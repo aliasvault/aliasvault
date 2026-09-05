@@ -144,10 +144,8 @@
       "alreadyConfigured": "Tá sé cumraithe agam cheana féin"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Gné Thurgnamhach",
-      "warningDescription": "Tá tacaíocht uathlíonta agus eochairfhocail le haghaidh Android i riocht turgnamhach faoi láthair.",
-      "warningLink": "Léigh tuilleadh faoi anseo",
       "headerText": "Is féidir leat AliasVault a chumrú chun feidhmiúlacht uathlíonta pasfhocail agus eochracha pas dúchasacha a sholáthar in Android. Lean na treoracha thíos chun é a chumasú.",
+      "docsLink": "Féach tuilleadh eolais shonrach faoi Android anseo.",
       "passkeyNotice": "Cruthaítear pasfhocail trí Bhainisteoir Dintiúirí Android (Android 14+). Chun iad a stóráil in AliasVault, cinntigh go bhfuil an Líonadh Uathoibríoch thíos cumasaithe.",
       "howToEnable": "Conas Líonadh Uathoibríoch & Eochracha Pas a chumasú:",
       "step1": "1. Oscail Socruithe Android tríd an gcnaipe thíos, agus athraigh an \"seirbhís uathlíonta is fearr leat\" go \"AliasVault\"",
@@ -362,6 +360,7 @@
     },
     "addField": "Cuir Réimse leis",
     "addCustomField": "Cuir Réimse Saincheaptha leis",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Réimsí Saincheaptha",
     "fieldLabel": "Lipéad Réimse",
     "fieldType": "Cineál Réimse",

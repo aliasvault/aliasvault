@@ -283,6 +283,8 @@
     "creating": "Creating",
     "editing": "Editing",
     "addCustomField": "Add custom field",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Field Label",
     "enterFieldName": "Enter field name",
     "fieldType": "Field Type",

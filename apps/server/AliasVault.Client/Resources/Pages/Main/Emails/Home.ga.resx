@@ -74,6 +74,22 @@
     <value>Athnuachan</value>
     <comment>Refresh button text</comment>
   </data>
+  <data name="DeleteSelectedEmails" xml:space="preserve">
+    <value>Scrios {0} ríomhphost(anna) roghnaithe</value>
+    <comment>Delete selected emails button text</comment>
+  </data>
+  <data name="BulkDeleteEmailTitle" xml:space="preserve">
+    <value>Scrios ríomhphost(anna)</value>
+    <comment>Delete multiple emails confirmation dialog title</comment>
+  </data>
+  <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
+    <value>An bhfuil tú cinnte gur mian leat {0} ríomhphost(anna) a scriosadh? Ní féidir an gníomh seo a chealú.</value>
+    <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailSuccess" xml:space="preserve">
+    <value>Scriosadh na {0} ríomhphoist go léir go rathúil</value>
+    <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
+  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>Níl aon seoltaí ríomhphoist príobháideacha in úsáid agat (go fóill). Cruthaigh leasainm nua agus bain úsáid as seoladh ríomhphoist príobháideach a dtacaítear leis ag AliasVault. Taispeánfar anseo gach ríomhphost a fhaightear trí na seoltaí ríomhphoist príobháideacha seo.</value>
     <comment>Message when no email addresses are configured</comment>

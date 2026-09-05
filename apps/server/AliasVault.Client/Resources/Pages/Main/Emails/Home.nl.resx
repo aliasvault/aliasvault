@@ -74,6 +74,22 @@
     <value>Vernieuwen</value>
     <comment>Refresh button text</comment>
   </data>
+  <data name="DeleteSelectedEmails" xml:space="preserve">
+    <value>Verwijder {0} geselecteerde e-mail(s)</value>
+    <comment>Delete selected emails button text</comment>
+  </data>
+  <data name="BulkDeleteEmailTitle" xml:space="preserve">
+    <value>Verwijder email(s)</value>
+    <comment>Delete multiple emails confirmation dialog title</comment>
+  </data>
+  <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
+    <value>Weet u zeker dat je deze {0} e-mail(s) wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</value>
+    <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailSuccess" xml:space="preserve">
+    <value>Alle {0} e-mail(s) met succes verwijderd</value>
+    <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
+  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>Je gebruikt (nog) geen privé e-mailadressen. Maak een nieuwe alias aan en gebruik een privé e-mailadres dat ondersteund wordt door AliasVault. Alle e-mails ontvangen op deze privé e-mailadressen zullen hier verschijnen.</value>
     <comment>Message when no email addresses are configured</comment>

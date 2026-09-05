@@ -144,10 +144,8 @@
       "alreadyConfigured": "Я вже це налаштував"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Експериментальна функція",
-      "warningDescription": "Підтримка автозаповнення та ключа доступу для Android наразі перебуває в експериментальному стані.",
-      "warningLink": "Детальніше про це читайте тут",
       "headerText": "Ви можете налаштувати AliasVault для надання функціональності автозаповнення власних паролів і ключів доступу в Android. Щоб увімкнути цю функцію, виконайте наведені нижче дії.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Ключі доступу створюються за допомогою Android Credential Manager (Android 14+). Щоб зберегти їх в AliasVault, переконайтеся, що нижче ввімкнено автозаповнення.",
       "howToEnable": "Як увімкнути автозаповнення та ключі доступу:",
       "step1": "1. Відкрийте налаштування Android за допомогою кнопки нижче та змініть «бажаний сервіс автозаповнення» на «AliasVault»",
@@ -362,6 +360,7 @@
     },
     "addField": "Add Field",
     "addCustomField": "Add Custom Field",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Custom Fields",
     "fieldLabel": "Field Label",
     "fieldType": "Field Type",

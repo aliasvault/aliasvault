@@ -144,10 +144,8 @@
       "alreadyConfigured": "Już to skonfigurowałem"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Funkcja eksperymentalna",
-      "warningDescription": "Funkcja autouzupełniania i obsługa hasła dostępowego dla systemu Android są obecnie w fazie eksperymentalnej.",
-      "warningLink": "Więcej informacji na ten temat można znaleźć tutaj",
       "headerText": "Możesz skonfigurować AliasVault, aby zapewnić natywną funkcję automatycznego wypełniania haseł i kluczy dostępu w systemie Android. Aby ją włączyć, postępuj zgodnie z poniższymi instrukcjami.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Klucze dostępu są tworzone za pomocą menedżera poświadczeń systemu Android (Android 14+). Aby zapisać je w AliasVault, upewnij się, że opcja Autofill poniżej jest włączona.",
       "howToEnable": "Jak włączyć autouzupełnianie i klucze dostępu:",
       "step1": "1. Otwórz ustawienia systemu Android za pomocą poniższego przycisku i zmień „preferowaną usługę autouzupełniania” na „AliasVault”",
@@ -362,6 +360,7 @@
     },
     "addField": "Dodaj pole",
     "addCustomField": "Dodaj pole niestandardowe",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Pola niestandardowe",
     "fieldLabel": "Etykieta pola",
     "fieldType": "Typ pola",

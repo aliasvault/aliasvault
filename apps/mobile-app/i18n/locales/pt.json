@@ -144,10 +144,8 @@
       "alreadyConfigured": "Já configurei"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Funcionalidade Experimental",
-      "warningDescription": "Suporte para autopreenchimento e passkeys no Android está em fase experimental.",
-      "warningLink": "Leia mais sobre isso aqui",
       "headerText": "Você pode configurar o AliasVault para prover a funcionalidade de autopreenchimento de senhas e passkeys no Android. Siga as instruções abaixo para habilitar.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Passkeys são criadas através do Gerenciador de Credenciais Android (Android 14+). Para armazená-las no AliasVault, confirme que o autopreenchimento está habilitado abaixo.",
       "howToEnable": "Como habilitar Autopreenchimento & Passkeys:",
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de autopreenchimento preferido\" para \"AliasVault\"",
@@ -362,6 +360,7 @@
     },
     "addField": "Adicionar Campo",
     "addCustomField": "Adicionar Campo Personalizado",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Campos Personalizados",
     "fieldLabel": "Nome do Campo",
     "fieldType": "Tipo do Campo",

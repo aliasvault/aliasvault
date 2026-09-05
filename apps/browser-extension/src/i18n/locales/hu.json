@@ -283,6 +283,8 @@
     "creating": "Létrehozás",
     "editing": "Szerkesztés",
     "addCustomField": "Egyedi mező hozzáadása",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Mező cím",
     "enterFieldName": "Adja meg a mező nevét",
     "fieldType": "Mező típus",

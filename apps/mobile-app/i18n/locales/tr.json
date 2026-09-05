@@ -144,10 +144,8 @@
       "alreadyConfigured": "Yapılandırma tamamlandı"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Deneysel Özellikler",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
-      "warningLink": "Daha fazlasını buradan okuyun",
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
       "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Aşağıdaki buton ile Android Ayarlarını açın ve “Otomatik doldurma tercihi”ni “AliasVault” olarak değiştirin",
@@ -362,6 +360,7 @@
     },
     "addField": "Add Field",
     "addCustomField": "Add Custom Field",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Custom Fields",
     "fieldLabel": "Field Label",
     "fieldType": "Field Type",

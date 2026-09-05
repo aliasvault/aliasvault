@@ -283,6 +283,8 @@
     "creating": "Creare",
     "editing": "Editare",
     "addCustomField": "Adaugă câmp personalizat",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Etichetă câmp",
     "enterFieldName": "Introdu numele câmpului",
     "fieldType": "Tip câmp",

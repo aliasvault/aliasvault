@@ -74,6 +74,22 @@
     <value>Actualiser</value>
     <comment>Refresh button text</comment>
   </data>
+  <data name="DeleteSelectedEmails" xml:space="preserve">
+    <value>Supprimer {0} email(s) sélectionné(s)</value>
+    <comment>Delete selected emails button text</comment>
+  </data>
+  <data name="BulkDeleteEmailTitle" xml:space="preserve">
+    <value>Supprimer email(s)</value>
+    <comment>Delete multiple emails confirmation dialog title</comment>
+  </data>
+  <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir supprimer {0} email(s) ? Cette action est irreversible.</value>
+    <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailSuccess" xml:space="preserve">
+    <value>{0} email(s) supprimé(s) avec succès</value>
+    <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
+  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>Vous n'utilisez pas (encore) d'adresse e-mail privée. Créez un nouvel alias et utilisez une adresse e-mail privée prise en charge par AliasVault. Tous les e-mails reçus par ces adresses e-mail privées apparaîtront ici.</value>
     <comment>Message when no email addresses are configured</comment>

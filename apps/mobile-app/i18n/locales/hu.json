@@ -144,10 +144,8 @@
       "alreadyConfigured": "Már beállítottam"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Kísérleti funkció",
-      "warningDescription": "Az Android-os kitöltés és azonosítókulcs támogatás jelenleg kísérleti fázisban van.",
-      "warningLink": "Itt olvashat róla többet",
       "headerText": "Az AliasVault-ot be tudja úgy állítani, hogy natívan töltse ki a jelszavakat és azonosítókulcsokat az Android-ban. Kövesse a lenti leírást a beállításhoz.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Az azonosítókulcsok az Android Bejegyzés Menedzseren keresztül jönnek létre (Android 14+). Ha az AliasVault-ban akarja tárolni, állítsa be a kitöltést.",
       "howToEnable": "Hogyan kapcsolja be a Kitöltés & Azonosítókulcsokat:",
       "step1": "1. Nyissa meg az Android Beállításokat a lenti gombbal, és válassza ki az \"AliasVault\"-ot a \"Preferált kitöltés szolgáltatás\" menüben",
@@ -362,6 +360,7 @@
     },
     "addField": "Mező hozzáadása",
     "addCustomField": "Egyedi mező hozzáadása",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Egyedi mezők",
     "fieldLabel": "Mező cím",
     "fieldType": "Mező típus",

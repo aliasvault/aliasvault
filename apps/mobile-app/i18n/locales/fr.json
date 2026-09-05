@@ -144,10 +144,8 @@
       "alreadyConfigured": "Je l'ai déjà configuré"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Fonctionnalité expérimentale",
-      "warningDescription": "Le remplissage automatique et la prise en charge de la clé d'accès pour Android sont actuellement dans un état expérimental.",
-      "warningLink": "En savoir plus à ce sujet ici",
       "headerText": "Vous pouvez configurer AliasVault pour fournir le mot de passe natif et la fonctionnalité de saisie automatique du mot de passe dans Android. Suivez les instructions ci-dessous pour l'activer.",
+      "docsLink": "Voir plus d'informations spécifiques à Android ici.",
       "passkeyNotice": "Les mots de passe sont créés via le gestionnaire d'identifiants Android (Android 14+). Pour les stocker dans AliasVault, assurez-vous que le remplissage automatique ci-dessous est activé.",
       "howToEnable": "Comment activer le remplissage automatique et les clés d'accès :",
       "step1": "1. Ouvrez les paramètres Android via le bouton ci-dessous, et changez le \"service préféré de saisie automatique\" par \"AliasVault\"",
@@ -362,6 +360,7 @@
     },
     "addField": "Ajouter un champ",
     "addCustomField": "Ajouter un champ personnalisé",
+    "editCustomField": "Modifier le champ personnalisé",
     "customFields": "Champs Personnalisés",
     "fieldLabel": "Étiquette du champ",
     "fieldType": "Type de champ",
@@ -663,7 +662,7 @@
   "app": {
     "status": {
       "unlockingVault": "Déverrouillage du coffre-fort",
-      "decryptingVault": "Décryptage du coffre-fort"
+      "decryptingVault": "Déchiffrage du coffre-fort"
     },
     "navigation": {
       "login": "Se connecter",

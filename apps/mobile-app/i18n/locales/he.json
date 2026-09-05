@@ -144,10 +144,8 @@
       "alreadyConfigured": "כבר הגדרתי את זה"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ יכולת ניסיונית",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
-      "warningLink": "אפשר לקרוא עליה עוד כאן",
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
       "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. לפתוח את הגדרות Android בעזרת הכפתור שלהלן ולשנות את „שירות השלמה אוטומטית מועדף” ל־„AliasVault”",
@@ -362,6 +360,7 @@
     },
     "addField": "Add Field",
     "addCustomField": "Add Custom Field",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Custom Fields",
     "fieldLabel": "Field Label",
     "fieldType": "Field Type",

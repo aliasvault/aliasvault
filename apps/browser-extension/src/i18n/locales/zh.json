@@ -283,6 +283,8 @@
     "creating": "创建",
     "editing": "编辑",
     "addCustomField": "添加自定义字段",
+    "editCustomField": "编辑自定义字段",
+    "deleteCustomField": "删除自定义字段",
     "fieldLabel": "字段标签",
     "enterFieldName": "输入字段名称",
     "fieldType": "字段类型",

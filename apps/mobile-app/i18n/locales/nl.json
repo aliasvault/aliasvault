@@ -29,7 +29,7 @@
     "attachments": "Bijlagen",
     "or": "of",
     "retry": "Probeer opnieuw",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Sleep om het formaat aan te passen",
     "deleteItemConfirmTitle": "Verwijder item",
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
@@ -144,10 +144,8 @@
       "alreadyConfigured": "Al geconfigureerd"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimentele functie",
-      "warningDescription": "Autofill en passkey support voor Android is momenteel in een experimentele staat.",
-      "warningLink": "Lees er hier meer over",
       "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in Android. Volg de instructies hieronder om deze in te schakelen.",
+      "docsLink": "Bekijk hier meer Android specifieke informatie.",
       "passkeyNotice": "Passkeys worden gemaakt via Android Credential Manager (Android 14+). Om ze op te slaan in AliasVault, moet Autofill hieronder ingeschakeld zijn.",
       "howToEnable": "Autofill & passkeys inschakelen:",
       "step1": "1. Open Android Instellingen via de onderstaande knop en verander de \"Autofill preferred service\" naar \"AliasVault\"",
@@ -227,7 +225,7 @@
       "biometricDisabledMessage": "{{biometric}} is uitgeschakeld voor AliasVault. Ga naar de app instellingen om dit in te schakelen.",
       "biometricHelp": "Gebruik biometrische authenticatie om je kluis te ontgrendelen, die is beveiligd door de {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} is niet beschikbaar. Tik om instellingen te openen en/of ga naar je apparaat-instellingen om het in te schakelen en te configureren.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "Biometrie is niet beschikbaar voor jouw apparaat. Android vereist sterke (class 3) biometrie, zoals een vingerafdruk of ondersteunde veilige gezichtsherkenning.",
       "featureRequiresPasscode": "Deze functie vereist een toegangscode om te kunnen worden ingeschakeld op uw apparaat.",
       "pin": "Pincode",
       "pinDescription": "Gebruik een eigen pincode om je vault sneller te ontgrendelen.",
@@ -362,6 +360,7 @@
     },
     "addField": "Veld toevoegen",
     "addCustomField": "Aangepast veld toevoegen",
+    "editCustomField": "Aangepast veld bewerken",
     "customFields": "Extra velden",
     "fieldLabel": "Veldlabel",
     "fieldType": "Veldtype",
@@ -607,7 +606,7 @@
     "formatSwitchTitle": "Wissel van e-mailformaat",
     "sizeKB": "KB",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Deze e-mail vereist een nieuwere app versie om correct weer te geven. Update je app.",
     "emptyMessage": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
     "loadMore": "Meer laden ({{count}} resterend)",
     "time": {
