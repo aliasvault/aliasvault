@@ -145,7 +145,7 @@
     },
     "androidAutofillSettings": {
       "headerText": "Poți configura AliasVault pentru a oferi funcționalitatea nativă de completare automată a parolelor și passkey-urilor pe Android. Urmează instrucțiunile de mai jos pentru a o activa.",
-      "docsLink": "View more Android specific information here.",
+      "docsLink": "Vezi aici mai multe informații specifice pentru Android.",
       "passkeyNotice": "Passkey-urile sunt create prin Android Credential Manager (Android 14+). Pentru a le stoca în AliasVault, asigură-te că funcția de completare automată de mai jos este activată.",
       "howToEnable": "Cum se activează completarea automată și passkey-urile:",
       "step1": "1. Deschide setările Android folosind butonul de mai jos și schimbă „Serviciul de completare automată” în „AliasVault",
@@ -360,7 +360,7 @@
     },
     "addField": "Adaugă Câmp",
     "addCustomField": "Adaugă Câmp Personalizat",
-    "editCustomField": "Edit Custom Field",
+    "editCustomField": "Editează câmpul personalizat",
     "customFields": "Câmpuri Personalizate",
     "fieldLabel": "Etichetă Câmp",
     "fieldType": "Tip Câmp",
