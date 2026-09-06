@@ -40,17 +40,21 @@ describe('EncryptionUtility VEK encrypt/decrypt (KEK/VEK model)', () => {
     await expect(EncryptionUtility.decryptVaultEncryptionKey(encrypted, wrongKek)).rejects.toThrow();
   });
 
-  it('decrypts a re-encrypted VEK after a simulated password change', async () => {
+  it('opens the full KEK to AK to VEK chain after a simulated password change (AK rewrap)', async () => {
     const vek = EncryptionUtility.generateVaultEncryptionKey();
+    const accountKey = EncryptionUtility.generateVaultEncryptionKey();
     const oldKek = EncryptionUtility.generateVaultEncryptionKey();
     const newKek = EncryptionUtility.generateVaultEncryptionKey();
 
-    // Password change: decrypt with old KEK, re-encrypt with new KEK. The VEK itself must survive unchanged.
-    const encryptedOld = await EncryptionUtility.encryptVaultEncryptionKey(vek, oldKek);
-    const decrypted = await EncryptionUtility.decryptVaultEncryptionKey(encryptedOld, oldKek);
-    const encryptedNew = await EncryptionUtility.encryptVaultEncryptionKey(decrypted, newKek);
+    const encryptedAccountKeyOld = await EncryptionUtility.encryptVaultEncryptionKey(accountKey, oldKek);
+    const encryptedVek = await EncryptionUtility.encryptVaultEncryptionKey(vek, accountKey);
 
-    expect(await EncryptionUtility.decryptVaultEncryptionKey(encryptedNew, newKek)).toBe(vek);
+    const decryptedAccountKey = await EncryptionUtility.decryptVaultEncryptionKey(encryptedAccountKeyOld, oldKek);
+    const encryptedAccountKeyNew = await EncryptionUtility.encryptVaultEncryptionKey(decryptedAccountKey, newKek);
+
+    const accountKeyViaNewKek = await EncryptionUtility.decryptVaultEncryptionKey(encryptedAccountKeyNew, newKek);
+    expect(accountKeyViaNewKek).toBe(accountKey);
+    expect(await EncryptionUtility.decryptVaultEncryptionKey(encryptedVek, accountKeyViaNewKek)).toBe(vek);
   });
 
   it('encrypts and decrypts vault content with a VEK end-to-end', async () => {

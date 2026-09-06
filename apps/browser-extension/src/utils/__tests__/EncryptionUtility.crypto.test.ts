@@ -60,7 +60,6 @@ async function createEmail(
     secondsAgo: 1,
     decryptionKeys: [{ keyIndex: 0, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
     publicKeys: [encryptionKey.PublicKey],
-    attachments: [],
   };
 }
 
