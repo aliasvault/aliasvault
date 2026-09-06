@@ -37,6 +37,10 @@ import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/Identi
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
 import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/PasswordGeneratorSettings';
+import ActiveSessionsSettings from '@/entrypoints/popup/pages/settings/security/ActiveSessionsSettings';
+import AuthLogsSettings from '@/entrypoints/popup/pages/settings/security/AuthLogsSettings';
+import ChangePasswordSettings from '@/entrypoints/popup/pages/settings/security/ChangePasswordSettings';
+import SecuritySettings from '@/entrypoints/popup/pages/settings/security/SecuritySettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
 
@@ -204,6 +208,10 @@ const App: React.FC = () => {
     { path: '/emails/:id', element: <EmailDetails />, showBackButton: true, title: t('emails.title') },
     { path: '/settings', element: <Settings />, showBackButton: false },
     { path: '/settings/unlock-method', element: <VaultUnlockSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/security', element: <SecuritySettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/security/change-password', element: <ChangePasswordSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/security/active-sessions', element: <ActiveSessionsSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/security/auth-logs', element: <AuthLogsSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/autofill', element: <AutofillSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/context-menu', element: <ContextMenuSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/clipboard', element: <ClipboardSettings />, showBackButton: true, title: t('common.settings') },

@@ -1,5 +1,5 @@
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { StatusResponseV2 } from '@/utils/dist/core/models/webapi';
+import type { AuthLogModel, RefreshToken, StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
@@ -360,6 +360,27 @@ export class WebApiService {
         capabilities: await CapabilityService.getAll()
       };
     }
+  }
+
+  /**
+   * Get the active sessions (logged in devices) for the current user from the server.
+   */
+  public async getActiveSessions(): Promise<RefreshToken[]> {
+    return this.get<RefreshToken[]>('Security/sessions');
+  }
+
+  /**
+   * Revoke a session (logged in device) for the current user on the server.
+   */
+  public async revokeSession(sessionId: string): Promise<void> {
+    await this.delete<void>(`Security/sessions/${sessionId}`);
+  }
+
+  /**
+   * Get the recent auth logs for the current user from the server.
+   */
+  public async getAuthLogs(): Promise<AuthLogModel[]> {
+    return this.get<AuthLogModel[]>('Security/authlogs');
   }
 
   /**

@@ -112,11 +112,11 @@ const ChangePasswordSettings: React.FC = () => {
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError(t('settings.changePassword.passwordsDoNotMatch'));
+      setError(t('settings.securitySettings.changePassword.passwordsDoNotMatch'));
       return;
     }
     if (newPassword.length < MIN_GOOD_PASSWORD_LENGTH) {
-      setError(t('settings.changePassword.passwordTooShort', { minLength: MIN_GOOD_PASSWORD_LENGTH }));
+      setError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_GOOD_PASSWORD_LENGTH }));
       return;
     }
 
@@ -126,7 +126,7 @@ const ChangePasswordSettings: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setSuccess(t('settings.changePassword.success'));
+      setSuccess(t('settings.securitySettings.changePassword.success'));
     } catch (err) {
       console.error('Password change failed:', err);
       setError(errorMessage(err));
@@ -141,11 +141,10 @@ const ChangePasswordSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageTitle>{t('settings.changePassword.title')}</PageTitle>
-
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        {t('settings.changePassword.description')}
-      </p>
+      <div>
+        <PageTitle>{t('settings.securitySettings.changePassword.title')}</PageTitle>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.changePassword.description')}</p>
+      </div>
 
       {error && <AlertMessage type="error" message={error} />}
       {success && <AlertMessage type="success" message={success} />}
@@ -154,14 +153,14 @@ const ChangePasswordSettings: React.FC = () => {
       <section>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <form onSubmit={handleSubmit}>
-            <PasswordInput id="current-password" label={t('settings.changePassword.currentPassword')} value={currentPassword} setValue={setCurrentPassword} visible={showCurrentPassword} setVisible={setShowCurrentPassword} />
-            <PasswordInput id="new-password" label={t('settings.changePassword.newPassword')} value={newPassword} setValue={setNewPassword} visible={showNewPassword} setVisible={setShowNewPassword}>
+            <PasswordInput id="current-password" label={t('settings.securitySettings.changePassword.currentPassword')} value={currentPassword} setValue={setCurrentPassword} visible={showCurrentPassword} setVisible={setShowCurrentPassword} />
+            <PasswordInput id="new-password" label={t('settings.securitySettings.changePassword.newPassword')} value={newPassword} setValue={setNewPassword} visible={showNewPassword} setVisible={setShowNewPassword}>
               <PasswordStrengthIndicator password={newPassword} />
             </PasswordInput>
-            <PasswordInput id="confirm-password" label={t('settings.changePassword.confirmNewPassword')} value={confirmPassword} setValue={setConfirmPassword} visible={showConfirmPassword} setVisible={setShowConfirmPassword} />
+            <PasswordInput id="confirm-password" label={t('settings.securitySettings.changePassword.confirmNewPassword')} value={confirmPassword} setValue={setConfirmPassword} visible={showConfirmPassword} setVisible={setShowConfirmPassword} />
 
             <Button type="submit">
-              {t('settings.changePassword.title')}
+              {t('settings.securitySettings.changePassword.title')}
             </Button>
           </form>
         </div>
