@@ -40,3 +40,14 @@ export function toBirthDateFormat(date: Date): string {
   const datePart = isoString.substring(0, 10); // yyyy-MM-dd
   return `${datePart} 00:00:00`;
 }
+
+/**
+ * Formats a date-time returned by the API (UTC by default) for display in the user's own locale and timezone.
+ * @param value - The date-time string as returned by the API
+ * @returns The date-time formatted for the current locale, or the raw value when it cannot be parsed
+ */
+export function toLocalDisplayFormat(value: string): string {
+  const normalized = /^\d{4}-\d{2}-\d{2}[T ][\d:.]+$/.test(value) ? `${value.replace(' ', 'T')}Z` : value;
+  const date = new Date(normalized);
+  return isNaN(date.getTime()) ? value : date.toLocaleString();
+}
