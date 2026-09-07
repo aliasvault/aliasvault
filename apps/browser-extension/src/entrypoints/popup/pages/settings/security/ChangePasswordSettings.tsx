@@ -9,9 +9,9 @@ import PasswordStrengthIndicator, { MIN_GOOD_PASSWORD_LENGTH } from '@/entrypoin
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
 import { CurrentPasswordIncorrectError, PasswordChangedElsewhereError, PasswordChangeService } from '@/utils/auth/PasswordChangeService';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 
 type PasswordInputProps = {
@@ -67,6 +67,7 @@ const ChangePasswordSettings: React.FC = () => {
   const dbContext = useDb();
   const webApi = useWebApi();
   const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
+  const { syncVault } = useVaultSync();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -130,13 +131,12 @@ const ChangePasswordSettings: React.FC = () => {
     } catch (err) {
       console.error('Password change failed:', err);
       setError(errorMessage(err));
-      if (err instanceof PasswordChangedElsewhereError) {
-        // Hand off to the sync preflight, which owns the password-changed-elsewhere forced logout.
-        await sendMessage('SYNC_VAULT');
-      }
     } finally {
       hideLoading();
     }
+
+    // Sync the vault after the password change to ensure everything is up to date both locally and on the server.
+    await syncVault();
   };
 
   return (
