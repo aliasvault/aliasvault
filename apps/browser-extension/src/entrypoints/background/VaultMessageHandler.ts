@@ -52,6 +52,7 @@ import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
 import { vaultMergeService } from '@/utils/VaultMergeService';
+import { getVaultSyncHoldReason } from '@/utils/VaultSyncHold';
 import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
 
@@ -314,6 +315,10 @@ async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFul
  * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
  */
 export async function handleSyncVault() : Promise<messageBoolResponse> {
+  if (await syncIsOnHold()) {
+    return { success: false };
+  }
+
   const webApi = new WebApiService();
   const statusResponse = await webApi.getStatus();
   const statusError = webApi.validateStatusResponse(statusResponse);
@@ -1457,6 +1462,10 @@ function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVaultSync
  * @param options - what the caller asks of the sync beyond what the revisions decide
  */
 async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Promise<FullVaultSyncResult> {
+  if (await syncIsOnHold()) {
+    return syncResult({ success: false });
+  }
+
   // Check if sync is already in progress
   if (isSyncInProgress) {
     // Mark that we need to sync again after current sync completes
@@ -1618,7 +1627,7 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
     return abortSync({ success: false, requiresLogout, errorKey: statusError });
   }
 
-  // Check if the SRP salt has changed (password change detection)
+  // A changed SRP salt means the password was changed on another device (this device's own change holds the sync hold).
   const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
   if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
     return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
@@ -1651,6 +1660,17 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
   }
 
   return { proceed: true, statusResponse, syncState, needsPull };
+}
+
+/**
+ * Whether a sync has to yield to a held sync hold (see VaultSyncHold), logging what it yields to when it does.
+ */
+async function syncIsOnHold(): Promise<boolean> {
+  const reason = await getVaultSyncHoldReason();
+  if (reason) {
+    devLog(`[VaultSync] Sync refused: on hold for ${reason}.`);
+  }
+  return reason !== null;
 }
 
 /**
@@ -2888,7 +2908,7 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
       return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
     }
 
-    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, EncryptionUtility.algorithmForPublicKey(member.publicKey!));
+    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
 
     devLog(`[Sharing] Invited ${member.userId} to vault ${manifest.manifestId} with its key encrypted for them.`);
     return { success: true };
