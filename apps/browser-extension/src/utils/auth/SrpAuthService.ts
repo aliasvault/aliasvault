@@ -20,9 +20,7 @@ export type RegisterRequest = {
   verifier: string;
   encryptionType: string;
   encryptionSettings: string;
-  /** The SRP identity used for authentication (a random GUID generated at registration). */
   srpIdentity: string;
-  /** The encrypted VEK (KEK/VEK model): base64 of the freshly generated VEK encrypted with the password-derived KEK. */
   encryptedVek: string;
 };
 
@@ -31,9 +29,7 @@ export type RegisterRequest = {
  */
 export type PreparedRegistration = {
   request: RegisterRequest;
-  /** The generated VEK (base64): the vault encryption key to store in session after successful registration. */
   vaultEncryptionKey: string;
-  /** The password-derived key (base64): the KEK, only needed for key encryption/SRP, never for vault content. */
   derivedKey: string;
 };
 
@@ -43,9 +39,7 @@ export type PreparedRegistration = {
 export type RegistrationResult = {
   success: boolean;
   token?: TokenModel;
-  /** The vault encryption key (VEK, base64) to use for all vault encryption after successful registration. */
   encryptionKey?: string;
-  /** The encrypted VEK to cache locally for offline unlock. */
   encryptedVek?: string;
   error?: string;
 };
@@ -62,10 +56,19 @@ export type SrpClientProof = {
  * Login credentials prepared from password derivation.
  */
 export type PreparedCredentials = {
-  /** Password hash as uppercase hex string for SRP */
   passwordHashString: string;
-  /** Password hash as base64 string for encryption/decryption */
   passwordHashBase64: string;
+};
+
+/**
+ * What a new master password needs on both sides: what the server stores to verify it, and the KEK it derives.
+ */
+export type NewPasswordMaterial = {
+  salt: string;
+  verifier: string;
+  encryptionType: string;
+  encryptionSettings: string;
+  kekBase64: string;
 };
 
 /**
@@ -336,6 +339,20 @@ export class SrpAuthService {
   }
 
   /**
+   * Derive what a new master password needs: a fresh salt, the SRP verifier the server stores, and the KEK the
+   * client wraps its key material with. Uses the default Argon2Id settings.
+   * @param password - the new master password
+   * @param srpIdentity - the account's SRP identity the verifier is bound to
+   */
+  public static async prepareNewPassword(password: string, srpIdentity: string): Promise<NewPasswordMaterial> {
+    const salt = await SrpAuthService.generateSalt();
+    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.settings);
+    const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
+    const verifier = await SrpAuthService.deriveVerifier(privateKey);
+    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, kekBase64: credentials.passwordHashBase64 };
+  }
+
+  /**
    * Prepares SRP registration data for a new user.
    *
    * This generates all the cryptographic values needed to register a user:
@@ -352,40 +369,33 @@ export class SrpAuthService {
     password: string
   ): Promise<PreparedRegistration> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const salt = await SrpAuthService.generateSalt();
 
     /**
      * Generate a random GUID for SRP identity. This is used for all SRP operations,
      * is set during registration, and never changes.
      */
     const srpIdentity = SrpAuthService.generateSrpIdentity();
-
-    // Derive key from password using default Argon2Id settings
-    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.settings);
-
-    // Generate SRP private key and verifier using srpIdentity (not username)
-    const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
-    const verifier = await SrpAuthService.deriveVerifier(privateKey);
+    const material = await SrpAuthService.prepareNewPassword(password, srpIdentity);
 
     /*
      * KEK/VEK: generate a random VEK that will encrypt the vault content, encrypted with the password-derived KEK.
      * The server stores only the encrypted form; the VEK itself stays client-side.
      */
     const vaultEncryptionKey = EncryptionUtility.generateVaultEncryptionKey();
-    const encryptedVek = await EncryptionUtility.encryptVaultEncryptionKey(vaultEncryptionKey, credentials.passwordHashBase64);
+    const encryptedVek = await EncryptionUtility.encryptVaultEncryptionKey(vaultEncryptionKey, material.kekBase64);
 
     return {
       request: {
         username: normalizedUsername,
-        salt,
-        verifier,
-        encryptionType: DEFAULT_ENCRYPTION.type,
-        encryptionSettings: DEFAULT_ENCRYPTION.settings,
+        salt: material.salt,
+        verifier: material.verifier,
+        encryptionType: material.encryptionType,
+        encryptionSettings: material.encryptionSettings,
         srpIdentity,
         encryptedVek,
       },
       vaultEncryptionKey,
-      derivedKey: credentials.passwordHashBase64,
+      derivedKey: material.kekBase64,
     };
   }
 

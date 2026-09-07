@@ -4,6 +4,7 @@ import { storage } from 'wxt/utils/storage';
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
+import { MasterPasswordService, PasswordChangedElsewhereError } from '@/utils/auth/MasterPasswordService';
 import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
@@ -733,8 +734,7 @@ export async function handleGetEncryptionKey(
  */
 export async function handleGetEncryptionKeyDerivationParams(
 ) : Promise<EncryptionKeyDerivationParams | null> {
-  // Get metadata from storage
-  return await getStorageItem<EncryptionKeyDerivationParams>(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS);
+  return MasterPasswordService.getStoredDerivationParams();
 }
 
 /**
@@ -1627,11 +1627,8 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
     return abortSync({ success: false, requiresLogout, errorKey: statusError });
   }
 
-  // A changed SRP salt means the password was changed on another device (this device's own change holds the sync hold).
-  const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
-  if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
-    return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
-  }
+  // Verify that the server's salt still matches the one this device derived its keys from, if not, it indicates password was changed remotely which warrants a logout.
+  await MasterPasswordService.assertSaltUnchanged(statusResponse.srpSalt);
 
   /*
    * Only needed when we are about to pull: the vault data below is decrypted with the session key, which is stale if
@@ -2178,6 +2175,11 @@ async function mapSyncFailure(err: unknown): Promise<FullVaultSyncResult> {
   // Auth error (session expired) - signal popup to trigger logout
   if (err instanceof ApiAuthError) {
     return syncResult({ success: false, requiresLogout: true, errorKey: 'sessionExpired' });
+  }
+
+  // The password was changed on another device: this device's keys no longer match, so it has to log in again.
+  if (err instanceof PasswordChangedElsewhereError) {
+    return syncResult({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
   }
 
   // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode

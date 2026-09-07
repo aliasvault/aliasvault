@@ -5,6 +5,7 @@
 import { storage } from 'wxt/utils/storage';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { UnlockMethodType, type VaultKeyGetResponse, type VaultKeyResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
@@ -131,6 +132,18 @@ export class VaultKeyService {
       { key: StorageKeys.ACCOUNT_PUBLIC_KEY, value: blobs.accountPublicKey },
       { key: StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, value: blobs.encryptedAccountPrivateKey },
       { key: StorageKeys.ACCOUNT_PRIVATE_KEY, value: blobs.accountPrivateKey },
+    ]);
+  }
+
+  /**
+   * Persist new account key after a local password change.
+   * @param newEncryptedAccountKey - the Account Key encrypted with the new password-derived KEK
+   * @param derivationParams - the KEK derivation parameters of the new password
+   */
+  public static async persistNewAccountKey(newEncryptedAccountKey: string, derivationParams: EncryptionKeyDerivationParams): Promise<void> {
+    await storage.setItems([
+      { key: StorageKeys.ENCRYPTED_ACCOUNT_KEY, value: newEncryptedAccountKey },
+      { key: StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS, value: derivationParams },
     ]);
   }
 

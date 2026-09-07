@@ -11,7 +11,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
-import { CurrentPasswordIncorrectError, PasswordChangedElsewhereError, PasswordChangeService } from '@/utils/auth/PasswordChangeService';
+import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@/utils/auth/MasterPasswordService';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 
 type PasswordInputProps = {
@@ -87,7 +87,7 @@ const ChangePasswordSettings: React.FC = () => {
    * @param err - the error thrown by the change flow
    */
   const errorMessage = (err: unknown): string => {
-    if (err instanceof CurrentPasswordIncorrectError) {
+    if (err instanceof IncorrectPasswordError) {
       return t('common.errors.wrongPassword');
     }
     if (err instanceof PasswordChangedElsewhereError) {
@@ -123,7 +123,7 @@ const ChangePasswordSettings: React.FC = () => {
 
     try {
       showLoading();
-      await PasswordChangeService.changePassword(webApi, currentPassword, newPassword);
+      await MasterPasswordService.changePassword(webApi, currentPassword, newPassword);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

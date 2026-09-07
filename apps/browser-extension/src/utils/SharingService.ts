@@ -1,6 +1,6 @@
 import { storage } from 'wxt/utils/storage';
 
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
+import { MasterPasswordService } from '@/utils/auth/MasterPasswordService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devWarn } from '@/utils/devLogger/DevLogger';
 import { VaultKeyAlgorithm, type CreateSharedManifestRequest, type CreateSharedManifestResponse, type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GrantManifestAccessRequest, type GrantManifestAccessResponse, type GroupMemberInfo, type GroupOverviewResponse, type ManifestGrant, type ReceivedManifestInvitation, type VaultKeyAlgorithmValue } from '@/utils/dist/core/models/webapi';
@@ -171,9 +171,8 @@ export class SharingService {
    * @param password - the caller's master password, proven to the server and forgotten.
    */
   public static async deleteSharedManifest(webApi: WebApiService, groupId: string, manifestId: string, password: string): Promise<void> {
-    const initiate = await webApi.post<object, DeleteSharedManifestInitiateResponse>(`Groups/${groupId}/manifests/${manifestId}/delete/initiate`, {});
-    const { passwordHashString } = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionSettings);
-    const proof = await SrpAuthService.deriveClientProof(initiate.salt, initiate.srpIdentity, passwordHashString, initiate.serverEphemeral);
+    const challenge = await webApi.post<object, DeleteSharedManifestInitiateResponse>(`Groups/${groupId}/manifests/${manifestId}/delete/initiate`, {});
+    const { proof } = await MasterPasswordService.answerSrpChallenge(challenge, password);
     await webApi.post<DeleteSharedManifestRequest, void>(`Groups/${groupId}/manifests/${manifestId}/delete/confirm`, proof, false);
   }
 
