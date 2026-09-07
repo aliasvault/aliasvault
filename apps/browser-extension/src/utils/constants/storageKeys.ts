@@ -106,6 +106,8 @@ export const StorageKeys = {
   LAST_TAB_URL: 'session:lastTabUrl',
   /** The item that was most recently autofilled, used to prioritize it in the list. */
   RECENTLY_SELECTED_ITEM: 'session:aliasvault_recently_selected_item',
+  /** The sync hold record (reason + when it was taken) while an operation no sync may race runs; see VaultSyncHold. */
+  VAULT_SYNC_HOLD: 'session:vaultSyncHold',
 
   /*
    * -- App preferences --
@@ -224,12 +226,13 @@ export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.RECENTLY_SELECTED_ITEM,
 ];
 
-/** Session keys cleared on logout: everything from a lock, plus the popup navigation state. */
+/** Session keys cleared on logout. */
 export const SESSION_STORAGE_KEYS: readonly StorageKey[] = [
   ...VAULT_LOCK_STORAGE_KEYS,
   StorageKeys.LAST_VISITED_PAGE,
   StorageKeys.LAST_VISITED_TIME,
   StorageKeys.NAVIGATION_HISTORY,
+  StorageKeys.VAULT_SYNC_HOLD,
 ];
 
 /** Keys managed by LocalPreferencesService and cleared as a group by its clearAll(). */
