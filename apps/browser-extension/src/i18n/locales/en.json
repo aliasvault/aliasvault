@@ -42,7 +42,6 @@
     "notice": "Notice",
     "error": "Error",
     "cancel": "Cancel",
-    "retry": "Try again",
     "confirm": "Confirm",
     "remove": "Remove",
     "back": "Back",
@@ -99,6 +98,14 @@
     "pendingSync": "Syncing...",
     "mergingVaultChanges": "Merging vault changes...",
     "uploadingVault": "Uploading vault...",
+    "passwordStrength": {
+      "title": "Password Strength",
+      "veryWeak": "Keep going",
+      "weak": "Getting better",
+      "fair": "Good",
+      "good": "Great",
+      "strong": "Excellent"
+    },
     "errors": {
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
       "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
@@ -514,6 +521,44 @@
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
+    "securitySettings": {
+      "title": "Security",
+      "description": "Manage your account and vault security settings.",
+      "changePassword": {
+        "title": "Change Password",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmNewPassword": "Confirm New Password",
+        "passwordsDoNotMatch": "New passwords do not match",
+        "passwordTooShort": "New password must be at least {{minLength}} characters long",
+        "success": "Your password has been changed successfully."
+      },
+      "activeSessions": {
+        "title": "Active Sessions",
+        "description": "Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.",
+        "noSessions": "No active sessions",
+        "revoke": "Revoke",
+        "revokeSession": "Revoke Session",
+        "revokeConfirmation": "Are you sure you want to revoke this session? This will log you out of the chosen device.",
+        "sessionRevoked": "Session successfully revoked",
+        "failedToRevoke": "Failed to revoke session",
+        "failedToLoad": "Failed to load active sessions",
+        "lastActive": "Last active",
+        "expires": "Expires"
+      },
+      "authLogs": {
+        "title": "Recent Auth Logs",
+        "description": "Below you can find an overview of recent login attempts to your account.",
+        "noLogs": "No auth logs found",
+        "success": "Success",
+        "failed": "Failed",
+        "time": "Time",
+        "ipAddress": "IP Address",
+        "client": "Client",
+        "failedToLoad": "Failed to load auth logs"
+      }
+    },
     "unlockMethod": {
       "title": "Vault Unlock Method",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
@@ -535,13 +580,9 @@
     "familySharing": "Family Sharing"
   },
   "sharing": {
-    "shareWithOthers": "Share with others",
-    "manageAccess": "Manage access",
-    "share": "Share",
     "members": "Family members",
     "owner": "Owner",
     "revoke": "Revoke",
-    "keyFingerprint": "Key fingerprint",
     "family": {
       "title": "Family Sharing",
       "beta": "Beta",
@@ -568,13 +609,12 @@
         "loadFailed": "Family sharing could not be loaded.",
         "createVaultFailed": "The shared folder could not be created. Please try again.",
         "vaultUpgradeRequired": "Your vault has to finish upgrading before it can be shared.",
-      "accountKeyMismatch": "Sharing is unavailable: this account's encryption key could not be verified. Sign out and back in, and if it keeps happening, do not share anything from this device.",
         "revokeAccessFailed": "The access could not be changed. Please try again.",
         "inviteFailed": "The invitation could not be sent. Please try again.",
         "userNotReady": "That account has to finish upgrading AliasVault before a folder can be shared with it.",
         "alreadyInvited": "That person has already been invited.",
         "invitationGone": "That invitation is no longer available.",
-      "invitationKeyOutdated": "This invitation is no longer valid because the shared folder's key has changed. Ask for a new invitation.",
+        "invitationKeyOutdated": "This invitation is no longer valid because the shared folder's key has changed. Ask for a new invitation.",
         "notFamilyMember": "That person is not in this family.",
         "alreadyHasAccess": "That person already has access to this folder.",
         "lastMemberWithAccess": "Somebody has to be able to open the shared folder. Give another member access to it first.",
@@ -586,7 +626,6 @@
       "invite": "Invite",
       "invitationSent": "Invitation sent to {{username}}.",
       "noAccess": "No access",
-      "rosterManagedElsewhere": "Who belongs to this family is set by AliasVault. Contact support to have somebody added or removed.",
       "revokeAccessConfirm": "Take {{username}} out of “{{vault}}”? They lose access to it right away, but stay in the family.",
       "revokeAccessWarning": "They keep any copy of this folder they already downloaded. Change the passwords in it that you do not want them to keep using.",
       "deleteVault": "Delete folder",
