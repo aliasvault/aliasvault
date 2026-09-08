@@ -626,27 +626,43 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
-        // Read-modify-write so any per-method fields this build does not know about survive the credential swap.
-        var unlockKeyMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
-        unlockKeyMetadata.Salt = model.NewPasswordSalt;
-        unlockKeyMetadata.SrpVerifier = model.NewPasswordVerifier;
-        unlockKeyMetadata.EncryptionType = model.NewEncryptionType;
-        unlockKeyMetadata.EncryptionSettings = model.NewEncryptionSettings;
-        unlockKey.Metadata = unlockKeyMetadata.ToJson();
-        unlockKey.EncryptedAccountKey = model.NewEncryptedAccountKey;
-        unlockKey.UpdatedAt = timeProvider.UtcNow;
-        await context.SaveChangesAsync();
+        var now = timeProvider.UtcNow;
+        var settings = await settingsService.GetAllSettingsAsync();
+        var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
 
-        // Update the password last changed at timestamp for user.
-        user.PasswordChangedAt = timeProvider.UtcNow;
-        await userManager.UpdateAsync(user);
+        var newMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
+        newMetadata.Salt = model.NewPasswordSalt;
+        newMetadata.SrpVerifier = model.NewPasswordVerifier;
+        newMetadata.EncryptionType = model.NewEncryptionType;
+        newMetadata.EncryptionSettings = model.NewEncryptionSettings;
+        var newMetadataJson = newMetadata.ToJson();
+
+        // Archive the superseded unlock key and update the current unlock key with the new credentials in a single transaction.
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var writeContext = await dbContextFactory.CreateDbContextAsync();
+            await using var transaction = await writeContext.Database.BeginTransactionAsync();
+
+            await ArchiveSupersededUnlockKeyAsync(writeContext, unlockKey, settings.UnlockKeyHistoryRetentionDays, now, ClientHeaderInfo.GetRawValue(Request));
+            await writeContext.SaveChangesAsync();
+
+            await writeContext.UserUnlockKeys.Where(x => x.Id == unlockKey.Id).ExecuteUpdateAsync(s => s
+                .SetProperty(x => x.Metadata, newMetadataJson)
+                .SetProperty(x => x.EncryptedAccountKey, model.NewEncryptedAccountKey)
+                .SetProperty(x => x.UpdatedAt, now));
+
+            // Update the password last changed at timestamp for user.
+            await writeContext.AliasVaultUsers.Where(x => x.Id == user.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
+
+            // Force revoke all logged-in sessions except the current one so other clients re-authenticate with the new password.
+            await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.DeviceIdentifier != deviceIdentifier).ExecuteDeleteAsync();
+            await transaction.CommitAsync();
+        });
+
+        user.PasswordChangedAt = now;
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.PasswordChange);
-
-        // Force revoke all logged-in sessions except the current one so other clients re-authenticate with the
-        // new password and rederive their KEK. Their locally cached vault stays decryptable: the AK is unchanged.
-        var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
-        await context.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.DeviceIdentifier != deviceIdentifier).ExecuteDeleteAsync();
 
         return Ok();
     }
@@ -996,6 +1012,39 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await context.SaveChangesAsync();
 
         return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_SUCCESSFULLY_DELETED, 200));
+    }
+
+    /// <summary>
+    /// Archives the unlock key that is about to be overwritten so it can be reverted to in case of a password change failure.
+    /// Archived rows are pruned automatically on each archive attempt and by TaskRunner daily as well.
+    /// </summary>
+    /// <param name="context">Database context, inside the caller's transaction.</param>
+    /// <param name="unlockKey">The unlock key about to receive new credentials.</param>
+    /// <param name="retentionDays">The configured retention window; 0 switches archiving off.</param>
+    /// <param name="now">The current time.</param>
+    /// <param name="client">The client performing the credential change, recorded on the archived row.</param>
+    /// <returns>Task.</returns>
+    private static async Task ArchiveSupersededUnlockKeyAsync(AliasServerDbContext context, UserUnlockKey unlockKey, int retentionDays, DateTime now, string? client)
+    {
+        if (UnlockKeyHistoryPolicy.EffectiveRetentionDays(retentionDays) == 0)
+        {
+            return;
+        }
+
+        // Prune first, leaving room for the row added below: the limit counts that row, so one fewer is skipped here.
+        var supersededIds = await context.UserUnlockKeysHistory
+            .Where(x => x.UserId == unlockKey.UserId && x.Type == unlockKey.Type)
+            .OrderByDescending(x => x.ArchivedAt)
+            .Skip(UnlockKeyHistoryPolicy.MaxRowsPerMethod - 1)
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        if (supersededIds.Count > 0)
+        {
+            await context.UserUnlockKeysHistory.Where(x => supersededIds.Contains(x.Id)).ExecuteDeleteAsync();
+        }
+
+        context.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(unlockKey, now, client));
     }
 
     /// <summary>
