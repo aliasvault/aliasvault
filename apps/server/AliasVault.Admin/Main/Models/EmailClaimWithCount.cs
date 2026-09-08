@@ -7,8 +7,10 @@
 
 namespace AliasVault.Admin.Main.Models;
 
+using AliasServerDb;
+
 /// <summary>
-/// User email claim view model with count.
+/// An email claim as seen from one manifest, with the number of emails stored for its address.
 /// </summary>
 public class EmailClaimWithCount
 {
@@ -23,19 +25,9 @@ public class EmailClaimWithCount
     public string Address { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the address local.
+    /// Gets or sets what the manifest's link to this claim says about the alias right now.
     /// </summary>
-    public string AddressLocal { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the address domain.
-    /// </summary>
-    public string AddressDomain { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the email claim is disabled.
-    /// </summary>
-    public bool Disabled { get; set; }
+    public EmailClaimLinkState State { get; set; }
 
     /// <summary>
     /// Gets or sets the created at timestamp.

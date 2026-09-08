@@ -8,63 +8,27 @@
 namespace AliasVault.Admin.Main.Models;
 
 /// <summary>
-/// Model representing user-specific usage statistics for both all-time and recent periods.
+/// Usage of a single user's personal vault.
 /// </summary>
 public class UserUsageStatistics
 {
     /// <summary>
-    /// Gets or sets the total number of credentials (all-time).
+    /// Gets or sets the number of credentials in the current vault revision.
     /// </summary>
     public int TotalCredentials { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of active email claims (all-time).
+    /// Gets or sets the number of email aliases the vault still carries.
     /// </summary>
-    public int TotalActiveEmailClaims { get; set; }
+    public int ActiveEmailClaims { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of disabled email claims (all-time).
-    /// </summary>
-    public int TotalDisabledEmailClaims { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total number of received emails (all-time).
+    /// Gets or sets the number of stored emails the vault can decrypt.
     /// </summary>
     public int TotalReceivedEmails { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of emails received across all time (persistent counter).
-    /// This counter is never decremented, even when emails are deleted. Used for abuse detection.
+    /// Gets or sets the kilobytes the vault occupies on the server, all revisions included.
     /// </summary>
-    public int TotalEmailsReceivedPersistent { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of credentials created in the last 72 hours.
-    /// </summary>
-    public int RecentCredentials72h { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of email claims created in the last 72 hours.
-    /// </summary>
-    public int RecentEmailClaims72h { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of emails received in the last 72 hours.
-    /// </summary>
-    public int RecentReceivedEmails72h { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total number of email attachments (all-time).
-    /// </summary>
-    public int TotalEmailAttachments { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total storage size of email attachments in bytes (all-time).
-    /// </summary>
-    public long TotalEmailAttachmentStorage { get; set; }
-
-    /// <summary>
-    /// Gets the total storage size of email attachments in MB for display purposes.
-    /// </summary>
-    public double TotalEmailAttachmentStorageMB => TotalEmailAttachmentStorage / (1024.0 * 1024.0);
+    public long VaultStorageKb { get; set; }
 }

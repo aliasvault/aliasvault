@@ -16,19 +16,22 @@
                 {
                     <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Current</span>
                 }
-                @if (_previousEntry != null && HasPasswordChanged(entry, SortedVaultList))
+                @if (HasPasswordChanged(entry, SortedVaultList))
                 {
                     <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Password Changed</span>
                 }
+                @if (IsUnrestorableLegacyRevision(entry))
+                {
+                    <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300" title="Predates this user's migration to the current vault storage format.">Pre-migration</span>
+                }
             </SortableTableColumn>
             <SortableTableColumn>
-                @if (entry is VaultManifestsHistory)
+                @if (entry is VaultManifestsHistory && !IsUnrestorableLegacyRevision(entry))
                 {
                     <Button OnClick="() => MakeCurrentAsync(entry)">Restore</Button>
                 }
             </SortableTableColumn>
         </SortableTableRow>
-        _previousEntry = entry;
     }
 </SortableTable>
 
@@ -40,6 +43,19 @@
     public List<VaultManifestBase> VaultList { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets whether the user has moved to the manifest key model, which decides where the password signal
+    /// comes from and which revisions may still be restored.
+    /// </summary>
+    [Parameter]
+    public bool HasManifestAccessKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets when the user last changed their master password.
+    /// </summary>
+    [Parameter]
+    public DateTime PasswordChangedAt { get; set; }
+
+    /// <summary>
     /// Gets or sets the event callback to make a history revision the current one.
     /// </summary>
     [Parameter]
@@ -47,7 +63,6 @@
 
     private string SortColumn { get; set; } = "RevisionNumber";
     private SortDirection SortDirection { get; set; } = SortDirection.Descending;
-    private VaultManifestBase? _previousEntry;
 
     private readonly List<TableColumn> _vaultTableColumns = [
         new TableColumn { Title = "Revision", PropertyName = "RevisionNumber" },
@@ -87,7 +102,17 @@
     }
 
     /// <summary>
-    /// Checks if the password has changed between the current and previous vault entry based on revision number..
+    /// Whether restoring this revision would put the user back on the legacy storage format which is not supported anymore.
+    /// </summary>
+    private bool IsUnrestorableLegacyRevision(VaultManifestBase entry)
+    {
+        return HasManifestAccessKeys && entry is VaultManifestsHistory && entry.StorageFormat == VaultManifestBase.LegacyStorageFormat;
+    }
+
+    /// <summary>
+    /// Checks if the password has changed between the current and previous vault entry based on revision number.
+    /// Only legacy revisions carry credentials, so this stays silent on the current key model where the header line
+    /// above reports the password change instead.
     /// </summary>
     private static bool HasPasswordChanged(VaultManifestBase current, IEnumerable<VaultManifestBase> vaultList)
     {

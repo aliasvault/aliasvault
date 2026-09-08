@@ -1,13 +1,13 @@
-﻿@using AliasVault.RazorComponents.Tables
+@using AliasVault.RazorComponents.Tables
 
 <div class="d-flex justify-content-between mb-3">
     <div class="flex items-center space-x-2 mt-2">
-        <Button Color="secondary" OnClick="ToggleShowDisabled">
-            @(ShowDisabled ? "Hide Disabled Claims" : "Show Disabled Claims")
+        <Button Color="secondary" OnClick="ToggleShowRemoved">
+            @(ShowRemoved ? "Hide removed aliases" : "Show removed aliases")
         </Button>
-        @if (EmailClaimList.Any(e => !e.Disabled))
+        @if (EmailClaimList.Any(e => e.State != EmailClaimLinkState.Removed))
         {
-            <Button Color="danger" OnClick="DisableAllEmailClaims">Disable All</Button>
+            <Button Color="danger" OnClick="RemoveAllEmailClaims">Disable All</Button>
         }
     </div>
 </div>
@@ -21,20 +21,33 @@ else
     <SortableTable Columns="@_emailClaimTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
         @foreach (var entry in SortedEmailClaimList)
         {
-            <SortableTableRow Class="@(entry.Disabled ? "bg-secondary" : "")">
+            <SortableTableRow Class="@(entry.State == EmailClaimLinkState.Removed ? "bg-secondary" : "")">
                 <SortableTableColumn IsPrimary="true">@entry.Id</SortableTableColumn>
                 <SortableTableColumn>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
                 <SortableTableColumn><a href="emails?search=@entry.Address">@entry.Address</a></SortableTableColumn>
                 <SortableTableColumn>@entry.EmailCount</SortableTableColumn>
-                <SortableTableColumn>@(entry.Disabled ? "Disabled" : "Enabled")</SortableTableColumn>
                 <SortableTableColumn>
-                    @if (entry.Disabled)
+                    @switch (entry.State)
                     {
-                        <Button Color="success" OnClick="() => ToggleEmailClaimStatus(entry)">Enable</Button>
+                        case EmailClaimLinkState.Active:
+                            <StatusPill Enabled="true" TextTrue="Active" />
+                            break;
+                        case EmailClaimLinkState.Paused:
+                            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300" title="The user switched this alias off. Stored mail stays readable, new mail is rejected.">Paused</span>
+                            break;
+                        default:
+                            <StatusPill Enabled="false" TextFalse="Removed" />
+                            break;
+                    }
+                </SortableTableColumn>
+                <SortableTableColumn>
+                    @if (entry.State == EmailClaimLinkState.Removed)
+                    {
+                        <Button Color="success" OnClick="() => SetLinkStateAsync(entry, EmailClaimLinkState.Active)">Enable</Button>
                     }
                     else
                     {
-                        <Button Color="danger" OnClick="() => ToggleEmailClaimStatus(entry)">Disable</Button>
+                        <Button Color="danger" OnClick="() => SetLinkStateAsync(entry, EmailClaimLinkState.Removed)">Disable</Button>
                     }
                 </SortableTableColumn>
             </SortableTableRow>
@@ -48,12 +61,6 @@ else
     /// </summary>
     [Parameter]
     public AliasVaultUser User { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the callback for when an email claim is enabled or disabled.
-    /// </summary>
-    [Parameter]
-    public EventCallback<(Guid id, bool disabled)> OnEmailClaimStatusChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the event callback for when the count changes.
@@ -70,19 +77,19 @@ else
 
     private string SortColumn { get; set; } = "CreatedAt";
     private SortDirection SortDirection { get; set; } = SortDirection.Descending;
-    private bool ShowDisabled { get; set; } = false;
+    private bool ShowRemoved { get; set; } = false;
 
     private readonly List<TableColumn> _emailClaimTableColumns = [
         new TableColumn { Title = "ID", PropertyName = "Id" },
         new TableColumn { Title = "Created", PropertyName = "CreatedAt" },
         new TableColumn { Title = "Email", PropertyName = "Address" },
         new TableColumn { Title = "Email Count", PropertyName = "EmailCount" },
-        new TableColumn { Title = "Status", PropertyName = "Disabled" },
+        new TableColumn { Title = "Status", PropertyName = "State" },
         new TableColumn { Title = "Actions", PropertyName = "" },
     ];
 
     private IEnumerable<EmailClaimWithCount> SortedEmailClaimList =>
-        SortList(ShowDisabled ? EmailClaimList : EmailClaimList.Where(e => !e.Disabled).ToList(), SortColumn, SortDirection);
+        SortList(ShowRemoved ? EmailClaimList : EmailClaimList.Where(e => e.State != EmailClaimLinkState.Removed).ToList(), SortColumn, SortDirection);
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -97,7 +104,7 @@ else
     }
 
     /// <summary>
-    /// This method will refresh the email claim list.
+    /// Loads the claims linked to the user's personal manifest, in any state, with the number of stored emails per address.
     /// </summary>
     private async Task RefreshData()
     {
@@ -109,34 +116,27 @@ else
             return;
         }
 
-        // Load all email claims for this user
-        var claims = await dbContext.EmailClaims
-            .Where(x => x.VaultManifest!.OwnerGroupId == User.PersonalGroupId)
+        var links = await dbContext.EmailClaimLinks
+            .Where(l => l.VaultManifest.OwnerGroupId == User.PersonalGroupId)
+            .Select(l => new { l.EmailClaim.Id, l.EmailClaim.Address, l.EmailClaim.CreatedAt, l.EmailClaim.UpdatedAt, l.State })
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
 
-        // Get email addresses for this user to filter email counts
-        var userEmailAddresses = claims.Select(x => x.Address).ToList();
-
-        // Load email counts only for this user's email addresses in a single query
+        var addresses = links.Select(x => x.Address).ToList();
         var emailCounts = await dbContext.Emails
-            .Where(e => userEmailAddresses.Contains(e.To))
+            .Where(e => addresses.Contains(e.To))
             .GroupBy(e => e.To)
             .Select(g => new { Address = g.Key, Count = g.Count() })
-            .ToListAsync();
+            .ToDictionaryAsync(x => x.Address, x => x.Count);
 
-        var emailCountDict = emailCounts.ToDictionary(x => x.Address, x => x.Count);
-
-        EmailClaimList = claims.Select(x => new EmailClaimWithCount
+        EmailClaimList = links.Select(x => new EmailClaimWithCount
         {
             Id = x.Id,
             Address = x.Address,
-            AddressLocal = x.AddressLocal,
-            AddressDomain = x.AddressDomain,
             CreatedAt = x.CreatedAt,
             UpdatedAt = x.UpdatedAt,
-            EmailCount = emailCountDict.TryGetValue(x.Address, out var count) ? count : 0,
-            Disabled = x.Disabled
+            State = x.State,
+            EmailCount = emailCounts.GetValueOrDefault(x.Address),
         }).ToList();
 
         // Notify parent that count has changed
@@ -150,83 +150,58 @@ else
         StateHasChanged();
     }
 
-    private void ToggleShowDisabled()
+    private void ToggleShowRemoved()
     {
-        ShowDisabled = !ShowDisabled;
+        ShowRemoved = !ShowRemoved;
         StateHasChanged();
     }
 
     /// <summary>
-    /// This method will toggle the disabled status of an email claim.
+    /// Sets the state of the personal manifest's link to a claim. Disabling marks the link Removed, after which the
+    /// server rejects mail for the address; enabling puts it back to Active. The user's next vault sync recomputes
+    /// the state from their vault contents, so either change is undone as soon as the vault says otherwise.
     /// </summary>
-    private async Task ToggleEmailClaimStatus(EmailClaimWithCount entry)
+    private async Task SetLinkStateAsync(EmailClaimWithCount entry, EmailClaimLinkState state)
     {
-        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-
-        if (entry.Disabled)
-        {
-            // Enable email claim without confirmation.
-            var emailClaim = await dbContext.EmailClaims.FindAsync(entry.Id);
-            if (emailClaim != null)
-            {
-                // Re-enable the email claim.
-                emailClaim.Disabled = false;
-                emailClaim.UpdatedAt = DateTime.UtcNow;
-                await dbContext.SaveChangesAsync();
-                await RefreshData();
-            }
-        }
-        else
-        {
-            if (await ConfirmModalService.ShowConfirmation(
-                title: "Confirm Email Claim Disable",
-                message: @"Are you sure you want to disable this email claim?
+        if (state == EmailClaimLinkState.Removed && !await ConfirmModalService.ShowConfirmation(
+            title: "Confirm Email Alias Disable",
+            message: @"Are you sure you want to disable this email alias?
 
 Important notes:
-• Disabling an email claim means that emails will no longer be received for this address and will be rejected by the server.
+• Disabling an email alias means that emails will no longer be received for this address and will be rejected by the server.
 • The user can re-enable this at will by re-saving their vault which will claim it again.
 
-Do you want to proceed with disabling this claim?"))
-            {
-                // Load email claim
-                var emailClaim = await dbContext.EmailClaims.FindAsync(entry.Id);
-                if (emailClaim != null)
-                {
-                    // Set the disabled status to true.
-                    emailClaim.Disabled = true;
-                    emailClaim.UpdatedAt = DateTime.UtcNow;
-                    await dbContext.SaveChangesAsync();
-                    await RefreshData();
-                }
-            }
+Do you want to proceed with disabling this alias?"))
+        {
+            return;
         }
+
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        await dbContext.EmailClaimLinks
+            .Where(l => l.EmailClaimId == entry.Id && l.VaultManifest.OwnerGroupId == User.PersonalGroupId)
+            .ExecuteUpdateAsync(s => s.SetProperty(l => l.State, state));
+        await dbContext.EmailClaims.Where(c => c.Id == entry.Id).ExecuteUpdateAsync(s => s.SetProperty(c => c.UpdatedAt, DateTime.UtcNow));
+
+        await RefreshData();
     }
 
-    private async Task DisableAllEmailClaims()
+    private async Task RemoveAllEmailClaims()
     {
         if (await ConfirmModalService.ShowConfirmation(
-            title: "Confirm Email Claim Disable",
-            message: @"Are you sure you want to disable all email claims?
+            title: "Confirm Email Alias Disable",
+            message: @"Are you sure you want to disable all email aliases of this user?
 
 Important notes:
-• Disabling an email claim means that emails will no longer be received for this address and will be rejected by the server.
+• Disabling an email alias means that emails will no longer be received for this address and will be rejected by the server.
 • The user can re-enable this at will by re-saving their vault which will claim it again.
 
-Do you want to proceed with disabling all email claims?"))
+Do you want to proceed with disabling all email aliases?"))
         {
             await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+            await dbContext.EmailClaimLinks
+                .Where(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == User.PersonalGroupId)
+                .ExecuteUpdateAsync(s => s.SetProperty(l => l.State, EmailClaimLinkState.Removed));
 
-            // Load email claims
-            var emailClaims = await dbContext.EmailClaims.Where(x => x.VaultManifest!.OwnerGroupId == User.PersonalGroupId).ToListAsync();
-
-            // Disable all email claims.
-            foreach (var emailClaim in emailClaims)
-            {
-                emailClaim.Disabled = true;
-                emailClaim.UpdatedAt = DateTime.UtcNow;
-            }
-
-            await dbContext.SaveChangesAsync();
             await RefreshData();
         }
     }
@@ -239,13 +214,13 @@ Do you want to proceed with disabling all email claims?"))
             "CreatedAt" => SortableTable.SortListByProperty(emailClaims, e => e.CreatedAt, sortDirection),
             "Address" => SortableTable.SortListByProperty(emailClaims, e => e.Address, sortDirection),
             "EmailCount" => SortableTable.SortListByProperty(emailClaims, e => e.EmailCount, sortDirection),
-            "Disabled" => SortableTable.SortListByProperty(emailClaims, e => e.Disabled, sortDirection),
+            "State" => SortableTable.SortListByProperty(emailClaims, e => e.State, sortDirection),
             _ => emailClaims
         };
     }
 
     /// <summary>
-    /// Gets the total count of email claims (including disabled).
+    /// Gets the total count of email claims (including removed).
     /// </summary>
     public int GetTotalEmailClaimsCount()
     {

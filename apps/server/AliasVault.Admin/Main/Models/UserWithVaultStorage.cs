@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// <copyright file="MobileLoginRequestWithUsername.cs" company="aliasvault">
+// <copyright file="UserWithVaultStorage.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
@@ -10,17 +10,17 @@ namespace AliasVault.Admin.Main.Models;
 using AliasServerDb;
 
 /// <summary>
-/// View model for MobileLoginRequest joined with User to get username.
+/// A user together with the server-side storage their personal vault occupies.
 /// </summary>
-public class MobileLoginRequestWithUsername
+public sealed class UserWithVaultStorage
 {
     /// <summary>
-    /// Gets or sets the mobile login request.
+    /// Gets the user.
     /// </summary>
-    public required MobileLoginRequest Request { get; set; }
+    public AliasVaultUser User { get; init; } = null!;
 
     /// <summary>
-    /// Gets or sets the username from the User table via UserId FK.
+    /// Gets the kilobytes occupied by the user's personal vault: every manifest, bucket and blob revision it owns.
     /// </summary>
-    public string? Username { get; set; }
+    public long VaultStorageKb { get; init; }
 }

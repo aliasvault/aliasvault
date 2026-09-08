@@ -40,7 +40,7 @@
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <div class="flex items-center">
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Email Aliases</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Active email aliases</h3>
                     @if (_totalAliases.HasValue)
                     {
                         <p class="text-2xl font-bold text-gray-900 dark:text-white">@_totalAliases.Value.ToString("N0")</p>
@@ -72,10 +72,10 @@
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
             <div class="flex items-center">
                 <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Email attachments</h3>
-                    @if (_totalEmailAttachments.HasValue)
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Vault storage</h3>
+                    @if (_totalVaultStorageKb.HasValue)
                     {
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">@_totalEmailAttachments.Value.ToString("N0")</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">@StatisticsService.FormatKilobytes(_totalVaultStorageKb.Value)</p>
                     }
                     else
                     {
@@ -326,7 +326,7 @@
     private int? _totalUsers;
     private int? _totalAliases;
     private int? _totalEmails;
-    private int? _totalEmailAttachments;
+    private long? _totalVaultStorageKb;
 
     // Detailed statistics (loaded separately)
     private List<TopUserByStorage>? _topUsersByStorage;
@@ -400,7 +400,7 @@
         _totalUsers = null;
         _totalAliases = null;
         _totalEmails = null;
-        _totalEmailAttachments = null;
+        _totalVaultStorageKb = null;
         _topUsersByStorage = null;
         _topUsersByAliases = null;
         _topUsersByEmails = null;
@@ -435,7 +435,7 @@
             _totalUsers = stats.TotalUsers;
             _totalAliases = stats.TotalAliases;
             _totalEmails = stats.TotalEmails;
-            _totalEmailAttachments = stats.TotalEmailAttachments;
+            _totalVaultStorageKb = stats.TotalVaultStorageKb;
 
             StateHasChanged();
         }
@@ -456,7 +456,7 @@
             var aliasTask = StatisticsService.GetTopUsersByAliasesPaginatedAsync(_aliasCurrentPage, _pageSize);
             var emailTask = StatisticsService.GetTopUsersByEmailsPaginatedAsync(_emailCurrentPage, _pageSize);
             var credentialTask = StatisticsService.GetTopUsersByCredentialsPaginatedAsync(_credentialCurrentPage, _pageSize);
-            var ipTask = StatisticsService.GetServerStatisticsAsync();
+            var ipTask = StatisticsService.GetTopIpAddressesAsync();
 
             await Task.WhenAll(storageTask, aliasTask, emailTask, credentialTask, ipTask);
 
@@ -464,7 +464,7 @@
             var (aliasUsers, aliasTotalCount) = await aliasTask;
             var (emailUsers, emailTotalCount) = await emailTask;
             var (credentialUsers, credentialTotalCount) = await credentialTask;
-            var stats = await ipTask;
+            var topIpAddresses = await ipTask;
 
             _topUsersByStorage = storageUsers;
             _storageTotalRecords = storageTotalCount;
@@ -478,7 +478,7 @@
             _topUsersByCredentials = credentialUsers;
             _credentialTotalRecords = credentialTotalCount;
 
-            _topIpAddresses = stats.TopIpAddresses;
+            _topIpAddresses = topIpAddresses;
             _ipAddressesLoading = false;
 
             StateHasChanged();

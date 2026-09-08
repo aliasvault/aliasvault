@@ -1,4 +1,4 @@
-﻿@page "/emails"
+@page "/emails"
 @using AliasVault.RazorComponents.Tables
 @inherits MainBase
 
@@ -7,14 +7,8 @@
 <PageHeader
     BreadcrumbItems="@BreadcrumbItems"
     Title="@(TotalRecords > 0 ? $"Emails ({TotalRecords:N0})" : "Emails")"
-    Description="This page shows all received mails by this AliasVault server. All email fields except 'To' are encrypted with the public key of the user and are unreadable by the server.">
+    Description="This page shows all received mails by this AliasVault server. All email fields except 'To' are encrypted with the public key of the receiving vault and are unreadable by the server.">
     <CustomActions>
-        <a href="email-storage-stats" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-200 mr-3">
-            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-            </svg>
-            Email Storage Stats
-        </a>
         <RefreshButton OnClick="() => RefreshData(CancellationToken.None)" ButtonText="Refresh" />
     </CustomActions>
 </PageHeader>
@@ -48,9 +42,21 @@ else
                     <SortableTableColumn>@(viewModel.Email.FromLocal.Length > 10 ? viewModel.Email.FromLocal.Substring(0, 10) : viewModel.Email.FromLocal)@@@(viewModel.Email.FromDomain.Length > 10 ? viewModel.Email.FromDomain.Substring(0, 10) : viewModel.Email.FromDomain)</SortableTableColumn>
                     <SortableTableColumn>@viewModel.Email.ToLocal@@@viewModel.Email.ToDomain</SortableTableColumn>
                     <SortableTableColumn>
-                        <UserNameDisplay User="@viewModel.User" />
+                        @if (viewModel.Recipients.Count == 0)
+                        {
+                            <UserNameDisplay User="null" />
+                        }
+                        else
+                        {
+                            <div class="flex flex-col gap-1">
+                                @foreach (var recipient in viewModel.Recipients)
+                                {
+                                    <UserNameDisplay User="@recipient" />
+                                }
+                            </div>
+                        }
                     </SortableTableColumn>
-                    <SortableTableColumn>@viewModel.Email.Attachments.Count</SortableTableColumn>
+                    <SortableTableColumn>@viewModel.Email.AttachmentCount</SortableTableColumn>
                 </SortableTableRow>
             }
         </SortableTable>
@@ -70,8 +76,8 @@ else
         new TableColumn { Title = "Time", PropertyName = "DateSystem" },
         new TableColumn { Title = "From", PropertyName = "From" },
         new TableColumn { Title = "To", PropertyName = "To" },
-        new TableColumn { Title = "User", Sortable = false },
-        new TableColumn { Title = "Attachments", PropertyName = "Attachments" },
+        new TableColumn { Title = "Vault", Sortable = false },
+        new TableColumn { Title = "Attachments", PropertyName = "AttachmentCount" },
     ];
 
     private List<EmailViewModel> EmailViewModelList { get; set; } = [];
@@ -165,30 +171,32 @@ else
                 return;
             }
 
-            // Get all usernames for the emails in the current list
-            var encryptionKeyIds = emailList.Select(x => x.EncryptionKeyId).Distinct().ToList();
-            var encryptionKeyUsernames = await dbContext.EncryptionKeys
-                        .Where(x => encryptionKeyIds.Contains(x.Id))
-                        .Join(dbContext.AliasVaultUsers, x => x.UserId, y => y.Id, (x, y) => new { EncryptionKeyId = x.Id, UserId = y.Id, y.UserName, y.Blocked })
-                        .ToListAsync(cancellationToken);
-
-            // Create new list of viewmodels
-            EmailViewModelList = new List<EmailViewModel>();
-
-            foreach (var email in emailList)
-            {
-                var encryptionKey = encryptionKeyUsernames.FirstOrDefault(x => x.EncryptionKeyId == email.EncryptionKeyId);
-                EmailViewModelList.Add(new EmailViewModel
+            // An email is stored once and its key is wrapped for every vault that claimed the alias at delivery time.
+            // Resolve each of those vaults to its owner: the user behind a personal group, or the group's name for
+            // a shared vault.
+            var emailIds = emailList.Select(x => x.Id).ToList();
+            var recipients = await dbContext.EmailDecryptionKeys
+                .Where(d => emailIds.Contains(d.EmailId))
+                .Select(d => new
                 {
-                    Email = email,
-                    User = new UserDisplay
-                    {
-                        UserId = encryptionKey?.UserId,
-                        UserName = encryptionKey?.UserName,
-                        Blocked = encryptionKey?.Blocked ?? false,
-                    },
-                });
-            }
+                    d.EmailId,
+                    GroupId = d.VaultManifestDeliveryKey.VaultManifest.OwnerGroupId,
+                    GroupName = d.VaultManifestDeliveryKey.VaultManifest.OwnerGroup.Name,
+                    Owner = dbContext.AliasVaultUsers.Where(u => u.PersonalGroupId == d.VaultManifestDeliveryKey.VaultManifest.OwnerGroupId).Select(u => new { u.Id, u.UserName, u.Blocked }).FirstOrDefault(),
+                })
+                .ToListAsync(cancellationToken);
+
+            EmailViewModelList = emailList.Select(email => new EmailViewModel
+            {
+                Email = email,
+                Recipients = recipients
+                    .Where(r => r.EmailId == email.Id)
+                    .DistinctBy(r => r.GroupId)
+                    .Select(r => r.Owner != null
+                        ? new UserDisplay { UserId = r.Owner.Id, UserName = r.Owner.UserName, Blocked = r.Owner.Blocked }
+                        : new UserDisplay { UserName = r.GroupName })
+                    .ToList(),
+            }).ToList();
 
             IsLoading = false;
             IsInitialized = true;
@@ -229,46 +237,22 @@ else
     /// <returns>The sorted query.</returns>
     private IQueryable<Email> ApplySort(IQueryable<Email> query)
     {
-        // Apply sort
-        switch (SortColumn)
+        var ascending = SortDirection == SortDirection.Ascending;
+        return SortColumn switch
         {
-            case "Id":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Id)
-                    : query.OrderByDescending(x => x.Id);
-                break;
-            case "DateSystem":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.DateSystem)
-                    : query.OrderByDescending(x => x.DateSystem);
-                break;
-            case "From":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.FromLocal + "@" + x.FromDomain)
-                    : query.OrderByDescending(x => x.FromLocal + "@" + x.FromDomain);
-                break;
-            case "To":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.ToLocal + "@" + x.ToDomain)
-                    : query.OrderByDescending(x => x.ToLocal + "@" + x.ToDomain);
-                break;
-            case "Attachments":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Attachments.Count)
-                    : query.OrderByDescending(x => x.Attachments.Count);
-                break;
-            default:
-                query = query.OrderByDescending(x => x.DateSystem);
-                break;
-        }
-
-        return query;
+            "Id" => ascending ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id),
+            "DateSystem" => ascending ? query.OrderBy(x => x.DateSystem) : query.OrderByDescending(x => x.DateSystem),
+            "From" => ascending ? query.OrderBy(x => x.FromLocal + "@" + x.FromDomain) : query.OrderByDescending(x => x.FromLocal + "@" + x.FromDomain),
+            "To" => ascending ? query.OrderBy(x => x.ToLocal + "@" + x.ToDomain) : query.OrderByDescending(x => x.ToLocal + "@" + x.ToDomain),
+            "AttachmentCount" => ascending ? query.OrderBy(x => x.AttachmentCount) : query.OrderByDescending(x => x.AttachmentCount),
+            _ => query.OrderByDescending(x => x.DateSystem),
+        };
     }
 
     private sealed class EmailViewModel
     {
         public Email Email { get; set; } = new();
-        public UserDisplay User { get; set; } = new();
+        public List<UserDisplay> Recipients { get; set; } = [];
     }
 
     protected override void Dispose(bool disposing)
