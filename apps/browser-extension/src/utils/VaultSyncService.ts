@@ -14,7 +14,7 @@ import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { buildEmailRouting } from '@/utils/EmailRouting';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { completeLegacyAccountKeyMigration, isLegacySqliteBlobSnapshot, legacyUnstampedRowAdoption, openLegacySqliteBlobSnapshot, prepareLegacyAccountKeyMigration, withOutdatedServerGuard, type LegacyAccountKeyMigration, type LegacySqliteBlobSnapshot } from '@/utils/legacy/LegacyStorageModelMigration';
-import { getManifestRevisions, getPersonalManifestId, recordManifestRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { getBucketRevisions, getManifestRevisions, getPersonalManifestId, recordBucketRevisions, recordManifestRevisions, replaceBucketRevisions, replaceManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 import {vaultCodecComputeCiphertextHash, vaultCodecComputeContentFingerprint, vaultCodecCanonicalizeFromSqlite, vaultCodecExtractEncryptionKeyForPublicKey, vaultCodecGenerateManifestSalt, vaultCodecMergeCanonical, vaultCodecUnpackPayload, vaultCodecMaterializeAsSqlite, vaultCodecPackPayload, vaultCodecValidateManifest, vaultCodecValidateDataBucket, type CodecBlobEntry, type CodecCanonicalized, type CodecCanonicalManifestMerge, type CodecManifest, type CodecManifestSpec, vaultSharingPartitionManifestAccess, vaultSharingResolveManifestWriteSet, type SharingAccessPartition} from '@/utils/RustCore';
 import { SharingService, type ManifestVekGrant, type SharedManifestRecord } from '@/utils/SharingService';
@@ -172,7 +172,7 @@ type OpenedManifestSet = {
   blobMap: Map<string, Uint8Array>;
   contentlessManifestIds: string[];
   personalRevision: number;
-  commitManifestRevisions: () => Promise<void>;
+  commitRevisions: () => Promise<void>;
 };
 
 /** Aggregate canonical-merge statistics across all manifests. */
@@ -472,7 +472,7 @@ export class VaultSyncService {
         devError('[V2Merge] Canonical merge failed, falling back to the server vault:', mergeError);
         const sqliteBytes = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
         const encryptedVault = await encryptVaultBlob(sqliteBytes, encryptionKey);
-        return { kind: 'server-only', response: this.buildResponse(encryptedVault, '2.0.0', opened.personalRevision, snapshot), commitRevisions: opened.commitManifestRevisions };
+        return { kind: 'server-only', response: this.buildResponse(encryptedVault, '2.0.0', opened.personalRevision, snapshot), commitRevisions: opened.commitRevisions };
       }
     } catch (error) {
       devError('[V2Merge] FAILED: the last logged step above is where it broke:', error);
@@ -607,7 +607,7 @@ export class VaultSyncService {
       stats,
       fallbackManifestIds,
       droppedLocalManifestIds: mergeOutput.droppedLocalManifestIds,
-      commitRevisions: opened.commitManifestRevisions,
+      commitRevisions: opened.commitRevisions,
       mergedSqliteBytes: sqliteBytes,
       pushCanonical: this.mergeOutputForPush(manifests, dataBuckets, mergedBlobs, manifestRecords, fallbackManifestIds.length > 0),
     };
@@ -787,7 +787,7 @@ export class VaultSyncService {
    * this device's sync state.
    * @param snapshot - the raw GET /v2/Vault response
    * @param vek - the personal manifest's symmetric key (from the unlock chain); every other manifest key resolves from it
-   * @param options - set deferRevisionCommit to hand the revision write back to the caller as `commitManifestRevisions`,
+   * @param options - set deferRevisionCommit to hand the revision write back to the caller as `commitRevisions`,
    *   for when the pulled revisions may only become local truth once a later step has succeeded
    */
   private async openManifestsAndAdoptSyncState(snapshot: GetResponseDto, vek: string, options?: { deferRevisionCommit?: boolean }): Promise<OpenedManifestSet> {
@@ -861,20 +861,25 @@ export class VaultSyncService {
     const personal = resolved[0];
 
     // 2) Open the data buckets belonging to those manifests.
-    const { dataBuckets, bucketFingerprints } = await this.openDataBuckets(snapshot, resolved);
+    const { dataBuckets, bucketFingerprints, bucketRevisions } = await this.openDataBuckets(snapshot, resolved);
     Object.assign(pulledFingerprints, bucketFingerprints);
 
     // 3) Revision baselines: what the next status check compares this device against.
     const manifestRevisions = { ...Object.fromEntries(resolved.map(m => [m.manifestId, m.revision])), ...contentlessRevisions };
     /**
-     * Commit the snapshot's revision map as the local believed-current revisions.
+     * Commit the snapshot's revision maps, manifests and data buckets alike, as the local believed-current
+     * revisions. Both are replaced rather than merged, so a manifest that is gone takes its buckets with it.
+     * The two move independently and the status check compares both, so they have to be committed together:
+     * committing the buckets earlier would clear a pending bucket pull that the manifests cannot re-trigger.
      */
-    const commitManifestRevisions = async (): Promise<void> => {
+    const commitRevisions = async (): Promise<void> => {
       await replaceManifestRevisions(manifestRevisions);
+      await replaceBucketRevisions(bucketRevisions);
       devLog(`[V2Pull] Stored local manifest revisions from snapshot: ${Object.entries(manifestRevisions).map(([id, rev]) => `${id}=${rev}`).join(', ')}. Next status check compares against these.`);
+      devLog(`[V2Pull] Stored local data bucket revisions from snapshot: ${Object.entries(bucketRevisions).map(([key, rev]) => `${key}=${rev}`).join(', ') || 'none'}.`);
     };
     if (options?.deferRevisionCommit !== true) {
-      await commitManifestRevisions();
+      await commitRevisions();
     }
 
     // 4) Fetch and decrypt every blob the opened manifests reference.
@@ -897,7 +902,7 @@ export class VaultSyncService {
       blobMap,
       contentlessManifestIds: Object.keys(contentlessRevisions),
       personalRevision: personal.revision,
-      commitManifestRevisions,
+      commitRevisions,
     };
   }
 
@@ -905,9 +910,10 @@ export class VaultSyncService {
    * Open the data buckets a snapshot carries and record their revisions as the local baseline.
    * @param snapshot - the raw GET /v2/Vault response
    * @param resolved - the manifests already opened; a bucket addressed to any other manifest is refused
-   * @returns The decrypted buckets plus one content fingerprint per bucket, for the push-side change detection
+   * @returns The decrypted buckets, one content fingerprint per bucket for the push-side change detection, and the
+   *   snapshot's bucket revisions, which the caller commits together with the manifest revisions
    */
-  private async openDataBuckets(snapshot: GetResponseDto, resolved: ResolvedManifest[]): Promise<{ dataBuckets: VaultDataBucket[]; bucketFingerprints: Record<string, string> }> {
+  private async openDataBuckets(snapshot: GetResponseDto, resolved: ResolvedManifest[]): Promise<{ dataBuckets: VaultDataBucket[]; bucketFingerprints: Record<string, string>; bucketRevisions: Record<string, number> }> {
     const bucketFingerprints: Record<string, string> = {};
     const keyByManifestId = new Map(resolved.map(entry => [entry.manifestId, entry.vek]));
     const dataBuckets: VaultDataBucket[] = [];
@@ -937,13 +943,11 @@ export class VaultSyncService {
         pulledBucketRevisions[bucketRevisionKey(bucketDto.manifestId, bucketDto.category)] = bucketDto.revision;
       }
     }
-    // Replace rather than merge, so the buckets of a manifest that is gone drop out with it.
-    await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, pulledBucketRevisions);
     if (dataBuckets.length === 0) {
       devLog('[V2Pull] No data buckets in snapshot.');
     }
 
-    return { dataBuckets, bucketFingerprints };
+    return { dataBuckets, bucketFingerprints, bucketRevisions: pulledBucketRevisions };
   }
 
   /**
@@ -1295,7 +1299,7 @@ export class VaultSyncService {
      */
     const bucketDtos: Array<{ manifestId: string; category: string; blob: string; ciphertextHash: string; currentRevision: number }> = [];
     const writtenBucketFingerprints: Record<string, string> = {};
-    const storedBucketRevisions = await this.loadBucketRevisions();
+    const storedBucketRevisions = await getBucketRevisions();
     const keyByManifestId = new Map(candidates.map(candidate => [candidate.manifestId, candidate.vek]));
     for (const bucket of canonicalizedBuckets) {
       const label = `Data bucket "${bucket.category}" of manifest ${bucket.manifestId}`;
@@ -1486,11 +1490,7 @@ export class VaultSyncService {
 
     // 5) Update local persisted state on success.
     if ((resp.bucketRevisions ?? []).length > 0) {
-      const bucketRevisions = await this.loadBucketRevisions();
-      for (const br of resp.bucketRevisions) {
-        bucketRevisions[bucketRevisionKey(br.manifestId, br.category)] = br.revision;
-      }
-      await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
+      await recordBucketRevisions(Object.fromEntries(resp.bucketRevisions.map(br => [bucketRevisionKey(br.manifestId, br.category), br.revision])));
     }
 
     // Advance the baseline of the manifests this write included.
@@ -1631,7 +1631,7 @@ export class VaultSyncService {
 
     // Same content-fingerprint gate as the full push: a mutation that ended up changing nothing skips the write.
     const fingerprints = await this.loadContentFingerprints();
-    const bucketRevisions = await this.loadBucketRevisions();
+    const bucketRevisions = await getBucketRevisions();
     const bucketFingerprint = await vaultCodecComputeContentFingerprint(plaintext);
     if (fingerprints[fingerprintBucketKey(manifestId, category)] === bucketFingerprint) {
       devLog(`[V2Push] ${label} (bucket-only) unchanged versus server baseline, skipping upload.`);
@@ -1667,8 +1667,7 @@ export class VaultSyncService {
     }
 
     const newRevision = reportedRevision(resp) ?? currentRevision + 1;
-    bucketRevisions[revisionKey] = newRevision;
-    await storage.setItem(StorageKeys.VAULT_BUCKET_REVISIONS, bucketRevisions);
+    await recordBucketRevisions({ [revisionKey]: newRevision });
 
     // New server baseline for this bucket, so an unchanged follow-up push (bucket-only or full) can skip it.
     fingerprints[fingerprintBucketKey(manifestId, category)] = bucketFingerprint;
@@ -1895,14 +1894,6 @@ export class VaultSyncService {
    */
   private async saveContentFingerprints(fingerprints: Record<string, string>): Promise<void> {
     await storage.setItem(StorageKeys.VAULT_CONTENT_FINGERPRINTS, fingerprints);
-  }
-
-  /**
-   * Load the known server revision of every data bucket, keyed by {@link bucketRevisionKey}. An absent entry
-   * reads as revision 0, which the server answers with its current one so the next attempt rebases.
-   */
-  private async loadBucketRevisions(): Promise<Record<string, number>> {
-    return ((await storage.getItem(StorageKeys.VAULT_BUCKET_REVISIONS)) as Record<string, number> | null) ?? {};
   }
 
   /**

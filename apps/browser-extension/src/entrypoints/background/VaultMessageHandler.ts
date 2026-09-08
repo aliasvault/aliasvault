@@ -13,11 +13,11 @@ import type { DraftItem } from '@/utils/db/ItemRef';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import { VaultKeyAlgorithm, type VaultResponse, type ManifestRevision, type StatusResponseV2 } from '@/utils/dist/core/models/webapi';
+import { VaultKeyAlgorithm, type VaultResponse, type StatusResponseV2 } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toManifestRevisionMap } from '@/utils/ManifestRevisions';
+import { bucketsRequiringPull, getBucketRevisions, getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toBucketRevisionMap, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
@@ -94,23 +94,31 @@ function clearInMemoryVaultState(): void {
 }
 
 /**
- * Whether the client has to pull and re-materialize, i.e. whether any manifest's local state no longer matches what
- * the server reports.
- * @param serverManifests - the per-manifest revisions from the status response
- * @param localRevisions - the client's last-known revision per manifest
+ * Whether the client has to pull and re-materialize, i.e. whether any manifest, or any data bucket has been updated on the server.
+ * @param statusResponse - the status response carrying the server's manifest and bucket revisions
  */
-function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevisions: Record<string, number>): boolean {
-  const serverRevisions = toManifestRevisionMap(serverManifests);
-  const requiringPull = manifestsRequiringPull(serverRevisions, localRevisions);
+async function serverStateNeedsPull(statusResponse: StatusResponseV2): Promise<boolean> {
+  const serverManifestRevisions = toManifestRevisionMap(statusResponse.manifestRevisions);
+  const localManifestRevisions = await getManifestRevisions();
+  const manifestsToPull = manifestsRequiringPull(serverManifestRevisions, localManifestRevisions);
 
-  if (requiringPull.length === 0) {
-    devLog(`[VaultSync] No pull needed: ${Object.keys(serverRevisions).length} manifest(s) all match local revisions.`);
+  const serverBucketRevisions = toBucketRevisionMap(statusResponse.bucketRevisions);
+  const localBucketRevisions = await getBucketRevisions();
+  const bucketsToPull = bucketsRequiringPull(serverBucketRevisions, localBucketRevisions);
+
+  if (manifestsToPull.length === 0 && bucketsToPull.length === 0) {
+    devLog(`[VaultSync] No pull needed: ${Object.keys(serverManifestRevisions).length} manifest(s) and ${Object.keys(serverBucketRevisions).length} data bucket(s) all match local revisions.`);
     return false;
   }
 
-  /** One manifest as `id (local rev X, server rev Y)`, with "untracked"/"unlisted" for a one-sided manifest. */
-  const describe = (manifestId: string): string => `${manifestId} (local ${localRevisions[manifestId] ?? 'untracked'}, server ${serverRevisions[manifestId] ?? 'unlisted'})`;
-  devLog(`[VaultSync] Pull needed for ${requiringPull.length} manifest(s): ${requiringPull.map(describe).join(', ')}.`);
+  // Log the manifests and buckets that need to be pulled.
+  const describe = (server: Record<string, number>, local: Record<string, number>) => (key: string): string => `${key} (local ${local[key] ?? 'untracked'}, server ${server[key] ?? 'unlisted'})`;
+  if (manifestsToPull.length > 0) {
+    devLog(`[VaultSync] Pull needed for ${manifestsToPull.length} manifest(s): ${manifestsToPull.map(describe(serverManifestRevisions, localManifestRevisions)).join(', ')}.`);
+  }
+  if (bucketsToPull.length > 0) {
+    devLog(`[VaultSync] Pull needed for ${bucketsToPull.length} data bucket(s): ${bucketsToPull.map(describe(serverBucketRevisions, localBucketRevisions)).join(', ')}.`);
+  }
   return true;
 }
 
@@ -121,11 +129,7 @@ function serverManifestsNeedPull(serverManifests: ManifestRevision[], localRevis
 let isSyncInProgress = false;
 let hasPendingSync = false;
 
-/**
- * How many times one chain of syncs may restart itself over a push the server called outdated. A pull settles a
- * genuine conflict on the first retry; a chain that keeps going is one where the pull cannot repair what makes the
- * push refuse itself, and repeating it forever would pull and merge the whole vault on every turn.
- */
+/** How many times one chain of syncs may restart itself over a push the server called outdated. */
 const MAX_OUTDATED_RESYNCS = 3;
 
 /** How many times the running chain of syncs has already restarted over an outdated push. */
@@ -327,7 +331,7 @@ export async function handleSyncVault() : Promise<messageBoolResponse> {
     return { success: false, error: await t('common.errors.' + statusError) };
   }
 
-  if (serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions())) {
+  if (await serverStateNeedsPull(statusResponse)) {
     /*
      * Retrieve the latest vault from the server.
      */
@@ -1611,7 +1615,7 @@ async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOp
   // Get current sync state
   const syncState = await handleGetSyncState();
 
-  let needsPull = options?.forcePull === true || serverManifestsNeedPull(statusResponse.manifestRevisions, await getManifestRevisions());
+  let needsPull = options?.forcePull === true || await serverStateNeedsPull(statusResponse);
 
   devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
 
