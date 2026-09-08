@@ -2704,6 +2704,10 @@ video {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .lg\:flex-row {
     flex-direction: row;
   }
@@ -2764,6 +2768,10 @@ video {
 @media (min-width: 1536px) {
   .\32xl\:col-span-2 {
     grid-column: span 2 / span 2;
+  }
+
+  .\32xl\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .\32xl\:space-x-4 > :not([hidden]) ~ :not([hidden]) {
