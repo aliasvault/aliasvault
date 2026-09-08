@@ -307,7 +307,6 @@ type ManifestWriteDto = {
   currentRevision: number;
   credentialsCount: number;
   blobReferences: BlobRefDto[];
-  encryptedVek?: string;
   encryptionPublicKey?: string;
 };
 
@@ -1390,11 +1389,6 @@ export class VaultSyncService {
         currentRevision: candidate.currentRevision,
         credentialsCount: (candidate.manifest.tables.Items ?? []).length,
         blobReferences: Object.entries(candidate.blobs).map(([hash, blob]) => ({ hash, category: blob.kind })),
-        /*
-         * Set only on the KEK/VEK migration push, where the server creates the vault key alongside this personal-manifest revision.
-         * A migration always forces a personal-manifest write (see the gate above), so the key can never be stranded without one.
-         */
-        ...(candidate.isPersonal && migration ? { encryptedVek: migration.encryptedVek } : {}),
         ...(manifestKey ? { encryptionPublicKey: manifestKey.PublicKey } : {}),
       });
       writtenManifestFingerprints[candidate.manifestId] = fingerprint;
@@ -1455,7 +1449,7 @@ export class VaultSyncService {
       buckets: bucketDtos,
       newBlobs: [] as BlobDto[],
       emailRouting,
-      // LEGACY: only the one-time KEK/VEK migration push carries a key hierarchy for the server to store.
+      // Legacy: only the one-time KEK/VEK migration push carries a key hierarchy for the server to store.
       accountKeys: migration?.accountKeys ?? null,
     };
 

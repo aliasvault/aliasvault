@@ -8,16 +8,39 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// Upload request for the encrypted Account Key and KEK derivation parameters for the given unlock method.
+/// One-time migration push for a legacy vault to the manifest-v1 format: an Account Key encrypted with the password-derived KEK.
+/// TODO: remove once the legacy sqlite-blob format is fully deprecated and we don't support legacy users anymore.
 /// </summary>
 public class AccountKeysUpload
 {
+    /// <summary>Maximum accepted length of <see cref="EncryptedAccountKey"/> and <see cref="EncryptedVek"/>.</summary>
+    public const int MaxWrappedKeyLength = 255;
+
+    /// <summary>Maximum accepted length of <see cref="AccountPublicKey"/>.</summary>
+    public const int MaxPublicKeyLength = 2000;
+
+    /// <summary>Maximum accepted length of <see cref="EncryptedAccountPrivateKey"/>.</summary>
+    public const int MaxEncryptedPrivateKeyLength = 4000;
+
     /// <summary>Gets or sets the Account Key encrypted with the KEK derived from the unlock method.</summary>
     public string? EncryptedAccountKey { get; set; }
 
-    /// <summary>Gets or sets the encrypted VEK.</summary>
+    /// <summary>Gets or sets the vault encryption key encrypted with the Account Key, as base64(IV | ciphertext | authTag).</summary>
+    public string? EncryptedVek { get; set; }
+
+    /// <summary>Gets or sets the public half (JWK) of the account keypair, which others encrypt shared-manifest grants for this user with.</summary>
     public string? AccountPublicKey { get; set; }
 
     /// <summary>Gets or sets the account private key encrypted with the Account Key.</summary>
     public string? EncryptedAccountPrivateKey { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether all four fields are present. A partial upload is not usable.
+    /// </summary>
+    public bool IsComplete => !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey);
+
+    /// <summary>
+    /// Gets a value indicating whether every field fits its storage column, so an oversized value is a validation error instead of a database exception.
+    /// </summary>
+    public bool FitsStorageLimits => (EncryptedAccountKey?.Length ?? 0) <= MaxWrappedKeyLength && (EncryptedVek?.Length ?? 0) <= MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= MaxEncryptedPrivateKeyLength;
 }

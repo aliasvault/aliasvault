@@ -20,6 +20,16 @@ using System.ComponentModel.DataAnnotations;
 public abstract class VaultManifestBase : IVaultRevision
 {
     /// <summary>
+    /// The legacy storage format, where the whole vault is one blob encrypted with the password-derived key.
+    /// </summary>
+    public const string LegacyStorageFormat = "sqlite-blob";
+
+    /// <summary>
+    /// The current storage format, where the vault is an encrypted manifest plus data buckets.
+    /// </summary>
+    public const string ManifestStorageFormat = "manifest-v1";
+
+    /// <summary>
     /// Gets or sets the encrypted vault blob. Only the legacy sqlite-blob format populates this; on manifest-v1
     /// revisions it is null. TODO: remove this column once the legacy model is fully deprecated.
     /// </summary>

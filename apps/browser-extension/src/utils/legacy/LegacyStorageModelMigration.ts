@@ -174,12 +174,12 @@ export function legacyUnstampedRowAdoption(personalManifestId: string): { adoptU
 export type LegacyAccountKeyMigration = {
   /** The new VEK: everything this push writes is encrypted with it, and the caller adopts it as the session key. */
   contentKey: string;
-  /** The new VEK encrypted with the Account Key; sent on the personal-manifest write so the server stores it. */
-  encryptedVek: string;
-  /** The rest of the hierarchy, sent as-is in the write payload. */
+  /** The whole hierarchy, sent as-is in the write payload. */
   accountKeys: {
     /** The Account Key encrypted with the password-derived KEK. */
     encryptedAccountKey: string;
+    /** The new VEK encrypted with the Account Key. */
+    encryptedVek: string;
     /** Public half of the new account keypair, used by others to grant this user access to a shared manifest. */
     accountPublicKey: string;
     /** Private half of the new account keypair, encrypted with the Account Key. */
@@ -210,9 +210,9 @@ export async function prepareLegacyAccountKeyMigration(kek: string): Promise<Leg
 
   return {
     contentKey,
-    encryptedVek: await EncryptionUtility.encryptVaultEncryptionKey(contentKey, accountKey),
     accountKeys: {
       encryptedAccountKey: await EncryptionUtility.encryptVaultEncryptionKey(accountKey, kek),
+      encryptedVek: await EncryptionUtility.encryptVaultEncryptionKey(contentKey, accountKey),
       accountPublicKey: accountKeyPair.publicKey,
       encryptedAccountPrivateKey: await EncryptionUtility.symmetricEncrypt(accountKeyPair.privateKey, accountKey),
     },
@@ -226,11 +226,5 @@ export async function prepareLegacyAccountKeyMigration(kek: string): Promise<Leg
  * @param migration - the hierarchy that was pushed
  */
 export async function completeLegacyAccountKeyMigration(migration: LegacyAccountKeyMigration): Promise<void> {
-  await VaultKeyService.adoptLocalAccountKeys({
-    encryptedAccountKey: migration.accountKeys.encryptedAccountKey,
-    encryptedVek: migration.encryptedVek,
-    accountPublicKey: migration.accountKeys.accountPublicKey,
-    encryptedAccountPrivateKey: migration.accountKeys.encryptedAccountPrivateKey,
-    accountPrivateKey: migration.accountPrivateKey,
-  });
+  await VaultKeyService.adoptLocalAccountKeys({ ...migration.accountKeys, accountPrivateKey: migration.accountPrivateKey });
 }

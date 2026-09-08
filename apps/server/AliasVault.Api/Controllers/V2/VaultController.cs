@@ -318,34 +318,27 @@ public class VaultController(
         // The caller's own manifest is the one owned by their personal group; a personal group owns no other.
         var personalWrite = resolved.FirstOrDefault(r => r.Row.OwnerGroupId == user.PersonalGroupId).Write;
 
-        /*
-         * Account-key migration: when writing the personal manifest the first time, the client needs to generate a VEK,
-         * encrypt it with the AccountKey, and store it in the personal manifest. AccountKeys blobs (KEK-encrypted AK + AK-encrypted account keypair).
-         * A shared-manifest write must never carry one. We reject rather than silently ignore, so a misdirected key can never be dropped unnoticed.
-         * TODO: these guards can be removed once all users have migrated and we don't support legacy users anymore.
-         */
-        if (resolved.Any(r => r.Row.OwnerGroupId != user.PersonalGroupId && !string.IsNullOrEmpty(r.Write.EncryptedVek)))
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
-        }
-
-        var migrationEncryptedVek = personalWrite?.EncryptedVek;
-        var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
-        if (!string.IsNullOrEmpty(migrationEncryptedVek) && hasExistingUnlockKey)
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
-        }
-
-        // A personal-manifest push from a not-yet-migrated user must carry the encrypted VEK to migrate the vault into the manifest-v1 format.
-        if (personalWrite != null && string.IsNullOrEmpty(migrationEncryptedVek) && !hasExistingUnlockKey)
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
-        }
-
-        // The migration VEK and the account-key blobs only make sense together: the VEK is encrypted under the AK.
+        // Account-key migration: a legacy vault's first manifest-v1 push includes a newly created Account Key hierarchy,
         var accountKeys = model.AccountKeys;
-        var accountKeysComplete = accountKeys != null && !string.IsNullOrEmpty(accountKeys.EncryptedAccountKey) && !string.IsNullOrEmpty(accountKeys.AccountPublicKey) && !string.IsNullOrEmpty(accountKeys.EncryptedAccountPrivateKey);
-        if (!string.IsNullOrEmpty(migrationEncryptedVek) && !accountKeysComplete)
+        var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        if (accountKeys != null)
+        {
+            if (hasExistingUnlockKey)
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+            }
+
+            if (personalWrite == null || !accountKeys.IsComplete)
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
+            }
+
+            if (!accountKeys.FitsStorageLimits)
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            }
+        }
+        else if (personalWrite != null && !hasExistingUnlockKey)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
@@ -383,7 +376,7 @@ public class VaultController(
             // 1) Upsert any new blob objects.
             if (model.NewBlobs.Count > 0)
             {
-                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: !string.IsNullOrEmpty(migrationEncryptedVek)))
+                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: accountKeys != null))
                 {
                     await tx.RollbackAsync();
                     return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
@@ -453,16 +446,23 @@ public class VaultController(
                     row.CreatedAt = timeProvider.UtcNow;
 
                     // Create the account-key hierarchy atomically with this write on the migration (first push after
-                    // the client re-encrypted the vault under a fresh VEK). Move the SRP credentials off the manifest row.
-                    if (!string.IsNullOrEmpty(migrationEncryptedVek))
+                    // the client re-encrypted the vault under a fresh VEK).
+                    if (accountKeys != null)
                     {
+                        // Check if the user already has an unlock key: if so, reject the write.
+                        if (await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
+                        {
+                            await tx.RollbackAsync();
+                            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+                        }
+
                         context.UserUnlockKeys.Add(new UserUnlockKey
                         {
                             Id = Guid.NewGuid(),
                             UserId = user.Id,
                             Type = UnlockMethodType.Password,
                             Algorithm = VaultKeyAlgorithm.Aes256Gcm,
-                            EncryptedAccountKey = accountKeys!.EncryptedAccountKey!,
+                            EncryptedAccountKey = accountKeys.EncryptedAccountKey!,
                             Metadata = new VaultKeyMetadata
                             {
                                 Salt = row.Salt,
@@ -493,7 +493,7 @@ public class VaultController(
                             VaultManifestId = row.ManifestId,
                             Type = ManifestKeyType.AccountKey,
                             Algorithm = VaultKeyAlgorithm.Aes256Gcm,
-                            EncryptedVek = migrationEncryptedVek,
+                            EncryptedVek = accountKeys.EncryptedVek!,
                             AccountKeyVersion = 0,
                             CreatedAt = timeProvider.UtcNow,
                             UpdatedAt = timeProvider.UtcNow,
@@ -510,7 +510,17 @@ public class VaultController(
                 manifestResults.Add(new ManifestWriteResult { ManifestId = mw.ManifestId, Revision = row.RevisionNumber });
             }
 
-            await context.SaveChangesAsync();
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException) when (accountKeys != null)
+            {
+                // A concurrent migration push won the race between the re-check above and this insert. Nothing was committed, so the client retries.
+                // TODO: remove once all users have migrated and we don't support legacy users anymore.
+                await tx.RollbackAsync();
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
+            }
 
             // 4) Add blob references for each manifest's new revision.
             foreach (var (mw, row) in resolved)

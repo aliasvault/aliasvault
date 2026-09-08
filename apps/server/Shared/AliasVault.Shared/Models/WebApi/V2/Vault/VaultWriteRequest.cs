@@ -28,7 +28,7 @@ public class VaultWriteRequest
     public EmailRoutingPush? EmailRouting { get; set; }
 
     /// <summary>
-    /// Gets or sets the encrypted Account Key and KEK derivation parameters for the given unlock method.
+    /// Gets or sets a newly created account key hierarchy. Only sent for the one-time legacy vault's migration push (pre-0.31.0).
     /// </summary>
     public AccountKeysUpload? AccountKeys { get; set; }
 }
