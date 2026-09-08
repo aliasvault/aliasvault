@@ -144,28 +144,6 @@ public class GeneralRetentionTests
     }
 
     /// <summary>
-    /// Test the LoginCredentialRetentionRule.
-    /// </summary>
-    [Test]
-    public void CredentialRetentionRuleTest()
-    {
-        // Keep the latest 2 unique credentials.
-        var rule = new LoginCredentialRetentionRule { CredentialsToKeep = 2 };
-        var result = rule.ApplyRule([.. testVaults], now).ToList();
-
-        // Expecting two vaults to be kept:
-        // - the latest
-        // - the one from 2 weeks ago
-        // The oldest vault should be excluded as that is the 3rd unique credential.
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Has.Count.EqualTo(2));
-            Assert.That(result[0].UpdatedAt, Is.EqualTo(new DateTime(2023, 5, 31, 12, 0, 0)));
-            Assert.That(result[1].UpdatedAt, Is.EqualTo(new DateTime(2023, 5, 18, 12, 0, 0)));
-        });
-    }
-
-    /// <summary>
     /// Test the RevisionRetentionRule.
     /// </summary>
     [Test]

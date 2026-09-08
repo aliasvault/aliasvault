@@ -91,20 +91,14 @@ public class BucketRetentionTests
     }
 
     /// <summary>
-    /// Test that manifest-specific rules keep nothing extra for bucket revisions, as buckets carry no db version or
-    /// login credentials.
+    /// Test that manifest-specific rules keep nothing extra for bucket revisions, as buckets carry no db version.
     /// </summary>
     [Test]
     public void ManifestOnlyRulesIgnoreBucketRevisionsTest()
     {
         var versionRule = new DbVersionRetentionRule { VersionsToKeep = 5 };
-        var credentialRule = new LoginCredentialRetentionRule { CredentialsToKeep = 5 };
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(versionRule.ApplyRule([.. testRevisions], now), Is.Empty);
-            Assert.That(credentialRule.ApplyRule([.. testRevisions], now), Is.Empty);
-        });
+        Assert.That(versionRule.ApplyRule([.. testRevisions], now), Is.Empty);
     }
 
     /// <summary>

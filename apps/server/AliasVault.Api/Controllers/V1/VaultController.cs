@@ -55,7 +55,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             new WeeklyRetentionRule { WeeksToKeep = 1 },
             new MonthlyRetentionRule { MonthsToKeep = 1 },
             new DbVersionRetentionRule { VersionsToKeep = 2 },
-            new LoginCredentialRetentionRule { CredentialsToKeep = 2 },
         ],
     };
 
