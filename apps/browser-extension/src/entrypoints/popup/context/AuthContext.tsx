@@ -97,11 +97,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * @param errorMessage Optional error message to display on the login page
    */
   const clearAuthUserInitiated = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // First, perform the base forced logout (clears session, vault, in-memory db, PIN)
-    await clearAuthForced(errorMessage);
-
-    // Additionally clear the username and local preferences, which a forced logout keeps
+    // Clear local vault data explicitly.
     await sendMessage('CLEAR_VAULT_DATA');
+
+    // Run the parent forced logout which clears everything else.
+    await clearAuthForced(errorMessage);
 
     setUsername(null);
   }, [clearAuthForced]);
