@@ -54,13 +54,8 @@ public class VaultBlobObject
     public int KeyVersion { get; set; }
 
     /// <summary>
-    /// Gets or sets the created timestamp.
+    /// Gets or sets the timestamp the bytes were stored. Used by the task runner as the start of the grace period it
+    /// gives a blob that no manifest revision references yet.
     /// </summary>
     public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the most-recent timestamp this blob was referenced by a successful manifest upload.
-    /// Used by the GC sweeper: orphaned blobs older than the grace window are deleted.
-    /// </summary>
-    public DateTime LastReferencedAt { get; set; }
 }

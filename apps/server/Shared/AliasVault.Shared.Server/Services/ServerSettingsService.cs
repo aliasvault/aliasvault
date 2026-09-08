@@ -139,6 +139,11 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.UnlockKeyHistoryRetentionDays = unlockKeyHistoryDays;
         }
 
+        if (int.TryParse(settings.GetValueOrDefault("UnreferencedBlobGraceHours"), out var unreferencedBlobHours))
+        {
+            model.UnreferencedBlobGraceHours = unreferencedBlobHours;
+        }
+
         if (int.TryParse(settings.GetValueOrDefault("EmailRetentionDays"), out var emailDays))
         {
             model.EmailRetentionDays = emailDays;
@@ -226,6 +231,7 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
         await SetSettingAsync("GeneralLogRetentionDays", model.GeneralLogRetentionDays.ToString());
         await SetSettingAsync("AuthLogRetentionDays", model.AuthLogRetentionDays.ToString());
         await SetSettingAsync("UnlockKeyHistoryRetentionDays", model.UnlockKeyHistoryRetentionDays.ToString());
+        await SetSettingAsync("UnreferencedBlobGraceHours", model.UnreferencedBlobGraceHours.ToString());
         await SetSettingAsync("EmailRetentionDays", model.EmailRetentionDays.ToString());
         await SetSettingAsync("DisabledEmailRetentionDays", model.DisabledEmailRetentionDays.ToString());
         await SetSettingAsync("MaxEmailsPerUser", model.MaxEmailsPerUser.ToString());

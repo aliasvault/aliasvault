@@ -158,8 +158,7 @@ public static class VaultStorageQueries
             .Select(g => new { Category = g.Key, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
             .ToListAsync();
 
-        var unreferenced = (await context.VaultBlobObjects
-                .Where(b => b.OwnerUserId == userId && !context.VaultBlobReferences.Any(r => r.BlobHash == b.Hash))
+        var unreferenced = (await VaultBlobRetentionPolicy.Unreferenced(context.VaultBlobObjects.Where(b => b.OwnerUserId == userId), context.VaultBlobReferences)
                 .GroupBy(b => b.Category)
                 .Select(g => new { Category = g.Key, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
                 .ToListAsync())

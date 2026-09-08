@@ -35,6 +35,12 @@ public class ServerSettingsModel
     public int UnlockKeyHistoryRetentionDays { get; set; } = 7;
 
     /// <summary>
+    /// Gets or sets the number of hours a freshly uploaded encrypted vault blob is kept while no vault revision
+    /// references it yet. Defaults to 24. Set to 0 to disable automatic cleanup.
+    /// </summary>
+    public int UnreferencedBlobGraceHours { get; set; } = 24;
+
+    /// <summary>
     /// Gets or sets the email retention days. Defaults to 0 (unlimited).
     /// </summary>
     public int EmailRetentionDays { get; set; }

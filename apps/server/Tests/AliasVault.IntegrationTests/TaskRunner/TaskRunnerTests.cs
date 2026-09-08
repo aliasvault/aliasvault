@@ -126,6 +126,29 @@ public class TaskRunnerTests
     }
 
     /// <summary>
+    /// Tests that the VaultBlobCleanup task deletes the encrypted blobs no vault revision references anymore, while
+    /// keeping the ones a current or history revision still holds and the ones a client has only just uploaded.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task VaultBlobCleanup()
+    {
+        // Arrange
+        await InitializeWithTestData();
+
+        // Assert
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var remainingBlobs = await dbContext.VaultBlobObjects.Select(x => x.Hash).ToListAsync();
+        var remainingReferences = await dbContext.VaultBlobReferences.Select(x => x.BlobHash).ToListAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(remainingBlobs, Is.EquivalentTo(new[] { "referenced-current", "referenced-history", "orphan-just-uploaded" }), "Only referenced blobs and blobs still inside the upload grace period should remain");
+            Assert.That(remainingReferences, Is.EquivalentTo(new[] { "referenced-current", "referenced-history" }), "The reference to a revision that no longer exists should be swept");
+        });
+    }
+
+    /// <summary>
     /// Tests the DisabledEmailCleanup task with 30 days retention.
     /// </summary>
     /// <returns>Task.</returns>

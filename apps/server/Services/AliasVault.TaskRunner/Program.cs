@@ -36,6 +36,7 @@ builder.Services.AddTransient<IMaintenanceTask, EmailQuotaCleanupTask>();
 builder.Services.AddTransient<IMaintenanceTask, DisabledEmailCleanupTask>();
 builder.Services.AddTransient<IMaintenanceTask, OrphanedEmailCleanupTask>();
 builder.Services.AddTransient<IMaintenanceTask, UnlockKeyHistoryCleanupTask>();
+builder.Services.AddTransient<IMaintenanceTask, VaultBlobCleanupTask>();
 
 builder.Services.AddStatusHostedService<TaskRunnerWorker, AliasServerDbContext>(Assembly.GetExecutingAssembly().GetName().Name!);
 

@@ -35,6 +35,7 @@ public static class SeedData
             new() { Key = "MaintenanceTime", Value = "00:00" },
             new() { Key = "TaskRunnerDays", Value = "1,2,3,4,5,6,7" },
             new() { Key = "UnlockKeyHistoryRetentionDays", Value = "7" },
+            new() { Key = "UnreferencedBlobGraceHours", Value = "24" },
         };
 
         await dbContext.ServerSettings.AddRangeAsync(settings);
@@ -46,6 +47,7 @@ public static class SeedData
         await SeedLogs(dbContext);
         await SeedAuthLogs(dbContext);
         await SeedUnlockKeyHistory(dbContext, testUser.User.Id);
+        SeedVaultBlobs(dbContext, testUser.Manifest, testUser.User.Id);
 
         await dbContext.SaveChangesAsync();
     }
@@ -141,6 +143,59 @@ public static class SeedData
         await dbContext.UserUnlockKeysHistory.AddRangeAsync(
             CreateTestUnlockKeyHistory(userId, -10, "expired"),
             CreateTestUnlockKeyHistory(userId, -1, "recent"));
+    }
+
+    /// <summary>
+    /// Seeds encrypted vault blobs together with the references that decide which of them the sweeper may delete.
+    /// </summary>
+    /// <param name="dbContext">The database context.</param>
+    /// <param name="manifest">The test user's vault manifest.</param>
+    /// <param name="userId">The user that owns the blobs.</param>
+    private static void SeedVaultBlobs(AliasServerDbContext dbContext, VaultManifest manifest, string userId)
+    {
+        // Move the current revision up so revision 1 can sit in history as a superseded revision.
+        manifest.RevisionNumber = 2;
+        dbContext.VaultManifestsHistory.Add(new VaultManifestsHistory
+        {
+            ManifestId = manifest.ManifestId,
+            StorageFormat = VaultManifestBase.ManifestStorageFormat,
+            RevisionNumber = 1,
+            CreatedAt = DateTime.UtcNow.AddDays(-40),
+            UpdatedAt = DateTime.UtcNow.AddDays(-40),
+        });
+
+        dbContext.VaultBlobObjects.AddRange(
+            CreateTestBlob(userId, "referenced-current", TimeSpan.FromDays(-30)),
+            CreateTestBlob(userId, "referenced-history", TimeSpan.FromDays(-30)),
+            CreateTestBlob(userId, "stale-reference", TimeSpan.FromDays(-30)),
+            CreateTestBlob(userId, "orphan-expired", TimeSpan.FromDays(-30)),
+            CreateTestBlob(userId, "orphan-just-uploaded", TimeSpan.FromHours(-2)));
+
+        dbContext.VaultBlobReferences.AddRange(
+            new VaultBlobReference { ManifestId = manifest.ManifestId, RevisionNumber = 2, BlobHash = "referenced-current" },
+            new VaultBlobReference { ManifestId = manifest.ManifestId, RevisionNumber = 1, BlobHash = "referenced-history" },
+            new VaultBlobReference { ManifestId = manifest.ManifestId, RevisionNumber = 99, BlobHash = "stale-reference" });
+    }
+
+    /// <summary>
+    /// Creates an encrypted vault blob for the tests.
+    /// </summary>
+    /// <param name="userId">The user that owns the blob.</param>
+    /// <param name="hash">The blob hash, also identifying the row in assertions.</param>
+    /// <param name="uploadedAgo">How long ago the blob was uploaded.</param>
+    /// <returns>VaultBlobObject.</returns>
+    private static VaultBlobObject CreateTestBlob(string userId, string hash, TimeSpan uploadedAgo)
+    {
+        var uploadedAt = DateTime.UtcNow.Add(uploadedAgo);
+        return new VaultBlobObject
+        {
+            Hash = hash,
+            OwnerUserId = userId,
+            Category = "logo",
+            EncryptedData = [1, 2, 3, 4],
+            SizeBytes = 4,
+            CreatedAt = uploadedAt,
+        };
     }
 
     /// <summary>

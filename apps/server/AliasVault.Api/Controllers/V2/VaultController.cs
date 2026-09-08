@@ -587,10 +587,9 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on (hash, user): re-uploading
-    /// an existing blob only bumps its LastReferencedAt so the GC grace period restarts. Clients chunk large blob
-    /// sets across multiple calls to keep individual request bodies within server limits. A blob uploaded here but
-    /// never referenced by a manifest is swept by the GC after its grace period.
+    /// Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on (hash, user). Clients chunk
+    /// large blob sets across multiple calls to keep individual request bodies within server limits. A blob uploaded
+    /// here but never referenced by a manifest is cleaned up by the task runner after its grace period.
     /// </summary>
     /// <param name="model">Blob upload request.</param>
     /// <returns>Blob upload response.</returns>
@@ -867,9 +866,9 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Upserts a batch of encrypted blob objects for a user in one round-trip. Existing blobs (same hash) only get
-    /// their LastReferencedAt bumped, unless <paramref name="overwrite"/> is set (KEK/VEK migration) in which case
-    /// their ciphertext is replaced with the re-encrypted bytes. The caller of this method should call SaveChanges after calling this method.
+    /// Upserts a batch of encrypted blob objects for a user in one round-trip. Existing blobs (same hash) are left
+    /// as they are, unless <paramref name="overwrite"/> is set (KEK/VEK migration) in which case their ciphertext is
+    /// replaced with the re-encrypted bytes. The caller of this method should call SaveChanges after calling this method.
     /// </summary>
     /// <param name="context">DbContext to operate on.</param>
     /// <param name="userId">Owning user id.</param>
@@ -897,9 +896,6 @@ public class VaultController(
 
             if (row != null)
             {
-                // Already have it (or a duplicate within this batch), bump LastReferencedAt so garbage collector leaves it alone.
-                // During a KEK/VEK migration the stored ciphertext is replaced (same plaintext hash, new key).
-                row.LastReferencedAt = nowUtc;
                 if (overwrite)
                 {
                     row.Category = dto.Category;
@@ -918,7 +914,6 @@ public class VaultController(
                 EncryptedData = data!,
                 SizeBytes = data!.Length,
                 CreatedAt = nowUtc,
-                LastReferencedAt = nowUtc,
             };
             context.VaultBlobObjects.Add(entity);
             existing[dto.Hash] = entity;
