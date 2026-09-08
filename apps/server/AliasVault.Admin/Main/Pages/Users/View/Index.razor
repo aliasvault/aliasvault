@@ -3,9 +3,11 @@
 @using AliasVault.Admin.Main.Models
 @using AliasVault.Admin.Services
 @using AliasVault.Auth
+@using AliasVault.Shared.Server.Services
 @using Microsoft.EntityFrameworkCore
 @inherits MainBase
 @inject StatisticsService StatisticsService
+@inject ServerSettingsService SettingsService
 @inject ILogger<Index> Logger
 
 <LayoutPageTitle>User</LayoutPageTitle>
@@ -59,7 +61,6 @@ else
                                     </div>
                                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
                                         Changing a username is permanent and may affect the user's ability to log in.
-                                        This is typically used for account archival or when a user specifically requests a username change.
                                     </p>
                                 </div>
                                 <div class="space-y-3">
@@ -86,45 +87,21 @@ else
                             <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white text-center mb-3">Usage Statistics</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <div class="text-left">
+                                    <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalCredentials.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total Credentials</div>
-                                        @if (UserUsageStats.RecentCredentials72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentCredentials72h.ToString("N0") in last 72h)</div>
-                                        }
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Credentials</div>
                                     </div>
-                                    <div class="text-left">
-                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalActiveEmailClaims.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Active Email Claims</div>
-                                        @if (UserUsageStats.RecentEmailClaims72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentEmailClaims72h.ToString("N0") in last 72h)</div>
-                                        }
-                                        @if (UserUsageStats.TotalDisabledEmailClaims > 0)
-                                        {
-                                            <div class="text-xs text-center text-red-400 dark:text-red-300">(@UserUsageStats.TotalDisabledEmailClaims.ToString("N0") disabled)</div>
-                                        }
+                                    <div>
+                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.ActiveEmailClaims.ToString("N0")</div>
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Active email aliases</div>
                                     </div>
-                                    <div class="text-left">
+                                    <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalReceivedEmails.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total Received Emails</div>
-                                        @if (UserUsageStats.RecentReceivedEmails72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentReceivedEmails72h.ToString("N0") in last 72h)</div>
-                                        }
-                                        @if (UserUsageStats.TotalEmailsReceivedPersistent > UserUsageStats.TotalReceivedEmails)
-                                        {
-                                            <div class="text-xs text-center text-orange-500 dark:text-orange-400" title="Persistent counter (never decremented, even when emails deleted)">(@UserUsageStats.TotalEmailsReceivedPersistent.ToString("N0") all-time)</div>
-                                        }
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Emails received</div>
                                     </div>
-                                    <div class="text-left">
-                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalEmailAttachments.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Email Attachments</div>
-                                        @if (UserUsageStats.TotalEmailAttachmentStorageMB > 0)
-                                        {
-                                            <div class="text-xs text-center text-blue-500 dark:text-blue-400">@UserUsageStats.TotalEmailAttachmentStorageMB.ToString("N2") MB</div>
-                                        }
+                                    <div>
+                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatKilobytes(UserUsageStats.VaultStorageKb)</div>
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Vault storage</div>
                                     </div>
                                 </div>
                             </div>
@@ -235,7 +212,20 @@ else
                     <div>
                         <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vaults (@VaultList.Count)</h3>
 
-                        <VaultTable VaultList="@VaultList" OnMakeCurrent="@MakeCurrentAsync" />
+                        <VaultTable VaultList="@VaultList" HasManifestAccessKeys="@HasManifestAccessKeys" PasswordChangedAt="@User.PasswordChangedAt" OnMakeCurrent="@MakeCurrentAsync" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div class="items-center">
+                    <div>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Previous master passwords (@PasswordHistoryList.Count)</h3>
+                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                            Allows to revert a password change in case of a failure. Automatically pruned after the configured Password Revert Window.
+                        </p>
+
+                        <PasswordHistoryTable PasswordHistoryList="@PasswordHistoryList" RetentionDays="@UnlockKeyHistoryRetentionDays" OnRevert="@RevertPasswordChangeAsync" />
                     </div>
                 </div>
             </div>
@@ -265,24 +255,9 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Related users (@RelatedUsersCount)</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email aliases (@EmailClaimsCount)</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Other user accounts that have authenticated from the same IP addresses or IP ranges as this user.
-                            This can help identify potential duplicate accounts or related users.
-                        </p>
-                        <RelatedUsersTable UserId="@Id" @ref="RelatedUsersTableRef" OnCountChanged="HandleCountChanged" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <div class="items-center">
-                    <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email claims (@EmailClaimsCount)</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Email claims represent the email addresses that the user has (historically) used. Whenever a user deletes an email alias
-                            the claim gets disabled and the server will reject all emails sent to that alias. A user can always re-enable
-                            the claim by using it again. Email claims are permanently tied to a user and cannot be transferred to another user.
+                            Every email address this user's vault has ever claimed.
                         </p>
                         <EmailClaimTable User="@User" @ref="EmailClaimTableRef" OnCountChanged="HandleCountChanged" />
                     </div>
@@ -304,6 +279,9 @@ else
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
     private List<VaultManifestBase> VaultList { get; set; } = [];
+    private List<UserUnlockKeysHistory> PasswordHistoryList { get; set; } = [];
+    private int UnlockKeyHistoryRetentionDays { get; set; }
+    private bool HasManifestAccessKeys { get; set; }
     private List<AuthLog> AuthLogList { get; set; } = [];
     private UserUsageStatistics? UserUsageStats { get; set; }
     private bool IsEditingEmailLimits { get; set; }
@@ -312,10 +290,8 @@ else
     private bool IsEditingUsername { get; set; }
     private string NewUsername { get; set; } = string.Empty;
     private string UsernameValidationError { get; set; } = string.Empty;
-    private RelatedUsersTable? RelatedUsersTableRef { get; set; }
     private EmailClaimTable? EmailClaimTableRef { get; set; }
 
-    private int RelatedUsersCount => RelatedUsersTableRef?.GetRelatedUsersCount() ?? 0;
     private int EmailClaimsCount => EmailClaimTableRef?.GetTotalEmailClaimsCount() ?? 0;
 
     /// <inheritdoc />
@@ -425,6 +401,17 @@ else
             .ToListAsync();
 
         VaultList = currentManifests.Cast<VaultManifestBase>().Concat(historyRevisions).OrderBy(x => x.UpdatedAt).ToList();
+
+        // Whether the user is on the key model where the vault manifest no longer carries the login credentials. This
+        // decides both whether a legacy vault revision may be restored onto them and where the password signal comes from.
+        HasManifestAccessKeys = await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == User.Id);
+
+        // Load the archived master password credentials that are still inside the retention window.
+        UnlockKeyHistoryRetentionDays = (await SettingsService.GetAllSettingsAsync()).UnlockKeyHistoryRetentionDays;
+        PasswordHistoryList = await UnlockKeyHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.UserId == User.Id), UnlockKeyHistoryRetentionDays, DateTime.UtcNow)
+            .OrderByDescending(x => x.ArchivedAt)
+            .ToListAsync();
 
         // Load recent auth logs for this user (last 3 records).
         AuthLogList = await dbContext.AuthLogs
@@ -536,13 +523,24 @@ else
         }
 
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        // A pre-migration revision is not allowed to be restored as this would conflict with the current vault storage format.
+        if (HasManifestAccessKeys && historyEntry.StorageFormat == VaultManifestBase.LegacyStorageFormat)
+        {
+            GlobalNotificationService.AddErrorMessage("This revision predates the user's migration to the current vault storage format and cannot be restored. Restoring it would leave the account unable to open its vault.", true);
+            return;
+        }
+
+        var passwordNote = HasManifestAccessKeys
+            ? "• The user's master password is not affected; use \"Previous master passwords\" to revert a password change."
+            : "• If the user has changed their password recently, their password will be reverted to the one associated with this vault.";
         if (await ConfirmModalService.ShowConfirmation(
                 title: "Confirm Vault Restoration",
-                message: @"Are you sure you want to restore this specific vault and make it the active one?
+                message: $@"Are you sure you want to restore this specific vault and make it the active one?
 
 Important notes:
 • The next time the user logs in, they will load this vault version.
-• If the user has changed their password recently, their password will be reverted to the one associated with this vault.
+{passwordNote}
 • All active sessions will be revoked and the user will need to login again on all devices.
 
 Do you want to proceed with the restoration?")) {
@@ -620,7 +618,62 @@ Do you want to proceed with the restoration?")) {
     }
 
     /// <summary>
-    /// This method will revoke all refresh tokens for the user which will log out all their devices.
+    /// Restore a previous master password credential to the user's current one.
+    /// </summary>
+    /// <param name="entry">The archived credential to restore.</param>
+    private async Task RevertPasswordChangeAsync(UserUnlockKeysHistory entry)
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        var now = DateTime.UtcNow;
+
+        // Re-read the row under the retention window to ensure it is still available.
+        var archived = await UnlockKeyHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.Id == entry.Id && x.UserId == User!.Id), UnlockKeyHistoryRetentionDays, now)
+            .FirstOrDefaultAsync();
+
+        if (archived == null)
+        {
+            GlobalNotificationService.AddErrorMessage("This previous password is no longer available. It has passed the retention window and has been discarded.", true);
+            await RefreshData();
+            return;
+        }
+
+        var unlockKey = await dbContext.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == User!.Id && x.Type == archived.Type);
+        if (unlockKey == null)
+        {
+            GlobalNotificationService.AddErrorMessage("This user no longer has an unlock method of this type to revert.", true);
+            return;
+        }
+
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var writeContext = await DbContextFactory.CreateDbContextAsync();
+            await using var transaction = await writeContext.Database.BeginTransactionAsync();
+
+            var target = await writeContext.UserUnlockKeys.FirstAsync(x => x.Id == unlockKey.Id);
+            var source = await writeContext.UserUnlockKeysHistory.FirstAsync(x => x.Id == archived.Id);
+
+            await writeContext.AliasVaultUsers.Where(x => x.Id == User!.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
+            await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == User!.Id).ExecuteDeleteAsync();
+
+            // Archive what is being replaced so the revert itself can be undone, then restore and consume the entry.
+            writeContext.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(target, now, "admin-revert"));
+            source.RestoreOnto(target, now);
+            writeContext.UserUnlockKeysHistory.Remove(source);
+
+            await writeContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+        });
+
+        Logger.LogWarning("Reverted master password for user {UserName} ({UserId}) to the credential archived at {ArchivedAt}. All sessions revoked.", User!.UserName, User.Id, archived.ArchivedAt);
+        GlobalNotificationService.AddSuccessMessage("Master password reverted. The user can log in again with the password they used before the change. All sessions have been revoked.", true);
+
+        await RefreshData();
+    }
+
+    /// <summary>
+    /// Revoke all refresh tokens for the user which will log out all their devices.
     /// </summary>
     private async Task RevokeAllTokens()
     {
