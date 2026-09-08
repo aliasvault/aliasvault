@@ -1,0 +1,151 @@
+@using AliasVault.RazorComponents.Tables
+
+<SortableTable Columns="@_manifestTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+    @foreach (var entry in SortedRevisions)
+    {
+        <SortableTableRow>
+            <SortableTableColumn IsPrimary="true">@entry.RevisionNumber</SortableTableColumn>
+            <SortableTableColumn>@entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+            <SortableTableColumn>@DescribeFormat(entry)</SortableTableColumn>
+            <SortableTableColumn>@StatisticsService.FormatBytes(entry.SizeBytes)</SortableTableColumn>
+            <SortableTableColumn>@DescribeBlobs(entry)</SortableTableColumn>
+            <SortableTableColumn>@entry.CredentialsCount</SortableTableColumn>
+            <SortableTableColumn>@entry.EmailClaimsCount</SortableTableColumn>
+            <SortableTableColumn>@(entry.Client ?? "-")</SortableTableColumn>
+            <SortableTableColumn>
+                @if (entry.IsCurrent)
+                {
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Current</span>
+                }
+                @if (HasPasswordChanged(entry, Revisions))
+                {
+                    <span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Password Changed</span>
+                }
+                @if (IsUnrestorableLegacyRevision(entry))
+                {
+                    <span class="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300" title="Predates this user's migration to the current vault storage format.">Pre-migration</span>
+                }
+            </SortableTableColumn>
+            <SortableTableColumn>
+                @if (!entry.IsCurrent && !IsUnrestorableLegacyRevision(entry))
+                {
+                    <Button OnClick="() => MakeCurrentAsync(entry)">Restore</Button>
+                }
+            </SortableTableColumn>
+        </SortableTableRow>
+    }
+</SortableTable>
+
+@code {
+    /// <summary>
+    /// Gets or sets the manifest revisions to display: the current revision per manifest plus its history revisions.
+    /// </summary>
+    [Parameter]
+    public List<ManifestRevisionRow> Revisions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets whether the user has moved to the manifest key model, which decides where the password signal
+    /// comes from and which revisions may still be restored.
+    /// </summary>
+    [Parameter]
+    public bool HasManifestAccessKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event callback to make a history revision the current one.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ManifestRevisionRow> OnMakeCurrent { get; set; }
+
+    private string SortColumn { get; set; } = "RevisionNumber";
+    private SortDirection SortDirection { get; set; } = SortDirection.Descending;
+
+    private readonly List<TableColumn> _manifestTableColumns = [
+        new TableColumn { Title = "Revision", PropertyName = "RevisionNumber" },
+        new TableColumn { Title = "Written", PropertyName = "UpdatedAt" },
+        new TableColumn { Title = "Format", PropertyName = "StorageFormat" },
+        new TableColumn { Title = "Manifest", PropertyName = "SizeBytes" },
+        new TableColumn { Title = "Blobs referenced", PropertyName = "BlobBytes" },
+        new TableColumn { Title = "Credentials", PropertyName = "CredentialsCount" },
+        new TableColumn { Title = "Aliases", PropertyName = "EmailClaimsCount" },
+        new TableColumn { Title = "Client", PropertyName = "Client" },
+        new TableColumn { Title = "Status", Sortable = false },
+        new TableColumn { Title = "Actions", Sortable = false },
+    ];
+
+    private IEnumerable<ManifestRevisionRow> SortedRevisions => SortList(Revisions, SortColumn, SortDirection);
+
+    private void HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        StateHasChanged();
+    }
+
+    private static IEnumerable<ManifestRevisionRow> SortList(List<ManifestRevisionRow> revisions, string sortColumn, SortDirection sortDirection)
+    {
+        return sortColumn switch
+        {
+            "UpdatedAt" => SortableTable.SortListByProperty(revisions, v => v.UpdatedAt, sortDirection),
+            "StorageFormat" => SortableTable.SortListByProperty(revisions, v => v.StorageFormat, sortDirection),
+            "SizeBytes" => SortableTable.SortListByProperty(revisions, v => v.SizeBytes, sortDirection),
+            "BlobBytes" => SortableTable.SortListByProperty(revisions, v => v.BlobBytes, sortDirection),
+            "RevisionNumber" => SortableTable.SortListByProperty(revisions, v => v.RevisionNumber, sortDirection),
+            "CredentialsCount" => SortableTable.SortListByProperty(revisions, v => v.CredentialsCount, sortDirection),
+            "EmailClaimsCount" => SortableTable.SortListByProperty(revisions, v => v.EmailClaimsCount, sortDirection),
+            "Client" => SortableTable.SortListByProperty(revisions, v => v.Client, sortDirection),
+            _ => revisions
+        };
+    }
+
+    /// <summary>
+    /// Describes the storage format a revision was written in, with the db version for legacy revisions.
+    /// </summary>
+    private static string DescribeFormat(ManifestRevisionRow entry)
+    {
+        if (!entry.IsLegacy)
+        {
+            return entry.StorageFormat;
+        }
+
+        return string.IsNullOrEmpty(entry.Version) ? entry.StorageFormat : $"{entry.StorageFormat} ({entry.Version})";
+    }
+
+    /// <summary>
+    /// Describes the blob objects a revision references. Blobs are shared between revisions, so this is usage, not
+    /// storage that adds up across the rows.
+    /// </summary>
+    private static string DescribeBlobs(ManifestRevisionRow entry)
+    {
+        return entry.BlobCount == 0 ? "-" : $"{entry.BlobCount} · {StatisticsService.FormatBytes(entry.BlobBytes)}";
+    }
+
+    /// <summary>
+    /// Whether restoring this revision would put the user back on the legacy storage format which is not supported anymore.
+    /// </summary>
+    private bool IsUnrestorableLegacyRevision(ManifestRevisionRow entry)
+    {
+        return HasManifestAccessKeys && entry.IsLegacy;
+    }
+
+    /// <summary>
+    /// Checks if the password has changed between this revision and the previous one of the same manifest. Only
+    /// legacy revisions carry credentials, so this stays silent on the current key model where the header line above
+    /// reports the password change instead.
+    /// </summary>
+    private static bool HasPasswordChanged(ManifestRevisionRow current, IEnumerable<ManifestRevisionRow> revisions)
+    {
+        var previousEntry = revisions.FirstOrDefault(v => v.ManifestId == current.ManifestId && v.RevisionNumber == current.RevisionNumber - 1);
+        if (previousEntry == null)
+        {
+            // Nothing to compare to, so assume it has not changed.
+            return false;
+        }
+
+        return current.Salt != previousEntry.Salt || current.Verifier != previousEntry.Verifier;
+    }
+
+    private async Task MakeCurrentAsync(ManifestRevisionRow entry)
+    {
+        await OnMakeCurrent.InvokeAsync(entry);
+    }
+}

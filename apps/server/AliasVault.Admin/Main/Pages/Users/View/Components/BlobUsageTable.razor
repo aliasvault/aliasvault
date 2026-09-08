@@ -1,0 +1,58 @@
+@using AliasVault.RazorComponents.Tables
+
+@if (Categories.Count == 0)
+{
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+        This vault stores no blob objects.
+    </p>
+}
+else
+{
+    <SortableTable Columns="@_blobTableColumns">
+        @foreach (var entry in Categories)
+        {
+            <SortableTableRow>
+                <SortableTableColumn IsPrimary="true">@entry.Category</SortableTableColumn>
+                <SortableTableColumn>@entry.ObjectCount.ToString("N0")</SortableTableColumn>
+                <SortableTableColumn>@StatisticsService.FormatBytes(entry.SizeBytes)</SortableTableColumn>
+                <SortableTableColumn>@DescribeAverage(entry)</SortableTableColumn>
+                <SortableTableColumn>
+                    @if (entry.UnreferencedCount == 0)
+                    {
+                        <span class="text-gray-500 dark:text-gray-400">-</span>
+                    }
+                    else
+                    {
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                            @entry.UnreferencedCount.ToString("N0") · @StatisticsService.FormatBytes(entry.UnreferencedBytes)
+                        </span>
+                    }
+                </SortableTableColumn>
+            </SortableTableRow>
+        }
+    </SortableTable>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the blob object usage per category.
+    /// </summary>
+    [Parameter]
+    public List<VaultBlobCategoryUsage> Categories { get; set; } = [];
+
+    private readonly List<TableColumn> _blobTableColumns = [
+        new TableColumn { Title = "Category", Sortable = false },
+        new TableColumn { Title = "Objects", Sortable = false },
+        new TableColumn { Title = "Size", Sortable = false },
+        new TableColumn { Title = "Average", Sortable = false },
+        new TableColumn { Title = "Unreferenced", Sortable = false },
+    ];
+
+    /// <summary>
+    /// Describes the average size of one blob object in a category.
+    /// </summary>
+    private static string DescribeAverage(VaultBlobCategoryUsage entry)
+    {
+        return entry.ObjectCount == 0 ? "-" : StatisticsService.FormatBytes(entry.SizeBytes / entry.ObjectCount);
+    }
+}

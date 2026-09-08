@@ -1,0 +1,99 @@
+@using AliasVault.RazorComponents.Tables
+
+@if (Revisions.Count == 0)
+{
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+        This vault has no data buckets yet.
+    </p>
+}
+else
+{
+    <SortableTable Columns="@_bucketTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+        @foreach (var entry in SortedRevisions)
+        {
+            <SortableTableRow>
+                <SortableTableColumn IsPrimary="true">@entry.Category</SortableTableColumn>
+                <SortableTableColumn>@entry.RevisionNumber</SortableTableColumn>
+                <SortableTableColumn>@entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+                <SortableTableColumn>@StatisticsService.FormatBytes(entry.SizeBytes)</SortableTableColumn>
+                <SortableTableColumn>
+                    @if (entry.IsCurrent)
+                    {
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Current</span>
+                    }
+                </SortableTableColumn>
+                <SortableTableColumn>
+                    @if (!entry.IsCurrent)
+                    {
+                        <Button OnClick="() => RestoreAsync(entry)">Restore</Button>
+                    }
+                </SortableTableColumn>
+            </SortableTableRow>
+        }
+    </SortableTable>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the bucket revisions to display: the current revision per bucket plus its history revisions.
+    /// </summary>
+    [Parameter]
+    public List<BucketRevisionRow> Revisions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the event callback to make a bucket history revision the current one.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BucketRevisionRow> OnRestore { get; set; }
+
+    private string SortColumn { get; set; } = "Category";
+    private SortDirection SortDirection { get; set; } = SortDirection.Ascending;
+
+    private readonly List<TableColumn> _bucketTableColumns = [
+        new TableColumn { Title = "Bucket", PropertyName = "Category" },
+        new TableColumn { Title = "Revision", PropertyName = "RevisionNumber" },
+        new TableColumn { Title = "Written", PropertyName = "UpdatedAt" },
+        new TableColumn { Title = "Size", PropertyName = "SizeBytes" },
+        new TableColumn { Title = "Status", Sortable = false },
+        new TableColumn { Title = "Actions", Sortable = false },
+    ];
+
+    private IEnumerable<BucketRevisionRow> SortedRevisions => SortList(Revisions, SortColumn, SortDirection);
+
+    private void HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        StateHasChanged();
+    }
+
+    private static IEnumerable<BucketRevisionRow> SortList(List<BucketRevisionRow> revisions, string sortColumn, SortDirection sortDirection)
+    {
+        return sortColumn switch
+        {
+            "Category" => sortDirection == SortDirection.Ascending
+                ? revisions.OrderBy(v => v.Category).ThenByDescending(v => v.RevisionNumber)
+                : revisions.OrderByDescending(v => v.Category).ThenByDescending(v => v.RevisionNumber),
+            "RevisionNumber" => SortableTable.SortListByProperty(revisions, v => v.RevisionNumber, sortDirection),
+            "UpdatedAt" => SortableTable.SortListByProperty(revisions, v => v.UpdatedAt, sortDirection),
+            "SizeBytes" => SortableTable.SortListByProperty(revisions, v => v.SizeBytes, sortDirection),
+            _ => revisions
+        };
+    }
+
+    private async Task RestoreAsync(BucketRevisionRow entry)
+    {
+        if (await ConfirmModalService.ShowConfirmation(
+            title: "Confirm Bucket Restoration",
+            message: $@"Are you sure you want to make revision {entry.RevisionNumber} of the {entry.Category} bucket the active one?
+
+Important notes:
+• Only this bucket is rolled back. The vault contents, the user's master password and their sessions are not affected.
+• Clients pick the restored bucket up on their next sync.
+
+Do you want to proceed with the restoration?"))
+        {
+            await OnRestore.InvokeAsync(entry);
+        }
+    }
+}

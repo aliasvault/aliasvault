@@ -40,6 +40,30 @@ public class StatisticsService(IAliasServerDbContextFactory contextFactory)
     }
 
     /// <summary>
+    /// Formats bytes into a human-readable size (e.g. "412 B", "1.5 MB").
+    /// </summary>
+    /// <param name="bytes">Number of bytes.</param>
+    /// <returns>Formatted size.</returns>
+    public static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024)
+        {
+            return $"{bytes} B";
+        }
+
+        string[] suffixes = ["KB", "MB", "GB", "TB"];
+        var counter = 0;
+        decimal number = bytes / 1024m;
+        while (Math.Round(number / 1024) >= 1 && counter < suffixes.Length - 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+
+        return $"{number:n1} {suffixes[counter]}";
+    }
+
+    /// <summary>
     /// Gets the all-time totals of this server.
     /// </summary>
     /// <returns>Server totals.</returns>
@@ -193,18 +217,17 @@ public class StatisticsService(IAliasServerDbContextFactory contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        var user = await context.AliasVaultUsers.Where(u => u.Id == userId).WithVaultStorage(context).Select(x => new { x.User.PersonalGroupId, x.VaultStorageKb }).FirstOrDefaultAsync();
-        if (user == null)
+        var personalGroupId = await context.AliasVaultUsers.Where(u => u.Id == userId).Select(u => (Guid?)u.PersonalGroupId).FirstOrDefaultAsync();
+        if (personalGroupId == null)
         {
             return new UserUsageStatistics();
         }
 
         return new UserUsageStatistics
         {
-            TotalCredentials = await context.VaultManifests.Where(m => m.OwnerGroupId == user.PersonalGroupId).SumAsync(m => m.CredentialsCount),
-            ActiveEmailClaims = await context.EmailClaimLinks.CountAsync(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId),
-            TotalReceivedEmails = await context.Emails.CountAsync(e => e.DecryptionKeys.Any(d => d.VaultManifestDeliveryKey.VaultManifest.OwnerGroupId == user.PersonalGroupId)),
-            VaultStorageKb = user.VaultStorageKb,
+            TotalCredentials = await context.VaultManifests.Where(m => m.OwnerGroupId == personalGroupId).SumAsync(m => m.CredentialsCount),
+            ActiveEmailClaims = await context.EmailClaimLinks.CountAsync(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == personalGroupId),
+            TotalReceivedEmails = await context.Emails.CountAsync(e => e.DecryptionKeys.Any(d => d.VaultManifestDeliveryKey.VaultManifest.OwnerGroupId == personalGroupId)),
         };
     }
 

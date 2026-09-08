@@ -86,7 +86,7 @@ else
                         {
                             <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white text-center mb-3">Usage Statistics</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalCredentials.ToString("N0")</div>
                                         <div class="text-sm text-center text-gray-600 dark:text-gray-400">Credentials</div>
@@ -98,10 +98,6 @@ else
                                     <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalReceivedEmails.ToString("N0")</div>
                                         <div class="text-sm text-center text-gray-600 dark:text-gray-400">Emails received</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatKilobytes(UserUsageStats.VaultStorageKb)</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Vault storage</div>
                                     </div>
                                 </div>
                             </div>
@@ -210,9 +206,51 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vaults (@VaultList.Count)</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vault storage</h3>
+                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                            A vault is stored as a manifest, a set of independently-versioned data buckets and the content-addressed
+                            blob objects that are referenced by one or more manifest revisions.
+                        </p>
 
-                        <VaultTable VaultList="@VaultList" HasManifestAccessKeys="@HasManifestAccessKeys" PasswordChangedAt="@User.PasswordChangedAt" OnMakeCurrent="@MakeCurrentAsync" />
+                        <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.ManifestBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.ManifestRevisions.Count manifest revisions</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.BucketBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.BucketRevisions.Count bucket revisions</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.BlobBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.BlobCount.ToString("N0") blob objects</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.TotalBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total</div>
+                                </div>
+                            </div>
+                            @if (StorageOverview.UnreferencedBlobCount > 0)
+                            {
+                                <p class="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
+                                    @StorageOverview.UnreferencedBlobCount.ToString("N0") blob objects (@StatisticsService.FormatBytes(StorageOverview.UnreferencedBlobBytes))
+                                    are no longer referenced by any manifest revision and become reclaimable once the revisions that used them age out.
+                                </p>
+                            }
+                        </div>
+
+                        <h4 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Manifest revisions (@StorageOverview.ManifestRevisions.Count)</h4>
+                        <ManifestTable Revisions="@StorageOverview.ManifestRevisions" HasManifestAccessKeys="@HasManifestAccessKeys" OnMakeCurrent="@MakeCurrentAsync" />
+
+                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Data bucket revisions (@StorageOverview.BucketRevisions.Count)</h4>
+                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                            Small categories of vault data that sync on their own revision counter, separate from the manifest.
+                        </p>
+                        <DataBucketTable Revisions="@StorageOverview.BucketRevisions" OnRestore="@RestoreBucketAsync" />
+
+                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Blob objects (@StorageOverview.BlobCount.ToString("N0"))</h4>
+                        <BlobUsageTable Categories="@StorageOverview.BlobCategories" />
                     </div>
                 </div>
             </div>
@@ -278,7 +316,7 @@ else
     private AliasVaultUser? User { get; set; } = new();
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
-    private List<VaultManifestBase> VaultList { get; set; } = [];
+    private VaultStorageOverview StorageOverview { get; set; } = new();
     private List<UserUnlockKeysHistory> PasswordHistoryList { get; set; } = [];
     private int UnlockKeyHistoryRetentionDays { get; set; }
     private bool HasManifestAccessKeys { get; set; }
@@ -358,52 +396,10 @@ else
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
 
-        // Load all vault revisions for this user: the current revision per manifest plus the history revisions
-        // (do not load the actual file content for performance reasons).
-        var currentManifests = await dbContext.VaultManifests.Where(x => x.OwnerGroupId == User.PersonalGroupId).Select(x => new VaultManifest
-            {
-                ManifestId = x.ManifestId,
-                StorageFormat = x.StorageFormat,
-                Version = x.Version,
-                RevisionNumber = x.RevisionNumber,
-                FileSize = x.FileSize,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-                Salt = x.Salt,
-                Verifier = x.Verifier,
-                VaultBlob = null,
-                EncryptionType = x.EncryptionType,
-                EncryptionSettings = x.EncryptionSettings,
-                CredentialsCount = x.CredentialsCount,
-                EmailClaimsCount = x.EmailClaimsCount,
-                Client = x.Client,
-            })
-            .ToListAsync();
+        // Load the storage breakdown of the user's personal vault: manifest and bucket revisions plus blob usage.
+        StorageOverview = await VaultStorageQueries.GetPersonalVaultStorageAsync(dbContext, User.Id, User.PersonalGroupId);
 
-        var historyRevisions = await dbContext.VaultManifestsHistory.Where(x => x.Manifest.OwnerGroupId == User.PersonalGroupId).Select(x => new VaultManifestsHistory
-            {
-                ManifestId = x.ManifestId,
-                StorageFormat = x.StorageFormat,
-                Version = x.Version,
-                RevisionNumber = x.RevisionNumber,
-                FileSize = x.FileSize,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-                Salt = x.Salt,
-                Verifier = x.Verifier,
-                VaultBlob = null,
-                EncryptionType = x.EncryptionType,
-                EncryptionSettings = x.EncryptionSettings,
-                CredentialsCount = x.CredentialsCount,
-                EmailClaimsCount = x.EmailClaimsCount,
-                Client = x.Client,
-            })
-            .ToListAsync();
-
-        VaultList = currentManifests.Cast<VaultManifestBase>().Concat(historyRevisions).OrderBy(x => x.UpdatedAt).ToList();
-
-        // Whether the user is on the key model where the vault manifest no longer carries the login credentials. This
-        // decides both whether a legacy vault revision may be restored onto them and where the password signal comes from.
+        // Whether the user is on the key model where the vault manifest no longer carries the login credentials.
         HasManifestAccessKeys = await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == User.Id);
 
         // Load the archived master password credentials that are still inside the retention window.
@@ -509,14 +505,14 @@ else
     }
 
     /// <summary>
-    /// Handles the action of restoring a history revision as the current one. The current revision is archived into
-    /// history first, then the chosen history revision's payload is copied onto the current row with a new (higher)
-    /// revision number so the monotonic revision sequence is preserved for client concurrency checks.
+    /// Handles the action of restoring a manifest history revision as the current one. The current revision is
+    /// archived into history first, then the chosen history revision's payload is copied onto the current row with a
+    /// new (higher) revision number so the monotonic revision sequence is preserved for client concurrency checks.
     /// </summary>
-    /// <param name="vault">The vault revision to make current.</param>
-    private async Task MakeCurrentAsync(VaultManifestBase vault)
+    /// <param name="revision">The manifest revision to make current.</param>
+    private async Task MakeCurrentAsync(ManifestRevisionRow revision)
     {
-        if (vault is not VaultManifestsHistory historyEntry)
+        if (revision.IsCurrent)
         {
             // Already the current revision; nothing to restore.
             return;
@@ -525,7 +521,7 @@ else
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
 
         // A pre-migration revision is not allowed to be restored as this would conflict with the current vault storage format.
-        if (HasManifestAccessKeys && historyEntry.StorageFormat == VaultManifestBase.LegacyStorageFormat)
+        if (HasManifestAccessKeys && revision.IsLegacy)
         {
             GlobalNotificationService.AddErrorMessage("This revision predates the user's migration to the current vault storage format and cannot be restored. Restoring it would leave the account unable to open its vault.", true);
             return;
@@ -535,18 +531,19 @@ else
             ? "• The user's master password is not affected; use \"Previous master passwords\" to revert a password change."
             : "• If the user has changed their password recently, their password will be reverted to the one associated with this vault.";
         if (await ConfirmModalService.ShowConfirmation(
-                title: "Confirm Vault Restoration",
-                message: $@"Are you sure you want to restore this specific vault and make it the active one?
+                title: "Confirm Manifest Restoration",
+                message: $@"Are you sure you want to restore this specific manifest revision and make it the active one?
 
 Important notes:
 • The next time the user logs in, they will load this vault version.
 {passwordNote}
+• Data buckets and blob objects are not rolled back with it.
 • All active sessions will be revoked and the user will need to login again on all devices.
 
 Do you want to proceed with the restoration?")) {
             // Load the current row and the full history revision (including its blob payload).
-            var currentVault = await dbContext.VaultManifests.FindAsync(historyEntry.ManifestId);
-            var revisionToRestore = await dbContext.VaultManifestsHistory.FindAsync(historyEntry.ManifestId, historyEntry.RevisionNumber);
+            var currentVault = await dbContext.VaultManifests.FindAsync(revision.ManifestId);
+            var revisionToRestore = await dbContext.VaultManifestsHistory.FindAsync(revision.ManifestId, revision.RevisionNumber);
             if (currentVault == null || revisionToRestore == null)
             {
                 return;
@@ -562,7 +559,7 @@ Do you want to proceed with the restoration?")) {
             // The restored revision moves out of history; re-key its blob references to the new revision number.
             dbContext.VaultManifestsHistory.Remove(revisionToRestore);
             await dbContext.VaultBlobReferences
-                .Where(r => r.ManifestId == currentVault.ManifestId && r.RevisionNumber == historyEntry.RevisionNumber)
+                .Where(r => r.ManifestId == currentVault.ManifestId && r.RevisionNumber == revision.RevisionNumber)
                 .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevisionNumber, newRevisionNumber));
 
             // Save it.
@@ -576,6 +573,41 @@ Do you want to proceed with the restoration?")) {
             // Reload the page.
             await RefreshData();
         }
+    }
+
+    /// <summary>
+    /// Handles the action of restoring a data bucket history revision as the current one.
+    /// </summary>
+    /// <param name="revision">The bucket revision to make current.</param>
+    private async Task RestoreBucketAsync(BucketRevisionRow revision)
+    {
+        if (revision.IsCurrent)
+        {
+            // Already the current revision; nothing to restore.
+            return;
+        }
+
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        var currentBucket = await dbContext.VaultDataBuckets.FindAsync(revision.ManifestId, revision.Category);
+        var revisionToRestore = await dbContext.VaultDataBucketsHistory.FindAsync(revision.ManifestId, revision.Category, revision.RevisionNumber);
+        if (currentBucket == null || revisionToRestore == null)
+        {
+            return;
+        }
+
+        var newRevisionNumber = currentBucket.RevisionNumber + 1;
+        dbContext.VaultDataBucketsHistory.Add(VaultDataBucketsHistory.CreateFrom(currentBucket));
+        currentBucket.CopyPayloadFrom(revisionToRestore);
+        currentBucket.RevisionNumber = newRevisionNumber;
+        dbContext.VaultDataBucketsHistory.Remove(revisionToRestore);
+
+        await dbContext.SaveChangesAsync();
+
+        Logger.LogInformation("Restored the {Category} data bucket of user {UserName} ({UserId}) to revision {RevisionNumber}.",
+            revision.Category, User!.UserName, User.Id, newRevisionNumber);
+
+        await RefreshData();
     }
 
     /// <summary>

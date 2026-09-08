@@ -26,9 +26,4 @@ public class UserUsageStatistics
     /// Gets or sets the number of stored emails the vault can decrypt.
     /// </summary>
     public int TotalReceivedEmails { get; set; }
-
-    /// <summary>
-    /// Gets or sets the kilobytes the vault occupies on the server, all revisions included.
-    /// </summary>
-    public long VaultStorageKb { get; set; }
 }
