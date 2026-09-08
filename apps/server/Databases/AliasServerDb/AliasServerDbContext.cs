@@ -203,6 +203,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<UserUnlockKey> UserUnlockKeys { get; set; }
 
     /// <summary>
+    /// Gets or sets the UserUnlockKeysHistory DbSet.
+    /// </summary>
+    public DbSet<UserUnlockKeysHistory> UserUnlockKeysHistory { get; set; }
+
+    /// <summary>
     /// Gets or sets the UserGrantKeys DbSet.
     /// </summary>
     public DbSet<UserGrantKey> UserGrantKeys { get; set; }
@@ -456,6 +461,22 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             // Label is part of the key so a user can enroll several methods of one type (two hardware keys, say)
             // while methods that must stay single, the password above all, keep it empty and so stay unique per type.
             builder.HasIndex(e => new { e.UserId, e.Type, e.Label }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserUnlockKeysHistory: superseded unlock keys, retained briefly so a password change can be reverted.
+        modelBuilder.Entity<UserUnlockKeysHistory>(builder =>
+        {
+            builder.ToTable("UserUnlockKeysHistory");
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.UserId, e.Type, e.ArchivedAt }).HasDatabaseName("IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt");
+            builder.HasIndex(e => e.ArchivedAt).HasDatabaseName("IX_UserUnlockKeysHistory_ArchivedAt");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");
             builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));

@@ -107,6 +107,25 @@ public class TaskRunnerTests
     }
 
     /// <summary>
+    /// Tests that the UnlockKeyHistoryCleanup task discards archived master password credentials once they fall
+    /// outside the retention window, while leaving the ones still inside it available for a revert.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task UnlockKeyHistoryCleanup()
+    {
+        // Arrange
+        await InitializeWithTestData();
+
+        // Assert
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var archivedKeys = await dbContext.UserUnlockKeysHistory.ToListAsync();
+
+        Assert.That(archivedKeys, Has.Count.EqualTo(1), "Only the archived credential inside the retention window should remain");
+        Assert.That(archivedKeys[0].Label, Is.EqualTo("recent"));
+    }
+
+    /// <summary>
     /// Tests the DisabledEmailCleanup task with 30 days retention.
     /// </summary>
     /// <returns>Task.</returns>

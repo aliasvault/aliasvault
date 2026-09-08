@@ -34,6 +34,7 @@ public static class SeedData
             new() { Key = "MaxEmailsPerUser", Value = "100" },
             new() { Key = "MaintenanceTime", Value = "00:00" },
             new() { Key = "TaskRunnerDays", Value = "1,2,3,4,5,6,7" },
+            new() { Key = "UnlockKeyHistoryRetentionDays", Value = "7" },
         };
 
         await dbContext.ServerSettings.AddRangeAsync(settings);
@@ -44,6 +45,7 @@ public static class SeedData
         await SeedEmails(dbContext, testUser.DeliveryKey.Id);
         await SeedLogs(dbContext);
         await SeedAuthLogs(dbContext);
+        await SeedUnlockKeyHistory(dbContext, testUser.User.Id);
 
         await dbContext.SaveChangesAsync();
     }
@@ -126,6 +128,45 @@ public static class SeedData
         }
 
         await dbContext.AuthLogs.AddRangeAsync(recentAuthLogs);
+    }
+
+    /// <summary>
+    /// Seeds the database with archived unlock keys on both sides of the 7 day retention window.
+    /// </summary>
+    /// <param name="dbContext">The database context.</param>
+    /// <param name="userId">The user the archived credentials belong to.</param>
+    /// <returns>Task.</returns>
+    private static async Task SeedUnlockKeyHistory(AliasServerDbContext dbContext, string userId)
+    {
+        await dbContext.UserUnlockKeysHistory.AddRangeAsync(
+            CreateTestUnlockKeyHistory(userId, -10, "expired"),
+            CreateTestUnlockKeyHistory(userId, -1, "recent"));
+    }
+
+    /// <summary>
+    /// Creates an archived unlock key for the tests.
+    /// </summary>
+    /// <param name="userId">The user the credential belongs to.</param>
+    /// <param name="daysOffset">How long ago the credential was archived.</param>
+    /// <param name="label">Label identifying the row in assertions.</param>
+    /// <returns>UserUnlockKeysHistory.</returns>
+    private static UserUnlockKeysHistory CreateTestUnlockKeyHistory(string userId, int daysOffset, string label)
+    {
+        var archivedAt = DateTime.UtcNow.AddDays(daysOffset);
+        return new UserUnlockKeysHistory
+        {
+            Id = Guid.NewGuid(),
+            UnlockKeyId = Guid.NewGuid(),
+            UserId = userId,
+            Type = UnlockMethodType.Password,
+            Algorithm = VaultKeyAlgorithm.Aes256Gcm,
+            Label = label,
+            EncryptedAccountKey = "encrypted-account-key",
+            Metadata = """{"salt":"salt","srpVerifier":"verifier"}""",
+            CreatedAt = archivedAt.AddDays(-30),
+            UpdatedAt = archivedAt,
+            ArchivedAt = archivedAt,
+        };
     }
 
     /// <summary>

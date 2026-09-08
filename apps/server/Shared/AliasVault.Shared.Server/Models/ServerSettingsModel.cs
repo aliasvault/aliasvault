@@ -29,6 +29,12 @@ public class ServerSettingsModel
     public int MobileLoginLogRetentionDays { get; set; } = 30;
 
     /// <summary>
+    /// Gets or sets the number of days a superseded unlock key is kept so an operator can revert a password change.
+    /// Defaults to 7. Set to 0 to disable retention which means superseded unlock keys are immediately deleted.
+    /// </summary>
+    public int UnlockKeyHistoryRetentionDays { get; set; } = 7;
+
+    /// <summary>
     /// Gets or sets the email retention days. Defaults to 0 (unlimited).
     /// </summary>
     public int EmailRetentionDays { get; set; }
