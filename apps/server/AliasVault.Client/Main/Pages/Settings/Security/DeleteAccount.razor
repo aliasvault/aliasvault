@@ -159,7 +159,7 @@
         {
             // First verify the current password.
             var username = await GetUsernameAsync();
-            var result = await Http.PostAsJsonAsync("v1/Auth/delete-account/initiate", new LoginInitiateRequest(username));
+            var result = await Http.PostAsJsonAsync(ApiRoute("Auth/delete-account/initiate"), new LoginInitiateRequest(username));
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)
@@ -196,7 +196,7 @@
                 srpIdentity);
 
             // Send final delete request with SRP proof.
-            result = await Http.PostAsJsonAsync("v1/Auth/delete-account/confirm", new DeleteAccountRequest(username, ClientEphemeral.Public, ClientSession.Proof));
+            result = await Http.PostAsJsonAsync(ApiRoute("Auth/delete-account/confirm"), new DeleteAccountRequest(username, ClientEphemeral.Public, ClientSession.Proof));
             responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)

@@ -28,7 +28,7 @@ using Microsoft.JSInterop;
 /// <param name="logger">ILogger instance.</param>
 public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService localStorage, JsInteropService jsInteropService, RustCoreService rustCoreService, ILogger<VaultKeyService> logger)
 {
-    private static readonly string VaultKeyEndpoint = $"v2/VaultKey/{UnlockMethodTypes.ToToken(UnlockMethodType.Password)}";
+    private static readonly string VaultKeyEndpoint = ApiRoute($"VaultKey/{UnlockMethodTypes.ToToken(UnlockMethodType.Password)}");
 
     /// <summary>
     /// Fetch the current user's password vault key from the server.
@@ -100,7 +100,7 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
         if (online)
         {
             // Legacy account: the derived key is the encryption key and the salt comes from the login handshake.
-            var initiate = await httpClient.PostAsJsonAsync("v2/Auth/login", new LoginInitiateRequest(username));
+            var initiate = await httpClient.PostAsJsonAsync(ApiRoute("Auth/login"), new LoginInitiateRequest(username));
             initiate.EnsureSuccessStatusCode();
             var loginResponse = await initiate.Content.ReadFromJsonAsync<LoginInitiateResponse>() ?? throw new InvalidOperationException("Empty login initiate response.");
             await StoreDerivationParamsAsync(new EncryptionKeyDerivationParams(loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings));

@@ -272,7 +272,7 @@ else
         // If user has no valid authentication an automatic redirect to login page will take place.
         try
         {
-            await Http.GetAsync("v2/Status");
+            await Http.GetAsync(ApiRoute("Status"));
         }
         catch (Exception ex)
         {

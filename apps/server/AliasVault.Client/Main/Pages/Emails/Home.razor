@@ -301,7 +301,7 @@ else
             Addresses = emailClaimList,
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, $"v1/EmailBox/bulk");
+        var request = new HttpRequestMessage(HttpMethod.Post, ApiRoute("EmailBox/bulk"));
         request.Content = new StringContent(JsonSerializer.Serialize(requestModel), Encoding.UTF8, "application/json");
 
         try
@@ -606,7 +606,7 @@ else
         StateHasChanged();
         await Task.Delay(1);
 
-        EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>($"v1/Email/{emailId}");
+        EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>(ApiRoute($"Email/{emailId}"));
         if (mail != null)
         {
             // Decrypt the email content locally.
@@ -675,7 +675,7 @@ else
 
         try
         {
-            EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>($"v1/Email/{emailId}");
+            EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>(ApiRoute($"Email/{emailId}"));
             if (sequence != _previewLoadSequence)
             {
                 return;

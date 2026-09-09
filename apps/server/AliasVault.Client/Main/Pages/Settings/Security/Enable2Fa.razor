@@ -80,7 +80,7 @@ else
         if (firstRender)
         {
             // Get the QR code and secret for the authenticator app.
-            var response = await Http.PostAsync("v1/TwoFactorAuth/enable", null);
+            var response = await Http.PostAsync(ApiRoute("TwoFactorAuth/enable"), null);
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<TwoFactorSetupResult>();
@@ -106,7 +106,7 @@ else
 
     private async Task VerifySetup()
     {
-        var response = await Http.PostAsJsonAsync("v1/TwoFactorAuth/verify", VerifyModel.Code);
+        var response = await Http.PostAsJsonAsync(ApiRoute("TwoFactorAuth/verify"), VerifyModel.Code);
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<TwoFactorVerifyResult>();

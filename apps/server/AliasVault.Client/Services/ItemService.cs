@@ -110,7 +110,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             // Check if email is already taken
             try
             {
-                var response = await httpClient.PostAsync($"v1/Identity/CheckEmail/{email}", null);
+                var response = await httpClient.PostAsync(ApiRoute($"Identity/CheckEmail/{email}"), null);
                 var result = await response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
                 isEmailTaken = result?["isTaken"] ?? false;
             }

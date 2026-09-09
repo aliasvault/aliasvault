@@ -74,7 +74,7 @@
     {
         IsLoading = true;
         StateHasChanged();
-        var sessionsResponse = await Http.GetFromJsonAsync<List<RefreshTokenModel>>("v1/Security/sessions");
+        var sessionsResponse = await Http.GetFromJsonAsync<List<RefreshTokenModel>>(ApiRoute("Security/sessions"));
         if (sessionsResponse is not null)
         {
             Sessions = sessionsResponse;
@@ -93,7 +93,7 @@
     {
         try
         {
-            var response = await Http.DeleteAsync($"v1/Security/sessions/{id}");
+            var response = await Http.DeleteAsync(ApiRoute($"Security/sessions/{id}"));
             if (response.IsSuccessStatusCode)
             {
                 GlobalNotificationService.AddSuccessMessage(Localizer["RevokeSuccessMessage"], true);

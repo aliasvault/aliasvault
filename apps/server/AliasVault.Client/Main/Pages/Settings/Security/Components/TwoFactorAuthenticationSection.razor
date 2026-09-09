@@ -51,7 +51,7 @@
         IsLoading = true;
         StateHasChanged();
 
-        var twoFactorResponse = await Http.GetFromJsonAsync<TwoFactorEnabledResult>("v1/TwoFactorAuth/status");
+        var twoFactorResponse = await Http.GetFromJsonAsync<TwoFactorEnabledResult>(ApiRoute("TwoFactorAuth/status"));
         if (twoFactorResponse is not null)
         {
             TwoFactorEnabled = twoFactorResponse.TwoFactorEnabled;

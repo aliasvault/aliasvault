@@ -62,7 +62,7 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
             var srpVerifier = await rustCoreService.SrpDeriveVerifierAsync(privateKey);
 
             var registerRequest = new RegisterRequest(username, salt, srpVerifier, encryptionType, encryptionSettings, srpIdentity);
-            var result = await httpClient.PostAsJsonAsync("v1/Auth/register", registerRequest);
+            var result = await httpClient.PostAsJsonAsync(ApiRoute("Auth/register"), registerRequest);
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)

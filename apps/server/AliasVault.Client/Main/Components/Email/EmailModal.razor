@@ -347,7 +347,7 @@
 
         try
         {
-            var response = await HttpClient.DeleteAsync($"v1/Email/{Email.Id}");
+            var response = await HttpClient.DeleteAsync(ApiRoute($"Email/{Email.Id}"));
             if (response.IsSuccessStatusCode)
             {
                 await OnEmailDeleted.InvokeAsync(Email.Id);
@@ -604,7 +604,7 @@
             }
             else
             {
-                var response = await HttpClient.GetAsync($"v1/Email/{Email!.Id}/attachments/{attachment.Id}");
+                var response = await HttpClient.GetAsync(ApiRoute($"Email/{Email!.Id}/attachments/{attachment.Id}"));
 
                 if (response.IsSuccessStatusCode)
                 {

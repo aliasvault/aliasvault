@@ -748,7 +748,7 @@ public sealed class DbService : IDisposable
             _logger.LogInformation("Local vault is outdated. Fetching latest vault from server for merge...");
 
             // Fetch the latest vault from server.
-            var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>("v1/Vault");
+            var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>(ApiRoute("Vault"));
             if (response?.Vault == null || string.IsNullOrEmpty(response.Vault.Blob))
             {
                 _logger.LogError("Failed to fetch vault from server for merge.");
@@ -991,7 +991,7 @@ public sealed class DbService : IDisposable
 
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("v1/Vault", vaultObject);
+            var response = await _httpClient.PostAsJsonAsync(ApiRoute("Vault"), vaultObject);
 
             // 413: server / reverse-proxy rejected the upload because the vault exceeded MAX_UPLOAD_SIZE_MB.
             // Show the targeted message and skip the generic notification fired in the catch / fallthrough.

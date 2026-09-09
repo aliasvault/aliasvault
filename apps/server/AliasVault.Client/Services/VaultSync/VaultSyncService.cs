@@ -33,8 +33,6 @@ using Microsoft.JSInterop;
 /// <param name="logger">ILogger instance.</param>
 public sealed class VaultSyncService(HttpClient httpClient, AuthService authService, VaultKeyService vaultKeyService, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultSyncState state, ILogger<VaultSyncService> logger)
 {
-    private const string VaultEndpoint = "v2/Vault";
-    private const string BlobsDownloadEndpoint = "v2/Vault/blobs/download";
     private const string AttachmentBlobCategory = "attachment";
 
     /// <summary>
@@ -46,6 +44,9 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// Upper bound on the number of blobs in one transfer batch.
     /// </summary>
     private const int BlobTransferBatchMaxCount = 100;
+
+    private static readonly string VaultEndpoint = ApiRoute("Vault");
+    private static readonly string BlobsDownloadEndpoint = ApiRoute("Vault/blobs/download");
 
     /// <summary>
     /// Gets the sync state recorded by the last pull.

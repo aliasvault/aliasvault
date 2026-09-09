@@ -90,8 +90,7 @@ public sealed class FaviconService(HttpClient httpClient)
     {
         try
         {
-            var apiReturn = await httpClient.GetFromJsonAsync<FaviconExtractModel>(
-                $"v1/Favicon/Extract?url={Uri.EscapeDataString(url)}");
+            var apiReturn = await httpClient.GetFromJsonAsync<FaviconExtractModel>(ApiRoute($"Favicon/Extract?url={Uri.EscapeDataString(url)}"));
             return apiReturn?.Image;
         }
         catch
@@ -156,7 +155,7 @@ public sealed class FaviconService(HttpClient httpClient)
             HttpResponseMessage response;
             try
             {
-                response = await httpClient.PostAsJsonAsync("v1/Favicon/ExtractBatch", request, cancellationToken);
+                response = await httpClient.PostAsJsonAsync(ApiRoute("Favicon/ExtractBatch"), request, cancellationToken);
             }
             catch
             {
