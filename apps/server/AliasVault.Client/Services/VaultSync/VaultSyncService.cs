@@ -53,7 +53,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     public VaultSyncState State => state;
 
     /// <summary>
-    /// Retrieve the latest vault from the server
+    /// Retrieve the latest vault from the server.
     /// </summary>
     /// <returns>The pull result.</returns>
     /// <exception cref="VaultProcessingException">Thrown when the snapshot was fetched but could not be opened or materialized.</exception>

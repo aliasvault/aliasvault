@@ -4,15 +4,16 @@
 @inject ILogger<Unlock> Logger
 @inject IJSRuntime JSRuntime
 @inject RustCoreService RustCoreService
+@inject VaultKeyService VaultKeyService
 @layout Auth.Layout.MainLayout
-@using System.Text.Json
 @using AliasVault.Client.Auth.Components
 @using AliasVault.Client.Auth.Models
 @using AliasVault.Client.Services
 @using AliasVault.Client.Services.JsInterop.RustCore
+@using AliasVault.Client.Services.VaultSync
+@using AliasVault.Client.Services.VaultSync.Exceptions
+@using AliasVault.Client.Services.VaultSync.Models
 @using AliasVault.Client.Utilities
-@using AliasVault.Shared.Models.WebApi.V1.Auth
-@using AliasVault.Cryptography.Client
 @using Microsoft.Extensions.Localization
 
 <FullScreenLoadingIndicator @ref="_loadingIndicator" />
@@ -118,7 +119,6 @@ else
     private ServerValidationErrors _serverValidationErrors = new();
     private PasswordInputField? passwordField;
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Auth.Unlock", "AliasVault.Client");
-    private IStringLocalizer ApiErrorLocalizer => LocalizerFactory.Create("ApiErrors", "AliasVault.Client");
     private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
 
     /// <inheritdoc />
@@ -166,42 +166,45 @@ else
         {
             await StatusCheck();
 
-            // Send request to server with email to get user salt.
-            var result = await Http.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(Username!));
-            var responseContent = await result.Content.ReadAsStringAsync();
-
-            if (!result.IsSuccessStatusCode)
+            // Derive the KEK from the password and decrypt the VEK.
+            ResolvedVaultKey resolved;
+            try
             {
-                var errors = ApiResponseUtility.ParseErrorResponse(responseContent, ApiErrorLocalizer);
-                foreach (var error in errors)
-                {
-                    _serverValidationErrors.AddError(error);
-                }
-
-                return;
+                resolved = await VaultKeyService.UnlockWithPasswordAsync(Username!, _unlockModel.Password);
             }
-
-            var loginResponse = JsonSerializer.Deserialize<LoginInitiateResponse>(responseContent);
-            if (loginResponse == null)
-            {
-                _serverValidationErrors.AddError(Localizer["UnlockRequestError"]);
-                return;
-            }
-
-            // 3. Client derives shared session key.
-            byte[] passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_unlockModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
-
-            // Check if the password is correct locally by decrypting the test string.
-            var validPassword = await AuthService.ValidateEncryptionKeyAsync(passwordHash);
-
-            if (!validPassword)
+            catch (VaultKeyDecryptException)
             {
                 _serverValidationErrors.AddError(Localizer["IncorrectPasswordError"]);
                 return;
             }
+            catch (VaultKeyUnavailableException)
+            {
+                _serverValidationErrors.AddError(Localizer["ConnectionFailedError"]);
+                return;
+            }
 
-            // Store the encryption key in memory.
-            await AuthService.StoreEncryptionKeyAsync(passwordHash);
+            // A legacy account has no chain: the derived key is the encryption key and is validated against the local test string.
+            if (resolved.IsLegacy)
+            {
+                if (!await AuthService.HasEncryptionKeyTestStringAsync())
+                {
+                    // Nothing local to validate against, so the user has to log in again.
+                    await AuthService.RemoveTokensAsync();
+                    GlobalNotificationService.ClearMessages();
+                    GlobalNotificationService.AddErrorMessage(Localizer["SessionTimedOutError"]);
+                    NavigationManager.NavigateTo("/user/login");
+                    return;
+                }
+
+                if (!await AuthService.ValidateEncryptionKeyAsync(Convert.FromBase64String(resolved.VaultEncryptionKey)))
+                {
+                    _serverValidationErrors.AddError(Localizer["IncorrectPasswordError"]);
+                    return;
+                }
+            }
+
+            // Store the session keys in memory.
+            await AuthService.StoreSessionKeysAsync(resolved);
 
             // Redirect to the page the user was trying to access before if set.
             var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
@@ -249,18 +252,6 @@ else
             return;
         }
 
-        // Check if encryption key test string is available. If not
-        // user should log in again.
-        if (!await AuthService.HasEncryptionKeyTestStringAsync())
-        {
-            // Clear all tokens and redirect to login page.
-            await AuthService.RemoveTokensAsync();
-            GlobalNotificationService.ClearMessages();
-            GlobalNotificationService.AddErrorMessage(Localizer["SessionTimedOutError"]);
-            NavigationManager.NavigateTo("/user/login");
-            return;
-        }
-
         // Check if username is set.
         // If not, redirect to login page.
         Username = authState.User.Identity?.Name;
@@ -275,11 +266,13 @@ else
             return;
         }
 
+        AuthService.StoreUsername(Username);
+
         // Make a request to the server to check if the user is still authenticated.
         // If user has no valid authentication an automatic redirect to login page will take place.
         try
         {
-            await Http.GetAsync("v1/Auth/status");
+            await Http.GetAsync("v2/Status");
         }
         catch (Exception ex)
         {
@@ -307,16 +300,16 @@ else
 
             try
             {
-                var decryptionKey = await AuthService.GetDecryptedWebAuthnEncryptionKeyAsync(authState.User.Identity!.Name!);
-                if (decryptionKey.Length == 0)
+                var resolved = await AuthService.UnlockWithWebAuthnAsync();
+                if (string.IsNullOrEmpty(resolved.VaultEncryptionKey))
                 {
                     Logger.LogWarning("No decryption key found for user {Username}. Falling back to password unlock.", authState.User.Identity!.Name!);
                     return;
                 }
 
-                if (await AuthService.ValidateEncryptionKeyAsync(decryptionKey))
+                if (await AuthService.ValidateEncryptionKeyAsync(Convert.FromBase64String(resolved.VaultEncryptionKey)))
                 {
-                    await AuthService.StoreEncryptionKeyAsync(decryptionKey);
+                    await AuthService.StoreSessionKeysAsync(resolved);
                     NavigationManager.NavigateTo("/");
                 }
                 else
@@ -389,15 +382,15 @@ else
             // Revoke only the current specific token before setting new ones.
             await AuthService.RevokeCurrentTokenAsync();
 
-            // Store the new tokens
+            // Store the new tokens.
             await AuthService.StoreAccessTokenAsync(result.Token);
             await AuthService.StoreRefreshTokenAsync(result.RefreshToken);
+            AuthService.StoreUsername(result.Username);
 
-            // Convert decryption key from base64 string to byte array
-            var decryptionKeyBytes = Convert.FromBase64String(result.DecryptionKey);
-
-            // Store the encryption key in memory
-            await AuthService.StoreEncryptionKeyAsync(decryptionKeyBytes);
+            // TODO: the mobile app is still v1-only, so it sends the vault encryption key of a legacy account directly.
+            // Resolve the full key chain here (KEK to AK to VEK plus the account private key) once the mobile app is
+            // migrated to the manifest-v1 structure and sends its KEK instead.
+            await AuthService.StoreSessionKeysAsync(Convert.FromBase64String(result.DecryptionKey), null);
 
             await AuthStateProvider.GetAuthenticationStateAsync();
 

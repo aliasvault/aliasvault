@@ -121,31 +121,6 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     }
 
     /// <summary>
-    /// Resolve the key to use for WebAuthn or mobile QR unlock.
-    /// </summary>
-    /// <param name="storedKeyBase64">The key restored from the auxiliary unlock method.</param>
-    /// <returns>The resolved keys and whether the stored key was upgraded to the VEK.</returns>
-    public async Task<(ResolvedVaultKey Key, bool Upgraded)> ResolveStoredUnlockKeyAsync(string storedKeyBase64)
-    {
-        try
-        {
-            var resolved = await ResolveFromLocalCacheAsync(storedKeyBase64);
-            if (resolved is null)
-            {
-                // Legacy account: no chain to upgrade the stored key with, so it is the encryption key itself.
-                return (new ResolvedVaultKey(storedKeyBase64, null, true), false);
-            }
-
-            return (resolved, resolved.VaultEncryptionKey != storedKeyBase64);
-        }
-        catch (VaultKeyDecryptException)
-        {
-            // The stored key is not the KEK, so it is the VEK itself; the private key cannot be recovered from it.
-            return (new ResolvedVaultKey(storedKeyBase64, null, false), false);
-        }
-    }
-
-    /// <summary>
     /// Whether the given derived key opens the cached chain.
     /// </summary>
     /// <param name="derivedKeyBase64">The password-derived key to test.</param>
@@ -166,23 +141,6 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
         catch (VaultKeyDecryptException)
         {
             return false;
-        }
-    }
-
-    /// <summary>
-    /// Refresh the local chain cache from the server without needing the KEK.
-    /// </summary>
-    /// <returns>Task.</returns>
-    public async Task CacheEncryptedVekFromServerAsync()
-    {
-        var vaultKey = await FetchVaultKeyAsync();
-        if (vaultKey is not null)
-        {
-            await CacheVaultKeyBlobsAsync(vaultKey);
-        }
-        else
-        {
-            await ClearCachedChainAsync();
         }
     }
 

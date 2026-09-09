@@ -11,8 +11,12 @@
 @using AliasVault.Client.Utilities
 @using AliasVault.Cryptography.Client
 @using AliasVault.Client.Services.JsInterop.RustCore
+@using AliasVault.Client.Services.JsInterop.RustCore.Models
+@using AliasVault.Client.Services.VaultSync
+@using AliasVault.Client.Services.VaultSync.Models
 @using Microsoft.Extensions.Localization
 @inject RustCoreService RustCoreService
+@inject VaultKeyService VaultKeyService
 
 @if (_showTwoFactorAuthStep)
 {
@@ -159,6 +163,7 @@ else
     private SrpEphemeral _clientEphemeral = new();
     private SrpSession _clientSession = new();
     private byte[] _passwordHash = [];
+    private EncryptionKeyDerivationParams? _derivationParams;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -247,7 +252,7 @@ else
         var username = _loginModel.Username.ToLowerInvariant().Trim();
 
         // Send request to server with username to get server ephemeral public key.
-        var result = await Http.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(username));
+        var result = await Http.PostAsJsonAsync("v2/Auth/login", new LoginInitiateRequest(username));
         var responseContent = await result.Content.ReadAsStringAsync();
 
         if (!result.IsSuccessStatusCode)
@@ -268,8 +273,9 @@ else
         // Note: the fallback can be removed in the future after 0.26.0+ is deployed.
         var srpIdentity = loginResponse.SrpIdentity ?? username;
 
-        // 3. Client derives shared session key.
+        // 3. Client derives the KEK.
         _passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_loginModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
+        _derivationParams = new EncryptionKeyDerivationParams(loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
         var passwordHashString = BitConverter.ToString(_passwordHash).Replace("-", string.Empty);
 
         _clientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();
@@ -282,7 +288,7 @@ else
             srpIdentity);
 
         // 4. Client sends proof of session key to server.
-        result = await Http.PostAsJsonAsync("v1/Auth/validate", new ValidateLoginRequest(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof));
+        result = await Http.PostAsJsonAsync("v2/Auth/validate", new ValidateLoginRequest(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof));
         responseContent = await result.Content.ReadAsStringAsync();
 
         if (!result.IsSuccessStatusCode)
@@ -324,7 +330,7 @@ else
             var username = _loginModel.Username.ToLowerInvariant().Trim();
 
             // Validate 2-factor auth code auth and login
-            var result = await Http.PostAsJsonAsync("v1/Auth/validate-recovery-code", new ValidateLoginRequestRecoveryCode(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof, _loginModelRecoveryCode.RecoveryCode));
+            var result = await Http.PostAsJsonAsync("v2/Auth/validate-recovery-code", new ValidateLoginRequestRecoveryCode(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof, _loginModelRecoveryCode.RecoveryCode));
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)
@@ -382,7 +388,7 @@ else
             var username = _loginModel.Username.ToLowerInvariant().Trim();
 
             // Validate 2-factor auth code auth and login
-            var result = await Http.PostAsJsonAsync("v1/Auth/validate-2fa", new ValidateLoginRequest2Fa(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof, _loginModel2Fa.TwoFactorCode ?? 0));
+            var result = await Http.PostAsJsonAsync("v2/Auth/validate-2fa", new ValidateLoginRequest2Fa(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof, _loginModel2Fa.TwoFactorCode ?? 0));
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)
@@ -434,12 +440,18 @@ else
         // 5. Client verifies proof.
         await RustCoreService.SrpVerifySessionAsync(_clientEphemeral.Public, _clientSession, validateLoginResponse.ServerSessionProof);
 
-        // Store the tokens in local storage.
+        // Store the tokens.
         await AuthService.StoreAccessTokenAsync(validateLoginResponse.Token!.Token);
         await AuthService.StoreRefreshTokenAsync(validateLoginResponse.Token!.RefreshToken);
+        AuthService.StoreUsername(_loginModel.Username.ToLowerInvariant().Trim());
+        if (_derivationParams is not null)
+        {
+            await VaultKeyService.StoreDerivationParamsAsync(_derivationParams);
+        }
 
-        // Store the encryption key in memory.
-        await AuthService.StoreEncryptionKeyAsync(_passwordHash);
+        // Fetch the vault key chain and decrypt the VEK.
+        var resolved = await VaultKeyService.ResolveEncryptionKeyAsync(Convert.ToBase64String(_passwordHash));
+        await AuthService.StoreSessionKeysAsync(resolved);
 
         await AuthStateProvider.GetAuthenticationStateAsync();
         GlobalNotificationService.ClearMessages();
@@ -472,32 +484,15 @@ else
             // Clear global messages
             GlobalNotificationService.ClearMessages();
 
-            // Call /login endpoint to retrieve salt and encryption settings
-            var loginInitiateRequest = new { username = result.Username };
-            var loginResponse = await Http.PostAsJsonAsync("v1/Auth/login", loginInitiateRequest);
-
-            if (!loginResponse.IsSuccessStatusCode)
-            {
-                _serverValidationErrors.AddError(Localizer["LoginErrorMessage"]);
-                return;
-            }
-
-            var loginData = await loginResponse.Content.ReadFromJsonAsync<LoginInitiateResponse>();
-            if (loginData == null)
-            {
-                _serverValidationErrors.AddError(Localizer["LoginErrorMessage"]);
-                return;
-            }
-
-            // Store the tokens in local storage
+            // Store the tokens in local storage.
             await AuthService.StoreAccessTokenAsync(result.Token);
             await AuthService.StoreRefreshTokenAsync(result.RefreshToken);
+            AuthService.StoreUsername(result.Username);
 
-            // Convert decryption key from base64 string to byte array
-            var decryptionKeyBytes = Convert.FromBase64String(result.DecryptionKey);
-
-            // Store the encryption key in memory
-            await AuthService.StoreEncryptionKeyAsync(decryptionKeyBytes);
+            // TODO: the mobile app is still v1-only, so it sends the vault encryption key of a legacy account directly.
+            // Resolve the full key chain here (KEK to AK to VEK plus the account private key) once the mobile app is
+            // migrated to the manifest-v1 structure and sends its KEK instead.
+            await AuthService.StoreSessionKeysAsync(Convert.FromBase64String(result.DecryptionKey), null);
 
             await AuthStateProvider.GetAuthenticationStateAsync();
             GlobalNotificationService.ClearMessages();
