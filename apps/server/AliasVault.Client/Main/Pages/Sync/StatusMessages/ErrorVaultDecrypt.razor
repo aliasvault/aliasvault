@@ -1,4 +1,4 @@
-﻿@inject IStringLocalizerFactory LocalizerFactory
+@inject IStringLocalizerFactory LocalizerFactory
 @using Microsoft.Extensions.Localization
 
 <div class="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
@@ -6,8 +6,18 @@
         <h2 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">@Localizer["ErrorTitle"]</h2>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">@Localizer["ErrorDescription"]</p>
     </div>
+    @if (!string.IsNullOrEmpty(Details))
+    {
+        <pre id="vault-error-report" class="mt-4 max-h-48 overflow-auto rounded bg-gray-100 dark:bg-gray-800 p-3 text-left text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all select-all">@Details</pre>
+    }
 </div>
 
 @code {
+    /// <summary>
+    /// Technical detail of the failure (a copyable support report), shown below the generic message when available.
+    /// </summary>
+    [Parameter]
+    public string? Details { get; set; }
+
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Sync.StatusMessages.ErrorVaultDecrypt", "AliasVault.Client");
 }
