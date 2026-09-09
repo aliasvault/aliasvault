@@ -1,10 +1,7 @@
 @page "/settings/server"
 @inject ServerSettingsService SettingsService
-@inject ILogger<Server> Logger
-@using AliasVault.Shared.Models.Enums
 @using AliasVault.Shared.Server.Models
 @using AliasVault.Shared.Server.Services
-@using AliasVault.Admin.Main.Pages.Settings.Components
 @inherits MainBase
 
 <LayoutPageTitle>Server settings</LayoutPageTitle>
@@ -84,17 +81,6 @@
 </div>
 
 <div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Inactive User Settings</h3>
-    <div class="grid gap-4 mb-4 sm:grid-cols-1 sm:gap-6 sm:mb-5">
-        <div>
-            <label for="markInactiveDays" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mark User as Inactive After (days)</label>
-            <input type="number" @bind="Settings.MarkUserInactiveAfterDays" id="markInactiveDays" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Users that have not logged in or had activity in the last number of days are marked as inactive. Other retention rules can act on this. Set to 0 to disable.</p>
-        </div>
-    </div>
-</div>
-
-<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
     <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Email Settings</h3>
     <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
         <div>
@@ -112,60 +98,11 @@
             <input type="number" @bind="Settings.MaxEmailsPerUser" id="maxEmails" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of emails a user can have in total. Emails exceeding this limit will be deleted, oldest first. Set to 0 for unlimited emails</p>
         </div>
-        <div>
-            <label for="maxEmailsInactive" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Emails per Inactive User</label>
-            <input type="number" @bind="Settings.MaxEmailsPerInactiveUser" id="maxEmailsInactive" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">This limit only applies to users that are marked as inactive per the Mark User as Inactive After (days) setting. Set to 0 for unlimited emails.</p>
-        </div>
     </div>
-</div>
-
-<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Maintenance Schedule</h3>
-    <div class="mb-4">
-        <label for="schedule" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Time</label>
-        <input type="time" @bind="Settings.MaintenanceTime" id="schedule" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Time when maintenance tasks are run (server local time)</p>
-    </div>
-    <div class="mb-4">
-        <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Run on Days</label>
-        <div class="flex flex-wrap gap-4">
-            @foreach (var day in DaysOfWeek)
-            {
-                var isSelected = Settings.TaskRunnerDays.Contains(day.Key);
-                <div class="flex items-center">
-                    <input type="checkbox" checked="@isSelected" @onchange="@(e => ToggleDay(day.Key))" id="@($"day_{day.Key}")" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                    <label for="@($"day_{day.Key}")" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">@day.Value</label>
-                </div>
-            }
-        </div>
-    </div>
-
-    <div class="mb-4">
-        <h4 class="mb-2 text-md font-medium text-gray-900 dark:text-white">Manual Execution</h4>
-        <ConfirmButton OnClick="RunMaintenanceTasksNow">Run Maintenance Tasks Now</ConfirmButton>
-    </div>
-</div>
-
-<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Maintenance History</h3>
-    <TaskRunnerHistory @ref="_taskRunnerHistoryComponent" />
 </div>
 
 @code {
-    private TaskRunnerHistory? _taskRunnerHistoryComponent;
-
     private ServerSettingsModel Settings { get; set; } = new();
-    private readonly Dictionary<int, string> DaysOfWeek = new()
-    {
-        { 1, "Monday" },
-        { 2, "Tuesday" },
-        { 3, "Wednesday" },
-        { 4, "Thursday" },
-        { 5, "Friday" },
-        { 6, "Saturday" },
-        { 7, "Sunday" }
-    };
 
     /// <inheritdoc/>
     protected override async Task OnInitializedAsync()
@@ -176,54 +113,10 @@
         Settings = await SettingsService.GetAllSettingsAsync();
     }
 
-    private void ToggleDay(int day)
-    {
-        if (Settings.TaskRunnerDays.Contains(day))
-        {
-            Settings.TaskRunnerDays.Remove(day);
-        }
-        else
-        {
-            Settings.TaskRunnerDays.Add(day);
-        }
-    }
-
     private async Task SaveSettings()
     {
         await SettingsService.SaveSettingsAsync(Settings);
         GlobalNotificationService.AddSuccessMessage("Settings saved successfully", true);
-    }
-
-    private async Task RunMaintenanceTasksNow()
-    {
-        try
-        {
-            await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-            var job = new TaskRunnerJob
-            {
-                Name = nameof(TaskRunnerJobType.Maintenance),
-                RunDate = DateTime.UtcNow.Date,
-                StartTime = TimeOnly.FromDateTime(DateTime.UtcNow),
-                Status = TaskRunnerJobStatus.Pending,
-                IsOnDemand = true
-            };
-
-            dbContext.TaskRunnerJobs.Add(job);
-            await dbContext.SaveChangesAsync();
-
-            // Refresh the history component to show the new job
-            if (_taskRunnerHistoryComponent != null)
-            {
-                await _taskRunnerHistoryComponent.RefreshData();
-            }
-
-            Logger.LogInformation("Maintenance tasks manually queued.");
-            GlobalNotificationService.AddSuccessMessage("Maintenance tasks queued. They will be executed on the next polling cycle (default every minute). Check the logs for details.", true);
-        }
-        catch (Exception ex)
-        {
-            GlobalNotificationService.AddErrorMessage($"Failed to start maintenance tasks: {ex}", true);
-        }
     }
 
     /// <summary>
@@ -232,11 +125,5 @@
     private async Task RefreshData()
     {
         Settings = await SettingsService.GetAllSettingsAsync();
-
-        // Refresh the history component to show the new job
-        if (_taskRunnerHistoryComponent != null)
-        {
-            await _taskRunnerHistoryComponent.RefreshData();
-        }
     }
 }

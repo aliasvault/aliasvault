@@ -33,15 +33,6 @@ public class ServerSettingsTests : AdminPlaywrightTest
         await Page.Locator("input[id='authLogRetention']").FillAsync("120");
         await Page.Locator("input[id='emailRetention']").FillAsync("60");
         await Page.Locator("input[id='maxEmails']").FillAsync("200");
-        await Page.Locator("input[id='markInactiveDays']").FillAsync("180");
-        await Page.Locator("input[id='maxEmailsInactive']").FillAsync("50");
-
-        // Set maintenance time
-        await Page.Locator("input[id='schedule']").FillAsync("03:30");
-
-        // Uncheck Sunday and Saturday from maintenance days
-        await Page.Locator("input[id='day_6']").UncheckAsync(); // Saturday
-        await Page.Locator("input[id='day_7']").UncheckAsync(); // Sunday
 
         // Save changes
         var saveButton = Page.Locator("text=Save changes");
@@ -66,19 +57,6 @@ public class ServerSettingsTests : AdminPlaywrightTest
         var maxEmails = settings.Find(s => s.Key == "MaxEmailsPerUser");
         Assert.That(maxEmails?.Value, Is.EqualTo("200"), "Max emails per user not saved correctly");
 
-        var markInactiveDays = settings.Find(s => s.Key == "MarkUserInactiveAfterDays");
-        Assert.That(markInactiveDays?.Value, Is.EqualTo("180"), "Mark user inactive after days not saved correctly");
-
-        var maxEmailsInactive = settings.Find(s => s.Key == "MaxEmailsPerInactiveUser");
-        Assert.That(maxEmailsInactive?.Value, Is.EqualTo("50"), "Max emails per inactive user not saved correctly");
-
-        // Check maintenance schedule
-        var maintenanceTime = settings.Find(s => s.Key == "MaintenanceTime");
-        Assert.That(maintenanceTime?.Value, Is.EqualTo("03:30"), "Maintenance time not saved correctly");
-
-        var taskRunnerDays = settings.Find(s => s.Key == "TaskRunnerDays");
-        Assert.That(taskRunnerDays?.Value, Is.EqualTo("1,2,3,4,5"), "Task runner days not saved correctly");
-
         // Refresh page and verify values persist
         await Page.ReloadAsync();
         await WaitForUrlAsync("settings/server", "Server settings");
@@ -89,16 +67,7 @@ public class ServerSettingsTests : AdminPlaywrightTest
         var generalLogRetentionValue = await Page.Locator("input[id='generalLogRetention']").InputValueAsync();
         Assert.That(generalLogRetentionValue, Is.EqualTo("45"), "General log retention value not persisted after refresh");
 
-        var maintenanceTimeValue = await Page.Locator("input[id='schedule']").InputValueAsync();
-        Assert.That(maintenanceTimeValue, Does.Contain("03:30"), "Maintenance time value not persisted after refresh");
-
-        // Verify weekend days are still unchecked
-        var sundayChecked = await Page.Locator("input[id='day_7']").IsCheckedAsync();
-        var saturdayChecked = await Page.Locator("input[id='day_6']").IsCheckedAsync();
-        Assert.Multiple(() =>
-        {
-            Assert.That(sundayChecked, Is.False, "Sunday checkbox should be unchecked");
-            Assert.That(saturdayChecked, Is.False, "Saturday checkbox should be unchecked");
-        });
+        var maxEmailsValue = await Page.Locator("input[id='maxEmails']").InputValueAsync();
+        Assert.That(maxEmailsValue, Is.EqualTo("200"), "Max emails per user value not persisted after refresh");
     }
 }
