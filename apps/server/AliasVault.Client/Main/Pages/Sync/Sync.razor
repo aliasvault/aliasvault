@@ -17,7 +17,7 @@
 <div class="fixed inset-0 flex flex-col items-center justify-center px-6 pt-8 pb-8 h-full w-full">
     @if (CurrentDbState.Status == DbServiceState.DatabaseStatus.DecryptionFailed)
     {
-        <ErrorVaultDecrypt />
+        <ErrorVaultDecrypt Details="@CurrentDbState.Message" />
     }
     else if (CurrentDbState.Status == DbServiceState.DatabaseStatus.VaultVersionUnrecognized)
     {
@@ -55,7 +55,7 @@
         CurrentDbState = DbService.GetState().CurrentState;
 
         // Check that encryption key is set. If not, redirect to unlock screen.
-        if (!AuthService.IsEncryptionKeySet())
+        if (!AuthService.IsEncryptionKeySet() && !await AuthService.TryRestoreDebugSessionKeysAsync())
         {
             NavigationManager.NavigateTo("/unlock");
         }

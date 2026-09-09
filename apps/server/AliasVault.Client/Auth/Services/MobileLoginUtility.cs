@@ -69,7 +69,7 @@ public sealed class MobileLoginUtility : IDisposable
             {
                 ClientPublicKey = keyPair.PublicKey,
             };
-            var response = await _httpClient.PostAsJsonAsync("v1/Auth/mobile-login/initiate", request);
+            var response = await _httpClient.PostAsJsonAsync("v2/Auth/mobile-login/initiate", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -183,7 +183,7 @@ public sealed class MobileLoginUtility : IDisposable
 
         try
         {
-            var response = await _httpClient.GetAsync($"v1/Auth/mobile-login/poll/{_requestId}");
+            var response = await _httpClient.GetAsync($"v2/Auth/mobile-login/poll/{_requestId}");
 
             if (!response.IsSuccessStatusCode)
             {

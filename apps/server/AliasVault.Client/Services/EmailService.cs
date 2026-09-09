@@ -8,7 +8,7 @@
 namespace AliasVault.Client.Services;
 
 using AliasClientDb;
-using AliasVault.Shared.Models.Spamok;
+using AliasVault.Shared.Models.WebApi.V1.Email;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>

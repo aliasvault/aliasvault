@@ -320,7 +320,7 @@ public abstract class MainBase : OwningComponentBase
         }
 
         // Check that encryption key is set. If not, redirect to unlock screen.
-        if (!AuthService.IsEncryptionKeySet())
+        if (!AuthService.IsEncryptionKeySet() && !await AuthService.TryRestoreDebugSessionKeysAsync())
         {
             // If returnUrl is not set and current URL is not unlock page, set it to the current URL.
             var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
