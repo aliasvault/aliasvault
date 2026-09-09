@@ -612,17 +612,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validate the SRP session (actual current password check).
-        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
-        if (serverSession is null)
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        if (srpResult.Session is null)
         {
-            if (activeSessionFound)
+            if (srpResult.ActiveSessionFound)
             {
                 // The password was wrong: increment failed login attempts which then locks out
                 // the account when the limit is reached.
                 await userManager.AccessFailedAsync(user);
             }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.PasswordChange, srpResult.FailureReason);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
@@ -993,10 +993,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
-        if (serverSession is null)
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        if (srpResult.Session is null)
         {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, srpResult.FailureReason);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
@@ -1244,21 +1244,24 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
-        if (serverSession is null)
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        if (srpResult.Session is null)
         {
-            if (activeSessionFound)
+            if (srpResult.ActiveSessionFound)
             {
                 // Incorrect password: increment failed login attempts which then locks out
                 // the account when the limit is reached.
                 await userManager.AccessFailedAsync(user);
             }
 
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, srpResult.FailureReason);
             return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
         }
 
-        return (user, serverSession, null);
+        // Record usage of this unlock method for statistics purposes.
+        await AuthHelper.TouchUnlockKeyLastUsedAsync(context, srpResult.UnlockKeyId, timeProvider.UtcNow);
+
+        return (user, srpResult.Session, null);
     }
 
     /// <summary>

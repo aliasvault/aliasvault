@@ -74,14 +74,14 @@ public sealed class VaultKeyMetadata
     /// <summary>
     /// Helper method to return the SRP credentials and KDF parameters.
     /// </summary>
-    /// <returns>Tuple with salt, verifier, encryption type and encryption settings.</returns>
-    public (string Salt, string SrpVerifier, string EncryptionType, string EncryptionSettings) RequireSrpCredentials()
+    /// <returns>The credentials, without the unlock key id which only the caller that loaded the row knows.</returns>
+    public UserSrpCredentials RequireSrpCredentials()
     {
         if (Salt is null || SrpVerifier is null || EncryptionType is null || EncryptionSettings is null)
         {
             throw new InvalidOperationException("Vault key metadata is missing SRP credentials.");
         }
 
-        return (Salt, SrpVerifier, EncryptionType, EncryptionSettings);
+        return new UserSrpCredentials(Salt, SrpVerifier, EncryptionType, EncryptionSettings);
     }
 }

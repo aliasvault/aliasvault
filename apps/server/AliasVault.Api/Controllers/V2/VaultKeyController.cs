@@ -64,7 +64,7 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
             .FirstOrDefaultAsync();
 
         // Get the KEK derivation parameters.
-        var (salt, _, encryptionType, encryptionSettings) = VaultKeyMetadata.Parse(unlockKey.Metadata).RequireSrpCredentials();
+        var credentials = VaultKeyMetadata.Parse(unlockKey.Metadata).RequireSrpCredentials();
 
         return Ok(new VaultKeyGetResponse
         {
@@ -75,9 +75,9 @@ public class VaultKeyController(IAliasServerDbContextFactory dbContextFactory, U
                 EncryptedVek = encryptedVek,
                 AccountPublicKey = accountKeypair?.PublicKey,
                 EncryptedAccountPrivateKey = accountKeypair?.EncryptedPrivateKey,
-                Salt = salt,
-                EncryptionType = encryptionType,
-                EncryptionSettings = encryptionSettings,
+                Salt = credentials.Salt,
+                EncryptionType = credentials.EncryptionType,
+                EncryptionSettings = credentials.EncryptionSettings,
             },
         });
     }

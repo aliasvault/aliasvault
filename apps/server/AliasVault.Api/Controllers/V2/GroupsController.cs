@@ -451,10 +451,10 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         // Validate the SRP session (actual password check).
-        var (serverSession, activeSessionFound) = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, model.ClientPublicEphemeral, model.ClientSessionProof);
-        if (serverSession is null)
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, model.ClientPublicEphemeral, model.ClientSessionProof);
+        if (srpResult.Session is null)
         {
-            await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, activeSessionFound ? AuthFailureReason.InvalidPassword : AuthFailureReason.SrpSessionNotFound);
+            await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, srpResult.FailureReason);
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
