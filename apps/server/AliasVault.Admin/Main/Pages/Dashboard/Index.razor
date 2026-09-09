@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using AliasVault.Admin.Main.Pages.Dashboard.Components
 @inherits MainBase
 
@@ -7,7 +7,7 @@
 <PageHeader
     BreadcrumbItems="@BreadcrumbItems"
     Title="AliasVault Admin"
-    Description="Welcome to the AliasVault admin dashboard. Below you can find statistics about recent activity on this server.">
+    Description="Welcome to the AliasVault admin dashboard. Below you can find the most recent activity, status and statistics for this server.">
     <CustomActions>
         <a href="all-time-stats" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-200">
             <svg class="w-4 h-4 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -21,7 +21,8 @@
 
 <div class="px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <ActiveUsersChart @ref="_activeUsersChart" />
+        <RecentActiveUsersCard @ref="_recentActiveUsersCard" />
+        <ServiceStatusCard @ref="_serviceStatusCard" />
         <ActiveUsersCard @ref="_activeUsersCard" />
         <RegistrationStatisticsCard @ref="_registrationStatisticsCard" />
         <EmailStatisticsCard @ref="_emailStatisticsCard" />
@@ -30,7 +31,8 @@
 </div>
 
 @code {
-    private ActiveUsersChart? _activeUsersChart;
+    private ServiceStatusCard? _serviceStatusCard;
+    private RecentActiveUsersCard? _recentActiveUsersCard;
     private ActiveUsersCard? _activeUsersCard;
     private RegistrationStatisticsCard? _registrationStatisticsCard;
     private EmailStatisticsCard? _emailStatisticsCard;
@@ -44,7 +46,7 @@
         // Check if 2FA is enabled. If not, show a one-time warning on the dashboard.
         if (!UserService.User().TwoFactorEnabled)
         {
-            GlobalNotificationService.AddWarningMessage("Two-factor authentication is not enabled. It is recommended to enable it in Account Settings for better security.", true);
+            GlobalNotificationService.AddWarningMessage("Two-factor authentication is not enabled for this admin account. It is recommended to enable it in Account Settings for better security.", true);
         }
     }
 
@@ -64,14 +66,16 @@
     /// </summary>
     private async Task RefreshData()
     {
-        if (_activeUsersChart != null &&
+        if (_serviceStatusCard != null &&
+            _recentActiveUsersCard != null &&
             _activeUsersCard != null &&
             _registrationStatisticsCard != null &&
             _emailStatisticsCard != null &&
             _emailClaimsCard != null)
         {
             await Task.WhenAll(
-                _activeUsersChart.RefreshData(),
+                _serviceStatusCard.RefreshData(),
+                _recentActiveUsersCard.RefreshData(),
                 _activeUsersCard.RefreshData(),
                 _registrationStatisticsCard.RefreshData(),
                 _emailStatisticsCard.RefreshData(),

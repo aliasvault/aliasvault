@@ -107,7 +107,7 @@ else
                             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <tbody>
                                     <tr class="">
-                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">Registered at</th>
+                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">Registered at (UTC)</th>
                                         <td class="px-4 py-3">@User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                     </tr>
                                     <tr>
@@ -208,8 +208,7 @@ else
                     <div>
                         <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vault storage</h3>
                         <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-                            A vault is stored as a manifest, a set of independently-versioned data buckets and the content-addressed
-                            blob objects that are referenced by one or more manifest revisions.
+                            A vault is stored as a manifest, one or more data buckets and optional blob objects (attachments).
                         </p>
 
                         <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
@@ -243,10 +242,7 @@ else
                         <h4 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Manifest revisions (@StorageOverview.ManifestRevisions.Count)</h4>
                         <ManifestTable Revisions="@StorageOverview.ManifestRevisions" HasManifestAccessKeys="@HasManifestAccessKeys" OnMakeCurrent="@MakeCurrentAsync" />
 
-                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Data bucket revisions (@StorageOverview.BucketRevisions.Count)</h4>
-                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                            Small categories of vault data that sync on their own revision counter, separate from the manifest.
-                        </p>
+                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Data bucket revisions</h4>
                         <DataBucketTable Revisions="@StorageOverview.BucketRevisions" OnRestore="@RestoreBucketAsync" />
 
                         <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Blob objects (@StorageOverview.BlobCount.ToString("N0"))</h4>
@@ -260,7 +256,7 @@ else
                     <div>
                         <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Previous master passwords (@PasswordHistoryList.Count)</h3>
                         <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
-                            Allows to revert a password change in case of a failure. Automatically pruned after the configured Password Revert Window.
+                            Allows to revert a password change in case of a failure. Historic records are automatically deleted after the configured Password Revert Window.
                         </p>
 
                         <PasswordHistoryTable PasswordHistoryList="@PasswordHistoryList" RetentionDays="@UnlockKeyHistoryRetentionDays" OnRevert="@RevertPasswordChangeAsync" />
