@@ -17,6 +17,10 @@ using AliasVault.Client.Services;
 using AliasVault.Client.Services.Auth;
 using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Client.Services.JsInterop.RustCore;
+using AliasVault.Client.Services.JsInterop.RustCore.Models;
+using AliasVault.Client.Services.VaultSync;
+using AliasVault.Client.Services.VaultSync.Exceptions;
+using AliasVault.Client.Services.VaultSync.Models;
 using AliasVault.Client.Utilities;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V1.Vault;
@@ -35,6 +39,8 @@ public sealed class DbService : IDisposable
     private readonly AuthService _authService;
     private readonly JsInteropService _jsInteropService;
     private readonly RustCoreService _rustCore;
+    private readonly VaultSyncService _vaultSync;
+    private readonly VaultSyncState _syncState;
     private readonly HttpClient _httpClient;
     private readonly DbServiceState _state = new();
     private readonly Config _config;
@@ -56,16 +62,20 @@ public sealed class DbService : IDisposable
     /// <param name="authService">AuthService.</param>
     /// <param name="jsInteropService">JsInteropService.</param>
     /// <param name="rustCore">RustCoreService for WASM interop.</param>
+    /// <param name="vaultSync">VaultSyncService that pulls the vault from the server.</param>
+    /// <param name="syncState">The sync state recorded by the last pull.</param>
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="config">Config instance.</param>
     /// <param name="globalNotificationService">Global notification service.</param>
     /// <param name="localizerFactory">IStringLocalizerFactory instance.</param>
     /// <param name="logger">ILogger instance.</param>
-    public DbService(AuthService authService, JsInteropService jsInteropService, RustCoreService rustCore, HttpClient httpClient, Config config, GlobalNotificationService globalNotificationService, IStringLocalizerFactory localizerFactory, ILogger<DbService> logger)
+    public DbService(AuthService authService, JsInteropService jsInteropService, RustCoreService rustCore, VaultSyncService vaultSync, VaultSyncState syncState, HttpClient httpClient, Config config, GlobalNotificationService globalNotificationService, IStringLocalizerFactory localizerFactory, ILogger<DbService> logger)
     {
         _authService = authService;
         _jsInteropService = jsInteropService;
         _rustCore = rustCore;
+        _vaultSync = vaultSync;
+        _syncState = syncState;
         _httpClient = httpClient;
         _config = config;
         _globalNotificationService = globalNotificationService;
@@ -502,16 +512,10 @@ public sealed class DbService : IDisposable
     /// <returns>SqliteConnection and AliasClientDbContext.</returns>
     public (SqliteConnection SqliteConnection, AliasClientDbContext AliasClientDbContext) InitializeEmptyDatabase()
     {
-        if (_sqlConnection?.State == ConnectionState.Open)
-        {
-            _sqlConnection.Close();
-            _sqlConnection.Dispose();
-        }
-
-        _sqlConnection = new SqliteConnection("Data Source=:memory:");
-        _sqlConnection.Open();
-
-        _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
+        var connection = new SqliteConnection("Data Source=:memory:");
+        connection.Open();
+        SetLiveConnection(connection);
+        _syncState.Clear();
 
         // Reset the database state.
         _state.UpdateState(DbServiceState.DatabaseStatus.Uninitialized);
@@ -520,7 +524,7 @@ public sealed class DbService : IDisposable
         // Reset settings.
         _settingsService = new();
 
-        return (_sqlConnection, _dbContext);
+        return (_sqlConnection!, _dbContext);
     }
 
     /// <summary>
@@ -797,7 +801,7 @@ public sealed class DbService : IDisposable
                 mergeOutput.Stats.Conflicts);
 
             // Apply the local changes onto the server base (statements target the server database),
-            // then adopt the merged (server-based) database as the live local database.
+            // then make the merged (server-based) database the live local database.
             await ExecuteMergeSqlStatementsAsync(mergeOutput.Statements, serverConnection);
             var mergedBase64 = await ExportConnectionToBase64Async(serverConnection);
             await ImportDbContextFromBase64Async(mergedBase64, _sqlConnection!);
@@ -860,60 +864,23 @@ public sealed class DbService : IDisposable
     /// <summary>
     /// Loads the database from the server.
     /// </summary>
-    /// <returns>Task.</returns>
+    /// <returns>True when the database is ready for use.</returns>
     private async Task<bool> LoadDatabaseFromServerAsync()
     {
         _state.UpdateState(DbServiceState.DatabaseStatus.Loading);
         _logger.LogInformation("Loading database from server...");
 
-        // Load from webapi.
+        PullResult pull;
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>("v1/Vault");
-            if (response is not null)
-            {
-                var vault = response.Vault!;
-                StoreVaultRevisionNumber(vault.CurrentRevisionNumber);
-
-                // Store username of the loaded vault in memory to send to server as sanity check when updating the vault later.
-                _authService.StoreUsername(vault.Username);
-
-                // Check if vault blob is empty, if so, we don't need to do anything and the initial vault created
-                // on client is sufficient.
-                if (string.IsNullOrEmpty(vault.Blob))
-                {
-                    // Create the database structure from scratch to get an empty ready-to-use database.
-                    _state.UpdateState(DbServiceState.DatabaseStatus.Creating);
-                    return false;
-                }
-
-                // Attempt to decrypt the database blob.
-                string decryptedBase64String = await _jsInteropService.SymmetricDecrypt(vault.Blob, _authService.GetEncryptionKeyAsBase64Async());
-                await ImportDbContextFromBase64Async(decryptedBase64String, _sqlConnection!);
-
-                // Refresh the db context with the new database to invalidate any cached data if the _dbContext was already used.
-                _dbContext = new AliasClientDbContext(_sqlConnection!, log => _logger.LogDebug("{Message}", log));
-
-                // Check if database is up-to-date with migrations.
-                try
-                {
-                    if (await HasPendingMigrationsAsync())
-                    {
-                        _state.UpdateState(DbServiceState.DatabaseStatus.PendingMigrations);
-                        return false;
-                    }
-                }
-                catch (DataException)
-                {
-                    _state.UpdateState(DbServiceState.DatabaseStatus.VaultVersionUnrecognized);
-                    return false;
-                }
-
-                _isSuccessfullyInitialized = true;
-                await _settingsService.InitializeAsync(this);
-                _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-                return true;
-            }
+            pull = await _vaultSync.PullAsync();
+        }
+        catch (VaultProcessingException ex)
+        {
+            // The snapshot was fetched but could not be opened locally: surface the technical detail as a support report.
+            _logger.LogError(ex, "Error processing the vault snapshot.");
+            _state.UpdateState(DbServiceState.DatabaseStatus.DecryptionFailed, ex.ToReport());
+            return false;
         }
         catch (Exception ex)
         {
@@ -922,7 +889,95 @@ public sealed class DbService : IDisposable
             return false;
         }
 
-        return false;
+        try
+        {
+            switch (pull.Kind)
+            {
+                case PullKind.Empty:
+                    // The vault was never written: create the database structure from scratch to get an empty ready-to-use database.
+                    StoreVaultRevisionNumber(pull.Revision);
+                    _state.UpdateState(DbServiceState.DatabaseStatus.Creating);
+                    return false;
+
+                case PullKind.LegacySqliteBlob:
+                    return await LoadLegacySqliteBlobAsync(pull);
+
+                default:
+                    SetLiveConnection(pull.Database!);
+                    StoreVaultRevisionNumber(pull.Revision);
+                    _isSuccessfullyInitialized = true;
+                    await _settingsService.InitializeAsync(this);
+                    _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading database from server.");
+            _state.UpdateState(DbServiceState.DatabaseStatus.DecryptionFailed);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Import an account's not-yet-migrated sqlite-blob vault. The derived key is the encryption key for these accounts.
+    /// TODO: remove when all accounts have been migrated to the new manifest-v1 format.
+    /// </summary>
+    /// <param name="pull">The pass-through pull result.</param>
+    /// <returns>True when the database is ready for use.</returns>
+    private async Task<bool> LoadLegacySqliteBlobAsync(PullResult pull)
+    {
+        StoreVaultRevisionNumber(pull.Revision);
+
+        // An account that registered but never uploaded a vault: create the database structure from scratch.
+        if (string.IsNullOrEmpty(pull.LegacyVaultBlob))
+        {
+            _state.UpdateState(DbServiceState.DatabaseStatus.Creating);
+            return false;
+        }
+
+        // Attempt to decrypt the database blob.
+        string decryptedBase64String = await _jsInteropService.SymmetricDecrypt(pull.LegacyVaultBlob, _authService.GetEncryptionKeyAsBase64Async());
+        await ImportDbContextFromBase64Async(decryptedBase64String, _sqlConnection!);
+
+        // Refresh the db context with the new database to invalidate any cached data if the _dbContext was already used.
+        _dbContext = new AliasClientDbContext(_sqlConnection!, log => _logger.LogDebug("{Message}", log));
+
+        // Check if database is up-to-date with migrations.
+        try
+        {
+            if (await HasPendingMigrationsAsync())
+            {
+                _state.UpdateState(DbServiceState.DatabaseStatus.PendingMigrations);
+                return false;
+            }
+        }
+        catch (DataException)
+        {
+            _state.UpdateState(DbServiceState.DatabaseStatus.VaultVersionUnrecognized);
+            return false;
+        }
+
+        _isSuccessfullyInitialized = true;
+        await _settingsService.InitializeAsync(this);
+        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+        return true;
+    }
+
+    /// <summary>
+    /// Make the given open connection the live database, replacing (and disposing) the previous one.
+    /// </summary>
+    /// <param name="connection">The open in-memory connection to make live.</param>
+    private void SetLiveConnection(SqliteConnection connection)
+    {
+        var previous = _sqlConnection;
+        _sqlConnection = connection;
+        _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
+
+        if (previous is not null && !ReferenceEquals(previous, connection))
+        {
+            previous.Dispose();
+        }
     }
 
     /// <summary>
@@ -993,7 +1048,7 @@ public sealed class DbService : IDisposable
             // Read table data for prune operation
             var tables = await ReadPruneTablesAsJsonAsync(_sqlConnection!);
 
-            var pruneInput = new JsInterop.RustCore.PruneInput
+            var pruneInput = new PruneInput
             {
                 Tables = tables,
                 RetentionDays = _config.TrashRetentionDays,
