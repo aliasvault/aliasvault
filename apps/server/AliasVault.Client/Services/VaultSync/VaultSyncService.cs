@@ -29,7 +29,7 @@ using Microsoft.JSInterop;
 /// <param name="vaultKeyService">VaultKeyService instance.</param>
 /// <param name="jsInteropService">JsInteropService instance.</param>
 /// <param name="rustCoreService">RustCoreService instance.</param>
-/// <param name="state">The sync state this pull adopts the snapshot into.</param>
+/// <param name="state">The sync state this pull records the snapshot into.</param>
 /// <param name="logger">ILogger instance.</param>
 public sealed class VaultSyncService(HttpClient httpClient, AuthService authService, VaultKeyService vaultKeyService, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultSyncState state, ILogger<VaultSyncService> logger)
 {
@@ -48,7 +48,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     private const int BlobTransferBatchMaxCount = 100;
 
     /// <summary>
-    /// Gets the sync state adopted from the last pull.
+    /// Gets the sync state recorded by the last pull.
     /// </summary>
     public VaultSyncState State => state;
 
@@ -94,7 +94,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         try
         {
             logger.LogInformation("[V2Pull] Step 2/3: decrypting manifests, buckets and blobs...");
-            var opened = await OpenManifestsAndAdoptSyncStateAsync(snapshot, personalDto);
+            var opened = await OpenManifestsAndRecordSyncStateAsync(snapshot, personalDto);
             var blobs = await DownloadReferencedBlobsAsync(opened);
 
             logger.LogInformation("[V2Pull] Step 3/3: materializing {ManifestCount} manifest(s) into a fresh SQLite database...", opened.Resolved.Count);
@@ -285,12 +285,12 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     }
 
     /// <summary>
-    /// Open every manifest a snapshot carries (the personal one plus each shared one) and adopt the snapshot as this device's sync state.
+    /// Open every manifest a snapshot carries (the personal one plus each shared one) and record the snapshot as this device's sync state.
     /// </summary>
     /// <param name="snapshot">The raw snapshot.</param>
     /// <param name="personalDto">The caller's own manifest.</param>
     /// <returns>The opened set.</returns>
-    private async Task<OpenedManifestSet> OpenManifestsAndAdoptSyncStateAsync(GetResponse snapshot, Manifest personalDto)
+    private async Task<OpenedManifestSet> OpenManifestsAndRecordSyncStateAsync(GetResponse snapshot, Manifest personalDto)
     {
         var personalVek = authService.GetEncryptionKeyAsBase64Async();
         var resolved = new List<ResolvedManifest>();
@@ -332,7 +332,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         // 2) Open the data buckets belonging to those manifests.
         var (dataBuckets, bucketRevisions) = await OpenDataBucketsAsync(snapshot, resolved, fingerprints);
 
-        // 3) Adopt the snapshot as local truth.
+        // 3) Record the snapshot as local truth.
         state.SharedManifests.Clear();
         foreach (var (id, record) in sharedRecords)
         {
@@ -362,7 +362,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             state.ContentFingerprints[key] = fingerprint;
         }
 
-        logger.LogInformation("[V2Pull] Adopted revisions of {ManifestCount} manifest(s) and {BucketCount} bucket(s); {FingerprintCount} fingerprint baseline(s) stored.", state.ManifestRevisions.Count, state.BucketRevisions.Count, state.ContentFingerprints.Count);
+        logger.LogInformation("[V2Pull] Recorded revisions of {ManifestCount} manifest(s) and {BucketCount} bucket(s); {FingerprintCount} fingerprint baseline(s) stored.", state.ManifestRevisions.Count, state.BucketRevisions.Count, state.ContentFingerprints.Count);
         return new OpenedManifestSet(resolved, dataBuckets, contentlessRevisions.Keys.ToList(), resolved[0].Revision);
     }
 

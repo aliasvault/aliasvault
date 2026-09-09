@@ -163,8 +163,8 @@ type PullResult = {
 };
 
 /**
- * What {@link VaultSyncService.openManifestsAndAdoptSyncState} produces: every manifest of one snapshot,
- * decrypted and ready to materialize or merge, with the local sync state already adopted from it.
+ * What {@link VaultSyncService.openManifestsAndRecordSyncState} produces: every manifest of one snapshot,
+ * decrypted and ready to materialize or merge, with the local sync state already recorded from it.
  */
 type OpenedManifestSet = {
   resolved: ResolvedManifest[];
@@ -462,7 +462,7 @@ export class VaultSyncService {
     }
 
     try {
-      const opened = await this.openManifestsAndAdoptSyncState(snapshot, encryptionKey, { deferRevisionCommit: true });
+      const opened = await this.openManifestsAndRecordSyncState(snapshot, encryptionKey, { deferRevisionCommit: true });
 
       try {
         const localSide = await this.localSideForMerge(localCanonicalized, localClient, opened);
@@ -777,20 +777,20 @@ export class VaultSyncService {
    * @param vek - the personal manifest's symmetric key (from the unlock chain); decrypts the personal manifest and the data buckets
    */
   private async materializeFromSnapshot(snapshot: GetResponseDto, vek: string): Promise<PullResult> {
-    const opened = await this.openManifestsAndAdoptSyncState(snapshot, vek);
+    const opened = await this.openManifestsAndRecordSyncState(snapshot, vek);
     const sqliteBytes = await this.materializeToSqlite(opened.resolved.map(m => m.manifest), opened.dataBuckets, opened.blobMap);
     return { sqliteBytes, manifestRevision: opened.personalRevision };
   }
 
   /**
-   * Open every manifest a snapshot carries (the personal one plus each shared one) and adopt the snapshot as
+   * Open every manifest a snapshot carries (the personal one plus each shared one) and record the snapshot as
    * this device's sync state.
    * @param snapshot - the raw GET /v2/Vault response
    * @param vek - the personal manifest's symmetric key (from the unlock chain); every other manifest key resolves from it
    * @param options - set deferRevisionCommit to hand the revision write back to the caller as `commitRevisions`,
    *   for when the pulled revisions may only become local truth once a later step has succeeded
    */
-  private async openManifestsAndAdoptSyncState(snapshot: GetResponseDto, vek: string, options?: { deferRevisionCommit?: boolean }): Promise<OpenedManifestSet> {
+  private async openManifestsAndRecordSyncState(snapshot: GetResponseDto, vek: string, options?: { deferRevisionCommit?: boolean }): Promise<OpenedManifestSet> {
     const personalDto = selectPersonalManifest(snapshot);
     if (!personalDto) {
       throw new Error('VaultSyncService: server returned no personal manifest, refusing to assemble.');

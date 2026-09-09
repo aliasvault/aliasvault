@@ -10,7 +10,7 @@ namespace AliasVault.Client.Services.VaultSync;
 using AliasVault.Client.Services.VaultSync.Models;
 
 /// <summary>
-/// The client's sync state as adopted from the last pull.
+/// The client's sync state as recorded by the last pull.
 /// </summary>
 public sealed class VaultSyncState
 {
