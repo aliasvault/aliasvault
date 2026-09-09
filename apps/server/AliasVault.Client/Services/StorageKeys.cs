@@ -62,4 +62,49 @@ public static class StorageKeys
     /// Key for storing the return URL to redirect to after login or unlock.
     /// </summary>
     public const string ReturnUrl = "returnUrl";
+
+    /// <summary>
+    /// Key for storing the Account Key encrypted with the password-derived KEK, as returned by the server.
+    /// </summary>
+    public const string EncryptedAccountKey = "encryptedAccountKey";
+
+    /// <summary>
+    /// Key for storing the vault encryption key (VEK) encrypted with the Account Key, as returned by the server.
+    /// </summary>
+    public const string EncryptedVek = "encryptedVek";
+
+    /// <summary>
+    /// Key for storing the account public key, used to seal shared vault grants to this account.
+    /// </summary>
+    public const string AccountPublicKey = "accountPublicKey";
+
+    /// <summary>
+    /// Key for storing the account private key encrypted with the Account Key.
+    /// </summary>
+    public const string EncryptedAccountPrivateKey = "encryptedAccountPrivateKey";
+
+    /// <summary>
+    /// Key for storing the Argon2 parameters the KEK is derived with, plus whether the account has a key chain.
+    /// </summary>
+    public const string EncryptionKeyDerivationParams = "encryptionKeyDerivationParams";
+
+    /// <summary>
+    /// Key for storing the plaintext session keys in development when the debug encryption key setting is on.
+    /// </summary>
+    public const string DebugSessionKeys = "debugSessionKeys";
+
+    /// <summary>
+    /// Keys holding key material derived from the account: the encrypted unlock chain, its derivation parameters and
+    /// the local key check. Cleared on any logout, forced or user-initiated.
+    /// </summary>
+    public static readonly string[] VaultKeyStorageKeys =
+    [
+        EncryptedAccountKey,
+        EncryptedVek,
+        AccountPublicKey,
+        EncryptedAccountPrivateKey,
+        EncryptionKeyDerivationParams,
+        EncryptionTestString,
+        DebugSessionKeys,
+    ];
 }
