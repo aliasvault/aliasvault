@@ -560,7 +560,7 @@ window.rustCoreSrpDeriveSession = async function(clientSecret, serverPublic, sal
 };
 
 /**
- * Verify the server's session proof (M2) on the client side.
+ * Verify the server's session proof on the client side.
  * @param {string} clientPublic - Client public ephemeral (A) as hex string.
  * @param {string} clientProof - Client proof (M1) as hex string.
  * @param {string} sessionKey - Session key (K) as hex string.
@@ -578,4 +578,261 @@ window.rustCoreSrpVerifySession = async function(clientPublic, clientProof, sess
         console.error('[RustCore] SRP verify session failed:', error);
         throw error;
     }
+};
+
+// ============================================================================
+// Vault codec (manifest-v1 storage format)
+// ============================================================================
+
+/**
+ * Resolve the initialized WASM module or throw.
+ * @returns {Promise<object>} The WASM module.
+ */
+async function requireRustCore() {
+    if (!await initRustCore()) {
+        throw new Error('Rust WASM module not available');
+    }
+    return wasmModule;
+}
+
+/**
+ * Canonicalize normalized vault tables into manifests + data buckets + blob maps.
+ * @param {string} inputJson - JSON string containing CanonicalizeInput.
+ * @returns {Promise<string>} JSON string containing CanonicalizedVault.
+ */
+window.rustCoreVaultCodecCanonicalizeFromSqlite = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecCanonicalizeFromSqlite(JSON.parse(inputJson)));
+};
+
+/**
+ * Materialize manifests + data buckets into the table set the platform inserts into a fresh SQLite DB.
+ * @param {string} inputJson - JSON string containing MaterializeInput ({ manifests, dataBuckets, schemaColumns }).
+ * @returns {Promise<string>} JSON string containing MaterializedTables ({ tables, overflow }).
+ */
+window.rustCoreVaultCodecMaterializeAsSqlite = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecMaterializeAsSqlite(JSON.parse(inputJson)));
+};
+
+/**
+ * Merge the local canonical vault onto the server canonical vault (the base), one manifest at a time.
+ * @param {string} inputJson - JSON string containing the canonical merge input.
+ * @returns {Promise<string>} JSON string containing the canonical merge output.
+ */
+window.rustCoreMergeCanonical = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.mergeCanonical(JSON.parse(inputJson)));
+};
+
+/**
+ * Extract the encryption-key row whose PublicKey matches from a decrypted manifest.
+ * @param {string} manifestJson - JSON string of the decrypted manifest.
+ * @param {string} publicKey - The public key to look up.
+ * @returns {Promise<string|null>} JSON string of the key row, or null when the manifest holds no such key.
+ */
+window.rustCoreVaultCodecExtractEncryptionKeyForPublicKey = async function(manifestJson, publicKey) {
+    const core = await requireRustCore();
+    const row = core.vaultCodecExtractEncryptionKeyForPublicKey(JSON.parse(manifestJson), publicKey);
+    return row ? JSON.stringify(row) : null;
+};
+
+/**
+ * Build a bucket category's data buckets from its tables, one per manifest.
+ * @param {string} inputJson - JSON string containing { category, manifestIds, tables }.
+ * @returns {Promise<string>} JSON string containing the data bucket list.
+ */
+window.rustCoreVaultCodecExtractBuckets = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecExtractBuckets(JSON.parse(inputJson)));
+};
+
+/**
+ * The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
+ * @returns {Promise<string>} The table name.
+ */
+window.rustCoreVaultCodecOverflowTable = async function() {
+    const core = await requireRustCore();
+    return core.vaultCodecOverflowTable();
+};
+
+/**
+ * The bucket layout: every category and the tables it owns.
+ * @returns {Promise<string>} JSON string containing the layout entries.
+ */
+window.rustCoreVaultCodecBucketLayout = async function() {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecBucketLayout());
+};
+
+/**
+ * The Logos.Id to use for the logo (kind, source) inside the given manifest.
+ * @param {string} manifestId - Owning manifest id.
+ * @param {string} kind - Logo kind (favicon, builtin, custom).
+ * @param {string} source - Logo source (domain, icon key or content hash).
+ * @returns {Promise<string>} The derived logo id.
+ */
+window.rustCoreVaultCodecLogoIdFor = async function(manifestId, kind, source) {
+    const core = await requireRustCore();
+    return core.vaultCodecLogoIdFor(manifestId, kind, source);
+};
+
+/**
+ * The SHA-256 (lowercase hex) of an uploaded logo's bytes, the Source a custom logo row is stored under.
+ * @param {Uint8Array} bytes - The image bytes.
+ * @returns {Promise<string>} The content hash.
+ */
+window.rustCoreVaultCodecLogoContentHash = async function(bytes) {
+    const core = await requireRustCore();
+    return core.vaultCodecLogoContentHash(bytes);
+};
+
+/**
+ * Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
+ * @returns {Promise<string>} The salt.
+ */
+window.rustCoreVaultCodecGenerateManifestSalt = async function() {
+    const core = await requireRustCore();
+    return core.vaultCodecGenerateManifestSalt();
+};
+
+/**
+ * Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
+ * @param {string} payloadJson - The manifest or data bucket JSON.
+ * @returns {Promise<Uint8Array>} The packed bytes.
+ */
+window.rustCoreVaultCodecPackPayload = async function(payloadJson) {
+    const core = await requireRustCore();
+    return core.vaultCodecPackPayload(payloadJson);
+};
+
+/**
+ * Unpack a decrypted payload: gunzip, verify the embedded content hash, return the payload JSON string.
+ * @param {Uint8Array} plainBytes - The decrypted packed bytes.
+ * @returns {Promise<string>} The payload JSON.
+ */
+window.rustCoreVaultCodecUnpackPayload = async function(plainBytes) {
+    const core = await requireRustCore();
+    return core.vaultCodecUnpackPayload(plainBytes);
+};
+
+/**
+ * Structurally validate a manifest before upload.
+ * @param {string} manifestJson - JSON string of the manifest.
+ * @returns {Promise<string>} JSON string containing { ok, failedRules, message }.
+ */
+window.rustCoreVaultCodecValidateManifest = async function(manifestJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecValidateManifest(JSON.parse(manifestJson)));
+};
+
+/**
+ * Validate a data bucket before upload.
+ * @param {string} bucketJson - JSON string of the data bucket.
+ * @returns {Promise<string>} JSON string containing { ok, failedRules, message }.
+ */
+window.rustCoreVaultCodecValidateDataBucket = async function(bucketJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultCodecValidateDataBucket(JSON.parse(bucketJson)));
+};
+
+/**
+ * SHA-256 (lowercase hex) of a base64 ciphertext string.
+ * @param {string} base64Ciphertext - The ciphertext as served by / sent to the server.
+ * @returns {Promise<string>} The hash.
+ */
+window.rustCoreVaultCodecComputeCiphertextHash = async function(base64Ciphertext) {
+    const core = await requireRustCore();
+    return core.vaultCodecComputeCiphertextHash(base64Ciphertext);
+};
+
+/**
+ * Content fingerprint of a manifest / data bucket payload for change detection (canonical JSON minus canonicalizedAt).
+ * @param {string} payloadJson - The payload JSON.
+ * @returns {Promise<string>} The fingerprint.
+ */
+window.rustCoreVaultCodecComputeContentFingerprint = async function(payloadJson) {
+    const core = await requireRustCore();
+    return core.vaultCodecComputeContentFingerprint(payloadJson);
+};
+
+/**
+ * Work out which manifests the next push writes, personal manifest first.
+ * @param {string} inputJson - JSON string containing the write-set request.
+ * @returns {Promise<string>} JSON string containing { records, skipped }.
+ */
+window.rustCoreVaultSharingResolveManifestWriteSet = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultSharingResolveManifestWriteSet(JSON.parse(inputJson)));
+};
+
+/**
+ * Split what the local vault holds by what this account can still open.
+ * @param {string} inputJson - JSON string containing the access partition request.
+ * @returns {Promise<string>} JSON string containing { unwritable, lost }.
+ */
+window.rustCoreVaultSharingPartitionManifestAccess = async function(inputJson) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.vaultSharingPartitionManifestAccess(JSON.parse(inputJson)));
+};
+
+// ============================================================================
+// Email parser
+// ============================================================================
+
+/**
+ * Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
+ * @param {Uint8Array} source - The decrypted message source.
+ * @returns {Promise<string>} JSON string containing { htmlBody, textBody, attachments }.
+ */
+window.rustCoreParseEmailSource = async function(source) {
+    const core = await requireRustCore();
+    return JSON.stringify(core.parseEmailSource(source));
+};
+
+/**
+ * Turn a stored email source into the raw RFC 822 message bytes for the source view.
+ * @param {Uint8Array} source - The decrypted message source.
+ * @returns {Promise<Uint8Array>} The raw message bytes.
+ */
+window.rustCoreDecodeEmailSource = async function(source) {
+    const core = await requireRustCore();
+    return core.decodeEmailSource(source);
+};
+
+/**
+ * Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+ * @param {Uint8Array} source - The decrypted message source.
+ * @param {number} index - Attachment index.
+ * @param {Uint8Array|null} detachedBody - The detached body fetched from the server, when the attachment is detached.
+ * @returns {Promise<Uint8Array>} The attachment bytes.
+ */
+window.rustCoreExtractEmailAttachment = async function(source, index, detachedBody) {
+    const core = await requireRustCore();
+    return core.extractEmailAttachment(source, index, detachedBody ?? undefined);
+};
+
+/**
+ * Decrypt a manifest or data bucket ciphertext (AES-GCM, base64(IV | ciphertext | tag)) and unpack it via the codec.
+ * @param {string} base64Ciphertext - The ciphertext as served by the server.
+ * @param {string} base64Key - The symmetric key.
+ * @returns {Promise<string>} The payload JSON.
+ */
+window.rustCoreVaultCodecDecryptAndUnpackPayload = async function(base64Ciphertext, base64Key) {
+    const core = await requireRustCore();
+    const plainBytes = await window.cryptoInterop.decryptBytes(base64Ciphertext, base64Key);
+    return core.vaultCodecUnpackPayload(plainBytes);
+};
+
+/**
+ * Pack a manifest or data bucket payload via the codec and encrypt it (AES-GCM, base64(IV | ciphertext | tag)).
+ * @param {string} payloadJson - The payload JSON.
+ * @param {string} base64Key - The symmetric key.
+ * @returns {Promise<string>} The base64 ciphertext.
+ */
+window.rustCoreVaultCodecPackAndEncryptPayload = async function(payloadJson, base64Key) {
+    const core = await requireRustCore();
+    const packed = core.vaultCodecPackPayload(payloadJson);
+    const encrypted = await window.cryptoInterop.encryptBytes(packed, base64ToBytes(base64Key));
+    return bytesToBase64(encrypted);
 };
