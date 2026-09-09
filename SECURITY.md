@@ -45,7 +45,7 @@ The **primary security boundary** (also referred to as the **encryption/access c
 - The server never has access to plaintext vault data.
 - Network interception, server compromise, or API token leakage **must not** expose decrypted secrets.
 
-A vulnerability is considered **critical** if it allows crossing this boundary.
+A vulnerability is considered a Class 1 security boundary failure if it allows crossing this boundary without the user's informed and specific authorization of the relevant device, session, or security-sensitive operation.
 
 ---
 
@@ -70,9 +70,9 @@ This section defines how reported issues are categorized.
 
 ---
 
-## 3.1 Critical Vulnerabilities (Class 1 - CVE-Eligible)
+## 3.1 Class 1 Vulnerabilities (Project CVE Candidates)
 
-Class 1 issues are eligible for CVE assignment. These represent vulnerabilities that breach AliasVault's encryption/access control boundary (see Section 2.1).
+Class 1 issues are considered eligible for CVE assignment under AliasVault's vulnerability disclosure policy. These represent vulnerabilities that breach AliasVault's encryption/access control boundary (see Section 2.1).
 
 A report must:
 
@@ -115,17 +115,22 @@ Issues that only arise or can only be exploited after an attacker has fully comp
 - Memory inspection of a live process
 - OS-level data extraction
 
-### 3.2.2 Local Data Handling
+### 3.2.2 Social Engineering
+Social engineering or phishing attacks where the application accurately presents the security-sensitive action and its material consequences, and the user intentionally approves that action, are out of scope for CVE assignment.
+
+This exclusion does not apply where an application flaw causes the approval UI to misrepresent, obscure, substitute, or fail to bind the action being approved to the action actually performed.
+
+### 3.2.3 Local Data Handling
 - Clipboard clearing
 - Screen recording protections
 - Autofill edge cases
 - UI redaction improvements
 
-### 3.2.3 Metadata & Session Observations
+### 3.2.4 Metadata & Session Observations
 - Token leakage that does **not** allow vault decryption
 - Metadata visibility inherent to system design
 
-### 3.2.4 Theoretical or Non-Reproducible
+### 3.2.5 Theoretical or Non-Reproducible
 - Speculative attack chains
 - No working proof of concept
 - Attacks requiring unrealistic assumptions
@@ -153,13 +158,15 @@ These are not treated as security vulnerabilities.
 
 # 4. How CVE Decisions Are Made
 
-We will assign a CVE ID only if an issue meets **all** of the following criteria:
+We will request or pursue a CVE ID only if an issue meets **all** of the following criteria:
 
 1. The issue impacts **confidentiality, integrity, or authentication**
-2. It crosses the **encryption/access control boundary** (as defined in Section 2.1)
+2. It crosses the **encryption/access control boundary** without the user's informed and specific authorization of the relevant device, session, or security-sensitive operation (as defined in Section 2.1)
 3. It affects a **released version**
 4. It is **reproducible**
 5. It does **not rely on full device compromise**
+
+CVE eligibility also requires that the issue does not fall within an out-of-scope category defined in Sections 3.3 or 5.
 
 Issues that do not meet these criteria will still be reviewed and may result in fixes, but they will be announced as regular updates rather than security advisories and are tracked as **hardening or quality improvements**. Every report is valued regardless of classification.
 
@@ -180,7 +187,7 @@ Out of scope for CVE assignment by this project:
 - Third-party dependency CVEs: the upstream maintainer or a central authority is responsible for issuing CVEs for their own code; AliasVault will promptly upgrade dependencies or apply patches when such issues arise
 - Device OS vulnerabilities
 - Hardware compromise
-- Phishing, social engineering, or other attacks that rely on deceiving the user rather than exploiting the application
+- Phishing, social engineering, or other attacks that rely solely on deceiving the user rather than exploiting the application, except where an application flaw misrepresents, obscures, substitutes, or fails to bind the security-sensitive action being authorized, as described in Section 3.2.2
 
 ---
 
