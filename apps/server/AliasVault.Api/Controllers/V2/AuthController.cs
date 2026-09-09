@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using AliasServerDb;
+using AliasServerDb.Retention;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth;

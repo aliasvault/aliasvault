@@ -8,6 +8,7 @@
 namespace AliasVault.UnitTests.Vault;
 
 using AliasServerDb;
+using AliasServerDb.Retention;
 
 /// <summary>
 /// Tests for the rules that decide which encrypted vault blobs the garbage collector may delete.

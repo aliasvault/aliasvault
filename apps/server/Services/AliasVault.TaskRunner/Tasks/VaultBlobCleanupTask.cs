@@ -8,6 +8,7 @@
 namespace AliasVault.TaskRunner.Tasks;
 
 using AliasServerDb;
+using AliasServerDb.Retention;
 using AliasVault.Shared.Server.Services;
 
 /// <summary>

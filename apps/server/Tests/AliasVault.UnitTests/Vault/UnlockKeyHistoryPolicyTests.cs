@@ -8,6 +8,7 @@
 namespace AliasVault.UnitTests.Vault;
 
 using AliasServerDb;
+using AliasServerDb.Retention;
 using AliasVault.Shared.Models.Enums;
 
 /// <summary>

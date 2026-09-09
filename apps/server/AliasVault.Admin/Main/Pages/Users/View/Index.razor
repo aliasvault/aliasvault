@@ -1,8 +1,11 @@
 ﻿@page "/users/{Id}"
+@using AliasServerDb.Legacy
+@using AliasServerDb.Retention
 @using AliasVault.Admin.Main.Pages.Users.View.Components
 @using AliasVault.Admin.Main.Models
 @using AliasVault.Admin.Services
 @using AliasVault.Auth
+@using AliasVault.Shared.Models.Enums
 @using AliasVault.Shared.Server.Services
 @using Microsoft.EntityFrameworkCore
 @inherits MainBase
@@ -240,7 +243,7 @@ else
                         </div>
 
                         <h4 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Manifest revisions (@StorageOverview.ManifestRevisions.Count)</h4>
-                        <ManifestTable Revisions="@StorageOverview.ManifestRevisions" HasManifestAccessKeys="@HasManifestAccessKeys" OnMakeCurrent="@MakeCurrentAsync" />
+                        <ManifestTable Revisions="@StorageOverview.ManifestRevisions" AllowRevertToLegacy="@(!TakesPartInSharing)" OnMakeCurrent="@MakeCurrentAsync" OnRevertToLegacy="@RevertToLegacyAsync" />
 
                         <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Data bucket revisions</h4>
                         <DataBucketTable Revisions="@StorageOverview.BucketRevisions" OnRestore="@RestoreBucketAsync" />
@@ -316,6 +319,7 @@ else
     private List<UserUnlockKeysHistory> PasswordHistoryList { get; set; } = [];
     private int UnlockKeyHistoryRetentionDays { get; set; }
     private bool HasManifestAccessKeys { get; set; }
+    private bool TakesPartInSharing { get; set; }
     private List<AuthLog> AuthLogList { get; set; } = [];
     private UserUsageStatistics? UserUsageStats { get; set; }
     private bool IsEditingEmailLimits { get; set; }
@@ -397,6 +401,9 @@ else
 
         // Whether the user is on the key model where the vault manifest no longer carries the login credentials.
         HasManifestAccessKeys = await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == User.Id);
+
+        // Whether this user can still be taken back to the legacy storage format, the escape hatch for a bad migration.
+        TakesPartInSharing = await TakesPartInSharingAsync(dbContext, User.Id);
 
         // Load the archived master password credentials that are still inside the retention window.
         UnlockKeyHistoryRetentionDays = (await SettingsService.GetAllSettingsAsync()).UnlockKeyHistoryRetentionDays;
@@ -516,13 +523,6 @@ else
 
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
 
-        // A pre-migration revision is not allowed to be restored as this would conflict with the current vault storage format.
-        if (HasManifestAccessKeys && revision.IsLegacy)
-        {
-            GlobalNotificationService.AddErrorMessage("This revision predates the user's migration to the current vault storage format and cannot be restored. Restoring it would leave the account unable to open its vault.", true);
-            return;
-        }
-
         var passwordNote = HasManifestAccessKeys
             ? "• The user's master password is not affected; use \"Previous master passwords\" to revert a password change."
             : "• If the user has changed their password recently, their password will be reverted to the one associated with this vault.";
@@ -542,6 +542,14 @@ Do you want to proceed with the restoration?")) {
             var revisionToRestore = await dbContext.VaultManifestsHistory.FindAsync(revision.ManifestId, revision.RevisionNumber);
             if (currentVault == null || revisionToRestore == null)
             {
+                return;
+            }
+
+            // Crossing storage formats leaves the account with a vault its keys cannot open, so it only ever happens
+            // through the deliberate revert action below.
+            if (currentVault.StorageFormat != revisionToRestore.StorageFormat)
+            {
+                GlobalNotificationService.AddErrorMessage("This revision is in a different vault storage format than the one the account is on and cannot be restored. Restoring it would leave the account unable to open its vault.", true);
                 return;
             }
 
@@ -569,6 +577,59 @@ Do you want to proceed with the restoration?")) {
             // Reload the page.
             await RefreshData();
         }
+    }
+
+    /// <summary>
+    /// Whether the user holds any state that only exists on the current storage format because of vault sharing: a
+    /// grant on a shared manifest, a membership of a shared group, or an invitation sealed to their account keypair.
+    /// Reverting such a user would delete the keypair all of that is encrypted to, so the revert is not offered.
+    /// </summary>
+    /// <param name="dbContext">The database context to query.</param>
+    /// <param name="userId">The user to check.</param>
+    /// <returns>True when the user takes part in vault sharing.</returns>
+    private static async Task<bool> TakesPartInSharingAsync(AliasServerDbContext dbContext, string userId)
+    {
+        return await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == userId && x.Type == ManifestKeyType.GrantKey)
+            || await dbContext.GroupMembers.AnyAsync(x => x.UserId == userId && x.Group.Type != GroupType.Personal)
+            || await dbContext.GroupInvitations.AnyAsync(x => x.InviteeUserId == userId);
+    }
+
+    /// <summary>
+    /// Handles the action of putting the user back on the legacy storage format by making a pre-migration revision
+    /// current again. This is the escape hatch for a migration that went wrong: it tears down everything the
+    /// manifest format added so the account can be opened by a v1 client and migrate a second time.
+    /// </summary>
+    /// <param name="revision">The pre-migration revision to revert to.</param>
+    private async Task RevertToLegacyAsync(ManifestRevisionRow revision)
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        // Re-check against the database rather than trusting the state the page was rendered with.
+        if (await TakesPartInSharingAsync(dbContext, User!.Id))
+        {
+            GlobalNotificationService.AddErrorMessage("This user can no longer be reverted to the legacy vault storage format because it takes part in vault sharing.", true);
+            await RefreshData();
+            return;
+        }
+
+        if (!await ConfirmModalService.ShowConfirmation(
+                title: "Confirm Revert To Legacy Format",
+                message: $@"Are you sure you want to revert this user to the legacy sqlite-blob vault storage format, using revision {revision.RevisionNumber}?
+
+This is meant as a recovery step for a migration that went wrong. All migrated data and any updates done since the migration will be lost. It cannot be undone.
+
+Do you want to proceed with the revert?"))
+        {
+            return;
+        }
+
+        var newRevisionNumber = await LegacyVaultRollback.RevertAsync(DbContextFactory, User.Id, revision.ManifestId, revision.RevisionNumber);
+
+        Logger.LogWarning("Reverted user {UserName} ({UserId}) to the legacy vault storage format using revision {RevisionNumber}, now current at revision {NewRevisionNumber}. Account keys removed and all sessions revoked.",
+            User.UserName, User.Id, revision.RevisionNumber, newRevisionNumber);
+        GlobalNotificationService.AddSuccessMessage("User reverted to the legacy vault storage format. They can log in again with the master password that belonged to this vault revision.", true);
+
+        await RefreshData();
     }
 
     /// <summary>
