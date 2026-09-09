@@ -11,6 +11,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using AliasVault.Client.Services.Auth.Enums;
 using AliasVault.Client.Services.JsInterop.RustCore;
+using AliasVault.Client.Services.VaultSync;
+using AliasVault.Client.Services.VaultSync.Models;
 using AliasVault.Shared.Models.WebApi.V1.Auth;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -25,11 +27,13 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// <param name="config">Config instance.</param>
 /// <param name="jsInteropService">JSInteropService instance.</param>
 /// <param name="rustCoreService">RustCoreService instance.</param>
-public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService, RustCoreService rustCoreService)
+/// <param name="vaultKeyService">VaultKeyService instance.</param>
+/// <param name="logger">ILogger instance.</param>
+public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultKeyService vaultKeyService, ILogger<AuthService> logger)
 {
     /// <summary>
-    /// Test string value that is stored in local storage in encrypted state. This is used to validate the encryption key
-    /// locally during future vault unlocks.
+    /// Test string value that is stored in local storage encrypted under the vault encryption key. It lets an unlock
+    /// method validate if it is the correct key locally before loading the actual vault data.
     /// </summary>
     private const string EncryptionTestStringValue = "aliasvault-test-string";
 
@@ -39,9 +43,14 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     private string _username = string.Empty;
 
     /// <summary>
-    /// The encryption key used to encrypt and decrypt the vault data.
+    /// The vault encryption key (VEK) used to encrypt and decrypt the vault data.
     /// </summary>
     private byte[] _encryptionKey = new byte[32];
+
+    /// <summary>
+    /// The account private key (JWK) of the unlocked session, used to open shared vault grants. Null when the account has no keypair yet.
+    /// </summary>
+    private string? _accountPrivateKey;
 
     /// <summary>
     /// Refreshes the access token asynchronously.
@@ -52,7 +61,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
         var accessToken = await GetAccessTokenAsync();
         var refreshToken = await GetRefreshTokenAsync();
         var tokenInput = new TokenModel { Token = accessToken, RefreshToken = refreshToken };
-        using var request = new HttpRequestMessage(HttpMethod.Post, "v1/Auth/refresh")
+        using var request = new HttpRequestMessage(HttpMethod.Post, "v2/Auth/refresh")
         {
             Content = JsonContent.Create(tokenInput),
         };
@@ -119,28 +128,20 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Get encryption key.
+    /// Get the vault encryption key.
     /// </summary>
-    /// <returns>SrpArgonEncryption key as byte[].</returns>
+    /// <returns>The vault encryption key as byte[].</returns>
     public byte[] GetEncryptionKey()
     {
         return _encryptionKey;
     }
 
     /// <summary>
-    /// Get encryption key as base64 string.
+    /// Get the vault encryption key as base64 string.
     /// </summary>
-    /// <returns>SrpArgonEncryption key as base64 string.</returns>
+    /// <returns>The vault encryption key as base64 string.</returns>
     public string GetEncryptionKeyAsBase64Async()
     {
-        if (environment.IsDevelopment() && config.UseDebugEncryptionKey)
-        {
-            // When project runs in development mode a static encryption key will be used.
-            // This allows to skip the unlock screen for faster development.
-            // Use launch profile "http-release" to get the actual user flow.
-            return "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB=";
-        }
-
         return Convert.ToBase64String(GetEncryptionKey());
     }
 
@@ -154,7 +155,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
         var encryptionKey = GetEncryptionKeyAsBase64Async();
         if (encryptionKey == string.Empty || encryptionKey == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
         {
-            // SrpArgonEncryption key is empty or base64 encoded empty string.
+            // Encryption key is empty or base64 encoded empty string.
             return false;
         }
 
@@ -162,20 +163,84 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Stores the encryption key asynchronously in-memory.
+    /// The account private key (JWK) of the unlocked session, or null when locked or when the account has no keypair yet.
     /// </summary>
-    /// <param name="newKey">SrpArgonEncryption key.</param>
-    /// <returns>Task.</returns>
-    public async Task StoreEncryptionKeyAsync(byte[] newKey)
+    /// <returns>The private key as a JWK JSON string.</returns>
+    public string? GetAccountPrivateKey()
     {
-        _encryptionKey = newKey;
+        return _accountPrivateKey;
+    }
 
-        // When storing a new encryption key, encrypt a test string and save it to local storage.
-        // This test string can then be used to locally validate the password during future unlocks.
+    /// <summary>
+    /// Stores the keys an unlock method resolved to in memory.
+    /// </summary>
+    /// <param name="resolved">The resolved keys.</param>
+    /// <returns>Task.</returns>
+    public Task StoreSessionKeysAsync(ResolvedVaultKey resolved)
+    {
+        return StoreSessionKeysAsync(Convert.FromBase64String(resolved.VaultEncryptionKey), resolved.AccountPrivateKey);
+    }
+
+    /// <summary>
+    /// Stores the vault encryption key and the account private key in memory, and refreshes the local key check.
+    /// </summary>
+    /// <param name="vaultEncryptionKey">The vault encryption key.</param>
+    /// <param name="accountPrivateKey">The account private key as JWK, or null when the session holds none.</param>
+    /// <returns>Task.</returns>
+    public async Task StoreSessionKeysAsync(byte[] vaultEncryptionKey, string? accountPrivateKey)
+    {
+        _encryptionKey = vaultEncryptionKey;
+        _accountPrivateKey = accountPrivateKey;
+
+        // Encrypt a test string under the vault key so a restored key can be validated locally during future unlocks.
         var encryptedTestString = await jsInteropService.SymmetricEncrypt(EncryptionTestStringValue, GetEncryptionKeyAsBase64Async());
-
-        // Store the encrypted test string in local storage.
         await localStorage.SetItemAsStringAsync(StorageKeys.EncryptionTestString, encryptedTestString);
+
+        if (IsDebugSessionPersistenceEnabled())
+        {
+            // Development only: keep the session keys across page reloads so the unlock screen can be skipped.
+            await localStorage.SetItemAsync(StorageKeys.DebugSessionKeys, new DebugSessionKeys(GetEncryptionKeyAsBase64Async(), accountPrivateKey));
+        }
+    }
+
+    /// <summary>
+    /// Stores a new vault encryption key in memory, keeping the session's account private key.
+    /// </summary>
+    /// <param name="newKey">The vault encryption key.</param>
+    /// <returns>Task.</returns>
+    public Task StoreEncryptionKeyAsync(byte[] newKey)
+    {
+        return StoreSessionKeysAsync(newKey, _accountPrivateKey);
+    }
+
+    /// <summary>
+    /// Development only: restore the session keys persisted by <see cref="StoreSessionKeysAsync(byte[], string?)"/> after a page reload.
+    /// </summary>
+    /// <returns>True when the keys were restored.</returns>
+    public async Task<bool> TryRestoreDebugSessionKeysAsync()
+    {
+        if (!IsDebugSessionPersistenceEnabled())
+        {
+            return false;
+        }
+
+        try
+        {
+            var keys = await localStorage.GetItemAsync<DebugSessionKeys>(StorageKeys.DebugSessionKeys);
+            if (keys is null || string.IsNullOrEmpty(keys.VaultEncryptionKey))
+            {
+                return false;
+            }
+
+            _encryptionKey = Convert.FromBase64String(keys.VaultEncryptionKey);
+            _accountPrivateKey = keys.AccountPrivateKey;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Persisted debug session keys are unreadable, ignoring them.");
+            return false;
+        }
     }
 
     /// <summary>
@@ -184,31 +249,36 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>True if WebAuthn is enabled, otherwise false.</returns>
     public async Task<bool> IsWebAuthnEnabledAsync()
     {
-        await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEnabled);
         return await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEnabled) == "true";
     }
 
     /// <summary>
-    /// Get the encryption key that is stored in local storage and decrypt it with the WebAuthn derived key.
+    /// Restore the session keys encrypted under the WebAuthn derived key. A store that is not in the current format was
+    /// written by a pre-0.31.0 build and is discarded, so the user signs in again and re-enables WebAuthn unlock.
+    /// TODO: simplify this logic once the pre-0.31.0 builds are no longer supported.
     /// </summary>
-    /// <param name="username">The username to associate with the credential.</param>
-    /// <returns>Decrypted encryption key.</returns>
-    public async Task<byte[]> GetDecryptedWebAuthnEncryptionKeyAsync(string username)
+    /// <returns>The resolved keys.</returns>
+    public async Task<ResolvedVaultKey> UnlockWithWebAuthnAsync()
     {
-        var encryptedEncryptionKey = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey);
+        var encryptedPayload = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey);
         var webauthnCredentialId = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnCredentialId);
         var webauthnSalt = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnSalt);
-        if (string.IsNullOrEmpty(encryptedEncryptionKey) || string.IsNullOrEmpty(webauthnCredentialId) || string.IsNullOrEmpty(webauthnSalt))
+        if (string.IsNullOrEmpty(encryptedPayload) || string.IsNullOrEmpty(webauthnCredentialId) || string.IsNullOrEmpty(webauthnSalt))
         {
             throw new InvalidOperationException("WebAuthn encrypted encryption key is not set or WebAuthn credential ID is not set.");
         }
 
         var webauthnCredentialDerivedKey = await jsInteropService.GetWebAuthnCredentialDerivedKey(webauthnCredentialId, webauthnSalt);
+        var payload = await jsInteropService.SymmetricDecrypt(encryptedPayload, webauthnCredentialDerivedKey);
+        var sessionKeys = TryReadSessionKeys(payload);
+        if (sessionKeys is null)
+        {
+            logger.LogWarning("WebAuthn key store is not in the current format, discarding it and falling back to password unlock.");
+            await SetWebAuthnEnabledAsync(false);
+            throw new InvalidOperationException("WebAuthn key store is not in the current format and has been discarded.");
+        }
 
-        // Decrypt the encrypted encryption key with the WebAuthn derived key.
-        var decryptedString = await jsInteropService.SymmetricDecrypt(encryptedEncryptionKey, webauthnCredentialDerivedKey);
-
-        return Convert.FromBase64String(decryptedString);
+        return new ResolvedVaultKey(sessionKeys.VaultEncryptionKey, sessionKeys.AccountPrivateKey, false);
     }
 
     /// <summary>
@@ -224,14 +294,10 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     {
         await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnEnabled, enabled.ToString().ToLower());
 
-        // Encrypt the current encryption key with the webauthn derived key and store it in local storage.
+        // Encrypt the current session keys with the webauthn derived key and store them in local storage.
         if (enabled && !string.IsNullOrEmpty(webauthCredentialId) && !string.IsNullOrEmpty(webauthSalt) && !string.IsNullOrEmpty(webauthCredentialDerivedKey))
         {
-            var encryptionKeyBase64 = Convert.ToBase64String(GetEncryptionKey());
-            var encryptedEncryptionKey = await jsInteropService.SymmetricEncrypt(encryptionKeyBase64, webauthCredentialDerivedKey);
-            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnCredentialId, webauthCredentialId);
-            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnSalt, webauthSalt);
-            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey, encryptedEncryptionKey);
+            await EncryptAndStoreWebAuthnSessionKeysAsync(webauthCredentialId, webauthSalt, webauthCredentialDerivedKey, GetEncryptionKeyAsBase64Async(), _accountPrivateKey);
         }
         else
         {
@@ -245,8 +311,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
 
     /// <summary>
     /// Check if the encryption test string is stored in local storage which is used to validate
-    /// the encryption key locally during future vault unlocks. If it's not stored the unlock
-    /// attempts will fail and user should log in again instead.
+    /// a restored encryption key locally during future vault unlocks.
     /// </summary>
     /// <returns>Task.</returns>
     public async Task<bool> HasEncryptionKeyTestStringAsync()
@@ -255,7 +320,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Validate the encryption locally by attempting to decrypt test string stored in local storage.
+    /// Validate a vault encryption key locally by attempting to decrypt the test string stored in local storage.
     /// </summary>
     /// <param name="encryptionKey">The encryption key to validate.</param>
     /// <returns>True if encryption key is valid, false if not.</returns>
@@ -286,9 +351,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Verifies a password by deriving the encryption key and validating it against the stored test string.
-    /// This method handles all the heavy lifting of password verification including fetching encryption
-    /// parameters from the server and deriving the key.
+    /// Verifies a password.
     /// </summary>
     /// <param name="username">The username for the account.</param>
     /// <param name="password">The password to verify.</param>
@@ -298,7 +361,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
         try
         {
             // Get user's encryption parameters from server
-            var result = await httpClient.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(username));
+            var result = await httpClient.PostAsJsonAsync("v2/Auth/login", new LoginInitiateRequest(username));
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (!result.IsSuccessStatusCode)
@@ -312,11 +375,12 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
                 return PasswordVerificationResult.ServerError;
             }
 
-            // Derive password hash using server parameters
-            byte[] passwordHash = await rustCoreService.Argon2DeriveKeyAsync(password, loginResponse.Salt, loginResponse.EncryptionSettings);
+            // Derive the KEK using server parameters
+            byte[] derivedKey = await rustCoreService.Argon2DeriveKeyAsync(password, loginResponse.Salt, loginResponse.EncryptionSettings);
 
-            // Verify the password locally using the derived password hash
-            var isValidPassword = await ValidateEncryptionKeyAsync(passwordHash);
+            // An account on the key chain proves the password by opening the chain; a legacy account by the test string.
+            var opensChain = await vaultKeyService.TryOpenCachedChainAsync(Convert.ToBase64String(derivedKey));
+            var isValidPassword = opensChain ?? await ValidateEncryptionKeyAsync(derivedKey);
             if (!isValidPassword)
             {
                 return PasswordVerificationResult.InvalidPassword;
@@ -341,7 +405,8 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Removes the stored access and refresh tokens asynchronously, called when logging out.
+    /// Removes the stored tokens and every piece of key material derived from the account, called when logging out
+    /// (user-initiated or forced). The next login adopts the server state from scratch.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task RemoveTokensAsync()
@@ -356,18 +421,21 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
             // If an exception occurs we ignore it and continue with removing the tokens from local storage.
         }
 
-        // Remove the tokens from local storage.
+        // Remove the tokens and key material from local storage.
         _username = string.Empty;
+        RemoveEncryptionKey();
         await localStorage.RemoveItemAsync(StorageKeys.AccessToken);
         await localStorage.RemoveItemAsync(StorageKeys.RefreshToken);
+        await localStorage.RemoveItemsAsync(StorageKeys.VaultKeyStorageKeys);
     }
 
     /// <summary>
-    /// Removes the encryption key from memory, called during logout.
+    /// Removes the session keys from memory, called during lock and logout.
     /// </summary>
     public void RemoveEncryptionKey()
     {
         _encryptionKey = new byte[32];
+        _accountPrivateKey = null;
     }
 
     /// <summary>
@@ -385,7 +453,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
             RefreshToken = await GetRefreshTokenAsync(),
         };
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "v1/Auth/revoke-token")
+        using var request = new HttpRequestMessage(HttpMethod.Post, "v2/Auth/revoke-token")
         {
             Content = JsonContent.Create(tokenInput),
         };
@@ -393,6 +461,50 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
         // Add the X-Ignore-Failure header to the request so any failure does not trigger another refresh token request.
         request.Headers.Add("X-Ignore-Failure", "true");
         await httpClient.SendAsync(request);
+    }
+
+    /// <summary>
+    /// Read the session keys from a decrypted WebAuthn key store, or null when the store is not in the current format.
+    /// </summary>
+    /// <param name="payload">The decrypted key store payload.</param>
+    /// <returns>The session keys, or null.</returns>
+    private static WebAuthnSessionKeys? TryReadSessionKeys(string payload)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<WebAuthnSessionKeys>(payload);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Encrypt the session keys under the WebAuthn derived key and store them with the credential parameters.
+    /// </summary>
+    /// <param name="credentialId">WebAuthn credential ID.</param>
+    /// <param name="salt">WebAuthn salt.</param>
+    /// <param name="derivedKey">WebAuthn credential derived key.</param>
+    /// <param name="vaultEncryptionKey">The vault encryption key as base64.</param>
+    /// <param name="accountPrivateKey">The account private key as JWK, or null.</param>
+    /// <returns>Task.</returns>
+    private async Task EncryptAndStoreWebAuthnSessionKeysAsync(string credentialId, string salt, string derivedKey, string vaultEncryptionKey, string? accountPrivateKey)
+    {
+        var payload = JsonSerializer.Serialize(new WebAuthnSessionKeys(vaultEncryptionKey, accountPrivateKey));
+        var encryptedPayload = await jsInteropService.SymmetricEncrypt(payload, derivedKey);
+        await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnCredentialId, credentialId);
+        await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnSalt, salt);
+        await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey, encryptedPayload);
+    }
+
+    /// <summary>
+    /// Whether the development convenience of persisting the session keys across page reloads is on.
+    /// </summary>
+    /// <returns>True when enabled.</returns>
+    private bool IsDebugSessionPersistenceEnabled()
+    {
+        return environment.IsDevelopment() && config.UseDebugEncryptionKey;
     }
 
     /// <summary>
@@ -411,7 +523,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
             RefreshToken = await GetRefreshTokenAsync(),
         };
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "v1/Auth/revoke")
+        using var request = new HttpRequestMessage(HttpMethod.Post, "v2/Auth/revoke")
         {
             Content = JsonContent.Create(tokenInput),
         };
@@ -429,4 +541,18 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     {
         return await localStorage.GetItemAsStringAsync(StorageKeys.RefreshToken) ?? string.Empty;
     }
+
+    /// <summary>
+    /// The session keys as encrypted under the WebAuthn derived key.
+    /// </summary>
+    /// <param name="VaultEncryptionKey">The vault encryption key as base64.</param>
+    /// <param name="AccountPrivateKey">The account private key as JWK, or null.</param>
+    private sealed record WebAuthnSessionKeys(string VaultEncryptionKey, string? AccountPrivateKey);
+
+    /// <summary>
+    /// The session keys as persisted in development when the debug encryption key setting is on.
+    /// </summary>
+    /// <param name="VaultEncryptionKey">The vault encryption key as base64.</param>
+    /// <param name="AccountPrivateKey">The account private key as JWK, or null.</param>
+    private sealed record DebugSessionKeys(string VaultEncryptionKey, string? AccountPrivateKey);
 }
