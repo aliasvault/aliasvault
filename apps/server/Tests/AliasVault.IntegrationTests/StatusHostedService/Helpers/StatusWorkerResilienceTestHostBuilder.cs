@@ -17,8 +17,8 @@ using Microsoft.Extensions.Hosting;
 
 /// <summary>
 /// Builds a test host whose StatusWorker is backed by a database context that injects a transient
-/// <see cref="TaskCanceledException"/> on its first few save operations to test if the StatusWorker
-/// recovers itself instead of permanently soft-stopping the service.
+/// <see cref="TaskCanceledException"/> on its first few save operations to test that the StatusWorker
+/// keeps heartbeating and still reaches the Started state.
 /// </summary>
 public class StatusWorkerResilienceTestHostBuilder : AbstractTestHostBuilder
 {

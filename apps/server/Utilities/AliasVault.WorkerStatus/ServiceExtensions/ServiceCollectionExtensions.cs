@@ -19,13 +19,12 @@ using Microsoft.Extensions.Hosting;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add a HostedService that is monitored by the StatusWorker.
+    /// Add a HostedService whose liveness is reported by the StatusWorker heartbeat.
     /// </summary>
     /// <param name="services">IServiceCollection.</param>
     /// <typeparam name="TWorker">Worker type to add.</typeparam>
-    /// <typeparam name="TContext">DBContext type to use for persisting and retrieving the status data.</typeparam>
-    /// <param name="serviceName">The unique service name through which the worker processes
-    /// can be triggered to start or stop.</param>
+    /// <typeparam name="TContext">DBContext type to use for persisting the heartbeat record.</typeparam>
+    /// <param name="serviceName">The unique service name under which the heartbeat record is stored.</param>
     /// <returns>IServiceCollection instance.</returns>
     public static IServiceCollection AddStatusHostedService<TWorker, TContext>(this IServiceCollection services, string serviceName)
         where TWorker : class, IHostedService

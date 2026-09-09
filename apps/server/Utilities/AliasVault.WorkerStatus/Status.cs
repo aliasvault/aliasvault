@@ -8,27 +8,22 @@
 namespace AliasVault.WorkerStatus;
 
 /// <summary>
-/// Enumeration of possible statuses for a worker service.
+/// Lifecycle states a worker service reports through its heartbeat record.
 /// </summary>
 public enum Status
 {
     /// <summary>
-    /// Indicates that the worker service has started.
-    /// </summary>
-    Started,
-
-    /// <summary>
-    /// Indicates that the worker service is starting.
+    /// The host is up but not all workers are running (yet, or after a worker fault while it restarts).
     /// </summary>
     Starting,
 
     /// <summary>
-    /// Indicates that the worker service is stopping.
+    /// All workers are running.
     /// </summary>
-    Stopping,
+    Started,
 
     /// <summary>
-    /// Indicates that the worker service has stopped.
+    /// The host shut down gracefully.
     /// </summary>
     Stopped,
 }

@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="WorkerServiceStatus.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -8,10 +8,9 @@
 namespace AliasVault.WorkerStatus.Database;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
-/// Represents the status of a worker service for monitoring and control.
+/// Heartbeat record of a worker service, used to tell whether the service is alive and healthy.
 /// </summary>
 public class WorkerServiceStatus
 {
@@ -28,16 +27,10 @@ public class WorkerServiceStatus
     public string ServiceName { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the current status of the service.
+    /// Gets or sets the current status of the service, one of the <see cref="Status"/> names.
     /// </summary>
     [StringLength(50)]
     public string CurrentStatus { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the desired status of the service.
-    /// </summary>
-    [StringLength(50)]
-    public string DesiredStatus { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the last heartbeat timestamp of the service.
