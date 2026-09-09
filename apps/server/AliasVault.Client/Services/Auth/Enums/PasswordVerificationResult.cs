@@ -23,7 +23,7 @@ public enum PasswordVerificationResult
     InvalidPassword,
 
     /// <summary>
-    /// A server error occurred during verification.
+    /// The password could not be verified, for example because no key derivation parameters are cached.
     /// </summary>
-    ServerError,
+    VerificationError,
 }

@@ -351,46 +351,34 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Verifies a password.
+    /// Verifies the master password against the locally cached key material, without contacting the server.
     /// </summary>
-    /// <param name="username">The username for the account.</param>
     /// <param name="password">The password to verify.</param>
     /// <returns>A result indicating success or the type of failure.</returns>
-    public async Task<PasswordVerificationResult> VerifyPasswordAsync(string username, string password)
+    public async Task<PasswordVerificationResult> VerifyPasswordAsync(string password)
     {
         try
         {
-            // Get user's encryption parameters from server
-            var result = await httpClient.PostAsJsonAsync("v2/Auth/login", new LoginInitiateRequest(username));
-            var responseContent = await result.Content.ReadAsStringAsync();
-
-            if (!result.IsSuccessStatusCode)
+            // The derivation parameters are cached on login and refreshed with every vault key fetch.
+            var parameters = await vaultKeyService.GetDerivationParamsAsync();
+            if (parameters is null)
             {
-                return PasswordVerificationResult.ServerError;
+                logger.LogWarning("No key derivation parameters are cached, the password cannot be verified.");
+                return PasswordVerificationResult.VerificationError;
             }
 
-            var loginResponse = JsonSerializer.Deserialize<LoginInitiateResponse>(responseContent);
-            if (loginResponse == null)
-            {
-                return PasswordVerificationResult.ServerError;
-            }
-
-            // Derive the KEK using server parameters
-            byte[] derivedKey = await rustCoreService.Argon2DeriveKeyAsync(password, loginResponse.Salt, loginResponse.EncryptionSettings);
+            byte[] derivedKey = await rustCoreService.Argon2DeriveKeyAsync(password, parameters.Salt, parameters.EncryptionSettings);
 
             // An account on the key chain proves the password by opening the chain; a legacy account by the test string.
             var opensChain = await vaultKeyService.TryOpenCachedChainAsync(Convert.ToBase64String(derivedKey));
             var isValidPassword = opensChain ?? await ValidateEncryptionKeyAsync(derivedKey);
-            if (!isValidPassword)
-            {
-                return PasswordVerificationResult.InvalidPassword;
-            }
 
-            return PasswordVerificationResult.Success;
+            return isValidPassword ? PasswordVerificationResult.Success : PasswordVerificationResult.InvalidPassword;
         }
-        catch
+        catch (Exception ex)
         {
-            return PasswordVerificationResult.ServerError;
+            logger.LogError(ex, "Password verification failed unexpectedly.");
+            return PasswordVerificationResult.VerificationError;
         }
     }
 

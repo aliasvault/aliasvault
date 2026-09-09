@@ -138,7 +138,6 @@
     private static readonly bool IsDebugBuild = false;
 #endif
 
-    private string _username = string.Empty;
     private bool _showPasswordConfirmation;
     private string _passwordError = string.Empty;
     private bool _showExportPasswordModal;
@@ -158,9 +157,6 @@
     {
         await base.OnInitializedAsync();
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["PageTitle"] });
-
-        // Get username for password verification
-        _username = await GetUsernameAsync();
     }
 
     private async Task ShowExportConfirmation(ExportType exportType)
@@ -211,7 +207,7 @@
 
         try
         {
-            var result = await AuthService.VerifyPasswordAsync(_username, password);
+            var result = await AuthService.VerifyPasswordAsync(password);
 
             switch (result)
             {
@@ -237,7 +233,7 @@
                     StateHasChanged();
                     break;
 
-                case PasswordVerificationResult.ServerError:
+                case PasswordVerificationResult.VerificationError:
                 default:
                     GlobalLoadingSpinner.Hide();
                     _passwordError = Localizer["PasswordVerificationFailed"];
