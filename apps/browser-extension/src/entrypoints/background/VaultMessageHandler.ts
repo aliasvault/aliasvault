@@ -1320,7 +1320,7 @@ async function resealSharedManifestRecords(newEncryptionKey: string): Promise<vo
 /**
  * Adopt a server-side vault key this device does not know about yet.
  *
- * A missing local encrypted-VEK cache means one of two things: this user is genuinely still legacy (their next full
+ * A missing local key-chain cache means one of two things: this user is genuinely still legacy (their next full
  * push performs the KEK/VEK migration), or another device migrated while this one held the old password-derived key.
  * Every path that adopts a VEK as the session key writes the encrypted-VEK cache first, so a session key that is
  * already the VEK without a cache is not a reachable state -- it can only come from torn storage, which a re-login fixes.
@@ -1356,12 +1356,18 @@ async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
     return true;
   }
 
+  const encryptedVek = fetchResult.vaultKey.encryptedVek;
+  if (!encryptedVek) {
+    devWarn('[VaultSync] Error: vault key chain has no VEK.');
+    return true;
+  }
+
   const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
 
   try {
     // Decrypt the encrypted Account Key and VEK.
     const accountKey = await EncryptionUtility.decryptVaultEncryptionKey(fetchResult.vaultKey.encryptedAccountKey, sessionKey);
-    const vek = fetchResult.vaultKey.encryptedVek ? await EncryptionUtility.decryptVaultEncryptionKey(fetchResult.vaultKey.encryptedVek, accountKey) : accountKey;
+    const vek = await EncryptionUtility.decryptVaultEncryptionKey(encryptedVek, accountKey);
 
     // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
     if (encryptedVault) {

@@ -102,8 +102,12 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
     return derivedKey;
   }
 
+  if (!vaultKey.encryptedVek) {
+    throw new Error('Vault key chain is missing the encrypted VEK');
+  }
+
   const accountKey = await symmetricDecryptBytes(vaultKey.encryptedAccountKey, derivedKey);
-  return vaultKey.encryptedVek ? symmetricDecryptBytes(vaultKey.encryptedVek, accountKey) : accountKey;
+  return symmetricDecryptBytes(vaultKey.encryptedVek, accountKey);
 }
 
 /**

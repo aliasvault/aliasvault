@@ -257,17 +257,17 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     }
 
     /// <summary>
-    /// Walk the chain: AK first, then the VEK (or the AK itself for a transitional account where AK equals VEK), then the account private key.
+    /// Walk the chain: AK first, then the VEK, then the account private key.
     /// </summary>
     /// <param name="encryptedAccountKey">The AK encrypted with the KEK.</param>
-    /// <param name="encryptedVek">The VEK encrypted with the AK, or null for a transitional account.</param>
+    /// <param name="encryptedVek">The VEK encrypted with the AK.</param>
     /// <param name="encryptedAccountPrivateKey">The account private key encrypted with the AK, or null when the account has no keypair.</param>
     /// <param name="derivedKeyBase64">The password-derived KEK.</param>
     /// <returns>The resolved keys.</returns>
     private async Task<ResolvedVaultKey> DecryptKeyChainAsync(string encryptedAccountKey, string? encryptedVek, string? encryptedAccountPrivateKey, string derivedKeyBase64)
     {
         var accountKey = await DecryptKeyOrThrowAsync(encryptedAccountKey, derivedKeyBase64);
-        var vek = string.IsNullOrEmpty(encryptedVek) ? accountKey : await DecryptKeyOrThrowAsync(encryptedVek, accountKey);
+        var vek = await DecryptKeyOrThrowAsync(encryptedVek!, accountKey);
         return new ResolvedVaultKey(vek, await DecryptPrivateKeyAsync(encryptedAccountPrivateKey, accountKey), false);
     }
 

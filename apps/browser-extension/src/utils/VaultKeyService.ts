@@ -85,11 +85,7 @@ export class VaultKeyService {
    * since the last login), which the background sync resolves by adopting the remote key before any vault work happens.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
-    if ((await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null) {
-      return true;
-    }
-    // Pre-encrypted VEK cache shape (encrypted VEK only), left behind by an older build of this extension.
-    return (await storage.getItem(StorageKeys.ENCRYPTED_VEK) as string | null) !== null;
+    return (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;
   }
 
   /**
@@ -181,45 +177,42 @@ export class VaultKeyService {
 
   /**
    * Decrypt the locally cached blob chain with the given KEK, staging the session private key when the chain
-   * carries one. Falls back to the pre-encrypted VEK cache shape (a encrypted VEK alone), and to the derived key itself
-   * when nothing is cached (legacy account).
+   * carries one. Falls back to the derived key itself when nothing is cached (legacy account).
    * @param derivedKeyBase64 - the password-derived key (the KEK)
    */
   private static async resolveFromLocalCache(derivedKeyBase64: string): Promise<string> {
     const encryptedAccountKey = (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string | null;
+    if (!encryptedAccountKey) {
+      return derivedKeyBase64;
+    }
+
     const encryptedVek = (await storage.getItem(StorageKeys.ENCRYPTED_VEK)) as string | null;
-
-    if (encryptedAccountKey) {
-      const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, derivedKeyBase64);
-      const vek = encryptedVek ? await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey) : accountKey;
-      await VaultKeyService.stageSessionPrivateKey(accountKey, (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY)) as string | null);
-      return vek;
+    if (!encryptedVek) {
+      throw new Error('Cached vault key chain is missing the encrypted VEK');
     }
 
-    if (encryptedVek) {
-      // Pre-encrypted VEK cache: the VEK was encrypted directly with the KEK.
-      return VaultKeyService.decryptKeyOrThrow(encryptedVek, derivedKeyBase64);
-    }
-
-    return derivedKeyBase64;
+    const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, derivedKeyBase64);
+    const vek = await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey);
+    await VaultKeyService.stageSessionPrivateKey(accountKey, (await storage.getItem(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY)) as string | null);
+    return vek;
   }
 
   /**
-   * Decrypt a fresh server response's chain with the KEK: AK first, then the VEK (or the AK itself for a
-   * transitional account where AK ≡ VEK), staging the session private key when the account has a keypair.
+   * Decrypt a fresh server response's chain with the KEK: AK first, then the VEK, staging the session private
+   * key when the account has a keypair.
    * @param vaultKey - the server's vault key response
    * @param derivedKeyBase64 - the password-derived KEK
    */
   private static async decryptKeyChainOrThrow(vaultKey: VaultKeyResponse, derivedKeyBase64: string): Promise<string> {
     const accountKey = await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedAccountKey, derivedKeyBase64);
-    const vek = vaultKey.encryptedVek ? await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedVek, accountKey) : accountKey;
+    const vek = await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedVek!, accountKey);
     await VaultKeyService.stageSessionPrivateKey(accountKey, vaultKey.encryptedAccountPrivateKey ?? null);
     return vek;
   }
 
   /**
    * Decrypt the account private key with the AK into session storage, so pull/grant flows can decrypt shared
-   * VEKs. A chain without a keypair (transitional account) clears any stale session copy instead.
+   * VEKs. A chain without a keypair clears any stale session copy instead.
    * @param accountKeyBase64 - the encrypted Account Key
    * @param encryptedAccountPrivateKey - the account private key encrypted with the Account Key, or null when the account has none yet
    */
@@ -242,12 +235,11 @@ export class VaultKeyService {
    * @param vaultKey - the server's vault key response
    */
   public static async cacheVaultKeyBlobs(vaultKey: VaultKeyResponse): Promise<void> {
-    await storage.setItem(StorageKeys.ENCRYPTED_ACCOUNT_KEY, vaultKey.encryptedAccountKey);
-    if (vaultKey.encryptedVek) {
-      await storage.setItem(StorageKeys.ENCRYPTED_VEK, vaultKey.encryptedVek);
-    } else {
-      await storage.removeItem(StorageKeys.ENCRYPTED_VEK);
-    }
+    await storage.setItems([
+      { key: StorageKeys.ENCRYPTED_ACCOUNT_KEY, value: vaultKey.encryptedAccountKey },
+      { key: StorageKeys.ENCRYPTED_VEK, value: vaultKey.encryptedVek },
+    ]);
+
     if (vaultKey.accountPublicKey && vaultKey.encryptedAccountPrivateKey) {
       await storage.setItem(StorageKeys.ACCOUNT_PUBLIC_KEY, vaultKey.accountPublicKey);
       await storage.setItem(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, vaultKey.encryptedAccountPrivateKey);
