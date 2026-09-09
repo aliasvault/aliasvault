@@ -5,7 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Client.Services.JsInterop.RustCore;
+namespace AliasVault.Client.Services.JsInterop.RustCore.Models;
 
 /// <summary>
 /// Input structure for vault prune operation.
