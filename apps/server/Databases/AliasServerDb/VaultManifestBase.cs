@@ -7,6 +7,7 @@
 namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 /// <summary>
 /// Shared revision payload columns for a vault manifest. <see cref="VaultManifest"/> holds the current revision of
@@ -133,6 +134,14 @@ public abstract class VaultManifestBase : IVaultRevision
     /// Gets or sets the timestamp at which this revision was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether this revision holds vault content. A manifest that was reserved but never
+    /// written (at registration, or when a shared manifest is created) holds none: it is not a revision anyone
+    /// ever pulled and can never be restored, so it is not archived into history when it is written over.
+    /// </summary>
+    [NotMapped]
+    public bool HasContent => ManifestBlob is not null || !string.IsNullOrEmpty(VaultBlob);
 
     /// <summary>
     /// Copies all shared revision payload columns from another manifest revision onto this instance.
