@@ -70,8 +70,6 @@ const UpgradeSelectors = {
 /**
  * Walk the vault upgrade gate, if the popup landed on it.
  *
- * Test accounts are seeded with a legacy sqlite-blob vault. TODO: update tests to work with native manifest-v1 newly created account.
- *
  * @param popup - The popup page
  * @param timeout - Timeout in milliseconds for each step of the flow
  */

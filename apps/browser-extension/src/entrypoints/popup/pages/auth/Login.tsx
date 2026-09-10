@@ -106,8 +106,6 @@ const Login: React.FC = () => {
      */
     const encryptionKey = await VaultKeyService.resolveEncryptionKey(passwordHashBase64, webApi);
 
-    // Store the encryption key and derivation params separately
-    await dbContext.storeEncryptionKey(encryptionKey);
     await dbContext.storeEncryptionKeyDerivationParams({
       salt: loginResponse.salt,
       encryptionType: loginResponse.encryptionType,
@@ -119,6 +117,7 @@ const Login: React.FC = () => {
 
     // Persist and load the vault.
     await persistAndLoadVault(vaultResponseJson, encryptionKey);
+    await dbContext.storeEncryptionKey(encryptionKey);
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
