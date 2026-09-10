@@ -426,6 +426,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 Id = Guid.NewGuid(),
                 Name = totpCode.Name,
                 SecretKey = totpCode.SecretKey,
+                Algorithm = totpCode.Algorithm,
+                Digits = totpCode.Digits,
+                Period = totpCode.Period,
                 ItemId = newItem.Id,
             };
             SetInsertTimestamps(newTotpCode, currentDateTime);
@@ -1437,7 +1440,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachmentToRemove.Blob = Array.Empty<byte>();
         }
 
-        // Process attachments from the new item (excluding deleted ones - they're handled above)
+        // Process attachments from the new item (excluding deleted ones, which are handled above)
         foreach (var attachment in newItem.Attachments.Where(a => !a.IsDeleted))
         {
             if (attachment.Id != Guid.Empty)
@@ -1445,7 +1448,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 var existingAttachment = existingItem.Attachments.FirstOrDefault(a => a.Id == attachment.Id);
                 if (existingAttachment != null)
                 {
-                    context.Entry(existingAttachment).CurrentValues.SetValues(attachment);
+                    // Copy the editable columns only.
+                    existingAttachment.Filename = attachment.Filename;
+                    existingAttachment.Blob = attachment.Blob;
                     existingAttachment.UpdatedAt = updateDateTime;
                 }
             }
@@ -1495,7 +1500,12 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 var existingTotpCode = existingItem.TotpCodes.FirstOrDefault(t => t.Id == totpCode.Id);
                 if (existingTotpCode != null)
                 {
-                    context.Entry(existingTotpCode).CurrentValues.SetValues(totpCode);
+                    // Copy the editable columns only.
+                    existingTotpCode.Name = totpCode.Name;
+                    existingTotpCode.SecretKey = totpCode.SecretKey;
+                    existingTotpCode.Algorithm = totpCode.Algorithm;
+                    existingTotpCode.Digits = totpCode.Digits;
+                    existingTotpCode.Period = totpCode.Period;
                     existingTotpCode.UpdatedAt = updateDateTime;
                 }
             }
@@ -1508,6 +1518,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                     ItemId = existingItem.Id,
                     Name = totpCode.Name,
                     SecretKey = totpCode.SecretKey,
+                    Algorithm = totpCode.Algorithm,
+                    Digits = totpCode.Digits,
+                    Period = totpCode.Period,
                     CreatedAt = updateDateTime,
                     UpdatedAt = updateDateTime,
                     IsDeleted = false,

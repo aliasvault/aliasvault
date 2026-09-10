@@ -583,6 +583,7 @@ public sealed class ItemEdit
         return new Attachment
         {
             Id = attachment.Id,
+            ManifestId = attachment.ManifestId,
             Filename = attachment.Filename ?? string.Empty,
             Blob = attachment.Blob ?? [],
             ItemId = attachment.ItemId,
@@ -602,8 +603,12 @@ public sealed class ItemEdit
         return new TotpCode
         {
             Id = totpCode.Id,
+            ManifestId = totpCode.ManifestId,
             Name = totpCode.Name,
             SecretKey = totpCode.SecretKey,
+            Algorithm = totpCode.Algorithm,
+            Digits = totpCode.Digits,
+            Period = totpCode.Period,
             ItemId = totpCode.ItemId,
             CreatedAt = totpCode.CreatedAt,
             UpdatedAt = totpCode.UpdatedAt,
@@ -621,6 +626,7 @@ public sealed class ItemEdit
         return new Passkey
         {
             Id = passkey.Id,
+            ManifestId = passkey.ManifestId,
             RpId = passkey.RpId,
             UserHandle = passkey.UserHandle,
             PublicKey = passkey.PublicKey,
