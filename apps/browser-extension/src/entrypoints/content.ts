@@ -3,6 +3,8 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
+import { setPlatform } from '@aliasvault/client/platform';
+
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
@@ -13,7 +15,6 @@ import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
-import type { Item } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
@@ -22,8 +23,13 @@ import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getDeepActiveElement, getDeepElementById, getDeepEventTarget } from '@/utils/ShadowDom';
 
 import { t } from '@/i18n/StandaloneI18n';
+import { extensionPlatform } from '@/platform/ExtensionPlatform';
+
+import type { Item } from '@aliasvault/models/vault';
 
 import { defineContentScript, createShadowRootUi, storage } from '#imports';
+
+setPlatform(extensionPlatform);
 
 /** Global login detector instance */
 let loginDetector: LoginDetector | null = null;
