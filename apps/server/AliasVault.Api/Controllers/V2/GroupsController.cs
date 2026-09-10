@@ -410,8 +410,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, me);
-        var srpIdentity = me.SrpIdentity ?? me.UserName!.ToLowerInvariant();
         var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
+        var srpIdentity = AuthHelper.GetSrpIdentity(me);
         cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
 
         return Ok(new LoginInitiateResponse(

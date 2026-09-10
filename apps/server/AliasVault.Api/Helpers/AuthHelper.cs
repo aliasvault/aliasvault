@@ -32,6 +32,22 @@ public static class AuthHelper
     public static readonly string CachePrefixFakeData = "FakeData_";
 
     /// <summary>
+    /// Gets the SRP identity to use for a user, falling back to the lowercase username for accounts that were created
+    /// before SRP identities existed (pre-0.26.0). TODO: remove this fallback in a future version.
+    /// </summary>
+    /// <param name="user">The user to resolve the SRP identity for.</param>
+    /// <returns>The SRP identity to use for all SRP operations for this user.</returns>
+    public static string GetSrpIdentity(AliasVaultUser user) => ResolveSrpIdentity(user.SrpIdentity, user.UserName!);
+
+    /// <summary>
+    /// Resolves an SRP identity, falling back to the lowercase username when no identity is available.
+    /// </summary>
+    /// <param name="srpIdentity">The SRP identity, if known.</param>
+    /// <param name="username">The username to fall back to.</param>
+    /// <returns>The SRP identity to use for all SRP operations.</returns>
+    public static string ResolveSrpIdentity(string? srpIdentity, string username) => string.IsNullOrEmpty(srpIdentity) ? username.ToLowerInvariant() : srpIdentity;
+
+    /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
@@ -42,8 +58,7 @@ public static class AuthHelper
     /// <returns>The validation outcome, carrying the unlock method whose secret was proven.</returns>
     public static async Task<SrpValidationResult> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
     {
-        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
-        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+        var srpIdentity = GetSrpIdentity(user);
 
         if (!cache.TryGetValue(CachePrefixEphemeral + srpIdentity, out var serverSecretEphemeral) || serverSecretEphemeral is not string)
         {

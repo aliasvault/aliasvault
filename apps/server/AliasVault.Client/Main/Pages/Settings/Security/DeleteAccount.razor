@@ -178,22 +178,18 @@
                 return;
             }
 
-            // Use srpIdentity from server response if available, otherwise fall back to username.
-            // Note: the fallback can be removed in the future after 0.27.0+ is deployed.
-            var srpIdentity = loginResponse.SrpIdentity ?? username;
-
             // Verify password using SRP
             var passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
 
             ClientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();
-            PrivateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, srpIdentity, passwordHashString);
+            PrivateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, loginResponse.SrpIdentity, passwordHashString);
             ClientSession = await RustCoreService.SrpDeriveSessionClientAsync(
                 PrivateKey,
                 ClientEphemeral.Secret,
                 loginResponse.ServerEphemeral,
                 loginResponse.Salt,
-                srpIdentity);
+                loginResponse.SrpIdentity);
 
             // Send final delete request with SRP proof.
             result = await Http.PostAsJsonAsync(ApiRoute("Auth/delete-account/confirm"), new DeleteAccountRequest(username, ClientEphemeral.Public, ClientSession.Proof));

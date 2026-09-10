@@ -269,23 +269,19 @@ else
         ];
         }
 
-        // Use srpIdentity from server response if available, otherwise fall back to username.
-        // Note: the fallback can be removed in the future after 0.26.0+ is deployed.
-        var srpIdentity = loginResponse.SrpIdentity ?? username;
-
         // 3. Client derives the KEK.
         _passwordHash = await RustCoreService.Argon2DeriveKeyAsync(_loginModel.Password, loginResponse.Salt, loginResponse.EncryptionSettings);
         _derivationParams = new EncryptionKeyDerivationParams(loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
         var passwordHashString = BitConverter.ToString(_passwordHash).Replace("-", string.Empty);
 
         _clientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();
-        var privateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, srpIdentity, passwordHashString);
+        var privateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, loginResponse.SrpIdentity, passwordHashString);
         _clientSession = await RustCoreService.SrpDeriveSessionClientAsync(
             privateKey,
             _clientEphemeral.Secret,
             loginResponse.ServerEphemeral,
             loginResponse.Salt,
-            srpIdentity);
+            loginResponse.SrpIdentity);
 
         // 4. Client sends proof of session key to server.
         result = await Http.PostAsJsonAsync(ApiRoute("Auth/validate"), new ValidateLoginRequest(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof));

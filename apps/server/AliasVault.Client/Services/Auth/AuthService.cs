@@ -32,12 +32,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultKeyService vaultKeyService, ILogger<AuthService> logger)
 {
     /// <summary>
-    /// Test string value that is stored in local storage encrypted under the vault encryption key. It lets an unlock
-    /// method validate if it is the correct key locally before loading the actual vault data.
-    /// </summary>
-    private const string EncryptionTestStringValue = "aliasvault-test-string";
-
-    /// <summary>
     /// The username of the currently logged-in user to prevent any conflicts during future vault saves.
     /// </summary>
     private string _username = string.Empty;
@@ -94,6 +88,35 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>The currently logged-in user's username.</returns>
     public string GetUsername()
     {
+        return _username;
+    }
+
+    /// <summary>
+    /// The username of the currently logged-in user.
+    /// </summary>
+    /// <returns>The username, or an empty string when nobody is logged in.</returns>
+    public async Task<string> GetUsernameAsync()
+    {
+        if (!string.IsNullOrEmpty(_username))
+        {
+            return _username;
+        }
+
+        var token = await GetAccessTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            _username = new System.Security.Claims.ClaimsIdentity(Providers.AuthStateProvider.ParseClaimsFromJwt(token), "jwt").Name ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "The access token could not be parsed for the username.");
+        }
+
         return _username;
     }
 
@@ -182,7 +205,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Stores the vault encryption key and the account private key in memory, and refreshes the local key check.
+    /// Stores the vault encryption key and the account private key in memory.
     /// </summary>
     /// <param name="vaultEncryptionKey">The vault encryption key.</param>
     /// <param name="accountPrivateKey">The account private key as JWK, or null when the session holds none.</param>
@@ -191,10 +214,6 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     {
         _encryptionKey = vaultEncryptionKey;
         _accountPrivateKey = accountPrivateKey;
-
-        // Encrypt a test string under the vault key so a restored key can be validated locally during future unlocks.
-        var encryptedTestString = await jsInteropService.SymmetricEncrypt(EncryptionTestStringValue, GetEncryptionKeyAsBase64Async());
-        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptionTestString, encryptedTestString);
 
         if (IsDebugSessionPersistenceEnabled())
         {
@@ -310,47 +329,6 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
-    /// Check if the encryption test string is stored in local storage which is used to validate
-    /// a restored encryption key locally during future vault unlocks.
-    /// </summary>
-    /// <returns>Task.</returns>
-    public async Task<bool> HasEncryptionKeyTestStringAsync()
-    {
-        return await localStorage.GetItemAsStringAsync(StorageKeys.EncryptionTestString) != null;
-    }
-
-    /// <summary>
-    /// Validate a vault encryption key locally by attempting to decrypt the test string stored in local storage.
-    /// </summary>
-    /// <param name="encryptionKey">The encryption key to validate.</param>
-    /// <returns>True if encryption key is valid, false if not.</returns>
-    public async Task<bool> ValidateEncryptionKeyAsync(byte[] encryptionKey)
-    {
-        // Get the encrypted test string from local storage.
-        var encryptedTestString = await localStorage.GetItemAsStringAsync(StorageKeys.EncryptionTestString);
-        if (encryptedTestString == null)
-        {
-            return false;
-        }
-
-        var base64EncryptionKey = Convert.ToBase64String(encryptionKey);
-
-        // Decrypt the test string using the provided encryption key.
-        try
-        {
-            var decryptedTestString = await jsInteropService.SymmetricDecrypt(encryptedTestString, base64EncryptionKey);
-
-            // If the decrypted test string is not equal to the test string, the encryption key is invalid.
-            return decryptedTestString == EncryptionTestStringValue;
-        }
-        catch
-        {
-            // Ignore errors, if decryption fails the encryption key is invalid.
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Verifies the master password against the locally cached key material, without contacting the server.
     /// </summary>
     /// <param name="password">The password to verify.</param>
@@ -369,11 +347,15 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
 
             byte[] derivedKey = await rustCoreService.Argon2DeriveKeyAsync(password, parameters.Salt, parameters.EncryptionSettings);
 
-            // An account on the key chain proves the password by opening the chain; a legacy account by the test string.
+            // The password proves itself by opening the cached unlock chain.
             var opensChain = await vaultKeyService.TryOpenCachedChainAsync(Convert.ToBase64String(derivedKey));
-            var isValidPassword = opensChain ?? await ValidateEncryptionKeyAsync(derivedKey);
+            if (opensChain is null)
+            {
+                logger.LogWarning("No unlock chain is cached, the password cannot be verified.");
+                return PasswordVerificationResult.VerificationError;
+            }
 
-            return isValidPassword ? PasswordVerificationResult.Success : PasswordVerificationResult.InvalidPassword;
+            return opensChain.Value ? PasswordVerificationResult.Success : PasswordVerificationResult.InvalidPassword;
         }
         catch (Exception ex)
         {

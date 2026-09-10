@@ -22,7 +22,7 @@ public class PasswordChangeInitiateResponse
     /// <param name="encryptionType">Encryption type.</param>
     /// <param name="encryptionSettings">Encryption settings.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    public PasswordChangeInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string? srpIdentity = null)
+    public PasswordChangeInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string srpIdentity)
     {
         Salt = salt;
         ServerEphemeral = serverEphemeral;
@@ -60,5 +60,5 @@ public class PasswordChangeInitiateResponse
     /// even if the display username is updated. Clients should use this value for all SRP operations.
     /// </summary>
     [JsonPropertyName("srpIdentity")]
-    public string? SrpIdentity { get; set; }
+    public string SrpIdentity { get; set; }
 }

@@ -24,11 +24,6 @@ public static class StorageKeys
     public const string RefreshToken = "refreshToken";
 
     /// <summary>
-    /// Key for storing the encrypted test string used to validate the encryption key locally.
-    /// </summary>
-    public const string EncryptionTestString = "encryptionTestString";
-
-    /// <summary>
     /// Key for storing whether WebAuthn is enabled for vault unlock.
     /// </summary>
     public const string WebAuthnEnabled = "webAuthnEnabled";
@@ -94,8 +89,14 @@ public static class StorageKeys
     public const string DebugSessionKeys = "debugSessionKeys";
 
     /// <summary>
-    /// Keys holding key material derived from the account: the encrypted unlock chain, its derivation parameters and
-    /// the local key check. Cleared on any logout, forced or user-initiated.
+    /// Key that held the encrypted test string earlier builds validated the encryption key with. Cleared on logout.
+    /// TODO: remove once sufficient time has passed since 0.31.0+ release.
+    /// </summary>
+    public const string LegacyEncryptionTestString = "encryptionTestString";
+
+    /// <summary>
+    /// Keys holding key material derived from the account: the encrypted unlock chain and its derivation parameters.
+    /// Cleared on any logout, forced or user-initiated.
     /// </summary>
     public static readonly string[] VaultKeyStorageKeys =
     [
@@ -104,7 +105,7 @@ public static class StorageKeys
         AccountPublicKey,
         EncryptedAccountPrivateKey,
         EncryptionKeyDerivationParams,
-        EncryptionTestString,
+        LegacyEncryptionTestString,
         DebugSessionKeys,
     ];
 }

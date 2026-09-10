@@ -16,7 +16,8 @@ public class AliasVaultUser : IdentityUser
 {
     /// <summary>
     /// Gets or sets the SRP identity used for authentication. This is a fixed value that is used for all SRP operations,
-    /// is set during registration, and never changes.
+    /// is set during registration, and never changes. This field is nullable for backward compatibility with accounts
+    /// that were created before SRP identities existed (pre-0.26.0). TODO: remove this nullable in a future version.
     /// </summary>
     [System.ComponentModel.DataAnnotations.StringLength(255)]
     public string? SrpIdentity { get; set; }

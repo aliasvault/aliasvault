@@ -170,8 +170,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
-        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
-        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+        var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
         // Server creates ephemeral and sends to client
         var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
@@ -479,8 +478,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
-        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
-        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+        var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
         // Server creates ephemeral and sends to client
         var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
@@ -557,8 +555,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
-        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
-        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+        var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
         // Server creates ephemeral and sends to client
         var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
@@ -1158,14 +1155,16 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var fakeDataCacheKey = AuthHelper.CachePrefixFakeData + model.Username;
 
         // Try to get cached fake data first
-        if (!cache.TryGetValue(fakeDataCacheKey, out (string Salt, string Verifier) fakeData))
+        if (!cache.TryGetValue(fakeDataCacheKey, out (string Salt, string Verifier, string SrpIdentity) fakeData))
         {
             // Generate new fake data if not cached
             var client = new SrpClient();
             var fakeSalt = client.GenerateSalt();
             var fakePrivateKey = client.DerivePrivateKey(fakeSalt, model.Username, "fakePassword");
             var fakeVerifier = client.DeriveVerifier(fakePrivateKey);
-            fakeData = (fakeSalt, fakeVerifier);
+
+            // A fake identity is a random GUID, like a real one, so the response does not reveal whether the account exists.
+            fakeData = (fakeSalt, fakeVerifier, Guid.NewGuid().ToString());
 
             // Cache the fake data for 4 hours
             cache.Set(fakeDataCacheKey, fakeData, TimeSpan.FromHours(4));
@@ -1179,6 +1178,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             fakeData.Salt,
             fakeEphemeral.Public,
             Defaults.EncryptionType,
-            Defaults.EncryptionSettings));
+            Defaults.EncryptionSettings,
+            fakeData.SrpIdentity));
     }
 }

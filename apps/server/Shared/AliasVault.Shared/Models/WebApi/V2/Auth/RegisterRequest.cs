@@ -27,7 +27,7 @@ public class RegisterRequest
     /// <param name="accountPublicKey">The account public key.</param>
     /// <param name="encryptedAccountPrivateKey">The AK encrypted account private key.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string encryptedVek, string encryptedAccountKey, string accountPublicKey, string encryptedAccountPrivateKey, string? srpIdentity = null)
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string encryptedVek, string encryptedAccountKey, string accountPublicKey, string encryptedAccountPrivateKey, string srpIdentity)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
@@ -69,7 +69,7 @@ public class RegisterRequest
     /// <summary>
     /// Gets the SRP identity used for authentication.
     /// </summary>
-    public string? SrpIdentity { get; }
+    public string SrpIdentity { get; }
 
     /// <summary>
     /// Gets the encrypted VEK.

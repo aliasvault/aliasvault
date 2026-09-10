@@ -21,8 +21,8 @@ public class LoginInitiateResponse
     /// <param name="serverEphemeral">Server ephemeral.</param>
     /// <param name="encryptionType">Encryption type.</param>
     /// <param name="encryptionSettings">Encryption settings.</param>
-    /// <param name="srpIdentity">The SRP identity to use for authentication (optional for backward compatibility).</param>
-    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string? srpIdentity = null)
+    /// <param name="srpIdentity">The SRP identity.</param>
+    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string srpIdentity)
     {
         Salt = salt;
         ServerEphemeral = serverEphemeral;
@@ -61,5 +61,5 @@ public class LoginInitiateResponse
     /// for all SRP operations.
     /// </summary>
     [JsonPropertyName("srpIdentity")]
-    public string? SrpIdentity { get; set; }
+    public string SrpIdentity { get; set; }
 }
