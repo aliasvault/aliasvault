@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
-
-import { VaultKeyService } from '@/utils/VaultKeyService';
 
 /**
  * One entry in the security settings menu.
@@ -62,32 +59,32 @@ const SecuritySettings: React.FC = () => {
         <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.description')}</p>
       </div>
 
-        <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {entries.map((entry) => (
-                <button
-                  key={entry.id}
-                  id={entry.id}
-                  onClick={() => navigate(entry.path)}
-                  disabled={entry.disabled}
-                  title={entry.disabled ? entry.disabledReason : undefined}
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      {entry.icon}
-                    </svg>
-                    <span className="text-gray-900 dark:text-white text-left">{entry.label}</span>
-                  </div>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      <section>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {entries.map((entry) => (
+              <button
+                key={entry.id}
+                id={entry.id}
+                onClick={() => navigate(entry.path)}
+                disabled={entry.disabled}
+                title={entry.disabled ? entry.disabledReason : undefined}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    {entry.icon}
                   </svg>
-                </button>
-              ))}
-            </div>
+                  <span className="text-gray-900 dark:text-white text-left">{entry.label}</span>
+                </div>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
     </div>
   );
 };
