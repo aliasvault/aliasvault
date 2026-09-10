@@ -1,4 +1,4 @@
-import { Vault } from "./Vault";
+import type { Vault } from "./Vault";
 
 /**
  * Vault response type.

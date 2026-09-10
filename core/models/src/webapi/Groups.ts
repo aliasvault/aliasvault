@@ -1,4 +1,4 @@
-import { VaultKeyAlgorithmValue } from './VaultKeyAlgorithm';
+import type { VaultKeyAlgorithmValue } from './VaultKeyAlgorithm';
 
 /**
  * The messages of the /v2/Groups API: the sharing half of vault sharing.

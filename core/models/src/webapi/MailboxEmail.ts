@@ -1,4 +1,4 @@
-import { EmailDecryptionKey } from "./EmailDecryptionKey";
+import type { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type MailboxEmail = {
     /** The preview of the email message */

@@ -1,4 +1,4 @@
-import { MailboxEmail } from "./MailboxEmail";
+import type { MailboxEmail } from "./MailboxEmail";
 
 /**
  * Mailbox bulk request type.

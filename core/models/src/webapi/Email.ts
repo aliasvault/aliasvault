@@ -1,4 +1,4 @@
-import { EmailDecryptionKey } from "./EmailDecryptionKey";
+import type { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type Email = {
     /** The raw RFC 822 source of the email message (ciphertext, base64)  */
