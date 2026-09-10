@@ -1,31 +1,18 @@
 /**
  * Test API utilities for E2E tests.
  *
- * This module provides utilities for interacting with the AliasVault API
- * during E2E tests, including user registration using SRP protocol.
+ * This module provides utilities for interacting with the AliasVault API during E2E tests.
  */
 
-import { webcrypto } from 'crypto';
-import { readFileSync, unlinkSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-
-import Database from 'better-sqlite3';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { base64ToBytes } from '@aliasvault/client/utilities/Base64';
 import * as OTPAuth from 'otpauth';
 
-import { argon2DeriveKey, srpDerivePrivateKey, srpDeriveVerifier, srpGenerateSalt } from '@aliasvault/client/wasm/aliasvault_core.js';
-// Get the vault schema SQL from the core vault package
-import { COMPLETE_SCHEMA_SQL, VAULT_VERSIONS } from '../../../../core/vault/dist/index.mjs';
+import { pushInitialVault } from './manifest-v2-api';
 
-import { ensureRustCore } from './rust-core';
+import './client-platform';
 
-/**
- * Token model returned from successful registration/login.
- */
-export type TokenModel = {
-  token: string;
-  refreshToken: string;
-};
+import type { TokenModel } from '@aliasvault/models/webapi';
 
 /**
  * Test user credentials.
@@ -36,60 +23,9 @@ export type TestUser = {
   token?: TokenModel;
   /** TOTP secret if 2FA is enabled */
   totpSecret?: string;
-  /** Argon2Id-derived vault encryption key, for tests that decrypt/re-encrypt vault blobs API-side. */
+  /** Argon2Id password-derived key (the KEK), for tests that walk the account key chain API-side. */
   encryptionKey?: Uint8Array;
 };
-
-/**
- * Vault upload request payload.
- */
-type VaultUploadRequest = {
-  username: string;
-  blob: string;
-  version: string;
-  currentRevisionNumber: number;
-  encryptionPublicKey: string;
-  credentialsCount: number;
-  emailAddressList: string[];
-  privateEmailDomainList: string[];
-  hiddenPrivateEmailDomainList: string[];
-  publicEmailDomainList: string[];
-  createdAt: string;
-  updatedAt: string;
-};
-
-/**
- * Registration request payload.
- * This matches the server's RegisterRequest model.
- */
-type RegisterRequest = {
-  username: string;
-  salt: string;
-  verifier: string;
-  encryptionType: string;
-  encryptionSettings: string;
-};
-
-/**
- * Default encryption settings for Argon2Id.
- * These match the server defaults in AliasVault.Cryptography.Client/Defaults.cs
- */
-const DEFAULT_ENCRYPTION = {
-  type: 'Argon2Id',
-  settings: JSON.stringify({
-    DegreeOfParallelism: 1,
-    MemorySize: 19456,
-    Iterations: 2,
-  }),
-};
-
-/**
- * Normalizes a username by converting to lowercase and trimming whitespace.
- * This matches the server's username normalization.
- */
-export function normalizeUsername(username: string): string {
-  return username.toLowerCase().trim();
-}
 
 /**
  * Generates a random test username.
@@ -113,262 +49,12 @@ export function generateTestPassword(): string {
 }
 
 /**
- * Converts a Uint8Array to an uppercase hex string.
- */
-function bytesToHexString(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-    .toUpperCase();
-}
-
-/**
- * Derives a key from password using Argon2Id, through the extension's own Rust core.
- *
- * @param password - The password to derive the key from
- * @param salt - The salt string, hashed as its UTF-8 bytes
- * @returns The derived key as Uint8Array
- */
-function deriveKeyFromPassword(password: string, salt: string): Uint8Array {
-  ensureRustCore();
-  return argon2DeriveKey(password, salt, DEFAULT_ENCRYPTION.settings);
-}
-
-/**
- * Encrypts data using AES-GCM symmetric encryption (matching the browser extension's EncryptionUtility).
- *
- * @param plaintext - The plaintext string to encrypt
- * @param keyBytes - The 256-bit encryption key as Uint8Array
- * @returns Base64-encoded ciphertext (IV prepended to ciphertext)
- */
-async function symmetricEncrypt(plaintext: string, keyBytes: Uint8Array): Promise<string> {
-  const key = await webcrypto.subtle.importKey(
-    'raw',
-    keyBytes,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-
-  // Generate random 12-byte IV
-  const iv = webcrypto.getRandomValues(new Uint8Array(12));
-
-  // Encode plaintext to bytes
-  const encoder = new TextEncoder();
-  const plaintextBytes = encoder.encode(plaintext);
-
-  // Encrypt
-  const ciphertext = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintextBytes);
-
-  // Prepend IV to ciphertext
-  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-  combined.set(iv);
-  combined.set(new Uint8Array(ciphertext), iv.length);
-
-  // Convert to base64
-  return Buffer.from(combined).toString('base64');
-}
-
-/**
- * Encrypts raw bytes using AES-GCM (matching the browser extension's `symmetricEncryptBytes`).
- *
- * @param plaintextBytes - The plaintext bytes to encrypt
- * @param keyBytes - The 256-bit encryption key as Uint8Array
- * @returns Base64-encoded ciphertext (IV prepended to ciphertext)
- */
-export async function symmetricEncryptBytes(plaintextBytes: Uint8Array, keyBytes: Uint8Array): Promise<string> {
-  const key = await webcrypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-  const iv = webcrypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintextBytes);
-
-  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-  combined.set(iv);
-  combined.set(new Uint8Array(ciphertext), iv.length);
-  return Buffer.from(combined).toString('base64');
-}
-
-/**
- * Decrypts an AES-GCM ciphertext produced by the extension's `symmetricEncrypt(Bytes)` (IV-prefixed).
- *
- * @param base64Ciphertext - Base64-encoded ciphertext (12-byte IV prepended)
- * @param keyBytes - The 256-bit encryption key as Uint8Array
- * @returns The decrypted plaintext bytes
- */
-export async function symmetricDecryptBytes(base64Ciphertext: string, keyBytes: Uint8Array): Promise<Uint8Array> {
-  const combined = new Uint8Array(Buffer.from(base64Ciphertext, 'base64'));
-  const key = await webcrypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-  const plaintext = await webcrypto.subtle.decrypt({ name: 'AES-GCM', iv: combined.slice(0, 12) }, key, combined.slice(12));
-  return new Uint8Array(plaintext);
-}
-
-/**
- * Creates an empty vault database with the latest schema.
- *
- * @returns Base64-encoded SQLite database
- */
-function createEmptyVaultDatabase(): string {
-  // Create a temporary file for the database
-  const tempPath = join(tmpdir(), `vault_${Date.now()}_${Math.random().toString(36).substring(2)}.db`);
-
-  try {
-    // Create a new SQLite database
-    const db = new Database(tempPath);
-
-    // Execute the complete schema SQL to create all tables
-    // The schema is a series of SQL statements separated by semicolons
-    db.exec(COMPLETE_SCHEMA_SQL);
-
-    // Close the database
-    db.close();
-
-    // Read the database file and convert to base64
-    const dbBytes = readFileSync(tempPath);
-    return Buffer.from(dbBytes).toString('base64');
-  } finally {
-    // Clean up the temp file
-    try {
-      unlinkSync(tempPath);
-    } catch {
-      // Ignore cleanup errors
-    }
-  }
-}
-
-/**
- * Generates an RSA key pair for the vault's encryption key.
- *
- * @returns Object with public and private keys as JSON strings
- */
-async function generateRsaKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
-  const keyPair = await webcrypto.subtle.generateKey(
-    {
-      name: 'RSA-OAEP',
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: 'SHA-256',
-    },
-    true,
-    ['encrypt', 'decrypt']
-  );
-
-  const publicKey = await webcrypto.subtle.exportKey('jwk', keyPair.publicKey);
-  const privateKey = await webcrypto.subtle.exportKey('jwk', keyPair.privateKey);
-
-  return {
-    publicKey: JSON.stringify(publicKey),
-    privateKey: JSON.stringify(privateKey),
-  };
-}
-
-/**
- * Prepares SRP registration data for a new user.
- *
- * @param username - The username for registration
- * @param password - The password for registration
- * @returns Registration request data and the encryption key
- */
-async function prepareRegistration(
-  username: string,
-  password: string
-): Promise<{ request: RegisterRequest; salt: string; encryptionKey: Uint8Array }> {
-  const normalizedUsername = normalizeUsername(username);
-
-  ensureRustCore();
-
-  // Generate salt and derive key from password
-  const salt = srpGenerateSalt();
-  const encryptionKey = deriveKeyFromPassword(password, salt);
-
-  // Convert to uppercase hex string (expected by server)
-  const passwordHashString = bytesToHexString(encryptionKey);
-
-  // Generate SRP private key and verifier
-  const privateKey = srpDerivePrivateKey(salt, normalizedUsername, passwordHashString);
-  const verifier = srpDeriveVerifier(privateKey);
-
-  return {
-    request: {
-      username: normalizedUsername,
-      salt,
-      verifier,
-      encryptionType: DEFAULT_ENCRYPTION.type,
-      encryptionSettings: DEFAULT_ENCRYPTION.settings,
-    },
-    salt,
-    encryptionKey,
-  };
-}
-
-/**
- * Uploads an initial empty vault to the server.
- *
- * @param apiBaseUrl - The base URL of the API
- * @param token - The authentication token
- * @param username - The username
- * @param encryptionKey - The encryption key as Uint8Array
- */
-async function uploadInitialVault(
-  apiBaseUrl: string,
-  token: string,
-  username: string,
-  encryptionKey: Uint8Array
-): Promise<void> {
-  /*
-   * Intentionally the v1 endpoint: the initial vault is a legacy sqlite-blob (the v2 endpoint is
-   * manifest-only). This mirrors a pre-manifest account, so the first login lands on the extension's
-   * upgrade gate; `completeVaultUpgrade` in the fixtures clicks it through to manifest-v1.
-   */
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
-
-  // Create an empty vault database
-  const vaultBase64 = createEmptyVaultDatabase();
-
-  // Encrypt the vault
-  const encryptedVault = await symmetricEncrypt(vaultBase64, encryptionKey);
-
-  // Generate RSA key pair for the vault
-  const rsaKeyPair = await generateRsaKeyPair();
-
-  // Prepare the vault upload request
-  const now = new Date().toISOString();
-  const vaultRequest: VaultUploadRequest = {
-    username: normalizeUsername(username),
-    blob: encryptedVault,
-    version: VAULT_VERSIONS[VAULT_VERSIONS.length - 1].version,
-    currentRevisionNumber: 1,
-    encryptionPublicKey: rsaKeyPair.publicKey,
-    credentialsCount: 0,
-    emailAddressList: [],
-    privateEmailDomainList: [],
-    hiddenPrivateEmailDomainList: [],
-    publicEmailDomainList: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  // Upload the vault
-  const response = await fetch(`${baseUrl}Vault`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(vaultRequest),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to upload initial vault: ${response.status} ${errorText}`);
-  }
-}
-
-/**
- * Registers a new test user via the API using SRP protocol and initializes their vault.
+ * Registers a new test user via the API and writes the first revision of their vault.
  *
  * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
  * @param username - The username for the new account
  * @param password - The password for the new account
- * @returns The token model on success
+ * @returns The token model and the password-derived key (KEK) on success
  * @throws Error if registration fails
  */
 export async function registerTestUser(
@@ -376,39 +62,14 @@ export async function registerTestUser(
   username: string,
   password: string
 ): Promise<{ tokenModel: TokenModel; encryptionKey: Uint8Array }> {
-  // Normalize the API URL
-  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
-
-  // Prepare registration data
-  const { request: registerRequest, encryptionKey } = await prepareRegistration(username, password);
-
-  // Send registration request to API
-  const response = await fetch(`${baseUrl}Auth/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(registerRequest),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    let errorMessage = `Registration failed with status ${response.status}`;
-    try {
-      const errorJson = JSON.parse(errorText);
-      errorMessage = errorJson.title || errorJson.message || errorMessage;
-    } catch {
-      errorMessage = errorText || errorMessage;
-    }
-    throw new Error(errorMessage);
+  const result = await SrpAuthService.registerUser(apiBaseUrl, username, password);
+  if (!result.success || !result.token || !result.derivedKey || !result.encryptionKey) {
+    throw new Error(result.error ?? 'Registration failed without an error message.');
   }
 
-  const tokenModel = (await response.json()) as TokenModel;
+  await pushInitialVault(apiBaseUrl, result.token.token, username, base64ToBytes(result.encryptionKey));
 
-  // Upload initial empty vault
-  await uploadInitialVault(apiBaseUrl, tokenModel.token, username, encryptionKey);
-
-  return { tokenModel, encryptionKey };
+  return { tokenModel: result.token, encryptionKey: base64ToBytes(result.derivedKey) };
 }
 
 /**

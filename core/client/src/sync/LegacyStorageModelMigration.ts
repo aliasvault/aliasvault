@@ -8,7 +8,7 @@ import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { ServerUpdateRequiredError } from '../api/errors/ServerUpdateRequiredError';
 import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
-import { mintAccountKeyHierarchy, type AccountKeyBlobs } from '../crypto/AccountKeys';
+import { createAccountKeyHierarchy, type AccountKeyBlobs } from '../crypto/AccountKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devLog } from '../platform/Logger';
 
@@ -193,7 +193,7 @@ export async function requiresLegacyAccountKeyMigration(): Promise<boolean> {
  * @param kek - the password-derived key this vault is currently encrypted with, which becomes the KEK
  */
 export async function prepareLegacyAccountKeyMigration(kek: string): Promise<LegacyAccountKeyMigration> {
-  const hierarchy = await mintAccountKeyHierarchy(kek);
+  const hierarchy = await createAccountKeyHierarchy(kek);
   return { contentKey: hierarchy.vaultEncryptionKey, accountKeys: hierarchy.accountKeys, accountPrivateKey: hierarchy.accountPrivateKey };
 }
 

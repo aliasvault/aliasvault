@@ -3,17 +3,16 @@
  *
  * Lets a test act as a second, "newer" client against the v2 Vault API: pull the snapshot,
  * decrypt + unpack the personal manifest, modify it (e.g. inject columns/tables an older client's
- * schema doesn't know), and push it back as a new revision. Pack/unpack goes through the real
- * Rust WASM codec so the integrity envelope's canonical content hash matches exactly what the
- * extension verifies on pull.
+ * schema doesn't know), and push it back as a new revision. Everything below the wire format goes
+ * through the shared client core the extension itself ships.
  */
 
 import { createHash } from 'crypto';
 
-import { vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/wasm/aliasvault_core.js';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
 
-import { ensureRustCore } from './rust-core';
-import { normalizeUsername, symmetricDecryptBytes, symmetricEncryptBytes } from './test-api';
+import { symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
@@ -48,6 +47,32 @@ export type DecryptedManifest = {
   canonicalizedAt: string;
   tables: Record<string, Array<Record<string, unknown>>>;
   [key: string]: unknown;
+};
+
+/** One manifest element of a POST /v2/Vault write. */
+type ManifestWrite = {
+  manifestId: string;
+  manifestBlob: string;
+  manifestCiphertextHash: string;
+  currentRevision: number;
+  credentialsCount: number;
+  blobReferences: Array<{ hash: string; category: string }>;
+};
+
+/** One data bucket element of a POST /v2/Vault write. */
+type BucketWrite = {
+  manifestId: string;
+  category: string;
+  blob: string;
+  ciphertextHash: string;
+  currentRevision: number;
+};
+
+/** The result of a POST /v2/Vault write. */
+type VaultWriteResult = {
+  status: number;
+  manifestRevisions?: Array<{ manifestId: string; revision: number }>;
+  missingBlobHashes?: string[];
 };
 
 /**
@@ -118,9 +143,8 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
  * @returns The decrypted manifest object
  */
 export async function openManifest(blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
-  ensureRustCore();
   const packedBytes = await symmetricDecryptBytes(blobBase64, encryptionKey);
-  return JSON.parse(vaultCodecUnpackPayload(packedBytes)) as DecryptedManifest;
+  return JSON.parse(await vaultCodecUnpackPayload(packedBytes)) as DecryptedManifest;
 }
 
 /**
@@ -147,53 +171,54 @@ export async function pushManifest(
   blobReferences: Array<{ hash: string; category: string }>,
   encryptionKey: Uint8Array
 ): Promise<number> {
-  ensureRustCore();
-  const packedBytes = vaultCodecPackPayload(JSON.stringify(manifest));
-  const manifestBlob = await symmetricEncryptBytes(packedBytes, encryptionKey);
-  const manifestCiphertextHash = createHash('sha256').update(Buffer.from(manifestBlob, 'base64')).digest('hex');
-
-  /*
-   * POST /v2/Vault is one atomic write over a list of manifests; every entry names the manifest it targets, so this
-   * simulated "newer client" addresses the personal manifest by id exactly as a real client does.
-   */
-  const payload = {
-    username: normalizeUsername(username),
-    manifests: [{
-      manifestId,
-      manifestBlob,
-      manifestCiphertextHash,
-      currentRevision,
-      credentialsCount: (manifest.tables.Items ?? []).length,
-      blobReferences,
-    }],
-    buckets: [],
-    newBlobs: [],
-    emailRouting: null,
-  };
-
-  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    throw new Error(`POST /v2/Vault failed with status ${response.status}: ${await response.text()}`);
-  }
-
-  const result = (await response.json()) as {
-    status: number;
-    manifestRevisions?: Array<{ manifestId: string; revision: number }>;
-    missingBlobHashes?: string[];
-  };
-  if (result.status !== 0 || (result.missingBlobHashes?.length ?? 0) > 0) {
-    throw new Error(`Manifest push rejected: status=${result.status}, missingBlobs=${result.missingBlobHashes?.join(',') ?? 'none'}`);
-  }
+  const write = await buildManifestWrite(manifestId, manifest, currentRevision, blobReferences, encryptionKey);
+  const result = await postVaultWrite(apiBaseUrl, token, username, [write], []);
 
   const written = (result.manifestRevisions ?? []).find((r) => r.manifestId === manifestId);
   if (!written) {
     throw new Error(`Manifest push returned no revision for ${manifestId}.`);
   }
   return written.revision;
+}
+
+/**
+ * Writes the first manifest-v1 revision for a newly registered account.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param token - Bearer token
+ * @param username - The vault owner's username
+ * @param encryptionKey - The account's VEK, which the vault content is encrypted with
+ * @returns The id of the personal manifest that was written
+ */
+export async function pushInitialVault(apiBaseUrl: string, token: string, username: string, encryptionKey: Uint8Array): Promise<string> {
+  const snapshot = await getVaultSnapshot(apiBaseUrl, token);
+  const manifestId = snapshot.personalManifestId;
+  if (!manifestId) {
+    throw new Error('Freshly registered account has no personal manifest to write the initial vault into.');
+  }
+
+  /*
+   * A brand-new vault is every syncable table, all empty. Taking the list from the shared table registry keeps
+   * this in step with the schema: canonicalize refuses a manifest that carries no tables at all.
+   */
+  const tables = (await getSyncableTableNames()).map((name) => ({ name, records: [] }));
+  const canonicalized = await vaultCodecCanonicalizeFromSqlite({
+    tables,
+    canonicalizedAt: new Date().toISOString(),
+    manifests: [{ manifestId, manifestSalt: await vaultCodecGenerateManifestSalt(), name: null }],
+  });
+
+  const manifest = canonicalized.manifests[0].manifest as DecryptedManifest;
+  const manifestWrite = await buildManifestWrite(manifestId, manifest, 0, [], encryptionKey);
+
+  const bucketWrites: BucketWrite[] = [];
+  for (const bucket of canonicalized.dataBuckets) {
+    const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(bucket), encryptionKey);
+    bucketWrites.push({ manifestId: bucket.manifestId, category: bucket.category, blob, ciphertextHash, currentRevision: 0 });
+  }
+
+  await postVaultWrite(apiBaseUrl, token, username, [manifestWrite], bucketWrites);
+  return manifestId;
 }
 
 /**
@@ -219,4 +244,86 @@ export async function pollUntil<T>(predicate: () => Promise<T | undefined | fals
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
   throw new Error(`pollUntil timed out after ${timeoutMs}ms${lastError ? `; last error: ${lastError instanceof Error ? lastError.message : String(lastError)}` : ''}`);
+}
+
+/**
+ * Packs a payload through the Rust codec and encrypts it.
+ *
+ * @param payloadJson - The payload to pack
+ * @param encryptionKey - The key the vault content is encrypted with
+ * @returns The encrypted blob and the ciphertext hash the server verifies it against
+ */
+async function packEncrypt(payloadJson: string, encryptionKey: Uint8Array): Promise<{ blob: string; ciphertextHash: string }> {
+  const packedBytes = await vaultCodecPackPayload(payloadJson);
+  const blob = await symmetricEncryptBytes(packedBytes, encryptionKey);
+  return { blob, ciphertextHash: createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex') };
+}
+
+/**
+ * Builds one manifest element of a vault write.
+ *
+ * @param manifestId - The manifest this write targets
+ * @param manifest - The manifest object to upload
+ * @param currentRevision - The revision this upload is based on
+ * @param blobReferences - Blob references to carry over to the new revision
+ * @param encryptionKey - The key the vault content is encrypted with
+ * @returns The manifest write element
+ */
+async function buildManifestWrite(
+  manifestId: string,
+  manifest: DecryptedManifest,
+  currentRevision: number,
+  blobReferences: Array<{ hash: string; category: string }>,
+  encryptionKey: Uint8Array
+): Promise<ManifestWrite> {
+  const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(manifest), encryptionKey);
+  return {
+    manifestId,
+    manifestBlob: blob,
+    manifestCiphertextHash: ciphertextHash,
+    currentRevision,
+    credentialsCount: (manifest.tables.Items ?? []).length,
+    blobReferences,
+  };
+}
+
+/**
+ * Sends a atomic POST /v2/Vault write.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param token - Bearer token
+ * @param username - The vault owner's username
+ * @param manifests - The manifests this write targets, each addressed by id exactly as a real client does
+ * @param buckets - The data buckets this write targets
+ * @returns The write result
+ */
+async function postVaultWrite(
+  apiBaseUrl: string,
+  token: string,
+  username: string,
+  manifests: ManifestWrite[],
+  buckets: BucketWrite[]
+): Promise<VaultWriteResult> {
+  const payload = {
+    username: SrpAuthService.normalizeUsername(username),
+    manifests,
+    buckets,
+    newBlobs: [],
+    emailRouting: null,
+  };
+
+  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v2/Vault`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error(`POST /v2/Vault failed with status ${response.status}: ${await response.text()}`);
+  }
+
+  const result = (await response.json()) as VaultWriteResult;
+  if (result.status !== 0 || (result.missingBlobHashes?.length ?? 0) > 0) {
+    throw new Error(`Vault write rejected: status=${result.status}, missingBlobs=${result.missingBlobHashes?.join(',') ?? 'none'}`);
+  }
+  return result;
 }
