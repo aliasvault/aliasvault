@@ -183,26 +183,6 @@ else
                 return;
             }
 
-            // A legacy account has no chain: the derived key is the encryption key and is validated against the local test string.
-            if (resolved.IsLegacy)
-            {
-                if (!await AuthService.HasEncryptionKeyTestStringAsync())
-                {
-                    // Nothing local to validate against, so the user has to log in again.
-                    await AuthService.RemoveTokensAsync();
-                    GlobalNotificationService.ClearMessages();
-                    GlobalNotificationService.AddErrorMessage(Localizer["SessionTimedOutError"]);
-                    NavigationManager.NavigateTo("/user/login");
-                    return;
-                }
-
-                if (!await AuthService.ValidateEncryptionKeyAsync(Convert.FromBase64String(resolved.VaultEncryptionKey)))
-                {
-                    _serverValidationErrors.AddError(Localizer["IncorrectPasswordError"]);
-                    return;
-                }
-            }
-
             // Store the session keys in memory.
             await AuthService.StoreSessionKeysAsync(resolved);
 
@@ -307,15 +287,8 @@ else
                     return;
                 }
 
-                if (await AuthService.ValidateEncryptionKeyAsync(Convert.FromBase64String(resolved.VaultEncryptionKey)))
-                {
-                    await AuthService.StoreSessionKeysAsync(resolved);
-                    NavigationManager.NavigateTo("/");
-                }
-                else
-                {
-                    Logger.LogWarning("The decrypted encryption key does not match the persisted encryption key. Falling back to password unlock.");
-                }
+                await AuthService.StoreSessionKeysAsync(resolved);
+                NavigationManager.NavigateTo("/");
             }
             catch (NotSupportedException)
             {
