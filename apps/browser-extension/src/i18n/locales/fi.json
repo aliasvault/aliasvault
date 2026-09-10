@@ -283,6 +283,8 @@
     "creating": "Luodaan",
     "editing": "Muokaataan",
     "addCustomField": "Add custom field",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Kentän otsikko",
     "enterFieldName": "Anna kentän nimi",
     "fieldType": "Kentän tyyppi",

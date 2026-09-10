@@ -283,6 +283,8 @@
     "creating": "Aanmaken",
     "editing": "Bewerken",
     "addCustomField": "Voeg eigen veld toe",
+    "editCustomField": "Aangepast veld bewerken",
+    "deleteCustomField": "Aangepast veld verwijderen",
     "fieldLabel": "Veldlabel",
     "enterFieldName": "Voer de veldnaam in",
     "fieldType": "Veldtype",
@@ -365,7 +367,7 @@
     "noEmails": "Geen e-mails gevonden",
     "noEmailsDescription": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Deze e-mail vereist een nieuwere app versie om correct weer te geven. Update je app.",
     "loadMore": "Meer laden ({{count}} resterend)",
     "dateFormat": {
       "justNow": "zojuist",

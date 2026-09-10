@@ -25,13 +25,13 @@ public static class GenericCsvImporter
         var template = new StringBuilder();
 
         // Add headers
-        template.AppendLine("service_name,url,username,password,totp_secret,notes");
+        template.AppendLine("service_name,url,username,password,totp_secret,notes,folder");
 
         // Add example rows
-        template.AppendLine("Gmail,https://gmail.com,your.email@gmail.com,your_password,,Important email account");
-        template.AppendLine("Facebook,https://facebook.com,your.username,your_password,,Social media account");
-        template.AppendLine("GitHub,https://github.com,developer_username,your_password,your_totp_secret_here,Development platform");
-        template.AppendLine("Secure Note,,,,,\"Important information or notes without login credentials\"");
+        template.AppendLine("Gmail,https://gmail.com,your.email@gmail.com,your_password,,Important email account,Personal");
+        template.AppendLine("Facebook,https://facebook.com,your.username,your_password,,Social media account,Personal/Social");
+        template.AppendLine("GitHub,https://github.com,developer_username,your_password,your_totp_secret_here,Development platform,Work");
+        template.AppendLine("Secure Note,,,,,\"Important information or notes without login credentials\",");
 
         return template.ToString();
     }
@@ -70,7 +70,8 @@ public static class GenericCsvImporter
                 Username = record.Username?.Trim(),
                 Password = record.Password?.Trim(),
                 TwoFactorSecret = record.TotpSecret?.Trim(),
-                Notes = record.Notes?.Trim()
+                Notes = record.Notes?.Trim(),
+                FolderPath = string.IsNullOrWhiteSpace(record.Folder) ? null : record.Folder.Trim(),
             };
 
             credentials.Add(credential);

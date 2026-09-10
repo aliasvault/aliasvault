@@ -61,3 +61,33 @@ export function applyTypeFilter(items: Item[], filterType: ItemFilterType): Item
     return true;
   });
 }
+
+/**
+ * Apply the free-text search filter to a list of items.
+ * Splits the term into words and keeps items where every word appears in the name,
+ * a field value or a field label. Shared with the current-site suggestion so the
+ * suggested match count always equals what the search field itself returns.
+ */
+export function applySearchFilter(items: Item[], searchTerm: string): Item[] {
+  const searchWords = searchTerm.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
+
+  if (searchWords.length === 0) {
+    return items;
+  }
+
+  return items.filter((item: Item) => {
+    const searchableFields: string[] = [
+      item.Name?.toLowerCase() ?? '',
+    ];
+
+    item.Fields?.forEach(field => {
+      const value = Array.isArray(field.Value) ? field.Value.join(' ') : (field.Value ?? '');
+      searchableFields.push(value.toLowerCase());
+      searchableFields.push(field.Label?.toLowerCase() ?? '');
+    });
+
+    return searchWords.every(word =>
+      searchableFields.some(field => field.includes(word))
+    );
+  });
+}

@@ -124,6 +124,59 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     }
 
     /// <summary>
+    /// Delete multiple emails.
+    /// </summary>
+    /// <param name="model">Request model.</param>
+    /// <returns>A EmailBulkResponse instance representing the result of the asynchronous operation.</returns>
+    [HttpDelete(template: "bulk", Name = "BulkDelete")]
+    public async Task<IActionResult> BulkDelete([FromBody] EmailBulkRequest model)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return Unauthorized("Not authenticated.");
+        }
+
+        // Sanitize input
+        model.Ids = [.. model.Ids.Where(id => id > 0).Distinct()];
+
+        if (model.Ids.Count == 0)
+        {
+            // Nothing to delete
+            return StatusCode(304);
+        }
+
+        // For each email ID, validate if user has access and if email exists
+        foreach (int emailId in model.Ids)
+        {
+            var (_, _, errorResult) = await RetrieveEmailAsync(emailId, user, context);
+            if (errorResult != null)
+            {
+                return errorResult;
+            }
+        }
+
+        try
+        {
+            // Every id was access-checked above, so the checked list is what may be deleted here.
+            await context.Emails.Where(e => model.Ids.Contains(e.Id)).ExecuteDeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while deleting the emails.");
+            return StatusCode(500);
+        }
+
+        EmailBulkResponse returnValue = new()
+        {
+            SuccessfulEmailIds = model.Ids,
+        };
+        return Ok(returnValue);
+    }
+
+    /// <summary>
     /// Authenticates the user and retrieves the requested email.
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
@@ -137,6 +190,18 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             return (null, [], Unauthorized("Not authenticated."));
         }
 
+        return await RetrieveEmailAsync(id, user, context);
+    }
+
+    /// <summary>
+    /// Retrieves the requested email for an already authenticated user.
+    /// </summary>
+    /// <param name="id">The email ID to retrieve.</param>
+    /// <param name="user">The authenticated AliasVault user.</param>
+    /// <param name="context">The database context.</param>
+    /// <returns>A tuple containing the email, the decryption keys of it the caller can open, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, List<EmailDecryptionKey> CallerDecryptionKeys, IActionResult? ErrorResult)> RetrieveEmailAsync(int id, AliasVaultUser user, AliasServerDbContext context)
+    {
         // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
         var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 

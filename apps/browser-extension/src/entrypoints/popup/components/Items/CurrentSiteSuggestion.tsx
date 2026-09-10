@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import useCurrentTabMatching, { type CurrentTabMatchResult } from '@/entrypoints/popup/hooks/useCurrentTabMatching';
+import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 
 import type { Item } from '@/utils/dist/core/models/vault';
+import { applySearchFilter } from '@/utils/ItemFilters';
 
 import ItemIcon from './ItemIcon';
 
 type CurrentSiteSuggestionProps = {
+  items: Item[];
   onSearch: (domain: string) => void;
 };
 
@@ -16,36 +18,40 @@ type CurrentSiteSuggestionProps = {
  * CurrentSiteSuggestion
  *
  * Shows a suggestion for the current browser tab's matching item(s) as a shortcut at the top of the
- * items index.
+ * items index. Matching uses the same search filter as the search field, so clicking through always
+ * lands on exactly the items counted here.
  */
-const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ onSearch }) => {
+const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, onSearch }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { matchCurrentTab } = useCurrentTabMatching();
-  const [match, setMatch] = useState<CurrentTabMatchResult | null>(null);
+  const { getCurrentTabInfo } = useCurrentTabInfo();
+  const [domain, setDomain] = useState<string | null>(null);
 
-  // Resolve the current tab match once on mount.
+  // Resolve the current tab domain once on mount.
   useEffect(() => {
     let active = true;
-    matchCurrentTab().then((result) => {
+    getCurrentTabInfo().then((result) => {
       if (active) {
-        setMatch(result);
+        setDomain(result?.domain ?? null);
       }
     });
     return (): void => {
       active = false;
     };
-  }, [matchCurrentTab]);
+  }, [getCurrentTabInfo]);
 
-  if (!match || !match.domain) {
+  const matches = useMemo(
+    () => (domain ? applySearchFilter(items, domain) : []),
+    [items, domain]
+  );
+
+  if (!domain) {
     return null;
   }
 
-  const { domain, items } = match;
-
   // Single match: open the item directly on click.
-  if (items.length === 1) {
-    const item: Item = items[0];
+  if (matches.length === 1) {
+    const item: Item = matches[0];
     return (
       <button
         onClick={() => navigate(`/items/${item.Id}`)}
@@ -70,7 +76,7 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ onSearch 
   }
 
   // Multiple matches: search the vault for the domain on click.
-  if (items.length > 1) {
+  if (matches.length > 1) {
     return (
       <button
         onClick={() => onSearch(domain)}
@@ -81,7 +87,7 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ onSearch 
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <span className="min-w-0 text-sm flex-1 font-medium text-orange-700 dark:text-orange-300 truncate">
-          {domain} ({t('items.numberOfItemMatchesFound', { count: items.length })})
+          {domain} ({t('items.numberOfItemMatchesFound', { count: matches.length })})
         </span>
         <svg className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="9 18 15 12 9 6" />

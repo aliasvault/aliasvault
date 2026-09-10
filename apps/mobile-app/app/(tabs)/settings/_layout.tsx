@@ -135,6 +135,15 @@ export default function SettingsLayout(): React.ReactNode {
           ...defaultHeaderOptions,
         }}
       />
+      {/* Developer only screen. Note: not required to be translated. */}
+      <Stack.Screen
+        name="developer-tools"
+        options={{
+          title: 'Developer tools',
+          headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
       <Stack.Screen
         name="qr-scanner"
         options={{

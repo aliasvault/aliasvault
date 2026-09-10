@@ -283,6 +283,8 @@
     "creating": "Tworzenie",
     "editing": "Edytowanie",
     "addCustomField": "Dodaj pole niestandardowe",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Etykieta pola",
     "enterFieldName": "Wprowadź nazwę pola",
     "fieldType": "Typ pola",

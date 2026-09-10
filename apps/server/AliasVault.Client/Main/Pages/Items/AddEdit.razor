@@ -359,7 +359,7 @@ else
                             <DraggableCustomFieldsList
                                 CustomFields="@customFields"
                                 OnReorder="HandleCustomFieldsReorder"
-                                OnLabelChange="HandleCustomFieldLabelChange"
+                                OnFieldUpdate="HandleCustomFieldUpdate"
                                 OnDelete="HandleCustomFieldDelete" />
                         </div>
                     </div>
@@ -804,11 +804,11 @@ else
     }
 
     /// <summary>
-    /// Handles custom field label change from the draggable list.
+    /// Handles custom field label and type changes from the draggable list.
     /// </summary>
-    private void HandleCustomFieldLabelChange((string fieldKey, string newLabel) args)
+    private void HandleCustomFieldUpdate((string fieldKey, string label, string fieldType) args)
     {
-        Obj.UpdateCustomFieldLabel(args.fieldKey, args.newLabel);
+        Obj.UpdateCustomField(args.fieldKey, args.label, args.fieldType);
         StateHasChanged();
     }
 

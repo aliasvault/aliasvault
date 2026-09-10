@@ -140,6 +140,61 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     }
 
     /// <summary>
+    /// Delete multiple emails.
+    /// </summary>
+    /// <param name="model">Request model.</param>
+    /// <returns>A EmailBulkResponse instance representing the result of the asynchronous operation.</returns>
+    [HttpDelete(template: "bulk", Name = "BulkDelete")]
+    public async Task<IActionResult> BulkDelete([FromBody] EmailBulkRequest model)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return Unauthorized("Not authenticated.");
+        }
+
+        // Sanitize input
+        model.Ids = [.. model.Ids.Where(id => id > 0).Distinct()];
+
+        if (model.Ids.Count == 0)
+        {
+            // Nothing to delete
+            return StatusCode(304);
+        }
+
+        // For each email ID, validate if user has access and if email exists
+        foreach (int emailId in model.Ids)
+        {
+            var (_, _, errorResult) = await RetrieveEmailAsync(emailId, user, context);
+            if (errorResult != null)
+            {
+                return errorResult;
+            }
+        }
+
+        try
+        {
+            await context.Emails
+                .Where(e => model.Ids.Contains(e.Id))
+                .Where(e => context.EmailClaims.Any(c => c.Address == e.To.Trim().ToLower() && c.Links.Any(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId)))
+                .ExecuteDeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while deleting the emails.");
+            return StatusCode(500);
+        }
+
+        EmailBulkResponse returnValue = new()
+        {
+            SuccessfulEmailIds = model.Ids,
+        };
+        return Ok(returnValue);
+    }
+
+    /// <summary>
     /// Authenticates the user and retrieves the requested email.
     /// </summary>
     /// <param name="id">The email ID to retrieve.</param>
@@ -153,9 +208,18 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
             return (null, null, Unauthorized("Not authenticated."));
         }
 
-        // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
-        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
+        return await RetrieveEmailAsync(id, user, context);
+    }
 
+    /// <summary>
+    /// Retrieves the requested email for an already authenticated user.
+    /// </summary>
+    /// <param name="id">The email ID to retrieve.</param>
+    /// <param name="user">The authenticated AliasVault user.</param>
+    /// <param name="context">The database context.</param>
+    /// <returns>A tuple containing the email, the decryption key belonging to the caller's personal keys, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, EmailDecryptionKey? PersonalDecryptionKey, IActionResult? ErrorResult)> RetrieveEmailAsync(int id, AliasVaultUser user, AliasServerDbContext context)
+    {
         // Retrieve email from database.
         var email = await context.Emails
             .Include(x => x.Attachments)
@@ -167,6 +231,9 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         {
             return (null, null, NotFound("Email not found."));
         }
+
+        // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
+        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         // Hide emails received after a shadow-block took effect.
         if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)

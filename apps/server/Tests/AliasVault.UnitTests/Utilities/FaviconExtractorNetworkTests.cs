@@ -28,6 +28,9 @@ public class FaviconExtractorNetworkTests
         "https://gmail.com", // Redirects to another host; icon path resolves against the final URL.
         "https://www.edreams.es", // Page behind a CDN that blocks the page request itself.
         "https://www.infojobs.net", // Page declaring a charset .NET cannot construct.
+        "https://mudblazor.com/getting-started/installation", // Blazor app: page under a sub-path with <base href="/"> and a relative icon href.
+        "https://www.instagram.com/accounts/login/", // Heavy page (600KB+) whose preferred icon is WebP.
+        "https://www.epicgames.com/id/login", // Cloudflare-fronted; admits HTTP/1.1 but challenges HTTP/2 requests.
     ];
 
     /// <summary>

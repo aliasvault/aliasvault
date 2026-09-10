@@ -94,6 +94,10 @@
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
+  <data name="EditCustomField">
+    <value>Edit Custom Field</value>
+    <comment>Title of the modal when editing an existing custom field</comment>
+  </data>
   <data name="FieldLabel">
     <value>Mező cím</value>
     <comment>Label for field label input</comment>

@@ -50,4 +50,10 @@ public class GenericCsvRecord
     /// </summary>
     [Name("notes")]
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the folder path (optional). Supports multi-level paths separated by "/" (e.g., "Personal/Social").
+    /// </summary>
+    [Name("folder")]
+    public string? Folder { get; set; }
 }

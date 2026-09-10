@@ -28,7 +28,7 @@ public static class FaviconExtractor
     private const int MaxSizeBytes = 20 * 1024; // 20KB max size; images above this are resized/re-encoded.
     private const int MaxResponseBytes = 5 * 1024 * 1024; // 5MB cap per response body, measured after decompression.
     private const int MaxDecodedPixels = 2048 * 2048; // Pixel budget per image; see IsWithinDecodePixelBudget.
-    private const int MaxFaviconCandidates = 10; // Distinct favicon URLs fetched per page; see TryExtractFaviconFromNodes.
+    private const int MaxFaviconCandidates = 10; // Distinct favicon URLs fetched per page; see TryFetchFaviconCandidatesAsync.
     private static readonly TimeSpan ExtractionDeadline = TimeSpan.FromSeconds(5); // Wall-clock budget for one full extraction.
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(3); // Per-request budget, so one slow host still leaves room for another candidate.
     private static readonly int[] ResizeWidths = [96, 64, 48, 32];
@@ -287,6 +287,74 @@ public static class FaviconExtractor
     }
 
     /// <summary>
+    /// Lists the favicon URLs a page declares, absolute and in order of preference, ending with the
+    /// origin's default /favicon.ico. Relative hrefs resolve against the page's base URL as a browser would.
+    /// </summary>
+    /// <param name="htmlBytes">The raw page bytes.</param>
+    /// <param name="documentUri">The URL the page was served from.</param>
+    /// <returns>The distinct candidate URLs.</returns>
+    internal static IReadOnlyList<string> GetFaviconCandidateUrls(byte[] htmlBytes, Uri documentUri)
+    {
+        HtmlDocument htmlDoc = new();
+        using (var htmlStream = new MemoryStream(htmlBytes))
+        {
+            htmlDoc.Load(htmlStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        }
+
+        var baseUri = ResolveDocumentBaseUri(htmlDoc, documentUri);
+
+        // Icon link queries, in order of preference.
+        string[] queries =
+        [
+            "//link[@rel='icon' and @type='image/svg+xml']",
+            "//link[@rel='icon' and @sizes='96x96']",
+            "//link[@rel='icon' and @sizes='128x128']",
+            "//link[@rel='icon' and @sizes='48x48']",
+            "//link[@rel='icon' and @sizes='32x32']",
+            "//link[@rel='icon' and @sizes='192x192']",
+            "//link[@rel='apple-touch-icon' or @rel='apple-touch-icon-precomposed']",
+            "//link[@rel='icon' or @rel='shortcut icon']",
+        ];
+
+        var candidates = new List<string>();
+        var seenUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var query in queries)
+        {
+            var nodes = htmlDoc.DocumentNode.SelectNodes(query);
+            if (nodes == null)
+            {
+                continue;
+            }
+
+            foreach (var node in nodes)
+            {
+                var href = node.Attributes["href"]?.DeEntitizeValue?.Trim();
+
+                // Skip empty or unparseable hrefs.
+                if (string.IsNullOrEmpty(href) || !Uri.TryCreate(baseUri, href, out var resolved))
+                {
+                    continue;
+                }
+
+                if (seenUrls.Add(resolved.AbsoluteUri))
+                {
+                    candidates.Add(resolved.AbsoluteUri);
+                }
+            }
+        }
+
+        // Try conventional location as fallback.
+        var defaultFavicon = $"{documentUri.GetLeftPart(UriPartial.Authority)}/favicon.ico";
+        if (seenUrls.Add(defaultFavicon))
+        {
+            candidates.Add(defaultFavicon);
+        }
+
+        return candidates;
+    }
+
+    /// <summary>
     /// Opens the TCP connection for an outgoing request and resolve a hostname only once.
     /// </summary>
     /// <param name="context">Connection context supplied by the HTTP stack.</param>
@@ -360,94 +428,44 @@ public static class FaviconExtractor
         // Resolve relative hrefs against the URL we actually ended up on after possible redirect.
         var finalUri = response.RequestMessage?.RequestUri ?? uri;
 
-        var faviconNodes = await GetFaviconNodesFromHtml(response, finalUri, cancellationToken);
-        return await TryExtractFaviconFromNodes(faviconNodes, client, finalUri, cancellationToken);
+        var htmlBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        var candidates = GetFaviconCandidateUrls(htmlBytes, finalUri);
+        return await TryFetchFaviconCandidatesAsync(client, candidates, cancellationToken);
     }
 
     /// <summary>
-    /// Gets the favicon nodes from the HTML.
+    /// Resolves the URL relative links in a page resolve against: the first base href when
+    /// present and usable, otherwise the page URL.
     /// </summary>
-    /// <param name="response">The response to get the favicon nodes from.</param>
-    /// <param name="uri">The URI to get the favicon nodes from.</param>
-    /// <param name="cancellationToken">Token maxing the overall extraction.</param>
-    /// <returns>The favicon nodes.</returns>
-    private static async Task<HtmlNodeCollection[]> GetFaviconNodesFromHtml(HttpResponseMessage response, Uri uri, CancellationToken cancellationToken)
+    /// <param name="htmlDoc">The parsed page.</param>
+    /// <param name="documentUri">The URL the page was served from.</param>
+    /// <returns>The base URL for relative links.</returns>
+    private static Uri ResolveDocumentBaseUri(HtmlDocument htmlDoc, Uri documentUri)
     {
-        var htmlBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-        HtmlDocument htmlDoc = new();
-        using (var htmlStream = new MemoryStream(htmlBytes))
+        var baseHref = htmlDoc.DocumentNode.SelectSingleNode("//base[@href]")?.Attributes["href"]?.DeEntitizeValue?.Trim();
+        if (!string.IsNullOrEmpty(baseHref) && Uri.TryCreate(documentUri, baseHref, out var baseUri) && AllowedSchemes.Contains(baseUri.Scheme))
         {
-            htmlDoc.Load(htmlStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            return baseUri;
         }
 
-        var defaultFavicon = new HtmlNode(HtmlNodeType.Element, htmlDoc, 0);
-        defaultFavicon.Attributes.Add("href", $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
-
-        // Get the favicon nodes from the HTML, in order of preference.
-        HtmlNodeCollection?[] nodeArray =
-        [
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @type='image/svg+xml']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='96x96']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='128x128']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='48x48']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='32x32']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @sizes='192x192']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='apple-touch-icon' or @rel='apple-touch-icon-precomposed']"),
-            htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' or @rel='shortcut icon']"),
-            new(htmlDoc.DocumentNode) { defaultFavicon },
-        ];
-
-        // Filter node array to only return non-null values and cast to non-nullable array
-        return nodeArray.Where(x => x != null).Cast<HtmlNodeCollection>().ToArray();
+        return documentUri;
     }
 
     /// <summary>
-    /// Tries to extract the favicon from the nodes.
+    /// Fetches the candidate URLs in order and returns the first usable icon.
     /// </summary>
-    /// <param name="faviconNodes">The favicon nodes.</param>
     /// <param name="client">The HTTP client.</param>
-    /// <param name="baseUri">The base URI.</param>
+    /// <param name="candidates">The candidate URLs, best first.</param>
     /// <param name="cancellationToken">Token maxing the overall extraction.</param>
-    /// <returns>The favicon bytes.</returns>
-    private static async Task<byte[]?> TryExtractFaviconFromNodes(HtmlNodeCollection[] faviconNodes, HttpClient client, Uri baseUri, CancellationToken cancellationToken)
+    /// <returns>The favicon bytes, or null if no candidate yielded a usable icon.</returns>
+    private static async Task<byte[]?> TryFetchFaviconCandidatesAsync(HttpClient client, IReadOnlyList<string> candidates, CancellationToken cancellationToken)
     {
-        var seenUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var nodeCollection in faviconNodes)
+        foreach (var candidate in candidates.Take(MaxFaviconCandidates))
         {
-            if (nodeCollection == null || nodeCollection.Count == 0)
+            var faviconBytes = await FetchAndProcessFaviconAsync(client, candidate, cancellationToken);
+            if (faviconBytes != null)
             {
-                continue;
-            }
-
-            foreach (var node in nodeCollection)
-            {
-                var faviconUrl = node.GetAttributeValue("href", string.Empty);
-                if (string.IsNullOrEmpty(faviconUrl))
-                {
-                    continue;
-                }
-
-                if (!Uri.IsWellFormedUriString(faviconUrl, UriKind.Absolute))
-                {
-                    faviconUrl = new Uri(baseUri, faviconUrl).ToString();
-                }
-
-                if (!seenUrls.Add(faviconUrl))
-                {
-                    continue;
-                }
-
-                if (seenUrls.Count > MaxFaviconCandidates)
-                {
-                    return null;
-                }
-
-                var faviconBytes = await FetchAndProcessFaviconAsync(client, faviconUrl, cancellationToken);
-                if (faviconBytes != null)
-                {
-                    return faviconBytes;
-                }
+                return faviconBytes;
             }
         }
 
@@ -535,9 +553,9 @@ public static class FaviconExtractor
         var handler = new SocketsHttpHandler
         {
             AllowAutoRedirect = false, // Handle redirects manually
-            UseCookies = true,         // Enable cookie handling for session management
-            CookieContainer = new System.Net.CookieContainer(),
-            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate | System.Net.DecompressionMethods.Brotli,
+            UseCookies = true, // Enable cookie handling for session management
+            CookieContainer = new CookieContainer(),
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
             ConnectCallback = ConnectToValidatedAddressAsync,
         };
 
@@ -627,8 +645,8 @@ public static class FaviconExtractor
     private static async Task<HttpResponseMessage?> FollowRedirectsAsync(HttpClient client, Uri uri, CancellationToken cancellationToken)
     {
         var currentUri = uri;
-        int redirectCount = 0;
-        const int maxRedirects = 5;
+        var redirectCount = 0;
+        var maxRedirects = 5;
 
         while (redirectCount < maxRedirects)
         {

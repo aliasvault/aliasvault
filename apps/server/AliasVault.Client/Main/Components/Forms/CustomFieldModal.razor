@@ -1,0 +1,139 @@
+@using AliasClientDb.Models
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizerFactory LocalizerFactory
+@inject JsInteropService JsInteropService
+
+@* Modal for creating and editing a custom field. *@
+<FormModal
+    IsOpen="IsOpen"
+    Title="@(IsEditMode ? Localizer["EditCustomField"].Value : Localizer["AddCustomField"].Value)"
+    ConfirmText="@(IsEditMode ? SharedLocalizer["Save"].Value : Localizer["Add"].Value)"
+    CancelText="@Localizer["Cancel"]"
+    ConfirmButtonClass="bg-primary-600 hover:bg-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
+    MaxWidth="md"
+    OnClose="OnClose"
+    OnConfirm="HandleConfirm">
+    <Icon>
+        <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+    </Icon>
+    <ChildContent>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    @Localizer["FieldLabel"]
+                </label>
+                <input type="text"
+                       id="custom-field-label-input"
+                       @bind="Label"
+                       @bind:event="oninput"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                       placeholder="@Localizer["EnterFieldName"]" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    @Localizer["FieldType"]
+                </label>
+                <select @bind="SelectedFieldType"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                    <option value="@FieldType.Text">@Localizer["FieldTypeText"]</option>
+                    <option value="@FieldType.Password">@Localizer["FieldTypePassword"]</option>
+                    <option value="@FieldType.Hidden">@Localizer["FieldTypeHidden"]</option>
+                    <option value="@FieldType.TextArea">@Localizer["FieldTypeTextArea"]</option>
+                    <option value="@FieldType.URL">@Localizer["FieldTypeUrl"]</option>
+                    <option value="@FieldType.Email">@Localizer["FieldTypeEmail"]</option>
+                    <option value="@FieldType.Phone">@Localizer["FieldTypePhone"]</option>
+                    <option value="@FieldType.Number">@Localizer["FieldTypeNumber"]</option>
+                    <option value="@FieldType.Date">@Localizer["FieldTypeDate"]</option>
+                </select>
+            </div>
+        </div>
+    </ChildContent>
+</FormModal>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.AddFieldMenu", "AliasVault.Client");
+
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets whether the modal is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether an existing field is being edited (as opposed to a new one being added).
+    /// </summary>
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the label the form is populated with when the modal opens.
+    /// </summary>
+    [Parameter]
+    public string InitialLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the field type the form is populated with when the modal opens.
+    /// </summary>
+    [Parameter]
+    public string InitialFieldType { get; set; } = FieldType.Text;
+
+    /// <summary>
+    /// Gets or sets the callback invoked when the modal is dismissed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback invoked with the submitted values. Parameters: (label, fieldType).
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string Label, string FieldType)> OnSubmit { get; set; }
+
+    private string Label { get; set; } = string.Empty;
+    private string SelectedFieldType { get; set; } = FieldType.Text;
+    private bool _wasOpen;
+    private bool _shouldFocusInput;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Reset the form to the field being edited (or to the defaults) whenever the modal opens.
+        if (IsOpen && !_wasOpen)
+        {
+            Label = InitialLabel;
+            SelectedFieldType = InitialFieldType;
+            _shouldFocusInput = true;
+        }
+
+        _wasOpen = IsOpen;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_shouldFocusInput)
+        {
+            return;
+        }
+
+        _shouldFocusInput = false;
+
+        // Wait for the modal to render, then focus and select the input text.
+        await Task.Delay(50);
+        await JsInteropService.FocusAndSelectElementById("custom-field-label-input");
+    }
+
+    private async Task HandleConfirm()
+    {
+        if (!string.IsNullOrWhiteSpace(Label))
+        {
+            await OnSubmit.InvokeAsync((Label.Trim(), SelectedFieldType));
+            await OnClose.InvokeAsync();
+        }
+    }
+}

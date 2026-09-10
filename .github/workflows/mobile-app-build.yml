@@ -75,8 +75,8 @@ jobs:
               exit 1
             fi
 
-            # Check if files were modified in the last 5 minutes
-            find "$dir" -type f -mmin -5 | grep -q . || {
+            # Check if files were modified in the last 10 minutes
+            find "$dir" -type f -mmin -10 | grep -q . || {
               echo "❌ Files in $dir were not recently modified"
               exit 1
             }

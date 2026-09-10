@@ -10,6 +10,7 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using System.IO.Compression;
+using System.Text;
 using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.ImportExport;
@@ -765,6 +766,7 @@ public class ImportExportTests
             Assert.That(gmailCredential.Password, Is.EqualTo("your_password"));
             Assert.That(gmailCredential.Notes, Is.EqualTo("Important email account"));
             Assert.That(gmailCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(gmailCredential.FolderPath, Is.EqualTo("Personal"));
         });
 
         // Test Facebook credential from template
@@ -777,6 +779,7 @@ public class ImportExportTests
             Assert.That(facebookCredential.Password, Is.EqualTo("your_password"));
             Assert.That(facebookCredential.Notes, Is.EqualTo("Social media account"));
             Assert.That(facebookCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(facebookCredential.FolderPath, Is.EqualTo("Personal/Social"));
         });
 
         // Test GitHub credential with TOTP from template
@@ -789,6 +792,7 @@ public class ImportExportTests
             Assert.That(githubCredential.Password, Is.EqualTo("your_password"));
             Assert.That(githubCredential.Notes, Is.EqualTo("Development platform"));
             Assert.That(githubCredential.TwoFactorSecret, Is.EqualTo("your_totp_secret_here"));
+            Assert.That(githubCredential.FolderPath, Is.EqualTo("Work"));
         });
 
         // Test Secure Note (no username/password) from template
@@ -801,6 +805,7 @@ public class ImportExportTests
             Assert.That(secureNoteCredential.Password, Is.Empty);
             Assert.That(secureNoteCredential.Notes, Is.EqualTo("Important information or notes without login credentials"));
             Assert.That(secureNoteCredential.TwoFactorSecret, Is.Empty);
+            Assert.That(secureNoteCredential.FolderPath, Is.Null);
         });
     }
 
@@ -1065,7 +1070,7 @@ public class ImportExportTests
 
         // Assert
         Assert.That(template, Is.Not.Null);
-        Assert.That(template, Does.Contain("service_name,url,username,password,totp_secret,notes"));
+        Assert.That(template, Does.Contain("service_name,url,username,password,totp_secret,notes,folder"));
         Assert.That(template, Does.Contain("Gmail"));
         Assert.That(template, Does.Contain("Facebook"));
         Assert.That(template, Does.Contain("GitHub"));
@@ -1398,8 +1403,8 @@ public class ImportExportTests
         // Act
         var importedCredentials = await RoboformImporter.ImportFromCsvAsync(fileContent);
 
-        // Assert - Should import 4 records
-        Assert.That(importedCredentials, Has.Count.EqualTo(4));
+        // Assert - Should import 5 records
+        Assert.That(importedCredentials, Has.Count.EqualTo(5));
 
         // Test regular login credential
         var comCredential = importedCredentials.First(c => c.ServiceName == "Com");
@@ -1449,6 +1454,15 @@ public class ImportExportTests
             Assert.That(businessCredential.Password, Is.EqualTo("businesspassword"));
             Assert.That(businessCredential.FolderPath, Is.EqualTo("Business"));
             Assert.That(businessCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+
+        // Test secure note with a multi-line note body
+        var multilineNote = importedCredentials.First(c => c.ServiceName == "Multiline safenote");
+        Assert.Multiple(() =>
+        {
+            Assert.That(multilineNote.Notes, Does.StartWith("First note line"));
+            Assert.That(multilineNote.Notes, Does.Contain("Fourth note line after a blank one"));
+            Assert.That(multilineNote.ItemType, Is.EqualTo(ImportedItemType.Note));
         });
     }
 

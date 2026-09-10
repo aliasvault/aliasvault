@@ -72,6 +72,12 @@ type PersistedFormData = {
 };
 
 /**
+ * Whether a custom field of the given type should be masked in the UI.
+ */
+const isMaskedFieldType = (fieldType: FieldType): boolean =>
+  fieldType === FieldTypes.Password || fieldType === FieldTypes.Hidden;
+
+/**
  * Add or edit item page with dynamic field support.
  * Shows all applicable system fields for the item type, not just fields with values.
  */
@@ -813,7 +819,7 @@ const ItemAddEdit: React.FC = () => {
        */
       const urlValue = fieldValues['login.url'];
       const usesAutomaticLogo = !logoSelection || logoSelection.Kind === LogoKinds.Favicon;
-      const isLogoResolved = usesAutomaticLogo && resolvedFaviconSource === FaviconService.extractSourceFromUrl(FaviconService.extractFirstValidUrl(urlValue));
+      const isLogoResolved = usesAutomaticLogo && resolvedFaviconSource === (await FaviconService.resolveTarget(urlValue))?.source;
       if (dbContext?.sqliteClient && urlValue && usesAutomaticLogo && !isLogoResolved) {
         updatedItem = await FaviconService.fetchAndAttachFavicon(
           updatedItem,
@@ -918,7 +924,7 @@ const ItemAddEdit: React.FC = () => {
       tempId,
       label,
       fieldType,
-      isHidden: false,
+      isHidden: isMaskedFieldType(fieldType),
       displayOrder: applicableSystemFields.length + customFields.length + 1
     };
 
@@ -938,11 +944,11 @@ const ItemAddEdit: React.FC = () => {
   }, []);
 
   /**
-   * Update custom field label handler.
+   * Update custom field handler. Both the label and the field type can be changed.
    */
-  const handleUpdateCustomFieldLabel = useCallback((tempId: string, newLabel: string) => {
+  const handleUpdateCustomField = useCallback((tempId: string, label: string, fieldType: FieldType) => {
     setCustomFields(prev => prev.map(f =>
-      f.tempId === tempId ? { ...f, label: newLabel } : f
+      f.tempId === tempId ? { ...f, label, fieldType, isHidden: isMaskedFieldType(fieldType) } : f
     ));
   }, []);
 
@@ -1559,7 +1565,7 @@ const ItemAddEdit: React.FC = () => {
             fieldValues={fieldValues}
             onFieldsReorder={handleCustomFieldsReorder}
             onFieldValueChange={(tempId, value) => handleFieldChange(tempId, value)}
-            onFieldLabelChange={handleUpdateCustomFieldLabel}
+            onFieldUpdate={handleUpdateCustomField}
             onFieldDelete={handleDeleteCustomField}
           />
         </FormSection>

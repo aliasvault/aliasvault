@@ -146,7 +146,7 @@ write_client_dev_settings() {
   cat > "$target" <<JSON
 {
     "ApiUrl": "http://localhost:$API_HTTP",
-    "PrivateEmailDomains": ["example.tld", "example2.tld", "disabled.tld"],
+    "PrivateEmailDomains": ["example.tld", "example2.tld", "aliasvault.net", "disabled.tld"],
     "HiddenPrivateEmailDomains": ["disabled.tld"],
     "SupportEmail": "support@example.tld",
     "PublicRegistrationEnabled": "true",

@@ -159,6 +159,12 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       fontSize: 16,
       fontWeight: '600',
     },
+    docsLink: {
+      color: colors.primary,
+      fontSize: 15,
+      lineHeight: 22,
+      textDecorationLine: 'underline',
+    },
     headerText: {
       color: colors.textMuted,
       fontSize: 13,
@@ -221,42 +227,11 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       lineHeight: 20,
       marginTop: 8,
     },
-    warningContainer: {
-      backgroundColor: colors.accentBackground,
-      marginBottom: 16,
-      padding: 16,
-    },
-    warningDescription: {
-      color: colors.text,
-      fontSize: 14,
-      lineHeight: 20,
-    },
-    warningLink: {
-      color: colors.primary,
-      fontSize: 14,
-      textDecorationLine: 'underline',
-    },
-    warningTitle: {
-      color: colors.text,
-      fontSize: 16,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
   });
 
   return (
     <ThemedContainer>
       <ThemedScrollView>
-        <View style={styles.warningContainer}>
-          <ThemedText style={styles.warningTitle}>{t('settings.androidAutofillSettings.warningTitle')}</ThemedText>
-          <ThemedText style={styles.warningDescription}>
-            {t('settings.androidAutofillSettings.warningDescription')}{' '}
-            <ThemedText style={styles.warningLink} onPress={handleOpenDocs}>
-              {t('settings.androidAutofillSettings.warningLink')}
-            </ThemedText>
-          </ThemedText>
-        </View>
-
         <View>
           <ThemedText style={styles.headerText}>
             {t('settings.androidAutofillSettings.headerText')}
@@ -282,7 +257,10 @@ export default function AndroidAutofillScreen() : React.ReactNode {
             </ThemedText>
           </View>
           <ThemedText style={styles.instructionStep}>
-            {t('settings.androidAutofillSettings.step2')}
+            {t('settings.androidAutofillSettings.step2')}{' '}
+            <ThemedText style={styles.docsLink} onPress={handleOpenDocs}>
+              {t('settings.androidAutofillSettings.docsLink')}
+            </ThemedText>
           </ThemedText>
           {shouldShowAutofillReminder && (
             <View style={styles.buttonContainer}>

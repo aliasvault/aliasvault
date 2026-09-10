@@ -1635,6 +1635,45 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Check whether this platform can ask the user for a store review. Not yet implemented for Android.
+     * TODO: implement for Google Play installs.
+     *
+     * @param promise The promise to resolve with boolean result
+     */
+    @ReactMethod
+    override fun isAppReviewAvailable(promise: Promise) {
+        promise.resolve(false)
+    }
+
+    /**
+     * Start the native review flow.
+     * TODO: implement for Google Play installs.
+     * @param promise The promise to resolve with whether a review flow was started
+     */
+    @ReactMethod
+    override fun requestAppReview(promise: Promise) {
+        promise.resolve(false)
+    }
+
+    /**
+     * Get the date this app was installed.
+     * @param promise The promise to resolve with the install date in milliseconds since epoch,
+     * or 0 when it cannot be determined
+     */
+    @ReactMethod
+    override fun getAppInstallDate(promise: Promise) {
+        try {
+            val packageInfo = reactApplicationContext.packageManager
+                .getPackageInfo(reactApplicationContext.packageName, 0)
+
+            promise.resolve(packageInfo.firstInstallTime.toDouble())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error resolving app install date", e)
+            promise.resolve(0.0)
+        }
+    }
+
     @ReactMethod
     override fun authenticateUser(
         title: String?,
@@ -1954,6 +1993,32 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error deriving SRP session", e)
             promise.reject("ERR_SRP_DERIVE_SESSION", "Failed to derive SRP session: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
+     * key it is stored under.
+     * @param urls The item's URLs, in the order the item lists them.
+     * @param promise Resolves with a JSON string, or null when no URL qualifies.
+     */
+    @ReactMethod
+    override fun selectFaviconTarget(urls: ReadableArray, promise: Promise) {
+        try {
+            val urlList = (0 until urls.size()).mapNotNull { urls.getString(it) }
+            val target = uniffi.aliasvault_core.selectFaviconTarget(urlList)
+            if (target == null) {
+                promise.resolve(null)
+                return
+            }
+
+            val json = JSONObject()
+                .put("url", target.url)
+                .put("source", target.source)
+            promise.resolve(json.toString())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error selecting favicon target", e)
+            promise.reject("ERR_SELECT_FAVICON_TARGET", "Failed to select favicon target: ${e.message}", e)
         }
     }
 

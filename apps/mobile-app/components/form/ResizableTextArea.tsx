@@ -1,8 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LayoutChangeEvent, StyleSheet, TextInput, TextInputProps, TouchableHighlight, View, useWindowDimensions } from 'react-native';
+import { NativeSyntheticEvent, ScrollView, StyleSheet, TextInput, TextInputProps, TextInputSelectionChangeEventData, TouchableHighlight, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
@@ -27,6 +27,9 @@ const DRAG_THRESHOLD = 2;
 /** Extra touch area around the drag handle. */
 const HANDLE_HIT_SLOP = { bottom: 12, left: 24, right: 24, top: 8 };
 
+/** Animated text input component. */
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
 type ResizableTextAreaProps = Omit<TextInputProps, 'onChangeText' | 'multiline' | 'numberOfLines'> & {
   label: string;
   value: string;
@@ -37,9 +40,6 @@ type ResizableTextAreaProps = Omit<TextInputProps, 'onChangeText' | 'multiline' 
 
 /**
  * Multi-line form field with a drag handle at the bottom to resize it.
- *
- * Until the handle is dragged the field grows with its content (between the minimum
- * and maximum height). After a drag it keeps the height the user dragged it to.
  */
 export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   label,
@@ -52,15 +52,15 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   const colors = useColors();
   const { t } = useTranslation();
   const { height: windowHeight } = useWindowDimensions();
-
   const maxHeight = Math.max(MIN_HEIGHT * 2, Math.round(windowHeight * MAX_HEIGHT_RATIO));
-
-  // Whether the user dragged the handle; until then the field sizes itself to its content.
   const [isResized, setIsResized] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const isCaretAtEnd = useRef(false);
 
-  // Height the field renders at: measured from the layout while it still auto-grows,
+  // Height the field renders at: follows the content while it still auto-grows,
   // driven by the drag afterwards.
   const height = useSharedValue(MIN_HEIGHT);
+  const contentHeight = useSharedValue(MIN_HEIGHT);
   const maxHeightValue = useSharedValue(maxHeight);
   const dragStartHeight = useSharedValue(MIN_HEIGHT);
   const hasDragged = useSharedValue(false);
@@ -68,13 +68,11 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   // Keep the height within bounds when the window size changes (e.g. rotation).
   useEffect(() => {
     maxHeightValue.value = maxHeight;
-
-    if (isResized && height.value > maxHeight) {
-      height.value = maxHeight;
-    }
-  }, [maxHeight, isResized, height, maxHeightValue]);
+    height.value = Math.min(Math.max(isResized ? height.value : contentHeight.value, MIN_HEIGHT), maxHeight);
+  }, [maxHeight, isResized, height, contentHeight, maxHeightValue]);
 
   const animatedHeightStyle = useAnimatedStyle(() => ({ height: height.value }));
+  const animatedInputStyle = useAnimatedStyle(() => ({ minHeight: height.value }));
 
   /**
    * Give feedback when the handle is grabbed.
@@ -120,16 +118,26 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
   }, [height, maxHeightValue]);
 
   /**
-   * Track the height the field renders at, so a drag starts from the size the
-   * user actually sees while the field is still auto-growing.
+   * Grow the field with its text until it is resized by hand.
    */
-  const handleLayout = useCallback((event: LayoutChangeEvent): void => {
-    if (isResized) {
-      return;
+  const handleContentSizeChange = useCallback((_width: number, newContentHeight: number): void => {
+    contentHeight.value = newContentHeight;
+
+    if (!isResized) {
+      height.value = Math.min(Math.max(newContentHeight, MIN_HEIGHT), maxHeightValue.value);
     }
 
-    height.value = event.nativeEvent.layout.height;
-  }, [isResized, height]);
+    if (isCaretAtEnd.current) {
+      scrollRef.current?.scrollToEnd({ animated: false });
+    }
+  }, [contentHeight, height, isResized, maxHeightValue]);
+
+  /**
+   * Track whether the caret is at the end of the text.
+   */
+  const handleSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>): void => {
+    isCaretAtEnd.current = event.nativeEvent.selection.end >= value.length;
+  }, [value.length]);
 
   const styles = StyleSheet.create({
     handle: {
@@ -150,9 +158,7 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
-    },
-    inputFilling: {
-      flex: 1,
+      overflow: 'hidden',
     },
     inputGroup: {
       marginBottom: 6,
@@ -191,24 +197,29 @@ export const ResizableTextArea: React.FC<ResizableTextAreaProps> = ({
         </View>
       )}
       <View style={styles.inputContainer}>
-        <Animated.View
-          style={isResized ? animatedHeightStyle : undefined}
-          onLayout={handleLayout}
+        <Animated.ScrollView
+          ref={scrollRef}
+          style={animatedHeightStyle}
+          onContentSizeChange={handleContentSizeChange}
+          keyboardShouldPersistTaps="always"
+          nestedScrollEnabled
         >
-          <TextInput
-            style={isResized ? [styles.input, styles.inputFilling] : [styles.input, { minHeight: MIN_HEIGHT, maxHeight }]}
+          <AnimatedTextInput
+            style={isResized ? [styles.input, animatedInputStyle] : [styles.input, { minHeight: MIN_HEIGHT }]}
             value={value}
             onChangeText={onChangeText}
+            onSelectionChange={handleSelectionChange}
             placeholderTextColor={colors.textMuted}
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect={false}
             multiline
+            scrollEnabled={false}
             testID={testID}
             accessibilityLabel={testID}
             {...props}
           />
-        </Animated.View>
+        </Animated.ScrollView>
         <GestureDetector gesture={resizeGesture}>
           <View
             style={styles.handle}

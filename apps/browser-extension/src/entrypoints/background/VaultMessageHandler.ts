@@ -30,7 +30,7 @@ import { getStorageItem } from '@/utils/StorageUtility';
 import { generateTotpCode } from '@/utils/TotpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode, hasErrorCode } from '@/utils/types/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
@@ -52,7 +52,7 @@ import { VaultCodec } from '@/utils/VaultCodec';
 import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
 import { VaultKeyService } from '@/utils/VaultKeyService';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
-import { vaultMergeService } from '@/utils/VaultMergeService';
+import { vaultMergeService, type MergeResult } from '@/utils/VaultMergeService';
 import { getVaultSyncHoldReason } from '@/utils/VaultSyncHold';
 import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@/utils/VaultSyncService';
 import { WebApiService } from '@/utils/WebApiService';
@@ -1424,24 +1424,20 @@ export type FullVaultSyncResult = {
 /**
  * Persists a sync error message to local storage so the popup can surface it
  * even when the failing sync was triggered from the background (e.g. follow-up
- * syncs after pending mutations). Cleared on the next successful sync.
- *
- * Skips errors that already have dedicated UX:
- * - requiresLogout: handled by the forced re-login flow
- * - wasOffline: handled by the offline indicator
+ * syncs after pending mutations). Any other result clears the stored message, so a stale
+ * error cannot keep re-opening the dialog after it stopped applying.
  */
 async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void> {
-  if (result.requiresLogout || result.wasOffline) {
-    return;
-  }
-
   const errorMessage = result.errorKey
     ? await t('common.errors.' + result.errorKey)
     : result.error;
 
-  if (errorMessage) {
+  // requiresLogout and wasOffline have dedicated UX: the forced re-login flow and the offline indicator.
+  const dedicatedError = result.requiresLogout || result.wasOffline;
+
+  if (errorMessage && !dedicatedError) {
     await storage.setItem(StorageKeys.LAST_SYNC_ERROR, errorMessage);
-  } else if (result.success) {
+  } else {
     await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }
 }
@@ -1879,7 +1875,14 @@ function mapVaultOpenError(error: unknown): FullVaultSyncResult {
     return syncResult({ success: false, requiresLogout: true, error: error.message });
   }
 
-  // E-501: Vault decryption failed
+  console.error('[VaultSync] Failed to process server vault:', error);
+
+  // Keep an already-coded error instead of masking it as a decryption failure.
+  if (hasErrorCode(error)) {
+    throw error;
+  }
+
+  // E-203: Vault decryption failed
   throw new Error(formatErrorWithCode('Vault could not be decrypted, if the problem persists please logout and login again.', AppErrorCode.VAULT_DECRYPT_FAILED));
 }
 
@@ -2033,7 +2036,15 @@ async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryption
     const localDecrypted = bytesToBase64(await decryptVaultBlob(localEncryptedVault, encryptionKey));
     const serverDecrypted = bytesToBase64(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
 
-    const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+    let mergeResult: MergeResult;
+    try {
+      mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+    } catch (error) {
+      console.error('[VaultSync] Vault merge threw during sync:', error);
+      // E-701: Merge failed
+      throw new Error(formatErrorWithCode(await t('common.errors.mergeFailed'), AppErrorCode.MERGE_FAILED));
+    }
+
     if (!mergeResult.success) {
       console.error('Vault merge failed during sync, using server vault');
       return await adoptServerVault(vaultResponse, syncState);
@@ -2154,8 +2165,13 @@ async function pendingMigrationResult(): Promise<FullVaultSyncResult | null> {
     if (await vaultRequiresManifestMigration(sqliteClient)) {
       return syncResult({ manifestMigrationRequired: true });
     }
-  } catch {
-    // Ignore errors checking migrations
+  } catch (error) {
+    // Only an incompatible vault version surfaces, as that forces a logout.
+    if (error instanceof VaultVersionIncompatibleError) {
+      throw error;
+    }
+
+    console.error('[VaultSync] Ignoring failed pending migration check:', error);
   }
 
   return null;
@@ -2206,8 +2222,8 @@ async function mapSyncFailure(err: unknown): Promise<FullVaultSyncResult> {
   // For all other errors, include an error code so users can report it
   const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
   // Check if message already has an error code (E-XXX format)
-  const hasErrorCode = /E-\d{3}/.test(baseMessage);
-  const errorMessage = hasErrorCode
+  const alreadyHasErrorCode = /E-\d{3}/.test(baseMessage);
+  const errorMessage = alreadyHasErrorCode
     ? baseMessage
     : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
 

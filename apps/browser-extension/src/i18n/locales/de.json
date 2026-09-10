@@ -283,6 +283,8 @@
     "creating": "Wird erstellt",
     "editing": "Bearbeiten",
     "addCustomField": "Benutzerdefiniertes Feld hinzufügen",
+    "editCustomField": "Benutzerdefiniertes Feld bearbeiten",
+    "deleteCustomField": "Benutzerdefiniertes Feld löschen",
     "fieldLabel": "Feldbezeichnung",
     "enterFieldName": "Feldnamen eingeben",
     "fieldType": "Feldtyp",

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Vault storage insights</value>
+    <comment>Page title for vault storage insights</comment>
+  </data>
+  <data name="PageDescription">
+    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <comment>Page description for vault storage insights</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Storage insights</value>
+    <comment>Breadcrumb title for storage insights page</comment>
+  </data>
+  <!-- Estimated total -->
+  <data name="EstimatedTotalTitle">
+    <value>Estimated vault size</value>
+    <comment>Title for the estimated total vault size card</comment>
+  </data>
+  <data name="EstimatedTotalDescription">
+    <value>This is an approximation calculated from your local data.</value>
+    <comment>Subtext explaining that the estimate is approximate</comment>
+  </data>
+  <!-- Counts -->
+  <data name="CountsTitle">
+    <value>Overview</value>
+    <comment>Title for the counts/overview section</comment>
+  </data>
+  <data name="ItemCountLabel">
+    <value>Items</value>
+    <comment>Label for total item count card</comment>
+  </data>
+  <data name="ItemsWithAttachmentsLabel">
+    <value>Items with attachments</value>
+    <comment>Label for count of items that have at least one attachment</comment>
+  </data>
+  <data name="ItemsWithLogosLabel">
+    <value>Items with a logo</value>
+    <comment>Label for count of items that reference a logo</comment>
+  </data>
+  <!-- Breakdown -->
+  <data name="BreakdownTitle">
+    <value>Storage usage breakdown</value>
+    <comment>Title for the breakdown bar section</comment>
+  </data>
+  <data name="BreakdownDescription">
+    <value>Approximate share of vault size by category. Attachments and logos usually take up most of the space.</value>
+    <comment>Description for the breakdown bar</comment>
+  </data>
+  <data name="BreakdownCredentialsLabel">
+    <value>Credentials</value>
+    <comment>Legend label for credential data slice</comment>
+  </data>
+  <data name="BreakdownAttachmentsLabel">
+    <value>Attachments</value>
+    <comment>Legend label for attachments slice</comment>
+  </data>
+  <data name="BreakdownLogosLabel">
+    <value>Logos</value>
+    <comment>Legend label for logos slice</comment>
+  </data>
+  <data name="BreakdownBaseOverheadLabel">
+    <value>Database overhead</value>
+    <comment>Legend label for the fixed SQLite base/schema overhead slice</comment>
+  </data>
+  <!-- Top attachments table -->
+  <data name="TopAttachmentsTitle">
+    <value>Largest attachments</value>
+    <comment>Title for the top attachments table</comment>
+  </data>
+  <data name="TopAttachmentsDescription">
+    <value>Top 10 largest file attachments. Remove the attachment if you no longer need it.</value>
+    <comment>Description for the top attachments table</comment>
+  </data>
+  <!-- Top logos table -->
+  <data name="TopLogosTitle">
+    <value>Largest logos</value>
+    <comment>Title for the top logos table</comment>
+  </data>
+  <data name="TopLogosDescription">
+    <value>Top 10 largest service logos. Logos are reused for items with the same domain.</value>
+    <comment>Description for the top logos table</comment>
+  </data>
+  <!-- Table column headers -->
+  <data name="ColumnFilename">
+    <value>Filename</value>
+    <comment>Table column header for attachment filename</comment>
+  </data>
+  <data name="ColumnSize">
+    <value>Size</value>
+    <comment>Table column header for size in KB</comment>
+  </data>
+  <data name="ColumnItem">
+    <value>Item</value>
+    <comment>Table column header for the parent item name</comment>
+  </data>
+  <data name="ColumnCreated">
+    <value>Created</value>
+    <comment>Table column header for creation date</comment>
+  </data>
+  <data name="ColumnWebsiteURL">
+    <value>Website URL</value>
+    <comment>Table column header for logo source domain</comment>
+  </data>
+  <data name="ColumnItemCount">
+    <value>Used by</value>
+    <comment>Table column header for the number of items using a logo</comment>
+  </data>
+  <!-- Logo management -->
+  <data name="LogoManagementTitle">
+    <value>Manage logos</value>
+    <comment>Title for the logo management section</comment>
+  </data>
+  <data name="LogoManagementDescription">
+    <value>Logos are fetched from the favicon of each item's website. You can delete every logo to reclaim space, or re-download them to pick up improved versions.</value>
+    <comment>Description for the logo management section</comment>
+  </data>
+  <data name="DeleteAllLogosButton">
+    <value>Delete all logos</value>
+    <comment>Button to delete every logo in the vault</comment>
+  </data>
+  <data name="RedownloadAllLogosButton">
+    <value>Re-download all logos</value>
+    <comment>Button to re-fetch favicons for every item with a URL</comment>
+  </data>
+  <data name="DeleteAllLogosConfirmTitle">
+    <value>Delete all logos?</value>
+    <comment>Confirmation modal title for delete-all-logos</comment>
+  </data>
+  <data name="DeleteAllLogosConfirmMessage">
+    <value>This removes every stored logo from your vault and clears the logo on each credential. You can re-download them at any time. Continue?</value>
+    <comment>Confirmation modal body for delete-all-logos</comment>
+  </data>
+  <data name="RedownloadAllLogosConfirmTitle">
+    <value>Re-download all logos?</value>
+    <comment>Confirmation modal title for redownload-all-logos</comment>
+  </data>
+  <data name="RedownloadAllLogosConfirmMessage">
+    <value>This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?</value>
+    <comment>Confirmation modal body for redownload-all-logos</comment>
+  </data>
+</root>

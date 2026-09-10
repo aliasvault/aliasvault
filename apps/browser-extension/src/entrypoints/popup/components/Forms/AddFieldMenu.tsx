@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
-
 import type { FieldType, SystemFieldDefinition } from '@/utils/dist/core/models/vault';
 import { FieldCategories } from '@/utils/dist/core/models/vault';
+
+import CustomFieldModal from './CustomFieldModal';
 
 /**
  * Configuration for an optional section (not field-based).
@@ -134,8 +134,6 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
-  const [customFieldLabel, setCustomFieldLabel] = useState('');
-  const [customFieldType, setCustomFieldType] = useState<FieldType>('Text');
 
   /**
    * Handle opening the custom field modal.
@@ -143,29 +141,6 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
   const handleOpenCustomFieldModal = useCallback((): void => {
     setShowCustomFieldModal(true);
     setIsOpen(false);
-  }, []);
-
-  /**
-   * Handle adding the custom field.
-   */
-  const handleAddCustomField = useCallback((): void => {
-    if (!customFieldLabel.trim()) {
-      return;
-    }
-
-    callbacks.onAddCustomField(customFieldLabel, customFieldType);
-    setCustomFieldLabel('');
-    setCustomFieldType('Text');
-    setShowCustomFieldModal(false);
-  }, [customFieldLabel, customFieldType, callbacks]);
-
-  /**
-   * Handle closing the custom field modal.
-   */
-  const handleCloseCustomFieldModal = useCallback((): void => {
-    setCustomFieldLabel('');
-    setCustomFieldType('Text');
-    setShowCustomFieldModal(false);
   }, []);
 
   /**
@@ -274,67 +249,11 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       </div>
 
       {/* Custom Field Modal */}
-      <ModalWrapper
+      <CustomFieldModal
         isOpen={showCustomFieldModal}
-        onClose={handleCloseCustomFieldModal}
-        title={t('itemTypes.addCustomField')}
-        footer={
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleAddCustomField}
-              disabled={!customFieldLabel.trim()}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('common.add')}
-            </button>
-            <button
-              type="button"
-              onClick={handleCloseCustomFieldModal}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('itemTypes.fieldLabel')}
-            </label>
-            <input
-              type="text"
-              value={customFieldLabel}
-              onChange={(e) => setCustomFieldLabel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-              placeholder={t('itemTypes.enterFieldName')}
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('itemTypes.fieldType')}
-            </label>
-            <select
-              value={customFieldType}
-              onChange={(e) => setCustomFieldType(e.target.value as FieldType)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="Text">{t('itemTypes.fieldTypes.text')}</option>
-              <option value="Password">{t('itemTypes.fieldTypes.password')}</option>
-              <option value="Hidden">{t('itemTypes.fieldTypes.hidden')}</option>
-              <option value="Email">{t('itemTypes.fieldTypes.email')}</option>
-              <option value="URL">{t('itemTypes.fieldTypes.url')}</option>
-              <option value="Phone">{t('itemTypes.fieldTypes.phone')}</option>
-              <option value="Number">{t('itemTypes.fieldTypes.number')}</option>
-              <option value="Date">{t('itemTypes.fieldTypes.date')}</option>
-              <option value="TextArea">{t('itemTypes.fieldTypes.textArea')}</option>
-            </select>
-          </div>
-        </div>
-      </ModalWrapper>
+        onClose={() => setShowCustomFieldModal(false)}
+        onSubmit={callbacks.onAddCustomField}
+      />
     </>
   );
 };

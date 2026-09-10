@@ -283,6 +283,8 @@
     "creating": "Ag cruthú",
     "editing": "Eagarthóireacht",
     "addCustomField": "Cuir réimse saincheaptha leis",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Lipéad Réimse",
     "enterFieldName": "Cuir isteach ainm na réimse",
     "fieldType": "Cineál Réimse",

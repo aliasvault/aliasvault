@@ -35,7 +35,7 @@ class OriginVerifier {
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
-        // Last refreshed: 2026-07-24
+        // Last refreshed: 2026-09-03
         private val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
@@ -975,6 +975,30 @@ class OriginVerifier {
                   {
                     "build": "release",
                     "cert_fingerprint_sha256": "F5:21:95:30:FC:8F:87:99:3B:3C:F5:0E:83:8A:96:75:AB:3B:2D:C5:79:A2:A8:52:0D:99:87:2A:26:B1:5C:5F"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "android",
+              "info": {
+                "package_name": "io.github.jqssun.helium",
+                "signatures": [
+                  {
+                    "build": "release",
+                    "cert_fingerprint_sha256": "09:55:40:49:4D:53:F4:8C:A0:51:BC:86:C3:92:C4:6E:DB:29:72:5D:A5:59:2B:D8:AF:3C:3D:02:7B:31:66:BB"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "android",
+              "info": {
+                "package_name": "com.norton.neo",
+                "signatures": [
+                  {
+                    "build": "release",
+                    "cert_fingerprint_sha256": "C5:2A:34:DE:F8:1E:DE:D5:3D:48:AD:D3:75:6C:73:24:A8:5B:42:04:D5:65:A7:22:0F:08:38:E3:07:6D:03:4B"
                   }
                 ]
               }

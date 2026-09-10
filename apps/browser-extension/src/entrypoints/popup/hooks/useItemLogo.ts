@@ -57,24 +57,24 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
       return;
     }
 
-    const normalizedUrl = FaviconService.extractFirstValidUrl(url);
-    const source = normalizedUrl ? FaviconService.extractSourceFromUrl(normalizedUrl) : 'unknown';
+    const target = await FaviconService.resolveTarget(url);
+    const source = target?.source ?? null;
     const previousSource = resolvedSourceRef.current;
     const requestId = ++requestIdRef.current;
 
     resolvedSourceRef.current = source;
-    setResolvedFaviconSource(source === 'unknown' ? null : source);
+    setResolvedFaviconSource(source);
     setLogoSelection({ Kind: LogoKinds.Favicon });
 
     // Without a domain there is nothing to fetch from, so automatic means no icon at all.
-    if (!normalizedUrl || source === 'unknown') {
+    if (!target) {
       onLogoBytesChange(undefined);
       return;
     }
 
     // The vault already holds this domain's favicon: show that one.
     if (!force) {
-      const stored = FaviconService.getStoredFavicon(normalizedUrl, sqliteClient);
+      const stored = FaviconService.getStoredFavicon(target, sqliteClient);
       if (stored) {
         onLogoBytesChange(stored);
         return;
@@ -87,7 +87,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
 
     setIsFetchingLogo(true);
     try {
-      const result = await FaviconService.fetchFavicon(normalizedUrl, sqliteClient, webApi, { ignoreStored: true });
+      const result = await FaviconService.fetchFavicon(target, sqliteClient, webApi, { ignoreStored: true });
       if (requestId !== requestIdRef.current) {
         return;
       }
@@ -113,23 +113,34 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
       return;
     }
 
-    const normalizedUrl = FaviconService.extractFirstValidUrl(url);
-    const source = normalizedUrl ? FaviconService.extractSourceFromUrl(normalizedUrl) : 'unknown';
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-    if (!hasInitialisedRef.current) {
-      hasInitialisedRef.current = true;
-      if (isExistingItem) {
-        resolvedSourceRef.current = source;
+    (async (): Promise<void> => {
+      const source = (await FaviconService.resolveTarget(url))?.source ?? null;
+      if (cancelled) {
         return;
       }
-    }
 
-    if (!usesWebsiteIcon || resolvedSourceRef.current === source) {
-      return;
-    }
+      if (!hasInitialisedRef.current) {
+        hasInitialisedRef.current = true;
+        if (isExistingItem) {
+          resolvedSourceRef.current = source;
+          return;
+        }
+      }
 
-    const timer = setTimeout(() => void resolveFromWebsite(false), URL_SETTLE_MS);
-    return (): void => clearTimeout(timer);
+      if (!usesWebsiteIcon || resolvedSourceRef.current === source) {
+        return;
+      }
+
+      timer = setTimeout(() => void resolveFromWebsite(false), URL_SETTLE_MS);
+    })();
+
+    return (): void => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [isExistingItem, isReady, resolveFromWebsite, url, usesWebsiteIcon]);
 
   /**

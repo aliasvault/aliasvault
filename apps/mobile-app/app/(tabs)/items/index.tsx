@@ -15,6 +15,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
+import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -76,6 +77,7 @@ export default function ItemsScreen(): React.ReactNode {
   const [itemsList, setItemsList] = useState<Item[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
+  const [hasLoadedItems, setHasLoadedItems] = useState(false);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -106,6 +108,9 @@ export default function ItemsScreen(): React.ReactNode {
 
   const authContext = useApp();
   const dbContext = useDb();
+
+  // Prompt for a store review when the app has been installed and used long enough and supported by the current platform.
+  useAppReviewPrompt(hasLoadedItems);
 
   const isAuthenticated = authContext.isLoggedIn;
   const isDatabaseAvailable = dbContext.dbAvailable;
@@ -316,6 +321,7 @@ export default function ItemsScreen(): React.ReactNode {
       setRecentlyDeletedCount(deletedCount);
       setSortOrder(savedSortOrder);
       setIsLoadingItems(false);
+      setHasLoadedItems(true);
     } catch (err) {
       console.error('Error loading items:', err);
       const errorMessage = err instanceof Error ? err.message : String(err);

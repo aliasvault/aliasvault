@@ -485,16 +485,19 @@ public sealed class ItemEdit
     }
 
     /// <summary>
-    /// Updates the label of a custom field.
+    /// Updates the label and type of a custom field.
     /// </summary>
     /// <param name="fieldKey">The field key.</param>
-    /// <param name="newLabel">The new label.</param>
-    public void UpdateCustomFieldLabel(string fieldKey, string newLabel)
+    /// <param name="label">The new label.</param>
+    /// <param name="fieldType">The new field type.</param>
+    public void UpdateCustomField(string fieldKey, string label, string fieldType)
     {
         var field = Fields.FirstOrDefault(f => f.FieldKey == fieldKey && f.IsCustomField);
         if (field != null)
         {
-            field.Label = newLabel;
+            field.Label = label;
+            field.FieldType = fieldType;
+            field.IsHidden = fieldType == FieldType.Hidden || fieldType == FieldType.Password;
         }
     }
 

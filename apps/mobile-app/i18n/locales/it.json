@@ -144,10 +144,8 @@
       "alreadyConfigured": "Ho già configurato"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Funzione Sperimentale",
-      "warningDescription": "Il supporto per l'auto-riempimento e passkey per Android è attualmente in stato sperimentale.",
-      "warningLink": "Per saperne di più clicca qui",
       "headerText": "È possibile configurare AliasVault per fornire password nativa e funzionalità di riempimento automatico della password in Android. Seguire le istruzioni qui sotto per abilitarla.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Le passkey  vengono create tramite Android Credential Manager (Android 14+). Per memorizzarle in AliasVault, assicurati che Autofill qui sotto sia abilitato.",
       "howToEnable": "Come abilitare l'auto-riempimento & Passkeys:",
       "step1": "1. Apri le impostazioni di Android tramite il pulsante qui sotto, e modifica il \"servizio preferito di riempimento automatico\" in \"AliasVault\"",
@@ -362,6 +360,7 @@
     },
     "addField": "Aggiungi Campo",
     "addCustomField": "Aggiungi Campo Personalizzato",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Campi Personalizzati",
     "fieldLabel": "Etichetta del Campo",
     "fieldType": "Tipo di Campo",

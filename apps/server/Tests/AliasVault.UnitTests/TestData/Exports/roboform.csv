@@ -3,3 +3,7 @@ Com,https://www.example.com.com,https://www.example.com,username1,password1,,,"U
 Example,https://www.example.com,https://www.example.com,exampleusername,examplepassword,Examplenote,,"User ID$,,,txt,exampleusername","Password$,,,pwd,examplepassword"
 Safenotename,,,,,Safenote content example here,
 Business,https://www.business.com,https://www.business.com,businessusername,businesspassword,,/Business,"User ID$,,,txt,businessusername","Password$,,,pwd,businesspassword"
+Multiline safenote,,,,,"First note line
+Second note line
+
+Fourth note line after a blank one",

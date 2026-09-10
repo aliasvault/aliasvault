@@ -3,7 +3,9 @@
 @inject AliasVault.Client.Services.FaviconService FaviconService
 @inject AliasVault.Client.Services.ItemService ItemService
 @inject AliasVault.RazorComponents.Services.ConfirmModalService ConfirmModalService
+@inject AliasVault.Client.Services.JsInterop.RustCore.RustCoreService RustCoreService
 @using AliasClientDb.Models
+@using AliasVault.Client.Services.JsInterop.RustCore
 @using AliasVault.RazorComponents.Tables
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Localization
@@ -459,36 +461,37 @@ else
         {
             var items = await ItemService.LoadAllAsync();
 
-            // Group items by normalized domain so each domain is fetched once and assigned to all items.
-            var itemsByDomain = new Dictionary<string, List<AliasClientDb.Item>>();
-            var representativeUrls = new Dictionary<string, string>();
+            /*
+             * Group items by favicon source so each source is fetched once and assigned to all
+             * items using it. Items with no URL a favicon can come from must not carry a logo,
+             * so their link is dropped instead.
+             */
+            var itemsBySource = new Dictionary<string, List<AliasClientDb.Item>>();
+            var targetsBySource = new Dictionary<string, FaviconTarget>();
+            var itemsWithoutTarget = new List<AliasClientDb.Item>();
             foreach (var item in items)
             {
-                var url = ItemService.GetFieldValue(item, FieldKey.LoginUrl);
-                if (string.IsNullOrEmpty(url) || url == ItemService.DefaultServiceUrl)
+                var target = await RustCoreService.SelectFaviconTargetAsync(ItemService.GetUrlsForFavicon(item));
+                if (target is null)
                 {
+                    itemsWithoutTarget.Add(item);
                     continue;
                 }
 
-                if (!FaviconService.TryNormalizeDomain(url, out var domain))
-                {
-                    continue;
-                }
-
-                if (!itemsByDomain.TryGetValue(domain, out var bucket))
+                if (!itemsBySource.TryGetValue(target.Source, out var bucket))
                 {
                     bucket = new List<AliasClientDb.Item>();
-                    itemsByDomain[domain] = bucket;
-                    representativeUrls[domain] = url;
+                    itemsBySource[target.Source] = bucket;
+                    targetsBySource[target.Source] = target;
                 }
 
                 bucket.Add(item);
             }
 
-            _redownloadTotal = itemsByDomain.Count;
+            _redownloadTotal = itemsBySource.Count;
             StateHasChanged();
 
-            if (_redownloadTotal == 0)
+            if (_redownloadTotal == 0 && itemsWithoutTarget.Count == 0)
             {
                 GlobalNotificationService.AddSuccessMessage(SharedLocalizer["Success"], true);
                 return;
@@ -500,20 +503,30 @@ else
                 InvokeAsync(StateHasChanged);
             });
 
-            var result = await FaviconService.ExtractBulkAsync(representativeUrls.Values, progress);
+            var result = await FaviconService.ExtractBulkAsync(targetsBySource.Values, progress);
 
             var ctx = await DbService.GetDbContextAsync();
             var now = DateTime.UtcNow;
 
-            foreach (var (domain, bucket) in itemsByDomain)
+            // Drop logo links where the item has no valid URL (anymore).
+            foreach (var item in itemsWithoutTarget)
             {
-                if (!result.Favicons.TryGetValue(domain, out var image))
+                if (item.LogoId != null)
+                {
+                    item.LogoId = null;
+                    item.UpdatedAt = now;
+                }
+            }
+
+            foreach (var (source, bucket) in itemsBySource)
+            {
+                if (!result.Favicons.TryGetValue(source, out var image))
                 {
                     continue;
                 }
 
                 // Look up by Source (unique field).
-                var existingLogo = await ctx.Logos.FirstOrDefaultAsync(l => l.Source == domain);
+                var existingLogo = await ctx.Logos.FirstOrDefaultAsync(l => l.Source == source);
                 Guid logoId;
                 if (existingLogo != null)
                 {
@@ -528,7 +541,7 @@ else
                     var newLogo = new AliasClientDb.Logo
                     {
                         Id = Guid.NewGuid(),
-                        Source = domain,
+                        Source = source,
                         FileData = image,
                         FetchedAt = now,
                         CreatedAt = now,

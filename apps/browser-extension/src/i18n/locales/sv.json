@@ -283,6 +283,8 @@
     "creating": "Skapar",
     "editing": "Redigerar",
     "addCustomField": "Lägg till anpassad fält",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Fältetikett",
     "enterFieldName": "Ange fältets namn",
     "fieldType": "Fälttyp",

@@ -339,6 +339,26 @@
     [vaultManager scanQRCode:prefixes statusText:statusText resolver:resolve rejecter:reject];
 }
 
+// MARK: - App Store Review
+
+- (void)isAppReviewAvailable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isAppReviewAvailable:resolve rejecter:reject];
+}
+
+- (void)requestAppReview:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager requestAppReview:resolve rejecter:reject];
+}
+
+- (void)getAppInstallDate:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getAppInstallDate:resolve rejecter:reject];
+}
+
+// MARK: - Favicon
+
+- (void)selectFaviconTarget:(NSArray<NSString *> *)urls resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager selectFaviconTarget:urls resolver:resolve rejecter:reject];
+}
+
 // MARK: - Password Generator
 
 - (void)generatePassword:(NSString *)settingsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

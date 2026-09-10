@@ -1,6 +1,7 @@
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@/utils/dist/core/models/vault';
 import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@/utils/dist/core/models/vault';
 import { getFolderPath } from '@/utils/FolderUtils';
+import { selectFaviconTarget, toUrlList } from '@/utils/RustCore';
 
 import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type DraftItem, type ItemRef } from '../ItemRef';
@@ -837,18 +838,18 @@ export class ItemRepository extends BaseRepository {
     }
 
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
-    const urlValue = urlField?.Value;
-    const urls = Array.isArray(urlValue) ? urlValue : (urlValue ? [urlValue] : []);
     // The first URL a domain can be read from, which is the one the favicon was fetched for.
-    const source = urls.map(url => this.logoRepository.extractSourceFromUrl(url)).find(candidate => candidate !== 'unknown') ?? 'unknown';
+    const target = await selectFaviconTarget(toUrlList(urlField?.Value));
 
     /*
-     * Without a domain there is no natural key to store a favicon under: 'unknown' is not one, every
-     * item with an unparseable URL would end up sharing (and overwriting) the same row.
+     * Without a domain there is no natural key to store a favicon under: every item with an
+     * unparseable URL would end up sharing (and overwriting) the same row.
      */
-    if (source === 'unknown') {
+    if (!target) {
       return null;
     }
+
+    const source = target.source;
 
     /*
      * An explicit re-fetch: the user asked for this domain's favicon to be pulled again because the one

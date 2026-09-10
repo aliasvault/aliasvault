@@ -74,6 +74,22 @@
     <value>Opdater</value>
     <comment>Refresh button text</comment>
   </data>
+  <data name="DeleteSelectedEmails" xml:space="preserve">
+    <value>Slet {0} valgte e-mail(s)</value>
+    <comment>Delete selected emails button text</comment>
+  </data>
+  <data name="BulkDeleteEmailTitle" xml:space="preserve">
+    <value>Slet email(s)</value>
+    <comment>Delete multiple emails confirmation dialog title</comment>
+  </data>
+  <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
+    <value>Er du sikker på, at du vil slette {0} e-mail(s)? Denne handling kan ikke fortrydes.</value>
+    <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailSuccess" xml:space="preserve">
+    <value>Alle {0} e-mail(s) slettet</value>
+    <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
+  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>Du bruger ikke nogen private e-mailadresser (endnu). Opret et nyt alias og brug en privat e-mailadresse som understøttes af AliasVault. Alle e-mails modtaget af disse private e-mailadresser vil blive vist her.</value>
     <comment>Message when no email addresses are configured</comment>

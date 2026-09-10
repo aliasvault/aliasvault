@@ -163,6 +163,9 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                 matching_mode,
                 AutofillMatchingMode::Default | AutofillMatchingMode::UrlSubdomain
             );
+            // The name wildcard (Priority 3b) is the feature the Default mode adds on top of
+            // URL matching, so the URL-only modes must not fall back to it.
+            let enable_name_wildcard_match = matches!(matching_mode, AutofillMatchingMode::Default);
 
             // Process credentials with item URLs (check all URLs for each credential)
             for cred in &credentials {
@@ -272,7 +275,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
             let root_domain = extract_root_domain(&current_domain_info.domain);
             let domain_words = extract_words(&root_domain);
 
-            if !domain_words.is_empty() {
+            if enable_name_wildcard_match && !domain_words.is_empty() {
                 let domain_word_match_ids: Vec<String> = credentials
                     .iter()
                     .filter(|cred| {

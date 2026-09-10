@@ -9,6 +9,7 @@ import VaultUtils
 import AVFoundation
 import RustCoreFramework
 import AuthenticationServices
+import StoreKit
 
 /**
  * This class is used as a bridge to allow React Native to interact with the VaultStoreKit class.
@@ -1074,6 +1075,50 @@ public class VaultManager: NSObject {
         }
     }
 
+    /**
+     * Whether this platform can ask the user for a store review. For iOS this is always true.
+     */
+    @objc
+    func isAppReviewAvailable(_ resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(true)
+    }
+
+    /**
+     * Show Apple's native rating overlay. Returns whether the OS accepted the request.
+     */
+    @objc
+    func requestAppReview(_ resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.main.async {
+            guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }) else {
+                resolve(false)
+                return
+            }
+
+            AppStore.requestReview(in: scene)
+            resolve(true)
+        }
+    }
+
+    /**
+     * Get the date this app was installed by looking at the creation date of the app's documents directory.
+     */
+    @objc
+    func getAppInstallDate(_ resolve: @escaping RCTPromiseResolveBlock,
+                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
+              let attributes = try? FileManager.default.attributesOfItem(atPath: documentsUrl.path),
+              let creationDate = attributes[.creationDate] as? Date else {
+            resolve(0)
+            return
+        }
+
+        resolve(creationDate.timeIntervalSince1970 * 1000)
+    }
+
     @objc
     func authenticateUser(_ title: String?,
                          subtitle: String?,
@@ -1306,6 +1351,28 @@ public class VaultManager: NSObject {
         vaultStore.setCurrentVaultRevisionNumber(0)
 
         resolve(nil)
+    }
+
+    // MARK: - Favicon
+
+    /// Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
+    /// key it is stored under. Resolves to a JSON string, or nil when no URL qualifies.
+    @objc
+    func selectFaviconTarget(_ urls: [String],
+                             resolver resolve: @escaping RCTPromiseResolveBlock,
+                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let target = RustCoreFramework.selectFaviconTarget(urls: urls) else {
+            resolve(nil)
+            return
+        }
+
+        do {
+            let payload = ["url": target.url, "source": target.source]
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            resolve(String(data: data, encoding: .utf8))
+        } catch {
+            reject("FAVICON_TARGET_ERROR", "Failed to serialize favicon target: \(error.localizedDescription)", error)
+        }
     }
 
     // MARK: - Password Generator

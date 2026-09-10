@@ -358,13 +358,17 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         val db = database.dbConnection ?: return emptyList()
 
         val results = mutableListOf<PasskeyWithCredentialInfo>()
-        val cursor = db.query(PasskeyQueries.GET_WITH_CREDENTIAL_INFO, arrayOf(FieldKey.LOGIN_USERNAME, rpId))
+        val cursor = db.query(
+            PasskeyQueries.GET_WITH_CREDENTIAL_INFO,
+            arrayOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, rpId),
+        )
 
         cursor.use {
             while (it.moveToNext()) {
                 val passkey = parsePasskeyFromCursor(it) ?: continue
                 val itemName = if (!it.isNull(11)) it.getString(11) else null
                 val itemUsername = if (!it.isNull(12)) it.getString(12) else null
+                val itemEmail = if (!it.isNull(13)) it.getString(13) else null
 
                 // Filter by username or userId if provided
                 var matches = true
@@ -381,6 +385,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                             passkey = passkey,
                             serviceName = itemName,
                             username = itemUsername,
+                            email = itemEmail,
                         ),
                     )
                 }
@@ -402,7 +407,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         val results = mutableListOf<ItemWithCredentialInfo>()
         val cursor = db.query(
             PasskeyQueries.GET_ALL_ITEMS_WITHOUT_PASSKEY,
-            arrayOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_PASSWORD),
+            arrayOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, FieldKey.LOGIN_PASSWORD),
         )
 
         cursor.use {
@@ -413,7 +418,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                 val itemUpdatedAt = if (!it.isNull(3)) it.getString(3) else null
                 val urlsString = if (!it.isNull(4)) it.getString(4) else null
                 val itemUsername = if (!it.isNull(5)) it.getString(5) else null
-                val hasPassword = !it.isNull(6) && it.getString(6).isNotEmpty()
+                val itemEmail = if (!it.isNull(6)) it.getString(6) else null
+                val hasPassword = !it.isNull(7) && it.getString(7).isNotEmpty()
 
                 try {
                     val itemId = UUID.fromString(itemIdString)
@@ -427,6 +433,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                             serviceName = itemName,
                             urls = urls,
                             username = itemUsername,
+                            email = itemEmail,
                             hasPassword = hasPassword,
                             createdAt = createdAt,
                             updatedAt = updatedAt,
@@ -712,12 +719,18 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
  * @property passkey The passkey.
  * @property serviceName The service name from the item.
  * @property username The username from the item.
+ * @property email The email from the item, used as display fallback when there is no username.
  */
 data class PasskeyWithCredentialInfo(
     val passkey: Passkey,
     val serviceName: String?,
     val username: String?,
-)
+    val email: String? = null,
+) {
+    /** The account identifier to display: the username, or the email when no username is set. */
+    val accountLabel: String?
+        get() = username?.takeIf { it.isNotBlank() } ?: email?.takeIf { it.isNotBlank() }
+}
 
 /**
  * Data class to hold passkey with its associated item.
@@ -736,9 +749,9 @@ data class PasskeyWithItem(
  *
  * @property itemId The UUID of the item.
  * @property serviceName The service name (Item.Name).
- * @property url The login URL (first URL for backwards compatibility).
  * @property urls All login URLs associated with this item.
  * @property username The username from field values.
+ * @property email The email from field values, used as display fallback when there is no username.
  * @property hasPassword Whether the item has a password.
  * @property createdAt When the item was created.
  * @property updatedAt When the item was last updated.
@@ -748,7 +761,12 @@ data class ItemWithCredentialInfo(
     val serviceName: String?,
     val urls: List<String>,
     val username: String?,
+    val email: String? = null,
     val hasPassword: Boolean,
     val createdAt: Date,
     val updatedAt: Date,
-)
+) {
+    /** The account identifier to display: the username, or the email when no username is set. */
+    val accountLabel: String?
+        get() = username?.takeIf { it.isNotBlank() } ?: email?.takeIf { it.isNotBlank() }
+}

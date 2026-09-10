@@ -29,7 +29,7 @@ import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isSharedFolder } from '@/utils/FolderUtils';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
+import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 
@@ -673,28 +673,7 @@ const ItemsList: React.FC = () => {
 
     const typeFiltered = applyTypeFilter(folderScoped, filterType);
 
-    const searchLower = searchTerm.toLowerCase().trim();
-    if (!searchLower) {
-      return typeFiltered;
-    }
-
-    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
-
-    return typeFiltered.filter((item: Item) => {
-      const searchableFields: string[] = [
-        item.Name?.toLowerCase() || '',
-      ];
-
-      item.Fields?.forEach(field => {
-        const value = Array.isArray(field.Value) ? field.Value.join(' ').toLowerCase() : (field.Value || '').toLowerCase();
-        searchableFields.push(value);
-        searchableFields.push(field.Label.toLowerCase());
-      });
-
-      return searchWords.every(word =>
-        searchableFields.some(field => field.includes(word))
-      );
-    });
+    return applySearchFilter(typeFiltered, searchTerm);
   })();
 
   /**
@@ -951,7 +930,7 @@ const ItemsList: React.FC = () => {
 
       {/* Current-site suggestion: show a suggestion for the current site's matching item(s) to quickly view/open them. */}
       {items.length > CURRENT_SITE_SUGGESTION_MIN_ITEMS && !currentFolderId && !searchTerm && filterType === 'all' && (
-        <CurrentSiteSuggestion onSearch={setSearchTerm} />
+        <CurrentSiteSuggestion items={items} onSearch={setSearchTerm} />
       )}
 
       {items.length === 0 ? (

@@ -5,6 +5,7 @@
 //! - **vault_sharing**: Sharing write logic for multi-manifest vaults
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
+//! - **favicon**: Favicon handling and source selection
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **srp**: Secure Remote Password (SRP-6a) protocol for authentication
@@ -24,6 +25,7 @@ pub mod vault_sharing;
 pub mod vault_pruner;
 pub mod credential_matcher;
 pub mod email_parser;
+pub mod favicon;
 pub mod password_generator;
 pub mod identity_generator;
 pub mod srp;
@@ -55,6 +57,7 @@ pub use credential_matcher::{
     AutofillMatchingMode, CredentialMatcherInput, CredentialMatcherOutput,
 };
 pub use email_parser::{ParsedEmail, ParsedEmailAttachment};
+pub use favicon::{favicon_source_key, select_favicon_target, FaviconTarget};
 pub use password_generator::{generate_password, PasswordSettings};
 pub use identity_generator::{generate_identity, Identity, IdentityRequest};
 pub use srp::{

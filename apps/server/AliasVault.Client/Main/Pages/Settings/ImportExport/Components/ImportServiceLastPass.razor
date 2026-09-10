@@ -22,7 +22,7 @@
 
     private static async Task<ImportFileResult> ProcessFile(string filename, byte[] fileBytes)
     {
-        var fileContents = System.Text.Encoding.UTF8.GetString(fileBytes);
+        var fileContents = await BaseImporter.DecodeFileContentAsync(fileBytes);
         return await LastPassImporter.ImportFromCsvAsync(fileContents);
     }
 }

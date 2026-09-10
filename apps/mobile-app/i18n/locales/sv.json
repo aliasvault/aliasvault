@@ -144,10 +144,8 @@
       "alreadyConfigured": "Jag har redan konfigurerat det"
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimentell funktion",
-      "warningDescription": "Autofyll och passkey stöd för Android är för närvarande i ett experimentellt tillstånd.",
-      "warningLink": "Läs mer om det här",
       "headerText": "Du kan konfigurera AliasVault för att ange ursprungliga lösenord och passkey-autofyll funktionalitet i Android. Följ instruktionerna nedan för att aktivera det.",
+      "docsLink": "View more Android specific information here.",
       "passkeyNotice": "Passkeys skapas via Android Credential Manager (Android 14+). För att lagra dem i AliasVault, se till att Autofyll nedan är aktiverat.",
       "howToEnable": "Så här aktiverar du Autofyll & Passkeys:",
       "step1": "1. Öppna Android-inställningar via knappen nedan, och ändra \"Autofyll föredragen tjänst\" till \"AliasVault\"",
@@ -362,6 +360,7 @@
     },
     "addField": "Lägg till fält",
     "addCustomField": "Lägg till anpassad fält",
+    "editCustomField": "Edit Custom Field",
     "customFields": "Anpassade fält",
     "fieldLabel": "Fältetikett",
     "fieldType": "Fälttyp",

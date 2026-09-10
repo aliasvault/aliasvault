@@ -283,6 +283,8 @@
     "creating": "Criando",
     "editing": "Editando",
     "addCustomField": "Adicionar campo personalizado",
+    "editCustomField": "Edit custom field",
+    "deleteCustomField": "Delete custom field",
     "fieldLabel": "Nome do Campo",
     "enterFieldName": "Digite o nome do campo",
     "fieldType": "Tipo do Campo",

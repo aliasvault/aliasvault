@@ -19,8 +19,8 @@ struct ExistingPasskeyRow: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
-                if let username = passkey.username {
-                    Text(username)
+                if let accountLabel = passkey.accountLabel {
+                    Text(accountLabel)
                         .font(.caption)
                         .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
                 }

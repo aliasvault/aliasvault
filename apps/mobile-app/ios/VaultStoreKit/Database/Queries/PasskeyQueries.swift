@@ -74,10 +74,12 @@ public struct PasskeyQueries {
           p.UpdatedAt,
           p.IsDeleted,
           i.Name as ServiceName,
-          fv.Value as Username
+          fv.Value as Username,
+          fv_email.Value as Email
         FROM Passkeys p
         INNER JOIN Items i ON p.ItemId = i.Id
         LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
+        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id AND fv_email.FieldKey = 'login.email' AND fv_email.IsDeleted = 0
         WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         ORDER BY p.CreatedAt DESC
         """
@@ -112,6 +114,7 @@ public struct PasskeyQueries {
         SELECT i.Id, i.Name, i.CreatedAt, i.UpdatedAt,
                fv_url.Value as Url,
                fv_username.Value as Username,
+               fv_email.Value as Email,
                fv_password.Value as Password
         FROM Items i
         INNER JOIN FieldValues fv_url ON fv_url.ItemId = i.Id
@@ -120,6 +123,9 @@ public struct PasskeyQueries {
         LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
             AND fv_username.FieldKey = 'login.username'
             AND fv_username.IsDeleted = 0
+        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id
+            AND fv_email.FieldKey = 'login.email'
+            AND fv_email.IsDeleted = 0
         LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id
             AND fv_password.FieldKey = 'login.password'
             AND fv_password.IsDeleted = 0
@@ -141,6 +147,7 @@ public struct PasskeyQueries {
         SELECT i.Id, i.Name, i.CreatedAt, i.UpdatedAt,
                GROUP_CONCAT(DISTINCT fv_url.Value) as Urls,
                fv_username.Value as Username,
+               fv_email.Value as Email,
                fv_password.Value as Password
         FROM Items i
         LEFT JOIN FieldValues fv_url ON fv_url.ItemId = i.Id
@@ -149,6 +156,9 @@ public struct PasskeyQueries {
         LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
             AND fv_username.FieldKey = 'login.username'
             AND fv_username.IsDeleted = 0
+        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id
+            AND fv_email.FieldKey = 'login.email'
+            AND fv_email.IsDeleted = 0
         LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id
             AND fv_password.FieldKey = 'login.password'
             AND fv_password.IsDeleted = 0

@@ -1,0 +1,25 @@
+{
+  "loading": {
+    "title": "AliasVault đang tải",
+    "message": "Đang khởi tạo môi trường bảo mật. AliasVault ưu tiên quyền riêng tư của bạn bằng cách chạy hoàn toàn trong trình duyệt. Lần tải đầu tiên có thể mất một chút thời gian.",
+    "refreshText": "Nếu quá trình tải có vẻ bị treo, bạn có thể nhấn nút bên dưới để tải lại trang.",
+    "refreshButtonText": "Tải lại trang"
+  },
+  "errors": {
+    "unhandledError": "Đã xảy ra lỗi không được xử lý. Vui lòng thử tải lại trang. Nếu sự cố vẫn tiếp diễn, vui lòng liên hệ bộ phận hỗ trợ.",
+    "webAssemblyError": "AliasVault yêu cầu WebAssembly, nhưng trình duyệt này không hỗ trợ WebAssembly. Hãy thử sử dụng một trình duyệt hiện đại hơn có hỗ trợ WebAssembly.",
+    "reloadPageText": "Tải lại trang"
+  },
+  "quotes": {
+    "security": [
+      "Danh tính của bạn là tài sản quý giá nhất. Hãy bảo vệ nó như vậy.",
+      "Trong thế giới kỹ thuật số, một mật khẩu mạnh là tuyến phòng thủ đầu tiên của bạn.",
+      "Bảo mật không phải là một sản phẩm, mà là một quá trình.",
+      "Mắt xích yếu nhất trong chuỗi bảo mật là yếu tố con người.",
+      "Bảo mật luôn bị cho là quá mức cho đến khi nó không còn đủ.",
+      "Tin tưởng, nhưng hãy xác minh — đặc biệt là trên mạng.",
+      "Dữ liệu của bạn chỉ an toàn như mật khẩu yếu nhất của bạn.",
+      "Mật khẩu an toàn nhất là mật khẩu mà bạn không thể nhớ được."
+    ]
+  }
+}

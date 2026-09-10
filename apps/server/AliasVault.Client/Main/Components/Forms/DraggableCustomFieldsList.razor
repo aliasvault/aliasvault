@@ -13,10 +13,10 @@
              class="relative bg-white dark:bg-gray-800 rounded-lg group">
             @* Draggable label row *@
             <div class="cursor-grab active:cursor-grabbing">
-                <EditableFieldLabel
+                <CustomFieldLabel
                     HtmlFor="@($"custom-{customField.TempId ?? customField.FieldKey}")"
                     Label="@customField.Label"
-                    LabelChanged="@((newLabel) => OnLabelChange.InvokeAsync((customField.FieldKey, newLabel)))"
+                    OnEdit="@(() => StartEditing(customField))"
                     OnDelete="@(() => OnDelete.InvokeAsync(customField.FieldKey))"/>
             </div>
 
@@ -67,6 +67,15 @@
     }
 </div>
 
+@* Custom Field Modal *@
+<CustomFieldModal
+    IsOpen="_editingField is not null"
+    IsEditMode="true"
+    InitialLabel="@(_editingField?.Label ?? string.Empty)"
+    InitialFieldType="@(_editingField?.FieldType ?? FieldType.Text)"
+    OnClose="StopEditing"
+    OnSubmit="HandleEditSubmit" />
+
 @code {
     private readonly string _containerId = $"draggable-fields-{Guid.NewGuid():N}";
     private IJSObjectReference? _jsModule;
@@ -86,10 +95,10 @@
     public EventCallback<List<SystemFieldEdit>> OnReorder { get; set; }
 
     /// <summary>
-    /// Event callback when a field label is changed.
+    /// Event callback when a field's label or type is changed.
     /// </summary>
     [Parameter]
-    public EventCallback<(string fieldKey, string newLabel)> OnLabelChange { get; set; }
+    public EventCallback<(string fieldKey, string label, string fieldType)> OnFieldUpdate { get; set; }
 
     /// <summary>
     /// Event callback when a field is deleted.
@@ -98,6 +107,25 @@
     public EventCallback<string> OnDelete { get; set; }
 
     private int _lastFieldCount;
+    private SystemFieldEdit? _editingField;
+
+    private void StartEditing(SystemFieldEdit customField)
+    {
+        _editingField = customField;
+    }
+
+    private void StopEditing()
+    {
+        _editingField = null;
+    }
+
+    private async Task HandleEditSubmit((string Label, string FieldType) args)
+    {
+        if (_editingField is not null)
+        {
+            await OnFieldUpdate.InvokeAsync((_editingField.FieldKey, args.Label, args.FieldType));
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -83,7 +83,7 @@
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
-    <value>您确定要删除这封邮件吗？此操作无法撤消。</value>
+    <value>您确定要删除这封邮件吗？此操作无法撤销。</value>
     <comment>Delete email confirmation message</comment>
   </data>
   <data name="EmailDeletedSuccess" xml:space="preserve">

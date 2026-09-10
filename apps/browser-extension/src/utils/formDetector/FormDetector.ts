@@ -1746,6 +1746,15 @@ export class FormDetector {
      */
     const checkVisibility = false;
 
+    const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
+    const isTotpField = totpField !== null && elementsToCheck.includes(totpField);
+
+    // A 2FA field that carries an unambiguous signal of its own is classified before the credential field types.
+    if (isTotpField && this.hasTotpFormContext(totpField)) {
+      devLog('[FormDetector] getDetectedFieldType: totp (specific signal) —', describeElement(this.clickedElement));
+      return DetectedFieldType.Totp;
+    }
+
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], [], checkVisibility);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
@@ -1769,8 +1778,7 @@ export class FormDetector {
     }
 
     // Check if any of the elements is a TOTP field
-    const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
-    if (totpField && elementsToCheck.includes(totpField)) {
+    if (isTotpField) {
       devLog('[FormDetector] getDetectedFieldType: totp —', describeElement(this.clickedElement));
       return DetectedFieldType.Totp;
     }
