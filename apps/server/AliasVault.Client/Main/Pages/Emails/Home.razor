@@ -5,7 +5,7 @@
 @using AliasVault.Client.Main.Pages.Emails.Models
 @using AliasVault.RazorComponents.Services
 @using AliasVault.Shared.Models.WebApi
-@using AliasVault.Shared.Models.WebApi.V1.Email
+@using AliasVault.Shared.Models.WebApi.V2.Email
 @using AliasVault.Client.Main.Components
 @using AliasVault.Client.Main.Components.Email
 @using AliasVault.Client.Main.Services
@@ -22,7 +22,7 @@
 
 @if (EmailModalVisible)
 {
-    <EmailModal Email="EmailModalEmail" IsSpamOk="false" OnClose="CloseEmailModal" OnEmailDeleted="HandleEmailDeletedFromModal" ShowItemLink="true" />
+    <EmailModal Email="EmailModalEmail" OnClose="CloseEmailModal" OnEmailDeleted="HandleEmailDeletedFromModal" ShowItemLink="true" />
 }
 
 <PageHeader
@@ -186,7 +186,6 @@ else
                         {
                             <EmailPreview
                                 Email="SelectedEmail"
-                                IsSpamOk="false"
                                 OnEmailDeleted="HandleEmailDeleted"
                                 CredentialId="@GetCredentialIdForEmail(SelectedEmailId)"
                                 CredentialName="@GetCredentialNameForEmail(SelectedEmailId)"
@@ -209,9 +208,9 @@ else
     private int TotalRecords { get; set; }
     private bool EmailModalVisible { get; set; }
     private bool NoEmailClaims { get; set; }
-    private EmailApiModel? EmailModalEmail { get; set; }
+    private EmailViewModel? EmailModalEmail { get; set; }
     private int? SelectedEmailId { get; set; }
-    private EmailApiModel? SelectedEmail { get; set; }
+    private EmailViewModel? SelectedEmail { get; set; }
     private bool IsPreviewLoading { get; set; }
     private int _previewLoadSequence;
     private bool IsLoadingMore { get; set; }
@@ -339,17 +338,7 @@ else
                         }
                     }
 
-                    List<MailboxEmailApiModel> decryptedEmailList;
-                    try
-                    {
-                        decryptedEmailList = await EmailService.DecryptEmailList(mailbox.Mails);
-                    }
-                    catch (InvalidOperationException ex) when (ex.Message.Contains("Sequence contains no matching element"))
-                    {
-                        // Handle case where encryption keys are not available for some emails
-                        Logger.LogWarning(ex, "Failed to decrypt some emails due to missing encryption keys");
-                        return null;
-                    }
+                    var decryptedEmailList = await EmailService.DecryptEmailList(mailbox.Mails, mailbox.PublicKeys);
 
                     var emails = decryptedEmailList.Select(email =>
                     {
@@ -619,17 +608,10 @@ else
         StateHasChanged();
         await Task.Delay(1);
 
-        EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>(ApiRoute($"Email/{emailId}"));
+        // The email service fetches the email and derives its bodies and attachments from the decrypted source.
+        var mail = await EmailService.LoadEmailAsync(emailId);
         if (mail != null)
         {
-            // Decrypt the email content locally.
-            var context = await DbService.GetDbContextAsync();
-            var privateKey = await context.EncryptionKeys.FirstOrDefaultAsync(x => x.PublicKey == mail.EncryptionKey);
-            if (privateKey is not null)
-            {
-                mail = await EmailService.DecryptEmail(mail);
-            }
-
             EmailModalEmail = mail;
             StateHasChanged();
         }
@@ -702,29 +684,13 @@ else
 
         try
         {
-            EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>(ApiRoute($"Email/{emailId}"));
+            var mail = await EmailService.LoadEmailAsync(emailId);
             if (sequence != _previewLoadSequence)
             {
                 return;
             }
 
-            if (mail != null)
-            {
-                // Decrypt the email content locally.
-                var context = await DbService.GetDbContextAsync();
-                var privateKey = await context.EncryptionKeys.FirstOrDefaultAsync(x => x.PublicKey == mail.EncryptionKey);
-                if (privateKey is not null)
-                {
-                    mail = await EmailService.DecryptEmail(mail);
-                }
-
-                if (sequence != _previewLoadSequence)
-                {
-                    return;
-                }
-
-                SelectedEmail = mail;
-            }
+            SelectedEmail = mail;
         }
         catch (Exception ex)
         {

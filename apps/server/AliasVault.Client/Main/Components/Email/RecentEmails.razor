@@ -1,6 +1,6 @@
 ﻿@using System.Net
 @using System.Text.Json
-@using AliasVault.Shared.Models.WebApi.V1.Email
+@using AliasVault.Shared.Models.WebApi.V2.Email
 @using AliasVault.Shared.Models.WebApi
 @using AliasVault.Client.Main.Services
 @inherits ComponentBase
@@ -18,7 +18,7 @@
 
 @if (EmailModalVisible)
 {
-    <EmailModal Email="@Email" IsSpamOk="@IsSpamOk" OnClose="CloseEmailModal" OnEmailDeleted="ManualRefresh" />
+    <EmailModal Email="@Email" OnClose="CloseEmailModal" OnEmailDeleted="ManualRefresh" />
 }
 
 @if (ShowComponent)
@@ -155,11 +155,10 @@
     private List<MailboxEmailApiModel> MailboxEmails { get; set; } = new();
     private List<MailboxEmailApiModel> DisplayedEmails { get; set; } = new();
     private bool ShowComponent { get; set; } = false;
-    private EmailApiModel? Email { get; set; }
+    private EmailViewModel? Email { get; set; }
     private bool EmailModalVisible { get; set; }
     private string Error { get; set; } = string.Empty;
     private bool IsLoading => LoadingService.IsLoading("recentemails");
-    private bool IsSpamOk { get; set; } = false;
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Email.RecentEmails", "AliasVault.Client");
 
     private int DisplayedEmailsCount { get; set; } = 2;
@@ -253,7 +252,6 @@
 
         // Check if email has a known SpamOK domain, if not, don't show this component.
         ShowComponent = EmailService.IsAliasVaultSupportedDomain(EmailAddress);
-        IsSpamOk = EmailService.IsSpamOkDomain(EmailAddress);
 
         // Create a single object reference for JS interop
         _dotNetRef = DotNetObjectReference.Create(this);
@@ -294,19 +292,6 @@
         {
             await ManualRefresh();
         }
-    }
-
-    /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-
-        if (EmailAddress is null)
-        {
-            return;
-        }
-
-        IsSpamOk = EmailService.IsSpamOkDomain(EmailAddress);
     }
 
     /// <summary>
@@ -409,21 +394,12 @@
         StateHasChanged();
         await Task.Delay(1);
 
-        var client = HttpClientFactory.CreateClient("EmailClient");
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spamok.com/v2/Email/{emailPrefix}/{emailId}");
-        request.Headers.Add("X-Asdasd-Platform-Id", "av-web");
-        request.Headers.Add("X-Asdasd-Platform-Version", AppInfo.GetFullVersion());
-
-        var response = await client.SendAsync(request);
-        if (response.IsSuccessStatusCode)
+        var mail = await EmailService.LoadSpamOkEmailAsync(emailPrefix, emailId);
+        if (mail != null)
         {
-            var mail = await response.Content.ReadFromJsonAsync<EmailApiModel>();
-            if (mail != null)
-            {
-                Email = mail;
-                StateHasChanged();
-                return;
-            }
+            Email = mail;
+            StateHasChanged();
+            return;
         }
 
         // Nothing to show — close the modal again.
@@ -487,12 +463,12 @@
     /// </summary>
     private async Task UpdateMailboxEmails(MailboxApiModel? mailbox)
     {
-        if (mailbox?.Mails != null)
+        if (mailbox?.Mails == null)
         {
-            MailboxEmails = mailbox.Mails.ToList();
+            return;
         }
 
-        MailboxEmails = await EmailService.DecryptEmailList(MailboxEmails);
+        MailboxEmails = await EmailService.DecryptEmailList(mailbox.Mails, mailbox.PublicKeys);
         Error = string.Empty;
         UpdateDisplayedEmails();
     }
@@ -527,17 +503,10 @@
         StateHasChanged();
         await Task.Delay(1);
 
-        EmailApiModel? mail = await HttpClient.GetFromJsonAsync<EmailApiModel>(ApiRoute($"Email/{emailId}"));
+        // The email service fetches the email and derives its bodies and attachments from the decrypted source.
+        var mail = await EmailService.LoadEmailAsync(emailId);
         if (mail != null)
         {
-            // Decrypt the email content locally.
-            var context = await DbService.GetDbContextAsync();
-            var privateKey = await context.EncryptionKeys.FirstOrDefaultAsync(x => x.PublicKey == mail.EncryptionKey);
-            if (privateKey is not null)
-            {
-                mail = await EmailService.DecryptEmail(mail);
-            }
-
             Email = mail;
             StateHasChanged();
         }

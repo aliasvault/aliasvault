@@ -636,6 +636,33 @@ public class RustCoreService : IAsyncDisposable
     /// <returns>The partition JSON (unwritable, lost).</returns>
     public Task<string> VaultSharingPartitionManifestAccessAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultSharingPartitionManifestAccess", inputJson);
 
+    /// <summary>
+    /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <returns>The parsed bodies and attachment metadata.</returns>
+    public async Task<ParsedEmail> ParseEmailSourceAsync(byte[] source)
+    {
+        var json = await InvokeCoreAsync<string>("rustCoreParseEmailSource", source);
+        return JsonSerializer.Deserialize<ParsedEmail>(json, CodecJsonOptions) ?? throw new InvalidOperationException("Failed to deserialize parsed email.");
+    }
+
+    /// <summary>
+    /// Turn a stored email source into the raw RFC 822 message bytes.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <returns>The raw message bytes.</returns>
+    public Task<byte[]> DecodeEmailSourceAsync(byte[] source) => InvokeCoreAsync<byte[]>("rustCoreDecodeEmailSource", source);
+
+    /// <summary>
+    /// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <param name="index">The attachment index.</param>
+    /// <param name="detachedBody">The separately fetched body, for an attachment the parse result flagged as detached.</param>
+    /// <returns>The attachment bytes.</returns>
+    public Task<byte[]> ExtractEmailAttachmentAsync(byte[] source, int index, byte[]? detachedBody) => InvokeCoreAsync<byte[]>("rustCoreExtractEmailAttachment", source, index, detachedBody);
+
     /// <inheritdoc/>
     public ValueTask DisposeAsync()
     {

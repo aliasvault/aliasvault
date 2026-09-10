@@ -1,5 +1,4 @@
-﻿@using AliasVault.Shared.Models.WebApi.V1.Email
-@using AliasVault.Shared.Utilities
+﻿@using AliasVault.Shared.Utilities
 @using AliasVault.Shared.Core;
 @using AliasVault.Client.Main.Components.Layout
 @using AliasVault.RazorComponents.Services
@@ -29,7 +28,7 @@
                                 <div class="w-full h-full bg-gray-300 dark:bg-gray-600 rounded"></div>
                             </SkeletonBase>
                         }
-                        else if (IsSpamOk)
+                        else if (Email.IsSpamOk)
                         {
                             <a target="_blank" href="https://spamok.com/@(Email!.ToLocal)/@(Email!.Id)" class="hover:underline">@Email.Subject</a>
                         }
@@ -147,7 +146,7 @@
                     }
                 </div>
                 <div class="mt-4">
-                    @if (Email?.Attachments?.Any() == true)
+                    @if (Email?.Attachments.Count > 0)
                     {
                         <div class="border-t border-gray-200 dark:border-gray-600 pt-4">
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">@Localizer["AttachmentsLabel"]</h3>
@@ -160,7 +159,7 @@
                                         </svg>
                                         <button @onclick="() => DownloadAttachment(attachment)"
                                                 class="text-primary-600 hover:underline text-sm truncate dark:text-primary-400 attachment-link">
-                                            (@(Math.Ceiling((double)attachment.Filesize / 1024)) KB) @attachment.Filename
+                                            (@(Math.Ceiling((double)attachment.Size / 1024)) KB) @attachment.Filename
                                         </button>
                                     </div>
                                 }
@@ -182,13 +181,7 @@
     /// The email to show in the modal.
     /// </summary>
     [Parameter]
-    public EmailApiModel? Email { get; set; }
-
-    /// <summary>
-    /// Boolean that indicates if the email is from SpamOK public API.
-    /// </summary>
-    [Parameter]
-    public bool IsSpamOk { get; set; }
+    public EmailViewModel? Email { get; set; }
 
     /// <summary>
     /// Callback when the modal is closed.
@@ -288,7 +281,7 @@
             return;
         }
 
-        if (IsSpamOk)
+        if (Email.IsSpamOk)
         {
             await DeleteEmailSpamOk();
         }
@@ -371,9 +364,9 @@
     private List<EmailViewMode> GetAvailableModes()
     {
         var modes = new List<EmailViewMode>();
-        var hasHtml = !string.IsNullOrWhiteSpace(Email?.MessageHtml);
-        var hasPlain = Email?.MessagePlain != null;
-        var hasSource = !string.IsNullOrWhiteSpace(Email?.MessageSource);
+        var hasHtml = !string.IsNullOrWhiteSpace(Email?.HtmlBody);
+        var hasPlain = Email?.TextBody != null;
+        var hasSource = Email?.HasSource == true;
         if (hasHtml)
         {
             modes.Add(EmailViewMode.Html);
@@ -407,7 +400,7 @@
     /// <summary>
     /// Cycle to the next available view mode.
     /// </summary>
-    private void CycleViewMode()
+    private async Task CycleViewMode()
     {
         var modes = GetAvailableModes();
         if (modes.Count <= 1)
@@ -417,13 +410,13 @@
 
         var currentIndex = modes.IndexOf(_viewMode);
         var nextIndex = (currentIndex + 1) % modes.Count;
-        SetViewMode(modes[nextIndex]);
+        await SetViewMode(modes[nextIndex]);
     }
 
     /// <summary>
     /// Sets the email body based on the selected view mode.
     /// </summary>
-    private void SetViewMode(EmailViewMode mode)
+    private async Task SetViewMode(EmailViewMode mode)
     {
         _viewMode = mode;
         if (Email == null)
@@ -434,9 +427,9 @@
         switch (mode)
         {
             case EmailViewMode.Html:
-                if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+                if (!string.IsNullOrWhiteSpace(Email.HtmlBody))
                 {
-                    EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
+                    EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.HtmlBody);
                 }
                 else
                 {
@@ -445,9 +438,9 @@
 
                 break;
             case EmailViewMode.Plain:
-                if (Email.MessagePlain != null)
+                if (Email.TextBody != null)
                 {
-                    var escapedText = System.Net.WebUtility.HtmlEncode(Email.MessagePlain);
+                    var escapedText = System.Net.WebUtility.HtmlEncode(Email.TextBody);
                     EmailBody = $"<pre style='font-family: system-ui, -apple-system, sans-serif; white-space: pre-wrap; word-wrap: break-word; margin: 0;'>{escapedText}</pre>";
                 }
                 else
@@ -457,9 +450,10 @@
 
                 break;
             case EmailViewMode.Source:
-                if (!string.IsNullOrWhiteSpace(Email.MessageSource))
+                var source = await EmailService.GetSourceTextAsync(Email);
+                if (!string.IsNullOrWhiteSpace(source))
                 {
-                    var escapedSource = System.Net.WebUtility.HtmlEncode(Email.MessageSource);
+                    var escapedSource = System.Net.WebUtility.HtmlEncode(source);
                     EmailBody = $"<pre style='font-family: monospace; white-space: pre-wrap; word-wrap: break-word; margin: 0; font-size: 12px; line-height: 1.4;'>{escapedSource}</pre>";
                 }
                 else
@@ -506,13 +500,10 @@
         }
 
         // Determine initial view mode and email body.
-        if (!string.IsNullOrWhiteSpace(Email.MessageHtml))
+        var availableModes = GetAvailableModes();
+        if (availableModes.Count > 0)
         {
-            SetViewMode(EmailViewMode.Html);
-        }
-        else if (Email.MessagePlain != null)
-        {
-            SetViewMode(EmailViewMode.Plain);
+            await SetViewMode(availableModes[0]);
         }
         else
         {
@@ -529,7 +520,7 @@
 
         // Resolve the credential linked to this email's to-address when the caller asks for the
         // Item row. SpamOK emails aren't backed by a local vault item so the lookup is skipped.
-        if (ShowItemLink && !IsSpamOk)
+        if (ShowItemLink && !Email.IsSpamOk)
         {
             await ResolveLinkedCredential();
             if (sequence == _bodyLoadSequence)
@@ -580,51 +571,18 @@
     /// <summary>
     /// Download an attachment.
     /// </summary>
-    private async Task DownloadAttachment(AttachmentApiModel attachment)
+    private async Task DownloadAttachment(EmailAttachmentViewModel attachment)
     {
         try
         {
-            if (IsSpamOk)
+            var bytes = await EmailService.GetAttachmentBytesAsync(Email!, attachment);
+            if (bytes == null)
             {
-                var client = HttpClientFactory.CreateClient("EmailClient");
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.spamok.com/v2/Attachment/{Email!.Id}/{attachment.Id}/download");
-                request.Headers.Add("X-Asdasd-Platform-Id", "av-web");
-                request.Headers.Add("X-Asdasd-Platform-Version", AppInfo.GetFullVersion());
-
-                var response = await client.SendAsync(request);
-                if (response.IsSuccessStatusCode)
-                {
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    await JsInteropService.DownloadFileFromStream(attachment.Filename, bytes);
-                }
-                else
-                {
-                    GlobalNotificationService.AddErrorMessage(Localizer["AttachmentDownloadFailed"], true);
-                }
+                GlobalNotificationService.AddErrorMessage(Localizer["AttachmentDownloadFailed"], true);
+                return;
             }
-            else
-            {
-                var response = await HttpClient.GetAsync(ApiRoute($"Email/{Email!.Id}/attachments/{attachment.Id}"));
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Get attachment bytes from API.
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-
-                    // Decrypt the attachment locally with email's encryption key.
-                    var decryptedBytes = await EmailService.DecryptEmailAttachment(Email, bytes);
-
-                    // Offer the decrypted attachment as download to the user's browser.
-                    if (decryptedBytes != null)
-                    {
-                        await JsInteropService.DownloadFileFromStream(attachment.Filename, decryptedBytes);
-                    }
-                }
-                else
-                {
-                    GlobalNotificationService.AddErrorMessage(Localizer["AttachmentDownloadFailed"], true);
-                }
-            }
+            await JsInteropService.DownloadFileFromStream(attachment.Filename, bytes);
         }
         catch (Exception ex)
         {
