@@ -48,7 +48,6 @@ while [[ $# -gt 0 ]]; do
             echo "  --all         Build cross-platform targets (browser, dotnet, android)"
             echo ""
             echo "Notes:"
-            echo "  - TypeScript utilities, models, and vault are always built"
             echo "  - iOS requires macOS/Xcode, use --ios explicitly (not included in --all)"
             echo "  - If no target is specified, cross-platform targets are built"
             echo ""
@@ -78,7 +77,7 @@ chmod +x ./rust/build.sh
 echo "🚀 Starting build process for selected modules..."
 echo ""
 
-# Always build common components (TypeScript utilities, models, vault)
+# Always build common components (TypeScript models, vault)
 if $BUILD_COMMON; then
     echo "📦 Building common components..."
 

@@ -3,7 +3,7 @@
  * Auto-generated from EF Core migration filenames
  */
 
-import { VaultVersion } from "../types/VaultVersion";
+import type { VaultVersion } from "../types/VaultVersion";
 
 /**
  * All vault migrations/versions in chronological order.

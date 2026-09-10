@@ -22,7 +22,7 @@ IOS_DIR="$DIST_DIR/ios"
 ANDROID_DIR="$DIST_DIR/android"
 
 # Target directories in consumer apps
-BROWSER_EXT_DIST="$SCRIPT_DIR/../../apps/browser-extension/src/utils/dist/core/rust"
+BROWSER_EXT_DIST="$SCRIPT_DIR/../client/wasm"
 BLAZOR_CLIENT_DIST="$SCRIPT_DIR/../../apps/server/AliasVault.Client/wwwroot/wasm"
 IOS_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/ios/RustCoreFramework/RustCore"
 ANDROID_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/android/app/src/main/jniLibs"
@@ -216,7 +216,7 @@ build_browser() {
 # ============================================
 distribute_browser() {
     echo ""
-    echo -e "${BLUE}Distributing to browser extension...${NC}"
+    echo -e "${BLUE}Distributing to the client core package (core/client/wasm)...${NC}"
 
     if [ -d "$WASM_DIR" ] && [ -n "$(ls -A "$WASM_DIR" 2>/dev/null)" ]; then
         rm -rf "$BROWSER_EXT_DIST"

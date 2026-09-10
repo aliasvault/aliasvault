@@ -283,7 +283,7 @@ After building, the outputs are distributed to:
 
 | Platform | Output Location | Files |
 |----------|----------------|-------|
-| Browser Extension | `apps/browser-extension/src/utils/dist/core/rust/` | `aliasvault_core.js`, `.wasm`, `.d.ts` |
+| Browser Extension | `core/client/wasm/` | `aliasvault_core.js`, `.wasm`, `.d.ts` |
 | Blazor WASM | `apps/server/AliasVault.Client/wwwroot/wasm/` | `aliasvault_core.js`, `.wasm` |
 | iOS | `apps/mobile-app/ios/VaultStoreKit/RustCore/` | `.a`, `.h`, `.swift` |
 | Android | `apps/mobile-app/android/app/src/main/jniLibs/` | `.so` per ABI + `.kt` |

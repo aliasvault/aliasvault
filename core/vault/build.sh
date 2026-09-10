@@ -4,8 +4,8 @@ set -e  # Stop on error
 set -u  # Treat unset variables as errors
 
 # Define output targets for vault
+# TODO: remove this whole copy logic once the web app and mobile apps are migrated to the new core
 TARGETS=(
-  "../../apps/browser-extension/src/utils/dist/core/vault"
   "../../apps/mobile-app/utils/dist/core/vault"
   "../../apps/server/AliasVault.Client/wwwroot/js/dist/core/vault"
 )
