@@ -529,7 +529,7 @@ export default function AddEditItemScreen(): React.ReactNode {
           : DEFAULT_ITEM_TYPE;
 
         const newItem: Item = {
-          Id: crypto.randomUUID().toUpperCase(),
+          Id: crypto.randomUUID(),
           Name: serviceName,
           ItemType: effectiveType,
           FolderId: folderIdParam || null,
@@ -811,7 +811,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     // Build the item to save
     let itemToSave: Item = {
       ...item,
-      Id: isEditMode ? id : crypto.randomUUID().toUpperCase(),
+      Id: isEditMode ? id : crypto.randomUUID(),
       Name: item.Name || t('items.untitled'),
       Fields: fields,
       UpdatedAt: new Date().toISOString()
