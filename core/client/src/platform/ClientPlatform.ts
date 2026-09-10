@@ -18,7 +18,7 @@ export interface IClientPlatform {
   app: IAppIdentity;
 
   /**
-   * Provide the Rust core WebAssembly binary. Called once per realm, lazily, on the first core call.
+   * Provide the Rust core WebAssembly binary.
    */
   loadRustCoreWasm(): Promise<BufferSource | Response>;
 
@@ -37,8 +37,7 @@ export interface IClientPlatform {
 let current: IClientPlatform | null = null;
 
 /**
- * Register the host platform. Call once at startup of every JS realm (a service worker and a popup document are
- * separate realms and each need their own call). Calling it again replaces the platform.
+ * Register the host platform.
  * @param platform - the host implementation
  */
 export function setPlatform(platform: IClientPlatform): void {

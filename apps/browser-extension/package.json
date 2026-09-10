@@ -29,6 +29,9 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@aliasvault/client": "file:../../core/client",
+    "@aliasvault/models": "file:../../core/models",
+    "@aliasvault/vault": "file:../../core/vault",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -46,7 +49,6 @@
     "react-hook-form": "^7.57.0",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.18.1",
-    "sql.js": "^1.12.0",
     "vitest": "^4.1.8",
     "yup": "^1.6.1"
   },
@@ -59,7 +61,6 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
-    "@types/sql.js": "^1.4.9",
     "@types/yup": "^0.29.14",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",

@@ -34,7 +34,7 @@ export function initRustCore(): Promise<void> {
     initPromise = (async (): Promise<void> => {
       await initWasm({ module_or_path: await getPlatform().loadRustCoreWasm() });
     })().catch((error: unknown) => {
-      // Let the next caller retry instead of pinning a failed load for the realm's lifetime.
+      // Let the next caller retry instead of pinning a failed load for the lifetime of the caller.
       initPromise = null;
       throw error;
     });

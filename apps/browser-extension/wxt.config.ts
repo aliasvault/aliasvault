@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { defineConfig } from 'wxt';
 import type { Plugin } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -28,6 +30,8 @@ function asciiOnlyJsPlugin(): Plugin {
     },
   };
 }
+
+const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -78,7 +82,7 @@ export default defineConfig({
       web_accessible_resources: [{
         resources: [
           "webauthn.js",
-          "src/sql-wasm.wasm",
+          "src/sql-wasm-browser.wasm",
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
@@ -96,19 +100,26 @@ export default defineConfig({
   srcDir: 'src',
   outDir: 'dist',
   vite: () => ({
+    // Allow to serve files from the shared core directory
+    server: {
+      fs: {
+        allow: [path.resolve('.'), CORE_DIR],
+      },
+    },
     optimizeDeps: {
       entries: ['src/**/*.html', 'public/**/*.html'],
+      exclude: ['@aliasvault/client', '@aliasvault/models', '@aliasvault/vault'],
     },
     plugins: [
       asciiOnlyJsPlugin(),
       viteStaticCopy({
         targets: [
           {
-            src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+            src: path.resolve(CORE_DIR, 'client/node_modules/sql.js/dist/sql-wasm-browser.wasm'),
             dest: 'src'
           },
           {
-            src: 'src/utils/dist/core/rust/aliasvault_core_bg.wasm',
+            src: path.resolve(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm'),
             dest: 'src'
           }
         ]
@@ -116,17 +127,27 @@ export default defineConfig({
     ],
   }),
   zip: {
-    includeSources: ['**/*'],
+    // Firefox source archive (zip) requires all the files the build needs locally inside the archive.
+    sourcesRoot: path.resolve(CORE_DIR, '..'),
+    includeSources: [
+      'apps/browser-extension/**/*',
+      'core/client/**/*',
+      'core/models/**/*',
+      'core/vault/**/*',
+    ],
     excludeSources: [
-      'safari-xcode/build/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.wxt/**',
+      'apps/browser-extension/safari-xcode/build/**',
       '**/xcuserdata/**',
-      'playwright-report/**',
-      'test-results/**',
-      'tests/**',
-      'stats.html',
-      'stats-*.json',
+      'apps/browser-extension/playwright-report/**',
+      'apps/browser-extension/test-results/**',
+      'apps/browser-extension/tests/**',
+      'apps/browser-extension/stats.html',
+      'apps/browser-extension/stats-*.json',
       '**/*.log',
-      'build-and-submit.sh'
+      'apps/browser-extension/build-and-submit.sh'
     ],
   },
 });
