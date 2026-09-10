@@ -6,12 +6,10 @@ This package serves as the **single source of truth** for data models across all
 
 This package performs two key functions:
 
-### 1. TypeScript Distribution (As-Is)
-Builds and copies TypeScript models directly to:
-- **Browser Extension**: `apps/browser-extension/src/utils/dist/core/models`
-- **Mobile App**: `apps/mobile-app/utils/dist/core/models`
-
-These apps consume the TypeScript models as-is, enabling type-safe development with no manual synchronization needed.
+### 1. TypeScript Distribution (Linked as Source)
+TypeScript models are consumed as the `@aliasvault/models` package:
+- **Browser Extension**: linked as source through `@aliasvault/models` (see `core/client`)
+- **Mobile App**: TODO: migrate to linked source via `@aliasvault/models` (currently still copied to `apps/mobile-app/utils/dist/core/models` for legacy reasons)
 
 ### 2. Native Code Generation (Transformed)
 Automatically generates platform-specific models from TypeScript sources:

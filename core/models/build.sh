@@ -4,8 +4,8 @@ set -e  # Stop on error
 set -u  # Treat unset variables as errors
 
 # Define output targets for models
+# TODO: remove this whole copy logic once the mobile app is migrated to the new core
 TARGETS=(
-  "../../apps/browser-extension/src/utils/dist/core/models"
   "../../apps/mobile-app/utils/dist/core/models"
 )
 
