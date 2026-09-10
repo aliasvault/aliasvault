@@ -59,13 +59,18 @@
         {
             try
             {
-                // Initialize vault settings with user's browser language preference. This also automatically
-                // saves the new empty database to the server.
+                // Initialize vault settings with user's browser language preference.
                 await InitializeVaultSettings();
 
-                // Migration successful, update state which will trigger the status message UI to refresh and redirect user.
-                DbService.GetState().UpdateState(DbServiceState.DatabaseStatus.Ready);
-                return;
+                // Push the new vault.
+                if (await DbService.SaveDatabaseAsync())
+                {
+                    // Creation successful, update state which will trigger the status message UI to refresh and redirect user.
+                    DbService.GetState().UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    return;
+                }
+
+                ErrorMessage = Localizer["SaveFailedError"];
             }
             catch
             {

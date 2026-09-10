@@ -19,7 +19,11 @@
                 }
             </SortableTableColumn>
             <SortableTableColumn>
-                @if (IsPreMigration(entry))
+                @if (!entry.HasContent)
+                {
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Not written yet</span>
+                }
+                else if (IsPreMigration(entry))
                 {
                     @if (AllowRevertToLegacy)
                     {
@@ -130,7 +134,7 @@
     /// </summary>
     private bool IsPreMigration(ManifestRevisionRow entry)
     {
-        return !entry.IsCurrent && entry.IsLegacy && Revisions.Any(x => x.ManifestId == entry.ManifestId && x.IsCurrent && !x.IsLegacy);
+        return !entry.IsCurrent && entry.IsLegacy && entry.HasContent && Revisions.Any(x => x.ManifestId == entry.ManifestId && x.IsCurrent && !x.IsLegacy);
     }
 
     private async Task MakeCurrentAsync(ManifestRevisionRow entry)

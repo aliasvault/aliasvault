@@ -180,11 +180,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             return Ok(new VaultUpdateResponse { Status = VaultStatus.Outdated, NewRevisionNumber = currentManifest.RevisionNumber });
         }
 
-        // Archive the current revision into history first, then update the current row in place. This ordering is a
-        // design invariant: the VaultManifests table structurally never holds two rows for the same manifest.
-        // Salt/verifier and encryption settings stay untouched on the current row.
-        var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
-        context.VaultManifestsHistory.Add(archivedRevision);
+        // Archive the current revision into history first.
+        var archivedRevision = ArchiveCurrentRevision(context, currentManifest);
 
         currentManifest.VaultBlob = model.Blob;
         currentManifest.StorageFormat = "sqlite-blob";
@@ -281,8 +278,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Archive the current revision into history first, then update the current row in place with the
         // re-encrypted vault and the new salt/verifier belonging to the new password.
-        var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
-        context.VaultManifestsHistory.Add(archivedRevision);
+        var archivedRevision = ArchiveCurrentRevision(context, currentManifest);
 
         currentManifest.VaultBlob = model.Blob;
         currentManifest.StorageFormat = "sqlite-blob";
@@ -319,6 +315,24 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
+    /// Archives the current revision of a manifest into history.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="currentManifest">The current manifest row, still holding the revision that is about to be replaced.</param>
+    /// <returns>The archived revision, not yet saved, or null when there was nothing to archive.</returns>
+    private static AliasServerDb.VaultManifestsHistory? ArchiveCurrentRevision(AliasServerDbContext context, AliasServerDb.VaultManifest currentManifest)
+    {
+        if (!currentManifest.HasContent)
+        {
+            return null;
+        }
+
+        var archivedRevision = AliasServerDb.VaultManifestsHistory.CreateFrom(currentManifest);
+        context.VaultManifestsHistory.Add(archivedRevision);
+        return archivedRevision;
+    }
+
+    /// <summary>
     /// HTTP 426 Upgrade Required: returned to legacy v1 clients hitting a migrated user. This is a backstop only:
     /// the status endpoint already reports such clients as unsupported, so a well-behaved client logs out with a
     /// proper "update your client" message before it ever calls a vault endpoint.
@@ -342,8 +356,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="currentManifest">The current manifest row (already updated in place, always kept).</param>
-    /// <param name="justArchived">The just-archived previous revision, not yet saved.</param>
-    private async Task ApplyVaultRetention(AliasServerDbContext context, AliasServerDb.VaultManifest currentManifest, AliasServerDb.VaultManifestsHistory justArchived)
+    /// <param name="justArchived">The just-archived previous revision, not yet saved. Null when there was nothing to archive.</param>
+    private async Task ApplyVaultRetention(AliasServerDbContext context, AliasServerDb.VaultManifest currentManifest, AliasServerDb.VaultManifestsHistory? justArchived)
     {
         // Load existing history without the (potentially large) blob payload columns; the rules only need metadata.
         var historyRevisions = await context.VaultManifestsHistory
@@ -368,7 +382,10 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 UpdatedAt = x.UpdatedAt,
             })
             .ToListAsync();
-        historyRevisions.Add(justArchived);
+        if (justArchived is not null)
+        {
+            historyRevisions.Add(justArchived);
+        }
 
         var revisionsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
         context.VaultManifestsHistory.RemoveRange(revisionsToDelete);

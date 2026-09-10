@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
+using AliasVault.Shared.Models.WebApi.V2.Vault;
+
 /// <summary>
 /// Register request model for the v2 endpoint.
 /// </summary>
@@ -20,12 +22,12 @@ public class RegisterRequest
     /// <param name="verifier">The verifier value.</param>
     /// <param name="encryptionType">The encryption type.</param>
     /// <param name="encryptionSettings">The encryption settings.</param>
-    /// <param name="srpIdentity">The SRP identity.</param>
     /// <param name="encryptedVek">The AK encrypted VEK.</param>
     /// <param name="encryptedAccountKey">The KEK encrypted Account Key.</param>
     /// <param name="accountPublicKey">The account public key.</param>
     /// <param name="encryptedAccountPrivateKey">The AK encrypted account private key.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null, string? encryptedVek = null, string? encryptedAccountKey = null, string? accountPublicKey = null, string? encryptedAccountPrivateKey = null)
+    /// <param name="srpIdentity">The SRP identity.</param>
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string encryptedVek, string encryptedAccountKey, string accountPublicKey, string encryptedAccountPrivateKey, string? srpIdentity = null)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
@@ -88,4 +90,14 @@ public class RegisterRequest
     /// Gets the account private key encrypted with the Account Key.
     /// </summary>
     public string? EncryptedAccountPrivateKey { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the client sent the complete account key hierarchy. A partial one is not usable.
+    /// </summary>
+    public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey);
+
+    /// <summary>
+    /// Gets a value indicating whether every account key fits its storage column, so an oversized value is a validation error instead of a half-created account.
+    /// </summary>
+    public bool AccountKeysFitStorageLimits => (EncryptedVek?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (EncryptedAccountKey?.Length ?? 0) <= AccountKeysUpload.MaxWrappedKeyLength && (AccountPublicKey?.Length ?? 0) <= AccountKeysUpload.MaxPublicKeyLength && (EncryptedAccountPrivateKey?.Length ?? 0) <= AccountKeysUpload.MaxEncryptedPrivateKeyLength;
 }

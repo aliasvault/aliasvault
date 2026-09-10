@@ -86,6 +86,12 @@ public sealed class ManifestRevisionRow
     public DateTime UpdatedAt { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether this revision holds vault content. A manifest reserved but never written
+    /// carries none, which makes it a placeholder rather than a revision that can be restored or reverted to.
+    /// </summary>
+    public bool HasContent { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether this revision predates the manifest storage format.
     /// </summary>
     public bool IsLegacy => StorageFormat == VaultManifestBase.LegacyStorageFormat;

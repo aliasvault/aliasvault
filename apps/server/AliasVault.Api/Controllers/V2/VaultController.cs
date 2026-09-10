@@ -417,8 +417,13 @@ public class VaultController(
             var manifestResults = new List<ManifestWriteResult>();
             foreach (var (mw, row) in resolved)
             {
-                var archivedRevision = VaultManifestsHistory.CreateFrom(row);
-                context.VaultManifestsHistory.Add(archivedRevision);
+                // A manifest without content indicates a placeholder record created during registration, which we do not want to archive.
+                VaultManifestsHistory? archivedRevision = null;
+                if (row.HasContent)
+                {
+                    archivedRevision = VaultManifestsHistory.CreateFrom(row);
+                    context.VaultManifestsHistory.Add(archivedRevision);
+                }
 
                 row.VaultBlob = null;
                 row.StorageFormat = ManifestFormat;
@@ -952,9 +957,10 @@ public class VaultController(
     /// <summary>
     /// Applies the retention policy to the history revisions of a manifest and removes the pruned revisions and
     /// their blob references. Runs after the previous current revision has been archived (passed as
-    /// <paramref name="justArchived"/>, still unsaved) and the current row has been updated in place.
+    /// <paramref name="justArchived"/>, still unsaved, null when there was nothing to archive) and the current row
+    /// has been updated in place.
     /// </summary>
-    private async Task ApplyVaultRetention(AliasServerDbContext context, VaultManifest currentManifest, VaultManifestsHistory justArchived)
+    private async Task ApplyVaultRetention(AliasServerDbContext context, VaultManifest currentManifest, VaultManifestsHistory? justArchived)
     {
         // Load existing history without the (potentially large) blob payload columns; the rules only need metadata.
         var historyRevisions = await context.VaultManifestsHistory
@@ -979,7 +985,10 @@ public class VaultController(
                 UpdatedAt = x.UpdatedAt,
             })
             .ToListAsync();
-        historyRevisions.Add(justArchived);
+        if (justArchived is not null)
+        {
+            historyRevisions.Add(justArchived);
+        }
 
         var revisionsToDelete = VaultRetentionManager.ApplyRetention(_manifestRetentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
         context.VaultManifestsHistory.RemoveRange(revisionsToDelete);

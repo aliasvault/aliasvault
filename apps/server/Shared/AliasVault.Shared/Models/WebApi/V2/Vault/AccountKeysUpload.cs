@@ -8,8 +8,8 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
-/// One-time migration push for a legacy vault to the manifest-v1 format: an Account Key encrypted with the password-derived KEK.
-/// TODO: remove once the legacy sqlite-blob format is fully deprecated and we don't support legacy users anymore.
+/// Model which contains the account key hierarchy to be uploaded to the manifest-v1 format. Used in both new account creation
+/// and the "sqlite-blob to manifest-v1" one-time migration for older accounts.
 /// </summary>
 public class AccountKeysUpload
 {
