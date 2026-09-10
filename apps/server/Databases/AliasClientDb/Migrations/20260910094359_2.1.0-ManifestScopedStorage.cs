@@ -12,7 +12,15 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
+            /*
+             * Every manifest-scoped table is rebuilt here to take its composite (ManifestId, Id) key, and the SQLite
+             * provider emits those rebuilds in table-name order: a child is copied into its new shape before the
+             * parent it names has the composite key that its foreign key resolves against, which SQLite rejects as a
+             * foreign key mismatch even when the table is empty. Enforcement is off for the duration, the way the
+             * provider itself brackets the drop-and-rename half of a rebuild. The next migration turns it back on.
+             * The pragma is a no-op inside a transaction, hence suppressTransaction.
+             */
+            migrationBuilder.Sql("PRAGMA foreign_keys = OFF;", suppressTransaction: true);
 
             migrationBuilder.DropForeignKey(
                 name: "FK_Attachments_Items_ItemId",
@@ -146,40 +154,125 @@ namespace AliasClientDb.Migrations
                 name: "IX_Attachments_ItemId",
                 table: "Attachments");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.DropColumn(
+                name: "Id",
+                table: "ItemTags");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "TotpCodes",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "TotpCodes",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "TotpCodes",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<string>(
+                name: "Algorithm",
+                table: "TotpCodes",
+                type: "TEXT",
+                maxLength: 20,
+                nullable: false,
+                defaultValue: "SHA1");
+
+            migrationBuilder.AddColumn<int>(
+                name: "Digits",
+                table: "TotpCodes",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: 6);
+
+            migrationBuilder.AddColumn<int>(
+                name: "Period",
+                table: "TotpCodes",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: 30);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Tags",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Tags",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Settings",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "Passkeys",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Passkeys",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Passkeys",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Logos",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Logos",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
             migrationBuilder.AddColumn<string>(
                 name: "Kind",
@@ -196,61 +289,247 @@ namespace AliasClientDb.Migrations
                 maxLength: 255,
                 nullable: true);
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "TagId",
+                table: "ItemTags",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "ItemTags",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "ItemTags",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "LogoId",
+                table: "Items",
+                type: "TEXT",
+                nullable: true,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "FolderId",
+                table: "Items",
+                type: "TEXT",
+                nullable: true,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Items",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Items",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<DateTime>(
+                name: "ArchivedAt",
+                table: "Items",
+                type: "TEXT",
+                nullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ParentFolderId",
+                table: "Folders",
+                type: "TEXT",
+                nullable: true,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Folders",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Folders",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "FieldDefinitionId",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: true,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "FieldValues",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AddColumn<bool>(
+                name: "IsDisabled",
+                table: "FieldValues",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<int>(
+                name: "ValueIndex",
+                table: "FieldValues",
+                type: "INTEGER",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "FieldDefinitionId",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: true,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "FieldHistories",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "FieldDefinitions",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "FieldDefinitions",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "EncryptionKeys",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "EncryptionKeys",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
-            migrationBuilder.AddColumn<Guid>(
+            migrationBuilder.AlterColumn<string>(
+                name: "ItemId",
+                table: "Attachments",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Id",
+                table: "Attachments",
+                type: "TEXT",
+                nullable: false,
+                collation: "NOCASE",
+                oldClrType: typeof(Guid),
+                oldType: "TEXT");
+
+            migrationBuilder.AddColumn<string>(
                 name: "ManifestId",
                 table: "Attachments",
                 type: "TEXT",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: "",
+                collation: "NOCASE");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_TotpCodes",
@@ -280,7 +559,7 @@ namespace AliasClientDb.Migrations
             migrationBuilder.AddPrimaryKey(
                 name: "PK_ItemTags",
                 table: "ItemTags",
-                columns: new[] { "ManifestId", "Id" });
+                columns: new[] { "ManifestId", "ItemId", "TagId" });
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Items",
@@ -321,7 +600,7 @@ namespace AliasClientDb.Migrations
                 name: "CodecOverflows",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
                     Data = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -333,8 +612,8 @@ namespace AliasClientDb.Migrations
                 name: "ItemStats",
                 columns: table => new
                 {
-                    ManifestId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ManifestId = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
+                    Id = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
                     LastUsedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     UseCount = table.Column<int>(type: "INTEGER", nullable: false),
                     LastAutofilledAt = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -356,7 +635,7 @@ namespace AliasClientDb.Migrations
                 name: "Manifests",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Id = table.Column<string>(type: "TEXT", nullable: false, collation: "NOCASE"),
                     Name = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -383,12 +662,6 @@ namespace AliasClientDb.Migrations
                 name: "IX_Logos_ManifestId_Kind_Source",
                 table: "Logos",
                 columns: new[] { "ManifestId", "Kind", "Source" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ItemTags_ManifestId_ItemId_TagId",
-                table: "ItemTags",
-                columns: new[] { "ManifestId", "ItemId", "TagId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -539,10 +812,6 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Same reason as in Up: reverting the composite keys rebuilds every table, and the copies are
-            // created before any original is dropped.
-            migrationBuilder.Sql("PRAGMA foreign_keys = 0;", suppressTransaction: true);
-
             migrationBuilder.DropForeignKey(
                 name: "FK_Attachments_Items_ManifestId_ItemId",
                 table: "Attachments");
@@ -641,10 +910,6 @@ namespace AliasClientDb.Migrations
                 table: "ItemTags");
 
             migrationBuilder.DropIndex(
-                name: "IX_ItemTags_ManifestId_ItemId_TagId",
-                table: "ItemTags");
-
-            migrationBuilder.DropIndex(
                 name: "IX_ItemTags_ManifestId_TagId",
                 table: "ItemTags");
 
@@ -717,6 +982,18 @@ namespace AliasClientDb.Migrations
                 table: "TotpCodes");
 
             migrationBuilder.DropColumn(
+                name: "Algorithm",
+                table: "TotpCodes");
+
+            migrationBuilder.DropColumn(
+                name: "Digits",
+                table: "TotpCodes");
+
+            migrationBuilder.DropColumn(
+                name: "Period",
+                table: "TotpCodes");
+
+            migrationBuilder.DropColumn(
                 name: "ManifestId",
                 table: "Tags");
 
@@ -749,11 +1026,23 @@ namespace AliasClientDb.Migrations
                 table: "Items");
 
             migrationBuilder.DropColumn(
+                name: "ArchivedAt",
+                table: "Items");
+
+            migrationBuilder.DropColumn(
                 name: "ManifestId",
                 table: "Folders");
 
             migrationBuilder.DropColumn(
                 name: "ManifestId",
+                table: "FieldValues");
+
+            migrationBuilder.DropColumn(
+                name: "IsDisabled",
+                table: "FieldValues");
+
+            migrationBuilder.DropColumn(
+                name: "ValueIndex",
                 table: "FieldValues");
 
             migrationBuilder.DropColumn(
@@ -771,6 +1060,225 @@ namespace AliasClientDb.Migrations
             migrationBuilder.DropColumn(
                 name: "ManifestId",
                 table: "Attachments");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "TotpCodes",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "TotpCodes",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Tags",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "Passkeys",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Passkeys",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Logos",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "TagId",
+                table: "ItemTags",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "ItemTags",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "Id",
+                table: "ItemTags",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "LogoId",
+                table: "Items",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true,
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "FolderId",
+                table: "Items",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true,
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Items",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ParentFolderId",
+                table: "Folders",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true,
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Folders",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "FieldDefinitionId",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true,
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "FieldValues",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "FieldDefinitionId",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true,
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "FieldHistories",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "FieldDefinitions",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "EncryptionKeys",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "ItemId",
+                table: "Attachments",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
+
+            migrationBuilder.AlterColumn<Guid>(
+                name: "Id",
+                table: "Attachments",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldCollation: "NOCASE");
 
             migrationBuilder.AddPrimaryKey(
                 name: "PK_TotpCodes",
