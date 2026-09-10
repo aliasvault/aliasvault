@@ -273,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_casing_is_ignored() {
-        let lower = select_favicon_target(&urls(&["facebook.com"])).unwrap();
+        let lower = select_favicon_target(&urls(&["example.com"])).unwrap();
         for variant in ["Example.com", "example.com", "https://example.com"] {
             let target = select_favicon_target(&urls(&[variant])).unwrap();
             assert_eq!(target.source, "example.com", "source for {variant}");
