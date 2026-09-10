@@ -1,3 +1,5 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +17,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import { AppInfo } from '@/utils/AppInfo';
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import { CapabilityKeys } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser, storage } from "#imports";

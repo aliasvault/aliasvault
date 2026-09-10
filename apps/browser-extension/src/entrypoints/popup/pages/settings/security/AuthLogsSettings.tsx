@@ -1,3 +1,5 @@
+import { toLocalDisplayFormat } from '@aliasvault/client/utilities/DateFormatter';
+import { AuthEventType } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,9 +8,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import { toLocalDisplayFormat } from '@/utils/DateFormatter';
-import type { AuthLogModel } from '@/utils/dist/core/models/webapi';
-import { AuthEventType } from '@/utils/dist/core/models/webapi';
+import type { AuthLogModel } from '@aliasvault/models/webapi';
 
 /**
  * Recent auth logs page which lists the recent authentication attempts on the account.

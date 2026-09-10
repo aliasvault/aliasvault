@@ -1,12 +1,12 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import type { Credential } from '@/utils/dist/core/models/vault';
-
 import { FormFiller } from '../FormFiller';
 import { type FormFields } from '../types/FormFields';
 
 import { setupTestDOM, createMockFormFields, createMockCredential, wasTriggerCalledFor, createDateSelects } from './TestUtils';
+
+import type { Credential } from '@aliasvault/models/vault';
 
 const { window } = new JSDOM('<!DOCTYPE html>');
 global.HTMLSelectElement = window.HTMLSelectElement;

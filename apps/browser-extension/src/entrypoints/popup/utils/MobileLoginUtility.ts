@@ -1,12 +1,14 @@
 import { Buffer } from 'buffer';
 
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { serverPredatesV2Api } from '@aliasvault/client/sync/LegacyStorageModelMigration';
+
 import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginErrorCode';
 
-import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
-import { serverPredatesV2Api } from '@/utils/legacy/LegacyStorageModelMigration';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import type { WebApiService } from '@/utils/WebApiService';
+
+import type { WebApiService } from '@aliasvault/client/api/WebApiService';
+import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@aliasvault/models/webapi';
 
 /**
  * Utility class for mobile login operations

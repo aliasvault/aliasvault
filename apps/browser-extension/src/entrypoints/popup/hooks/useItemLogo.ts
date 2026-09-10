@@ -1,11 +1,12 @@
+import { LogoKinds } from '@aliasvault/models/vault';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import type { LogoKind, LogoSelection } from '@/utils/dist/core/models/vault';
-import { LogoKinds } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
+
+import type { LogoKind, LogoSelection } from '@aliasvault/models/vault';
 
 /**
  * Debounce time for the URL field after typing before its favicon is looked up.

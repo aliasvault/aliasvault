@@ -1,3 +1,8 @@
+import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +24,6 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import {
@@ -32,11 +36,7 @@ import {
   setupPin,
   unlockWithPin
 } from '@/utils/PinUnlockService';
-import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@/utils/types/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import { VaultKeyService } from '@/utils/VaultKeyService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 

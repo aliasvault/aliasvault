@@ -1,10 +1,11 @@
 import { Buffer } from 'buffer';
 
-import type { DraftItem } from '@/utils/db/ItemRef';
-import type { FaviconTarget } from '@/utils/RustCore';
-import { selectFaviconTarget, toUrlList } from '@/utils/RustCore';
-import type { SqliteClient } from '@/utils/SqliteClient';
-import type { WebApiService } from '@/utils/WebApiService';
+import { selectFaviconTarget, toUrlList } from '@aliasvault/client/rust/RustCore';
+
+import type { WebApiService } from '@aliasvault/client/api/WebApiService';
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
+import type { FaviconTarget } from '@aliasvault/client/rust/RustCore';
 
 /**
  * Result of a favicon fetch operation.

@@ -1,11 +1,10 @@
+import { getFolderPath, getFolderIdPath } from '@aliasvault/client/items/FolderUtils';
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useNavigationHistory } from '@/entrypoints/popup/hooks/useNavigationHistory';
-
-import { getFolderPath, getFolderIdPath } from '@/utils/FolderUtils';
 
 type Breadcrumb = {
   name: string;

@@ -1,42 +1,49 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { AppErrorCode, formatErrorWithCode, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { NetworkError } from '@aliasvault/client/api/errors/NetworkError';
+import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
+import { RequestTimeoutError } from '@aliasvault/client/api/errors/RequestTimeoutError';
+import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { WebApiService } from '@aliasvault/client/api/WebApiService';
+import { MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { TRASH_RETENTION_DAYS } from '@aliasvault/client/constants/Vault';
+import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
+import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
+import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@aliasvault/client/rust/RustCore';
+import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
+import { SharingService } from '@aliasvault/client/sharing/SharingService';
+import { requiresLegacyAccountKeyMigration } from '@aliasvault/client/sync/LegacyStorageModelMigration';
+import { bucketsRequiringPull, getBucketRevisions, getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toBucketRevisionMap, toManifestRevisionMap } from '@aliasvault/client/sync/ManifestRevisions';
+import { PendingActionProcessor } from '@aliasvault/client/sync/PendingActionProcessor';
+import { VaultCodec } from '@aliasvault/client/sync/VaultCodec';
+import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
+import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
+import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@aliasvault/client/sync/VaultMutationScope';
+import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
+import { type PullAndMergeResult, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@aliasvault/client/sync/VaultSyncService';
+import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
+import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
+import { VaultKeyAlgorithm, type VaultResponse, type StatusResponseV2 } from '@aliasvault/models/webapi';
 import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
-import { MasterPasswordService, PasswordChangedElsewhereError } from '@/utils/auth/MasterPasswordService';
-import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
-import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
-import type { ItemUsageAction } from '@/utils/db';
-import type { DraftItem } from '@/utils/db/ItemRef';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@/utils/dist/core/models/vault';
-import { VaultKeyAlgorithm, type VaultResponse, type StatusResponseV2 } from '@/utils/dist/core/models/webapi';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { requiresLegacyAccountKeyMigration } from '@/utils/legacy/LegacyStorageModelMigration';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { bucketsRequiringPull, getBucketRevisions, getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toBucketRevisionMap, toManifestRevisionMap } from '@/utils/ManifestRevisions';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
-import { multiManifestRendering } from '@/utils/MultiManifestRendering';
-import { PendingActionProcessor } from '@/utils/PendingActionProcessor';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@/utils/RustCore';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { SharingService } from '@/utils/SharingService';
-import { SqliteClient } from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
-import { generateTotpCode } from '@/utils/TotpUtility';
-import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode, hasErrorCode } from '@/utils/types/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
-import { NetworkError } from '@/utils/types/errors/NetworkError';
-import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
-import { RequestTimeoutError } from '@/utils/types/errors/RequestTimeoutError';
-import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -46,18 +53,14 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
-import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@/utils/types/VaultMutationScope';
-import { decryptVaultBlob, encryptVaultBlob } from '@/utils/VaultBlob';
-import { VaultCodec } from '@/utils/VaultCodec';
-import { clearDirtyScopes, getDirtyScopes } from '@/utils/VaultDirtyState';
-import { VaultKeyService } from '@/utils/VaultKeyService';
-import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@/utils/VaultManifestMigration';
-import { vaultMergeService, type MergeResult } from '@/utils/VaultMergeService';
-import { getVaultSyncHoldReason } from '@/utils/VaultSyncHold';
-import { type PullAndMergeResult, vaultSyncService, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@/utils/VaultSyncService';
-import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
+import { vaultMergeService, vaultSyncService } from '@/platform/ClientServices';
+
+import type { ItemUsageAction } from '@aliasvault/client/database';
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { MergeResult } from '@aliasvault/client/sync/VaultMergeService';
+import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
  * Cache for the SqliteClient to avoid repeated decryption and initialization.
@@ -111,7 +114,9 @@ async function serverStateNeedsPull(statusResponse: StatusResponseV2): Promise<b
     return false;
   }
 
-  // Log the manifests and buckets that need to be pulled.
+  /**
+   * Describe one manifest or bucket that needs a pull, with its local and server revision.
+   */
   const describe = (server: Record<string, number>, local: Record<string, number>) => (key: string): string => `${key} (local ${local[key] ?? 'untracked'}, server ${server[key] ?? 'unlisted'})`;
   if (manifestsToPull.length > 0) {
     devLog(`[VaultSync] Pull needed for ${manifestsToPull.length} manifest(s): ${manifestsToPull.map(describe(serverManifestRevisions, localManifestRevisions)).join(', ')}.`);

@@ -1,9 +1,8 @@
+import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
-
-import { hasUnsyncedUserChanges } from '@/utils/VaultDirtyState';
 
 interface ILogoutConfirmModalProps {
   isOpen: boolean;

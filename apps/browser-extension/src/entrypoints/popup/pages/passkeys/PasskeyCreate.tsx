@@ -1,3 +1,5 @@
+import { extractDomain, filterItems, AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
+import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@aliasvault/models/vault';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -13,15 +15,14 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import type { DraftItem } from '@/utils/db/ItemRef';
-import type { Item, Passkey } from '@/utils/dist/core/models/vault';
-import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
-import { extractDomain, filterItems, AutofillMatchingMode } from '@/utils/RustCore';
+
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { Item, Passkey } from '@aliasvault/models/vault';
 
 /**
  * PasskeyCreate

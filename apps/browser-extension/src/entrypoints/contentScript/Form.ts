@@ -1,16 +1,18 @@
+import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
+import { itemToCredential, FieldKey } from '@aliasvault/models/vault';
+
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { itemToCredential, FieldKey } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
-import { SqliteClient } from '@/utils/SqliteClient';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Global timestamp to track popup debounce time.

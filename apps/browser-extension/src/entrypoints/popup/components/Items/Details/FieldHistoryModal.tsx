@@ -1,3 +1,4 @@
+import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,8 +7,7 @@ import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/F
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import type { FieldHistory, FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
 
 type FieldHistoryModalProps = {
   isOpen: boolean;

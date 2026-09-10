@@ -1,4 +1,4 @@
-import type { Item } from "@/utils/dist/core/models/vault";
+import type { Item } from "@aliasvault/models/vault";
 
 export type ItemsResponse = {
     success: boolean,

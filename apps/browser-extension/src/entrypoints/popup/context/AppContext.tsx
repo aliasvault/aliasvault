@@ -1,10 +1,10 @@
+import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 import React, { createContext, useContext, useMemo, useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 type AppContextType = {

@@ -1,14 +1,14 @@
-import React from 'react';
-
-import type { DraftItem } from '@/utils/db/ItemRef';
-import type { ItemTypeIconKey } from '@/utils/dist/core/models/icons';
-import { getAppIconSvg, ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
+import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { getAppIconSvg, ItemTypeIconSvgs } from '@aliasvault/models/icons';
 import {
   FieldKey,
   LogoKinds,
   ItemTypes,
-} from '@/utils/dist/core/models/vault';
-import SqliteClient from '@/utils/SqliteClient';
+} from '@aliasvault/models/vault';
+import React from 'react';
+
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { ItemTypeIconKey } from '@aliasvault/models/icons';
 
 type ItemIconProps = {
   item: DraftItem;

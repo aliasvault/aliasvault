@@ -1,13 +1,13 @@
+import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/FormInputCopyToClipboard';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { ItemField } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
-
 import FieldHistoryModal from './FieldHistoryModal';
+
+import type { ItemField } from '@aliasvault/models/vault';
 
 type FieldBlockProps = {
   field: ItemField;

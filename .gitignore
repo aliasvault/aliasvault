@@ -449,7 +449,7 @@ core/rust/dist/
 core/rust/target/
 
 # Browser extension WASM (built by: cd core/rust && ./build.sh --browser)
-apps/browser-extension/src/utils/dist/core/rust
+core/client/wasm
 
 # Server .NET bindings (built by: cd core/rust && ./build.sh --server)
 apps/server/Utilities/AliasVault.RustCore/

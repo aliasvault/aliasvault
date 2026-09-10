@@ -1,11 +1,12 @@
+import { generateTotpCode, getTotpElapsedPercentage, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { TotpCode } from '@/utils/dist/core/models/vault';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { generateTotpCode, getTotpElapsedPercentage, getTotpRemainingSeconds } from '@/utils/TotpUtility';
+
+import type { TotpCode } from '@aliasvault/models/vault';
 
 /**
  * Formats a TOTP code with a space in the middle for better readability, e.g. "XXX XXX" or "XXXX XXXX".

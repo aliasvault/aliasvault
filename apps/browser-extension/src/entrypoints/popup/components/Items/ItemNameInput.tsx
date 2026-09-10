@@ -1,10 +1,9 @@
+import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-
-import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@/utils/FolderUtils';
 
 type Folder = {
   Id: string;

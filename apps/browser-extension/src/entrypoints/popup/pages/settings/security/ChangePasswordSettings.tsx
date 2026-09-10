@@ -1,3 +1,5 @@
+import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,9 +12,6 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
-
-import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@/utils/auth/MasterPasswordService';
-import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
 
 type PasswordInputProps = {
   id: string;

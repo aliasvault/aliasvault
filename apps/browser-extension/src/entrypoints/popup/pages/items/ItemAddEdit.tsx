@@ -1,3 +1,5 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
+import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -31,15 +33,14 @@ import useItemLogo from '@/entrypoints/popup/hooks/useItemLogo';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import type { DraftItem } from '@/utils/db/ItemRef';
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@/utils/dist/core/models/vault';
-import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { NavigationStateService } from '@/utils/NavigationStateService';
-import * as RustCore from '@/utils/RustCore';
+
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@aliasvault/models/vault';
 
 import { browser } from '#imports';
 

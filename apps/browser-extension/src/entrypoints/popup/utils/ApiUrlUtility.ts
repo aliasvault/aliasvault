@@ -1,6 +1,6 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { useState } from 'react';
 
-import { AppInfo } from '@/utils/AppInfo';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';

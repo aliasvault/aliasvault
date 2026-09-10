@@ -10,7 +10,7 @@
 
 import { createHash } from 'crypto';
 
-import { vaultCodecPackPayload, vaultCodecUnpackPayload } from '../../src/utils/dist/core/rust/aliasvault_core.js';
+import { vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/wasm/aliasvault_core.js';
 
 import { ensureRustCore } from './rust-core';
 import { normalizeUsername, symmetricDecryptBytes, symmetricEncryptBytes } from './test-api';

@@ -1,10 +1,10 @@
+import { FieldCategories } from '@aliasvault/models/vault';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { FieldType, SystemFieldDefinition } from '@/utils/dist/core/models/vault';
-import { FieldCategories } from '@/utils/dist/core/models/vault';
-
 import CustomFieldModal from './CustomFieldModal';
+
+import type { FieldType, SystemFieldDefinition } from '@aliasvault/models/vault';
 
 /**
  * Configuration for an optional section (not field-based).

@@ -10,7 +10,6 @@ lerna-debug.log*
 node_modules
 .output
 dist
-!src/utils/dist
 stats.html
 stats-*.json
 .wxt

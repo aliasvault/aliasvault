@@ -1,3 +1,12 @@
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
+import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { decryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,22 +25,14 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
-import { AppInfo } from '@/utils/AppInfo';
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
-import { ServerUpdateRequiredError } from '@/utils/types/errors/ServerUpdateRequiredError';
-import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import { decryptVaultBlob } from '@/utils/VaultBlob';
-import { VaultKeyService } from '@/utils/VaultKeyService';
-import { vaultSyncService } from '@/utils/VaultSyncService';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
+import { vaultSyncService } from '@/platform/ClientServices';
+
+import type { VaultResponse, LoginResponse } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
 

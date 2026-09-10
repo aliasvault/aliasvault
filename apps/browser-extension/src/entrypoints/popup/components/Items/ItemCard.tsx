@@ -1,13 +1,13 @@
+import { truncateFolderPath } from '@aliasvault/client/items/FolderUtils';
+import { FieldKey } from '@aliasvault/models/vault';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldKey } from '@/utils/dist/core/models/vault';
-import { truncateFolderPath } from '@/utils/FolderUtils';
-
 import ItemContextMenu from './ItemContextMenu';
 import ItemIcon from './ItemIcon';
+
+import type { Item } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
   item: Item;

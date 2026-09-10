@@ -1,13 +1,13 @@
+import { LogoKinds } from '@aliasvault/models/vault';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LogoPickerModal from '@/entrypoints/popup/components/Items/LogoPickerModal';
 
-import type { DraftItem } from '@/utils/db/ItemRef';
-import type { LogoSelection, ItemLogo } from '@/utils/dist/core/models/vault';
-import { LogoKinds } from '@/utils/dist/core/models/vault';
-
 import ItemIconComponent from './ItemIcon';
+
+import type { DraftItem } from '@aliasvault/client/database/ItemRef';
+import type { LogoSelection, ItemLogo } from '@aliasvault/models/vault';
 
 type ItemLogoPickerProps = {
   item: DraftItem;

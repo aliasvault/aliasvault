@@ -1,3 +1,4 @@
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -15,11 +16,11 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import { getStorageItem } from '@/utils/StorageUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /**
  * Emails list page.

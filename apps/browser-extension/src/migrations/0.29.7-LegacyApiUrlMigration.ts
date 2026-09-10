@@ -1,4 +1,5 @@
-import { AppInfo } from '@/utils/AppInfo';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';

@@ -1,8 +1,8 @@
+import { argon2DeriveKey } from '@aliasvault/client/rust/RustCore';
+import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { browser } from 'wxt/browser';
 
-import { base64ToBytes, bytesToBase64 } from '@/utils/Base64';
 import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
-import { argon2DeriveKey } from '@/utils/RustCore';
 
 import { storage } from '#imports';
 

@@ -1,5 +1,6 @@
+import { AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
+
 import { LOCAL_PREFERENCE_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
-import { AutofillMatchingMode } from '@/utils/RustCore';
 
 import { storage } from '#imports';
 

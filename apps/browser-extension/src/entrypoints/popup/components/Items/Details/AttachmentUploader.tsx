@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
   attachments: Attachment[];

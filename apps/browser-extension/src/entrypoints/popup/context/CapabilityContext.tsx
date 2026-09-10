@@ -1,8 +1,7 @@
+import { type Capabilities, CapabilityService } from '@aliasvault/client/api/CapabilityService';
+import { type CapabilityKey, isCapabilityEnabled } from '@aliasvault/models/webapi';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-
-import { type Capabilities, CapabilityService } from '@/utils/CapabilityService';
-import { type CapabilityKey, isCapabilityEnabled } from '@/utils/dist/core/models/webapi';
 
 type CapabilityContextType = {
   isEnabled: (key: CapabilityKey) => boolean;

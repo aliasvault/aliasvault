@@ -1,3 +1,4 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
@@ -5,7 +6,6 @@ import * as Yup from 'yup';
 import LanguageSwitcher from '@/entrypoints/popup/components/LanguageSwitcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { AppInfo } from '@/utils/AppInfo';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 

@@ -1,19 +1,21 @@
+import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
+import { generateTotpCode, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
+import { ItemTypeIconSvgs } from '@aliasvault/models/icons';
+import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models/vault';
+
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
-import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@/utils/dist/core/models/vault';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { SqliteClient } from '@/utils/SqliteClient';
-import { generateTotpCode, getTotpRemainingSeconds } from '@/utils/TotpUtility';
 
 import { t } from '@/i18n/StandaloneI18n';
 
 import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * The input element the autofill popup was most recently shown for. Used as a fallback fill

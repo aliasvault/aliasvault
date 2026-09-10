@@ -1,3 +1,4 @@
+import { toLocalDisplayFormat } from '@aliasvault/client/utilities/DateFormatter';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,8 +8,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import { toLocalDisplayFormat } from '@/utils/DateFormatter';
-import type { RefreshToken } from '@/utils/dist/core/models/webapi';
+import type { RefreshToken } from '@aliasvault/models/webapi';
 
 /**
  * Active sessions page which lists the devices that are currently logged in and allows revoking them.

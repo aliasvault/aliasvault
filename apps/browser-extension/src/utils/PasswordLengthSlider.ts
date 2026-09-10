@@ -8,7 +8,7 @@
  * This makes it easy to select common password lengths while still allowing
  * very long passwords when needed.
  */
-import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from '@/utils/dist/core/models/defaults';
+import { MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH } from '@aliasvault/models/defaults';
 
 /** Slider minimum value (internal representation) */
 export const SLIDER_MIN = 0;

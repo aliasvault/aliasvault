@@ -9,7 +9,7 @@
  * without re-entering credentials.
  */
 
-import type { LoginResponse } from '@/utils/dist/core/models/webapi';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * The 2FA state that is persisted in memory.

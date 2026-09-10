@@ -1,14 +1,15 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+import { Gender } from '@aliasvault/models/identity';
 import { JSDOM, type DOMWindow } from 'jsdom';
 import { it, expect, vi } from 'vitest';
 
-import { Gender } from '@/utils/dist/core/models/identity';
-import type { Credential } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { type FormFields } from '@/utils/formDetector/types/FormFields';
 import { getDeepElementById } from '@/utils/ShadowDom';
+
+import type { Credential } from '@aliasvault/models/vault';
 
 export enum FormField {
   Username = 'username',

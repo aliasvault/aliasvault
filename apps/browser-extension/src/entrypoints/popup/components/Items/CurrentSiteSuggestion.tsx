@@ -1,13 +1,13 @@
+import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { applySearchFilter } from '@/utils/ItemFilters';
-
 import ItemIcon from './ItemIcon';
+
+import type { Item } from '@aliasvault/models/vault';
 
 type CurrentSiteSuggestionProps = {
   items: Item[];

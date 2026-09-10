@@ -3,7 +3,7 @@
  * Add new languages here to make them available throughout the application
  */
 
-import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
+import { getLanguageInfo } from '@aliasvault/models/defaults';
 
 import daTranslations from './locales/da.json';
 import deTranslations from './locales/de.json';

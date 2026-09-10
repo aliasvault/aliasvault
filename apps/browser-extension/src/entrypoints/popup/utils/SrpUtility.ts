@@ -1,8 +1,9 @@
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
-import type { LoginResponse, ValidateLoginResponse, ValidateLoginRequest, ValidateLoginRequest2Fa, BadRequestResponse } from '@/utils/dist/core/models/webapi';
-import { throwIfServerPredatesV2Api } from '@/utils/legacy/LegacyStorageModelMigration';
-import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-import { WebApiService } from '@/utils/WebApiService';
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { WebApiService } from '@aliasvault/client/api/WebApiService';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { throwIfServerPredatesV2Api } from '@aliasvault/client/sync/LegacyStorageModelMigration';
+
+import type { LoginResponse, ValidateLoginResponse, ValidateLoginRequest, ValidateLoginRequest2Fa, BadRequestResponse } from '@aliasvault/models/webapi';
 
 /**
  * Utility class for SRP authentication operations.

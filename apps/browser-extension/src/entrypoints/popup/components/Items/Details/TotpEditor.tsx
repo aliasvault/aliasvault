@@ -1,3 +1,5 @@
+import { buildOtpAuthUri } from '@aliasvault/client/items/TotpUtility';
+import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import  * as OTPAuth from 'otpauth';
 import QRCode from 'qrcode';
 import React, { useState } from 'react';
@@ -6,9 +8,7 @@ import { useTranslation } from 'react-i18next';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
-import type { TotpCode } from '@/utils/dist/core/models/vault';
-import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@/utils/dist/core/models/vault';
-import { buildOtpAuthUri } from '@/utils/TotpUtility';
+import type { TotpCode } from '@aliasvault/models/vault';
 
 type TotpFormData = {
   name: string;

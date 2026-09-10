@@ -7,7 +7,8 @@ import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginError
 import { MobileLoginUtility } from '@/entrypoints/popup/utils/MobileLoginUtility';
 
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import type { WebApiService } from '@/utils/WebApiService';
+
+import type { WebApiService } from '@aliasvault/client/api/WebApiService';
 
 interface IMobileUnlockModalProps {
   isOpen: boolean;

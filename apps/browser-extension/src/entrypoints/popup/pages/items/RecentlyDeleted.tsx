@@ -1,3 +1,4 @@
+import { TRASH_RETENTION_DAYS } from '@aliasvault/client/constants/Vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -10,11 +11,10 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
-import type { Item } from '@/utils/dist/core/models/vault';
-import type { ItemFilterType } from '@/utils/ItemFilters';
-
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Calculate days remaining until permanent deletion.

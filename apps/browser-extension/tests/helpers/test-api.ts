@@ -13,9 +13,9 @@ import { join } from 'path';
 import Database from 'better-sqlite3';
 import * as OTPAuth from 'otpauth';
 
-import { argon2DeriveKey, srpDerivePrivateKey, srpDeriveVerifier, srpGenerateSalt } from '../../src/utils/dist/core/rust/aliasvault_core.js';
+import { argon2DeriveKey, srpDerivePrivateKey, srpDeriveVerifier, srpGenerateSalt } from '@aliasvault/client/wasm/aliasvault_core.js';
 // Get the vault schema SQL from the core vault package
-import { COMPLETE_SCHEMA_SQL, VAULT_VERSIONS } from '../../src/utils/dist/core/vault/index.mjs';
+import { COMPLETE_SCHEMA_SQL, VAULT_VERSIONS } from '../../../../core/vault/dist/index.mjs';
 
 import { ensureRustCore } from './rust-core';
 

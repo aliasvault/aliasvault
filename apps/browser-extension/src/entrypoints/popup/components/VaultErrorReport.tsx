@@ -1,8 +1,7 @@
+import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { AppInfo } from '@/utils/AppInfo';
-import { VaultProcessingError } from '@/utils/types/errors/VaultProcessingError';
 
 /**
  * Vault error report props.

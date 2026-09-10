@@ -1,3 +1,4 @@
+import { extractDomain } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -5,7 +6,6 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { extractDomain } from '@/utils/RustCore';
 
 import { browser } from "#imports";
 

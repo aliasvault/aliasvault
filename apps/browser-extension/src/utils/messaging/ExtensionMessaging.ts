@@ -20,10 +20,6 @@ export type TotpSecret = {
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import type { FullVaultSyncResult, VaultManifestMigrationResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
-import type { ItemUsageAction } from '@/utils/db';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -35,8 +31,13 @@ import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginRespons
 import type { StringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
-import type { VaultMutationScope } from '@/utils/types/VaultMutationScope';
-import type { VaultMigrationStatus } from '@/utils/VaultManifestMigration';
+
+import type { ItemUsageAction } from '@aliasvault/client/database';
+import type { VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
+import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
+import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { PasswordSettings } from '@aliasvault/models/vault';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**

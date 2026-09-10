@@ -5,7 +5,7 @@ import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 
-import type { ItemType } from '@/utils/dist/core/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 type AddItemDropdownProps = {
   onSelect: (type: ItemType) => void;

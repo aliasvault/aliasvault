@@ -1,6 +1,5 @@
+import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-
-import { WebApiService } from '@/utils/WebApiService';
 
 const WebApiContext = createContext<WebApiService | null>(null);
 

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentBlockProps = {
   itemId: string;

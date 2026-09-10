@@ -1,3 +1,6 @@
+import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
+import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,11 +14,9 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestInfo } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { multiManifestRendering } from '@/utils/MultiManifestRendering';
-import { SharingService } from '@/utils/SharingService';
-import { ApiRequestError } from '@/utils/types/errors/ApiRequestError';
+
+import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestInfo } from '@aliasvault/models/webapi';
 
 /**
  * The access removal the confirmation dialog is about.

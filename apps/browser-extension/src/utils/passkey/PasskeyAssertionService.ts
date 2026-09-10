@@ -4,8 +4,6 @@
  * Shared helper that turns a stored passkey into a WebAuthn assertion response.
  */
 
-import type { SqliteClient } from '@/utils/SqliteClient';
-
 import { PasskeyAuthenticator } from './PasskeyAuthenticator';
 import { PasskeyHelper } from './PasskeyHelper';
 
@@ -15,6 +13,7 @@ import type {
   StoredPasskeyRecord,
   WebAuthnPublicKeyGetPayload
 } from './types';
+import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 
 /**
  * A pending `get` request, narrowed to the fields needed to build an assertion.

@@ -1,11 +1,11 @@
+import { encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
+import { isSilentScope, type VaultMutationOptions, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import { useCallback, useRef } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { isSilentScope, type VaultMutationOptions, type VaultMutationScope } from '@/utils/types/VaultMutationScope';
-import { encryptVaultBlob } from '@/utils/VaultBlob';
 
 /**
  * Hook to execute a vault mutation.

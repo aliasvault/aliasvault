@@ -1,3 +1,4 @@
+import { extractDomain } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -14,7 +15,6 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { PendingPasskeyGetRequest } from '@/utils/passkey/types';
-import { extractDomain } from '@/utils/RustCore';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**

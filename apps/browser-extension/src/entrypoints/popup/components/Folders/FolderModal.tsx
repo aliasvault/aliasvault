@@ -1,9 +1,8 @@
+import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
-
-import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 
 type FolderModalProps = {
   isOpen: boolean;

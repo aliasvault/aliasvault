@@ -3,6 +3,8 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { extractDomain } from '@aliasvault/client/rust/RustCore';
+
 import { createVaultSqliteClient, handleGetEncryptionKey, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -22,7 +24,6 @@ import type {
   MatchingPasskeysResponse,
   WebAuthnAssertionResponse
 } from '@/utils/passkey/types';
-import { extractDomain } from '@/utils/RustCore';
 
 import { browser } from '#imports';
 

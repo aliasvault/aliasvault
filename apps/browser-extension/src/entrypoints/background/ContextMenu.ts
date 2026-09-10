@@ -1,13 +1,14 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { type Browser } from '@wxt-dev/browser';
 
 import { handleGetPasswordSettings } from '@/entrypoints/background/VaultMessageHandler';
 
 import { POPUP_TYPES, type PopupType, isPopupType } from '@/utils/autofill/PopupTypes';
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import * as RustCore from '@/utils/RustCore';
 
 import { t } from '@/i18n/StandaloneI18n';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 import { browser } from "#imports";
 

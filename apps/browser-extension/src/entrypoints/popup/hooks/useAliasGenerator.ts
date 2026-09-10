@@ -1,8 +1,7 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-
-import * as RustCore from '@/utils/RustCore';
 
 /**
  * Generated alias data returned by the hook.

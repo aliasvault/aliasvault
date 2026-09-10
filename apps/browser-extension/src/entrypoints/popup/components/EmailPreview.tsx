@@ -1,3 +1,5 @@
+import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
@@ -6,11 +8,10 @@ import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentI
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import { AppInfo } from '@/utils/AppInfo';
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { getStorageItem } from '@/utils/StorageUtility';
+
+import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 type EmailPreviewProps = {
   email: string;

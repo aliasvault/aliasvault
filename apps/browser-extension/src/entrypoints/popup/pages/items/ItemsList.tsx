@@ -1,3 +1,6 @@
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -25,15 +28,13 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isSharedFolder } from '@/utils/FolderUtils';
-import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { multiManifestRendering } from '@/utils/MultiManifestRendering';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import type { Item, ItemType } from '@aliasvault/models/vault';
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes

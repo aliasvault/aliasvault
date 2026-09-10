@@ -12,7 +12,6 @@ export default [
         ignores: [
             "dist/**",
             "node_modules/**",
-            "src/utils/dist/**",
         ]
     },
     js.configs.recommended,

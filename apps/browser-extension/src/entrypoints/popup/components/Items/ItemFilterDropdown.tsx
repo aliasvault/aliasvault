@@ -1,9 +1,8 @@
+import { isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
-
-import { isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 
 /**
  * Filter selection that includes the dedicated "deleted" page as an option too.

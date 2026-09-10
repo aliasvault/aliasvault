@@ -1,11 +1,11 @@
+import { AppIconSvgs, getAllAppIconKeys } from '@aliasvault/models/icons';
+import { LogoKinds } from '@aliasvault/models/vault';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
-import { AppIconSvgs, getAllAppIconKeys } from '@/utils/dist/core/models/icons';
-import type { LogoSelection, ItemLogo } from '@/utils/dist/core/models/vault';
-import { LogoKinds } from '@/utils/dist/core/models/vault';
+import type { LogoSelection, ItemLogo } from '@aliasvault/models/vault';
 
 type LogoPickerModalProps = {
   isOpen: boolean;

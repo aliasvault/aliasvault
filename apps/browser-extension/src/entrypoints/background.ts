@@ -2,6 +2,8 @@
  * Background script entry point - handles messages from the content script
  */
 
+import '@/platform/ClientServices';
+
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';

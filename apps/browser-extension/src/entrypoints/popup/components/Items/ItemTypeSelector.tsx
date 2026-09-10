@@ -1,8 +1,8 @@
+import { ItemTypes } from '@aliasvault/models/vault';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { ItemType } from '@/utils/dist/core/models/vault';
-import { ItemTypes } from '@/utils/dist/core/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type option configuration.

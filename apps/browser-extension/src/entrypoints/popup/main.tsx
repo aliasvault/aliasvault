@@ -1,3 +1,5 @@
+import '@/platform/ClientServices';
+
 import ReactDOM from 'react-dom/client';
 
 import App from '@/entrypoints/popup/App';

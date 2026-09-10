@@ -1,3 +1,5 @@
+import { FieldCategories, FieldTypes, ItemTypes } from '@aliasvault/models/vault';
+import { groupFieldsByCategory } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,11 +19,9 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldCategories, FieldTypes, ItemTypes } from '@/utils/dist/core/models/vault';
-import { groupFieldsByCategory } from '@/utils/dist/core/models/vault';
-
 import { EmailPreview } from '../../components/EmailPreview';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Item details page with dynamic field rendering.

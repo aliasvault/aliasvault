@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Passkey } from '@/utils/dist/core/models/vault';
-
 import { PasskeyIcon } from './PasskeyBlock';
+
+import type { Passkey } from '@aliasvault/models/vault';
 
 type PasskeyEditorProps = {
   itemId: string;

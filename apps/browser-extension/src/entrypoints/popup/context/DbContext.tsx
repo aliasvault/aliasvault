@@ -1,17 +1,18 @@
+import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
+import { vaultRequiresManifestMigration } from '@aliasvault/client/sync/VaultManifestMigration';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import SqliteClient from '@/utils/SqliteClient';
 import { getStorageItem } from '@/utils/StorageUtility';
-import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
-import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@/utils/VaultDirtyState';
-import { vaultRequiresManifestMigration } from '@/utils/VaultManifestMigration';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
+
+import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { storage } from '#imports';
 

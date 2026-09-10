@@ -1,3 +1,6 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
+import { VaultSqlGenerator } from '@aliasvault/vault';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -19,11 +22,9 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import { AppInfo } from '@/utils/AppInfo';
-import type { VaultVersion } from '@/utils/dist/core/vault';
-import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { VaultMigrationKind } from '@/utils/VaultManifestMigration';
+
+import type { VaultVersion } from '@aliasvault/vault';
 
 /** How long the success confirmation stays up before the vault opens by itself. */
 const SUCCESS_COUNTDOWN_SECONDS = 5;

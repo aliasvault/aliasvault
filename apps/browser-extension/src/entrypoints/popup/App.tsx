@@ -1,3 +1,4 @@
+import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
@@ -44,7 +45,6 @@ import SecuritySettings from '@/entrypoints/popup/pages/settings/security/Securi
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
 
-import { CapabilityKeys } from '@/utils/dist/core/models/webapi';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

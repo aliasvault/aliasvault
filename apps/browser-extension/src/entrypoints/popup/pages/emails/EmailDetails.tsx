@@ -1,3 +1,5 @@
+import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
+import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,14 +14,12 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Email } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
-import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@/utils/RustCore';
-
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import HeaderButton from '../../components/HeaderButton';
 import { HeaderIconType } from '../../components/Icons/HeaderIcons';
+
+import type { Email } from '@aliasvault/models/webapi';
 
 /**
  * Email details page.
