@@ -89,6 +89,56 @@ public sealed class VaultSyncState
     public static string BucketFingerprintKey(Guid manifestId, string category) => $"bucket:{manifestId}:{category}";
 
     /// <summary>
+    /// A detached copy, so a failed operation can restore the state it started from.
+    /// </summary>
+    /// <returns>The copy.</returns>
+    public VaultSyncState Clone()
+    {
+        var copy = new VaultSyncState();
+        copy.CopyFrom(this);
+        return copy;
+    }
+
+    /// <summary>
+    /// Replace everything with another state's content.
+    /// </summary>
+    /// <param name="other">The state to copy.</param>
+    public void CopyFrom(VaultSyncState other)
+    {
+        Clear();
+        PersonalManifestId = other.PersonalManifestId;
+        PersonalManifestSalt = other.PersonalManifestSalt;
+        LastSnapshotWasLegacySqliteBlob = other.LastSnapshotWasLegacySqliteBlob;
+        foreach (var (key, value) in other.ManifestRevisions)
+        {
+            ManifestRevisions[key] = value;
+        }
+
+        foreach (var (key, value) in other.BucketRevisions)
+        {
+            BucketRevisions[key] = value;
+        }
+
+        foreach (var (key, value) in other.ContentFingerprints)
+        {
+            ContentFingerprints[key] = value;
+        }
+
+        ServerBlobHashes.UnionWith(other.ServerBlobHashes);
+        foreach (var (key, value) in other.BlobCipherCache)
+        {
+            BlobCipherCache[key] = value;
+        }
+
+        foreach (var (key, value) in other.SharedManifests)
+        {
+            SharedManifests[key] = value;
+        }
+
+        LastServedManifestIds.AddRange(other.LastServedManifestIds);
+    }
+
+    /// <summary>
     /// Forgets everything; the next pull rebuilds it.
     /// </summary>
     public void Clear()

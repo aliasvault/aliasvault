@@ -8,9 +8,6 @@
 namespace AliasVault.Client.Services.Database;
 
 using System.Data;
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.Client.Services;
@@ -21,9 +18,6 @@ using AliasVault.Client.Services.JsInterop.RustCore.Models;
 using AliasVault.Client.Services.VaultSync;
 using AliasVault.Client.Services.VaultSync.Exceptions;
 using AliasVault.Client.Services.VaultSync.Models;
-using AliasVault.Client.Utilities;
-using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.V1.Vault;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -36,23 +30,30 @@ using Microsoft.Extensions.Localization;
 public sealed class DbService : IDisposable
 {
     private const string _UNKNOWN_VERSION = "Unknown";
+
+    /// <summary>
+    /// How many times a save pulls, merges and pushes again after the server reported newer state before giving up.
+    /// </summary>
+    private const int MaxPushAttempts = 3;
+
     private readonly AuthService _authService;
     private readonly JsInteropService _jsInteropService;
     private readonly RustCoreService _rustCore;
     private readonly VaultSyncService _vaultSync;
+    private readonly VaultKeyService _vaultKeyService;
     private readonly VaultSyncState _syncState;
-    private readonly HttpClient _httpClient;
     private readonly DbServiceState _state = new();
     private readonly Config _config;
     private readonly ILogger<DbService> _logger;
     private readonly GlobalNotificationService _globalNotificationService;
     private readonly IStringLocalizer _sharedLocalizer;
     private readonly CancellationTokenSource _backgroundSyncCts = new();
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
     private SettingsService _settingsService = new();
     private SqliteConnection? _sqlConnection;
     private AliasClientDbContext _dbContext;
-    private long _vaultRevisionNumber;
     private bool _isSuccessfullyInitialized;
+    private bool _forceFullWriteOnNextPush;
     private int _retryCount;
     private bool _disposed;
 
@@ -62,21 +63,21 @@ public sealed class DbService : IDisposable
     /// <param name="authService">AuthService.</param>
     /// <param name="jsInteropService">JsInteropService.</param>
     /// <param name="rustCore">RustCoreService for WASM interop.</param>
-    /// <param name="vaultSync">VaultSyncService that pulls the vault from the server.</param>
-    /// <param name="syncState">The sync state recorded by the last pull.</param>
-    /// <param name="httpClient">HttpClient.</param>
+    /// <param name="vaultSync">VaultSyncService that pulls, pushes and merges the vault.</param>
+    /// <param name="vaultKeyService">VaultKeyService that holds the account key chain.</param>
+    /// <param name="syncState">The sync state recorded by the last pull or push.</param>
     /// <param name="config">Config instance.</param>
     /// <param name="globalNotificationService">Global notification service.</param>
     /// <param name="localizerFactory">IStringLocalizerFactory instance.</param>
     /// <param name="logger">ILogger instance.</param>
-    public DbService(AuthService authService, JsInteropService jsInteropService, RustCoreService rustCore, VaultSyncService vaultSync, VaultSyncState syncState, HttpClient httpClient, Config config, GlobalNotificationService globalNotificationService, IStringLocalizerFactory localizerFactory, ILogger<DbService> logger)
+    public DbService(AuthService authService, JsInteropService jsInteropService, RustCoreService rustCore, VaultSyncService vaultSync, VaultKeyService vaultKeyService, VaultSyncState syncState, Config config, GlobalNotificationService globalNotificationService, IStringLocalizerFactory localizerFactory, ILogger<DbService> logger)
     {
         _authService = authService;
         _jsInteropService = jsInteropService;
         _rustCore = rustCore;
         _vaultSync = vaultSync;
+        _vaultKeyService = vaultKeyService;
         _syncState = syncState;
-        _httpClient = httpClient;
         _config = config;
         _globalNotificationService = globalNotificationService;
         _sharedLocalizer = localizerFactory.Create("SharedResources", "AliasVault.Client");
@@ -94,6 +95,12 @@ public sealed class DbService : IDisposable
     /// </summary>
     /// <returns>SettingsService.</returns>
     public SettingsService Settings => _settingsService;
+
+    /// <summary>
+    /// Gets the id of the user's personal manifest, the scope every row this client creates belongs to.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when no vault has been pulled yet.</exception>
+    public Guid PersonalManifestId => _syncState.PersonalManifestId ?? throw new InvalidOperationException("No personal manifest id is recorded; the vault has not been loaded from the server yet.");
 
     /// <summary>
     /// Gets database service state object which can be subscribed to.
@@ -125,15 +132,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Stores / updates the vault revision number. Should be called after a successful vault update to the server.
-    /// </summary>
-    /// <param name="newRevisionNumber">New revision number.</param>
-    public void StoreVaultRevisionNumber(long newRevisionNumber)
-    {
-        _vaultRevisionNumber = newRevisionNumber;
-    }
-
-    /// <summary>
     /// Returns the AliasClientDbContext instance.
     /// </summary>
     /// <returns>AliasClientDbContext.</returns>
@@ -157,22 +155,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Generate encrypted base64 string representation of current state of database in order to save it
-    /// to the server.
-    /// </summary>
-    /// <returns>Base64 encoded vault blob.</returns>
-    public async Task<string> GetEncryptedDatabaseBase64String()
-    {
-        // Save the actual dbContext.
-        await _dbContext.SaveChangesAsync();
-
-        string base64String = await ExportSqliteToBase64Async();
-
-        // SymmetricEncrypt base64 string using IJSInterop.
-        return await _jsInteropService.SymmetricEncrypt(base64String, _authService.GetEncryptionKeyAsBase64Async());
-    }
-
-    /// <summary>
     /// Saves the database to the remote server.
     /// </summary>
     /// <returns>Bool which indicates if saving database to server was successful.</returns>
@@ -184,24 +166,16 @@ public sealed class DbService : IDisposable
             _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
         }
 
-        // Prune expired items from trash before saving.
-        await PruneExpiredTrashItemsAsync();
-
-        // Make sure a public/private RSA encryption key exists before saving the database.
-        await GetOrCreateEncryptionKeyAsync();
-
-        var encryptedBase64String = await GetEncryptedDatabaseBase64String();
-
-        // Save to webapi.
-        var success = await SaveToServerAsync(encryptedBase64String);
+        var success = await SaveAndPushAsync();
         if (success)
         {
             _logger.LogInformation("Database successfully saved to server.");
-            if (_state.CurrentState.Status != DbServiceState.DatabaseStatus.Creating)
-            {
-                // If database is not in the process of being created, update status to ready which is reflected in the UI.
-                _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-            }
+        }
+
+        if (_state.CurrentState.Status != DbServiceState.DatabaseStatus.Creating)
+        {
+            // If database is not in the process of being created, update status to ready which is reflected in the UI.
+            _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
         }
 
         return success;
@@ -219,8 +193,12 @@ public sealed class DbService : IDisposable
     /// </remarks>
     public void SaveDatabaseInBackground()
     {
-        // Set state to indicate background sync is pending
-        _state.UpdateState(DbServiceState.DatabaseStatus.BackgroundSyncPending);
+        var creating = _state.CurrentState.Status == DbServiceState.DatabaseStatus.Creating;
+        if (!creating)
+        {
+            // Set state to indicate background sync is pending
+            _state.UpdateState(DbServiceState.DatabaseStatus.BackgroundSyncPending);
+        }
 
         // Capture cancellation token for this background operation
         var cancellationToken = _backgroundSyncCts.Token;
@@ -236,43 +214,19 @@ public sealed class DbService : IDisposable
                         return;
                     }
 
-                    // Prune expired items from trash before saving.
-                    await PruneExpiredTrashItemsAsync();
-
-                    if (cancellationToken.IsCancellationRequested || _disposed)
-                    {
-                        return;
-                    }
-
-                    // Make sure a public/private RSA encryption key exists before saving the database.
-                    await GetOrCreateEncryptionKeyAsync();
-
-                    if (cancellationToken.IsCancellationRequested || _disposed)
-                    {
-                        return;
-                    }
-
-                    var encryptedBase64String = await GetEncryptedDatabaseBase64String();
-
-                    if (cancellationToken.IsCancellationRequested || _disposed)
-                    {
-                        return;
-                    }
-
-                    // Update state to show we're actively syncing
-                    _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
-
-                    // Save to webapi.
-                    var success = await SaveToServerAsync(encryptedBase64String);
+                    var success = await SaveAndPushAsync();
                     if (success)
                     {
                         _logger.LogInformation("Database successfully saved to server (background sync).");
-                        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
                     }
                     else
                     {
-                        // SaveToServerAsync already raised the user-facing error notification (targeted or generic).
+                        // SaveAndPushAsync already raised the user-facing error notification (targeted or generic).
                         _logger.LogWarning("Background sync to server failed.");
+                    }
+
+                    if (!creating && !_disposed)
+                    {
                         _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
                     }
                 }
@@ -290,7 +244,10 @@ public sealed class DbService : IDisposable
                 {
                     _logger.LogError(ex, "Error during background database sync.");
                     _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
-                    _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    if (!creating)
+                    {
+                        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    }
                 }
             },
             cancellationToken);
@@ -331,6 +288,9 @@ public sealed class DbService : IDisposable
     {
         try
         {
+            // Every row this vault will hold is stamped with the personal manifest, so its id must be known up front.
+            _ = PersonalManifestId;
+
             // Call JS interop to get SQL commands to create a new vault with the latest schema.
             var sqlCommands = await _jsInteropService.GetCreateVaultSqlAsync();
 
@@ -354,30 +314,35 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Migrate the database structure to the latest version.
+    /// Migrate the loaded legacy vault onto the current storage model: walk the frozen sqlite-blob upgrade chain when
+    /// the vault predates its end, then rebuild the database from its manifest-v1 form on the complete schema. The
+    /// result is held locally until <see cref="SaveDatabaseAsync"/> pushes it, which also creates the account key chain
+    /// for an account that has none yet.
     /// </summary>
     /// <returns>Bool which indicates if migration was successful.</returns>
     public async Task<bool> MigrateDatabaseAsync()
     {
         try
         {
-            // Get current version of database.
-            var currentVersion = await GetCurrentDatabaseVersionAsync();
-
-            // Get latest version from JsInteropService.
-            var latestVersion = await _jsInteropService.GetLatestVaultVersionAsync();
-
-            // Call JS interop to get SQL commands to create a new vault with the latest schema.
-            var sqlCommands = await _jsInteropService.GetUpgradeVaultSqlAsync(currentVersion.Revision, latestVersion.Revision);
-
-            // Execute the SQL commands to create a new vault with the latest schema.
-            foreach (var sqlCommand in sqlCommands.SqlCommands)
+            if (await HasPendingMigrationsAsync())
             {
-                await _dbContext.Database.ExecuteSqlRawAsync(sqlCommand);
+                // LEGACY: the frozen sqlite-blob upgrade chain has to bring the vault to its end first; the codec cannot canonicalize what came before.
+                var currentVersion = await GetCurrentDatabaseVersionAsync();
+                var latestVersion = await _jsInteropService.GetLatestVaultVersionAsync();
+                var sqlCommands = await _jsInteropService.GetUpgradeVaultSqlAsync(currentVersion.Revision, latestVersion.Revision);
+                foreach (var sqlCommand in sqlCommands.SqlCommands)
+                {
+                    await _dbContext.Database.ExecuteSqlRawAsync(sqlCommand);
+                }
             }
 
+            // Rebuild on the complete schema via the codec; this stamps every row with the personal manifest.
+            AdoptDatabase(await _vaultSync.MigrateVaultToCurrentSchemaAsync(_sqlConnection!));
+
+            // The server holds no manifest-v1 state for this vault yet, so the next push must write everything.
+            _forceFullWriteOnNextPush = true;
             _isSuccessfullyInitialized = true;
-            await _settingsService.InitializeAsync(this);
+            await _settingsService.ReloadAsync(this);
         }
         catch (Exception ex)
         {
@@ -477,36 +442,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Prepare a vault object for upload to the server.
-    /// </summary>
-    /// <param name="encryptedDatabase">Encrypted database as string.</param>
-    /// <returns>Vault object.</returns>
-    public async Task<Vault> PrepareVaultForUploadAsync(string encryptedDatabase)
-    {
-        var username = _authService.GetUsername();
-        var databaseVersion = await GetCurrentDatabaseVersionAsync();
-        var encryptionKey = await GetOrCreateEncryptionKeyAsync();
-        var credentialsCount = await _dbContext.Items.Where(x => !x.IsDeleted && x.DeletedAt == null).CountAsync();
-        var emailAddresses = await GetEmailClaimListAsync();
-        var currentDateTime = DateTime.UtcNow;
-        return new Vault
-        {
-            Username = username,
-            Blob = encryptedDatabase,
-            Version = databaseVersion.Version,
-            CurrentRevisionNumber = _vaultRevisionNumber,
-            EncryptionPublicKey = encryptionKey.PublicKey,
-            CredentialsCount = credentialsCount,
-            EmailAddressList = emailAddresses,
-            PrivateEmailDomainList = [],
-            HiddenPrivateEmailDomainList = [],
-            PublicEmailDomainList = [],
-            CreatedAt = currentDateTime,
-            UpdatedAt = currentDateTime,
-        };
-    }
-
-    /// <summary>
     /// Clears the database connection and creates a new one so that the database is empty.
     /// </summary>
     /// <returns>SqliteConnection and AliasClientDbContext.</returns>
@@ -516,6 +451,7 @@ public sealed class DbService : IDisposable
         connection.Open();
         SetLiveConnection(connection);
         _syncState.Clear();
+        _forceFullWriteOnNextPush = false;
 
         // Reset the database state.
         _state.UpdateState(DbServiceState.DatabaseStatus.Uninitialized);
@@ -605,6 +541,7 @@ public sealed class DbService : IDisposable
 
     /// <summary>
     /// Imports a base64-encoded SQLite database into the given connection, replacing its contents.
+    /// TODO: remove when all accounts have been migrated to the new manifest-v1 format.
     /// </summary>
     /// <param name="base64String">The base64-encoded SQLite database.</param>
     /// <param name="connection">The connection to import into.</param>
@@ -700,25 +637,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Converts a JsonElement to its appropriate .NET value for SQLite parameters.
-    /// </summary>
-    /// <param name="element">The JsonElement to convert.</param>
-    /// <returns>The converted value.</returns>
-    private static object? ConvertJsonElementToValue(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.String => element.GetString(),
-            JsonValueKind.Number => element.TryGetInt64(out var longVal) ? longVal : element.GetDouble(),
-            JsonValueKind.True => 1L, // SQLite stores booleans as integers
-            JsonValueKind.False => 0L,
-            JsonValueKind.Null => null,
-            JsonValueKind.Undefined => null,
-            _ => element.ToString(),
-        };
-    }
-
-    /// <summary>
     /// Replace first occurrence of a string.
     /// </summary>
     /// <param name="text">The text to search in.</param>
@@ -737,111 +655,140 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Fetches the latest vault from server, merges with local changes using Rust WASM, and saves the merged result.
-    /// Called when server responds with "Outdated" status, indicating another client has uploaded a newer vault.
+    /// Commit the pending EF changes and push the vault to the server, one save at a time. Saves that arrive while
+    /// another is running wait for it, so two pushes never canonicalize the same database concurrently.
     /// </summary>
-    /// <returns>Bool which indicates if merge and save was successful.</returns>
-    private async Task<bool> MergeWithServerAndSaveAsync()
+    /// <returns>True when the server holds the local vault afterwards.</returns>
+    private async Task<bool> SaveAndPushAsync()
     {
+        await _saveLock.WaitAsync();
         try
         {
-            _logger.LogInformation("Local vault is outdated. Fetching latest vault from server for merge...");
+            // Prune expired items from trash before saving.
+            await PruneExpiredTrashItemsAsync();
 
-            // Fetch the latest vault from server.
-            var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>(ApiRoute("Vault"));
-            if (response?.Vault == null || string.IsNullOrEmpty(response.Vault.Blob))
-            {
-                _logger.LogError("Failed to fetch vault from server for merge.");
-                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
-                return false;
-            }
+            // Make sure a public/private RSA encryption key exists before saving the database.
+            await EnsurePersonalEncryptionKeyAsync();
+            await _dbContext.SaveChangesAsync();
 
-            var serverVault = response.Vault;
-            _logger.LogInformation("Fetched server vault at revision {Revision}.", serverVault.CurrentRevisionNumber);
-
-            // Store username of the loaded vault in memory to send to server as sanity check when updating the vault later.
-            _authService.StoreUsername(serverVault.Username);
-
-            // Decrypt server vault.
-            var decryptedBase64String = await _jsInteropService.SymmetricDecrypt(serverVault.Blob, _authService.GetEncryptionKeyAsBase64Async());
-
-            // Get the list of syncable table names from Rust core.
-            var tableNames = await _rustCore.GetSyncableTableNamesAsync();
-
-            // Read local tables as JSON.
-            var localTables = await ReadTablesAsJsonAsync(_sqlConnection!, tableNames);
-            _logger.LogDebug("Read {Count} local tables.", localTables.Count);
-
-            // Create a temporary in-memory SQLite database for the server vault.
-            await using var serverConnection = new SqliteConnection("Data Source=:memory:");
-            await serverConnection.OpenAsync();
-            await ImportDbContextFromBase64Async(decryptedBase64String, serverConnection);
-
-            // Read server tables as JSON.
-            var serverTables = await ReadTablesAsJsonAsync(serverConnection, tableNames);
-            _logger.LogDebug("Read {Count} server tables.", serverTables.Count);
-
-            // Create the merge input (local has our pending changes, server is the merge base).
-            var mergeInput = new MergeInput
-            {
-                LocalTables = localTables,
-                ServerTables = serverTables,
-            };
-
-            // Call Rust WASM merge (LWW - Last Write Wins based on UpdatedAt). The merge base is the
-            // server vault; the returned statements bring the local changes onto that base.
-            var mergeOutput = await _rustCore.MergeVaultsAsync(mergeInput);
-
-            _logger.LogInformation(
-                "Merge completed: {TablesProcessed} tables, {FromLocal} kept local, {FromServer} from server, {Inserted} inserted, {Conflicts} conflicts.",
-                mergeOutput.Stats.TablesProcessed,
-                mergeOutput.Stats.RecordsFromLocal,
-                mergeOutput.Stats.RecordsFromServer,
-                mergeOutput.Stats.RecordsInserted,
-                mergeOutput.Stats.Conflicts);
-
-            // Apply the local changes onto the server base (statements target the server database),
-            // then make the merged (server-based) database the live local database.
-            await ExecuteMergeSqlStatementsAsync(mergeOutput.Statements, serverConnection);
-            var mergedBase64 = await ExportConnectionToBase64Async(serverConnection);
-            await ImportDbContextFromBase64Async(mergedBase64, _sqlConnection!);
-
-            // Verify foreign key integrity after merge.
-            await using (var command = _sqlConnection!.CreateCommand())
-            {
-                command.CommandText = "PRAGMA foreign_key_check;";
-                await using var reader = await command.ExecuteReaderAsync();
-                if (await reader.ReadAsync())
-                {
-                    _logger.LogError("Foreign key violation detected after merge.");
-                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
-                    return false;
-                }
-            }
-
-            // Update the db context with the merged database.
-            _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
-
-            // Update the local revision number to the server's revision.
-            // When we upload, server will calculate new revision = this + 1.
-            StoreVaultRevisionNumber(serverVault.CurrentRevisionNumber);
-
-            _logger.LogInformation("Local merge completed. Uploading merged vault to server...");
-
-            // Now save the merged vault to server. This recursive call handles the case where
-            // another client uploaded during our merge (returns Outdated again).
-            return await SaveDatabaseAsync();
+            return await PushWithConflictResolutionAsync();
         }
         catch (Exception ex)
         {
-            _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"], true);
-            _logger.LogError(ex, "Error merging with server vault.");
+            _logger.LogError(ex, "Error saving database to server.");
+            _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
             return false;
+        }
+        finally
+        {
+            _saveLock.Release();
         }
     }
 
     /// <summary>
-    /// Checks if there are any pending migrations.
+    /// Push the vault. When the server reports newer state, pull it, merge the local changes onto it and push again,
+    /// a bounded number of times. Errors are reported to the user here so callers only need the bool.
+    /// </summary>
+    /// <returns>True when the push succeeded.</returns>
+    private async Task<bool> PushWithConflictResolutionAsync()
+    {
+        for (var attempt = 1; attempt <= MaxPushAttempts; attempt++)
+        {
+            // LEGACY: an account without a key chain creates one on its first manifest-v1 push, unless another device already did.
+            var createVaultKey = !await _vaultKeyService.HasLocalVaultKeyAsync() && !await TryAdoptRemoteVaultKeyAsync();
+
+            PushResult result;
+            try
+            {
+                result = await _vaultSync.PushAsync(_sqlConnection!, new PushOptions(createVaultKey, _forceFullWriteOnNextPush));
+            }
+            catch (VaultTooLargeException)
+            {
+                // 413: server / reverse-proxy rejected the upload because the vault exceeded MAX_UPLOAD_SIZE_MB.
+                _logger.LogError("Vault upload rejected by server with 413 Request Entity Too Large. The vault exceeds the server's configured MAX_UPLOAD_SIZE_MB.");
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultTooLargeError"], true);
+                return false;
+            }
+            catch (VaultKeyDecryptException ex)
+            {
+                _logger.LogError(ex, "The server's key chain does not open with this session's key; the password was changed elsewhere. Log in again.");
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
+                return false;
+            }
+
+            switch (result.Status)
+            {
+                case PushStatus.Ok:
+                    _forceFullWriteOnNextPush = false;
+                    return true;
+
+                case PushStatus.Outdated:
+                    _logger.LogInformation("Push attempt {Attempt}/{Max}: the server holds newer state ({Reasons}); pulling and merging.", attempt, MaxPushAttempts, string.Join("; ", result.Reasons ?? []));
+                    if (attempt == MaxPushAttempts)
+                    {
+                        break;
+                    }
+
+                    await MergeWithServerAsync();
+                    continue;
+
+                default:
+                    _logger.LogError("Vault push {Status}: {Reasons}", result.Status, string.Join("; ", result.Reasons ?? []));
+                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
+                    return false;
+            }
+        }
+
+        _logger.LogError("Vault push still outdated after {Max} attempts, giving up.", MaxPushAttempts);
+        _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
+        return false;
+    }
+
+    /// <summary>
+    /// Fetch the server vault and merge the local changes onto it; the merged database becomes the live one. When the
+    /// server holds nothing to merge with (legacy format or a never-written manifest), the next push writes everything.
+    /// </summary>
+    /// <returns>Task.</returns>
+    private async Task MergeWithServerAsync()
+    {
+        var result = await _vaultSync.PullAndMergeAsync(_sqlConnection!);
+        if (result.Kind == PullAndMergeKind.NothingToMergeWith)
+        {
+            _logger.LogInformation("The server holds no manifest-v1 vault to merge with; pushing the local vault over it whole.");
+            _forceFullWriteOnNextPush = true;
+            return;
+        }
+
+        foreach (var manifestId in result.FallbackManifestIds)
+        {
+            _logger.LogWarning("Canonical merge fell back to the server's rows for manifest {ManifestId}; local changes to it were dropped.", manifestId);
+        }
+
+        AdoptDatabase(result.Database!);
+        await _settingsService.ReloadAsync(this);
+    }
+
+    /// <summary>
+    /// Adopt a key chain the server holds but this device does not: the account was migrated on another device while
+    /// this session still holds the old password-derived key, which opens the chain as its KEK.
+    /// </summary>
+    /// <returns>True when a chain was adopted, false when the server holds none.</returns>
+    /// <exception cref="VaultKeyDecryptException">Thrown when the server's chain does not open with the session key.</exception>
+    private async Task<bool> TryAdoptRemoteVaultKeyAsync()
+    {
+        var resolved = await _vaultKeyService.AdoptRemoteVaultKeyAsync(_authService.GetEncryptionKeyAsBase64Async());
+        if (resolved is null)
+        {
+            return false;
+        }
+
+        _logger.LogInformation("Adopted the account key chain another device created; the session key is now the VEK.");
+        await _authService.StoreSessionKeysAsync(resolved);
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if there are any pending migrations of the frozen sqlite-blob upgrade chain.
     /// </summary>
     /// <returns>Bool which indicates if there are any pending migrations.</returns>
     private async Task<bool> HasPendingMigrationsAsync()
@@ -895,7 +842,6 @@ public sealed class DbService : IDisposable
             {
                 case PullKind.Empty:
                     // The vault was never written: create the database structure from scratch to get an empty ready-to-use database.
-                    StoreVaultRevisionNumber(pull.Revision);
                     _state.UpdateState(DbServiceState.DatabaseStatus.Creating);
                     return false;
 
@@ -904,7 +850,6 @@ public sealed class DbService : IDisposable
 
                 default:
                     SetLiveConnection(pull.Database!);
-                    StoreVaultRevisionNumber(pull.Revision);
                     _isSuccessfullyInitialized = true;
                     await _settingsService.InitializeAsync(this);
                     _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
@@ -920,15 +865,14 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Import an account's not-yet-migrated sqlite-blob vault. The derived key is the encryption key for these accounts.
-    /// TODO: remove when all accounts have been migrated to the new manifest-v1 format.
+    /// Import an account's not-yet-migrated sqlite-blob vault. The derived key is the encryption key for these
+    /// accounts. A legacy vault cannot be saved before it is migrated onto the manifest-v1 storage model, so it
+    /// always lands on the upgrade page. TODO: remove when all accounts have been migrated to the new manifest-v1 format.
     /// </summary>
     /// <param name="pull">The pass-through pull result.</param>
     /// <returns>True when the database is ready for use.</returns>
     private async Task<bool> LoadLegacySqliteBlobAsync(PullResult pull)
     {
-        StoreVaultRevisionNumber(pull.Revision);
-
         // An account that registered but never uploaded a vault: create the database structure from scratch.
         if (string.IsNullOrEmpty(pull.LegacyVaultBlob))
         {
@@ -941,16 +885,12 @@ public sealed class DbService : IDisposable
         await ImportDbContextFromBase64Async(decryptedBase64String, _sqlConnection!);
 
         // Refresh the db context with the new database to invalidate any cached data if the _dbContext was already used.
-        _dbContext = new AliasClientDbContext(_sqlConnection!, log => _logger.LogDebug("{Message}", log));
+        _dbContext = CreateDbContext(_sqlConnection!);
 
-        // Check if database is up-to-date with migrations.
+        // A vault this client cannot place on the upgrade chain (newer major version) cannot be migrated either.
         try
         {
-            if (await HasPendingMigrationsAsync())
-            {
-                _state.UpdateState(DbServiceState.DatabaseStatus.PendingMigrations);
-                return false;
-            }
+            await HasPendingMigrationsAsync();
         }
         catch (DataException)
         {
@@ -958,10 +898,8 @@ public sealed class DbService : IDisposable
             return false;
         }
 
-        _isSuccessfullyInitialized = true;
-        await _settingsService.InitializeAsync(this);
-        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-        return true;
+        _state.UpdateState(DbServiceState.DatabaseStatus.PendingMigrations);
+        return false;
     }
 
     /// <summary>
@@ -972,7 +910,7 @@ public sealed class DbService : IDisposable
     {
         var previous = _sqlConnection;
         _sqlConnection = connection;
-        _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
+        _dbContext = CreateDbContext(connection);
 
         if (previous is not null && !ReferenceEquals(previous, connection))
         {
@@ -981,57 +919,27 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Saves encrypted database blob to server and updates the local revision number.
+    /// Copy another database into the live connection and refresh the context over it. The connection object stays
+    /// the same, so a context handed out earlier keeps working and simply sees the new content.
     /// </summary>
-    /// <param name="encryptedDatabase">Encrypted database as string.</param>
-    /// <returns>True if save action succeeded and revision number was updated, false otherwise.</returns>
-    private async Task<bool> SaveToServerAsync(string encryptedDatabase)
+    /// <param name="source">The open in-memory database to adopt; disposed afterwards.</param>
+    private void AdoptDatabase(SqliteConnection source)
     {
-        var vaultObject = await PrepareVaultForUploadAsync(encryptedDatabase);
+        source.BackupDatabase(_sqlConnection!);
+        source.Dispose();
+        _dbContext = CreateDbContext(_sqlConnection!);
+    }
 
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync(ApiRoute("Vault"), vaultObject);
-
-            // 413: server / reverse-proxy rejected the upload because the vault exceeded MAX_UPLOAD_SIZE_MB.
-            // Show the targeted message and skip the generic notification fired in the catch / fallthrough.
-            if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
-            {
-                _logger.LogError("Vault upload rejected by server with 413 Request Entity Too Large. The vault exceeds the server's configured MAX_UPLOAD_SIZE_MB.");
-                _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultTooLargeError"], true);
-                return false;
-            }
-
-            // Ensure the request was successful
-            response.EnsureSuccessStatusCode();
-
-            // Deserialize the response content
-            var vaultUpdateResponse = await response.Content.ReadFromJsonAsync<VaultUpdateResponse>();
-
-            if (vaultUpdateResponse != null)
-            {
-                if (vaultUpdateResponse.Status == VaultStatus.Outdated)
-                {
-                    // Server has a newer vault. Fetch it, merge with our local changes, and re-upload.
-                    // The merge uses LWW (Last Write Wins) based on UpdatedAt timestamps.
-                    return await MergeWithServerAndSaveAsync();
-                }
-
-                _vaultRevisionNumber = vaultUpdateResponse.NewRevisionNumber;
-                return true;
-            }
-
-            _logger.LogError("Error during save: server response was empty or could not be deserialized.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error saving database to server.");
-        }
-
-        // Generic save failure (server error, network issue, malformed response, etc.). DbService owns
-        // the user-facing error so callers only need to react to the bool return value.
-        _globalNotificationService.AddErrorMessage(_sharedLocalizer["VaultSaveError"], true);
-        return false;
+    /// <summary>
+    /// Create the EF context over a connection, with every save stamping new rows with their manifest.
+    /// </summary>
+    /// <param name="connection">The open connection.</param>
+    /// <returns>The context.</returns>
+    private AliasClientDbContext CreateDbContext(SqliteConnection connection)
+    {
+        var context = new AliasClientDbContext(connection, log => _logger.LogDebug("{Message}", log));
+        context.SavingChanges += (sender, _) => ManifestStamper.Stamp((DbContext)sender!, PersonalManifestId);
+        return context;
     }
 
     /// <summary>
@@ -1096,31 +1004,32 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Get the default public/private encryption key, if it does not yet exist, create it.
+    /// Make sure the personal manifest holds its email delivery keypair; create one when it does not.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    private async Task<EncryptionKey> GetOrCreateEncryptionKeyAsync()
+    private async Task EnsurePersonalEncryptionKeyAsync()
     {
-        var encryptionKey = await _dbContext.EncryptionKeys.FirstOrDefaultAsync(x => x.IsPrimary);
+        var personalManifestId = PersonalManifestId;
+        var encryptionKey = await _dbContext.EncryptionKeys.FirstOrDefaultAsync(x => x.ManifestId == personalManifestId && x.IsPrimary && !x.IsDeleted);
         if (encryptionKey is not null)
         {
-            return encryptionKey;
+            return;
         }
 
         // Create a new encryption key via JSInterop, .NET WASM does not support crypto operations natively (yet).
         var keyPair = await _jsInteropService.GenerateRsaKeyPair();
 
         var currentDateTime = DateTime.UtcNow;
-        encryptionKey = new EncryptionKey
+        _dbContext.EncryptionKeys.Add(new EncryptionKey
         {
+            Id = Guid.NewGuid(),
+            ManifestId = personalManifestId,
             PublicKey = keyPair.PublicKey,
             PrivateKey = keyPair.PrivateKey,
             IsPrimary = true,
             CreatedAt = currentDateTime,
             UpdatedAt = currentDateTime,
-        };
-        _dbContext.EncryptionKeys.Add(encryptionKey);
-        return encryptionKey;
+        });
     }
 
     /// <summary>
@@ -1178,137 +1087,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Reads all specified tables from a SQLite connection as JSON data for the Rust merge.
-    /// </summary>
-    /// <param name="connection">The SQLite connection to read from.</param>
-    /// <param name="tableNames">The names of tables to read.</param>
-    /// <returns>List of TableData objects containing the table records.</returns>
-    private async Task<List<TableData>> ReadTablesAsJsonAsync(SqliteConnection connection, string[] tableNames)
-    {
-        var tables = new List<TableData>();
-
-        foreach (var tableName in tableNames)
-        {
-            var tableData = new TableData { Name = tableName };
-
-            // Check if table exists in the database.
-            await using var checkCommand = connection.CreateCommand();
-            checkCommand.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName";
-            checkCommand.Parameters.AddWithValue("@tableName", tableName);
-            var exists = await checkCommand.ExecuteScalarAsync();
-
-            if (exists == null)
-            {
-                // Table doesn't exist, add empty table data.
-                tables.Add(tableData);
-                continue;
-            }
-
-            // Get column names for the table.
-            await using var columnsCommand = connection.CreateCommand();
-            columnsCommand.CommandText = $"PRAGMA table_info({tableName})";
-            var columns = new List<string>();
-            await using (var columnsReader = await columnsCommand.ExecuteReaderAsync())
-            {
-                while (await columnsReader.ReadAsync())
-                {
-                    columns.Add(columnsReader.GetString(1));
-                }
-            }
-
-            // Read all records from the table.
-            await using var selectCommand = connection.CreateCommand();
-            selectCommand.CommandText = $"SELECT * FROM {tableName}";
-            await using var reader = await selectCommand.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                var record = new Dictionary<string, object?>();
-                for (var i = 0; i < columns.Count; i++)
-                {
-                    var value = reader.GetValue(i);
-
-                    // Convert DBNull to null for proper JSON serialization.
-                    record[columns[i]] = value == DBNull.Value ? null : value;
-                }
-
-                tableData.Records.Add(record);
-            }
-
-            tables.Add(tableData);
-        }
-
-        return tables;
-    }
-
-    /// <summary>
-    /// Executes the SQL statements returned by the Rust merge operation against the given connection.
-    /// </summary>
-    /// <param name="statements">The SQL statements to execute.</param>
-    /// <param name="connection">The connection to execute the statements against (the merge base).</param>
-    /// <returns>Task.</returns>
-    private async Task ExecuteMergeSqlStatementsAsync(List<SqlStatement> statements, SqliteConnection connection)
-    {
-        if (statements.Count == 0)
-        {
-            _logger.LogDebug("No SQL statements to execute from merge.");
-            return;
-        }
-
-        _logger.LogDebug("Executing {Count} SQL statements from merge.", statements.Count);
-
-        // Disable foreign key checks during merge execution.
-        await using (var pragmaCommand = connection.CreateCommand())
-        {
-            pragmaCommand.CommandText = "PRAGMA foreign_keys = OFF;";
-            await pragmaCommand.ExecuteNonQueryAsync();
-        }
-
-        try
-        {
-            foreach (var statement in statements)
-            {
-                await using var command = connection.CreateCommand();
-                command.CommandText = statement.Sql;
-
-                // Add parameters in order (SQLite uses positional parameters with ?).
-                for (var i = 0; i < statement.Params.Count; i++)
-                {
-                    var value = statement.Params[i];
-
-                    // Handle JsonElement values from deserialization.
-                    if (value is JsonElement jsonElement)
-                    {
-                        value = ConvertJsonElementToValue(jsonElement);
-                    }
-
-                    command.Parameters.AddWithValue($"@p{i}", value ?? DBNull.Value);
-                }
-
-                // Replace ? placeholders with named parameters.
-                var paramIndex = 0;
-                var sql = statement.Sql;
-                while (sql.Contains('?'))
-                {
-                    var pos = sql.IndexOf('?');
-                    sql = sql[..pos] + $"@p{paramIndex}" + sql[(pos + 1)..];
-                    paramIndex++;
-                }
-
-                command.CommandText = sql;
-                await command.ExecuteNonQueryAsync();
-            }
-        }
-        finally
-        {
-            // Re-enable foreign key checks.
-            await using var pragmaCommand = connection.CreateCommand();
-            pragmaCommand.CommandText = "PRAGMA foreign_keys = ON;";
-            await pragmaCommand.ExecuteNonQueryAsync();
-        }
-    }
-
-    /// <summary>
     /// Disposes the service.
     /// </summary>
     /// <param name="disposing">True if disposing.</param>
@@ -1324,6 +1102,7 @@ public sealed class DbService : IDisposable
             // Cancel any pending background sync operations first
             _backgroundSyncCts.Cancel();
             _backgroundSyncCts.Dispose();
+            _saveLock.Dispose();
             _sqlConnection?.Dispose();
         }
 

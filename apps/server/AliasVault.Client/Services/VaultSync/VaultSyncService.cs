@@ -7,6 +7,7 @@
 
 namespace AliasVault.Client.Services.VaultSync;
 
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -22,18 +23,22 @@ using Microsoft.Data.Sqlite;
 using Microsoft.JSInterop;
 
 /// <summary>
-/// Syncs the vault with the server.
+/// Syncs the vault with the server: pulls and materializes the manifest snapshot, canonicalizes and pushes the local
+/// vault, and merges the two when they diverged.
 /// </summary>
 /// <param name="httpClient">The HTTP client.</param>
 /// <param name="authService">AuthService instance, the session's key holder.</param>
 /// <param name="vaultKeyService">VaultKeyService instance.</param>
 /// <param name="jsInteropService">JsInteropService instance.</param>
 /// <param name="rustCoreService">RustCoreService instance.</param>
-/// <param name="state">The sync state this pull records the snapshot into.</param>
+/// <param name="state">The sync state this service records the server's state into.</param>
+/// <param name="config">Config instance, for the private email domains the routing push claims.</param>
 /// <param name="logger">ILogger instance.</param>
-public sealed class VaultSyncService(HttpClient httpClient, AuthService authService, VaultKeyService vaultKeyService, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultSyncState state, ILogger<VaultSyncService> logger)
+public sealed class VaultSyncService(HttpClient httpClient, AuthService authService, VaultKeyService vaultKeyService, JsInteropService jsInteropService, RustCoreService rustCoreService, VaultSyncState state, Config config, ILogger<VaultSyncService> logger)
 {
     private const string AttachmentBlobCategory = "attachment";
+    private const string BlobRefMarker = "__blobRef";
+    private const string BlobKindMarker = "__blobKind";
 
     /// <summary>
     /// Max amount of base64 characters transferred in a single blob transfer request or response body.
@@ -46,10 +51,15 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     private const int BlobTransferBatchMaxCount = 100;
 
     private static readonly string VaultEndpoint = ApiRoute("Vault");
+    private static readonly string BlobsEndpoint = ApiRoute("Vault/blobs");
+    private static readonly string BlobsMissingEndpoint = ApiRoute("Vault/blobs/missing");
     private static readonly string BlobsDownloadEndpoint = ApiRoute("Vault/blobs/download");
 
+    private string? _schemaSql;
+    private Dictionary<string, List<string>>? _schemaColumns;
+
     /// <summary>
-    /// Gets the sync state recorded by the last pull.
+    /// Gets the sync state recorded by the last pull or push.
     /// </summary>
     public VaultSyncState State => state;
 
@@ -66,9 +76,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
          */
         logger.LogInformation("[V2Pull] Step 1/3: fetching vault snapshot (GET /v2/Vault)...");
         var snapshot = await FetchSnapshotAsync();
-        state.LastServedManifestIds.Clear();
-        state.LastServedManifestIds.AddRange(snapshot.Manifests.Select(m => m.ManifestId));
-        state.LastSnapshotWasLegacySqliteBlob = snapshot.StorageFormat != StorageFormat.Manifest;
+        RecordServedManifests(snapshot);
 
         // LEGACY: a not-yet-migrated account's blob is passed through unchanged.
         if (state.LastSnapshotWasLegacySqliteBlob)
@@ -80,9 +88,9 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         if (string.IsNullOrEmpty(personalDto.Blob))
         {
             // The personal manifest exists but was never written (fresh account): the client creates the vault.
-            state.PersonalManifestId = personalDto.ManifestId;
+            RecordEmptyPersonalManifest(personalDto);
             logger.LogInformation("[V2Pull] Personal manifest {ManifestId} has no content yet; a new vault will be created.", personalDto.ManifestId);
-            return new PullResult { Kind = PullKind.Empty, Revision = personalDto.Revision };
+            return new PullResult { Kind = PullKind.Empty };
         }
 
         logger.LogInformation("[V2Pull] Step 1/3 done: manifests={ManifestCount}, personalRevision={Revision}, buckets={BucketCount}, blobRefs={BlobRefCount}.", snapshot.Manifests.Count, personalDto.Revision, snapshot.Buckets.Count, personalDto.BlobReferences.Count);
@@ -99,14 +107,347 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             var blobs = await DownloadReferencedBlobsAsync(opened);
 
             logger.LogInformation("[V2Pull] Step 3/3: materializing {ManifestCount} manifest(s) into a fresh SQLite database...", opened.Resolved.Count);
-            var database = await MaterializeAsync(opened, blobs);
-            return new PullResult { Kind = PullKind.Materialized, Database = database, Revision = opened.PersonalRevision };
+            var database = await MaterializeAsync(opened.Resolved.Select(entry => entry.ManifestJson), opened.DataBuckets, blobs);
+            return new PullResult { Kind = PullKind.Materialized, Database = database };
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "[V2Pull] FAILED: the last logged step above is where it broke.");
             throw new VaultProcessingException("vault-pull", ex);
         }
+    }
+
+    /// <summary>
+    /// Pull the latest snapshot and merge the local vault onto it at canonical level, one manifest at a time. The
+    /// server side is the base; the local side is canonicalized from the given connection.
+    /// </summary>
+    /// <param name="localConnection">The local vault holding the changes to keep.</param>
+    /// <returns>The merged database, or the signal that the server holds nothing to merge with.</returns>
+    /// <exception cref="VaultProcessingException">Thrown when the snapshot could not be opened or the merge failed.</exception>
+    public async Task<PullAndMergeResult> PullAndMergeAsync(SqliteConnection localConnection)
+    {
+        logger.LogInformation("[V2Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...");
+        var snapshot = await FetchSnapshotAsync();
+        RecordServedManifests(snapshot);
+
+        // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
+        if (state.LastSnapshotWasLegacySqliteBlob)
+        {
+            OpenLegacySqliteBlobSnapshot(snapshot);
+            return new PullAndMergeResult { Kind = PullAndMergeKind.NothingToMergeWith };
+        }
+
+        var personalDto = SelectPersonalManifest(snapshot) ?? throw new VaultProcessingException("vault-merge", new InvalidOperationException("The server returned no personal manifest, refusing to merge."));
+        if (string.IsNullOrEmpty(personalDto.Blob))
+        {
+            RecordEmptyPersonalManifest(personalDto);
+            return new PullAndMergeResult { Kind = PullAndMergeKind.NothingToMergeWith };
+        }
+
+        var stateBeforeMerge = state.Clone();
+        try
+        {
+            var opened = await OpenManifestsAndRecordSyncStateAsync(snapshot, personalDto);
+            var serverBlobs = await DownloadReferencedBlobsAsync(opened);
+            var local = await CanonicalizeAsync(localConnection, authService.GetEncryptionKeyAsBase64Async(), null);
+            return await MergeOntoOpenedManifestsAsync(opened, serverBlobs, local);
+        }
+        catch (Exception ex)
+        {
+            // The local vault is still the live one, so the state must keep describing what it was pulled from.
+            state.CopyFrom(stateBeforeMerge);
+            logger.LogError(ex, "[V2Merge] FAILED: the last logged step above is where it broke.");
+            throw new VaultProcessingException("vault-merge", ex);
+        }
+    }
+
+    /// <summary>
+    /// Migrate the local vault onto the current full schema canonicalize the database into
+    /// manifest-v1 form (adopting rows that predate the manifest stamp into the personal manifest) and materialize
+    /// it straight back out again. This is the permanent delivery path for client schema changes.
+    /// </summary>
+    /// <param name="connection">The local vault to migrate.</param>
+    /// <returns>The migrated in-memory database; the caller owns it.</returns>
+    /// <exception cref="VaultProcessingException">Thrown when the vault could not be canonicalized or materialized.</exception>
+    public async Task<SqliteConnection> MigrateVaultToCurrentSchemaAsync(SqliteConnection connection)
+    {
+        logger.LogInformation("[ManifestMigration] Migrating the local vault onto the current schema (local round-trip, no server involved)...");
+        try
+        {
+            var personalManifestId = state.PersonalManifestId ?? throw new InvalidOperationException("No personal manifest id is recorded; pull once before migrating.");
+            var vault = await CanonicalizeAsync(connection, authService.GetEncryptionKeyAsBase64Async(), personalManifestId);
+
+            // Canonicalize already extracted every favicon and attachment as plaintext bytes, so materialize resolves its references without a fetch.
+            var blobs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            foreach (var manifest in vault.Manifests)
+            {
+                foreach (var (hash, blob) in manifest.Blobs)
+                {
+                    blobs[hash] = blob.Bytes;
+                }
+            }
+
+            var database = await MaterializeAsync(vault.Manifests.Select(manifest => manifest.ManifestJson), vault.Buckets.Select(bucket => bucket.BucketJson), blobs);
+            logger.LogInformation("[ManifestMigration] Migration complete: {BlobCount} blob(s) re-embedded.", blobs.Count);
+            return database;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[ManifestMigration] FAILED to migrate the local vault.");
+            throw new VaultProcessingException("vault-storage-migration", ex);
+        }
+    }
+
+    /// <summary>
+    /// Canonicalize the local vault, validate, encrypt and POST /v2/Vault.
+    /// </summary>
+    /// <param name="connection">The local vault to push.</param>
+    /// <param name="options">How to write.</param>
+    /// <returns>The outcome. Revisions, fingerprints and the blob caches are updated on success.</returns>
+    /// <exception cref="VaultTooLargeException">Thrown when the server refuses an upload as too large.</exception>
+    public async Task<PushResult> PushAsync(SqliteConnection connection, PushOptions options)
+    {
+        var personalManifestId = state.PersonalManifestId ?? throw new InvalidOperationException("No personal manifest id is recorded; pull once before pushing.");
+
+        var unwritable = await FindUnwritableManifestsAsync(connection, personalManifestId);
+        if (unwritable.Count > 0)
+        {
+            logger.LogWarning("[V2Push] Vault holds rows for manifest(s) this session cannot write ({Manifests}); refusing the write until a pull restores them.", string.Join(", ", unwritable));
+            return new PushResult(PushStatus.Outdated, [$"Manifest(s) {string.Join(", ", unwritable)} are not open to this session"]);
+        }
+
+        // LEGACY: the one-time migration push creates the account key hierarchy and re-keys the personal manifest under the new VEK.
+        var migration = options.CreateVaultKey ? await vaultKeyService.CreateAccountKeyHierarchyAsync(authService.GetEncryptionKeyAsBase64Async()) : null;
+        var contentKey = migration?.VaultEncryptionKey ?? authService.GetEncryptionKeyAsBase64Async();
+        if (migration is not null)
+        {
+            logger.LogInformation("[V2Push] Account-key migration: generated a new VEK, AK and account keypair; vault content and all blobs will be re-encrypted and re-uploaded.");
+        }
+
+        var vault = await CanonicalizeAsync(connection, contentKey, null);
+        var emailRouting = EmailRoutingBuilder.Build(vault.Manifests.Select(manifest => manifest.ManifestJson), PrivateEmailDomains());
+        logger.LogInformation("[V2Push] Canonicalize produced {ManifestCount} manifest(s) and {BucketCount} data bucket(s).", vault.Manifests.Count, vault.Buckets.Count);
+
+        // Content-fingerprint gating: compare every canonicalized target against the fingerprint of its last-known server state and only write the targets that changed.
+        var keyByManifestId = vault.Manifests.ToDictionary(manifest => manifest.Record.ManifestId, manifest => manifest.Record.VaultEncryptionKey);
+        var bucketWrites = new List<BucketWrite>();
+        var writtenBucketFingerprints = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var bucket in vault.Buckets)
+        {
+            var label = $"Data bucket \"{bucket.Category}\" of manifest {bucket.ManifestId}";
+            var fingerprintKey = VaultSyncState.BucketFingerprintKey(bucket.ManifestId, bucket.Category);
+            var fingerprint = await rustCoreService.VaultCodecComputeContentFingerprintAsync(bucket.BucketJson);
+            if (!options.ForceFullWrite && migration is null && state.ContentFingerprints.TryGetValue(fingerprintKey, out var baseline) && baseline == fingerprint)
+            {
+                continue;
+            }
+
+            if (!keyByManifestId.TryGetValue(bucket.ManifestId, out var bucketKey))
+            {
+                logger.LogWarning("[V2Push] {Label} names a manifest this vault cannot write; leaving it out of this write.", label);
+                continue;
+            }
+
+            if (!Enum.TryParse<VaultDataBucketCategory>(bucket.Category, true, out var category))
+            {
+                logger.LogWarning("[V2Push] {Label} has a category this client does not know; leaving it out of this write.", label);
+                continue;
+            }
+
+            var validation = await rustCoreService.VaultCodecValidateDataBucketAsync(bucket.BucketJson);
+            if (!validation.Ok)
+            {
+                return new PushResult(PushStatus.Rejected, [$"{label} validation failed: {string.Join(", ", validation.FailedRules)}. {validation.Message}".Trim()]);
+            }
+
+            var ciphertext = await rustCoreService.VaultCodecPackAndEncryptPayloadAsync(bucket.BucketJson, bucketKey);
+            bucketWrites.Add(new BucketWrite
+            {
+                ManifestId = bucket.ManifestId,
+                Category = category,
+                Blob = ciphertext,
+                CiphertextHash = await rustCoreService.VaultCodecComputeCiphertextHashAsync(ciphertext),
+                CurrentRevision = state.BucketRevisions.GetValueOrDefault(VaultSyncState.BucketRevisionKey(bucket.ManifestId, bucket.Category), 0),
+            });
+            writtenBucketFingerprints[fingerprintKey] = fingerprint;
+        }
+
+        // Gate, validate, pack and encrypt every candidate manifest into the write, each with its own VEK.
+        var blobEntries = new Dictionary<string, UploadBlobEntry>(StringComparer.Ordinal);
+        var manifestWrites = new List<ManifestWrite>();
+        var writtenManifestFingerprints = new Dictionary<Guid, string>();
+        foreach (var manifest in vault.Manifests)
+        {
+            foreach (var (hash, blob) in manifest.Blobs)
+            {
+                blobEntries.TryAdd(hash, new UploadBlobEntry(blob.Kind, blob.Bytes, manifest.Record.VaultEncryptionKey, manifest.Record.IsPersonal));
+            }
+
+            var label = manifest.Record.IsPersonal ? "Personal manifest" : $"Shared manifest \"{manifest.Record.Name ?? manifest.Record.ManifestId.ToString()}\"";
+            var fingerprint = await rustCoreService.VaultCodecComputeContentFingerprintAsync(manifest.ManifestJson);
+            var rekeyed = migration is not null && manifest.Record.IsPersonal;
+            if (!options.ForceFullWrite && !rekeyed && state.ContentFingerprints.TryGetValue(VaultSyncState.ManifestFingerprintKey(manifest.Record.ManifestId), out var baseline) && baseline == fingerprint)
+            {
+                continue;
+            }
+
+            var validation = await rustCoreService.VaultCodecValidateManifestAsync(manifest.ManifestJson);
+            if (!validation.Ok)
+            {
+                if (manifest.Record.IsPersonal)
+                {
+                    return new PushResult(PushStatus.Rejected, [$"Manifest validation failed: {string.Join(", ", validation.FailedRules)}. {validation.Message}".Trim()]);
+                }
+
+                logger.LogWarning("[V2Push] {Label} failed validation ({Rules}), dropping it from this write.", label, string.Join(", ", validation.FailedRules));
+                continue;
+            }
+
+            var ciphertext = await rustCoreService.VaultCodecPackAndEncryptPayloadAsync(manifest.ManifestJson, manifest.Record.VaultEncryptionKey);
+
+            // Publish the public half of the manifest's email delivery keypair; only admins may publish a shared manifest's key.
+            var mayPublish = manifest.Record.IsPersonal || manifest.Record.CanAdminister;
+            var publicKey = mayPublish ? await VaultTableReader.ReadActivePublicKeyAsync(connection, manifest.Record.ManifestId) : null;
+            if (mayPublish && publicKey is null && !manifest.Record.IsPersonal)
+            {
+                logger.LogWarning("[V2Push] {Label} is missing its email keypair; its aliases stay personal until sharing is re-enabled.", label);
+            }
+
+            manifestWrites.Add(new ManifestWrite
+            {
+                ManifestId = manifest.Record.ManifestId,
+                ManifestBlob = ciphertext,
+                ManifestCiphertextHash = await rustCoreService.VaultCodecComputeCiphertextHashAsync(ciphertext),
+                CurrentRevision = state.ManifestRevisions.GetValueOrDefault(manifest.Record.ManifestId, 0),
+                CredentialsCount = manifest.ItemCount,
+                BlobReferences = manifest.Blobs.Select(pair => new BlobReference { Hash = pair.Key, Category = pair.Value.Kind }).ToList(),
+                EncryptionPublicKey = publicKey,
+            });
+            writtenManifestFingerprints[manifest.Record.ManifestId] = fingerprint;
+            logger.LogInformation("[V2Push] {Label}: {Items} item(s), {Blobs} blob reference(s), {Chars} encrypted characters.", label, manifest.ItemCount, manifest.Blobs.Count, ciphertext.Length);
+        }
+
+        // Nothing changed versus the server baselines: skip the write (and the blob diff) entirely.
+        if (manifestWrites.Count == 0 && bucketWrites.Count == 0)
+        {
+            logger.LogInformation("[V2Push] No content changes detected (every manifest and data bucket matches the server baselines); skipping upload.");
+            return new PushResult(PushStatus.Ok);
+        }
+
+        // Blob diff across every manifest in this write: only encrypt and upload blobs the server does not already have.
+        var allBlobHashes = blobEntries.Keys.ToList();
+        var personalHashes = allBlobHashes.Where(hash => blobEntries[hash].FromPersonal).ToList();
+        var sharedHashes = allBlobHashes.Where(hash => !blobEntries[hash].FromPersonal).ToList();
+        List<string> personalToUpload;
+        List<string> sharedToUpload;
+        if (migration is not null)
+        {
+            personalToUpload = personalHashes;
+            sharedToUpload = await MissingOnServerAsync(sharedHashes.Where(hash => !state.ServerBlobHashes.Contains(hash)));
+        }
+        else
+        {
+            var toUpload = new HashSet<string>(await MissingOnServerAsync(allBlobHashes.Where(hash => !state.ServerBlobHashes.Contains(hash))), StringComparer.Ordinal);
+            personalToUpload = personalHashes.Where(toUpload.Contains).ToList();
+            sharedToUpload = sharedHashes.Where(toUpload.Contains).ToList();
+        }
+
+        logger.LogInformation("[V2Push] Blob diff: {Total} blob(s) across {Manifests} manifest(s), uploading {Personal} personal and {Shared} shared.", allBlobHashes.Count, vault.Manifests.Count, personalToUpload.Count, sharedToUpload.Count);
+        var uploadedCiphertexts = new Dictionary<string, string>(StringComparer.Ordinal);
+        await UploadBlobsAsync(blobEntries, personalToUpload, migration is not null, uploadedCiphertexts);
+        await UploadBlobsAsync(blobEntries, sharedToUpload, false, uploadedCiphertexts);
+
+        var request = new VaultWriteRequest
+        {
+            Username = await authService.GetUsernameAsync(),
+            Manifests = manifestWrites,
+            Buckets = bucketWrites,
+            NewBlobs = [],
+            EmailRouting = emailRouting,
+            AccountKeys = migration?.Keys,
+        };
+
+        var response = await PostWriteAsync(request);
+        if (response.MissingBlobHashes.Count > 0)
+        {
+            // Upload any blobs the server reports as missing and retry the write.
+            var unsatisfiable = response.MissingBlobHashes.Where(hash => !blobEntries.ContainsKey(hash)).ToList();
+            if (unsatisfiable.Count > 0)
+            {
+                return new PushResult(PushStatus.MissingBlobs, unsatisfiable);
+            }
+
+            logger.LogWarning("[V2Push] Server reported {Count} missing blob(s); uploading and retrying once.", response.MissingBlobHashes.Count);
+            await UploadBlobsAsync(blobEntries, response.MissingBlobHashes.Where(hash => blobEntries[hash].FromPersonal), migration is not null, uploadedCiphertexts);
+            await UploadBlobsAsync(blobEntries, response.MissingBlobHashes.Where(hash => !blobEntries[hash].FromPersonal), false, uploadedCiphertexts);
+            response = await PostWriteAsync(request);
+            if (response.MissingBlobHashes.Count > 0)
+            {
+                return new PushResult(PushStatus.MissingBlobs, response.MissingBlobHashes);
+            }
+        }
+
+        if (response.Status != VaultStatus.Ok)
+        {
+            // A single stale manifest or bucket rejected the whole write; the caller pulls, merges and retries.
+            return new PushResult(PushStatus.Outdated);
+        }
+
+        // Advance the baselines of exactly the targets this write carried.
+        foreach (var bucketRevision in response.BucketRevisions)
+        {
+            state.BucketRevisions[VaultSyncState.BucketRevisionKey(bucketRevision.ManifestId, bucketRevision.Category.ToString())] = bucketRevision.Revision;
+        }
+
+        foreach (var manifestRevision in response.ManifestRevisions)
+        {
+            state.ManifestRevisions[manifestRevision.ManifestId] = manifestRevision.Revision;
+        }
+
+        foreach (var (key, fingerprint) in writtenBucketFingerprints)
+        {
+            state.ContentFingerprints[key] = fingerprint;
+        }
+
+        foreach (var (manifestId, fingerprint) in writtenManifestFingerprints)
+        {
+            state.ContentFingerprints[VaultSyncState.ManifestFingerprintKey(manifestId)] = fingerprint;
+        }
+
+        // Every referenced hash is now known to be on the server; refresh the diff baseline and the cache.
+        state.ServerBlobHashes.Clear();
+        state.ServerBlobHashes.UnionWith(allBlobHashes);
+        var refreshedCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var hash in allBlobHashes)
+        {
+            if (uploadedCiphertexts.TryGetValue(hash, out var uploaded))
+            {
+                refreshedCache[hash] = uploaded;
+            }
+            else if (state.BlobCipherCache.TryGetValue(hash, out var cached))
+            {
+                refreshedCache[hash] = cached;
+            }
+        }
+
+        state.BlobCipherCache.Clear();
+        foreach (var (hash, ciphertext) in refreshedCache)
+        {
+            state.BlobCipherCache[hash] = ciphertext;
+        }
+
+        state.LastSnapshotWasLegacySqliteBlob = false;
+
+        // Adopt the newly created account keys if this push included the one-time sqlite-blob to manifest-v1 migration.
+        if (migration is not null)
+        {
+            await vaultKeyService.AdoptLocalAccountKeysAsync(migration);
+            await authService.StoreSessionKeysAsync(Convert.FromBase64String(migration.VaultEncryptionKey), migration.AccountPrivateKey);
+            logger.LogInformation("[V2Push] Account-key migration complete: hierarchy created server-side, chain cached locally.");
+        }
+
+        logger.LogInformation("[V2Push] Pushed {Manifests} manifest(s), {Buckets} bucket(s) and {Blobs} blob(s).", manifestWrites.Count, bucketWrites.Count, uploadedCiphertexts.Count);
+        return new PushResult(PushStatus.Ok);
     }
 
     /// <summary>
@@ -218,37 +559,150 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         using (var writer = new Utf8JsonWriter(stream))
         {
             writer.WriteStartObject();
-            writer.WriteStartArray("manifests");
-            foreach (var manifestJson in manifestJsons)
-            {
-                writer.WriteRawValue(manifestJson, skipInputValidation: true);
-            }
-
-            writer.WriteEndArray();
-            writer.WriteStartArray("dataBuckets");
-            foreach (var bucketJson in bucketJsons)
-            {
-                writer.WriteRawValue(bucketJson, skipInputValidation: true);
-            }
-
-            writer.WriteEndArray();
-            writer.WriteStartObject("schemaColumns");
-            foreach (var (table, columns) in schemaColumns)
-            {
-                writer.WriteStartArray(table);
-                foreach (var column in columns)
-                {
-                    writer.WriteStringValue(column);
-                }
-
-                writer.WriteEndArray();
-            }
-
-            writer.WriteEndObject();
+            WriteRawArray(writer, "manifests", manifestJsons);
+            WriteRawArray(writer, "dataBuckets", bucketJsons);
+            WriteSchemaColumns(writer, schemaColumns);
             writer.WriteEndObject();
         }
 
         return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    /// <summary>
+    /// Build the JSON input of the Rust canonical merge call.
+    /// </summary>
+    /// <param name="opened">The opened server manifests, the merge base.</param>
+    /// <param name="local">The canonicalized local vault, the incoming side.</param>
+    /// <param name="schemaColumns">The column set of the local schema, per table.</param>
+    /// <returns>The canonical merge input JSON.</returns>
+    private static string BuildMergeInput(OpenedManifestSet opened, CanonicalizedVault local, IReadOnlyDictionary<string, List<string>> schemaColumns)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            WriteRawArray(writer, "serverManifests", opened.Resolved.Select(entry => entry.ManifestJson));
+            WriteRawArray(writer, "serverBuckets", opened.DataBuckets);
+            writer.WriteStartArray("contentlessServerManifestIds");
+            foreach (var id in opened.ContentlessManifestIds)
+            {
+                writer.WriteStringValue(id.ToString());
+            }
+
+            writer.WriteEndArray();
+            WriteRawArray(writer, "localManifests", local.Manifests.Select(manifest => manifest.ManifestJson));
+            WriteRawArray(writer, "localBuckets", local.Buckets.Select(bucket => bucket.BucketJson));
+            WriteSchemaColumns(writer, schemaColumns);
+            writer.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    /// <summary>
+    /// Write a named array of pre-serialized JSON values.
+    /// </summary>
+    /// <param name="writer">The writer.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="rawValues">The JSON values.</param>
+    private static void WriteRawArray(Utf8JsonWriter writer, string name, IEnumerable<string> rawValues)
+    {
+        writer.WriteStartArray(name);
+        foreach (var rawValue in rawValues)
+        {
+            writer.WriteRawValue(rawValue, skipInputValidation: true);
+        }
+
+        writer.WriteEndArray();
+    }
+
+    /// <summary>
+    /// Write the schemaColumns object.
+    /// </summary>
+    /// <param name="writer">The writer.</param>
+    /// <param name="schemaColumns">The column set of the local schema, per table.</param>
+    private static void WriteSchemaColumns(Utf8JsonWriter writer, IReadOnlyDictionary<string, List<string>> schemaColumns)
+    {
+        writer.WriteStartObject("schemaColumns");
+        foreach (var (table, columns) in schemaColumns)
+        {
+            writer.WriteStartArray(table);
+            foreach (var column in columns)
+            {
+                writer.WriteStringValue(column);
+            }
+
+            writer.WriteEndArray();
+        }
+
+        writer.WriteEndObject();
+    }
+
+    /// <summary>
+    /// Every blob reference marker in a manifest payload: hash and kind.
+    /// </summary>
+    /// <param name="manifestJson">The manifest payload JSON.</param>
+    /// <returns>The references.</returns>
+    private static List<(string Hash, string? Kind)> BlobReferencesOf(string manifestJson)
+    {
+        var references = new List<(string Hash, string? Kind)>();
+        using var document = JsonDocument.Parse(manifestJson);
+        if (!document.RootElement.TryGetProperty("tables", out var tables) || tables.ValueKind != JsonValueKind.Object)
+        {
+            return references;
+        }
+
+        foreach (var table in tables.EnumerateObject())
+        {
+            if (table.Value.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            foreach (var row in table.Value.EnumerateArray())
+            {
+                foreach (var cell in row.EnumerateObject())
+                {
+                    if (cell.Value.ValueKind == JsonValueKind.Object && cell.Value.TryGetProperty(BlobRefMarker, out var hash) && hash.ValueKind == JsonValueKind.String)
+                    {
+                        var kind = cell.Value.TryGetProperty(BlobKindMarker, out var kindElement) && kindElement.ValueKind == JsonValueKind.String ? kindElement.GetString() : null;
+                        references.Add((hash.GetString()!, kind));
+                    }
+                }
+            }
+        }
+
+        return references;
+    }
+
+    /// <summary>
+    /// Turn a failed upload response into an exception that names the failure.
+    /// </summary>
+    /// <param name="response">The response.</param>
+    /// <param name="what">What was uploaded, for the message.</param>
+    /// <returns>Task.</returns>
+    private static async Task EnsureUploadSucceededAsync(HttpResponseMessage response, string what)
+    {
+        if (response.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+        {
+            throw new VaultTooLargeException();
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"{what} failed with HTTP {(int)response.StatusCode}: {body}", null, response.StatusCode);
+        }
+    }
+
+    /// <summary>
+    /// The domains the server hosts mail for; addresses outside them are never claimed.
+    /// </summary>
+    /// <returns>The domains.</returns>
+    private List<string> PrivateEmailDomains()
+    {
+        // "DISABLED.TLD" was a placeholder used before 0.22.0 that has been replaced by an empty string. TODO: remove in a future release.
+        return config.PrivateEmailDomains.Where(domain => !string.IsNullOrWhiteSpace(domain) && !string.Equals(domain, "DISABLED.TLD", StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     /// <summary>
@@ -258,6 +712,31 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     private async Task<GetResponse> FetchSnapshotAsync()
     {
         return await httpClient.GetFromJsonAsync<GetResponse>(VaultEndpoint) ?? throw new InvalidOperationException("Empty vault snapshot response.");
+    }
+
+    /// <summary>
+    /// Record which manifests a snapshot served, before any of them is opened: it is the authority for held access.
+    /// </summary>
+    /// <param name="snapshot">The raw snapshot.</param>
+    private void RecordServedManifests(GetResponse snapshot)
+    {
+        state.LastServedManifestIds.Clear();
+        state.LastServedManifestIds.AddRange(snapshot.Manifests.Select(m => m.ManifestId));
+        state.LastSnapshotWasLegacySqliteBlob = snapshot.StorageFormat != StorageFormat.Manifest;
+    }
+
+    /// <summary>
+    /// Record a personal manifest that exists but was never written: its id and revision are the baseline the first push rebases on.
+    /// </summary>
+    /// <param name="personalDto">The personal manifest.</param>
+    private void RecordEmptyPersonalManifest(Manifest personalDto)
+    {
+        state.PersonalManifestId = personalDto.ManifestId;
+        state.ContentFingerprints.Clear();
+        state.SharedManifests.Clear();
+        state.BucketRevisions.Clear();
+        state.ManifestRevisions.Clear();
+        state.ManifestRevisions[personalDto.ManifestId] = personalDto.Revision;
     }
 
     /// <summary>
@@ -282,7 +761,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         }
 
         logger.LogInformation("[V2Pull] Legacy sqlite-blob pass-through (account not yet migrated), returning the blob as-is.");
-        return new PullResult { Kind = PullKind.LegacySqliteBlob, LegacyVaultBlob = snapshot.LegacyVaultBlob ?? string.Empty, LegacyVersion = snapshot.Version ?? string.Empty, Revision = revision };
+        return new PullResult { Kind = PullKind.LegacySqliteBlob, LegacyVaultBlob = snapshot.LegacyVaultBlob ?? string.Empty, LegacyVersion = snapshot.Version ?? string.Empty };
     }
 
     /// <summary>
@@ -650,23 +1129,415 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     }
 
     /// <summary>
+    /// The merge core: run the Rust canonical merge of the local side against the manifests just opened, validate the
+    /// result per manifest (the server's copy stands for one that fails), and materialize it.
+    /// </summary>
+    /// <param name="opened">The opened server manifests, the merge base.</param>
+    /// <param name="serverBlobs">The plaintext blobs the server manifests reference.</param>
+    /// <param name="local">The canonicalized local vault, the incoming side.</param>
+    /// <returns>The merged result.</returns>
+    private async Task<PullAndMergeResult> MergeOntoOpenedManifestsAsync(OpenedManifestSet opened, Dictionary<string, byte[]> serverBlobs, CanonicalizedVault local)
+    {
+        logger.LogInformation("[V2Merge] Merging {Local} local manifest(s) onto {Server} server manifest(s)...", local.Manifests.Count, opened.Resolved.Count);
+        var mergeOutputJson = await rustCoreService.MergeCanonicalAsync(BuildMergeInput(opened, local, await GetSchemaColumnsAsync()));
+
+        var serverManifestById = opened.Resolved.ToDictionary(entry => entry.ManifestId, entry => entry.ManifestJson);
+        var serverBucketsById = new Dictionary<Guid, List<string>>();
+        foreach (var bucketJson in opened.DataBuckets)
+        {
+            var owner = ReadPayloadHeader(bucketJson).ManifestId ?? Guid.Empty;
+            serverBucketsById.TryAdd(owner, []);
+            serverBucketsById[owner].Add(bucketJson);
+        }
+
+        var contentless = new HashSet<Guid>(opened.ContentlessManifestIds);
+        var manifestJsons = new List<(Guid ManifestId, string Json)>();
+        var bucketJsons = new List<string>();
+        var fallbackManifestIds = new List<Guid>();
+        var droppedLocalManifestIds = new List<Guid>();
+        using (var document = JsonDocument.Parse(mergeOutputJson))
+        {
+            var root = document.RootElement;
+            foreach (var entry in root.GetProperty("manifests").EnumerateArray())
+            {
+                var manifestId = Guid.Parse(entry.GetProperty("manifestId").GetString()!);
+                var manifestJson = entry.GetProperty("manifest").GetRawText();
+                var mergedBuckets = entry.TryGetProperty("buckets", out var buckets) && buckets.ValueKind == JsonValueKind.Array ? buckets.EnumerateArray().Select(bucket => bucket.GetRawText()).ToList() : [];
+                var failure = await ValidateMergedManifestAsync(manifestJson, mergedBuckets);
+                if (failure is not null && !contentless.Contains(manifestId))
+                {
+                    logger.LogWarning("[V2Merge] Merged manifest {ManifestId} failed validation ({Failure}); the server's version stands and local changes to it are dropped.", manifestId, failure);
+                    fallbackManifestIds.Add(manifestId);
+                    if (serverManifestById.TryGetValue(manifestId, out var serverJson))
+                    {
+                        manifestJsons.Add((manifestId, serverJson));
+                        bucketJsons.AddRange(serverBucketsById.GetValueOrDefault(manifestId, []));
+                    }
+
+                    continue;
+                }
+
+                if (failure is not null)
+                {
+                    // A contentless pass-through has no server base to fall back to; keep the local rows, the push gate decides.
+                    logger.LogWarning("[V2Merge] Pass-through manifest {ManifestId} failed validation ({Failure}); keeping its local rows.", manifestId, failure);
+                }
+
+                manifestJsons.Add((manifestId, manifestJson));
+                bucketJsons.AddRange(mergedBuckets);
+                if (entry.TryGetProperty("stats", out var stats))
+                {
+                    logger.LogInformation("[V2Merge] Manifest {ManifestId}: {Stats}", manifestId, stats.GetRawText());
+                }
+            }
+
+            if (root.TryGetProperty("droppedLocalManifestIds", out var dropped) && dropped.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var id in dropped.EnumerateArray())
+                {
+                    if (Guid.TryParse(id.GetString(), out var droppedId))
+                    {
+                        droppedLocalManifestIds.Add(droppedId);
+                        logger.LogWarning("[V2Merge] Local manifest {ManifestId} is no longer served; its rows are dropped from the merged vault.", droppedId);
+                    }
+                }
+            }
+        }
+
+        // Blob bytes for materialize: the server download plus everything the local canonicalize extracted.
+        var blobMap = new Dictionary<string, byte[]>(serverBlobs, StringComparer.Ordinal);
+        foreach (var manifest in local.Manifests)
+        {
+            foreach (var (hash, blob) in manifest.Blobs)
+            {
+                blobMap.TryAdd(hash, blob.Bytes);
+            }
+        }
+
+        var personalManifestId = opened.Resolved[0].ManifestId;
+        foreach (var (manifestId, manifestJson) in manifestJsons)
+        {
+            foreach (var (hash, kind) in BlobReferencesOf(manifestJson))
+            {
+                if (blobMap.ContainsKey(hash))
+                {
+                    continue;
+                }
+
+                if (manifestId == personalManifestId && string.Equals(kind, AttachmentBlobCategory, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"The merged vault references attachment blob {hash} with no bytes available, refusing to materialize an incomplete vault.");
+                }
+
+                logger.LogWarning("[V2Merge] Merged {Kind} blob {Hash} has no bytes available; it will materialize as empty.", kind ?? "blob", hash);
+            }
+        }
+
+        var database = await MaterializeAsync(manifestJsons.Select(entry => entry.Json), bucketJsons, blobMap);
+        logger.LogInformation("[V2Merge] Canonical merge complete: {Fallbacks} validation fallback(s), {Dropped} dropped local manifest(s).", fallbackManifestIds.Count, droppedLocalManifestIds.Count);
+        return new PullAndMergeResult { Kind = PullAndMergeKind.Merged, Database = database, FallbackManifestIds = fallbackManifestIds, DroppedLocalManifestIds = droppedLocalManifestIds };
+    }
+
+    /// <summary>
+    /// Validate one merged manifest and its buckets.
+    /// </summary>
+    /// <param name="manifestJson">The merged manifest.</param>
+    /// <param name="bucketJsons">Its merged buckets.</param>
+    /// <returns>The failed rules, or null when valid.</returns>
+    private async Task<string?> ValidateMergedManifestAsync(string manifestJson, List<string> bucketJsons)
+    {
+        var validation = await rustCoreService.VaultCodecValidateManifestAsync(manifestJson);
+        if (!validation.Ok)
+        {
+            return string.Join(", ", validation.FailedRules);
+        }
+
+        foreach (var bucketJson in bucketJsons)
+        {
+            var bucketValidation = await rustCoreService.VaultCodecValidateDataBucketAsync(bucketJson);
+            if (!bucketValidation.Ok)
+            {
+                return $"bucket \"{ReadPayloadHeader(bucketJson).Category}\": {string.Join(", ", bucketValidation.FailedRules)}";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Canonicalize the local vault into the manifest-v1 format against every manifest this vault writes, routing each
+    /// row into its own manifest by the ManifestId it carries.
+    /// </summary>
+    /// <param name="connection">The local vault.</param>
+    /// <param name="personalVek">The key the personal manifest encrypts with.</param>
+    /// <param name="adoptUnstampedInto">One-time migration only: the manifest rows without a stamp are adopted into.</param>
+    /// <returns>The canonicalized vault, personal manifest first.</returns>
+    private async Task<CanonicalizedVault> CanonicalizeAsync(SqliteConnection connection, string personalVek, Guid? adoptUnstampedInto)
+    {
+        var records = await ResolveManifestRecordsAsync(connection, personalVek);
+        var tablesJson = await VaultTableReader.ReadTablesAsCodecJsonAsync(connection);
+
+        string inputJson;
+        using (var stream = new MemoryStream())
+        {
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("tables");
+                writer.WriteRawValue(tablesJson, skipInputValidation: true);
+                writer.WriteString("canonicalizedAt", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", System.Globalization.CultureInfo.InvariantCulture));
+                writer.WriteStartArray("manifests");
+                foreach (var record in records)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("manifestId", record.ManifestId.ToString());
+                    writer.WriteString("manifestSalt", record.Salt);
+                    if (record.Name is not null)
+                    {
+                        writer.WriteString("name", record.Name);
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+                if (adoptUnstampedInto is { } adoptInto)
+                {
+                    writer.WriteString("adoptUnstampedInto", adoptInto.ToString());
+                }
+
+                writer.WriteEndObject();
+            }
+
+            inputJson = Encoding.UTF8.GetString(stream.ToArray());
+        }
+
+        var outputJson = await rustCoreService.VaultCodecCanonicalizeFromSqliteAsync(inputJson);
+        return ParseCanonicalized(outputJson, records);
+    }
+
+    /// <summary>
+    /// Read the codec's canonicalize output into the shapes the push works with.
+    /// </summary>
+    /// <param name="outputJson">The CanonicalizedVault JSON.</param>
+    /// <param name="records">The records the vault was split against.</param>
+    /// <returns>The canonicalized vault.</returns>
+    private CanonicalizedVault ParseCanonicalized(string outputJson, List<ManifestRecord> records)
+    {
+        using var document = JsonDocument.Parse(outputJson);
+        var root = document.RootElement;
+        var manifests = new List<CanonicalizedManifest>();
+        foreach (var entry in root.GetProperty("manifests").EnumerateArray())
+        {
+            var manifest = entry.GetProperty("manifest");
+            var manifestId = Guid.Parse(manifest.GetProperty("manifestId").GetString()!);
+            var record = records.FirstOrDefault(candidate => candidate.ManifestId == manifestId);
+            if (record is null)
+            {
+                logger.LogWarning("[V2Push] Canonicalize produced manifest {ManifestId}, which is not in the write set; leaving it out.", manifestId);
+                continue;
+            }
+
+            var itemCount = manifest.TryGetProperty("tables", out var tables) && tables.TryGetProperty("Items", out var items) && items.ValueKind == JsonValueKind.Array ? items.GetArrayLength() : 0;
+            var blobs = new Dictionary<string, CanonicalizedBlob>(StringComparer.Ordinal);
+            if (entry.TryGetProperty("blobs", out var blobsElement) && blobsElement.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var blob in blobsElement.EnumerateObject())
+                {
+                    blobs[blob.Name] = new CanonicalizedBlob(blob.Value.GetProperty("kind").GetString() ?? string.Empty, blob.Value.GetProperty("bytesBase64").GetBytesFromBase64());
+                }
+            }
+
+            manifests.Add(new CanonicalizedManifest(record, manifest.GetRawText(), itemCount, blobs));
+        }
+
+        var buckets = new List<CanonicalizedBucket>();
+        if (root.TryGetProperty("dataBuckets", out var dataBuckets) && dataBuckets.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var bucket in dataBuckets.EnumerateArray())
+            {
+                buckets.Add(new CanonicalizedBucket(Guid.Parse(bucket.GetProperty("manifestId").GetString()!), bucket.GetProperty("category").GetString() ?? string.Empty, bucket.GetRawText()));
+            }
+        }
+
+        return new CanonicalizedVault(manifests, buckets);
+    }
+
+    /// <summary>
+    /// Resolve every manifest this vault can write, personal manifest first.
+    /// </summary>
+    /// <param name="connection">The local vault.</param>
+    /// <param name="personalVek">The key the personal manifest encrypts with.</param>
+    /// <returns>The records.</returns>
+    private async Task<List<ManifestRecord>> ResolveManifestRecordsAsync(SqliteConnection connection, string personalVek)
+    {
+        var personalManifestId = state.PersonalManifestId ?? throw new InvalidOperationException("No personal manifest id is recorded; pull once before pushing.");
+        state.PersonalManifestSalt ??= await rustCoreService.VaultCodecGenerateManifestSaltAsync();
+
+        var opened = state.SharedManifests.Values.Where(record => !string.IsNullOrEmpty(record.VaultEncryptionKey)).ToList();
+        var request = new
+        {
+            personalManifestId = personalManifestId.ToString(),
+            personalManifestSalt = state.PersonalManifestSalt,
+            stampedManifestIds = (await VaultTableReader.ManifestIdsInVaultAsync(connection)).ToList(),
+            openedManifestIds = opened.Select(record => record.ManifestId.ToString()).ToList(),
+            heldRecords = state.SharedManifests.Values.Select(record => new { manifestId = record.ManifestId.ToString(), salt = record.Salt, name = record.Name, canAdminister = record.CanAdminister }).ToList(),
+            displayNames = await VaultTableReader.ReadDisplayNamesAsync(connection),
+        };
+
+        var writeSetJson = await rustCoreService.VaultSharingResolveManifestWriteSetAsync(JsonSerializer.Serialize(request));
+        using var document = JsonDocument.Parse(writeSetJson);
+        var root = document.RootElement;
+        if (root.TryGetProperty("skipped", out var skipped) && skipped.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var entry in skipped.EnumerateArray())
+            {
+                logger.LogInformation("[V2Push] Shared manifest {ManifestId} is left out of the write: {Reason}.", entry.GetProperty("manifestId").GetString(), entry.GetProperty("reason").GetString());
+            }
+        }
+
+        var records = new List<ManifestRecord>();
+        foreach (var entry in root.GetProperty("records").EnumerateArray())
+        {
+            var manifestId = Guid.Parse(entry.GetProperty("manifestId").GetString()!);
+            var isPersonal = entry.GetProperty("isPersonal").GetBoolean();
+            var name = entry.TryGetProperty("name", out var nameElement) && nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() : null;
+            var canAdminister = entry.TryGetProperty("canAdminister", out var adminElement) && adminElement.ValueKind == JsonValueKind.True;
+            var vek = isPersonal ? personalVek : state.SharedManifests.GetValueOrDefault(manifestId)?.VaultEncryptionKey;
+            if (string.IsNullOrEmpty(vek))
+            {
+                throw new InvalidOperationException($"Manifest {manifestId} is in the write set without a key, refusing to write it.");
+            }
+
+            records.Add(new ManifestRecord(manifestId, isPersonal, entry.GetProperty("salt").GetString()!, vek, name, canAdminister));
+        }
+
+        return records;
+    }
+
+    /// <summary>
+    /// The manifests the local vault holds rows for that this session cannot write.
+    /// </summary>
+    /// <param name="connection">The local vault.</param>
+    /// <param name="personalManifestId">The caller's own manifest.</param>
+    /// <returns>The manifest ids, empty when the vault and the session agree.</returns>
+    private async Task<List<string>> FindUnwritableManifestsAsync(SqliteConnection connection, Guid personalManifestId)
+    {
+        var writable = state.SharedManifests.Values.Where(record => !string.IsNullOrEmpty(record.VaultEncryptionKey)).Select(record => record.ManifestId.ToString()).Append(personalManifestId.ToString()).ToList();
+        var request = new
+        {
+            manifestIdsInVault = (await VaultTableReader.ManifestIdsInVaultAsync(connection)).ToList(),
+            writableManifestIds = writable,
+            grantedManifestIds = Array.Empty<string>(),
+        };
+
+        var partitionJson = await rustCoreService.VaultSharingPartitionManifestAccessAsync(JsonSerializer.Serialize(request));
+        using var document = JsonDocument.Parse(partitionJson);
+        return document.RootElement.TryGetProperty("unwritable", out var unwritable) && unwritable.ValueKind == JsonValueKind.Array ? unwritable.EnumerateArray().Select(id => id.GetString() ?? string.Empty).ToList() : [];
+    }
+
+    /// <summary>
+    /// Ask the server which of the given blobs it does not hold.
+    /// </summary>
+    /// <param name="hashes">The candidate hashes.</param>
+    /// <returns>The hashes unknown to the server.</returns>
+    private async Task<List<string>> MissingOnServerAsync(IEnumerable<string> hashes)
+    {
+        var candidates = hashes.ToList();
+        if (candidates.Count == 0)
+        {
+            return [];
+        }
+
+        using var response = await httpClient.PostAsJsonAsync(BlobsMissingEndpoint, new BlobHashesRequest { Hashes = candidates });
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadFromJsonAsync<MissingBlobsResponse>();
+        return body?.Missing ?? [];
+    }
+
+    /// <summary>
+    /// Encrypt the given blobs, each with the key of the manifest that owns it, and upload them in size-capped batches
+    /// ahead of the manifest write.
+    /// </summary>
+    /// <param name="entries">Every staged blob, by hash.</param>
+    /// <param name="hashes">The subset to upload.</param>
+    /// <param name="overwrite">Ask the server to replace the ciphertext of blobs it already has (the migration re-keys them).</param>
+    /// <param name="uploaded">Receives the uploaded ciphertext per hash, for the local cipher cache.</param>
+    /// <returns>Task.</returns>
+    private async Task UploadBlobsAsync(Dictionary<string, UploadBlobEntry> entries, IEnumerable<string> hashes, bool overwrite, Dictionary<string, string> uploaded)
+    {
+        var batch = new List<Blob>();
+        var batchChars = 0;
+        foreach (var hash in hashes)
+        {
+            if (!entries.TryGetValue(hash, out var entry))
+            {
+                continue;
+            }
+
+            var ciphertext = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(entry.Bytes, Convert.FromBase64String(entry.VaultEncryptionKey)));
+            uploaded[hash] = ciphertext;
+
+            // Flush before adding when this blob would take the request past either bound.
+            if (batch.Count > 0 && (batchChars + ciphertext.Length > BlobTransferBatchMaxChars || batch.Count >= BlobTransferBatchMaxCount))
+            {
+                await PostBlobBatchAsync(batch, overwrite);
+                batch = [];
+                batchChars = 0;
+            }
+
+            batch.Add(new Blob { Hash = hash, Category = entry.Kind, EncryptedDataBase64 = ciphertext });
+            batchChars += ciphertext.Length;
+        }
+
+        if (batch.Count > 0)
+        {
+            await PostBlobBatchAsync(batch, overwrite);
+        }
+    }
+
+    /// <summary>
+    /// Upload one batch of encrypted blobs.
+    /// </summary>
+    /// <param name="batch">The blobs.</param>
+    /// <param name="overwrite">Whether the server replaces ciphertext it already holds.</param>
+    /// <returns>Task.</returns>
+    private async Task PostBlobBatchAsync(List<Blob> batch, bool overwrite)
+    {
+        logger.LogInformation("[V2Push] Uploading blob batch: {Count} blob(s).", batch.Count);
+        using var response = await httpClient.PostAsJsonAsync(BlobsEndpoint, new BlobUploadRequest { Blobs = batch, Overwrite = overwrite });
+        await EnsureUploadSucceededAsync(response, "Blob upload");
+    }
+
+    /// <summary>
+    /// POST the unified vault write.
+    /// </summary>
+    /// <param name="request">The write.</param>
+    /// <returns>The server's response.</returns>
+    private async Task<VaultWriteResponse> PostWriteAsync(VaultWriteRequest request)
+    {
+        using var response = await httpClient.PostAsJsonAsync(VaultEndpoint, request);
+        await EnsureUploadSucceededAsync(response, "Vault write");
+        return await response.Content.ReadFromJsonAsync<VaultWriteResponse>() ?? throw new InvalidOperationException("Empty vault write response.");
+    }
+
+    /// <summary>
     /// Materialize manifests and data buckets into a fresh in-memory SQLite database via the codec.
     /// </summary>
-    /// <param name="opened">The opened manifests and buckets.</param>
+    /// <param name="manifestJsons">The manifests, the caller's own first.</param>
+    /// <param name="bucketJsons">The data buckets belonging to those manifests.</param>
     /// <param name="blobs">Plaintext bytes for every blob hash the manifests reference.</param>
     /// <returns>The open database connection; the caller owns it.</returns>
-    private async Task<SqliteConnection> MaterializeAsync(OpenedManifestSet opened, Dictionary<string, byte[]> blobs)
+    private async Task<SqliteConnection> MaterializeAsync(IEnumerable<string> manifestJsons, IEnumerable<string> bucketJsons, Dictionary<string, byte[]> blobs)
     {
         var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         try
         {
-            var schemaSql = await jsInteropService.GetCompleteSchemaSqlAsync();
-            await VaultMaterializer.ApplySchemaAsync(connection, schemaSql);
+            await VaultMaterializer.ApplySchemaAsync(connection, await GetSchemaSqlAsync());
 
             // The local schema's column set routes anything a newer writer stored into the overflow carrier instead of crashing the insert.
-            var schemaColumns = await VaultMaterializer.ReadSchemaColumnsAsync(connection);
-            var inputJson = BuildMaterializeInput(opened.Resolved.Select(entry => entry.ManifestJson), opened.DataBuckets, schemaColumns);
+            var inputJson = BuildMaterializeInput(manifestJsons, bucketJsons, await GetSchemaColumnsAsync());
             var materializedJson = await rustCoreService.VaultCodecMaterializeAsSqliteAsync(inputJson);
             await VaultMaterializer.InsertMaterializedTablesAsync(connection, materializedJson, blobs, logger);
             return connection;
@@ -677,4 +1548,40 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             throw;
         }
     }
+
+    /// <summary>
+    /// The complete client schema, read once.
+    /// </summary>
+    /// <returns>The COMPLETE_SCHEMA_SQL script.</returns>
+    private async Task<string> GetSchemaSqlAsync()
+    {
+        return _schemaSql ??= await jsInteropService.GetCompleteSchemaSqlAsync();
+    }
+
+    /// <summary>
+    /// The column set of the complete client schema, per table, read once from a scratch database.
+    /// </summary>
+    /// <returns>Column names per table.</returns>
+    private async Task<Dictionary<string, List<string>>> GetSchemaColumnsAsync()
+    {
+        if (_schemaColumns is not null)
+        {
+            return _schemaColumns;
+        }
+
+        await using var scratch = new SqliteConnection("Data Source=:memory:");
+        await scratch.OpenAsync();
+        await VaultMaterializer.ApplySchemaAsync(scratch, await GetSchemaSqlAsync());
+        _schemaColumns = await VaultMaterializer.ReadSchemaColumnsAsync(scratch);
+        return _schemaColumns;
+    }
+
+    /// <summary>
+    /// A plaintext blob staged for upload: its bytes plus the key that encrypts it.
+    /// </summary>
+    /// <param name="Kind">The blob kind.</param>
+    /// <param name="Bytes">The plaintext bytes.</param>
+    /// <param name="VaultEncryptionKey">The key of the manifest that owns it.</param>
+    /// <param name="FromPersonal">Whether the personal manifest owns it.</param>
+    private sealed record UploadBlobEntry(string Kind, byte[] Bytes, string VaultEncryptionKey, bool FromPersonal);
 }

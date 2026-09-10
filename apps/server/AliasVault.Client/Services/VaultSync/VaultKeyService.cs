@@ -8,6 +8,7 @@
 namespace AliasVault.Client.Services.VaultSync;
 
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using AliasVault.Client.Services.JsInterop;
 using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Services.VaultSync.Exceptions;
@@ -15,6 +16,7 @@ using AliasVault.Client.Services.VaultSync.Models;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.V1.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 
@@ -69,7 +71,7 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     /// </summary>
     /// <param name="username">The username, needed to look up the salt of a legacy account.</param>
     /// <param name="password">The master password.</param>
-    /// <returns>The resolved keys. A legacy result still has to be validated by the caller.</returns>
+    /// <returns>The resolved keys.</returns>
     /// <exception cref="VaultKeyDecryptException">Thrown when the password is wrong.</exception>
     /// <exception cref="VaultKeyUnavailableException">Thrown when offline and the chain this account unlocks with is not cached.</exception>
     public async Task<ResolvedVaultKey> UnlockWithPasswordAsync(string username, string password)
@@ -151,6 +153,121 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     public async Task<string?> GetAccountPublicKeyAsync()
     {
         return await localStorage.GetItemAsStringAsync(StorageKeys.AccountPublicKey);
+    }
+
+    /// <summary>
+    /// Whether this device holds the account's encrypted key chain, meaning the account is on the account-key model.
+    /// </summary>
+    /// <returns>True when the chain is cached.</returns>
+    public async Task<bool> HasLocalVaultKeyAsync()
+    {
+        return !string.IsNullOrEmpty(await localStorage.GetItemAsStringAsync(StorageKeys.EncryptedAccountKey));
+    }
+
+    /// <summary>
+    /// Create a complete account key hierarchy: a random Account Key wrapped by the KEK, a random VEK and the account
+    /// keypair both wrapped by the Account Key. Used on registration and on the one-time legacy migration push.
+    /// </summary>
+    /// <param name="kekBase64">The password-derived key that becomes the KEK.</param>
+    /// <returns>The plaintext keys to adopt and the wrapped chain to upload.</returns>
+    public async Task<AccountKeyHierarchy> CreateAccountKeyHierarchyAsync(string kekBase64)
+    {
+        var vek = RandomNumberGenerator.GetBytes(32);
+        var accountKey = RandomNumberGenerator.GetBytes(32);
+        var (publicKey, privateKey) = await jsInteropService.GenerateRsaKeyPair();
+
+        var keys = new AccountKeysUpload
+        {
+            EncryptedAccountKey = await WrapKeyAsync(accountKey, Convert.FromBase64String(kekBase64)),
+            EncryptedVek = await WrapKeyAsync(vek, accountKey),
+            AccountPublicKey = publicKey,
+            EncryptedAccountPrivateKey = await jsInteropService.SymmetricEncrypt(privateKey, Convert.ToBase64String(accountKey)),
+        };
+
+        return new AccountKeyHierarchy(Convert.ToBase64String(vek), privateKey, keys);
+    }
+
+    /// <summary>
+    /// Adopt a hierarchy the server just committed: cache the wrapped chain for offline unlock and mark the cached
+    /// derivation parameters as belonging to an account-key account.
+    /// </summary>
+    /// <param name="hierarchy">The hierarchy that was uploaded.</param>
+    /// <returns>Task.</returns>
+    public async Task AdoptLocalAccountKeysAsync(AccountKeyHierarchy hierarchy)
+    {
+        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedAccountKey, hierarchy.Keys.EncryptedAccountKey!);
+        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedVek, hierarchy.Keys.EncryptedVek!);
+        await localStorage.SetItemAsStringAsync(StorageKeys.AccountPublicKey, hierarchy.Keys.AccountPublicKey!);
+        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedAccountPrivateKey, hierarchy.Keys.EncryptedAccountPrivateKey!);
+
+        var parameters = await GetDerivationParamsAsync();
+        if (parameters is not null)
+        {
+            await StoreDerivationParamsAsync(parameters with { HasKeyChain = true });
+        }
+    }
+
+    /// <summary>
+    /// Adopt a chain the server holds but this device does not (the account was migrated on another device while
+    /// this session still holds the old password-derived key): open it with the session key, which then is the KEK.
+    /// </summary>
+    /// <param name="sessionKeyBase64">The session's current key.</param>
+    /// <returns>The resolved keys when a chain was adopted, null when the server holds none. Throws when the chain does not open.</returns>
+    public async Task<ResolvedVaultKey?> AdoptRemoteVaultKeyAsync(string sessionKeyBase64)
+    {
+        var vaultKey = await FetchVaultKeyAsync();
+        if (vaultKey is null)
+        {
+            return null;
+        }
+
+        var resolved = await DecryptKeyChainAsync(vaultKey.EncryptedAccountKey, vaultKey.EncryptedVek, vaultKey.EncryptedAccountPrivateKey, sessionKeyBase64);
+        await CacheVaultKeyBlobsAsync(vaultKey);
+        return resolved;
+    }
+
+    /// <summary>
+    /// Decrypt the locally cached chain with the given KEK.
+    /// </summary>
+    /// <param name="derivedKeyBase64">The password-derived key.</param>
+    /// <returns>The resolved keys, or null when no chain is cached.</returns>
+    /// <exception cref="VaultKeyDecryptException">Thrown when the chain does not open with the derived key.</exception>
+    public async Task<ResolvedVaultKey?> UnlockCachedChainAsync(string derivedKeyBase64)
+    {
+        return await ResolveFromLocalCacheAsync(derivedKeyBase64);
+    }
+
+    /// <summary>
+    /// Re-wrap the cached Account Key for a new password: open it with the current KEK, wrap it with the new one.
+    /// The VEK, the account keypair and every grant stay as they are.
+    /// </summary>
+    /// <param name="currentKekBase64">The KEK derived from the current password.</param>
+    /// <param name="newKekBase64">The KEK derived from the new password.</param>
+    /// <returns>The Account Key wrapped with the new KEK.</returns>
+    /// <exception cref="VaultKeyDecryptException">Thrown when the current password is wrong.</exception>
+    /// <exception cref="VaultKeyUnavailableException">Thrown when no chain is cached (the account has not migrated yet).</exception>
+    public async Task<string> RewrapAccountKeyAsync(string currentKekBase64, string newKekBase64)
+    {
+        var encryptedAccountKey = await localStorage.GetItemAsStringAsync(StorageKeys.EncryptedAccountKey);
+        if (string.IsNullOrEmpty(encryptedAccountKey))
+        {
+            throw new VaultKeyUnavailableException(null);
+        }
+
+        var accountKey = await DecryptKeyOrThrowAsync(encryptedAccountKey, currentKekBase64);
+        return await WrapKeyAsync(Convert.FromBase64String(accountKey), Convert.FromBase64String(newKekBase64));
+    }
+
+    /// <summary>
+    /// Persist the re-wrapped Account Key and the new derivation parameters after a password change.
+    /// </summary>
+    /// <param name="newEncryptedAccountKey">The Account Key wrapped with the new KEK.</param>
+    /// <param name="parameters">The new derivation parameters.</param>
+    /// <returns>Task.</returns>
+    public async Task PersistNewAccountKeyAsync(string newEncryptedAccountKey, EncryptionKeyDerivationParams parameters)
+    {
+        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedAccountKey, newEncryptedAccountKey);
+        await StoreDerivationParamsAsync(parameters with { HasKeyChain = true });
     }
 
     /// <summary>
@@ -293,6 +410,17 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
             logger.LogWarning(ex, "The account private key could not be decrypted; shared vault grants stay closed until the next sync.");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Wrap a 32-byte key with another key: AES-256-GCM, output base64(IV | ciphertext | tag).
+    /// </summary>
+    /// <param name="key">The key to wrap.</param>
+    /// <param name="wrappingKey">The key that wraps it.</param>
+    /// <returns>The wrapped key.</returns>
+    private async Task<string> WrapKeyAsync(byte[] key, byte[] wrappingKey)
+    {
+        return Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(key, wrappingKey));
     }
 
     /// <summary>
