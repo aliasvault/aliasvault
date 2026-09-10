@@ -5,6 +5,7 @@ import {
   srpGenerateEphemeral,
   srpDeriveSession,
 } from '../../wasm/aliasvault_core.js';
+import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { initRustCore } from '../rust/RustCore';
 
@@ -13,14 +14,13 @@ import type { TokenModel, LoginResponse, BadRequestResponse } from '@aliasvault/
 /**
  * Register request type for creating a new user.
  */
-export type RegisterRequest = {
+export type RegisterRequest = AccountKeyBlobs & {
   username: string;
   salt: string;
   verifier: string;
   encryptionType: string;
   encryptionSettings: string;
   srpIdentity: string;
-  encryptedVek: string;
 };
 
 /**
@@ -28,7 +28,7 @@ export type RegisterRequest = {
  */
 export type PreparedRegistration = {
   request: RegisterRequest;
-  vaultEncryptionKey: string;
+  keys: AccountKeyHierarchy;
   derivedKey: string;
 };
 
@@ -39,7 +39,9 @@ export type RegistrationResult = {
   success: boolean;
   token?: TokenModel;
   encryptionKey?: string;
-  encryptedVek?: string;
+  derivedKey?: string;
+  accountKeys?: AccountKeyBlobs;
+  accountPrivateKey?: string;
   error?: string;
 };
 
@@ -329,20 +331,9 @@ export class SrpAuthService {
     password: string
   ): Promise<PreparedRegistration> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-
-    /**
-     * Generate a random GUID for SRP identity. This is used for all SRP operations,
-     * is set during registration, and never changes.
-     */
     const srpIdentity = SrpAuthService.generateSrpIdentity();
     const material = await SrpAuthService.prepareNewPassword(password, srpIdentity);
-
-    /*
-     * KEK/VEK: generate a random VEK that will encrypt the vault content, encrypted with the password-derived KEK.
-     * The server stores only the encrypted form; the VEK itself stays client-side.
-     */
-    const vaultEncryptionKey = EncryptionUtility.generateVaultEncryptionKey();
-    const encryptedVek = await EncryptionUtility.encryptVaultEncryptionKey(vaultEncryptionKey, material.kekBase64);
+    const hierarchy = await createAccountKeyHierarchy(material.kekBase64);
 
     return {
       request: {
@@ -352,9 +343,9 @@ export class SrpAuthService {
         encryptionType: material.encryptionType,
         encryptionSettings: material.encryptionSettings,
         srpIdentity,
-        encryptedVek,
+        ...hierarchy.accountKeys,
       },
-      vaultEncryptionKey,
+      keys: hierarchy,
       derivedKey: material.kekBase64,
     };
   }
@@ -401,7 +392,14 @@ export class SrpAuthService {
       }
 
       const tokenModel = (await response.json()) as TokenModel;
-      return { success: true, token: tokenModel, encryptionKey: prepared.vaultEncryptionKey, encryptedVek: prepared.request.encryptedVek };
+      return {
+        success: true,
+        token: tokenModel,
+        encryptionKey: prepared.keys.vaultEncryptionKey,
+        derivedKey: prepared.derivedKey,
+        accountKeys: prepared.keys.accountKeys,
+        accountPrivateKey: prepared.keys.accountPrivateKey,
+      };
     } catch (error) {
       return {
         success: false,

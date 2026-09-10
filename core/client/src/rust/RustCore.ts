@@ -499,6 +499,14 @@ export async function vaultCodecOverflowTable(): Promise<string> {
 }
 
 /**
+ * The vault tables that take part in sync, as declared by the shared vault table registry.
+ */
+export async function getSyncableTableNames(): Promise<string[]> {
+  await initRustCore();
+  return core.getSyncableTableNames();
+}
+
+/**
  * The bucket layout: every category and the tables it owns.
  */
 export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]> {

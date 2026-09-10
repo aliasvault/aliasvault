@@ -8,7 +8,7 @@ import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { ServerUpdateRequiredError } from '../api/errors/ServerUpdateRequiredError';
 import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
-import { EncryptionUtility } from '../crypto/EncryptionUtility';
+import { mintAccountKeyHierarchy, type AccountKeyBlobs } from '../crypto/AccountKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devLog } from '../platform/Logger';
 
@@ -175,16 +175,7 @@ export type LegacyAccountKeyMigration = {
   /** The new VEK: everything this push writes is encrypted with it, and the caller adopts it as the session key. */
   contentKey: string;
   /** The whole hierarchy, sent as-is in the write payload. */
-  accountKeys: {
-    /** The Account Key encrypted with the password-derived KEK. */
-    encryptedAccountKey: string;
-    /** The new VEK encrypted with the Account Key. */
-    encryptedVek: string;
-    /** Public half of the new account keypair, used by others to grant this user access to a shared manifest. */
-    accountPublicKey: string;
-    /** Private half of the new account keypair, encrypted with the Account Key. */
-    encryptedAccountPrivateKey: string;
-  };
+  accountKeys: AccountKeyBlobs;
   /** Plaintext private half of the new account keypair, staged into the session once the push commits. */
   accountPrivateKey: string;
 };
@@ -198,26 +189,12 @@ export async function requiresLegacyAccountKeyMigration(): Promise<boolean> {
 }
 
 /**
- * Mint the full account key hierarchy for a migration push: a random Account Key (AK) encrypted with the
- * password-derived key, which from then on is only the KEK; a fresh VEK encrypted with the AK; and the account
- * keypair whose private half is encrypted with the AK too.
+ * Mint the account key hierarchy for a migration push.
  * @param kek - the password-derived key this vault is currently encrypted with, which becomes the KEK
  */
 export async function prepareLegacyAccountKeyMigration(kek: string): Promise<LegacyAccountKeyMigration> {
-  const contentKey = EncryptionUtility.generateVaultEncryptionKey();
-  const accountKey = EncryptionUtility.generateVaultEncryptionKey();
-  const accountKeyPair = await EncryptionUtility.generateRsaKeyPair();
-
-  return {
-    contentKey,
-    accountKeys: {
-      encryptedAccountKey: await EncryptionUtility.encryptVaultEncryptionKey(accountKey, kek),
-      encryptedVek: await EncryptionUtility.encryptVaultEncryptionKey(contentKey, accountKey),
-      accountPublicKey: accountKeyPair.publicKey,
-      encryptedAccountPrivateKey: await EncryptionUtility.symmetricEncrypt(accountKeyPair.privateKey, accountKey),
-    },
-    accountPrivateKey: accountKeyPair.privateKey,
-  };
+  const hierarchy = await mintAccountKeyHierarchy(kek);
+  return { contentKey: hierarchy.vaultEncryptionKey, accountKeys: hierarchy.accountKeys, accountPrivateKey: hierarchy.accountPrivateKey };
 }
 
 /**
