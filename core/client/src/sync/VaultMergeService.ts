@@ -1,0 +1,327 @@
+import initSqlJs from 'sql.js';
+
+import { getPruneTableQueries, getSyncableTableNames, mergeVaults, pruneVault } from '../../wasm/aliasvault_core.js';
+import { TRASH_RETENTION_DAYS } from '../constants/Vault';
+import { getPlatform } from '../platform/ClientPlatform';
+import { devLog } from '../platform/Logger';
+import { initRustCore } from '../rust/RustCore';
+import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+
+import type { SqliteClient } from '../database/SqliteClient';
+import type { Database, SqlJsStatic, SqlValue } from 'sql.js';
+
+/**
+ * Record type for JSON data passed to/from Rust.
+ */
+type JsonRecord = { [key: string]: unknown };
+
+/**
+ * Table data structure for Rust merge input/output.
+ */
+type TableData = {
+  name: string;
+  records: JsonRecord[];
+}
+
+/**
+ * Input structure for Rust merge function.
+ */
+type MergeInput = {
+  local_tables: TableData[];
+  server_tables: TableData[];
+}
+
+/**
+ * One SQL parameter as returned by the Rust merge: a plain sql.js value, or the `{ __b64 }` byte
+ * payload the row reader encodes BLOB columns as.
+ */
+type RustSqlParam = SqlValue | { __b64: string } | undefined;
+
+/**
+ * SQL statement with parameters from Rust.
+ */
+type SqlStatement = {
+  sql: string;
+  params: RustSqlParam[];
+}
+
+/**
+ * Statistics from Rust merge.
+ */
+type RustMergeStats = {
+  tablesProcessed: number;
+  recordsFromLocal: number;
+  recordsFromServer: number;
+  recordsCreatedLocally: number;
+  conflicts: number;
+  recordsInserted: number;
+}
+
+/**
+ * Output structure from Rust merge function.
+ */
+type MergeOutput = {
+  success: boolean;
+  statements: SqlStatement[];
+  stats: RustMergeStats;
+}
+
+/**
+ * Input structure for Rust prune function.
+ */
+type PruneInput = {
+  tables: TableData[];
+  retention_days: number;
+  /** Current time in ISO 8601 format (YYYY-MM-DDTHH:MM:SS.sssZ). Use new Date().toISOString() */
+  current_time: string;
+}
+
+/**
+ * Output structure from Rust prune function.
+ */
+type PruneOutput = {
+  success: boolean;
+  statements: SqlStatement[];
+}
+
+/**
+ * Result of a merge operation.
+ */
+export type MergeResult = {
+  success: boolean;
+  mergedVaultBase64: string;
+  stats: MergeStats;
+}
+
+/**
+ * Statistics about what was merged.
+ */
+export type MergeStats = {
+  tablesProcessed: number;
+  recordsFromLocal: number;
+  recordsFromServer: number;
+  recordsCreatedLocally: number;
+  conflicts: number;
+}
+
+/**
+ * Service for merging two vault SQLite databases using Last-Write-Wins (LWW) strategy.
+ *
+ * This implementation uses Rust WASM for the core merge logic, ensuring consistency
+ * across all platforms (browser, iOS, Android, server).
+ *
+ * The merge uses UpdatedAt timestamps on all SyncableEntity records to determine
+ * which version of a record wins in case of conflict.
+ */
+export class VaultMergeService {
+  private sqlJsInstance: SqlJsStatic | null = null;
+  /**
+   * Get the SQL.js instance, initializing and caching it on first use.
+   */
+  private async getSqlJs(): Promise<SqlJsStatic> {
+    this.sqlJsInstance ??= await initSqlJs({
+      /**
+       * Locate the SQL.js WASM file.
+       * @param file - The file name to locate
+       * @returns The path to the file
+       */
+      locateFile: (file: string): string => getPlatform().locateSqlJsFile(file)
+    });
+    return this.sqlJsInstance;
+  }
+
+  /**
+   * LEGACY: SQLite statement-level merge, kept only for the frozen sqlite-blob storage format (a
+   * not-yet-migrated local vault). Manifest-v1 vaults merge at canonical level instead, see
+   * `VaultSyncService.pullAndMerge`. TODO: delete this function once all users have migrated to manifest-v1.
+   *
+   * Uses Rust WASM for the merge logic. The merge base is the SERVER vault (it is freshly
+   * materialized with the newest schema and the newest codec overflow carrier), and the local
+   * vault's winning changes are applied on top of it:
+   * 1. Load both SQLite databases with sql.js
+   * 2. Read the syncable tables from both as JSON
+   * 3. Call Rust merge (returns SQL statements that bring local changes onto the server base)
+   * 4. Execute SQL statements on the SERVER database
+   * 5. Export the merged (server-based) database - the codec overflow carrier rides along untouched
+   *
+   * @param localVaultBase64 - The local vault (with offline changes) as base64 SQLite
+   * @param serverVaultBase64 - The server vault (latest version) as base64 SQLite
+   * @returns MergeResult with the merged vault as base64
+   */
+  public async merge(localVaultBase64: string, serverVaultBase64: string): Promise<MergeResult> {
+    try {
+      // Initialize Rust WASM
+      await initRustCore();
+
+      const SQL = await this.getSqlJs();
+
+      // Load both databases
+      const localDb = this.loadDatabase(SQL, localVaultBase64);
+      const serverDb = this.loadDatabase(SQL, serverVaultBase64);
+
+      try {
+        // Get syncable table names from Rust (or injected function)
+        const tableNames = getSyncableTableNames();
+
+        // Read all tables from both databases as JSON
+        const localTables: TableData[] = tableNames.map(name => ({
+          name,
+          records: this.readTableAsJson(localDb, name),
+        }));
+
+        const serverTables: TableData[] = tableNames.map(name => ({
+          name,
+          records: this.readTableAsJson(serverDb, name),
+        }));
+
+        /*
+         * Call Rust WASM merge (or injected function).
+         * Use JSON stringify/parse to ensure no undefined values reach Rust/serde.
+         */
+        const mergeInput: MergeInput = JSON.parse(JSON.stringify({
+          local_tables: localTables,
+          server_tables: serverTables,
+        })) as MergeInput;
+
+        devLog('[VaultMerge] Merge input:', {
+          localTableCount: localTables.length,
+          serverTableCount: serverTables.length,
+          localTables: localTables.map(t => ({ name: t.name, recordCount: t.records.length })),
+          serverTables: serverTables.map(t => ({ name: t.name, recordCount: t.records.length })),
+        });
+
+        const mergeOutput = mergeVaults(mergeInput) as MergeOutput;
+
+        /*
+         * Execute SQL statements from Rust on the SERVER database (the merge base). The exported
+         * server DB carries the newest codec overflow carrier untouched.
+         */
+        for (const stmt of mergeOutput.statements) {
+          serverDb.run(stmt.sql, stmt.params.map(toBindableParam));
+        }
+
+        // Export the merged (server-based) database
+        const mergedVaultBase64 = this.exportDatabase(serverDb);
+
+        return {
+          success: mergeOutput.success,
+          mergedVaultBase64,
+          stats: {
+            tablesProcessed: mergeOutput.stats.tablesProcessed,
+            recordsFromLocal: mergeOutput.stats.recordsFromLocal,
+            recordsFromServer: mergeOutput.stats.recordsFromServer,
+            recordsCreatedLocally: mergeOutput.stats.recordsCreatedLocally,
+            conflicts: mergeOutput.stats.conflicts,
+          },
+        };
+      } finally {
+        // Clean up databases
+        localDb.close();
+        serverDb.close();
+      }
+    } catch (error) {
+      console.error('Vault merge failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Prune expired trash items directly on a live SQLite client: items that have been in the trash (DeletedAt
+   * set) for longer than the retention period are permanently deleted (IsDeleted = true).
+   *
+   * @param client - The live SQLite client to prune
+   * @param retentionDays - Number of days to keep items in trash (defaults to TRASH_RETENTION_DAYS)
+   * @returns Number of SQL statements executed (0 when nothing was expired)
+   */
+  public async pruneInPlace(client: SqliteClient, retentionDays: number = TRASH_RETENTION_DAYS): Promise<number> {
+    await initRustCore();
+
+    const tableQueries = getPruneTableQueries() as { name: string; query: string }[];
+    const tables: TableData[] = tableQueries.map(({ name, query }) => ({ name, records: client.executeQuery<JsonRecord>(query) }));
+
+    // JSON roundtrip converts undefined to null and ensures clean JSON types for Rust/serde.
+    const pruneInput: PruneInput = JSON.parse(JSON.stringify({ tables, retention_days: retentionDays, current_time: new Date().toISOString() })) as PruneInput;
+    const pruneOutput = pruneVault(pruneInput) as PruneOutput;
+
+    for (const stmt of pruneOutput.statements) {
+      client.executeUpdate(stmt.sql, stmt.params.map(toBindableParam));
+    }
+
+    if (pruneOutput.statements.length > 0) {
+      devLog(`[VaultMerge] Pruned expired items from trash (${pruneOutput.statements.length} SQL statements executed)`);
+    }
+
+    return pruneOutput.statements.length;
+  }
+
+  /**
+   * Load a SQLite database from base64 string.
+   * @param SQL - The SQL.js instance
+   * @param base64String - The base64 encoded database
+   * @returns The loaded Database instance
+   */
+  private loadDatabase(SQL: SqlJsStatic, base64String: string): Database {
+    return new SQL.Database(base64ToBytes(base64String));
+  }
+
+  /**
+   * Export a SQLite database to base64 string.
+   * @param db - The database to export
+   * @returns The base64 encoded database
+   */
+  private exportDatabase(db: Database): string {
+    db.run('VACUUM');
+    return bytesToBase64(db.export());
+  }
+
+  /**
+   * Read all records from a table as JSON objects.
+   * @param db - The database to query
+   * @param tableName - The name of the table
+   * @returns Array of records as JSON objects
+   */
+  private readTableAsJson(db: Database, tableName: string): JsonRecord[] {
+    const exists = this.readQueryAsJson(db, `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}'`).length > 0;
+    if (!exists) {
+      return [];
+    }
+    return this.readQueryAsJson(db, `SELECT * FROM ${tableName}`);
+  }
+
+  /**
+   * Read all rows of a query as JSON objects. BLOB columns come back from sql.js as Uint8Array,
+   * which neither JSON nor serde can round-trip; they are encoded as `{ __b64 }` payloads that
+   * {@link toBindableParam} decodes when a merge statement writes them back.
+   * @param db - The database to query
+   * @param query - The SELECT query to run
+   * @returns Array of records as JSON objects
+   */
+  private readQueryAsJson(db: Database, query: string): JsonRecord[] {
+    const records: JsonRecord[] = [];
+    const stmt = db.prepare(query);
+
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      const record: JsonRecord = {};
+      for (const [column, value] of Object.entries(row)) {
+        record[column] = value instanceof Uint8Array ? { __b64: bytesToBase64(value) } : value ?? null;
+      }
+      records.push(record);
+    }
+    stmt.free();
+
+    return records;
+  }
+}
+
+/**
+ * Decode one Rust-returned SQL parameter into a sql.js-bindable value: `{ __b64 }` byte payloads
+ * become Uint8Array, undefined becomes null.
+ * @param param - the parameter as returned by the Rust merge
+ */
+function toBindableParam(param: RustSqlParam): SqlValue {
+  if (param !== null && typeof param === 'object' && '__b64' in param) {
+    return base64ToBytes(param.__b64);
+  }
+  return param ?? null;
+}

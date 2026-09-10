@@ -1,0 +1,102 @@
+import { getPlatform } from './ClientPlatform';
+
+/**
+ * Version and server compatibility information. Version and client name come from the host's
+ * {@link IAppIdentity}; the server floor and the default URLs are shared by every client.
+ */
+export class AppInfo {
+  /**
+   * The minimum supported AliasVault server (API) version. If the server version is below this, the
+   * client will throw an error stating that the server should be updated.
+   */
+  public static readonly MIN_SERVER_VERSION = '0.12.0-dev';
+
+  /**
+   * The default AliasVault client URL.
+   */
+  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.com';
+
+  /**
+   * The default AliasVault web API URL.
+   */
+  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.com/api';
+
+  /**
+   * Prevent instantiation of this utility class
+   */
+  private constructor() {}
+
+  /**
+   * The host app version, e.g. `0.31.0-alpha`.
+   */
+  public static get VERSION(): string {
+    return getPlatform().app.version;
+  }
+
+  /**
+   * The API version to send to the server (base semver without stage suffixes).
+   * Apple app store requires semver format without stage suffixes.
+   */
+  public static get API_VERSION(): string {
+    return AppInfo.VERSION.split('-')[0];
+  }
+
+  /**
+   * The client name to use in the X-AliasVault-Client header.
+   */
+  public static get CLIENT_NAME(): string {
+    return getPlatform().app.clientName;
+  }
+
+  /**
+   * Checks if a given server version is supported
+   * @param serverVersion The version to check
+   * @returns boolean indicating if the version is supported
+   */
+  public static isServerVersionSupported(serverVersion: string): boolean {
+    return this.versionGreaterThanOrEqualTo(serverVersion, this.MIN_SERVER_VERSION);
+  }
+
+  /**
+   * Checks if version1 is greater than or equal to version2, following SemVer rules.
+   * Pre-release versions (e.g., -alpha, -beta) are considered lower than release versions.
+   * @param version1 First version string (e.g., "1.2.3" or "1.2.3-beta")
+   * @param version2 Second version string (e.g., "1.2.0" or "1.2.0-alpha")
+   * @returns true if version1 >= version2, false otherwise
+   */
+  public static versionGreaterThanOrEqualTo(version1: string, version2: string): boolean {
+    // Split versions into core and pre-release parts
+    const [core1, preRelease1] = version1.split('-');
+    const [core2, preRelease2] = version2.split('-');
+
+    const parts1 = core1.split('.').map(Number);
+    const parts2 = core2.split('.').map(Number);
+
+    // Compare core versions first
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const part1 = parts1[i] ?? 0;
+      const part2 = parts2[i] ?? 0;
+
+      if (part1 > part2) {
+        return true;
+      }
+      if (part1 < part2) {
+        return false;
+      }
+    }
+
+    // If core versions are equal, check pre-release versions.
+    if (!preRelease1 && preRelease2) {
+      return true;
+    }
+    if (preRelease1 && !preRelease2) {
+      return false;
+    }
+    if (!preRelease1 && !preRelease2) {
+      return true;
+    }
+
+    // Both have pre-release versions, compare them lexically
+    return preRelease1 >= preRelease2;
+  }
+}

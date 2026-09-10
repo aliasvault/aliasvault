@@ -1,0 +1,40 @@
+{
+    "name": "@aliasvault/client",
+    "version": "1.0.0",
+    "description": "Typescript AliasVault client core.",
+    "type": "module",
+    "private": true,
+    "license": "AGPL-3.0",
+    "exports": {
+        ".": "./src/index.ts",
+        "./platform": "./src/platform/index.ts",
+        "./database": "./src/database/index.ts",
+        "./wasm/*": "./wasm/*",
+        "./*": "./src/*.ts"
+    },
+    "scripts": {
+        "compile": "tsc --noEmit",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@aliasvault/models": "file:../models",
+        "@aliasvault/vault": "file:../vault",
+        "otpauth": "^9.3.6",
+        "sql.js": "^1.12.0"
+    },
+    "devDependencies": {
+        "@types/sql.js": "^1.4.9",
+        "@typescript-eslint/eslint-plugin": "^8.65.0",
+        "@typescript-eslint/parser": "^8.65.0",
+        "eslint": "^9.39.5",
+        "eslint-import-resolver-typescript": "^4.4.3",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-jsdoc": "^50.6.3",
+        "globals": "^16.5.0",
+        "typescript": "^5.6.3",
+        "vitest": "^4.1.8"
+    }
+}
