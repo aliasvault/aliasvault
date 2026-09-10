@@ -33,9 +33,4 @@ public sealed class PullResult
     /// Gets the legacy data-model version string. Set only for <see cref="PullKind.LegacySqliteBlob"/>.
     /// </summary>
     public string? LegacyVersion { get; init; }
-
-    /// <summary>
-    /// Gets the revision of the personal manifest (or of the legacy blob).
-    /// </summary>
-    public required long Revision { get; init; }
 }
