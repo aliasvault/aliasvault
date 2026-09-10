@@ -289,7 +289,7 @@ const PasskeyCreate: React.FC = () => {
        * Generate a new GUID for the passkey which will be embedded in the passkey
        * metadata and send back to the RP as the credential.id and credential.rawId.
        */
-      const newPasskeyGuid = crypto.randomUUID().toUpperCase();
+      const newPasskeyGuid = crypto.randomUUID();
       const newPasskeyGuidBytes = PasskeyHelper.guidToBytes(newPasskeyGuid);
       const newPasskeyGuidBase64url = PasskeyHelper.guidToBase64url(newPasskeyGuid);
 

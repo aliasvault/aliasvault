@@ -116,7 +116,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
             let credentials = try vaultStore.getAllAutofillCredentials()
 
             if let matchingCredential = credentials.first(where: { credential in
-                return credential.id.uuidString == request.credentialIdentity.recordIdentifier
+                return credential.id.uuidString.lowercased() == request.credentialIdentity.recordIdentifier?.lowercased()
             }) {
                 // Ensure minimum duration before completing
                 let elapsed = Date().timeIntervalSince(startTime)

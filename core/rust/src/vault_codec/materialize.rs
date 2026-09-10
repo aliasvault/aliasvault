@@ -50,6 +50,9 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     // SQLite projection has the primary keys it expects back, identical on every device.
     super::normalize::mint_missing_derived_ids(&mut combined);
 
+    // Normalize all id columns.
+    super::normalize::normalize_id_spelling(&mut combined);
+
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
@@ -76,6 +79,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
             }
             for row in records.iter_mut() {
                 row.insert(MANIFEST_ID_COL.to_string(), json!(bucket.manifest_id));
+                super::normalize::normalize_row_id_spelling(row);
             }
             match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
                 SplitResult::Fits(records) => bucket_tables.entry(name).or_default().extend(records),
@@ -110,6 +114,7 @@ fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
         let mut row: CodecRecord = HashMap::new();
         row.insert("Id".to_string(), json!(id));
         row.insert("Name".to_string(), manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
+        super::normalize::normalize_row_id_spelling(&mut row);
         records.push(row);
     }
     records
@@ -152,10 +157,3 @@ fn split_for_schema(
     SplitResult::Fits(fitted)
 }
 
-/// Stable string key for a primary-key JSON value (strings unquoted, everything else canonical JSON).
-pub(super) fn row_key(value: &serde_json::Value) -> String {
-    match value.as_str() {
-        Some(s) => s.to_string(),
-        None => value.to_string(),
-    }
-}

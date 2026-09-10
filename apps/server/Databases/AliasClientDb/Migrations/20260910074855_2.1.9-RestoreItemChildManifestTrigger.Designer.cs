@@ -3,6 +3,7 @@ using System;
 using AliasClientDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    partial class AliasClientDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260910074855_2.1.9-RestoreItemChildManifestTrigger")]
+    partial class _219RestoreItemChildManifestTrigger
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,7 +30,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -46,8 +49,7 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -63,7 +65,7 @@ namespace AliasClientDb.Migrations
 
             modelBuilder.Entity("AliasClientDb.CodecOverflow", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
@@ -83,7 +85,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -122,7 +124,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -171,7 +173,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -181,7 +183,7 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FieldDefinitionId")
+                    b.Property<Guid?>("FieldDefinitionId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -192,8 +194,7 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -223,14 +224,14 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FieldDefinitionId")
+                    b.Property<Guid?>("FieldDefinitionId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -242,12 +243,9 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDisabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -258,9 +256,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ValueIndex")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Weight")
                         .HasColumnType("INTEGER");
@@ -290,7 +286,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -305,7 +301,7 @@ namespace AliasClientDb.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ParentFolderId")
+                    b.Property<Guid?>("ParentFolderId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -330,7 +326,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -343,7 +339,7 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FolderId")
+                    b.Property<Guid?>("FolderId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -355,7 +351,7 @@ namespace AliasClientDb.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("LogoId")
+                    b.Property<Guid?>("LogoId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -381,7 +377,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -429,11 +425,11 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("ItemId")
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("TagId")
+                    b.Property<Guid>("TagId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -463,7 +459,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -531,7 +527,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -549,8 +545,7 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -621,7 +616,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
@@ -659,7 +654,7 @@ namespace AliasClientDb.Migrations
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
-                    b.Property<string>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
@@ -682,8 +677,7 @@ namespace AliasClientDb.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
+                    b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 

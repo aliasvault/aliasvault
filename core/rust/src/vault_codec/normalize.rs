@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::CodecRecord;
-use super::types::{MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS};
+use super::types::{is_guid, is_id_column, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS};
 use crate::vault_model::names::{
     CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
     FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
@@ -31,6 +31,30 @@ pub fn field_value_id_for(manifest_id: &str, item_id: &str, field_key: &str, fie
 pub fn field_history_id_for(manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, changed_at: &str) -> String {
     let field = if field_key.is_empty() { format!("fd:{}", field_definition_id.to_lowercase()) } else { format!("fk:{}", field_key.to_lowercase()) };
     super::hash::derived_uuid(&format!("{}\n{}\n{}\n{}\n{}", FIELD_HISTORY_ID_NAMESPACE, manifest_id.to_lowercase(), item_id.to_lowercase(), field, changed_at))
+}
+
+/// Lowercase every id in `tables` which is the normalized spelling expected by all AliasVault clients.
+///
+/// Only [`is_id_column`] columns are touched.
+pub(crate) fn normalize_id_spelling(tables: &mut HashMap<String, Vec<CodecRecord>>) {
+    for rows in tables.values_mut() {
+        for row in rows.iter_mut() {
+            normalize_row_id_spelling(row);
+        }
+    }
+}
+
+/// Lowercase every id of one row. See [`normalize_id_spelling`].
+pub(crate) fn normalize_row_id_spelling(row: &mut CodecRecord) {
+    for (column, value) in row.iter_mut() {
+        if !is_id_column(column) {
+            continue;
+        }
+        let Some(text) = value.as_str() else { continue };
+        if is_guid(text) && text.bytes().any(|byte| byte.is_ascii_uppercase()) {
+            *value = json!(text.to_ascii_lowercase());
+        }
+    }
 }
 
 /// Normalize the shape of rows for converting from materialized SQLite to the manifest format to save on filesize.

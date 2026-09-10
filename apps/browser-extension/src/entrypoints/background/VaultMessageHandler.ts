@@ -2814,7 +2814,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
     const mapping = await SharingService.createSharedManifest(webApi, {
       groupId: group.groupId,
       selfPublicKey,
-    }, crypto.randomUUID().toUpperCase());
+    }, crypto.randomUUID());
 
     await SharingService.addSharedManifestRecord({
       manifestId: mapping.manifestId,

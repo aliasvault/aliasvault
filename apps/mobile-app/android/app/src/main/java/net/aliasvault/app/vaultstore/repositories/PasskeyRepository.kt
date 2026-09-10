@@ -52,7 +52,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
 
         val results = executeQuery(
             PasskeyQueries.GET_BY_CREDENTIAL_ID,
-            arrayOf(credentialIdString.uppercase()),
+            arrayOf(credentialIdString.lowercase()),
         )
 
         return results.firstOrNull()?.let { parsePasskeyRow(it) }
@@ -66,7 +66,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     fun getForItem(itemId: UUID): List<Passkey> {
         val results = executeQuery(
             PasskeyQueries.GET_BY_ITEM_ID,
-            arrayOf(itemId.toString().uppercase()),
+            arrayOf(itemId.toString().lowercase()),
         )
 
         return results.mapNotNull { parsePasskeyRow(it) }
@@ -88,7 +88,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return Passkey object or null if not found
      */
     fun getById(passkeyId: UUID): Passkey? {
-        val results = executeQuery(PasskeyQueries.GET_BY_ID, arrayOf(passkeyId.toString().uppercase()))
+        val results = executeQuery(PasskeyQueries.GET_BY_ID, arrayOf(passkeyId.toString().lowercase()))
         return results.firstOrNull()?.let { parsePasskeyRow(it) }
     }
 
@@ -106,8 +106,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
 
         val statement = db.compileStatement(PasskeyQueries.INSERT)
         statement.use {
-            it.bindString(1, passkey.id.toString().uppercase())
-            it.bindString(2, passkey.parentItemId.toString().uppercase()) // Note: still called parentItemId but references ItemId
+            it.bindString(1, passkey.id.toString().lowercase())
+            it.bindString(2, passkey.parentItemId.toString().lowercase()) // Note: still called parentItemId but references ItemId
             it.bindString(3, passkey.rpId)
             if (passkey.userHandle != null) {
                 it.bindBlob(4, passkey.userHandle)
@@ -162,7 +162,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             executeUpdate(
                 PasskeyQueries.CREATE_ITEM,
                 arrayOf(
-                    itemId.toString().uppercase(),
+                    itemId.toString().lowercase(),
                     displayName,
                     "Login", // Passkey items are Login type
                     logoId,
@@ -180,7 +180,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                     PasskeyQueries.INSERT_FIELD_VALUE,
                     arrayOf(
                         generateId(),
-                        itemId.toString().uppercase(),
+                        itemId.toString().lowercase(),
                         null, // FieldDefinitionId for system fields
                         FieldKey.LOGIN_URL,
                         "https://$rpId",
@@ -198,7 +198,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                     PasskeyQueries.INSERT_FIELD_VALUE,
                     arrayOf(
                         generateId(),
-                        itemId.toString().uppercase(),
+                        itemId.toString().lowercase(),
                         null,
                         FieldKey.LOGIN_USERNAME,
                         userName,
@@ -257,23 +257,23 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             val itemId = oldPasskey.parentItemId
 
             // Update the item's timestamp
-            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().uppercase()))
+            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().lowercase()))
 
             if (logo != null) {
                 val source = newPasskey.rpId.lowercase().replace("www.", "")
-                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().uppercase()))
+                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().lowercase()))
                 val existingLogoId = itemResults.firstOrNull()?.get("LogoId") as? String
 
                 if (existingLogoId != null) {
                     executeUpdate(LogoQueries.UPDATE_FILE_DATA, arrayOf(logo, timestamp, existingLogoId))
                 } else {
                     val newLogoId = getOrCreateLogo(source, logo, timestamp)
-                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().uppercase()))
+                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().lowercase()))
                 }
             }
 
             // Soft delete the old passkey
-            softDelete("Passkeys", oldPasskeyId.toString().uppercase())
+            softDelete("Passkeys", oldPasskeyId.toString().lowercase())
 
             // Create the new passkey with the same item ID
             val updatedPasskey = newPasskey.copy(
@@ -310,7 +310,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                 val source = rpId.lowercase().replace("www.", "")
 
                 // Check if item already has a logo
-                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().uppercase()))
+                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().lowercase()))
                 val existingLogoId = itemResults.firstOrNull()?.get("LogoId") as? String
 
                 if (existingLogoId != null) {
@@ -320,12 +320,12 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                     // Create or reuse logo with unique source check
                     val newLogoId = getOrCreateLogo(source, logo, timestamp)
                     // Link logo to item
-                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().uppercase()))
+                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().lowercase()))
                 }
             }
 
             // Update item's UpdatedAt timestamp
-            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().uppercase()))
+            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().lowercase()))
 
             // Create the passkey with the existing item ID
             val passkeyToInsert = passkey.copy(

@@ -127,7 +127,8 @@ fn rewrite_logo_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str
         let (Some((kind, source)), Some(old_id)) = (natural_key(row), str_col(row, ID_COL)) else { continue };
         let new_id = logo_id_for(scope, &kind, &source);
         if old_id != new_id || !survivors.contains(&idx) {
-            remap.insert(old_id.to_string(), new_id);
+            // GUIDs are case-insensitive and should be stored/compared as such.
+            remap.insert(old_id.to_lowercase(), new_id);
         }
     }
 
@@ -161,8 +162,8 @@ fn repoint_items(tables: &mut HashMap<String, Vec<CodecRecord>>, remap: &HashMap
     let Some(items) = tables.get_mut(ITEMS_TABLE) else { return };
     for item in items.iter_mut() {
         let Some(current) = str_col(item, LOGO_ID_COL).map(str::to_string) else { continue };
-        let resolved = remap.get(&current).cloned().unwrap_or(current);
-        let repaired = if valid_ids.contains(&resolved) { json!(resolved) } else { Value::Null };
+        let resolved = remap.get(&current.to_lowercase()).cloned().unwrap_or(current);
+        let repaired = if valid_ids.contains(&resolved.to_lowercase()) { json!(resolved) } else { Value::Null };
         item.insert(LOGO_ID_COL.to_string(), repaired);
     }
 }
@@ -180,7 +181,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         let mut ids: Vec<String> = tables[ITEMS_TABLE]
             .iter()
             .filter_map(|item| str_col(item, LOGO_ID_COL))
-            .filter(|id| !present.contains(*id))
+            .filter(|id| !present.contains(&id.to_lowercase()))
             .map(str::to_string)
             .collect();
         ids.sort();
@@ -203,12 +204,12 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
     let scope_value = json!(scope);
     for missing_id in missing {
         // The referenced row as it exists in its original scope, if it exists at all.
-        let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL) == Some(missing_id.as_str())) else { continue };
+        let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL).is_some_and(|id| id.eq_ignore_ascii_case(&missing_id))) else { continue };
         let Some((kind, source)) = natural_key(origin) else { continue };
 
         if let Some(existing_id) = id_by_key.get(&(kind.clone(), source.clone())).cloned() {
             refill_empty_scope_row(tables, &existing_id, origin);
-            remap.insert(missing_id, existing_id);
+            remap.insert(missing_id.to_lowercase(), existing_id);
             continue;
         }
 
@@ -219,7 +220,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         clone.insert(MANIFEST_ID_COL.to_string(), scope_value.clone());
         clones.push(clone);
         id_by_key.insert((kind, source), scoped_id.clone());
-        remap.insert(missing_id, scoped_id);
+        remap.insert(missing_id.to_lowercase(), scoped_id);
     }
 
     if !clones.is_empty() {
@@ -254,11 +255,11 @@ fn refill_empty_scope_row(tables: &mut HashMap<String, Vec<CodecRecord>>, existi
     }
 }
 
-/// Every `Logos.Id` present in this table set.
+/// Every `Logos.Id` present in this table set, lowercased: GUIDs are case-insensitive and should be stored/compared as such.
 fn logo_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> HashSet<String> {
     tables
         .get(LOGOS_TABLE)
-        .map(|rows| rows.iter().filter_map(|r| str_col(r, ID_COL).map(str::to_string)).collect())
+        .map(|rows| rows.iter().filter_map(|r| str_col(r, ID_COL).map(str::to_lowercase)).collect())
         .unwrap_or_default()
 }
 

@@ -56,7 +56,7 @@ object AutofillDatasetBuilder {
         val bitmap = buildLogoBitmap(context, item, presentation)
 
         if (inlineSpec != null) {
-            val itemDeepLink = "aliasvault://items/${item.id.toString().uppercase()}"
+            val itemDeepLink = "aliasvault://items/${item.id.toString().lowercase()}"
             val attribIntent = InlinePresentationHelper.attributionPendingIntent(
                 context = context,
                 deepLinkUri = itemDeepLink,
@@ -80,7 +80,7 @@ object AutofillDatasetBuilder {
         val autofillIds = fields.map { it.first }.toTypedArray()
         val fieldTypeOrdinals = IntArray(fields.size) { i -> fields[i].second.ordinal }
         val authIntent = Intent(context, AutofillFillActivity::class.java).apply {
-            putExtra(AutofillFillActivity.EXTRA_ITEM_ID, item.id.toString().uppercase())
+            putExtra(AutofillFillActivity.EXTRA_ITEM_ID, item.id.toString().lowercase())
             putExtra(AutofillFillActivity.EXTRA_AUTOFILL_IDS, autofillIds)
             putExtra(AutofillFillActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
             putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, copyTotpOnSelect)

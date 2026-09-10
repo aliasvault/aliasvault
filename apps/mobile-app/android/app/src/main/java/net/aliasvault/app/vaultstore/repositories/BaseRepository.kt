@@ -108,11 +108,11 @@ open class BaseRepository(
     }
 
     /**
-     * Generate a new UUID in uppercase format.
+     * Generate a new id.
      * @return A new UUID string
      */
     fun generateId(): String {
-        return UUID.randomUUID().toString().uppercase()
+        return UUID.randomUUID().toString()
     }
 
     /**

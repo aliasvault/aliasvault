@@ -82,7 +82,7 @@ const subfolderRendering: MultiManifestRenderer = {
    * @param folder - The folder to classify
    */
   isManifestRoot(folder: Pick<Folder, 'Id' | 'ManifestId'>): boolean {
-    return Boolean(folder.ManifestId) && folder.Id.toUpperCase() === String(folder.ManifestId).toUpperCase();
+    return Boolean(folder.ManifestId) && folder.Id.toLowerCase() === String(folder.ManifestId).toLowerCase();
   },
 
   /**
@@ -92,7 +92,7 @@ const subfolderRendering: MultiManifestRenderer = {
    * @param name - The folder name, which is the vault's name
    */
   async render(sqliteClient: SqliteClient, manifestId: string, name: string): Promise<void> {
-    const folderId = manifestId.toUpperCase();
+    const folderId = manifestId.toLowerCase();
     await sqliteClient.folders.create(name, null, folderId);
     await sqliteClient.folders.restampSubtree(folderId, manifestId);
   },

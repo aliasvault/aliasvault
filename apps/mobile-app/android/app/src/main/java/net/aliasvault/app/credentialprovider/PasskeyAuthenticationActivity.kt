@@ -159,7 +159,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     return@launch
                 }
 
-                val passkeyId = UUID.fromString(passkeyIdString.uppercase())
+                val passkeyId = UUID.fromString(passkeyIdString)
 
                 // Get database connection from vault
                 val db = vaultStore.database.dbConnection

@@ -11,8 +11,34 @@ pub use crate::vault_model::{
     UNSTAMPED_SCOPE_SENTINEL,
 };
 
+use crate::vault_model::names::ID_COL;
+
 /// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
+
+/// One identity component of a row, as a string: a GUID lowercased, any other string verbatim,
+/// anything else canonical JSON.
+pub fn identity_part(value: &serde_json::Value) -> String {
+    match value.as_str() {
+        Some(text) if is_guid(text) => text.to_ascii_lowercase(),
+        Some(text) => text.to_string(),
+        None => value.to_string(),
+    }
+}
+
+/// True when a column names a row rather than holding content.
+pub fn is_id_column(column: &str) -> bool {
+    column.ends_with(ID_COL)
+}
+
+/// True when `text` has the exact shape of a GUID (8-4-4-4-12 hex).
+pub(crate) fn is_guid(text: &str) -> bool {
+    text.len() == 36
+        && text.as_bytes().iter().enumerate().all(|(index, byte)| match index {
+            8 | 13 | 18 | 23 => *byte == b'-',
+            _ => byte.is_ascii_hexdigit(),
+        })
+}
 
 // ---------------------------------------------------------------------------
 // Accessor methods
@@ -105,7 +131,7 @@ pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Opt
     Some(
         columns
             .iter()
-            .filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(super::materialize::row_key))
+            .filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(identity_part))
             .collect::<Vec<_>>()
             .join("\u{1f}"),
     )

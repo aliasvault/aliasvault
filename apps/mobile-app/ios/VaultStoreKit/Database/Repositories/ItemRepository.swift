@@ -279,7 +279,7 @@ public class ItemRepository: BaseRepository {
     public func create(_ item: Item) throws -> String {
         return try withTransaction {
             let now = self.now()
-            let itemId = item.id.uuidString.uppercased()
+            let itemId = item.id.uuidString.lowercased()
 
             // 1. Insert Item
             try client.executeUpdate(ItemQueries.insertItem, params: [
@@ -287,7 +287,7 @@ public class ItemRepository: BaseRepository {
                 item.name as SqliteBindValue,
                 item.itemType,
                 nil, // LogoId - handled separately if needed
-                item.folderId?.uuidString.uppercased() as SqliteBindValue,
+                item.folderId?.uuidString.lowercased() as SqliteBindValue,
                 now,
                 now,
                 0
@@ -307,13 +307,13 @@ public class ItemRepository: BaseRepository {
     public func update(_ item: Item) throws -> Int {
         return try withTransaction {
             let now = self.now()
-            let itemId = item.id.uuidString.uppercased()
+            let itemId = item.id.uuidString.lowercased()
 
             // 1. Update Item
             try client.executeUpdate(ItemQueries.updateItem, params: [
                 item.name as SqliteBindValue,
                 item.itemType,
-                item.folderId?.uuidString.uppercased() as SqliteBindValue,
+                item.folderId?.uuidString.lowercased() as SqliteBindValue,
                 nil, // LogoId update handled separately if needed
                 now,
                 itemId

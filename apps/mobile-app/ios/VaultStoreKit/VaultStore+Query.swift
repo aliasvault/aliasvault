@@ -224,7 +224,7 @@ extension VaultStore {
     /// - Parameter itemId: The UUID of the item to fetch
     /// - Returns: Item object or nil if not found
     public func getItemById(_ itemId: UUID) throws -> Item? {
-        return try itemRepository.getById(itemId.uuidString.uppercased())
+        return try itemRepository.getById(itemId.uuidString.lowercased())
     }
 
     /// Get all items that have passkeys.
@@ -267,7 +267,7 @@ extension VaultStore {
     /// - Returns: Number of rows affected
     @discardableResult
     public func archiveItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.archive(itemId.uuidString.uppercased())
+        return try itemRepository.archive(itemId.uuidString.lowercased())
     }
 
     /// Unarchive an item.
@@ -275,7 +275,7 @@ extension VaultStore {
     /// - Returns: Number of rows affected
     @discardableResult
     public func unarchiveItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.unarchive(itemId.uuidString.uppercased())
+        return try itemRepository.unarchive(itemId.uuidString.lowercased())
     }
 
     /// Move an item to trash.
@@ -283,7 +283,7 @@ extension VaultStore {
     /// - Returns: Number of rows affected
     @discardableResult
     public func trashItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.trash(itemId.uuidString.uppercased())
+        return try itemRepository.trash(itemId.uuidString.lowercased())
     }
 
     /// Restore an item from trash.
@@ -291,7 +291,7 @@ extension VaultStore {
     /// - Returns: Number of rows affected
     @discardableResult
     public func restoreItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.restore(itemId.uuidString.uppercased())
+        return try itemRepository.restore(itemId.uuidString.lowercased())
     }
 
     /// Permanently delete an item.
@@ -299,7 +299,7 @@ extension VaultStore {
     /// - Returns: Number of rows affected
     @discardableResult
     public func permanentlyDeleteItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.permanentlyDelete(itemId.uuidString.uppercased())
+        return try itemRepository.permanentlyDelete(itemId.uuidString.lowercased())
     }
 
     /// Create a new item.
@@ -326,7 +326,7 @@ extension VaultStore {
     ///   - url: The URL or app package identifier to add
     public func appendUrl(toItemId itemId: UUID, url: String) throws {
         try itemRepository.appendFieldValue(
-            itemId: itemId.uuidString.uppercased(),
+            itemId: itemId.uuidString.lowercased(),
             fieldKey: FieldKey.loginUrl,
             value: url
         )

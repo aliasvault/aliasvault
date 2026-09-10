@@ -193,7 +193,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
 
         // Assign fields to items
         return items.map { item ->
-            val fields = fieldsByItemId[item.id.toString().uppercase()] ?: emptyList()
+            val fields = fieldsByItemId[item.id.toString().lowercase()] ?: emptyList()
             item.copy(fields = fields)
         }
     }
@@ -205,7 +205,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return Item object or null if not found.
      */
     fun getById(itemId: String): Item? {
-        val itemResults = executeQueryWithBlobs(ItemQueries.GET_BY_ID, arrayOf(itemId.uppercase()))
+        val itemResults = executeQueryWithBlobs(ItemQueries.GET_BY_ID, arrayOf(itemId.lowercase()))
         val row = itemResults.firstOrNull() ?: return null
 
         // Build folder paths
@@ -430,7 +430,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     fun getTotpForItem(itemId: String): TotpCode? {
         val results = executeQuery(
             "SELECT SecretKey, Algorithm, Digits, Period FROM TotpCodes WHERE ItemId = ? AND IsDeleted = 0 ORDER BY Name ASC LIMIT 1",
-            arrayOf(itemId.uppercase()),
+            arrayOf(itemId.lowercase()),
         )
         val row = results.firstOrNull() ?: return null
         val secretKey = row["SecretKey"] as? String ?: return null

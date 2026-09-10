@@ -154,7 +154,7 @@ public class PasskeyRepository: BaseRepository {
     @discardableResult
     public func create(_ passkey: Passkey) throws -> String {
         return try withTransaction {
-            let passkeyId = passkey.id.uuidString.uppercased()
+            let passkeyId = passkey.id.uuidString.lowercased()
             let now = self.now()
 
             // Convert keys to string for storage
@@ -169,7 +169,7 @@ public class PasskeyRepository: BaseRepository {
 
             try client.executeUpdate(PasskeyQueries.insert, params: [
                 passkeyId,
-                passkey.parentItemId.uuidString.uppercased(),
+                passkey.parentItemId.uuidString.lowercased(),
                 passkey.rpId,
                 userHandleParam,
                 publicKeyString,
@@ -225,7 +225,7 @@ public class PasskeyRepository: BaseRepository {
             // Update logo if provided
             if let logo = logo {
                 try updateItemLogoInternal(
-                    itemId: newPasskey.parentItemId.uuidString.uppercased(),
+                    itemId: newPasskey.parentItemId.uuidString.lowercased(),
                     logo: logo,
                     rpId: newPasskey.rpId,
                     now: now
@@ -236,7 +236,7 @@ public class PasskeyRepository: BaseRepository {
             try client.executeUpdate(PasskeyQueries.softDelete, params: [now, oldPasskeyId])
 
             // Create the new passkey
-            let newPasskeyId = newPasskey.id.uuidString.uppercased()
+            let newPasskeyId = newPasskey.id.uuidString.lowercased()
 
             guard let publicKeyString = String(data: newPasskey.publicKey, encoding: .utf8),
                   let privateKeyString = String(data: newPasskey.privateKey, encoding: .utf8) else {
@@ -248,7 +248,7 @@ public class PasskeyRepository: BaseRepository {
 
             try client.executeUpdate(PasskeyQueries.insert, params: [
                 newPasskeyId,
-                newPasskey.parentItemId.uuidString.uppercased(),
+                newPasskey.parentItemId.uuidString.lowercased(),
                 newPasskey.rpId,
                 userHandleParam,
                 publicKeyString,
@@ -284,7 +284,7 @@ public class PasskeyRepository: BaseRepository {
         logo: Data? = nil
     ) throws -> String {
         return try withTransaction {
-            let itemId = passkey.parentItemId.uuidString.uppercased()
+            let itemId = passkey.parentItemId.uuidString.lowercased()
             let now = self.now()
 
             // Create or reuse logo if provided
@@ -346,7 +346,7 @@ public class PasskeyRepository: BaseRepository {
             let prfKeyParam: SqliteBindValue = passkey.prfKey.map { "av-base64-to-blob:\($0.base64EncodedString())" }
 
             try client.executeUpdate(PasskeyQueries.insert, params: [
-                passkey.id.uuidString.uppercased(),
+                passkey.id.uuidString.lowercased(),
                 itemId,
                 passkey.rpId,
                 userHandleParam,
@@ -425,7 +425,7 @@ public class PasskeyRepository: BaseRepository {
         logo: Data? = nil
     ) throws -> String {
         return try withTransaction {
-            let itemIdString = itemId.uuidString.uppercased()
+            let itemIdString = itemId.uuidString.lowercased()
             let now = self.now()
 
             // Update logo if provided
@@ -439,7 +439,7 @@ public class PasskeyRepository: BaseRepository {
             }
 
             // Create the passkey linked to the existing item
-            let passkeyId = passkey.id.uuidString.uppercased()
+            let passkeyId = passkey.id.uuidString.lowercased()
 
             guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8),
                   let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {

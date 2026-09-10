@@ -104,10 +104,10 @@ public class BaseRepository {
         return !results.isEmpty
     }
 
-    /// Generate a new UUID in uppercase format.
+    /// Generate a new id.
     /// - Returns: A new UUID string
     public func generateId() -> String {
-        return UUID().uuidString.uppercased()
+        return UUID().uuidString.lowercased()
     }
 
     /// Get the current timestamp in the standard format.

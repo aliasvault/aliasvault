@@ -34,7 +34,7 @@ public enum RustItemMatcher {
             // Convert items to the format expected by Rust
             let rustCredentials = items.map { item -> [String: Any?] in
                 return [
-                    "Id": item.itemId.uuidString,
+                    "Id": item.itemId.uuidString.lowercased(),
                     "ItemName": item.serviceName as Any?,
                     "ItemUrls": item.urls,
                     "Username": item.username as Any?

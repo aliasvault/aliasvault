@@ -21,7 +21,7 @@ public class RustItemMatcher {
             // Convert AutofillCredential to the format expected by Rust
             let rustCredentials = credentials.map { credential -> [String: Any?] in
                 return [
-                    "Id": credential.id.uuidString,
+                    "Id": credential.id.uuidString.lowercased(),
                     "ItemName": credential.serviceName,
                     "ItemUrls": credential.serviceUrls,
                     "Username": credential.username

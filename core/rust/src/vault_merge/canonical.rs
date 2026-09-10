@@ -362,6 +362,17 @@ mod tests {
     }
 
     #[test]
+    fn the_same_id_in_two_spellings_is_one_row() {
+        // GUIDs are case-insensitive and should be stored/compared as such.
+        let merged = merge_single(
+            vec![item(PERSONAL, "9d3f7a2c-1b4e-4f80-8a11-2c3d4e5f6a7b", "server-old", "2024-01-01T00:00:00Z")],
+            vec![item(PERSONAL, "9D3F7A2C-1B4E-4F80-8A11-2C3D4E5F6A7B", "local-new", "2024-01-09T00:00:00Z")],
+        );
+
+        assert_eq!(names_of(&merged.manifest), vec!["local-new"], "one row, the newer one");
+    }
+
+    #[test]
     fn one_sided_rows_are_kept_on_both_sides() {
         let merged = merge_single(
             vec![item(PERSONAL, "server-only", "on-server", "2024-01-01T00:00:00Z")],

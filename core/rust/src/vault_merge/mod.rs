@@ -274,12 +274,10 @@ fn get_key(record: &Record, columns: &[&str]) -> String {
         .join(":")
 }
 
-/// One key component rendered as a string (strings unquoted, everything else canonical JSON).
+/// One key component rendered as a string. See [`crate::vault_codec::identity_part`]: ids compare
+/// case-insensitively, everything else exactly as it is spelled.
 fn key_part(value: &serde_json::Value) -> String {
-    match value.as_str() {
-        Some(s) => s.to_string(),
-        None => value.to_string(),
-    }
+    crate::vault_codec::identity_part(value)
 }
 
 /// Get the UpdatedAt timestamp from a record.

@@ -164,6 +164,17 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Setting>().HasKey(e => new { e.ManifestId, e.Key });
         modelBuilder.Entity<ItemTag>().HasKey(e => new { e.ManifestId, e.ItemId, e.TagId });
 
+        // For GUID columns, convert to lowercase which is the normalized spelling expected by all AliasVault clients.
+        var guidConverter = new ValueConverter<Guid, string>(id => id.ToString("D"), text => Guid.Parse(text));
+        var guidProperties = modelBuilder.Model.GetEntityTypes()
+            .SelectMany(type => type.GetProperties())
+            .Where(property => property.ClrType == typeof(Guid) || property.ClrType == typeof(Guid?));
+        foreach (var property in guidProperties)
+        {
+            property.SetValueConverter(guidConverter);
+            property.SetCollation("NOCASE");
+        }
+
         // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
             .HasOne(l => l.Item)
@@ -267,6 +278,15 @@ public class AliasClientDbContext : DbContext
             .WithMany(fd => fd.FieldHistories)
             .HasForeignKey(fh => new { fh.ManifestId, fh.FieldDefinitionId })
             .OnDelete(DeleteBehavior.Cascade);
+
+        /*
+         * A column added to a table that already shipped carries its default in the model, not only in the
+         * migration that added it: the codec inserts exactly the columns a manifest row carries, so a row
+         * written before the column existed omits it, and any later table rebuild re-creates the column
+         * without the migration's one-off backfill default. Without this the insert fails on NOT NULL.
+         */
+        modelBuilder.Entity<FieldValue>().Property(fv => fv.IsDisabled).HasDefaultValue(false);
+        modelBuilder.Entity<FieldValue>().Property(fv => fv.ValueIndex).HasDefaultValue(0);
 
         // Configure indexes for FieldValue
         modelBuilder.Entity<FieldValue>()

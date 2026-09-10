@@ -15,7 +15,7 @@ public class TotpRepository: BaseRepository {
         ORDER BY Name ASC
         """
 
-        let results = try client.executeQuery(query, params: [itemId.uuidString])
+        let results = try client.executeQuery(query, params: [itemId.uuidString.lowercased()])
         var totpCodes: [TotpCode] = []
 
         for row in results {

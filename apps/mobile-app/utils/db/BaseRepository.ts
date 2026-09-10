@@ -111,11 +111,11 @@ export abstract class BaseRepository {
   }
 
   /**
-   * Generate a new UUID in uppercase format.
+   * Generate a new id.
    * @returns A new UUID string
    */
   protected generateId(): string {
-    return crypto.randomUUID().toUpperCase();
+    return crypto.randomUUID();
   }
 
   /**

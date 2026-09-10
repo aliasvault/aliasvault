@@ -16,7 +16,7 @@ use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::{json, Value};
 
-use super::normalize::normalize_row_shapes;
+use super::normalize::{normalize_id_spelling, normalize_row_shapes};
 use super::hash::salted_blob_hash;
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
@@ -62,6 +62,12 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     for (name, rows) in &overflow.tables {
         // Local rows win if the table somehow exists locally now (e.g. client upgraded since the pull).
         all_tables.entry(name.clone()).or_insert_with(|| rows.clone());
+    }
+
+    // Normalize all id columns.
+    normalize_id_spelling(&mut all_tables);
+    for bucket_tables in overflow.bucket_tables.values_mut() {
+        normalize_id_spelling(bucket_tables);
     }
 
     // Legacy migration: adopt unstamped rows into the manifest if specified by the caller.

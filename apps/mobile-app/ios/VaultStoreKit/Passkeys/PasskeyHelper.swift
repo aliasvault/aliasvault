@@ -45,8 +45,8 @@ public class PasskeyHelper {
     }
 
     /**
-     * Convert byte array to GUID string (uppercase)
-     * Example: Data(16 bytes) → "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
+     * Convert byte array to GUID string.
+     * Example: Data(16 bytes) → "3f2504e0-4f89-11d3-9a0c-0305e82c3301"
      */
     public static func bytesToGuid(_ bytes: Data) throws -> String {
         guard bytes.count == 16 else {
@@ -64,7 +64,7 @@ public class PasskeyHelper {
             String(hex.dropFirst(20))
         ]
 
-        return parts.joined(separator: "-").uppercased()
+        return parts.joined(separator: "-")
     }
 
 }

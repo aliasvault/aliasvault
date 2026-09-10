@@ -28,7 +28,7 @@ extension VaultStore {
      * Get all passkeys for an item (new model)
      */
     public func getPasskeys(forItemId itemId: UUID) throws -> [Passkey] {
-        return try passkeyRepository.getByItemId(itemId.uuidString.uppercased())
+        return try passkeyRepository.getByItemId(itemId.uuidString.lowercased())
     }
 
     /**
@@ -117,7 +117,7 @@ extension VaultStore {
      */
     public func replacePasskey(oldPasskeyId: UUID, newPasskey: Passkey, displayName: String, logo: Data? = nil) throws {
         // Get the old passkey to find its item
-        guard let oldPasskey = try passkeyRepository.getById(oldPasskeyId.uuidString.uppercased()) else {
+        guard let oldPasskey = try passkeyRepository.getById(oldPasskeyId.uuidString.lowercased()) else {
             throw VaultStoreError.passkeyNotFound
         }
 
@@ -141,7 +141,7 @@ extension VaultStore {
 
         // Replace the passkey (handles logo update in same transaction)
         try passkeyRepository.replace(
-            oldPasskeyId: oldPasskeyId.uuidString.uppercased(),
+            oldPasskeyId: oldPasskeyId.uuidString.lowercased(),
             with: updatedPasskey,
             displayName: displayName,
             logo: logo

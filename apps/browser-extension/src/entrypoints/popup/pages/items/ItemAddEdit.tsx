@@ -354,7 +354,7 @@ const ItemAddEdit: React.FC = () => {
 
         // Create the new item with detected values
         const newItem: DraftItem = {
-          Id: crypto.randomUUID().toUpperCase(),
+          Id: crypto.randomUUID(),
           Name: serviceName,
           ItemType: effectiveType,
           FolderId: folderIdParam || null,
@@ -801,7 +801,7 @@ const ItemAddEdit: React.FC = () => {
          * For create mode, always generate a fresh ID to prevent UNIQUE constraint
          * violations if form persistence restored a previously saved item's ID.
          */
-        Id: isEditMode ? item.Id : crypto.randomUUID().toUpperCase(),
+        Id: isEditMode ? item.Id : crypto.randomUUID(),
         Fields: fields,
         UpdatedAt: new Date().toISOString()
       };

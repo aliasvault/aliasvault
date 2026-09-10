@@ -139,11 +139,15 @@ pub(super) fn partition_by_manifest(
 
     // Where a row goes, read straight off its `ManifestId` stamp.
     let route = |row: &CodecRecord| -> Route {
-        let scope = str_col(row, MANIFEST_ID_COL);
-        if scope == Some(writing_manifest_id) {
+        let Some(scope) = str_col(row, MANIFEST_ID_COL) else { return Route::Gone };
+        if scope.eq_ignore_ascii_case(writing_manifest_id) {
             return Route::Base;
         }
-        scope.and_then(|s| manifest_to_spec.get(s).copied()).map(Route::Partition).unwrap_or(Route::Gone)
+        manifest_to_spec
+            .iter()
+            .find(|(id, _)| id.eq_ignore_ascii_case(scope))
+            .map(|(_, index)| Route::Partition(*index))
+            .unwrap_or(Route::Gone)
     };
 
     /*

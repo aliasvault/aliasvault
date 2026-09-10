@@ -114,7 +114,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
           const name = parsed.label || '';
 
           const newTotpCode: TotpCode = {
-            Id: crypto.randomUUID().toUpperCase(),
+            Id: crypto.randomUUID(),
             Name: name,
             SecretKey: secretKey,
             Algorithm: parsed.algorithm,
@@ -225,7 +225,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
 
       // Create new TOTP code
       const newTotpCode: TotpCode = {
-        Id: crypto.randomUUID().toUpperCase(),
+        Id: crypto.randomUUID(),
         Name: name,
         SecretKey: secretKey,
         Algorithm: algorithm,

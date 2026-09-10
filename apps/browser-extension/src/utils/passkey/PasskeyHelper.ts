@@ -35,7 +35,7 @@ export class PasskeyHelper {
   }
 
   /**
-   * Convert byte array to GUID string (uppercase)
+   * Convert byte array to GUID string.
    */
   private static bytesToGuid(bytes: Uint8Array): string {
     if (bytes.length !== 16) {
@@ -49,7 +49,7 @@ export class PasskeyHelper {
       hex.substr(12, 4),
       hex.substr(16, 4),
       hex.substr(20)
-    ].join('-').toUpperCase();
+    ].join('-');
   }
 
   /**

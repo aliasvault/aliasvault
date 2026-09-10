@@ -43,7 +43,7 @@ export class FolderRepository extends BaseRepository {
    */
   public async create(name: string, parentFolderId?: string | null, id?: string): Promise<string> {
     return this.withTransaction(async () => {
-      const folderId = id ?? crypto.randomUUID().toUpperCase();
+      const folderId = id ?? crypto.randomUUID();
       const currentDateTime = this.now();
 
       this.client.executeUpdate(FolderQueries.INSERT, [
