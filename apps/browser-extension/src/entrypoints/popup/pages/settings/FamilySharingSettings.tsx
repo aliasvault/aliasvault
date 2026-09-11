@@ -178,7 +178,7 @@ const FamilySharingSettings: React.FC = () => {
    */
   const acceptInvitation = (invitationId: string): Promise<void> => run(async () => {
     await SharingService.acceptInvitation(webApi, invitationId);
-    await sendMessage('SYNC_VAULT');
+    await sendMessage('FULL_VAULT_SYNC', {});
     // Same as creating one: the sync wrote the joined vault to storage, and this window has to pick it up to render it.
     await loadStoredDatabase();
   }, t('sharing.family.errors.invitationGone'));
@@ -221,7 +221,7 @@ const FamilySharingSettings: React.FC = () => {
 
     setPendingVaultDelete(null);
     await run(async () => {
-      await sendMessage('SYNC_VAULT');
+      await sendMessage('FULL_VAULT_SYNC', {});
       await loadStoredDatabase();
       setNotice(t('sharing.family.vaultDeleted'));
     }, t('sharing.family.errors.deleteVaultFailed'));

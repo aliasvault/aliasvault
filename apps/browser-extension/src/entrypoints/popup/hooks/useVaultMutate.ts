@@ -129,7 +129,7 @@ export function useVaultMutate(): {
      *
      * After sending message, we start polling to detect completion.
      */
-    void sendMessage('FULL_VAULT_SYNC').then(async (syncResult) => {
+    void sendMessage('FULL_VAULT_SYNC', {}).then(async (syncResult) => {
       if (!silent && !syncResult.success && (syncResult.error || syncResult.errorKey)) {
         /*
          * Permanent failure (e.g. HTTP 413 vault too large). Stop polling and clear the upload

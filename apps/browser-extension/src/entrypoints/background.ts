@@ -11,7 +11,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
@@ -245,7 +245,6 @@ export default defineBackground({
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
     onMessage('GENERATE_PASSWORD', ({ data }) => handleGeneratePassword(data.settings));
 
-    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data));
     onMessage('STORE_ENCRYPTION_KEY', async ({ data, sender }) => {
       if (!isTrustedExtensionSender(sender)) {
         return { success: false };
@@ -268,9 +267,7 @@ export default defineBackground({
     onMessage('GET_SYNC_STATE', () => handleGetSyncState());
     onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data));
 
-    onMessage('UPLOAD_VAULT', () => handleUploadVault());
-    onMessage('SYNC_VAULT', () => handleSyncVault());
-    onMessage('FULL_VAULT_SYNC', () => handleFullVaultSync());
+    onMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));
     onMessage('GET_VAULT_MIGRATION_STATUS', () => handleGetVaultMigrationStatus());
     onMessage('MIGRATE_VAULT_MANIFEST', () => handleMigrateVaultManifest());
     onMessage('GROUP_CREATE_VAULT', ({ data, sender }) => isTrustedExtensionSender(sender) ? handleGroupCreateVault(data) : { success: false });

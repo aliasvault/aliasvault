@@ -112,7 +112,7 @@ const ServerSyncIndicator: React.FC = () => {
     setIsRetrying(true);
 
     try {
-      const result = await sendMessage('FULL_VAULT_SYNC');
+      const result = await sendMessage('FULL_VAULT_SYNC', {});
 
       // Handle logout requirement
       if (result.requiresLogout) {

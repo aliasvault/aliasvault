@@ -18,19 +18,22 @@ export type TotpSecret = {
 };
 
 import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import type { FullVaultSyncResult, VaultManifestMigrationResult, VaultSyncPhase } from '@/entrypoints/background/VaultMessageHandler';
 
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
+import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
+import type { FullVaultSyncResult } from '@/utils/types/messaging/FullVaultSyncResult';
 import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import type { ItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { StringResponse } from '@/utils/types/messaging/StringResponse';
+import type { VaultManifestMigrationResult } from '@/utils/types/messaging/VaultManifestMigrationResult';
 import type { VaultResponse } from '@/utils/types/messaging/VaultResponse';
-import type { VaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
+import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
+import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -63,7 +66,7 @@ export interface IExtensionMessageProtocol {
   CLIPBOARD_COPIED_FROM_CONTEXT(): void;
   CLIPBOARD_COUNTDOWN(data: { remaining: number; total: number; id: number }): void;
   CLIPBOARD_COUNTDOWN_CANCELLED(data: Record<string, never>): void;
-  FULL_VAULT_SYNC(): FullVaultSyncResult;
+  FULL_VAULT_SYNC(data: FullVaultSyncRequest): FullVaultSyncResult;
   GENERATE_PASSWORD(data: { settings: PasswordSettings }): { success: boolean; password?: string; error?: string };
   GENERATE_TOTP_CODE(data: { itemId: string }): { success: boolean; code?: string; error?: string };
   GET_CLIPBOARD_CLEAR_TIMEOUT(): number;
@@ -84,7 +87,7 @@ export interface IExtensionMessageProtocol {
   GET_REQUEST_DATA(data: any): PendingPasskeyRequest | null;
   GET_SAVE_PROMPT_STATE(): { success: boolean; state: SavePromptPersistedState | null };
   GET_SEARCH_ITEMS(data: { searchTerm: string }): ItemsResponse;
-  GET_SYNC_STATE(): { isDirty: boolean; mutationSequence: number; isSyncInProgress: boolean };
+  GET_SYNC_STATE(): VaultSyncState;
   GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
   GET_VAULT(): VaultResponse;
@@ -118,10 +121,7 @@ export interface IExtensionMessageProtocol {
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };
   STORE_SAVE_PROMPT_STATE(data: SavePromptPersistedState): { success: boolean };
   STORE_TWO_FACTOR_STATE(data: { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }): void;
-  STORE_VAULT_METADATA(data: { publicEmailDomainList?: string[]; privateEmailDomainList?: string[]; hiddenPrivateEmailDomainList?: string[] }): BoolResponse;
-  SYNC_VAULT(): BoolResponse;
   TOGGLE_CONTEXT_MENU(data: any): BoolResponse;
-  UPLOAD_VAULT(): VaultUploadResponse;
   VAULT_SYNC_PHASE(data: { phase: VaultSyncPhase }): void;
   VAULT_UNLOCKED(): void;
   WEBAUTHN_CREATE(data: any): any;

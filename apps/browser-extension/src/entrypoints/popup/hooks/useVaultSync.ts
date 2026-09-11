@@ -52,7 +52,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       /*
        * Delegate to the background script for the full sync orchestration.
        */
-      const result = await sendMessage('FULL_VAULT_SYNC');
+      const result = await sendMessage('FULL_VAULT_SYNC', {});
 
       // Handle logout requirement
       if (result.requiresLogout) {

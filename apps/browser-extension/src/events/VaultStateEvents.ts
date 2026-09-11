@@ -50,13 +50,39 @@ export const vaultStateEvents = {
    * Fires when ANOTHER window unlocks the vault (or completes login). The
    * active window's own write is filtered via `lastOwnEncryptionKey`, which
    * is set synchronously before the write through `markOwnEncryptionKey`.
+   *
+   * Unlocked means a foreign key AND a stored vault: a login stores its key
+   * before the vault pull lands, so the key alone is not yet a vault to open.
    */
   onVaultUnlocked(listener: Listener): Unsubscribe {
-    return storage.watch<string | null>(StorageKeys.ENCRYPTION_KEY, (newValue) => {
-      if (newValue && newValue !== lastOwnEncryptionKey) {
+    /**
+     * Fire when both halves are present in storage.
+     */
+    const fireIfUnlocked = async (): Promise<void> => {
+      const [key, vault] = await Promise.all([
+        storage.getItem<string | null>(StorageKeys.ENCRYPTION_KEY),
+        storage.getItem<string | null>(StorageKeys.ENCRYPTED_VAULT),
+      ]);
+      if (key && vault && key !== lastOwnEncryptionKey) {
         listener();
       }
+    };
+
+    const unwatchKey = storage.watch<string | null>(StorageKeys.ENCRYPTION_KEY, (newValue) => {
+      if (newValue && newValue !== lastOwnEncryptionKey) {
+        void fireIfUnlocked();
+      }
     });
+    const unwatchVault = storage.watch<string | null>(StorageKeys.ENCRYPTED_VAULT, (newValue) => {
+      if (newValue) {
+        void fireIfUnlocked();
+      }
+    });
+
+    return (): void => {
+      unwatchKey();
+      unwatchVault();
+    };
   },
 
   /** Fires when the user is logged out in any window. */

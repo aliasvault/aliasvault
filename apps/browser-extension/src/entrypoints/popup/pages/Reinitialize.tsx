@@ -116,7 +116,7 @@ const Reinitialize: React.FC = () => {
   /**
    * Run sync in background. If server has newer vault, useVaultSync will:
    * 1. Download and merge (if needed)
-   * 2. Call dbContext.loadDatabase() which updates sqliteClient
+   * 2. Call dbContext.loadStoredDatabase() which updates sqliteClient
    * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
    *
    * Note: onSuccess triggers refreshSyncState to ensure any UI components
