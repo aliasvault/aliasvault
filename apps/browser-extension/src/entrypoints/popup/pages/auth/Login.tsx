@@ -5,7 +5,6 @@ import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerU
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
-import { decryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,9 +29,8 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
-import { vaultSyncService } from '@/platform/ClientServices';
 
-import type { VaultResponse, LoginResponse } from '@aliasvault/models/webapi';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
 
@@ -71,20 +69,48 @@ const Login: React.FC = () => {
   const srpUtil = new SrpUtility(webApi);
 
   /**
-   * Persist and load the vault the pull just produced. A login always adopts the server's vault as-is: logging out
-   * clears the local one either way, so there is never a second candidate to choose between here.
+   * Pull the vault from the server.
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<void> => {
-    await sendMessage('STORE_ENCRYPTED_VAULT', { vaultBlob: vaultResponse.vault.blob });
+  const pullAndLoadVault = async (): Promise<void> => {
+    const result = await sendMessage('FULL_VAULT_SYNC', { forcePull: true, reportErrorToPopup: false });
+    if (result.errorKey === 'clientVersionNotSupported') {
+      throw new ClientUpgradeRequiredError();
+    }
+    if (result.errorKey === 'serverVersionNotSupported') {
+      throw new ServerUpdateRequiredError();
+    }
+    if (!result.success) {
+      throw new VaultProcessingError('vault-pull', new Error(result.errorKey ? t('common.errors.' + result.errorKey) : result.error ?? t('common.errors.unknownError')));
+    }
 
-    await sendMessage('STORE_VAULT_METADATA', {
-      publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-      hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-    });
+    await dbContext.loadStoredDatabase();
+  };
 
-    // Decrypt and load the vault into memory
-    await dbContext.loadDatabase(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
+  /**
+   * Show login attempt failure.
+   * @param context - what failed, for the console
+   * @param err - the error
+   */
+  const showLoginError = (context: string, err: unknown): void => {
+    console.error(`${context}:`, err);
+    if (err instanceof ClientUpgradeRequiredError) {
+      // Server refused this client version (HTTP 426).
+      setError(t('common.errors.clientVersionNotSupported'));
+    } else if (err instanceof ServerUpdateRequiredError) {
+      // Server does not support the v2 API, throw unsupported error.
+      setError(t('common.errors.serverVersionNotSupported'));
+    } else if (err instanceof VaultProcessingError) {
+      // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
+      setVaultError(err);
+    } else if (err instanceof ApiAuthError) {
+      // Show API authentication errors as-is.
+      setError(t('common.apiErrors.' + err.message));
+    } else if (hasErrorCode(err)) {
+      // Error contains an error code (E-XXX), show the formatted message.
+      setError(getErrorMessage(err, t('common.errors.serverError')));
+    } else {
+      setError(t('common.errors.serverError'));
+    }
   };
 
   /**
@@ -112,12 +138,9 @@ const Login: React.FC = () => {
       encryptionSettings: loginResponse.encryptionSettings
     });
 
-    // Fetch the latest vault.
-    const vaultResponseJson = await vaultSyncService.pull(encryptionKey);
-
-    // Persist and load the vault.
-    await persistAndLoadVault(vaultResponseJson, encryptionKey);
+    // Store the session key, then pull and load the vault.
     await dbContext.storeEncryptionKey(encryptionKey);
+    await pullAndLoadVault();
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
@@ -286,25 +309,7 @@ const Login: React.FC = () => {
         loginResponse
       );
     } catch (err) {
-      console.error('Login error:', err);
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this client version (HTTP 426).
-        setError(t('common.errors.clientVersionNotSupported'));
-      } else if (err instanceof ServerUpdateRequiredError) {
-        // Server does not support the v2 API, throw unsupported error.
-        setError(t('common.errors.serverVersionNotSupported'));
-      } else if (err instanceof VaultProcessingError) {
-        // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
-        setVaultError(err);
-      } else if (err instanceof ApiAuthError) {
-        // Show API authentication errors as-is.
-        setError(t('common.apiErrors.' + err.message));
-      } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message.
-        setError(getErrorMessage(err, t('common.errors.serverError')));
-      } else {
-        setError(t('common.errors.serverError'));
-      }
+      showLoginError('Login error', err);
       hideLoading();
     }
   };
@@ -363,25 +368,7 @@ const Login: React.FC = () => {
       setPasswordHashBase64(null);
       setLoginResponse(null);
     } catch (err) {
-      // Show API authentication errors as-is.
-      console.error('2FA error:', err);
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this client version (HTTP 426).
-        setError(t('common.errors.clientVersionNotSupported'));
-      } else if (err instanceof ServerUpdateRequiredError) {
-        // Server does not support the v2 API, throw unsupported error.
-        setError(t('common.errors.serverVersionNotSupported'));
-      } else if (err instanceof VaultProcessingError) {
-        // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
-        setVaultError(err);
-      } else if (err instanceof ApiAuthError) {
-        setError(t('common.apiErrors.' + err.message));
-      } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message.
-        setError(getErrorMessage(err, t('common.errors.serverError')));
-      } else {
-        setError(t('common.errors.serverError'));
-      }
+      showLoginError('2FA error', err);
       hideLoading();
     }
   };
@@ -414,11 +401,8 @@ const Login: React.FC = () => {
         encryptionSettings: result.encryptionSettings,
       });
 
-      // Fetch the latest vault.
-      const vaultResponse = await vaultSyncService.pull(mobileKey);
-
-      // Persist and load the vault
-      await persistAndLoadVault(vaultResponse, mobileKey);
+      // Pull and load the vault.
+      await pullAndLoadVault();
 
       /*
        * Navigate to reinitialize page which will:

@@ -70,10 +70,6 @@ type DbContextType = {
    */
   shouldSuppressEmailErrors: () => boolean;
   /**
-   * Load a decrypted vault into memory (SQLite client).
-   */
-  loadDatabase: (sqliteBytes: Uint8Array) => Promise<SqliteClient>;
-  /**
    * Load the stored (encrypted) vault from background storage into memory.
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
    */
@@ -228,20 +224,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       setSqliteClient(null);
       setDbAvailable(false);
     });
-  }, []);
-
-  /**
-   * Load a decrypted vault into memory (SQLite client).
-   */
-  const loadDatabase = useCallback(async (sqliteBytes: Uint8Array) => {
-    const client = new SqliteClient();
-    await client.initializeFromBytes(sqliteBytes);
-
-    setSqliteClient(client);
-    setDbInitialized(true);
-    setDbAvailable(true);
-
-    return client;
   }, []);
 
   /**
@@ -414,7 +396,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setIsSyncing,
     setIsUploading,
     shouldSuppressEmailErrors,
-    loadDatabase,
     loadStoredDatabase,
     storeEncryptionKey,
     storeEncryptionKeyDerivationParams,
@@ -425,7 +406,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

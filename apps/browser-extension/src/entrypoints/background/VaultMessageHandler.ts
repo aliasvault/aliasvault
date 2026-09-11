@@ -1,37 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
-import { NetworkError } from '@aliasvault/client/api/errors/NetworkError';
-import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
-import { RequestTimeoutError } from '@aliasvault/client/api/errors/RequestTimeoutError';
-import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
+import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
-import { MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
-import { TRASH_RETENTION_DAYS } from '@aliasvault/client/constants/Vault';
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword, vaultCodecExtractBuckets, vaultCodecBucketLayout, vaultCodecOverflowTable } from '@aliasvault/client/rust/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@aliasvault/client/rust/RustCore';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
-import { requiresLegacyAccountKeyMigration } from '@aliasvault/client/sync/LegacyStorageModelMigration';
-import { bucketsRequiringPull, getBucketRevisions, getManifestRevisions, manifestsRequiringPull, recordManifestRevisions, toBucketRevisionMap, toManifestRevisionMap } from '@aliasvault/client/sync/ManifestRevisions';
-import { PendingActionProcessor } from '@aliasvault/client/sync/PendingActionProcessor';
-import { VaultCodec } from '@aliasvault/client/sync/VaultCodec';
+import { recordManifestRevisions } from '@aliasvault/client/sync/ManifestRevisions';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
-import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, isManifestScope } from '@aliasvault/client/sync/VaultMutationScope';
+import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
+import { runFullVaultSync, runVaultManifestMigration, runVaultMigrationStatus, type IVaultSyncEngineHost, type VaultSyncEngineResult, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
-import { type PullAndMergeResult, invalidateCanonicalizeCache, primeCanonicalizeCache } from '@aliasvault/client/sync/VaultSyncService';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
-import { VaultKeyAlgorithm, type VaultResponse, type StatusResponseV2 } from '@aliasvault/models/webapi';
+import { VaultKeyAlgorithm } from '@aliasvault/models/webapi';
 import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
@@ -46,20 +36,23 @@ import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetecti
 import { getStorageItem } from '@/utils/StorageUtility';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
+import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
+import type { FullVaultSyncResult } from '@/utils/types/messaging/FullVaultSyncResult';
 import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import type { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
+import type { VaultManifestMigrationResult } from '@/utils/types/messaging/VaultManifestMigrationResult';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
-import type { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
+import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
+import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
 import { t } from '@/i18n/StandaloneI18n';
-import { vaultMergeService, vaultSyncService } from '@/platform/ClientServices';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { DraftItem } from '@aliasvault/client/database/ItemRef';
-import type { MergeResult } from '@aliasvault/client/sync/VaultMergeService';
+import type { ISqliteDatabase, ISqliteStatement, SqliteValue } from '@aliasvault/client/platform';
 import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
@@ -77,14 +70,76 @@ let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
 
 /**
+ * Define Rust sync engine host interface to bridge the engine to the extension.
+ */
+const syncEngineHost: IVaultSyncEngineHost = {
+  /**
+   * The open vault. A store clears the cache, so the next call re-opens the blob just stored.
+   */
+  localDatabase: async (): Promise<ISqliteDatabase> => {
+    const sqliteClient = await createVaultSqliteClient();
+    const db = sqliteClient.getDb();
+    if (!db) {
+      throw new Error('Vault database not initialized');
+    }
+    return {
+      /** Run a statement. */
+      run: (sql: string, params?: SqliteValue[]): number => db.run(sql, params),
+      /** Run a query. */
+      query: <T,>(sql: string, params?: SqliteValue[]): T[] => db.query<T>(sql, params),
+      /** Run raw SQL. */
+      exec: (sql: string): void => db.exec(sql),
+      /** Compile a statement. */
+      prepare: (sql: string): ISqliteStatement => db.prepare(sql),
+      /** Export through the client so it can compact the file first. */
+      export: (): Uint8Array => sqliteClient.exportToBytes(),
+      /** The cached client owns the database's lifetime. */
+      close: (): void => {},
+    };
+  },
+  /**
+   * The stored vault blob.
+   */
+  loadVault: (): Promise<string | null> => handleGetEncryptedVault(),
+  /**
+   * Persist a vault blob the engine produced (pulled, merged, reconciled, migrated or re-keyed).
+   */
+  storeVault: (request: VaultSyncStoreRequest): Promise<VaultSyncStoreOutcome> =>
+    handleStoreEncryptedVault({ vaultBlob: request.encryptedBlob, markDirty: request.markDirty, expectedMutationSeq: request.expectedMutationSeq }),
+  /**
+   * Clear the dirty flag unless a mutation raced the sync.
+   */
+  markClean: async (mutationSeqAtStart: number): Promise<boolean> => (await handleMarkVaultClean({ mutationSeqAtStart })).cleared,
+  /**
+   * Drop an in-memory vault holding changes no store persisted; the next reader reopens the stored blob.
+   */
+  discardLocalDatabase: (): void => {
+    cachedSqliteClient = null;
+    cachedVaultBlob = null;
+  },
+  /**
+   * Show the popup what the sync is doing.
+   */
+  onPhase: (phase: EngineSyncPhase): void => {
+    if (phase === 'pull') {
+      broadcastSyncPhase('pull');
+      return;
+    }
+    void getDirtyScopes().then(scopes => {
+      if (hasUserVisibleScope(scopes)) {
+        broadcastSyncPhase('push');
+      }
+    });
+  },
+};
+
+/**
  * Cleanup the cached decrypted vault database and drop the cache.
  */
 function cleanupCachedSqliteClient(): void {
   cachedSqliteClient?.close();
   cachedSqliteClient = null;
   cachedVaultBlob = null;
-  // The pre-push canonicalize result holds plaintext rows, plaintext blob bytes and unwrapped shared-manifest VEKs, so it dies with the vault it came from.
-  invalidateCanonicalizeCache();
 }
 
 /**
@@ -97,48 +152,11 @@ function clearInMemoryVaultState(): void {
 }
 
 /**
- * Whether the client has to pull and re-materialize, i.e. whether any manifest, or any data bucket has been updated on the server.
- * @param statusResponse - the status response carrying the server's manifest and bucket revisions
- */
-async function serverStateNeedsPull(statusResponse: StatusResponseV2): Promise<boolean> {
-  const serverManifestRevisions = toManifestRevisionMap(statusResponse.manifestRevisions);
-  const localManifestRevisions = await getManifestRevisions();
-  const manifestsToPull = manifestsRequiringPull(serverManifestRevisions, localManifestRevisions);
-
-  const serverBucketRevisions = toBucketRevisionMap(statusResponse.bucketRevisions);
-  const localBucketRevisions = await getBucketRevisions();
-  const bucketsToPull = bucketsRequiringPull(serverBucketRevisions, localBucketRevisions);
-
-  if (manifestsToPull.length === 0 && bucketsToPull.length === 0) {
-    devLog(`[VaultSync] No pull needed: ${Object.keys(serverManifestRevisions).length} manifest(s) and ${Object.keys(serverBucketRevisions).length} data bucket(s) all match local revisions.`);
-    return false;
-  }
-
-  /**
-   * Describe one manifest or bucket that needs a pull, with its local and server revision.
-   */
-  const describe = (server: Record<string, number>, local: Record<string, number>) => (key: string): string => `${key} (local ${local[key] ?? 'untracked'}, server ${server[key] ?? 'unlisted'})`;
-  if (manifestsToPull.length > 0) {
-    devLog(`[VaultSync] Pull needed for ${manifestsToPull.length} manifest(s): ${manifestsToPull.map(describe(serverManifestRevisions, localManifestRevisions)).join(', ')}.`);
-  }
-  if (bucketsToPull.length > 0) {
-    devLog(`[VaultSync] Pull needed for ${bucketsToPull.length} data bucket(s): ${bucketsToPull.map(describe(serverBucketRevisions, localBucketRevisions)).join(', ')}.`);
-  }
-  return true;
-}
-
-/**
  * Global sync queue state.
  * Prevents multiple simultaneous sync operations and ensures pending changes are synced.
  */
 let isSyncInProgress = false;
 let hasPendingSync = false;
-
-/** How many times one chain of syncs may restart itself over a push the server called outdated. */
-const MAX_OUTDATED_RESYNCS = 3;
-
-/** How many times the running chain of syncs has already restarted over an outdated push. */
-let outdatedResyncCount = 0;
 
 /**
  * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
@@ -178,38 +196,6 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
 }
 
 /**
- * Store vault metadata (email domains) in browser storage.
- * This is used during login/sync when receiving vault data from the server.
- */
-export async function handleStoreVaultMetadata(
-  message: {
-    publicEmailDomainList?: string[];
-    privateEmailDomainList?: string[];
-    hiddenPrivateEmailDomainList?: string[];
-  },
-) : Promise<messageBoolResponse> {
-  try {
-    if (message.publicEmailDomainList) {
-      await storage.setItem(StorageKeys.PUBLIC_EMAIL_DOMAINS, message.publicEmailDomainList);
-    }
-
-    if (message.privateEmailDomainList) {
-      await storage.setItem(StorageKeys.PRIVATE_EMAIL_DOMAINS, message.privateEmailDomainList);
-    }
-
-    if (message.hiddenPrivateEmailDomainList) {
-      await storage.setItem(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, message.hiddenPrivateEmailDomainList);
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to store vault metadata:', error);
-    // E-602: Storage write failed during metadata store
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
-  }
-}
-
-/**
  * Store the encryption key (derived key) in browser storage.
  */
 export async function handleStoreEncryptionKey(
@@ -240,123 +226,6 @@ export async function handleStoreEncryptionKeyDerivationParams(
     // E-602: Storage write failed during derivation params store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
-}
-
-/**
- * Fetch the latest vault from the server as a VaultResponse, via the v2-only {@link VaultSyncService}.
- *
- * GET /v2/Vault returns either the manifest model (materialized locally into a SQLite blob) or, for a
- * not-yet-migrated user, the legacy SQLite blob as-is, so a migrated user never hits the legacy API's 426
- * guard from the sync paths. There is no legacy-API fallback: a server without the v2 API surfaces E-903
- * (update your server).
- */
-async function fetchLatestVaultFromServer(): Promise<VaultResponse> {
-  const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptionKey) {
-    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
-  }
-
-  try {
-    return await vaultSyncService.pull(encryptionKey);
-  } catch (error) {
-    if (error instanceof ServerUpdateRequiredError) {
-      throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
-    }
-    throw error;
-  }
-}
-
-/**
- * Outcome of a push attempt: 0 = ok, 2 = the server had newer state and the caller must re-sync (pull/merge/retry).
- * Revision bookkeeping happens inside VaultSyncService, which records the new revision of every manifest a
- * successful write actually carried; no revision travels back through this result.
- */
-type VaultPushOutcome = { status: number };
-
-/**
- * Push the current SQLite vault to the server.
- *
- * @param sqliteClient - the in-memory SQLite client to upload
- * @param options - forceFullWrite bypasses the content-fingerprint gating and rewrites every manifest and bucket;
- *   createVaultKey mints the VEK as part of this push (KEK/VEK migration)
- */
-async function pushVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }): Promise<VaultPushOutcome> {
-  const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptionKey) {
-    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
-  }
-
-  const username = (await storage.getItem(StorageKeys.USERNAME)) as string;
-
-  const result = await vaultSyncService.push(sqliteClient, encryptionKey, username, options);
-
-  if (result.status === 'ok') {
-    if (result.newEncryptionKey) {
-      /*
-       * Migration succeeded: from now on the session key is the VEK, not the password-derived key.
-       * TODO: this can be removed once all users have migrated to the manifest-v1 storage model.
-       */
-      await resealSharedManifestRecords(result.newEncryptionKey);
-      await handleStoreEncryptionKey(result.newEncryptionKey);
-    }
-
-    return { status: 0 };
-  }
-
-  if (result.status === 'outdated') {
-    return { status: 2 };
-  }
-
-  if (result.status === 'rejected') {
-    // Structural validation error
-    const reason = (result.reasons ?? ['Integrity check failed']).join('; ');
-    devError('[V2Sync] Refusing to upload corrupt vault:', reason);
-    throw new Error(formatErrorWithCode(`Vault integrity check failed: ${reason}`, AppErrorCode.UPLOAD_FAILED));
-  }
-
-  /*
-   * missing-blobs: push already re-uploaded the blob bytes the server asked for and retried once; landing
-   * here means the server still reports gaps, a genuine server-side problem, not a transient race.
-   */
-  throw new Error(formatErrorWithCode('Server reported missing blobs; please retry', AppErrorCode.UPLOAD_FAILED));
-}
-
-/**
- * Sync the vault with the server to check if a newer vault is available. If so, the vault will be updated.
- */
-export async function handleSyncVault() : Promise<messageBoolResponse> {
-  if (await syncIsOnHold()) {
-    return { success: false };
-  }
-
-  const webApi = new WebApiService();
-  const statusResponse = await webApi.getStatus();
-  const statusError = webApi.validateStatusResponse(statusResponse);
-  if (statusError !== null) {
-    return { success: false, error: await t('common.errors.' + statusError) };
-  }
-
-  if (await serverStateNeedsPull(statusResponse)) {
-    /*
-     * Retrieve the latest vault from the server.
-     */
-    const vaultResponse = await fetchLatestVaultFromServer();
-
-    // Store in local: storage for persistence (fresh from server, not dirty). The pull recorded the per-manifest revisions itself.
-    await storage.setItems([
-      { key: StorageKeys.ENCRYPTED_VAULT, value: vaultResponse.vault.blob },
-      { key: StorageKeys.PUBLIC_EMAIL_DOMAINS, value: vaultResponse.vault.publicEmailDomainList },
-      { key: StorageKeys.PRIVATE_EMAIL_DOMAINS, value: vaultResponse.vault.privateEmailDomainList },
-      { key: StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, value: vaultResponse.vault.hiddenPrivateEmailDomainList },
-      { key: StorageKeys.IS_DIRTY, value: false }
-    ]);
-
-    // Clear cached client since we received a new vault blob from server
-    cachedSqliteClient = null;
-    cachedVaultBlob = null;
-  }
-
-  return { success: true };
 }
 
 /**
@@ -747,165 +616,6 @@ export async function handleGetEncryptionKeyDerivationParams(
 }
 
 /**
- * Push only the data buckets named by the dirty scopes, no manifest upload. Used when every pending local
- * mutation since the last sync is bucket-scoped (e.g. a settings toggle): the server's vault content manifest
- * is still current, so re-uploading it would be pure waste.
- *
- * Unknown categories fall back to a full vault upload, which always covers everything.
- * @param sqliteClient - the in-memory SQLite client to read bucket data from
- * @param scopes - the pending dirty scopes (bucket category names, deduplicated here)
- */
-async function uploadDirtyBucketsOnly(sqliteClient: SqliteClient, scopes: VaultMutationScope[]): Promise<VaultPushOutcome> {
-  const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptionKey) {
-    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
-  }
-
-  /*
-   * Which tables make up each bucket category is owned by the Rust layer, and so is splitting their rows
-   * across the manifests that own them: this loop reads a category whole and hands it over per category.
-   */
-  const layout = await vaultCodecBucketLayout();
-  const username = (await storage.getItem(StorageKeys.USERNAME)) as string;
-
-  if (!sqliteClient.getActiveManifestId() && !sqliteClient.getPersonalManifestId()) {
-    devWarn('[V2Push] No manifest to address the bucket write to, falling back to a full vault upload.');
-    return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
-  }
-
-  // Same rule as the full push: a vault holding manifests this session cannot write is re-synced, not written to.
-  if (await vaultHoldsUnwritableManifests()) {
-    return { status: 2 };
-  }
-
-  /*
-   * Every manifest this vault can write. Each gets a bucket back, empty where it holds no rows of the
-   * category, so deleting a manifest's last row still reaches the server.
-   */
-  const writeKeys = await vaultSyncService.resolveBucketWriteKeys(sqliteClient, encryptionKey);
-  const overflowTable = await vaultCodecOverflowTable();
-
-  for (const category of new Set(scopes)) {
-    const spec = layout.find(entry => entry.category === category);
-    if (!spec) {
-      devWarn(`[V2Push] Unknown bucket scope "${category}", falling back to full vault upload.`);
-      return (await uploadNewVaultToServer(sqliteClient, { forceFullWrite: false, createVaultKey: false })).response;
-    }
-
-    const tables = VaultCodec.readNamedTables(sqliteClient, [...spec.tables, overflowTable]);
-    const buckets = await vaultCodecExtractBuckets(category, [...writeKeys.keys()], tables);
-
-    for (const bucket of buckets) {
-      const result = await vaultSyncService.pushDataBucketOnly(bucket, writeKeys.get(bucket.manifestId)!, username);
-      if (result.status !== 'ok') {
-        // Conflict persisted even after the rebase-retry, let the caller run a full re-sync (status 2).
-        return { status: 2 };
-      }
-      devLog(`[V2Push] Bucket-only push for "${category}" of manifest ${bucket.manifestId} done (bucket revision ${result.revision}); manifest untouched.`);
-    }
-  }
-
-  // Manifests untouched, so every manifest revision baseline stays where it was.
-  return { status: 0 };
-}
-
-/**
- * Upload the currently stored vault to the server.
- * Returns the upload status and captures the mutation sequence at start for race detection.
- *
- * Bucket-aware: when every pending mutation is scoped to a data bucket (e.g. Settings), only those buckets
- * are pushed. A dirty 'manifest' scope (or a dirty state with no recorded scopes) triggers the full upload path,
- * whose content-fingerprint gating then narrows the write down to the manifests/buckets that actually changed.
- *
- * @param options - set forceFullWrite to rewrite every manifest and bucket regardless of change detection, for when
- *   the fingerprints cannot be trusted to describe the server's state (the legacy storage-format guard is the only
- *   caller); set createVaultKey to mint the VEK as part of this push (the explicit storage migration passes this,
- *   and it is the only caller that should)
- */
-export async function handleUploadVault(
-  options?: { forceFullWrite?: boolean; createVaultKey?: boolean }
-) : Promise<messageVaultUploadResponse> {
-  try {
-    // Capture mutation sequence at start of upload for race detection
-    const mutationSeqAtStart = await storage.getItem(StorageKeys.MUTATION_SEQUENCE) as number | null ?? 0;
-
-    // Create sqlite client from the already-stored vault blob.
-    const sqliteClient = await createVaultSqliteClient();
-
-    /*
-     * Check if vault key is available on server, if so, adopt it.
-     */
-    if (!await adoptRemoteVaultKeyIfNeeded()) {
-      throw new Error(formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED));
-    }
-    
-    // Handle creating a vault key if it is not available. TODO: delete once all users have migrated to the manifest-v1 storage model.
-    const createVaultKey = options?.createVaultKey === true || !await VaultKeyService.hasLocalVaultKey();
-
-    // Upload to the server: bucket-only when possible, full vault otherwise. A forced full write skips the bucket-only shortcut.
-    const forceFullWrite = options?.forceFullWrite === true;
-    const dirtyScopes = await getDirtyScopes();
-    const bucketOnly = !forceFullWrite && !createVaultKey && dirtyScopes.length > 0 && !dirtyScopes.some(isManifestScope);
-    if (bucketOnly) {
-      devLog(`[V2Push] All pending mutations are bucket-scoped (${dirtyScopes.join(', ')}), skipping manifest upload.`);
-    }
-    let response: VaultPushOutcome;
-    let vaultPruned = false;
-    if (bucketOnly) {
-      // Bucket-only pushes never prune (settings buckets carry no trash items).
-      response = await uploadDirtyBucketsOnly(sqliteClient, dirtyScopes);
-    } else {
-      ({ response, vaultPruned } = await uploadNewVaultToServer(sqliteClient, { forceFullWrite, createVaultKey }));
-    }
-
-    return {
-      success: true,
-      status: response.status,
-      mutationSeqAtStart,
-      vaultPruned
-    };
-  } catch (error) {
-    console.error('Failed to upload vault:', error);
-
-    /*
-     * E-805: Vault transfer timed out.
-     */
-    if (error instanceof RequestTimeoutError) {
-      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) };
-    }
-
-    /*
-     * Let network and auth errors propagate.
-     */
-    if (error instanceof NetworkError || error instanceof ApiAuthError) {
-      throw error;
-    }
-
-    const errorMessage = error instanceof Error ? error.message : '';
-
-    // Check if error is UPLOAD_OUTDATED (E-802) - server has newer vault
-    if (errorMessage.includes('E-802')) {
-      // Return status 2 (Outdated) so caller can handle merge
-      return { success: false, status: 2, error: errorMessage };
-    }
-
-    /*
-     * Pass through any error already tagged with an E-XXX code (e.g. E-804 for HTTP 413).
-     * Stripping the targeted code and replacing it with E-801 would lose the actionable message.
-     */
-    if (/E-\d{3}/.test(errorMessage)) {
-      return { success: false, error: errorMessage };
-    }
-
-    /*
-     * E-801: Upload failed. Include the HTTP status and server error code (if any).
-     */
-    const detail = error instanceof ApiRequestError ? ` [${error.message}]` : '';
-    return { success: false, error: formatErrorWithCode(`${await t('common.errors.unknownError')}${detail}`, AppErrorCode.UPLOAD_FAILED) };
-  }
-}
-
-/**
  * Handle persisting form values to storage.
  * Data is encrypted using the derived key for additional security.
  */
@@ -954,67 +664,6 @@ export async function handleGetPersistedFormValues(): Promise<any | null> {
  */
 export async function handleClearPersistedFormValues(): Promise<void> {
   await storage.removeItem(StorageKeys.PERSISTED_FORM_VALUES);
-}
-
-/**
- * Upload a new version of the vault to the server using the provided sqlite client.
- * Prunes expired trash items before uploading.
- * @param sqliteClient - the in-memory SQLite client to upload
- * @param options - forceFullWrite: whether to force a full write of the vault, createVaultKey: whether to create a vault key
- */
-async function uploadNewVaultToServer(sqliteClient: SqliteClient, options: { forceFullWrite: boolean; createVaultKey: boolean }) : Promise<{ response: VaultPushOutcome; vaultPruned: boolean }> {
-  devLog('[VaultSync] Upload started');
-  let vaultPruned = false;
-  const encryptionKey = await handleGetEncryptionKey();
-
-  if (!encryptionKey) {
-    // E-202: Vault is locked
-    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
-  }
-
-  /**
-   * Prune expired items from trash before uploading.
-   * Items that have been in trash (DeletedAt set) longer than TRASH_RETENTION_DAYS
-   * are permanently deleted (IsDeleted = true) as part of the sync process.
-   * Runs in place on the live client; in the common case (nothing expired) it only costs the table reads.
-   */
-  try {
-    const prunedStatementCount = await vaultMergeService.pruneInPlace(sqliteClient, TRASH_RETENTION_DAYS);
-    if (prunedStatementCount > 0) {
-      devLog(`[VaultSync] Pruned expired items from trash (${prunedStatementCount} statements)`);
-      vaultPruned = true;
-      // The prune mutated the vault without bumping the mutation sequence, so a cached pre-push canonicalize result is stale.
-      invalidateCanonicalizeCache();
-    }
-  } catch (pruneError) {
-    console.warn('[VaultSync] Failed to prune vault, continuing with upload:', pruneError);
-  }
-
-  let pushResponse: VaultPushOutcome;
-  try {
-    pushResponse = await pushVaultToServer(sqliteClient, options);
-  } catch (err) {
-    if (err instanceof ServerUpdateRequiredError) {
-      throw new Error(formatErrorWithCode(await t('common.errors.serverVersionNotSupported'), AppErrorCode.SERVER_UPDATE_REQUIRED));
-    }
-    if (err instanceof PayloadTooLargeError) {
-      throw new Error(formatErrorWithCode(await t('common.errors.vaultTooLarge'), AppErrorCode.UPLOAD_TOO_LARGE));
-    }
-    throw err;
-  }
-
-  /*
-   * Re-encrypt and persist locally only when the stored blob went stale or encryption key changed.
-   */
-  const currentKey = await handleGetEncryptionKey() ?? encryptionKey;
-  if (vaultPruned || currentKey !== encryptionKey) {
-    const reEncrypted = await encryptVaultBlob(sqliteClient.exportToBytes(), currentKey);
-    await storage.setItem(StorageKeys.ENCRYPTED_VAULT, reEncrypted);
-    cachedSqliteClient = sqliteClient;
-    cachedVaultBlob = reEncrypted;
-  }
-
-  return { response: pushResponse, vaultPruned };
 }
 
 /**
@@ -1144,47 +793,12 @@ export async function handleStoreEncryptedVault(request: {
 }
 
 /**
- * Result of the manifest migration.
- */
-export type VaultManifestMigrationResult = {
-  success: boolean;
-  pushed: boolean;
-  error?: string;
-};
-
-/**
- * Classify the pending migration so the migration gate logic knows whether it may run on its own.
+ * Classify the pending migration status.
  */
 export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationStatus> {
   try {
-    const sqliteClient = await createVaultSqliteClient();
-
-    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
-      // The frozen sqlite-blob chain runs first, under its own /upgrade gate; nothing here applies yet.
-      return { kind: VaultMigrationKind.None, serverConfirmed: true };
-    }
-
-    // Ask the server whether it holds a key hierarchy for this account, and adopt it when it does.
-    let serverConfirmed = false;
-    try {
-      const probe = await VaultKeyService.fetchVaultKey();
-      serverConfirmed = probe.supported;
-      if (probe.vaultKey) {
-        await adoptRemoteVaultKeyIfNeeded();
-      }
-    } catch (probeError) {
-      devWarn('[ManifestMigration] Vault key probe failed, classifying from local state:', probeError);
-    }
-
-    if (await requiresLegacyAccountKeyMigration()) {
-      return { kind: VaultMigrationKind.StorageFormatUpgrade, serverConfirmed };
-    }
-
-    if (await sqliteClient.requiresSchemaMigration()) {
-      return { kind: VaultMigrationKind.SchemaRebuild, serverConfirmed: true };
-    }
-
-    return { kind: VaultMigrationKind.None, serverConfirmed: true };
+    const result = await runVaultMigrationStatus(syncEngineHost);
+    return { kind: result.kind as VaultMigrationKind, serverConfirmed: result.serverConfirmed };
   } catch (error) {
     devWarn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
     return { kind: VaultMigrationKind.StorageFormatUpgrade, serverConfirmed: false };
@@ -1192,7 +806,7 @@ export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationSta
 }
 
 /**
- * Upgrade local manifest-v1 storage model to the current schema (if needed).
+ * Upgrade local manifest-v1 storage model to the current schema (if needed) and push it.
  */
 export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
   try {
@@ -1203,53 +817,17 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
     }
 
     const sqliteClient = await createVaultSqliteClient();
-
     if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
       // The sqlite-blob upgrade chain has to bring the vault to 2.0.0 first; the codec cannot canonicalize what came before.
       return { success: false, pushed: false, error: await t('content.vaultUpgradeRequired') };
     }
 
-    // Check if vault key is available on server, if so, adopt it.
-    if (!await adoptRemoteVaultKeyIfNeeded()) {
-      return { success: false, pushed: false, error: formatErrorWithCode('Vault encryption key out of sync with the server; please log in again', AppErrorCode.VAULT_DECRYPT_FAILED) };
+    const result = await runVaultManifestMigration(syncEngineHost);
+    if (result.success) {
+      devLog(result.pushed ? '[ManifestMigration] Migration pushed to the server.' : '[ManifestMigration] Migration stored locally; the vault stays dirty for the next sync.');
     }
-
-    const needsSchemaMigration = await sqliteClient.requiresSchemaMigration();
-    const needsVaultKey = await requiresLegacyAccountKeyMigration();
-    if (!needsSchemaMigration && !needsVaultKey) {
-      devLog('[ManifestMigration] Vault is already on the current storage model, nothing to migrate.');
-      return { success: true, pushed: true };
-    }
-
-    // Step 1: local migration. Store it dirty so the vault is usable immediately, with or without a server.
-    if (needsSchemaMigration) {
-      const migratedBytes = await vaultSyncService.migrateVaultToCurrentSchema(sqliteClient);
-      const migratedEncrypted = await encryptVaultBlob(migratedBytes, encryptionKey);
-      await handleStoreEncryptedVault({ vaultBlob: migratedEncrypted, markDirty: true });
-
-      // Invalidate any local cached results that are now stale.
-      invalidateCanonicalizeCache();
-      devLog('[ManifestMigration] Local vault migrated and stored; pushing the migrated vault to the server...');
-    } else {
-      devLog('[ManifestMigration] Schema is current; pushing to mint the vault key.');
-    }
-
-    /*
-     * Step 2: push the migrated vault to the server.
-     */
-    try {
-      const uploadResponse = await handleUploadVault({ createVaultKey: needsVaultKey });
-      if (uploadResponse.success && uploadResponse.status === 0) {
-        await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-        devLog('[ManifestMigration] Migration pushed to the server.');
-        return { success: true, pushed: true };
-      }
-      devWarn('[ManifestMigration] Migration push did not succeed, vault stays dirty for the next sync:', uploadResponse.error);
-    } catch (pushError) {
-      devWarn('[ManifestMigration] Migration push failed, vault stays dirty for the next sync:', pushError);
-    }
-
-    return { success: true, pushed: false };
+    const error = result.errorKey ? await t('common.errors.' + logoutErrorKey(result.errorKey)) : await localizeSyncError(result.error, result.errorCode);
+    return { success: result.success, pushed: result.pushed, error };
   } catch (error) {
     devError('[ManifestMigration] Manifest migration failed:', error);
     return { success: false, pushed: false, error: error instanceof Error ? error.message : await t('common.errors.unknownError') };
@@ -1279,16 +857,6 @@ export async function handleMarkVaultClean(request: {
 }
 
 /**
- * Local sync bookkeeping: whether the vault holds changes that still have to be pushed, the mutation counter
- * they were recorded at, and whether a sync is running right now.
- */
-export type VaultSyncState = {
-  isDirty: boolean;
-  mutationSequence: number;
-  isSyncInProgress: boolean;
-};
-
-/**
  * Get the current sync state.
  */
 export async function handleGetSyncState(): Promise<VaultSyncState> {
@@ -1305,105 +873,6 @@ export async function handleGetSyncState(): Promise<VaultSyncState> {
 }
 
 /**
- * Re-seal the shared-manifest key records under a new session key.
- *
- * The records are stored encrypted with the session key, so a key swap (adopting another device's VEK, or minting
- * one in the migration push) leaves them unreadable and this session silently without any shared manifest, which
- * only a pull would repair. Must run while the old key is still the session key, since that is what reads them.
- * @param newEncryptionKey - the key that is about to become the session key
- */
-async function resealSharedManifestRecords(newEncryptionKey: string): Promise<void> {
-  const records = await SharingService.getSharedManifestRecords();
-  if (Object.keys(records).length === 0) {
-    return;
-  }
-
-  await SharingService.setSharedManifestRecords(records, newEncryptionKey);
-  devLog(`[Sharing] Re-sealed ${Object.keys(records).length} shared-manifest key record(s) under the new vault key.`);
-}
-
-/**
- * Adopt a server-side vault key this device does not know about yet.
- *
- * A missing local key-chain cache means one of two things: this user is genuinely still legacy (their next full
- * push performs the KEK/VEK migration), or another device migrated while this one held the old password-derived key.
- * Every path that adopts a VEK as the session key writes the encrypted-VEK cache first, so a session key that is
- * already the VEK without a cache is not a reachable state -- it can only come from torn storage, which a re-login fixes.
- *
- * TODO: this method can be removed once all users have migrated to the KEK/VEK model and we don't support legacy users anymore.
- *
- * @returns False only when this device is holding key material that matches neither the KEK nor the VEK, which
- *   requires a re-login; true in every other case, including offline (the next sync retries).
- */
-async function adoptRemoteVaultKeyIfNeeded(): Promise<boolean> {
-  if (await VaultKeyService.hasLocalVaultKey()) {
-    // Already on the KEK/VEK model: the session key is the VEK.
-    return true;
-  }
-
-  const sessionKey = await handleGetEncryptionKey();
-  if (!sessionKey) {
-    // Vault is locked; the next unlock/login resolves the key through the vault key endpoint.
-    return true;
-  }
-
-  let fetchResult;
-  try {
-    fetchResult = await VaultKeyService.fetchVaultKey();
-  } catch (error) {
-    // Server unreachable or the probe failed: state is unchanged and unknowable, so let the next sync retry.
-    devWarn('[VaultSync] Vault key probe failed, deferring vault key adoption:', error);
-    return true;
-  }
-
-  if (!fetchResult.vaultKey) {
-    // Genuinely legacy: the next full push creates the vault key and re-encrypts the vault under a fresh VEK.
-    return true;
-  }
-
-  const encryptedVek = fetchResult.vaultKey.encryptedVek;
-  if (!encryptedVek) {
-    devWarn('[VaultSync] Error: vault key chain has no VEK.');
-    return true;
-  }
-
-  const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-
-  try {
-    // Decrypt the encrypted Account Key and VEK.
-    const accountKey = await EncryptionUtility.decryptVaultEncryptionKey(fetchResult.vaultKey.encryptedAccountKey, sessionKey);
-    const vek = await EncryptionUtility.decryptVaultEncryptionKey(encryptedVek, accountKey);
-
-    // Re-encrypt the locally persisted vault with the VEK before swapping the session key.
-    if (encryptedVault) {
-      const decrypted = await decryptVaultBlob(encryptedVault, sessionKey);
-      await storage.setItem(StorageKeys.ENCRYPTED_VAULT, await encryptVaultBlob(decrypted, vek));
-    }
-
-    await resealSharedManifestRecords(vek);
-    await VaultKeyService.cacheVaultKeyBlobs(fetchResult.vaultKey);
-    await handleStoreEncryptionKey(vek);
-    cachedSqliteClient = null;
-    cachedVaultBlob = null;
-    devLog('[VaultSync] Adopted vault key created by another client; session key swapped to the VEK.');
-    return true;
-  } catch (error) {
-    /*
-     * Decryption failed, so this device holds key material that is not the KEK the server encrypted the VEK with.
-     * We trigger a re-login to fix the problem.
-     */
-    devError('[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login:', error);
-    return false;
-  }
-}
-
-/**
- * What a running sync is doing, broadcast to the popup so it can show the matching indicator.
- * 'pull' = downloading a newer server vault, 'push' = uploading local changes, 'idle' = nothing in flight.
- */
-export type VaultSyncPhase = 'pull' | 'push' | 'idle';
-
-/**
  * Tell any open popup what the current sync is doing. Fire-and-forget: with no popup open there is no
  * receiver and runtime messaging rejects, which is expected and ignored.
  * @param phase - the phase to broadcast
@@ -1411,20 +880,6 @@ export type VaultSyncPhase = 'pull' | 'push' | 'idle';
 function broadcastSyncPhase(phase: VaultSyncPhase): void {
   sendMessage('VAULT_SYNC_PHASE', { phase }).catch(() => {});
 }
-
-/**
- * Result of a full vault sync operation.
- */
-export type FullVaultSyncResult = {
-  success: boolean;
-  hasNewVault: boolean;
-  wasOffline: boolean;
-  sqliteBlobUpgradeRequired: boolean;
-  manifestMigrationRequired?: boolean;
-  error?: string;
-  errorKey?: string;
-  requiresLogout: boolean;
-};
 
 /**
  * Persists a sync error message to local storage so the popup can surface it
@@ -1453,9 +908,11 @@ async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void>
  * can show a targeted alert for failures even if it wasn't open at the time.
  * @param options - what the caller asks of the sync beyond what the revisions decide
  */
-export async function handleFullVaultSync(options?: FullVaultSyncOptions): Promise<FullVaultSyncResult> {
+export async function handleFullVaultSync(options?: FullVaultSyncRequest): Promise<FullVaultSyncResult> {
   const result = await handleFullVaultSyncInternal(options);
-  await persistSyncErrorState(result);
+  if (options?.reportErrorToPopup !== false) {
+    await persistSyncErrorState(result);
+  }
   return result;
 }
 
@@ -1468,11 +925,60 @@ function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVaultSync
 }
 
 /**
- * Internal implementation of the full vault sync. Wrapped by handleFullVaultSync
- * so the result can be persisted to local storage for the popup to surface.
+ * The message the popup shows for a sync failure: the translation of its error code, tagged with the code.
+ * @param error - the sync engine's diagnostic message
+ * @param errorCode - the client error code the sync engine attached
+ */
+async function localizeSyncError(error: string | undefined, errorCode: string | undefined): Promise<string | undefined> {
+  if (!error && !errorCode) {
+    return undefined;
+  }
+  devWarn(`[VaultSync] Engine failure (${errorCode ?? 'no code'}): ${error ?? 'no detail'}`);
+  const code = errorCode && isErrorCode(errorCode) ? errorCode : AppErrorCode.UNKNOWN_ERROR;
+  return formatErrorWithCode(await t(getErrorTranslationKey(code)), code);
+}
+
+/**
+ * The `common.errors` key that translates a sync logout reason.
+ */
+const LOGOUT_REASON_ERROR_KEYS: Record<string, string> = {
+  clientVersionNotSupported: 'clientVersionNotSupported',
+  serverVersionNotSupported: 'serverVersionNotSupported',
+  sessionExpired: 'sessionExpired',
+  passwordChanged: 'passwordChanged',
+  vaultVersionIncompatible: 'browserExtensionOutdated',
+};
+
+/**
+ * The `common.errors` key for an engine logout reason, `unknownError` for a reason this build does not know.
+ * @param reason - the engine's logout reason
+ */
+function logoutErrorKey(reason: string): string {
+  return LOGOUT_REASON_ERROR_KEYS[reason] ?? 'unknownError';
+}
+
+/**
+ * The full sync as the popup reads it.
+ * @param result - the engine's outcome
+ */
+async function toFullVaultSyncResult(result: VaultSyncEngineResult): Promise<FullVaultSyncResult> {
+  return {
+    success: result.success,
+    hasNewVault: result.hasNewVault,
+    wasOffline: result.wasOffline,
+    sqliteBlobUpgradeRequired: result.sqliteBlobUpgradeRequired,
+    manifestMigrationRequired: result.manifestMigrationRequired,
+    requiresLogout: result.requiresLogout,
+    errorKey: result.errorKey ? logoutErrorKey(result.errorKey) : undefined,
+    error: await localizeSyncError(result.error, result.errorCode),
+  };
+}
+
+/**
+ * Full vault sync which does both push and pull based on revision counters.
  * @param options - what the caller asks of the sync beyond what the revisions decide
  */
-async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Promise<FullVaultSyncResult> {
+async function handleFullVaultSyncInternal(options?: VaultSyncOptions): Promise<FullVaultSyncResult> {
   if (await syncIsOnHold()) {
     return syncResult({ success: false });
   }
@@ -1489,55 +995,23 @@ async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Prom
   isSyncInProgress = true;
   hasPendingSync = false;
 
-  devLog('[VaultSync] Sync started');
-
-  const webApi = new WebApiService();
-
   try {
-    const preflight = await runSyncPreflight(webApi, options);
-    if (!preflight.proceed) {
-      return preflight.result;
+    const [username, accessToken, encryptionKey] = await Promise.all([storage.getItem(StorageKeys.USERNAME), storage.getItem(StorageKeys.ACCESS_TOKEN), handleGetEncryptionKey()]);
+    if (username === null || accessToken === null) {
+      return syncResult({ success: false });
     }
-
-    const { statusResponse, syncState } = preflight;
-    let needsPull = preflight.needsPull;
-
-    await announceSyncPhase(needsPull, syncState.isDirty);
-
-    const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
-      return syncResult({ success: false, error: await t('common.errors.vaultIsLocked') });
+      // E-202: Vault is locked
+      return syncResult({ success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) });
     }
-
-    // Chcek for any client pending actions as directed by the server (e.g. shared group invitations, shared group memberships, etc.)
-    const grantSyncChangedVault = await applyServerDirectedChanges(webApi, statusResponse, syncState, encryptionKey, needsPull);
-
-    /*
-     * The rows just reconciled turned a clean vault dirty after the preflight had already decided, so the
-     * write-side check runs again here instead of letting this sync push into a refusal and re-sync afterwards.
-     */
-    if (!needsPull && syncState.isDirty && await vaultHoldsUnwritableManifests()) {
-      needsPull = true;
-      broadcastSyncPhase('pull');
-    }
-
-    if (needsPull) {
-      return await pullAndMaterializeServerVault(syncState, encryptionKey, grantSyncChangedVault);
-    }
-
-    if (syncState.isDirty) {
-      return await pushPendingLocalChanges(grantSyncChangedVault);
-    }
-
-    // No changes to apply, check for any pending migrations.
-    return await pendingMigrationResult() ?? syncResult();
+    return await toFullVaultSyncResult(await runFullVaultSync(syncEngineHost, options));
   } catch (err) {
-    return await mapSyncFailure(err);
+    console.error('Vault sync error:', err);
+    const message = err instanceof Error ? err.message : 'Unknown error during vault sync';
+    return syncResult({ success: false, error: /E-\d{3}/.test(message) ? message : formatErrorWithCode(message, AppErrorCode.UNKNOWN_ERROR) });
   } finally {
     // Reset sync in progress flag
     isSyncInProgress = false;
-
-    devLog('[VaultSync] Sync finished');
 
     // Clear the popup's sync indicator; a follow-up sync below re-announces its own phase.
     broadcastSyncPhase('idle');
@@ -1550,124 +1024,8 @@ async function handleFullVaultSyncInternal(options?: FullVaultSyncOptions): Prom
       handleFullVaultSync().catch(err => {
         console.error('[VaultSync] Follow-up sync failed:', err);
       });
-    } else {
-      // Nothing chained onto this sync, so the next outdated push starts counting from zero again.
-      outdatedResyncCount = 0;
     }
   }
-}
-
-/**
- * Re-sync after the server refused a push as outdated, at most {@link MAX_OUTDATED_RESYNCS} times per chain.
- *
- * The pull that follows is what normally makes the next push succeed. When it does not (the vault holds rows of a
- * manifest no pull can restore access to, say), the chain would otherwise re-pull and re-merge the whole vault
- * forever, so it is cut off and the failure is reported instead.
- * @param what - what could not be written, named for the log
- */
-async function resyncAfterOutdatedPush(what: string): Promise<FullVaultSyncResult> {
-  if (outdatedResyncCount >= MAX_OUTDATED_RESYNCS) {
-    devError(`[VaultSync] The server still refuses ${what} after ${MAX_OUTDATED_RESYNCS} re-syncs; giving up on this chain, the next sync starts over.`);
-    outdatedResyncCount = 0;
-    return syncResult({ success: false, error: await t('common.errors.syncConflictMaxRetries') });
-  }
-
-  outdatedResyncCount++;
-  return handleFullVaultSync();
-}
-
-/** What a caller may ask of a full sync beyond what the revisions decide. */
-type FullVaultSyncOptions = {
-  /** Pull even when the revisions say the vault is current, for state only a pull re-records (the shared-manifest key records). */
-  forcePull?: boolean;
-};
-
-/**
- * Outcome of the sync preflight: either a result the sync returns as-is, or the state the sync then runs on.
- */
-type SyncPreflightResult =
-  | { proceed: false; result: FullVaultSyncResult }
-  | { proceed: true; statusResponse: StatusResponseV2; syncState: VaultSyncState; needsPull: boolean };
-
-/**
- * Stop the sync before it touches the vault, reporting the given result.
- * @param overrides - the fields that differ from an uneventful, successful sync
- */
-function abortSync(overrides: Partial<FullVaultSyncResult>): SyncPreflightResult {
-  return { proceed: false, result: syncResult(overrides) };
-}
-
-/**
- * Sync preflight (sanity checks) to determine if the sync should proceed.
- *
- * @param webApi - the API service the status call runs on
- * @param options - what the caller asks of the sync beyond what the revisions decide
- * @returns Either the result the sync must return unchanged, or the status, sync state and pull decision.
- */
-async function runSyncPreflight(webApi: WebApiService, options?: FullVaultSyncOptions): Promise<SyncPreflightResult> {
-  // Check if user is logged in
-  const authStatus = await handleCheckAuthStatus();
-  if (!authStatus.isLoggedIn) {
-    return abortSync({ success: false });
-  }
-
-  if (authStatus.isVaultLocked) {
-    // E-202: Vault is locked
-    return abortSync({ success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) });
-  }
-
-  // Check app status and vault revision
-  const statusResponse = await webApi.getStatus();
-
-  // Get current sync state
-  const syncState = await handleGetSyncState();
-
-  let needsPull = options?.forcePull === true || await serverStateNeedsPull(statusResponse);
-
-  devLog(`[VaultSync] Status received (needsPull ${needsPull}, isDirty ${syncState.isDirty})`);
-
-  // Check if server is actually available (0.0.0 indicates connection error)
-  if (statusResponse.serverVersion === '0.0.0') {
-    return { proceed: false, result: await enterOfflineMode() };
-  }
-
-  // Validate status response
-  const statusError = webApi.validateStatusResponse(statusResponse);
-  if (statusError) {
-    const requiresLogout = statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported';
-    return abortSync({ success: false, requiresLogout, errorKey: statusError });
-  }
-
-  // Verify that the server's salt still matches the one this device derived its keys from, if not, it indicates password was changed remotely which warrants a logout.
-  await MasterPasswordService.assertSaltUnchanged(statusResponse.srpSalt);
-
-  /*
-   * Only needed when we are about to pull: the vault data below is decrypted with the session key, which is stale if
-   * another device migrated. An unmigrated device with nothing to pull has nothing to adopt and skips the check.
-   */
-  if (needsPull && !await adoptRemoteVaultKeyIfNeeded()) {
-    return abortSync({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
-  }
-
-  // Valid connection: exit offline mode if we were in it
-  const isOffline = await storage.getItem(StorageKeys.IS_OFFLINE_MODE) as boolean | null;
-  if (isOffline) {
-    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, false);
-  }
-
-  if (syncState.isDirty && !needsPull && await clearDirtyStateIfNoOpMutation(syncState.mutationSequence)) {
-    syncState.isDirty = false;
-  }
-
-  /*
-   * One state the revisions cannot see, repaired by a pull: rows of a manifest this session cannot write, which
-   * the push would silently leave out, so it refuses instead. Only matters for a write.
-   */
-  if (syncState.isDirty && !needsPull && await vaultHoldsUnwritableManifests()) {
-    needsPull = true;
-  }
-
-  return { proceed: true, statusResponse, syncState, needsPull };
 }
 
 /**
@@ -1679,560 +1037,6 @@ async function syncIsOnHold(): Promise<boolean> {
     devLog(`[VaultSync] Sync refused: on hold for ${reason}.`);
   }
   return reason !== null;
-}
-
-/**
- * Whether the stored vault holds rows for manifests this session cannot write, which a pull has to repair before
- * anything may be pushed (see {@link VaultSyncService.findUnwritableManifests}). A vault that cannot even be
- * opened answers false: it has its own failure path, and forcing a pull here would only mask it.
- */
-async function vaultHoldsUnwritableManifests(): Promise<boolean> {
-  try {
-    const unwritable = await vaultSyncService.findUnwritableManifests(await createVaultSqliteClient());
-    if (unwritable.length === 0) {
-      return false;
-    }
-
-    devWarn(`[VaultSync] Vault holds rows for manifest(s) this session cannot write (${unwritable.join(', ')}); pulling before the push.`);
-    return true;
-  } catch (error) {
-    devWarn('[VaultSync] Could not check which manifests this session can write; leaving the pull decision to the revisions.', error);
-    return false;
-  }
-}
-
-/**
- * Fall back to offline mode when the server cannot be reached. Without a local vault there is nothing to fall
- * back on, so that case reports a failure instead.
- */
-async function enterOfflineMode(): Promise<FullVaultSyncResult> {
-  const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT);
-  if (!encryptedVault) {
-    return syncResult({ success: false, wasOffline: true, error: await t('common.errors.serverNotAvailable') });
-  }
-
-  await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-  return syncResult({ wasOffline: true });
-}
-
-/**
- * Check if the local vault is canonically identical to the last-known server state, if so, do not unnecessarily push it to the server.
- *
- * @param mutationSequence - the mutation counter the sync started at
- * @returns True when the dirty flag was cleared and there is nothing left to push.
- */
-async function clearDirtyStateIfNoOpMutation(mutationSequence: number): Promise<boolean> {
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    if (!await vaultSyncService.detectNoOpMutation(sqliteClient, mutationSequence)) {
-      return false;
-    }
-
-    const cleanResult = await handleMarkVaultClean({ mutationSeqAtStart: mutationSequence });
-    if (cleanResult.cleared) {
-      devLog('[VaultSync] Local changes are canonically identical to the server baselines (no-op mutation); nothing to push.');
-    }
-    return cleanResult.cleared;
-  } catch (preCheckError) {
-    devWarn('[VaultSync] No-op mutation pre-check failed, proceeding with a normal push:', preCheckError);
-    return false;
-  }
-}
-
-/**
- * Announce the sync phase to the popup so it can show the right indicator.
- *
- * @param needsPull - whether the sync is about to pull from the server
- * @param isDirty - whether the local vault holds changes that still have to be pushed
- */
-async function announceSyncPhase(needsPull: boolean, isDirty: boolean): Promise<void> {
-  if (needsPull) {
-    broadcastSyncPhase('pull');
-  } else if (isDirty && hasUserVisibleScope(await getDirtyScopes())) {
-    broadcastSyncPhase('push');
-  }
-}
-
-/**
- * Carry out the work the server has addressed to this client (primarily related to shared groups).
- *
- * @param webApi - the API service the pending actions are acknowledged on
- * @param statusResponse - the status response carrying the pending actions
- * @param syncState - the sync state, updated in place when the reconciled rows make the vault dirty
- * @param encryptionKey - the key the reconciled vault is re-encrypted with
- * @param needsPull - whether this sync already announced itself as a pull
- * @returns True when the stored vault changed, which the sync has to report as a new vault however it ends.
- */
-async function applyServerDirectedChanges(webApi: WebApiService, statusResponse: StatusResponseV2, syncState: VaultSyncState, encryptionKey: string, needsPull: boolean): Promise<boolean> {  
-  const pendingActions = PendingActionProcessor.pendingActions(statusResponse);
-  const sharedManifests = Object.values(await SharingService.getSharedManifestRecords());
-
-  const sqliteClient = await createVaultSqliteClient();
-
-  // A vault with a migration still ahead of it is not on the current schema, so it cannot take the new rows yet.
-  const canReconcile = !await vaultRequiresManifestMigration(sqliteClient);
-  let vaultChanged = canReconcile && await multiManifestRendering.reconcile(sqliteClient, sharedManifests);
-  if (canReconcile && pendingActions.length > 0) {
-    vaultChanged = await PendingActionProcessor.process(webApi, pendingActions, sqliteClient) || vaultChanged;
-  }
-
-  if (!vaultChanged) {
-    return false;
-  }
-
-  // A rotated delivery key or a re-rendered shared manifest is a normal local change, so it rides out on this very sync.
-  const reconciledVault = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
-  const stored = await handleStoreEncryptedVault({ vaultBlob: reconciledVault, markDirty: true });
-  syncState.isDirty = true;
-  syncState.mutationSequence = stored.mutationSequence;
-
-  if (!needsPull) {
-    broadcastSyncPhase('push');
-  }
-
-  // The stored vault now holds a row the caller's in-memory copy does not, so this sync has to report a new vault.
-  return true;
-}
-
-/**
- * Pull the server's latest vault and merge it with what is stored locally (if needed).
- *
- * @param syncState - the sync state the pull runs against
- * @param encryptionKey - the key the local and server vaults are encrypted with
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
- */
-async function pullAndMaterializeServerVault(syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
-  const strategy = await choosePullStrategy(syncState, encryptionKey);
-
-  switch (strategy.kind) {
-    case 'canonical':
-      return await canonicalPullAndMerge(strategy.localClient, syncState, encryptionKey, grantSyncChangedVault);
-    case 'legacy-sqlite':
-      return await legacyStatementPullAndMerge(syncState, encryptionKey);
-    case 'server-only':
-      return await adoptServerVault(await fetchLatestVaultFromServer(), syncState);
-    case 'abort':
-      return strategy.result;
-  }
-}
-
-/**
- * How a pull reconciles the server's vault with the local one.
- */
-type PullStrategy =
-  /** Merge onto the server's vault at canonical level, per manifest, in Rust: the manifest-v1 path. */
-  | { kind: 'canonical'; localClient: SqliteClient }
-  /** LEGACY: merge at the SQLite statement level, for a local vault still on the pre-manifest-v1 storage model. */
-  | { kind: 'legacy-sqlite' }
-  /** Nothing to merge onto: the server's vault is taken as-is. */
-  | { kind: 'server-only' }
-  /** The local vault could not be opened; the sync reports this result instead of pulling. */
-  | { kind: 'abort'; result: FullVaultSyncResult };
-
-/**
- * Decide how the pull reconciles with the local vault, before anything is fetched.
- *
- * @param syncState - the sync state the pull runs against
- * @param encryptionKey - the key the local vault is encrypted with
- */
-async function choosePullStrategy(syncState: VaultSyncState, encryptionKey: string): Promise<PullStrategy> {
-  if (!syncState.isDirty) {
-    return { kind: 'server-only' };
-  }
-
-  const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-  if (!localEncryptedVault) {
-    devLog('[VaultSync] No stored local vault to merge onto; taking the server vault as-is.');
-    return { kind: 'server-only' };
-  }
-
-  // Create a fresh client decrypted from the stored blob for the merge input.
-  const localClient = new SqliteClient();
-  try {
-    await localClient.initializeFromBytes(await decryptVaultBlob(localEncryptedVault, encryptionKey));
-
-    /*
-     * Both checks matter: requiresSchemaMigration deliberately answers false for a vault still on the
-     * legacy sqlite-blob chain, but such a vault cannot canonicalize (unstamped rows) and must merge
-     * via the legacy statement path.
-     */
-    if (await localClient.requiresLegacySqliteBlobMigration() || await localClient.requiresSchemaMigration()) {
-      devLog('[VaultSync] Local vault is on a legacy or stale schema; merging via the legacy statement path.');
-      localClient.close();
-      return { kind: 'legacy-sqlite' };
-    }
-  } catch (error) {
-    localClient.close();
-    return { kind: 'abort', result: mapVaultOpenError(error) };
-  }
-
-  return { kind: 'canonical', localClient };
-}
-
-/**
- * Turn a failure to open a vault into the sync result to report: an incompatible vault version forces a
- * logout, anything else is rethrown as a reportable decryption failure.
- *
- * @param error - the error the decrypt or open threw
- */
-function mapVaultOpenError(error: unknown): FullVaultSyncResult {
-  if (error instanceof VaultVersionIncompatibleError) {
-    return syncResult({ success: false, requiresLogout: true, error: error.message });
-  }
-
-  console.error('[VaultSync] Failed to process server vault:', error);
-
-  // Keep an already-coded error instead of masking it as a decryption failure.
-  if (hasErrorCode(error)) {
-    throw error;
-  }
-
-  // E-203: Vault decryption failed
-  throw new Error(formatErrorWithCode('Vault could not be decrypted, if the problem persists please logout and login again.', AppErrorCode.VAULT_DECRYPT_FAILED));
-}
-
-/**
- * Store the server's vault as the local vault, replacing whatever was there.
- *
- * @param vaultResponse - the vault just pulled from the server
- * @param syncState - the sync state the pull runs against, whose mutation sequence detects a concurrent local change
- */
-async function adoptServerVault(vaultResponse: VaultResponse, syncState: VaultSyncState): Promise<FullVaultSyncResult> {
-  const storeResult = await handleStoreEncryptedVault({ vaultBlob: vaultResponse.vault.blob, expectedMutationSeq: syncState.mutationSequence });
-  if (!storeResult.success) {
-    devLog('[VaultSync] Mutation detected during sync, re-syncing...');
-    return handleFullVaultSync();
-  }
-
-  await storeVaultMetadata(vaultResponse);
-
-  try {
-    return await materializedVaultResult();
-  } catch (error) {
-    return mapVaultOpenError(error);
-  }
-}
-
-/**
- * Canonical-merge path of a dirty pull: fetch the snapshot, merge the local vault onto it at canonical
- * level (per manifest, in Rust), store the result, and push.
- *
- * @param localClient - the local vault, freshly decrypted from storage
- * @param syncState - the sync state the pull runs against
- * @param encryptionKey - the key the local vault and the snapshot are encrypted with
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
- */
-async function canonicalPullAndMerge(localClient: SqliteClient, syncState: VaultSyncState, encryptionKey: string, grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
-  // Network and vault-processing errors propagate unchanged, exactly like the plain pull path.
-  let result: PullAndMergeResult;
-  try {
-    result = await vaultSyncService.pullAndMerge(encryptionKey, localClient);
-  } finally {
-    // The merge is the only reader of this client and its result is fully materialized, so the sql.js database can go.
-    localClient.close();
-  }
-
-  if (result.kind === 'legacy-server') {
-    devWarn('[VaultSync] Server vault is still on the legacy storage format while the local vault is migrated; skipping the merge and pushing the local vault.');
-    return await pushOverLegacyServerVault(grantSyncChangedVault);
-  }
-
-  if (result.kind === 'merged') {
-    if (result.fallbackManifestIds.length > 0) {
-      devWarn(`[VaultSync] Canonical merge fell back to the server's rows for manifest(s) ${result.fallbackManifestIds.join(', ')}; local changes to them were dropped.`);
-    }
-    devLog('[VaultSync] Canonical vault merge completed:', result.stats);
-  }
-
-  // Store the merged (or server-only) vault; expectedMutationSeq detects a mutation racing the merge.
-  const storeResult = await handleStoreEncryptedVault({ vaultBlob: result.response.vault.blob, expectedMutationSeq: syncState.mutationSequence });
-  if (!storeResult.success) {
-    devLog('[VaultSync] Mutation detected during canonical merge, re-syncing...');
-    return handleFullVaultSync();
-  }
-
-  /*
-   * Only now do the pulled revisions become the local truth: committing them before a raced store would
-   * clear needsPull while the merged content was never kept, and the resync would push the unmerged local
-   * vault over the other device's rows.
-   */
-  await result.commitRevisions();
-
-  if (result.kind === 'server-only') {
-    await storeVaultMetadata(result.response);
-    return await materializedVaultResult();
-  }
-
-  /**
-   * The blob just stored is this merge's own output, so the push is handed the database and the canonical form
-   * the merge already produced.
-   */
-  await adoptMergedVault(result, storeResult.mutationSequence);
-
-  const uploadResponse = await handleUploadVault();
-  if (uploadResponse.success && uploadResponse.status === 0) {
-    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-  } else if (uploadResponse.status === 2) {
-    // Outdated: another device uploaded first, or the merged vault is not one this session may write whole.
-    return resyncAfterOutdatedPush('the merged vault');
-  } else {
-    console.error('Failed to upload merged vault:', uploadResponse.error);
-    return syncResult({ success: false, error: uploadResponse.error });
-  }
-
-  await storeVaultMetadata(result.response);
-  return await materializedVaultResult();
-}
-
-/**
- * Adopt a just-stored merge output as this context's live vault: its SQLite becomes the cached client, and the
- * canonical form the merge produced is handed to the push that follows.
- *
- * @param result - the merge whose vault was just stored
- * @param mutationSequence - the mutation sequence the stored vault is at
- */
-async function adoptMergedVault(result: Extract<PullAndMergeResult, { kind: 'merged' }>, mutationSequence: number): Promise<void> {
-  try {
-    const mergedClient = new SqliteClient();
-    await mergedClient.initializeFromBytes(result.mergedSqliteBytes);
-
-    // The store above cleared the cache without closing what was there, so there is nothing to close here.
-    cachedSqliteClient = mergedClient;
-    cachedVaultBlob = result.response.vault.blob;
-
-    if (result.pushCanonical) {
-      primeCanonicalizeCache(mergedClient, mutationSequence, result.pushCanonical);
-    } else {
-      devLog('[VaultSync] Merge output cannot stand in for the push canonicalize; the push derives it from the merged vault itself.');
-    }
-  } catch (error) {
-    devWarn('[VaultSync] Could not adopt the merged vault as the live one; the push reads it back from storage.', error);
-  }
-}
-
-/**
- * LEGACY: pull that merges the local vault onto the server's at the SQLite statement level and uploads the
- * result. A merge that cannot run or fails degrades to taking the server vault as-is.
- *
- * @param syncState - the sync state the merge runs against
- * @param encryptionKey - the key both vaults are encrypted with
- */
-async function legacyStatementPullAndMerge(syncState: VaultSyncState, encryptionKey: string): Promise<FullVaultSyncResult> {
-  const vaultResponse = await fetchLatestVaultFromServer();
-
-  /*
-   * The server has already moved to manifest-v1 while this device is still on the sqlite-blob storage model.
-   * The two have different column sets, and the statement merge addresses a row by the columns it carries, so
-   * the local rows would land unstamped and be dropped the next time the vault is canonicalized. The server
-   * vault is the newer of the two, so it is taken as-is; the local changes cannot be expressed in it and are
-   * given up, exactly as they are when a merge fails.
-   */
-  if (!vaultSyncService.lastSnapshotServedLegacySqliteBlob()) {
-    devWarn('[VaultSync] Local vault is still on the legacy storage model while the server serves manifest-v1; skipping the merge and taking the server vault.');
-    return await adoptServerVault(vaultResponse, syncState);
-  }
-
-  try {
-    const localEncryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
-    if (!localEncryptedVault) {
-      return await adoptServerVault(vaultResponse, syncState);
-    }
-
-    const localDecrypted = bytesToBase64(await decryptVaultBlob(localEncryptedVault, encryptionKey));
-    const serverDecrypted = bytesToBase64(await decryptVaultBlob(vaultResponse.vault.blob, encryptionKey));
-
-    let mergeResult: MergeResult;
-    try {
-      mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
-    } catch (error) {
-      console.error('[VaultSync] Vault merge threw during sync:', error);
-      // E-701: Merge failed
-      throw new Error(formatErrorWithCode(await t('common.errors.mergeFailed'), AppErrorCode.MERGE_FAILED));
-    }
-
-    if (!mergeResult.success) {
-      console.error('Vault merge failed during sync, using server vault');
-      return await adoptServerVault(vaultResponse, syncState);
-    }
-
-    devLog('[VaultSync] Vault merge during sync completed:', mergeResult.stats);
-
-    // Store merged vault. Use expectedMutationSeq to detect if a local mutation happened during merge.
-    const mergedEncryptedVault = await encryptVaultBlob(base64ToBytes(mergeResult.mergedVaultBase64), encryptionKey);
-    const storeResult = await handleStoreEncryptedVault({ vaultBlob: mergedEncryptedVault, expectedMutationSeq: syncState.mutationSequence });
-    if (!storeResult.success) {
-      devLog('[VaultSync] Mutation detected during merge, re-syncing...');
-      return handleFullVaultSync();
-    }
-
-    // Upload merged vault to server
-    const uploadResponse = await handleUploadVault();
-
-    if (uploadResponse.success && uploadResponse.status === 0) {
-      await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-    } else if (uploadResponse.status === 2) {
-      // Outdated: another device uploaded first, or the merged vault is not one this session may write whole.
-      return resyncAfterOutdatedPush('the merged vault');
-    } else {
-      console.error('Failed to upload merged vault:', uploadResponse.error);
-      return syncResult({ success: false, error: uploadResponse.error });
-    }
-
-    await storeVaultMetadata(vaultResponse);
-
-    return await materializedVaultResult();
-  } catch (error) {
-    return mapVaultOpenError(error);
-  }
-}
-
-/**
- * Push the local vault over a server vault that is still on the legacy sqlite-blob format, replacing it whole instead of merging two incompatible schemas.
- *
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
- */
-async function pushOverLegacyServerVault(grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
-  const uploadResponse = await handleUploadVault({ forceFullWrite: true });
-  if (uploadResponse.success && uploadResponse.status === 0) {
-    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-    return syncResult({ hasNewVault: grantSyncChangedVault });
-  }
-
-  if (uploadResponse.status === 2) {
-    return resyncAfterOutdatedPush('the vault pushed over the legacy server vault');
-  }
-
-  return syncResult({ success: false, error: uploadResponse.error });
-}
-
-/**
- * Push path: server and client agree on every manifest revision, so the pending local changes upload as-is.
- *
- * @param grantSyncChangedVault - whether an earlier step already changed the stored vault
- */
-async function pushPendingLocalChanges(grantSyncChangedVault: boolean): Promise<FullVaultSyncResult> {
-  const uploadResponse = await handleUploadVault();
-
-  if (uploadResponse.success && uploadResponse.status === 0) {
-    await handleMarkVaultClean({ mutationSeqAtStart: uploadResponse.mutationSeqAtStart! });
-
-    /*
-     * If expired trash items were pruned during upload, report the vault as new
-     * so the popup reloads the pruned vault instead of resurrecting the items
-     * from its stale in-memory copy on the next mutation.
-     */
-    return syncResult({ hasNewVault: uploadResponse.vaultPruned === true || grantSyncChangedVault });
-  }
-
-  if (uploadResponse.status === 2) {
-    // Outdated: another device uploaded first, or this vault is not one this session may write whole.
-    return resyncAfterOutdatedPush('the pending local changes');
-  }
-
-  console.error('Failed to upload pending vault:', uploadResponse.error);
-  return syncResult({ success: false, error: uploadResponse.error });
-}
-
-/**
- * Store the email domain lists that came with a pulled vault.
- * @param vaultResponse - the vault response to take the metadata from
- */
-async function storeVaultMetadata(vaultResponse: VaultResponse): Promise<void> {
-  await handleStoreVaultMetadata({
-    publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-    privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-    hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-  });
-}
-
-/**
- * Result for a sync that stored a freshly materialized vault, reporting any migrations that new database needs before it can be used.
- */
-async function materializedVaultResult(): Promise<FullVaultSyncResult> {
-  const sqliteClient = await createVaultSqliteClient();
-  const requiresLegacySqliteBlobMigration = await sqliteClient.requiresLegacySqliteBlobMigration();
-  const manifestMigrationRequired = await vaultRequiresManifestMigration(sqliteClient);
-
-  return syncResult({ hasNewVault: true, sqliteBlobUpgradeRequired: requiresLegacySqliteBlobMigration, manifestMigrationRequired });
-}
-
-/**
- * Check for any pending migrations.
- * @returns The result to return when a migration is pending, null when none is or the check itself failed.
- */
-async function pendingMigrationResult(): Promise<FullVaultSyncResult | null> {
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
-      return syncResult({ sqliteBlobUpgradeRequired: true });
-    }
-
-    if (await vaultRequiresManifestMigration(sqliteClient)) {
-      return syncResult({ manifestMigrationRequired: true });
-    }
-  } catch (error) {
-    // Only an incompatible vault version surfaces, as that forces a logout.
-    if (error instanceof VaultVersionIncompatibleError) {
-      throw error;
-    }
-
-    console.error('[VaultSync] Ignoring failed pending migration check:', error);
-  }
-
-  return null;
-}
-
-/**
- * Turn an error thrown during a sync into the result the popup acts on.
- * error message carrying a reportable code.
- *
- * @param err - the error the sync threw
- */
-async function mapSyncFailure(err: unknown): Promise<FullVaultSyncResult> {
-  console.error('Vault sync error:', err);
-
-  /*
-   * The server refuses this extension version for this account (HTTP 426).
-   */
-  if (err instanceof ClientUpgradeRequiredError) {
-    return syncResult({ success: false, requiresLogout: true, errorKey: 'clientVersionNotSupported' });
-  }
-
-  // Version incompatibility requires logout
-  if (err instanceof VaultVersionIncompatibleError) {
-    return syncResult({ success: false, requiresLogout: true, error: err.message });
-  }
-
-  // Auth error (session expired) - signal popup to trigger logout
-  if (err instanceof ApiAuthError) {
-    return syncResult({ success: false, requiresLogout: true, errorKey: 'sessionExpired' });
-  }
-
-  // The password was changed on another device: this device's keys no longer match, so it has to log in again.
-  if (err instanceof PasswordChangedElsewhereError) {
-    return syncResult({ success: false, requiresLogout: true, errorKey: 'passwordChanged' });
-  }
-
-  // E-805: Vault transfer timed out - show a targeted error instead of entering offline mode
-  if (err instanceof RequestTimeoutError) {
-    return syncResult({ success: false, error: formatErrorWithCode(await t('common.errors.vaultSyncTimeout'), AppErrorCode.UPLOAD_TIMEOUT) });
-  }
-
-  // Network error: enter offline mode if we have a local vault
-  if (err instanceof NetworkError && await storage.getItem(StorageKeys.ENCRYPTED_VAULT)) {
-    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, true);
-    return syncResult({ wasOffline: true });
-  }
-
-  // For all other errors, include an error code so users can report it
-  const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
-  // Check if message already has an error code (E-XXX format)
-  const alreadyHasErrorCode = /E-\d{3}/.test(baseMessage);
-  const errorMessage = alreadyHasErrorCode
-    ? baseMessage
-    : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
-
-  return syncResult({ success: false, error: errorMessage });
 }
 
 /**
