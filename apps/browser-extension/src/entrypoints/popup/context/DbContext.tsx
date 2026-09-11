@@ -4,10 +4,13 @@ import SqliteClient from '@aliasvault/client/database/SqliteClient';
 import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration } from '@aliasvault/client/sync/VaultManifestMigration';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getStorageItem } from '@/utils/StorageUtility';
+import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
+import type { SyncErrorDetail } from '@/utils/types/messaging/SyncErrorDetail';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
@@ -85,8 +88,8 @@ type DbContextType = {
   requiresLegacySqliteBlobMigration: () => Promise<boolean>;
   requiresManifestMigration: () => Promise<boolean>;
   /**
-   * Last sync error message persisted by the background sync. Surfaced as a popup
-   * alert. Null when no error is pending. Updated reactively via storage.watch so
+   * Last sync error persisted by the background sync, translated here so it follows the display language.
+   * Surfaced as a popup alert. Null when no error is pending. Updated reactively via storage.watch so
    * background-initiated sync failures show up immediately while popup is open.
    */
   syncError: string | null;
@@ -102,6 +105,8 @@ const DbContext = createContext<DbContextType | undefined>(undefined);
  * DbProvider to provide the SQLite client to the app that components can use to make database queries.
  */
 export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
+
   /**
    * SQLite client.
    */
@@ -140,10 +145,16 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isUploading, setIsUploading] = useState(false);
 
   /**
-   * Last sync error written by the background sync. Driven by storage so background-only
-   * syncs (e.g. follow-up syncs after pending mutations) reach the user.
+   * Last sync error written by the background sync, as the key and code it reported. Driven by storage so
+   * background-only syncs (e.g. follow-up syncs after pending mutations) reach the user.
    */
-  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncErrorDetail, setSyncErrorDetail] = useState<SyncErrorDetail | null>(null);
+
+  /**
+   * The stored sync error in the current display language. Translated on read, so switching language
+   * re-renders the message instead of leaving the one the background happened to write.
+   */
+  const syncError = useMemo(() => syncErrorDetail ? syncErrorMessage(syncErrorDetail, t) ?? null : null, [syncErrorDetail, t]);
 
   /**
    * Check if email errors should be suppressed.
@@ -175,12 +186,12 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const [offlineMode, pendingUserChanges, lastError] = await Promise.all([
         storage.getItem(StorageKeys.IS_OFFLINE_MODE) as Promise<boolean | null>,
         hasUnsyncedUserChangesInStorage(),
-        storage.getItem(StorageKeys.LAST_SYNC_ERROR) as Promise<string | null>
+        storage.getItem(StorageKeys.LAST_SYNC_ERROR)
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
       setHasUnsyncedUserChanges(pendingUserChanges);
-      setSyncError(lastError ?? null);
+      setSyncErrorDetail(toSyncErrorDetail(lastError));
     };
     loadSyncState();
   }, []);
@@ -190,8 +201,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * even when the failing sync wasn't triggered by anything in the popup itself.
    */
   useEffect(() => {
-    const unwatch = storage.watch<string | null>(StorageKeys.LAST_SYNC_ERROR, (newValue) => {
-      setSyncError(newValue ?? null);
+    const unwatch = storage.watch(StorageKeys.LAST_SYNC_ERROR, (newValue) => {
+      setSyncErrorDetail(toSyncErrorDetail(newValue));
     });
     return (): void => {
       unwatch();
@@ -213,7 +224,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Dismiss the current sync error from both React state and persisted storage.
    */
   const clearSyncError = useCallback(async (): Promise<void> => {
-    setSyncError(null);
+    setSyncErrorDetail(null);
     await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }, []);
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
@@ -17,7 +17,7 @@ import { recordManifestRevisions } from '@aliasvault/client/sync/ManifestRevisio
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { runFullVaultSync, runVaultManifestMigration, runVaultMigrationStatus, type IVaultSyncEngineHost, type VaultSyncEngineResult, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
+import { runFullVaultSync, runVaultManifestMigration, runVaultMigrationStatus, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
@@ -26,6 +26,7 @@ import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+import { syncResult, toFullVaultSyncResult, toSyncErrorDetail } from '@/entrypoints/background/VaultSyncResultMapper';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
@@ -34,6 +35,7 @@ import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessagi
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { getStorageItem } from '@/utils/StorageUtility';
+import { hasSyncError } from '@/utils/SyncError';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
@@ -68,6 +70,13 @@ import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata'
  */
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
+
+/**
+ * Global sync queue state.
+ * Prevents multiple simultaneous sync operations and ensures pending changes are synced.
+ */
+let isSyncInProgress = false;
+let hasPendingSync = false;
 
 /**
  * Define Rust sync engine host interface to bridge the engine to the extension.
@@ -150,13 +159,6 @@ function clearInMemoryVaultState(): void {
   clearAllSavePromptState();
   handleClearTwoFactorState();
 }
-
-/**
- * Global sync queue state.
- * Prevents multiple simultaneous sync operations and ensures pending changes are synced.
- */
-let isSyncInProgress = false;
-let hasPendingSync = false;
 
 /**
  * Check if the user is logged in and if the vault is locked, and also check for both kinds of pending vault.
@@ -812,8 +814,7 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
   try {
     const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
-      // E-202: Vault is locked
-      return { success: false, pushed: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+      return { success: false, pushed: false, errorCode: AppErrorCode.VAULT_LOCKED };
     }
 
     const sqliteClient = await createVaultSqliteClient();
@@ -826,11 +827,10 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
     if (result.success) {
       devLog(result.pushed ? '[ManifestMigration] Migration pushed to the server.' : '[ManifestMigration] Migration stored locally; the vault stays dirty for the next sync.');
     }
-    const error = result.errorKey ? await t('common.errors.' + logoutErrorKey(result.errorKey)) : await localizeSyncError(result.error, result.errorCode);
-    return { success: result.success, pushed: result.pushed, error };
+    return { success: result.success, pushed: result.pushed, ...toSyncErrorDetail(result) };
   } catch (error) {
     devError('[ManifestMigration] Manifest migration failed:', error);
-    return { success: false, pushed: false, error: error instanceof Error ? error.message : await t('common.errors.unknownError') };
+    return { success: false, pushed: false, error: error instanceof Error ? error.message : undefined };
   }
 }
 
@@ -888,15 +888,11 @@ function broadcastSyncPhase(phase: VaultSyncPhase): void {
  * error cannot keep re-opening the dialog after it stopped applying.
  */
 async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void> {
-  const errorMessage = result.errorKey
-    ? await t('common.errors.' + result.errorKey)
-    : result.error;
-
   // requiresLogout and wasOffline have dedicated UX: the forced re-login flow and the offline indicator.
   const dedicatedError = result.requiresLogout || result.wasOffline;
 
-  if (errorMessage && !dedicatedError) {
-    await storage.setItem(StorageKeys.LAST_SYNC_ERROR, errorMessage);
+  if (hasSyncError(result) && !dedicatedError) {
+    await storage.setItem(StorageKeys.LAST_SYNC_ERROR, { errorKey: result.errorKey, errorCode: result.errorCode, error: result.error });
   } else {
     await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }
@@ -914,64 +910,6 @@ export async function handleFullVaultSync(options?: FullVaultSyncRequest): Promi
     await persistSyncErrorState(result);
   }
   return result;
-}
-
-/**
- * Build a sync result.
- * @param overrides - the fields that differ from an uneventful, successful sync
- */
-function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVaultSyncResult {
-  return { success: true, hasNewVault: false, wasOffline: false, sqliteBlobUpgradeRequired: false, requiresLogout: false, ...overrides };
-}
-
-/**
- * The message the popup shows for a sync failure: the translation of its error code, tagged with the code.
- * @param error - the sync engine's diagnostic message
- * @param errorCode - the client error code the sync engine attached
- */
-async function localizeSyncError(error: string | undefined, errorCode: string | undefined): Promise<string | undefined> {
-  if (!error && !errorCode) {
-    return undefined;
-  }
-  devWarn(`[VaultSync] Engine failure (${errorCode ?? 'no code'}): ${error ?? 'no detail'}`);
-  const code = errorCode && isErrorCode(errorCode) ? errorCode : AppErrorCode.UNKNOWN_ERROR;
-  return formatErrorWithCode(await t(getErrorTranslationKey(code)), code);
-}
-
-/**
- * The `common.errors` key that translates a sync logout reason.
- */
-const LOGOUT_REASON_ERROR_KEYS: Record<string, string> = {
-  clientVersionNotSupported: 'clientVersionNotSupported',
-  serverVersionNotSupported: 'serverVersionNotSupported',
-  sessionExpired: 'sessionExpired',
-  passwordChanged: 'passwordChanged',
-  vaultVersionIncompatible: 'browserExtensionOutdated',
-};
-
-/**
- * The `common.errors` key for an engine logout reason, `unknownError` for a reason this build does not know.
- * @param reason - the engine's logout reason
- */
-function logoutErrorKey(reason: string): string {
-  return LOGOUT_REASON_ERROR_KEYS[reason] ?? 'unknownError';
-}
-
-/**
- * The full sync as the popup reads it.
- * @param result - the engine's outcome
- */
-async function toFullVaultSyncResult(result: VaultSyncEngineResult): Promise<FullVaultSyncResult> {
-  return {
-    success: result.success,
-    hasNewVault: result.hasNewVault,
-    wasOffline: result.wasOffline,
-    sqliteBlobUpgradeRequired: result.sqliteBlobUpgradeRequired,
-    manifestMigrationRequired: result.manifestMigrationRequired,
-    requiresLogout: result.requiresLogout,
-    errorKey: result.errorKey ? logoutErrorKey(result.errorKey) : undefined,
-    error: await localizeSyncError(result.error, result.errorCode),
-  };
 }
 
 /**
@@ -1001,10 +939,9 @@ async function handleFullVaultSyncInternal(options?: VaultSyncOptions): Promise<
       return syncResult({ success: false });
     }
     if (!encryptionKey) {
-      // E-202: Vault is locked
-      return syncResult({ success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) });
+      return syncResult({ success: false, errorCode: AppErrorCode.VAULT_LOCKED });
     }
-    return await toFullVaultSyncResult(await runFullVaultSync(syncEngineHost, options));
+    return toFullVaultSyncResult(await runFullVaultSync(syncEngineHost, options));
   } catch (err) {
     console.error('Vault sync error:', err);
     const message = err instanceof Error ? err.message : 'Unknown error during vault sync';

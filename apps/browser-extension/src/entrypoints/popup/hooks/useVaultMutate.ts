@@ -6,6 +6,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { hasSyncError } from '@/utils/SyncError';
 
 /**
  * Hook to execute a vault mutation.
@@ -130,7 +131,7 @@ export function useVaultMutate(): {
      * After sending message, we start polling to detect completion.
      */
     void sendMessage('FULL_VAULT_SYNC', {}).then(async (syncResult) => {
-      if (!silent && !syncResult.success && (syncResult.error || syncResult.errorKey)) {
+      if (!silent && !syncResult.success && hasSyncError(syncResult)) {
         /*
          * Permanent failure (e.g. HTTP 413 vault too large). Stop polling and clear the upload
          * spinner. Skipped for a silent scope: it owns neither the poll nor the spinner, both of

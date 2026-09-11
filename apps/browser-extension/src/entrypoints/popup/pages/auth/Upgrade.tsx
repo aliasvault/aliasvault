@@ -23,6 +23,7 @@ import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 
 import type { VaultVersion } from '@aliasvault/vault';
 
@@ -162,7 +163,7 @@ const Upgrade: React.FC = () => {
 
     if (!result.success) {
       // Back to the consent screen, where the same button retries and the error says why it has to.
-      setError(result.error ?? t('common.errors.unknownError'));
+      setError(syncErrorMessage(result, t) ?? t('common.errors.unknownError'));
       setStage('consent');
       setIsInitialLoading(false);
       return;

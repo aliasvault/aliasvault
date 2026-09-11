@@ -26,6 +26,7 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
@@ -80,7 +81,7 @@ const Login: React.FC = () => {
       throw new ServerUpdateRequiredError();
     }
     if (!result.success) {
-      throw new VaultProcessingError('vault-pull', new Error(result.errorKey ? t('common.errors.' + result.errorKey) : result.error ?? t('common.errors.unknownError')));
+      throw new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result, t) ?? t('common.errors.unknownError')));
     }
 
     await dbContext.loadStoredDatabase();

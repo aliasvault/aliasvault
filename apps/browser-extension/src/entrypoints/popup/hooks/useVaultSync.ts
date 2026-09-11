@@ -5,6 +5,7 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 
 type VaultSyncOptions = {
   onSuccess?: (hasNewVault: boolean) => void;
@@ -56,8 +57,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       // Handle logout requirement
       if (result.requiresLogout) {
-        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error;
-        await app.logout(errorMessage);
+        await app.logout(syncErrorMessage(result, t));
         return false;
       }
 
@@ -91,8 +91,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       // Handle errors
       if (!result.success) {
-        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error ?? t('common.errors.unknownError');
-        onError?.(errorMessage);
+        onError?.(syncErrorMessage(result, t) ?? t('common.errors.unknownError'));
         return false;
       }
 

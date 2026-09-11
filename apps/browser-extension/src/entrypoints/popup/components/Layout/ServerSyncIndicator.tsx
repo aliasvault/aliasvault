@@ -5,6 +5,7 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 
 /**
  * Minimum time (ms) an in-flight indicator stays visible once it has appeared.
@@ -116,10 +117,7 @@ const ServerSyncIndicator: React.FC = () => {
 
       // Handle logout requirement
       if (result.requiresLogout) {
-        const errorMessage = result.errorKey
-          ? t('common.errors.' + result.errorKey)
-          : result.error;
-        await app.logout(errorMessage);
+        await app.logout(syncErrorMessage(result, t));
         return;
       }
 
