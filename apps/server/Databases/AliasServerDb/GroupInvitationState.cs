@@ -33,7 +33,7 @@ public enum GroupInvitationState
     Revoked = 3,
 
     /// <summary>
-    /// The vault's key was rotated after the invitation was made, so the key sealed into it no longer opens the vault and
+    /// The vault's key was rotated after the invitation was made, so the key encrypted into it no longer decrypts the vault and
     /// accepting it would hand the invitee a grant they cannot use. The inviter has to make a fresh invitation.
     /// </summary>
     Stale = 4,

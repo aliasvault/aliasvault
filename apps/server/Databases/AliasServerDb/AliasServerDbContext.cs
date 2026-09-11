@@ -364,7 +364,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
 
-            // Losing the keypair the vault key was sealed to leaves an invitation nobody could ever open.
+            // Losing the keypair the vault key was encrypted to leaves an invitation nobody could ever decrypt.
             builder.HasOne(e => e.UserGrantKey)
                 .WithMany()
                 .HasForeignKey(e => e.UserGrantKeyId)
@@ -421,7 +421,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             // One access path per (holder, type, manifest) per VEK version: a rotation adds a row rather than
-            // replacing one, so the retired VEK stays retrievable for the history revisions it sealed.
+            // replacing one, so the retired VEK stays retrievable for the history revisions it encrypted.
             builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId, e.KeyVersion }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version");
             builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
             builder.Property(e => e.Metadata).HasColumnType("jsonb");

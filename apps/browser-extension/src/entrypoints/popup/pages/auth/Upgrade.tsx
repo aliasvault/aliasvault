@@ -196,12 +196,12 @@ const Upgrade: React.FC = () => {
   }, [loadStoredDatabase, refreshSyncState, navigate, setIsInitialLoading, t]);
 
   /**
-   * Ask the background what the manifest migration would do, and either put it to the user or run it.
+   * Ask the background what the manifest migration would do, and either prompt the user or run it.
    */
   const startManifestUpgrade = useCallback(async (): Promise<void> => {
-    const plan = await sendMessage('GET_VAULT_MIGRATION_STATUS');
+    const pending = await sendMessage('GET_VAULT_MIGRATION_STATUS');
 
-    if (plan.kind === VaultMigrationKind.StorageFormatUpgrade) {
+    if (pending === VaultMigrationKind.StorageFormatUpgrade) {
       setKind(UpgradeKind.StorageFormat);
       setStage('consent');
       setIsInitialLoading(false);

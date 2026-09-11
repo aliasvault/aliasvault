@@ -90,7 +90,7 @@ public class GroupInvitation
     public virtual UserGrantKey? UserGrantKey { get; set; }
 
     /// <summary>
-    /// Gets or sets the version of the manifest's VEK that this invitation was sealed under. Used to check
+    /// Gets or sets the version of the manifest's VEK that this invitation was encrypted under. Used to check
     /// if this invitation is still valid for the manifest upon accepting.
     /// </summary>
     public int VaultKeyVersion { get; set; }

@@ -11,7 +11,7 @@ namespace AliasServerDb.Migrations
     /// Existing rows are carried over in place:
     /// - every user gains a Personal group that takes over their vault, aliases, quotas and rate limit overrides,
     /// - the append-only "Vaults" revision log becomes one "VaultManifests" head row per user plus a
-    ///   "VaultManifestsHistory" tail, keyed by a newly minted manifest id,
+    ///   "VaultManifestsHistory" tail, keyed by a newly generated manifest id,
     /// - per-user email encryption keys become per-manifest delivery keys.
     ///
     /// The tables that only the manifest-v1 write path uses (buckets, blobs, access and unlock keys) start empty. Every

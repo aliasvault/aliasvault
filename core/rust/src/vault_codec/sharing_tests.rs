@@ -89,7 +89,7 @@ fn tag_links(records: &[CodecRecord]) -> Vec<(String, String)> {
 }
 
 /// The scoped logo id the codec derives for `(manifest id, source)`, what tests assert against, since
-/// a logo's identity is a function of its manifest and domain rather than whatever id the writer minted.
+/// a logo's identity is a function of its manifest and domain rather than whatever id the writer generated.
 fn logo_id(scope: &str, source: &str) -> String {
     scoped_assets::logo_id_for(scope, scoped_assets::KIND_FAVICON, source)
 }
@@ -1109,7 +1109,7 @@ fn item_moved_into_shared_manifest_adopts_its_existing_logo() {
 
 #[test]
 fn combine_scopes_a_legacy_shared_manifest_before_it_can_collide() {
-    // A shared manifest whose ROWS predate manifest-id scoping: its logos were minted at random and
+    // A shared manifest whose ROWS predate manifest-id scoping: its logos were generated at random and
     // carry no scope stamp. Materializing it next to the recipient's own rows must not collide on
     // UNIQUE(ManifestId, Kind, Source) — combine normalizes every row to the manifest's own id.
     let (recipient_manifest, buckets) = recipient_personal_manifest();
@@ -1145,7 +1145,7 @@ fn combine_scopes_a_legacy_shared_manifest_before_it_can_collide() {
 
 #[test]
 fn combine_keeps_both_rows_when_two_manifests_share_a_primary_key() {
-    // Ids are client-minted, so a shared manifest may legitimately carry a row whose Id equals one of
+    // Ids are client-generated, so a shared manifest may legitimately carry a row whose Id equals one of
     // the reader's own. Because rows are keyed by (ManifestId, Id) — the primary key the local schema
     // declares — both survive in their own namespace and neither shadows the other.
     let mut personal = canonicalize_from_sqlite(input_with_shares(
@@ -1644,7 +1644,7 @@ fn logo_kinds_key_independently_so_a_domain_and_a_catalog_key_never_collide() {
 
 #[test]
 fn icon_row_without_a_kind_is_a_favicon_and_keeps_its_legacy_id() {
-    // Rows written before the Kind column exists must not be re-minted: their id has to stay exactly
+    // Rows written before the Kind column exists must not be re-derived: their id has to stay exactly
     // what `logo_id_for_source` produces, or every item in every older vault loses its logo once.
     let tables = vec![
         table("Items", vec![row(&[("Id", json!("i-1")), ("FolderId", serde_json::Value::Null), ("LogoId", json!("random-guid"))])]),

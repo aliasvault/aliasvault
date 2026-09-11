@@ -83,7 +83,6 @@ export type VaultSyncEngineResult = EngineResultBase & {
 /** Outcome of the migration classification. */
 export type VaultSyncMigrationStatusResult = EngineResultBase & {
   kind: 'none' | 'schema-rebuild' | 'storage-format-upgrade';
-  serverConfirmed: boolean;
 };
 
 /** Outcome of the manifest migration. */

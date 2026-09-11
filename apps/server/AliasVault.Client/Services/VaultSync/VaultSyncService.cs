@@ -464,7 +464,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// The grant a shared manifest is remembered by, or null when the snapshot carries none.
     /// </summary>
     /// <param name="dto">The snapshot manifest.</param>
-    /// <returns>Tuple with the sealed VEK, the public key it was sealed with and the algorithm token.</returns>
+    /// <returns>Tuple with the encrypted VEK, the public key it was encrypted with and the algorithm token.</returns>
     private static (string EncryptedVek, string EncryptionPublicKey, string Algorithm)? GrantOf(Manifest dto)
     {
         if (string.IsNullOrEmpty(dto.EncryptedVek) || string.IsNullOrEmpty(dto.EncryptionPublicKey))
@@ -971,7 +971,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// Resolve the private key (JWK) that opens a grant.
     /// </summary>
     /// <param name="personalManifest">The opened personal manifest.</param>
-    /// <param name="encryptionPublicKey">The public key the grant was sealed with.</param>
+    /// <param name="encryptionPublicKey">The public key the grant was encrypted with.</param>
     /// <returns>The private key as a JWK JSON string, or null.</returns>
     private async Task<string?> ResolvePrivateKeyJwkAsync(ResolvedManifest personalManifest, string encryptionPublicKey)
     {

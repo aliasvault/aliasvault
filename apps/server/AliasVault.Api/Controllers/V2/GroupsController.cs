@@ -89,7 +89,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             .Where(u => allMemberIds.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? string.Empty);
 
-        // Only an admin can hand a manifest key to somebody, so only an admin is served the keys to seal one with.
+        // Only an admin can hand a manifest key to somebody, so only an admin is served the keys to encrypt one with.
         var administeredMemberIds = allMembers.Where(m => administeredGroupIds.Contains(m.GroupId)).Select(m => m.UserId);
         var publicKeys = administeredGroupIds.Count > 0 ? await GrantHelper.GetPrimaryKeysAsync(context, administeredMemberIds) : [];
 
@@ -200,7 +200,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
         catch (DbUpdateException)
         {
-            // The client-minted manifest id is already taken, which a fresh id makes vanishingly unlikely; the client asks again.
+            // The client-generated manifest id is already taken, which a fresh id makes vanishingly unlikely; the client asks again.
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.MANIFEST_ID_TAKEN, 400));
         }
 
@@ -210,7 +210,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Offer a member of the group access to one of its shared manifests, handing over the manifest key sealed for them in
+    /// Offer a member of the group access to one of its shared manifests, handing over the manifest key encrypted for them in
     /// the same call. The offer becomes a grant once they accept it.
     /// </summary>
     /// <param name="groupId">The group ID.</param>
@@ -264,13 +264,13 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.NOT_GROUP_MEMBER, 400));
         }
 
-        // The sealed key and the offer have to be about the same person.
+        // The encrypted key and the offer have to be about the same person.
         if (!string.Equals(model.Grant.RecipientUserId, model.UserId, StringComparison.Ordinal))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 400));
         }
 
-        // The key it was sealed for must really be theirs.
+        // The key it was encrypted for must really be theirs.
         if (!await context.UserGrantKeys.AnyAsync(k => k.Id == model.Grant.RecipientPublicKeyId && k.UserId == model.UserId))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
@@ -535,7 +535,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
         }
 
-        // If the current manifest key version is different from the one the invitation was sealed under, it is no longer valid.
+        // If the current manifest key version is different from the one the invitation was encrypted under, it is no longer valid.
         if (manifestKeyVersion.Value != invitation.VaultKeyVersion)
         {
             CloseInvitation(invitation, GroupInvitationState.Stale);
@@ -552,7 +552,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.RespondedAt = timeProvider.UtcNow;
         invitation.UpdatedAt = timeProvider.UtcNow;
 
-        // The sealed copy has become the grant, so it stops being a second copy of the key lying around.
+        // The encrypted copy has become the grant, so it stops being a second copy of the key lying around.
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
@@ -683,7 +683,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Close an offer of access, dropping the manifest key sealed inside it.
+    /// Close an offer of access, dropping the manifest key encrypted inside it.
     /// </summary>
     /// <param name="invitation">The invitation to close.</param>
     /// <param name="state">The state it ends in.</param>
@@ -698,7 +698,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Turn the manifest key sealed into an offer of access into the accepting member's grant on that manifest.
+    /// Turn the manifest key encrypted into an offer of access into the accepting member's grant on that manifest.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="invitation">The invitation being accepted.</param>
@@ -724,7 +724,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Close every open offer of access to a manifest whose sealed key predates the manifest's current one, as accepting it would fail anyway.
+    /// Close every open offer of access to a manifest whose encrypted key predates the manifest's current one, as accepting it
+    /// would fail anyway.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="manifestId">The shared manifest.</param>

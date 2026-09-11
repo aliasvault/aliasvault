@@ -428,7 +428,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(apiErrorCode, 400));
         }
 
-        // Every new account is created on the account-key model, so the client must mint the whole hierarchy up front.
+        // Every new account is created on the account-key model, so the client must generate the whole hierarchy up front.
         // Reject an incomplete or oversized one before any row is written, so a rejected attempt leaves no account behind.
         if (!model.HasCompleteAccountKeys)
         {

@@ -72,9 +72,9 @@ pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>
 }
 
 /// The materialize direction: a FieldValues or FieldHistories row without an `Id` is a row whose
-/// derived id the wire omits; mint it from the row's own natural key so every device materializes
+/// derived id the wire omits; derive it from the row's own natural key so every device materializes
 /// the same SQLite row.
-pub(crate) fn mint_missing_derived_ids(tables: &mut HashMap<String, Vec<CodecRecord>>) {
+pub(crate) fn derive_missing_ids(tables: &mut HashMap<String, Vec<CodecRecord>>) {
     if let Some(rows) = tables.get_mut(FIELD_VALUES_TABLE) {
         for row in rows.iter_mut().filter(|row| !has_id(row)) {
             let id = derive_row_id(row, value_index_of(row).unwrap_or(0));
@@ -269,7 +269,7 @@ mod tests {
 
     #[test]
     fn derivation_ignores_guid_casing() {
-        // iOS and the extension mint uppercase GUIDs; the natural key must not fork on casing.
+        // iOS and the extension generate uppercase GUIDs; the natural key must not fork on casing.
         let lower = field_value_id_for("aaaa-bbbb", "item-x", "", "def-1", 2);
         let upper = field_value_id_for("AAAA-BBBB", "ITEM-X", "", "DEF-1", 2);
         assert_eq!(lower, upper);

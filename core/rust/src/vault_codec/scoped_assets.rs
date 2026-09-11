@@ -8,7 +8,7 @@
 //!
 //! A logo is scoped to the manifest that owns it:
 //!   - `ManifestId` is that manifest's id, personal or shared alike (no NULL convention);
-//!   - `Id` is derived from `(manifest id, Kind, Source)` (see [`logo_id_for`]), so every writer mints
+//!   - `Id` is derived from `(manifest id, Kind, Source)` (see [`logo_id_for`]), so every writer derives
 //!     the same id for the same logo in the same manifest and the uniqueness invariant is
 //!     self-enforcing rather than repaired after the fact.
 //!
@@ -34,8 +34,8 @@ pub use crate::vault_model::names::LOGO_KIND_BUILTIN as KIND_BUILTIN;
 pub use crate::vault_model::names::LOGO_KIND_CUSTOM as KIND_CUSTOM;
 
 /// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
-/// every favicon row that already exists keeps its id: changing it would re-mint the logo of every
-/// item in every vault on the next push.
+/// every favicon row that already exists keeps its id: changing it would re-derive the logo id of
+/// every item in every vault on the next push.
 const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 
 /// The `Id` of the logo `(manifest id, kind, source)`: a UUIDv8 (RFC 9562 custom-format) whose bytes
@@ -88,7 +88,7 @@ fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
 }
 
 /// Normalize one table set's logo rows to `scope` (the owning manifest's id): stamp `ManifestId`,
-/// re-mint `Id` from `(scope, Kind, Source)`, collapse rows that now share a natural key (keeping
+/// re-derive `Id` from `(scope, Kind, Source)`, collapse rows that now share a natural key (keeping
 /// the better row, see [`is_better_logo`]), and repoint every `Items.LogoId` at the surviving row.
 ///
 /// It runs once per manifest, each with its own id, so a personal logo is never merged with a shared

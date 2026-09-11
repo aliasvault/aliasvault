@@ -581,7 +581,7 @@ Do you want to proceed with the restoration?")) {
 
     /// <summary>
     /// Whether the user holds any state that only exists on the current storage format because of vault sharing: a
-    /// grant on a shared manifest, a membership of a shared group, or an invitation sealed to their account keypair.
+    /// grant on a shared manifest, a membership of a shared group, or an invitation encrypted to their account keypair.
     /// Reverting such a user would delete the keypair all of that is encrypted to, so the revert is not offered.
     /// </summary>
     /// <param name="dbContext">The database context to query.</param>

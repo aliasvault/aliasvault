@@ -30,6 +30,6 @@ public class ReceivedManifestInvitation
     /// <summary>Gets or sets the encrypted name of the vault.</summary>
     public string? EncryptedName { get; set; }
 
-    /// <summary>Gets or sets the public half of the recipient's keypair the offer was sealed to.</summary>
+    /// <summary>Gets or sets the public half of the recipient's keypair the offer was encrypted to.</summary>
     public string? RecipientPublicKey { get; set; }
 }

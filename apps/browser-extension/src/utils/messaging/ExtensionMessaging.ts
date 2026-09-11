@@ -36,7 +36,7 @@ import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
-import type { VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
+import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordSettings } from '@aliasvault/models/vault';
@@ -91,7 +91,7 @@ export interface IExtensionMessageProtocol {
   GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
   GET_VAULT(): VaultResponse;
-  GET_VAULT_MIGRATION_STATUS(): VaultMigrationStatus;
+  GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };

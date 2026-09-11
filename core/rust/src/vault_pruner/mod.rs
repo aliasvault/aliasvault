@@ -178,7 +178,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         .ok_or_else(|| crate::error::VaultError::General(
             format!("Invalid current_time format: {}", input.current_time)
         ))?;
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = crate::timestamp::iso_utc(&now);
 
     // Calculate cutoff date for trash retention
     let cutoff_date = now - Duration::days(input.retention_days as i64);

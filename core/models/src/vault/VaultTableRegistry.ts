@@ -65,14 +65,14 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
   { Name: 'Items', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: false },
   /*
    * ItemStats is keyed by the item it describes: Id IS the item's id, so recording a use is an
-   * upsert and two devices never mint competing rows. Listed after Items so a merge inserts the
+   * upsert and two devices never create competing rows. Listed after Items so a merge inserts the
    * item first.
    */
   { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true, BucketCategory: 'Stats' },
   /*
    * FieldValues legacy statement merge: a field value matches on the field it belongs to (FieldKey
    * for system fields, FieldDefinitionId for custom ones; exactly one is set), so independently
-   * minted rows of the same field converge. Canonical merge: both sides are normalized first,
+   * created rows of the same field converge. Canonical merge: both sides are normalized first,
    * which strips the derived id of every single-value row, so adding Id to the key makes a
    * single-value row match by its field (id part empty on both sides) while a multi-value row
    * matches by its OWNED id: two devices each adding a login.url are two different rows that must

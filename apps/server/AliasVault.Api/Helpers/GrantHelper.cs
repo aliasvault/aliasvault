@@ -66,7 +66,7 @@ public static class GrantHelper
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="userIds">The user IDs to look up.</param>
-    /// <returns>User ID to the public key a vault key is sealed for them with. Users without a keypair are absent.</returns>
+    /// <returns>User ID to the public key a vault key is encrypted for them with. Users without a keypair are absent.</returns>
     public static async Task<Dictionary<string, MemberPublicKey>> GetPrimaryKeysAsync(AliasServerDbContext context, IEnumerable<string> userIds)
     {
         var ids = userIds.Distinct(StringComparer.Ordinal).ToList();

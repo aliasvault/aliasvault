@@ -185,7 +185,7 @@ public enum ApiErrorCode
     MANIFEST_ID_INVALID,
 
     /// <summary>
-    /// The supplied manifest id is already in use by a different manifest. The client must mint a fresh id and retry.
+    /// The supplied manifest id is already in use by a different manifest. The client must generate a fresh id and retry.
     /// </summary>
     MANIFEST_ID_TAKEN,
 
@@ -238,8 +238,8 @@ public enum ApiErrorCode
     INVITE_RECIPIENT_NOT_READY,
 
     /// <summary>
-    /// The shared manifest's key was rotated after the offer of access was made, so the key sealed into the offer no
-    /// longer opens the manifest. The offer is closed and the inviter has to make a fresh one.
+    /// The shared manifest's key was rotated after the offer of access was made, so the key encrypted into the offer no
+    /// longer decrypts the manifest. The offer is closed and the inviter has to make a fresh one.
     /// </summary>
     INVITATION_KEY_OUTDATED,
 

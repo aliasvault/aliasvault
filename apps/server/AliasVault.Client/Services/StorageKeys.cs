@@ -69,7 +69,7 @@ public static class StorageKeys
     public const string EncryptedVek = "encryptedVek";
 
     /// <summary>
-    /// Key for storing the account public key, used to seal shared vault grants to this account.
+    /// Key for storing the account public key, used to encrypt shared vault grants to this account.
     /// </summary>
     public const string AccountPublicKey = "accountPublicKey";
 

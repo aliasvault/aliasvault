@@ -168,7 +168,7 @@ export function legacyUnstampedRowAdoption(personalManifestId: string): { adoptU
  */
 
 /**
- * The freshly minted key hierarchy for one migration push. Held across the push so
+ * The freshly generated key hierarchy for one migration push. Held across the push so
  * {@link completeLegacyAccountKeyMigration} can cache exactly what the server committed.
  */
 export type LegacyAccountKeyMigration = {
@@ -189,7 +189,7 @@ export async function requiresLegacyAccountKeyMigration(): Promise<boolean> {
 }
 
 /**
- * Mint the account key hierarchy for a migration push.
+ * Generate the account key hierarchy for a migration push.
  * @param kek - the password-derived key this vault is currently encrypted with, which becomes the KEK
  */
 export async function prepareLegacyAccountKeyMigration(kek: string): Promise<LegacyAccountKeyMigration> {

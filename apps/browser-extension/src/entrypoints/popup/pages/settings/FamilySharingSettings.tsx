@@ -445,7 +445,7 @@ const FamilySharingSettings: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Inviting somebody seals this vault's key for them, which an admin who holds no grant on it cannot do. */}
+                      {/* Inviting somebody encrypts this vault's key for them, which an admin who holds no grant on it cannot do. */}
                       {canAdminister && !iHoldKey && (
                         <p className="text-xs text-gray-500 dark:text-gray-400">{t('sharing.family.cannotInviteWithoutAccess')}</p>
                       )}

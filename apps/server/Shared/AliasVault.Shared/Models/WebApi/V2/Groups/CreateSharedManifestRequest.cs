@@ -12,7 +12,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 /// </summary>
 public class CreateSharedManifestRequest
 {
-    /// <summary>Gets or sets the client-minted id of the new manifest.</summary>
+    /// <summary>Gets or sets the client-generated id of the new manifest.</summary>
     public required Guid ManifestId { get; set; }
 
     /// <summary>Gets or sets the manifest VEK encrypted with the user's own public key (base64), decryptable only by the user.</summary>

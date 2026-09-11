@@ -427,7 +427,7 @@ const Unlock: React.FC = () => {
 
       /*
        * KEK/VEK: when the PIN was set up before the vault key migration, the PIN-protected key is the old
-       * password-derived key (now the KEK). Upgrade to the VEK and re-seal the PIN store so future PIN unlocks
+       * password-derived key (now the KEK). Upgrade to the VEK and re-encrypt the PIN store so future PIN unlocks
        * return the VEK directly.
        */
       passwordHashBase64 = await VaultKeyService.resolveStoredUnlockKey(passwordHashBase64, key => setupPin(pinToUse, key));

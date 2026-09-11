@@ -45,7 +45,7 @@ public static class LegacyVaultRollback
             context.VaultManifestsHistory.Remove(legacyRevision);
             await context.SaveChangesAsync();
 
-            // Every manifest-v1 revision is sealed with the VEK removed below, so none of them can ever be opened
+            // Every manifest-v1 revision is encrypted with the VEK removed below, so none of them can ever be decrypted
             // again. They are dropped rather than left as restorable rows that would brick the account.
             await context.VaultManifestsHistory.Where(x => x.ManifestId == manifestId && x.StorageFormat == VaultManifestBase.ManifestStorageFormat).ExecuteDeleteAsync();
 

@@ -316,10 +316,10 @@ fn forward_compat_unknown_manifest_fields_preserved() {
 }
 
 #[test]
-fn canonicalize_remints_legacy_logo_ids_and_collapses_duplicate_sources() {
-    // Two clients minted distinct random Ids for the same domain; Items point at each. Canonicalize
-    // re-mints the row against its scope's derived id, which is what stops the two from ever being
-    // minted apart again and repoints both Items at it.
+fn canonicalize_rederives_legacy_logo_ids_and_collapses_duplicate_sources() {
+    // Two clients generated distinct random Ids for the same domain; Items point at each. Canonicalize
+    // re-derives the row's id against its scope, which is what stops the two from ever drifting apart
+    // again and repoints both Items at it.
     let favicon = vec![0x01, 0x02, 0x03];
     let out = canonicalize_from_sqlite(basic_input(vec![
         CodecTableData {
@@ -404,7 +404,7 @@ fn canonicalize_nulls_dangling_logo_reference() {
     let items = &out.first().manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-mint");
+    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-derive");
     assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
 }
 
@@ -932,7 +932,7 @@ fn canonicalize_collapses_duplicate_single_value_rows_to_the_newest() {
 }
 
 #[test]
-fn materialize_mints_missing_field_value_ids() {
+fn materialize_derives_missing_field_value_ids() {
     let manifest = Manifest {
         schema_version: SCHEMA_VERSION,
         manifest_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
@@ -944,7 +944,7 @@ fn materialize_mints_missing_field_value_ids() {
             (
                 "FieldValues".to_string(),
                 vec![
-                    // Single-value wire shape: no id, explicit position; the id is minted here.
+                    // Single-value wire shape: no id, explicit position; the id is derived here.
                     row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("ItemId", json!("i-1")), ("FieldKey", json!("login.username")), ("ValueIndex", json!(0)), ("Value", json!("me"))]),
                     // Multi-value: the owned id rides along untouched.
                     row(&[("ManifestId", json!(PERSONAL_MANIFEST)), ("Id", json!("u-1")), ("ItemId", json!("i-1")), ("FieldKey", json!("login.url")), ("ValueIndex", json!(0)), ("Value", json!("https://a.example"))]),
@@ -975,14 +975,14 @@ fn materialize_mints_missing_field_value_ids() {
 
     let fv: HashMap<&str, &CodecRecord> = tables["FieldValues"].iter().map(|r| (r["Value"].as_str().unwrap(), r)).collect();
     let expected_username_id = super::normalize::field_value_id_for(PERSONAL_MANIFEST, "i-1", "login.username", "", 0);
-    assert_eq!(fv["me"]["Id"], json!(expected_username_id), "materialize mints the derived id");
+    assert_eq!(fv["me"]["Id"], json!(expected_username_id), "materialize derives the id");
     assert_eq!(fv["https://a.example"]["Id"], json!("u-1"), "an owned multi-value id is kept verbatim");
 
     assert_eq!(tables["ItemTags"].len(), 1, "the id-less join row inserts as-is");
 
     let history = &tables["FieldHistories"][0];
     let expected_history_id = super::normalize::field_history_id_for(PERSONAL_MANIFEST, "i-1", "login.password", "", "2026-01-01 10:00:00.000");
-    assert_eq!(history["Id"], json!(expected_history_id), "materialize mints the derived history id");
+    assert_eq!(history["Id"], json!(expected_history_id), "materialize derives the history id");
 
     assert!(out.overflow.is_empty());
 }

@@ -15,7 +15,7 @@ import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifest
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { recordManifestRevisions } from '@aliasvault/client/sync/ManifestRevisions';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
-import { vaultRequiresManifestMigration, VaultMigrationKind, type VaultMigrationStatus } from '@aliasvault/client/sync/VaultManifestMigration';
+import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
 import { runFullVaultSync, runVaultManifestMigration, runVaultMigrationStatus, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
@@ -797,13 +797,13 @@ export async function handleStoreEncryptedVault(request: {
 /**
  * Classify the pending migration status.
  */
-export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationStatus> {
+export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationKind> {
   try {
     const result = await runVaultMigrationStatus(syncEngineHost);
-    return { kind: result.kind as VaultMigrationKind, serverConfirmed: result.serverConfirmed };
+    return result.kind as VaultMigrationKind;
   } catch (error) {
     devWarn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
-    return { kind: VaultMigrationKind.StorageFormatUpgrade, serverConfirmed: false };
+    return VaultMigrationKind.StorageFormatUpgrade;
   }
 }
 
@@ -1614,7 +1614,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
 }
 
 /**
- * Invite a member of a family to one of its shared manifests, handing them the manifest's key sealed for them.
+ * Invite a member of a family to one of its shared manifests, handing them the manifest's key encrypted to their account keypair.
  *
  * The recipient is picked off the family's own roster, so this never names an account outside the family.
  * @param message - the family, the manifest, and the member being invited.

@@ -22,7 +22,10 @@ export async function vaultRequiresManifestMigration(sqliteClient: SqliteClient)
  * What a pending migration will actually do, which decides whether it may run on its own.
  */
 export enum VaultMigrationKind {
-  /** No migration pending. */
+  /**
+   * Nothing to migrate, or nothing that may be migrated yet: a vault still on the frozen sqlite-blob chain
+   * classifies as None because that chain has to bring it to 2.0.0 before either kind below can apply.
+   */
   None = 'none',
 
   /**
@@ -36,14 +39,3 @@ export enum VaultMigrationKind {
   StorageFormatUpgrade = 'storage-format-upgrade',
 }
 
-/**
- * A pending migration, classified.
- */
-export type VaultMigrationStatus = {
-  kind: VaultMigrationKind;
-
-  /**
-   * Whether the classification could be confirmed against the server. False when the vault key probe could not reach the server.
-   */
-  serverConfirmed: boolean;
-};

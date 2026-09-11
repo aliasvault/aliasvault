@@ -208,7 +208,7 @@ window.rustCoreExtractDomain = async function(url) {
 /**
  * The Logos.Id to use for a source domain inside a given manifest scope.
  *
- * Logo identity is derived, not minted: two clients that fetch the same favicon independently produce
+ * Logo identity is derived, not random: two clients that fetch the same favicon independently produce
  * the same row and merge by LWW, instead of two rows that collide on UNIQUE(ManifestId, Source).
  * The same domain in two different manifests deliberately yields two different ids, so a shared
  * manifest's icon and the user's own icon for that domain never overwrite each other.

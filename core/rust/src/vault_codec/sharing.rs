@@ -19,14 +19,14 @@
 //!   below) and drops what nothing references any more (see [`prune_unreferenced_logos`]).
 //!
 //! **combine** (materialize side) stamps every manifest's rows with the manifest they arrived in,
-//! re-minting the ids that derive from the scope, drops the `EncryptionKeys` rows it may not publish
+//! recomputing the ids that derive from the scope, drops the `EncryptionKeys` rows it may not publish
 //! plus the bucketed, personal and bookkeeping tables no manifest may carry, folds in its data buckets,
 //! then repairs the references a namespace boundary leaves dangling.
 //!
 //! **Referenced content** is copied, never moved. A foreign key is composite, so a row in another
 //! namespace is as absent as a deleted one, and the manifest referencing it gets its own stamped copy:
 //! two members editing "the same" tag or logo then never overwrite each other. A row with an opaque id
-//! keeps it ([`clone_referenced_rows`]); a `Logos` id derives from the scope, so the copy re-mints it
+//! keeps it ([`clone_referenced_rows`]); a `Logos` id derives from the scope, so the copy recomputes it
 //! (see [`scoped_assets`](super::scoped_assets)).
 
 use std::collections::{HashMap, HashSet};
@@ -227,7 +227,7 @@ pub(super) fn partition_by_manifest(
 
     /*
      * 3. Logos are scoped, not copied: a row moves to the partition its ManifestId names. The stamp
-     * value itself is re-minted to the owning manifest below.
+     * value itself is rewritten to the owning manifest below.
      */
     if let Some(logo_rows) = tables.remove(LOGOS_TABLE) {
         let mut base_rows: Vec<CodecRecord> = Vec::with_capacity(logo_rows.len());
@@ -329,7 +329,7 @@ pub(super) fn partition_by_manifest(
     /*
      * 6. Each manifest ends up self-contained: every row it references but does not hold is copied out
      * of the vault-wide snapshot and stamped for this manifest, keeping its id where the id is opaque
-     * and re-minting it where it derives from the scope.
+     * and recomputing it where it derives from the scope.
      */
     let no_logos: Vec<CodecRecord> = Vec::new();
     let all_logos = snapshots.get(LOGOS_TABLE).unwrap_or(&no_logos);
@@ -473,7 +473,7 @@ pub(super) fn combine_manifest_tables(
 /// let one manifest inject rows into another's namespace through a table the registry cannot police).
 ///
 /// Two tables are held out of the blanket stamp. `Logos` are stamped by [`normalize_logo_scope`], which
-/// re-mints their derived ids and repoints `Items.LogoId` in the same pass. `EncryptionKeys` are not
+/// re-derives their ids and repoints `Items.LogoId` in the same pass. `EncryptionKeys` are not
 /// stamped at all: there the stamp is a *claim* that [`retain_own_encryption_keys`] checks, and stamping
 /// first would make every claim true.
 fn claim_manifest_scope(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {

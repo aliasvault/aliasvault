@@ -67,7 +67,7 @@ export class SharingService {
    * Create a shared group's manifest.
    * @param webApi - API client to reuse.
    * @param group - the group to create the manifest for, with this client's own public key to encrypt its VEK for.
-   * @param manifestId - the client-minted id of the new manifest.
+   * @param manifestId - the client-generated id of the new manifest.
    */
   public static async createSharedManifest(webApi: WebApiService, group: ShareTarget, manifestId: string): Promise<SharedManifestMapping> {
     const manifestVek = EncryptionUtility.generateVaultEncryptionKey();
@@ -110,7 +110,7 @@ export class SharingService {
   }
 
   /**
-   * Open the vault names sealed into the invitations addressed to this account.
+   * Decrypt the vault names encrypted into the invitations addressed to this account.
    * @param sqliteClient - the open local vault, which holds this account's superseded private keys.
    * @param invitations - the invitations as served by the API.
    * @returns The name of each invitation's vault, keyed by invitation id; invitations whose name will not open are left out.
@@ -125,14 +125,14 @@ export class SharingService {
 
       const privateKey = await this.resolveGrantPrivateKey(sqliteClient, invitation.recipientPublicKey);
       if (!privateKey) {
-        devWarn(`[Sharing] No account key in this vault opens the name sealed into invitation ${invitation.id}.`);
+        devWarn(`[Sharing] No account key in this vault decrypts the name encrypted into invitation ${invitation.id}.`);
         continue;
       }
 
       try {
         names[invitation.id] = new TextDecoder().decode(await EncryptionUtility.decryptWithPrivateKey(invitation.encryptedName, privateKey));
       } catch (error) {
-        devWarn(`[Sharing] Failed to open the name sealed into invitation ${invitation.id}.`, error);
+        devWarn(`[Sharing] Failed to decrypt the name encrypted into invitation ${invitation.id}.`, error);
       }
     }
 
@@ -205,7 +205,7 @@ export class SharingService {
   }
 
   /**
-   * Mint a fresh active keypair for a shared manifest.
+   * Generate a fresh active keypair for a shared manifest.
    * @param sqliteClient - the open local vault DB (caller must run this inside a vault mutation so it is saved)
    * @param manifestId - the shared manifest's id (the stamp its key rows carry)
    */
@@ -243,7 +243,7 @@ export class SharingService {
   /**
    * Persist the shared-manifest key records.
    * @param manifests - the full record map; replaces whatever is stored.
-   * @param encryptionKey - the vault encryption key the map is sealed with, passed explicitly because both writers already hold it.
+   * @param encryptionKey - the vault encryption key the map is encrypted with, passed explicitly because both writers already hold it.
    */
   public static async setSharedManifestRecords(manifests: Record<string, SharedManifestRecord>, encryptionKey: string): Promise<void> {
     await getPlatform().storage.set(StorageKeys.SHARED_MANIFESTS, await EncryptionUtility.symmetricEncrypt(JSON.stringify(manifests), encryptionKey));
@@ -252,7 +252,7 @@ export class SharingService {
   /**
    * Add (or replace) one shared-manifest key record.
    * @param record - the record to add.
-   * @param encryptionKey - the vault encryption key the map is sealed with.
+   * @param encryptionKey - the vault encryption key the map is encrypted with.
    */
   public static async addSharedManifestRecord(record: SharedManifestRecord, encryptionKey: string): Promise<void> {
     const manifests = await this.getSharedManifestRecords();

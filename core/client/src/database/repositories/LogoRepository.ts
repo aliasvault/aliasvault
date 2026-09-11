@@ -19,7 +19,7 @@ export type CustomLogoEntry = ItemLogo & {
  * Every logo an item can have lives in one table, keyed by (Kind, Source): a fetched favicon under its
  * domain, a built-in logo under its catalog key, an uploaded image under its content hash. Ids are
  * derived from that key by the Rust core rather than randomly generated, so every device and platform
- * produces the same row for the same logo instead of minting duplicates that collide on
+ * produces the same row for the same logo instead of creating duplicates that collide on
  * UNIQUE(ManifestId, Kind, Source).
  */
 export class LogoRepository extends BaseRepository {
@@ -123,7 +123,7 @@ export class LogoRepository extends BaseRepository {
    * Get or create the logo for a kind and key inside one manifest, refreshing its image data.
    *
    * The row's stamp and the id derived for it come from the same `manifestId`, so a logo can never be
-   * stored under a scope other than the one its id was minted for.
+   * stored under a scope other than the one its id was derived for.
    * @param manifestId The manifest to write the logo into
    * @param kind The logo kind
    * @param source The natural key within that kind
