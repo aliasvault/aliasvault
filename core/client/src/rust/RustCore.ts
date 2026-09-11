@@ -1,45 +1,36 @@
 /**
- * Typed wrapper around the AliasVault Rust core (shared with iOS, Android,
- * and the Blazor client). The browser ships the core as WebAssembly; that
- * detail is encapsulated here so callers can think in terms of plain
- * TypeScript functions.
+ * Typed wrapper around the AliasVault Rust core (shared with iOS, Android, and the Blazor client).
  *
- * Algorithms (URL matching, credential filtering, domain extraction) live in
- * `core/rust/src/credential_matcher`. This file only handles init and
- * adapts inputs/outputs to TypeScript types.
+ * Algorithms (URL matching, credential filtering, domain extraction, the vault codec) live in `core/rust`.
  */
 import { resolveDefaultLanguage } from '@aliasvault/models/defaults';
 import { FieldKey } from '@aliasvault/models/vault';
 
-import initWasm, * as core from '../../wasm/aliasvault_core.js';
 import { getPlatform } from '../platform/ClientPlatform';
 import { deviceLanguage } from '../platform/DeviceLanguage';
 
+import { AutofillMatchingMode } from './RustCoreTypes';
+
+import type { IRustCore } from './RustCoreBinding';
+import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
-export enum AutofillMatchingMode {
-  DEFAULT = 'default',
-  URL_EXACT = 'url_exact',
-  URL_SUBDOMAIN = 'url_subdomain'
-}
+export { AutofillMatchingMode } from './RustCoreTypes';
+export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
 
-let initPromise: Promise<void> | null = null;
+/**
+ * The host's Rust core binding.
+ */
+export function rustCore(): IRustCore {
+  return getPlatform().rustCore;
+}
 
 /**
  * Initialize the Rust core.
  */
 export function initRustCore(): Promise<void> {
-  if (!initPromise) {
-    initPromise = (async (): Promise<void> => {
-      await initWasm({ module_or_path: await getPlatform().loadRustCoreWasm() });
-    })().catch((error: unknown) => {
-      // Let the next caller retry instead of pinning a failed load for the lifetime of the caller.
-      initPromise = null;
-      throw error;
-    });
-  }
-  return initPromise;
+  return rustCore().init();
 }
 
 /**
@@ -49,8 +40,7 @@ export function initRustCore(): Promise<void> {
  * reversed-TLD app bundle identifiers like `com.example.app`.
  */
 export async function extractDomain(url: string): Promise<string> {
-  await initRustCore();
-  return core.extractDomain(url);
+  return rustCore().extractDomain(url);
 }
 
 /**
@@ -58,17 +48,8 @@ export async function extractDomain(url: string): Promise<string> {
  * Example: `sub.example.co.uk` > `example.co.uk`.
  */
 export async function extractRootDomain(domain: string): Promise<string> {
-  await initRustCore();
-  return core.extractRootDomain(domain);
+  return rustCore().extractRootDomain(domain);
 }
-
-/**
- * The URL a favicon is fetched from, paired with the `Logos.Source` key it is stored under.
- */
-export type FaviconTarget = {
-  url: string;
-  source: string;
-};
 
 /**
  * Read a URL field value as an ordered list, accepting the single-string and multi-value
@@ -88,30 +69,20 @@ export function toUrlList(urlValue: string | string[] | undefined | null): strin
  * Returns null when no URL qualifies.
  */
 export async function selectFaviconTarget(urls: string[]): Promise<FaviconTarget | null> {
-  await initRustCore();
-  return core.selectFaviconTarget(urls) as FaviconTarget | null;
+  return rustCore().selectFaviconTarget(urls);
 }
 
 /**
  * Generate a password or passphrase from the given settings.
- *
- * The `Type` field selects the generator: `'basic'` (character-set password)
- * or `'diceware'` (wordlist passphrase). Generation runs in the Rust core.
- *
- * Seed is an optional 64-character hex string (32 bytes) that seeds the RNG for deterministic generation
- * primarily for UI comparison purposes. All normal password generation is non-deterministic.
  */
 export async function generatePassword(settings: PasswordSettings, seed?: string): Promise<string> {
-  await initRustCore();
   const effective = await applyEffectiveDicewareLanguage(settings);
   const payload = seed ? { ...effective, Seed: seed } : effective;
-  return core.generatePassword(JSON.stringify(payload));
+  return rustCore().generatePassword(JSON.stringify(payload));
 }
 
 /**
  * Resolve the effective Diceware passphrase language when none is explicitly chosen.
- *
- * The passphrase language is left empty by default ("auto").
  */
 async function applyEffectiveDicewareLanguage(settings: PasswordSettings): Promise<PasswordSettings> {
   if (settings.Type !== 'diceware' || (settings.Language && settings.Language.trim().length > 0)) {
@@ -123,59 +94,32 @@ async function applyEffectiveDicewareLanguage(settings: PasswordSettings): Promi
 
 /**
  * Get the list of bundled Diceware wordlist language ISO codes (first is the default, 'en').
- * The set is owned by the Rust core; unknown codes fall back to English during generation.
  */
 export async function getDicewareLanguages(): Promise<string[]> {
-  await initRustCore();
-  const languages = core.getDicewareLanguages() as string[];
+  const languages = await rustCore().getDicewareLanguages();
   return languages.length > 0 ? languages : ['en'];
 }
-
-/**
- * Request for {@link generateIdentity}. All fields except `language` are optional.
- */
-export type IdentityRequest = {
-  /** Dictionary language code (e.g. 'en'); unknown codes fall back to English. */
-  language: string;
-  /** Gender preference: 'male', 'female' or 'random' (default). */
-  gender?: string;
-  /** Age range preference as stored in settings (e.g. '21-25' or 'random'). */
-  ageRange?: string;
-};
-
-/**
- * Name and birth date input for identity-based username/email prefix generation.
- */
-export type IdentityNameInput = {
-  firstName: string;
-  lastName: string;
-  /** Birth date; only the leading yyyy year part is used. */
-  birthDate: string;
-};
 
 /**
  * Generate a random identity (alias persona) in the Rust core.
  * Returns the identity with a yyyy-MM-dd birth date string.
  */
 export async function generateIdentity(request: IdentityRequest): Promise<Identity> {
-  await initRustCore();
-  return JSON.parse(core.generateIdentity(JSON.stringify(request))) as Identity;
+  return JSON.parse(await rustCore().generateIdentity(JSON.stringify(request))) as Identity;
 }
 
 /**
  * Generate a username from persona name fields (alphanumeric, 6-20 characters).
  */
 export async function generateIdentityUsername(input: IdentityNameInput): Promise<string> {
-  await initRustCore();
-  return core.generateIdentityUsername(JSON.stringify(input));
+  return rustCore().generateIdentityUsername(JSON.stringify(input));
 }
 
 /**
  * Generate an email prefix from persona name fields (6-20 characters).
  */
 export async function generateIdentityEmailPrefix(input: IdentityNameInput): Promise<string> {
-  await initRustCore();
-  return core.generateIdentityEmailPrefix(JSON.stringify(input));
+  return rustCore().generateIdentityEmailPrefix(JSON.stringify(input));
 }
 
 /**
@@ -183,8 +127,7 @@ export async function generateIdentityEmailPrefix(input: IdentityNameInput): Pro
  * Used for login-type credentials where no persona fields are available.
  */
 export async function generateRandomEmailPrefix(length: number = 14): Promise<string> {
-  await initRustCore();
-  return core.generateRandomEmailPrefix(length);
+  return rustCore().generateRandomEmailPrefix(length);
 }
 
 /**
@@ -192,8 +135,7 @@ export async function generateRandomEmailPrefix(length: number = 14): Promise<st
  * The set is owned by the Rust core; unknown codes fall back to English during generation.
  */
 export async function getIdentityLanguages(): Promise<string[]> {
-  await initRustCore();
-  const languages = core.getIdentityLanguages() as string[];
+  const languages = await rustCore().getIdentityLanguages();
   return languages.length > 0 ? languages : ['en'];
 }
 
@@ -201,59 +143,35 @@ export async function getIdentityLanguages(): Promise<string[]> {
  * Get the list of identity age range option values ('random' plus 5-year ranges).
  */
 export async function getIdentityAgeRanges(): Promise<string[]> {
-  await initRustCore();
-  return core.getIdentityAgeRanges() as string[];
+  return rustCore().getIdentityAgeRanges();
 }
-
-/**
- * A single attachment of a parsed email message. Metadata only: fetch the bytes with
- * {@link extractEmailAttachment} using this attachment's index in {@link ParsedEmail.attachments}.
- */
-export type ParsedEmailAttachment = {
-  filename: string;
-  mimeType: string;
-  size: number;
-  detached: boolean;
-  partIndex: number | null;
-};
-
-/** Result of parsing a raw RFC 822 email source. Body fields are null when the message has no such part. */
-export type ParsedEmail = {
-  htmlBody: string | null;
-  textBody: string | null;
-  attachments: ParsedEmailAttachment[];
-};
 
 /**
  * Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
  */
 export async function parseEmailSource(source: Uint8Array): Promise<ParsedEmail> {
-  await initRustCore();
-  return core.parseEmailSource(source) as ParsedEmail;
+  return rustCore().parseEmailSource(source);
 }
 
 /**
  * Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
  */
 export async function decodeEmailSource(source: Uint8Array): Promise<Uint8Array> {
-  await initRustCore();
-  return core.decodeEmailSource(source) as Uint8Array;
+  return rustCore().decodeEmailSource(source);
 }
 
 /**
  * Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
  */
 export async function extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array> {
-  await initRustCore();
-  return core.extractEmailAttachment(source, index, detachedBody) as Uint8Array;
+  return rustCore().extractEmailAttachment(source, index, detachedBody);
 }
 
 /**
  * Derive a 32-byte key from a password using Argon2id.
  */
 export async function argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array> {
-  await initRustCore();
-  return core.argon2DeriveKey(password, salt, encryptionSettings);
+  return rustCore().argon2DeriveKey(password, salt, encryptionSettings);
 }
 
 /**
@@ -269,26 +187,19 @@ export function generateSeed(): string {
 /**
  * Filter items by URL/title for autofill. Returns at most 3 matches.
  */
-export async function filterItems(
-  items: Item[],
-  currentUrl: string,
-  pageTitle: string,
-  matchingMode: AutofillMatchingMode = AutofillMatchingMode.DEFAULT
-): Promise<Item[]> {
-  await initRustCore();
-
+export async function filterItems(items: Item[], currentUrl: string, pageTitle: string, matchingMode: AutofillMatchingMode = AutofillMatchingMode.DEFAULT): Promise<Item[]> {
   const credentials = items.map(item => ({
     Id: item.Id,
     ItemName: item.Name ?? '',
     ItemUrls: getFieldValues(item, FieldKey.LoginUrl)
   }));
 
-  const result = core.filterCredentials({
+  const result = await rustCore().filterCredentials({
     credentials,
     current_url: currentUrl,
     page_title: pageTitle,
     matching_mode: matchingMode
-  }) as { matched_ids: string[] };
+  });
 
   return result.matched_ids
     .map(id => items.find(item => item.Id === id))
@@ -302,183 +213,57 @@ export async function filterItems(
  * extractor returns no domain (app bundle identifiers).
  */
 export async function isUrlAlreadyLinked(existingUrls: string[], newUrl: string): Promise<boolean> {
-  await initRustCore();
-  const newKey = urlComparisonKey(newUrl);
+  const newKey = await urlComparisonKey(newUrl);
   if (!newKey) {
     return false;
   }
-  return existingUrls.some(existing => urlComparisonKey(existing) === newKey);
+  const existingKeys = await Promise.all(existingUrls.map(existing => urlComparisonKey(existing)));
+  return existingKeys.some(key => key === newKey);
 }
 
 /**
- * Synchronous host-only comparison key. Caller must ensure `initRustCore()`
- * has resolved before calling. Exposed as a sync helper for tight loops
- * (see `isUrlAlreadyLinked`); async callers should use `extractDomain`.
+ * Host-only comparison key of a URL: its domain, or the lowercased URL when the extractor yields none.
  */
-function urlComparisonKey(url: string): string {
+async function urlComparisonKey(url: string): Promise<string> {
   const trimmed = url.trim().toLowerCase();
   if (!trimmed) {
     return trimmed;
   }
-  const domain = core.extractDomain(trimmed);
+  const domain = await rustCore().extractDomain(trimmed);
   return domain.length > 0 ? domain : trimmed;
 }
 
 /*
  * Vault codec (manifest-v1 storage format).
- *
- * The format logic (canonicalize/materialize, canonical hash + integrity envelope, gzip pack/unpack,
- * structural validation, blob diff) lives in `core/rust/src/vault_codec`. These wrappers adapt the
- * WASM exports to TypeScript types.
  */
-
-/** A single table's rows (byte columns rendered as `{ __b64 }`). */
-export type CodecTableData = { name: string; records: Array<Record<string, unknown>> };
-
-/**
- * Manifest-v1 manifest. Forward-compat: unknown keys are preserved on round-trip.
- *
- * Carries no data-model (EF migration) version: each manifest is written by whichever client last
- * pushed it, and a reader materializes into the schema it ships with anyway (anything that schema
- * cannot hold is preserved structurally by `CodecOverflow`). `schemaVersion` is the wire-structure
- * version and is a separate axis.
- */
-export type CodecManifest = {
-  schemaVersion: number;
-  manifestSalt: string;
-  canonicalizedAt: string;
-  manifestId: string;
-  name?: string | null;
-  tables: Record<string, Array<Record<string, unknown>>>;
-  [key: string]: unknown;
-};
-
-/**
- * One manifest canonicalize should emit.
- */
-export type CodecManifestSpec = {
-  manifestId: string;
-  manifestSalt: string;
-  name?: string | null;
-};
-
-/**
- * A manifest-v1 data bucket, addressed by the manifest that owns it and its category.
- */
-export type CodecDataBucket = {
-  schemaVersion: number;
-  manifestId: string;
-  category: string;
-  tables: Record<string, Array<Record<string, unknown>>>;
-  [key: string]: unknown;
-};
-
-/** A decoded blob entry: kind + plaintext bytes (base64). */
-export type CodecBlobEntry = { kind: string; bytesBase64: string };
-
-/** One manifest produced by canonicalize: the manifest and the blobs hashed with its own salt. */
-export type CodecCanonicalizedManifest = { manifest: CodecManifest; blobs: Record<string, CodecBlobEntry> };
-
-/**
- * Result of canonicalize: one entry per spec, in spec order, plus the vault's data buckets.
- */
-export type CodecCanonicalized = {
-  manifests: CodecCanonicalizedManifest[];
-  dataBuckets: CodecDataBucket[];
-};
-
-/**
- * Data a newer writer put in the manifest that this client's local SQLite schema cannot hold:
- * whole unknown manifest tables, whole unknown bucket tables (per category), and unknown columns
- * keyed by table > row primary-key value.
- */
-export type CodecOverflow = {
-  tables: Record<string, Array<Record<string, unknown>>>;
-  bucketTables: Record<string, Record<string, Array<Record<string, unknown>>>>;
-  columns: Record<string, Record<string, Record<string, unknown>>>;
-};
-
-/** Input for canonicalize. */
-export type CodecCanonicalizeInput = {
-  tables: CodecTableData[];
-  canonicalizedAt: string;
-  manifests: CodecManifestSpec[];
-  /** For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. TODO: delete this field once the migration is complete. */
-  adoptUnstampedInto?: string | null;
-};
-
-/**
- * Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy).
- * No migration id: the DB is created from this client's own schema, which is the only thing that
- * decides which migration the result is at.
- */
-export type CodecMaterialized = { tables: CodecTableData[]; overflow: CodecOverflow };
-
-/** One entry in the bucket layout: a category and the tables it owns. */
-export type CodecBucketLayoutEntry = { category: string; tables: string[] };
-
-/** Structural validation outcome. */
-export type CodecValidation = { ok: boolean; failedRules: string[]; message: string };
 
 /**
  * Canonicalize normalized tables into manifest + data buckets + blob map.
  */
 export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized> {
-  await initRustCore();
-  return core.vaultCodecCanonicalizeFromSqlite(input) as CodecCanonicalized;
+  return rustCore().vaultCodecCanonicalizeFromSqlite(input);
 }
 
 /**
  * Materialize the vault's manifests + data buckets into the table set the platform inserts.
  */
-export async function vaultCodecMaterializeAsSqlite(
-  manifests: CodecManifest[],
-  dataBuckets: CodecDataBucket[],
-  schemaColumns: Record<string, string[]>
-): Promise<CodecMaterialized> {
-  await initRustCore();
-  return core.vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns }) as CodecMaterialized;
+export async function vaultCodecMaterializeAsSqlite(manifests: CodecManifest[], dataBuckets: CodecDataBucket[], schemaColumns: Record<string, string[]>): Promise<CodecMaterialized> {
+  return rustCore().vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns });
 }
-
-/** Input of the canonical merge: server side is the base, local side the incoming changes. */
-export type CodecCanonicalMergeInput = {
-  serverManifests: CodecManifest[];
-  serverBuckets: CodecDataBucket[];
-  contentlessServerManifestIds: string[];
-  localManifests: CodecManifest[];
-  localBuckets: CodecDataBucket[];
-  schemaColumns: Record<string, string[]>;
-};
-
-/** One manifest's merged result: the server manifest with merged tables, plus its merged buckets. */
-export type CodecCanonicalManifestMerge = {
-  manifestId: string;
-  manifest: CodecManifest;
-  buckets: CodecDataBucket[];
-  stats: { tablesProcessed: number; recordsFromLocal: number; recordsFromServer: number; recordsCreatedLocally: number; conflicts: number; recordsInserted: number };
-};
-
-/** Output of the canonical merge. */
-export type CodecCanonicalMergeOutput = {
-  manifests: CodecCanonicalManifestMerge[];
-  droppedLocalManifestIds: string[];
-};
 
 /**
  * Merge the local canonical vault onto the server canonical vault (the base), one manifest at a
  * time, rows out.
  */
 export async function vaultCodecMergeCanonical(input: CodecCanonicalMergeInput): Promise<CodecCanonicalMergeOutput> {
-  await initRustCore();
-  return core.mergeCanonical(input) as CodecCanonicalMergeOutput;
+  return rustCore().mergeCanonical(input);
 }
 
 /**
  * Extract the encryption-key row whose `PublicKey` matches `publicKey` from a decrypted manifest.
  */
 export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: CodecManifest, publicKey: string): Promise<Record<string, unknown> | null> {
-  await initRustCore();
-  return (core.vaultCodecExtractEncryptionKeyForPublicKey(manifest, publicKey) ?? null) as Record<string, unknown> | null;
+  return rustCore().vaultCodecExtractEncryptionKeyForPublicKey(manifest, publicKey);
 }
 
 /**
@@ -486,32 +271,28 @@ export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: Codec
  * path).
  */
 export async function vaultCodecExtractBuckets(category: string, manifestIds: string[], tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket[]> {
-  await initRustCore();
-  return core.vaultCodecExtractBuckets({ category, manifestIds, tables }) as CodecDataBucket[];
+  return rustCore().vaultCodecExtractBuckets({ category, manifestIds, tables });
 }
 
 /**
  * The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
  */
 export async function vaultCodecOverflowTable(): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecOverflowTable();
+  return rustCore().vaultCodecOverflowTable();
 }
 
 /**
  * The vault tables that take part in sync, as declared by the shared vault table registry.
  */
 export async function getSyncableTableNames(): Promise<string[]> {
-  await initRustCore();
-  return core.getSyncableTableNames();
+  return rustCore().getSyncableTableNames();
 }
 
 /**
  * The bucket layout: every category and the tables it owns.
  */
 export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]> {
-  await initRustCore();
-  return core.vaultCodecBucketLayout() as CodecBucketLayoutEntry[];
+  return rustCore().vaultCodecBucketLayout();
 }
 
 /**
@@ -524,16 +305,14 @@ export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]
  * overwrite each other.
  */
 export async function vaultCodecLogoIdForSource(manifestId: string, source: string): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecLogoIdForSource(manifestId, source);
+  return rustCore().vaultCodecLogoIdForSource(manifestId, source);
 }
 
 /**
  * The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
  */
 export async function vaultCodecLogoIdFor(manifestId: string, kind: string, source: string): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecLogoIdFor(manifestId, kind, source);
+  return rustCore().vaultCodecLogoIdFor(manifestId, kind, source);
 }
 
 /**
@@ -541,56 +320,49 @@ export async function vaultCodecLogoIdFor(manifestId: string, kind: string, sour
  * under, which is what makes picking the same image again reuse the row that already holds it.
  */
 export async function vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecLogoContentHash(bytes);
+  return rustCore().vaultCodecLogoContentHash(bytes);
 }
 
 /**
  * Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
  */
 export async function vaultCodecGenerateManifestSalt(): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecGenerateManifestSalt();
+  return rustCore().vaultCodecGenerateManifestSalt();
 }
 
 /**
  * Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
  */
 export async function vaultCodecPackPayload(payloadJson: string): Promise<Uint8Array> {
-  await initRustCore();
-  return core.vaultCodecPackPayload(payloadJson);
+  return rustCore().vaultCodecPackPayload(payloadJson);
 }
 
 /**
  * Unpack a (decrypted) payload: gunzip > verify content hash > return the payload JSON string.
  */
 export async function vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecUnpackPayload(plainBytes);
+  return rustCore().vaultCodecUnpackPayload(plainBytes);
 }
 
 /**
  * Structurally validate a manifest before upload.
  */
 export async function vaultCodecValidateManifest(manifest: CodecManifest): Promise<CodecValidation> {
-  await initRustCore();
-  return core.vaultCodecValidateManifest(manifest) as CodecValidation;
+  return rustCore().vaultCodecValidateManifest(manifest);
 }
 
 /**
  * Validate a data bucket before upload.
  */
 export async function vaultCodecValidateDataBucket(bucket: CodecDataBucket): Promise<CodecValidation> {
-  await initRustCore();
-  return core.vaultCodecValidateDataBucket(bucket) as CodecValidation;
+  return rustCore().vaultCodecValidateDataBucket(bucket);
 }
 
 /**
  * SHA-256 (lowercase hex) of a base64 ciphertext string.
  */
 export async function vaultCodecComputeCiphertextHash(base64Ciphertext: string): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecComputeCiphertextHash(base64Ciphertext);
+  return rustCore().vaultCodecComputeCiphertextHash(base64Ciphertext);
 }
 
 /**
@@ -599,63 +371,23 @@ export async function vaultCodecComputeCiphertextHash(base64Ciphertext: string):
  * every platform uses the same fingerprinting algorithm.
  */
 export async function vaultCodecComputeContentFingerprint(payloadJson: string): Promise<string> {
-  await initRustCore();
-  return core.vaultCodecComputeContentFingerprint(payloadJson);
+  return rustCore().vaultCodecComputeContentFingerprint(payloadJson);
 }
-
-/** A shared manifest's key record. */
-export type SharingManifestRecord = {
-  manifestId: string;
-  salt: string;
-  name?: string | null;
-  canAdminister?: boolean;
-};
-
-/** One manifest the next push writes. */
-export type SharingWriteRecord = {
-  manifestId: string;
-  isPersonal: boolean;
-  salt: string;
-  name: string | null;
-  canAdminister: boolean;
-};
-
-/** The manifests a push writes, personal first, plus what was left out and why. */
-export type SharingWriteSet = {
-  records: SharingWriteRecord[];
-  skipped: Array<{ manifestId: string; reason: 'NO_ROWS_IN_VAULT' | 'KEY_DID_NOT_OPEN' }>;
-};
-
-/** What the vault holds but cannot write, and what it holds but has lost access to. */
-export type SharingAccessPartition = { unwritable: string[]; lost: string[] };
 
 /**
  * Work out which manifests the next push writes, personal manifest first.
  * @param input - the personal manifest, what the vault holds rows for, what opened, and the held records.
  */
-export async function vaultSharingResolveManifestWriteSet(input: {
-  personalManifestId: string;
-  personalManifestSalt: string;
-  stampedManifestIds: string[];
-  openedManifestIds: string[];
-  heldRecords: SharingManifestRecord[];
-  displayNames: Record<string, string>;
-}): Promise<SharingWriteSet> {
-  await initRustCore();
-  return core.vaultSharingResolveManifestWriteSet(input) as SharingWriteSet;
+export async function vaultSharingResolveManifestWriteSet(input: { personalManifestId: string; personalManifestSalt: string; stampedManifestIds: string[]; openedManifestIds: string[]; heldRecords: SharingManifestRecord[]; displayNames: Record<string, string> }): Promise<SharingWriteSet> {
+  return rustCore().vaultSharingResolveManifestWriteSet(input);
 }
 
 /**
  * Split what the local vault holds by what this account can still open.
  * @param input - what the vault holds, what this session can write, and what the last snapshot served.
  */
-export async function vaultSharingPartitionManifestAccess(input: {
-  manifestIdsInVault: string[];
-  writableManifestIds: string[];
-  grantedManifestIds: string[];
-}): Promise<SharingAccessPartition> {
-  await initRustCore();
-  return core.vaultSharingPartitionManifestAccess(input) as SharingAccessPartition;
+export async function vaultSharingPartitionManifestAccess(input: { manifestIdsInVault: string[]; writableManifestIds: string[]; grantedManifestIds: string[] }): Promise<SharingAccessPartition> {
+  return rustCore().vaultSharingPartitionManifestAccess(input);
 }
 
 /**

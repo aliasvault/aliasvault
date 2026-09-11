@@ -7,7 +7,7 @@ import type { SqliteClient } from '../database/SqliteClient';
  * answered entirely from local state.
  *
  * Two conditions, carried independently of each other:
- * 1. A stale local schema, rebuilt via `VaultSyncService.migrateVaultToCurrentSchema`. This is the permanent path:
+ * 1. A stale local schema, rebuilt by the sync engine's `migrateManifest` operation. This is the permanent path:
  *    it delivered the initial sqlite-blob to manifest-v1 transition and fires again after every schema change we ship.
  * 2. A missing account key hierarchy ({@link requiresLegacyAccountKeyMigration}), one-time and deletable.
  *

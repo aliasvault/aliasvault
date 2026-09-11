@@ -62,7 +62,7 @@ export const StorageKeys = {
   MUTATION_SEQUENCE: 'local:mutationSequence',
   /** True when the client operates against the local vault only. */
   IS_OFFLINE_MODE: 'local:isOfflineMode',
-  /** Message of the last failed sync attempt, shown in the UI. */
+  /** The last failed sync attempt, as the translation key and error code the UI renders from. */
   LAST_SYNC_ERROR: 'local:lastSyncError',
   /** The client's last known server revision per manifest. */
   SERVER_MANIFEST_REVISIONS: 'local:serverManifestRevisions',

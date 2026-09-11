@@ -50,6 +50,8 @@ export enum AppErrorCode {
   SYNC_VAULT_FETCH_FAILED = 'E-502', // Failed to fetch vault from server
   SYNC_VAULT_DECRYPT_FAILED = 'E-503', // Failed to decrypt server vault
   SYNC_STORE_FAILED = 'E-504', // Failed to store synced vault locally
+  SYNC_SERVER_UNREACHABLE = 'E-505', // Server unreachable and no local vault to fall back on
+  SYNC_SERVER_ERROR = 'E-506', // The server answered a sync request with an unexpected HTTP failure
 
   // Storage read/write errors (E-6xx)
   STORAGE_READ_FAILED = 'E-601',
@@ -146,6 +148,8 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.SYNC_VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.SYNC_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_SERVER_UNREACHABLE]: 'common.errors.serverNotAvailable',
+    [AppErrorCode.SYNC_SERVER_ERROR]: 'common.errors.unknownErrorTryAgain',
 
     // Storage read/write errors (E-6xx)
     [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
@@ -155,7 +159,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
 
     // Merge operations (E-7xx)
     [AppErrorCode.MERGE_FAILED]: 'common.errors.mergeFailed',
-    [AppErrorCode.MERGE_CONFLICT]: 'common.errors.mergeFailed',
+    [AppErrorCode.MERGE_CONFLICT]: 'common.errors.syncConflictMaxRetries',
     [AppErrorCode.MERGE_UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Upload operations (E-8xx)

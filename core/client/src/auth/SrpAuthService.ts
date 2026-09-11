@@ -1,14 +1,8 @@
-import {
-  srpGenerateSalt,
-  srpDerivePrivateKey,
-  srpDeriveVerifier,
-  srpGenerateEphemeral,
-  srpDeriveSession,
-} from '../../wasm/aliasvault_core.js';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
-import { initRustCore } from '../rust/RustCore';
+import { rustCore } from '../rust/RustCore';
 
+import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
 import type { TokenModel, LoginResponse, BadRequestResponse } from '@aliasvault/models/webapi';
 
 /**
@@ -86,22 +80,6 @@ export const DEFAULT_ENCRYPTION = {
 } as const;
 
 /**
- * SRP ephemeral key pair type.
- */
-type SrpEphemeral = {
-  public: string;
-  secret: string;
-};
-
-/**
- * SRP session type.
- */
-type SrpSession = {
-  proof: string;
-  key: string;
-};
-
-/**
  * SrpAuthService provides SRP-based authentication utilities using Rust WASM.
  *
  * This service handles:
@@ -129,8 +107,7 @@ export class SrpAuthService {
    * @returns A random salt string (uppercase hex)
    */
   public static async generateSalt(): Promise<string> {
-    await initRustCore();
-    return srpGenerateSalt();
+    return rustCore().srpGenerateSalt();
   }
 
   /**
@@ -169,8 +146,7 @@ export class SrpAuthService {
     username: string,
     passwordHashString: string
   ): Promise<string> {
-    await initRustCore();
-    return srpDerivePrivateKey(salt, SrpAuthService.normalizeUsername(username), passwordHashString);
+    return rustCore().srpDerivePrivateKey(salt, SrpAuthService.normalizeUsername(username), passwordHashString);
   }
 
   /**
@@ -180,8 +156,7 @@ export class SrpAuthService {
    * @returns The SRP verifier (uppercase hex)
    */
   public static async deriveVerifier(privateKey: string): Promise<string> {
-    await initRustCore();
-    return srpDeriveVerifier(privateKey);
+    return rustCore().srpDeriveVerifier(privateKey);
   }
 
   /**
@@ -190,8 +165,7 @@ export class SrpAuthService {
    * @returns Object containing public and secret ephemeral values (uppercase hex)
    */
   public static async generateEphemeral(): Promise<SrpEphemeral> {
-    await initRustCore();
-    return srpGenerateEphemeral() as SrpEphemeral;
+    return rustCore().srpGenerateEphemeral();
   }
 
   /**
@@ -211,14 +185,13 @@ export class SrpAuthService {
     username: string,
     privateKey: string
   ): Promise<SrpSession> {
-    await initRustCore();
-    return srpDeriveSession(
+    return rustCore().srpDeriveSession(
       clientSecretEphemeral,
       serverPublicEphemeral,
       salt,
       SrpAuthService.normalizeUsername(username),
       privateKey
-    ) as SrpSession;
+    );
   }
 
   /**

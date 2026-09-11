@@ -27,10 +27,7 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
 const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 
 /**
- * Path prefix whose requests carry vault ciphertext and therefore run on {@link VAULT_TRANSFER_TIMEOUT_MS}:
- * `Vault` itself and every subpath of it, which includes the single-manifest fetch and the batched blob
- * upload/download calls that run to several MB per request. Matched lowercased and unslashed, so sibling
- * endpoints such as `VaultKey` keep the short timeout.
+ * Path prefix whose requests carry vault ciphertext and therefore use the larger timeout setting {@link VAULT_TRANSFER_TIMEOUT_MS}.
  */
 const LARGE_TRANSFER_PATH = 'vault';
 
@@ -73,6 +70,14 @@ type TokenResponse = {
   token: string;
   refreshToken: string;
 }
+
+/**
+ * A response as the Rust sync engine reads it: the HTTP status and the body text, never thrown on a non-2xx status.
+ */
+export type EngineHttpResponse = {
+  status: number;
+  body: string;
+};
 
 /**
  * Service class for interacting with the web API.
@@ -147,7 +152,7 @@ export class WebApiService {
           logoutEventEmitter.emit('common.errors.sessionExpired');
           throw new ApiAuthError('Session expired');
         } else {
-          // Token refresh failed due to network/server error - throw NetworkError for offline handling
+          // Token refresh failed due to network/server error.
           throw new NetworkError('Token refresh failed due to network error');
         }
       }
@@ -187,16 +192,59 @@ export class WebApiService {
 
   /**
    * Fetch data from the API without authentication headers and without access token refresh retry.
-   * Throws RequestTimeoutError when the request exceeds its timeout, and NetworkError for other
-   * network-related failures (offline, DNS, etc.)
    */
   public async rawFetch(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<Response> {
-    const baseUrl = await this.getBaseUrl();
-    const url = baseUrl + endpoint;
+    const url = await this.getBaseUrl() + endpoint;
     const headers = new Headers(options.headers ?? {});
+    return this.performFetch(url, endpoint, { ...options, headers }, this.isLargeTransfer(endpoint, headers));
+  }
+
+  /**
+   * Run a request on behalf of the Rust sync engine.
+   */
+  public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean): Promise<EngineHttpResponse> {
+    const url = (await this.getApiUrl()).replace(/\/$/, '') + '/' + path.replace(/^\/+/, '');
+    const headers = new Headers({ Accept: 'application/json' });
+    if (body !== undefined) {
+      headers.set('Content-Type', 'application/json');
+    }
+    const accessToken = requiresAuth ? await this.getAccessToken() : null;
+    if (accessToken) {
+      headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    try {
+      let response = await this.performFetch(url, path, { method, headers, body }, largeTransfer);
+      if (response.status === 401 && requiresAuth) {
+        const refreshResult = await this.refreshAccessToken();
+        if (refreshResult.token) {
+          headers.set('Authorization', `Bearer ${refreshResult.token}`);
+          response = await this.performFetch(url, path, { method, headers, body }, largeTransfer);
+        } else if (refreshResult.isAuthError) {
+          // The session is truly expired; the engine turns the 401 into its logout outcome.
+          logoutEventEmitter.emit('common.errors.sessionExpired');
+          return { status: 401, body: '' };
+        } else {
+          throw new NetworkError('Token refresh failed due to network error');
+        }
+      }
+      return { status: response.status, body: await response.text() };
+    } catch (error) {
+      if (error instanceof ClientUpgradeRequiredError) {
+        return { status: 426, body: '' };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Send one request with the client headers and the timeout for its size.
+   */
+  private async performFetch(url: string, endpoint: string, options: RequestInit & { headers: Headers }, largeTransfer: boolean): Promise<Response> {
+    const headers = options.headers;
 
     // Add client version header (using API_VERSION for server compatibility)
     headers.set('X-AliasVault-Client', `${AppInfo.CLIENT_NAME}-${AppInfo.API_VERSION}`);
@@ -206,10 +254,11 @@ export class WebApiService {
       headers.set(name, value);
     }
 
+    const timeoutSignal = timeoutAbortSignal(largeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS);
     const requestOptions: RequestInit = {
       ...options,
       headers,
-      signal: this.buildTimeoutSignal(endpoint, headers, options.signal),
+      signal: options.signal ? anyAbortSignal([options.signal, timeoutSignal]) : timeoutSignal,
     };
 
     let response: Response;
@@ -218,8 +267,7 @@ export class WebApiService {
     } catch (error) {
       console.error('API request failed:', error);
       /*
-       * The timeout signal aborts with a DOMException; no caller passes its own abort signal,
-       * so any abort here means the request exceeded its timeout.
+       * The timeout signal aborts with a DOMException.
        */
       if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
         throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
@@ -240,15 +288,12 @@ export class WebApiService {
   }
 
   /**
-   * Build an AbortSignal that bounds how long a request can run, combined with any caller-supplied
-   * signal.
+   * Whether a request carries vault ciphertext and so runs on the long timeout.
    */
-  private buildTimeoutSignal(endpoint: string, headers: Headers, callerSignal?: AbortSignal | null): AbortSignal {
+  private isLargeTransfer(endpoint: string, headers: Headers): boolean {
     const path = endpoint.split('?')[0].replace(/^\/+|\/+$/g, '').toLowerCase();
-    const isLargeTransfer = path === LARGE_TRANSFER_PATH || path.startsWith(`${LARGE_TRANSFER_PATH}/`) ||
+    return path === LARGE_TRANSFER_PATH || path.startsWith(`${LARGE_TRANSFER_PATH}/`) ||
       (headers.get('Accept') ?? '').toLowerCase().includes('application/octet-stream');
-    const timeoutSignal = timeoutAbortSignal(isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS);
-    return callerSignal ? anyAbortSignal([callerSignal, timeoutSignal]) : timeoutSignal;
   }
 
   /**
@@ -338,8 +383,6 @@ export class WebApiService {
   /**
    * Revoke only the current specific token via WebApi.
    * Unlike revokeTokens(), this does NOT revoke other sessions for the same device.
-   * Used for mobile unlock flow where we want to replace the current session without
-   * affecting other browser sessions.
    */
   public async revokeCurrentTokens(): Promise<void> {
     try {

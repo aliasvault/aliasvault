@@ -15,9 +15,15 @@ export class CapabilityService {
    * @param status - the status response to take the capabilities from.
    */
   public static async store(status: StatusResponseV2): Promise<void> {
-    const resolved = status.capabilities ?? {};
+    await this.storeCapabilities(status.capabilities ?? {});
+  }
 
-    // Only write when the status response actually changed.
+  /**
+   * Persist the resolved capabilities.
+   * @param resolved - the capabilities, keyed by capability key.
+   */
+  public static async storeCapabilities(resolved: Capabilities): Promise<void> {
+    // Only write when the set actually changed.
     if (canonical(await this.getAll()) === canonical(resolved)) {
       return;
     }
