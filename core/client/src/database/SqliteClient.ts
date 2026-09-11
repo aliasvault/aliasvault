@@ -1,5 +1,4 @@
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@aliasvault/vault';
-import initSqlJs from 'sql.js';
 
 import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompatibleError';
 import { StorageKeys } from '../constants/StorageKeys';
@@ -19,8 +18,8 @@ import {
 } from './index';
 
 import type { IDatabaseClient, SqliteBindValue } from './BaseRepository';
+import type { ISqliteDatabase } from '../platform/SqliteEngine';
 import type { VaultVersion } from '@aliasvault/vault';
-import type { Database } from 'sql.js';
 
 /** Minimum number of free pages before a VACUUM is worth the full database rewrite on export. */
 const VACUUM_MIN_FREE_PAGES = 64;
@@ -33,7 +32,7 @@ const VACUUM_FREE_PAGE_RATIO = 10;
  * Provides low-level database operations and exposes repositories for domain-specific operations.
  */
 export class SqliteClient implements IDatabaseClient {
-  private db: Database | null = null;
+  private db: ISqliteDatabase | null = null;
   private isInTransaction: boolean = false;
 
   /**
@@ -159,7 +158,7 @@ export class SqliteClient implements IDatabaseClient {
   /**
    * Get the underlying database instance.
    */
-  public getDb(): Database | null {
+  public getDb(): ISqliteDatabase | null {
     return this.db;
   }
 
@@ -177,18 +176,8 @@ export class SqliteClient implements IDatabaseClient {
    */
   public async initializeFromBytes(bytes: Uint8Array): Promise<void> {
     try {
-      // Initialize SQL.js with the WASM file
-      const SQL = await initSqlJs({
-        /**
-         * Locates SQL.js files from the local file system.
-         * @param file - The name of the file to locate
-         * @returns The complete URL path to the file
-         */
-        locateFile: (file: string): string => getPlatform().locateSqlJsFile(file)
-      });
-
-      // Create database from the binary data
-      this.db = new SQL.Database(bytes);
+      // Open the database in memory through the host's SQLite engine.
+      this.db = await getPlatform().sqlite.open(bytes);
 
       // Get the personal manifest id from local storage
       this.personalManifestId = (await getPlatform().storage.get(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
@@ -218,7 +207,7 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      this.db.run('BEGIN TRANSACTION');
+      this.db.exec('BEGIN TRANSACTION');
       this.isInTransaction = true;
     } catch (error) {
       console.error('Error beginning transaction:', error);
@@ -239,7 +228,7 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      this.db.run('COMMIT');
+      this.db.exec('COMMIT');
       this.isInTransaction = false;
     } catch (error) {
       console.error('Error committing transaction:', error);
@@ -260,7 +249,7 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      this.db.run('ROLLBACK');
+      this.db.exec('ROLLBACK');
       this.isInTransaction = false;
     } catch (error) {
       console.error('Error rolling back transaction:', error);
@@ -318,16 +307,7 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      const stmt = this.db.prepare(query);
-      stmt.bind(params);
-
-      const results: T[] = [];
-      while (stmt.step()) {
-        results.push(stmt.getAsObject() as T);
-      }
-      stmt.free();
-
-      return results;
+      return this.db.query<T>(query, params);
     } catch (error) {
       console.error('Error executing query:', error);
       throw error;
@@ -356,12 +336,7 @@ export class SqliteClient implements IDatabaseClient {
     }
 
     try {
-      const stmt = this.db.prepare(query);
-      stmt.bind(params);
-      stmt.step();
-      const changes = this.db.getRowsModified();
-      stmt.free();
-      return changes;
+      return this.db.run(query, params);
     } catch (error) {
       console.error('Error executing update:', error);
       throw error;
@@ -391,7 +366,7 @@ export class SqliteClient implements IDatabaseClient {
           continue;
         }
 
-        this.db.run(trimmedStatement);
+        this.db.exec(trimmedStatement);
       }
     } catch (error) {
       console.error('Error executing raw SQL:', error);

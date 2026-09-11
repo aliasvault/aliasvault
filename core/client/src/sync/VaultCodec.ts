@@ -7,6 +7,7 @@ import { devLog } from '../platform/Logger';
 import { base64ToBytes as decodeBase64, bytesToBase64 as encodeBase64 } from '../utilities/Base64';
 
 import type SqliteClient from '../database/SqliteClient';
+import type { ISqliteDatabase, ISqliteStatement, SqliteValue } from '../platform/SqliteEngine';
 import type {
   CodecManifest,
   CodecDataBucket,
@@ -66,7 +67,7 @@ export function manifestIdKey(manifestId: string): string {
 }
 
 /**
- * VaultCodec — sql.js read/insert methods.
+ * VaultCodec: SQLite read/insert methods, on whichever engine the host provides.
  */
 export class VaultCodec {
   /**
@@ -151,11 +152,11 @@ export class VaultCodec {
   private static async readSchemaColumns(schemaSql: string): Promise<Record<string, string[]>> {
     const db = await this.createDatabase();
     try {
-      db.run(schemaSql);
-      const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values.map(v => String(v[0])) ?? [];
+      db.exec(schemaSql);
+      const tables = db.query<{ name: string }>("SELECT name FROM sqlite_master WHERE type='table'").map(row => row.name);
       const out: Record<string, string[]> = {};
       for (const table of tables) {
-        out[table] = db.exec(`PRAGMA table_info("${table}")`)[0]?.values.map(v => String(v[1])) ?? [];
+        out[table] = db.query<{ name: string }>(`PRAGMA table_info("${table}")`).map(row => row.name);
       }
       return out;
     } finally {
@@ -175,7 +176,7 @@ export class VaultCodec {
 
     try {
       // 1) Apply the schema.
-      db.run(schemaSql);
+      db.exec(schemaSql);
       devLog('[VaultCodec] Schema applied.');
 
       /*
@@ -183,14 +184,14 @@ export class VaultCodec {
        * emitted them, so child rows (e.g. Attachments) may precede their parents (Items). Disable enforcement
        * for the bulk load; an explicit foreign_key_check below validates the fully-assembled result instead.
        */
-      db.run('PRAGMA foreign_keys = OFF');
-      db.run('BEGIN TRANSACTION');
+      db.exec('PRAGMA foreign_keys = OFF');
+      db.exec('BEGIN TRANSACTION');
 
       // Compiled INSERT statements, keyed by table name plus the row's column set.
-      const statements = new Map<string, import('sql.js').Statement>();
+      const statements = new Map<string, ISqliteStatement>();
 
       // Tables present in the freshly-created schema; rows for tables outside it cannot be inserted.
-      const schemaTables = new Set<string>(db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0]?.values.map(v => String(v[0])) ?? []);
+      const schemaTables = new Set<string>(db.query<{ name: string }>("SELECT name FROM sqlite_master WHERE type='table'").map(row => row.name));
 
       // 2) Insert every materialized table's rows.
       for (const { name: tableName, records: rows } of materialized.tables) {
@@ -207,7 +208,7 @@ export class VaultCodec {
         devLog(`[VaultCodec] Inserting ${rows.length} rows into "${tableName}"...`);
         for (const row of rows) {
           const cols = Object.keys(row);
-          const values: unknown[] = cols.map(c => {
+          const values: SqliteValue[] = cols.map(c => {
             const v = row[c];
             if (this.isBlobRef(v)) {
               return blobs.get((v as BlobRef).__blobRef) ?? null;
@@ -216,7 +217,7 @@ export class VaultCodec {
             if (this.isInlineB64(v)) {
               return this.base64ToBytes((v as { __b64: string }).__b64);
             }
-            return (v === undefined ? null : v) as unknown;
+            return (v === undefined ? null : v) as SqliteValue;
           });
 
           const statementKey = `${tableName}\u0000${cols.join('\u0000')}`;
@@ -229,7 +230,7 @@ export class VaultCodec {
           }
 
           try {
-            statement.run(values as never);
+            statement.run(values);
           } catch (e) {
             throw new Error(`VaultCodec: failed to insert row into "${tableName}" (columns: ${cols.join(', ')}): ${e instanceof Error ? e.message : String(e)}`);
           }
@@ -237,17 +238,17 @@ export class VaultCodec {
       }
 
       for (const statement of statements.values()) {
-        statement.free();
+        statement.finalize();
       }
       statements.clear();
 
-      db.run('COMMIT');
+      db.exec('COMMIT');
 
       // 3) Verify referential integrity of the fully-assembled database.
-      const fkViolations = db.exec('PRAGMA foreign_key_check');
+      const fkViolations = db.query<{ table: string; rowid: number; parent: string }>('PRAGMA foreign_key_check');
       if (fkViolations.length > 0) {
-        const sample = fkViolations[0].values.slice(0, 5).map(v => `${v[0]} row ${v[1]} → missing parent in ${v[2]}`).join('; ');
-        throw new Error(`VaultCodec: materialized database fails foreign key check (${fkViolations[0].values.length} violations): ${sample}`);
+        const sample = fkViolations.slice(0, 5).map(v => `${v.table} row ${v.rowid} > missing parent in ${v.parent}`).join('; ');
+        throw new Error(`VaultCodec: materialized database fails foreign key check (${fkViolations.length} violations): ${sample}`);
       }
       devLog('[VaultCodec] Foreign key check passed.');
 
@@ -261,19 +262,10 @@ export class VaultCodec {
   }
 
   /**
-   * Open a fresh in-memory sql.js database.
+   * Open a fresh in-memory database through the host's SQLite engine.
    */
-  private static async createDatabase(): Promise<import('sql.js').Database> {
-    const initSqlJs = (await import('sql.js')).default;
-    const SQL = await initSqlJs({
-      /**
-       * Locates SQL.js files from the local file system.
-       * @param file - The name of the file to locate
-       * @returns The complete URL path to the file
-       */
-      locateFile: (file: string): string => getPlatform().locateSqlJsFile(file)
-    });
-    return new SQL.Database();
+  private static async createDatabase(): Promise<ISqliteDatabase> {
+    return getPlatform().sqlite.open();
   }
 
   /**

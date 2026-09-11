@@ -1,5 +1,7 @@
 import type { IClientPlatform } from './ClientPlatform';
 import type { IKeyValueStore, StorageKey } from './KeyValueStore';
+import type { ISqliteEngine } from './SqliteEngine';
+import type { IRustCore } from '../rust/RustCoreBinding';
 
 /**
  * A {@link IKeyValueStore} held in a Map. For unit tests and for hosts that keep session state in memory only.
@@ -62,8 +64,19 @@ export class InMemoryKeyValueStore implements IKeyValueStore {
 }
 
 /**
+ * A Rust core or SQLite engine that refuses every call, for platforms that did not provide one.
+ * @param what - the member name, for the error message
+ */
+function unavailable<T extends object>(what: string): T {
+  return new Proxy({} as T, {
+    /** Every member access yields a rejecting function. */
+    get: (_target, property): unknown => (): Promise<never> => Promise.reject(new Error(`No ${what} configured for this platform (${String(property)}).`)),
+  });
+}
+
+/**
  * A platform with in-memory storage and no-op logging, for unit tests. Override what the test needs (typically
- * the WASM loader and the sql.js locator).
+ * the Rust core binding and the SQLite engine).
  * @param overrides - members to replace
  */
 export function createInMemoryPlatform(overrides: Partial<IClientPlatform> = {}): IClientPlatform {
@@ -78,10 +91,8 @@ export function createInMemoryPlatform(overrides: Partial<IClientPlatform> = {})
       error: (): void => {},
     },
     app: { version: '0.0.0-test', clientName: 'test', isDevelopment: false },
-    /** Not available unless overridden. */
-    loadRustCoreWasm: (): Promise<BufferSource> => Promise.reject(new Error('No Rust core WASM loader configured for this platform.')),
-    /** Not available unless overridden. */
-    locateSqlJsFile: (file: string): string => file,
+    rustCore: unavailable<IRustCore>('Rust core'),
+    sqlite: unavailable<ISqliteEngine>('SQLite engine'),
     /**
      * Echo the message id.
      */

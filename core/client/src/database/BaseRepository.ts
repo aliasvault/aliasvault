@@ -2,7 +2,7 @@ import * as dateFormatter from '../utilities/DateFormatter';
 
 import { BaseQueries } from './queries/BaseQueries';
 
-import type { Database } from 'sql.js';
+import type { ISqliteDatabase } from '../platform/SqliteEngine';
 
 export type SqliteBindValue = string | number | null | Uint8Array;
 
@@ -10,7 +10,7 @@ export type SqliteBindValue = string | number | null | Uint8Array;
  * Interface for the core database operations needed by repositories.
  */
 export interface IDatabaseClient {
-  getDb(): Database | null;
+  getDb(): ISqliteDatabase | null;
   executeQuery<T>(query: string, params?: SqliteBindValue[]): T[];
   executeUpdate(query: string, params?: SqliteBindValue[]): number;
   beginTransaction(): void;

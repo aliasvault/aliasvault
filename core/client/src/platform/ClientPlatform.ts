@@ -1,7 +1,9 @@
 import type { IAppIdentity } from './AppIdentity';
 import type { IKeyValueStore } from './KeyValueStore';
 import type { ILogger } from './Logger';
+import type { ISqliteEngine } from './SqliteEngine';
 import type { TranslatableMessage } from './TranslatableMessage';
+import type { IRustCore } from '../rust/RustCoreBinding';
 
 /**
  * Everything the client core needs from the host app. Each app (browser extension, web app, mobile app) implements
@@ -17,21 +19,26 @@ export interface IClientPlatform {
   /** Version and client name of the host app. */
   app: IAppIdentity;
 
-  /**
-   * Provide the Rust core WebAssembly binary.
-   */
-  loadRustCoreWasm(): Promise<BufferSource | Response>;
+  /** The Rust core: WebAssembly on the web hosts (see WasmRustCore), the native uniffi bindings on mobile. */
+  rustCore: IRustCore;
 
-  /**
-   * Resolve a sql.js support file (`sql-wasm.wasm`) to a URL the runtime can fetch.
-   * @param file - the file name sql.js asks for
-   */
-  locateSqlJsFile(file: string): string;
+  /** The SQLite engine the vault is opened with: sql.js on the web hosts (see SqlJsEngine), expo-sqlite on mobile. */
+  sqlite: ISqliteEngine;
 
   /**
    * Translate one of the core's own messages into the user's language.
    */
   translate(message: TranslatableMessage): Promise<string>;
+
+  /**
+   * The device's UI language as a BCP 47 tag. Hosts without `navigator.language` provide it here.
+   */
+  deviceLanguage?(): string;
+
+  /**
+   * Extra headers to send with every API request, e.g. the custom proxy headers a self-hosted setup needs.
+   */
+  requestHeaders?(): Promise<Record<string, string>>;
 }
 
 let current: IClientPlatform | null = null;
@@ -46,18 +53,17 @@ export function setPlatform(platform: IClientPlatform): void {
 
 /**
  * The registered host platform.
- * @throws Error when no platform was registered yet.
+ * @throws When no platform has been registered yet.
  */
 export function getPlatform(): IClientPlatform {
   if (!current) {
-    throw new Error('AliasVault client platform is not configured. Call setPlatform() before using the client core.');
+    throw new Error('No client platform registered. Call setPlatform() before using the client core.');
   }
   return current;
 }
 
 /**
- * The registered host platform, or null before registration. For code paths that must stay usable without a
- * platform, such as logging.
+ * The registered host platform, or null before registration. For code paths that must stay silent early on.
  */
 export function tryGetPlatform(): IClientPlatform | null {
   return current;

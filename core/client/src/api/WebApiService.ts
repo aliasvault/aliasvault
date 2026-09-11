@@ -35,6 +35,38 @@ const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 const LARGE_TRANSFER_PATH = 'vault';
 
 /**
+ * A signal that aborts after `ms`.
+ * @param ms - the timeout
+ */
+function timeoutAbortSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === 'function') {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(new Error('TimeoutError')), ms);
+  return controller.signal;
+}
+
+/**
+ * A signal that aborts as soon as any of the given signals does.
+ * @param signals - the signals to combine
+ */
+function anyAbortSignal(signals: AbortSignal[]): AbortSignal {
+  if (typeof AbortSignal.any === 'function') {
+    return AbortSignal.any(signals);
+  }
+  const controller = new AbortController();
+  for (const signal of signals) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+      break;
+    }
+    signal.addEventListener('abort', () => controller.abort(signal.reason), { once: true });
+  }
+  return controller.signal;
+}
+
+/**
  * Type for the token response from the API.
  */
 type TokenResponse = {
@@ -169,6 +201,11 @@ export class WebApiService {
     // Add client version header (using API_VERSION for server compatibility)
     headers.set('X-AliasVault-Client', `${AppInfo.CLIENT_NAME}-${AppInfo.API_VERSION}`);
 
+    // Headers the host adds to every request (e.g. custom proxy headers for a self-hosted setup).
+    for (const [name, value] of Object.entries(await getPlatform().requestHeaders?.() ?? {})) {
+      headers.set(name, value);
+    }
+
     const requestOptions: RequestInit = {
       ...options,
       headers,
@@ -184,7 +221,7 @@ export class WebApiService {
        * The timeout signal aborts with a DOMException; no caller passes its own abort signal,
        * so any abort here means the request exceeded its timeout.
        */
-      if (error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
         throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
       }
       // Convert fetch errors to NetworkError for proper error handling
@@ -210,10 +247,8 @@ export class WebApiService {
     const path = endpoint.split('?')[0].replace(/^\/+|\/+$/g, '').toLowerCase();
     const isLargeTransfer = path === LARGE_TRANSFER_PATH || path.startsWith(`${LARGE_TRANSFER_PATH}/`) ||
       (headers.get('Accept') ?? '').toLowerCase().includes('application/octet-stream');
-    const timeoutSignal = AbortSignal.timeout(
-      isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS
-    );
-    return callerSignal ? AbortSignal.any([callerSignal, timeoutSignal]) : timeoutSignal;
+    const timeoutSignal = timeoutAbortSignal(isLargeTransfer ? VAULT_TRANSFER_TIMEOUT_MS : DEFAULT_REQUEST_TIMEOUT_MS);
+    return callerSignal ? anyAbortSignal([callerSignal, timeoutSignal]) : timeoutSignal;
   }
 
   /**

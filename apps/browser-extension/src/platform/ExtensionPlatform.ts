@@ -2,7 +2,9 @@
  * The browser extension's implementations of the client core's platform interfaces (e.g. storage, logger, etc.) which are different per platform.
  */
 
+import { createSqlJsEngine } from '@aliasvault/client/database/SqlJsEngine';
 import { type IClientPlatform, type IKeyValueStore, type StorageKey, TranslatableMessage } from '@aliasvault/client/platform';
+import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 import { browser } from 'wxt/browser';
 
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
@@ -84,6 +86,13 @@ const extensionStorage: IKeyValueStore = {
 };
 
 /**
+ * Get the path to the sql.js support files.
+ */
+function locateSqlJsFile(file: string): string {
+  return `src/${file}`;
+}
+
+/**
  * The platform the extension registers with the client core.
  */
 export const extensionPlatform: IClientPlatform = {
@@ -97,16 +106,13 @@ export const extensionPlatform: IClientPlatform = {
   /**
    * Fetch the bundled Rust core binary.
    */
-  loadRustCoreWasm: async (): Promise<BufferSource> => {
+  rustCore: createWasmRustCore(async (): Promise<BufferSource> => {
     const wasmUrl = (browser.runtime.getURL as (path: string) => string)('src/aliasvault_core_bg.wasm');
     return (await fetch(wasmUrl)).arrayBuffer();
-  },
+  }),
+  sqlite: createSqlJsEngine(locateSqlJsFile),
   /**
-   * Locate the sql.js support file.
-   */
-  locateSqlJsFile: (file: string): string => `src/${file}`,
-  /**
-   * Resolve a core message.
+   * Translate one of the core's own messages through the extension's i18n.
    */
   translate: (message: TranslatableMessage): Promise<string> => t(TRANSLATION_KEYS[message]),
 };

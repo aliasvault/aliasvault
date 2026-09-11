@@ -9,20 +9,17 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createSqlJsEngine } from '@aliasvault/client/database/SqlJsEngine';
 import { setPlatform } from '@aliasvault/client/platform';
 import { createInMemoryPlatform } from '@aliasvault/client/platform/InMemoryPlatform';
+import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 
 const clientCoreDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../core/client');
 const requireFromClientCore = createRequire(path.join(clientCoreDir, 'package.json'));
 
 setPlatform(createInMemoryPlatform({
-  /**
-   * Load the Rust core WASM from the client core build output.
-   */
-  loadRustCoreWasm: async (): Promise<BufferSource> => readFileSync(path.join(clientCoreDir, 'wasm/aliasvault_core_bg.wasm')),
-  /**
-   * Locate a sql.js support file in the client core's node_modules.
-   * @param file - the file name sql.js asks for
-   */
-  locateSqlJsFile: (file: string): string => path.join(path.dirname(requireFromClientCore.resolve('sql.js')), file),
+  // The Rust core WASM from the client core build output.
+  rustCore: createWasmRustCore(async (): Promise<BufferSource> => readFileSync(path.join(clientCoreDir, 'wasm/aliasvault_core_bg.wasm'))),
+  // sql.js support files from the client core's node_modules.
+  sqlite: createSqlJsEngine((file: string): string => path.join(path.dirname(requireFromClientCore.resolve('sql.js')), file)),
 }));
