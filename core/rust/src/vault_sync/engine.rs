@@ -4,13 +4,14 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-use super::errors::{Failure, LogoutReason, SyncError, SyncResult};
+use super::db::SchemaState;
+use super::errors::{LogoutReason, SyncError, SyncResult};
 use super::merge::{self, PullAndMergeOutcome};
-use super::pull::{self, PullOutcome, SnapshotFacts};
+use super::pull::{self, PulledVault};
 use super::push::{self, CanonicalizedSet, PushStatus};
 use super::session::Host;
 use super::state::{self, Ctx};
-use super::types::{Db, EmailRoutingDto, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
+use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
 use super::{db, http, keys, legacy, version};
 use crate::crypto;
 
@@ -72,14 +73,11 @@ fn success() -> FullSyncResult {
 
 /// The outcome of a failed sync: a forced logout, or a coded error.
 fn failure(error: &SyncError) -> FullSyncResult {
-    match error.failure() {
-        Failure::Logout(reason) => logout(reason),
-        Failure::Coded(code) => FullSyncResult { success: false, error: Some(error.to_string()), error_code: Some(code), ..Default::default() },
-    }
+    FullSyncResult { failure: error.into(), ..Default::default() }
 }
 
 fn logout(reason: LogoutReason) -> FullSyncResult {
-    FullSyncResult { success: false, requires_logout: true, error_key: Some(reason), ..Default::default() }
+    FullSyncResult { failure: FailureFields::logout(reason), ..Default::default() }
 }
 
 /// Turn an error thrown during a sync into the outcome the host acts on. A transport failure with a local vault
@@ -139,7 +137,11 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     let flow = if needs_pull {
         pull_and_materialize_server_vault(ctx, grant_sync_changed_vault).await?
     } else if ctx.is_dirty && !vault_predates_current_schema(ctx).await? {
-        push_pending_local_changes(ctx, canonicalize_cache, grant_sync_changed_vault).await?
+        // Push path: server and client agree on every revision, so the pending local changes upload as-is.
+        match push_local_changes(ctx, canonicalize_cache, false, false).await? {
+            Some(vault_changed) => Flow::Done(FullSyncResult { success: true, has_new_vault: vault_changed || grant_sync_changed_vault, ..Default::default() }),
+            None => Flow::Resync { outdated: true },
+        }
     } else {
         // A vault the codec cannot canonicalize has no way to the server; the upgrade gate takes it from here.
         Flow::Done(pending_migration_result(ctx).await?.unwrap_or_else(success))
@@ -262,10 +264,20 @@ async fn enter_offline_mode(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
     Ok(FullSyncResult { success: true, was_offline: true, is_offline_mode: true, ..Default::default() })
 }
 
+/// Where the local vault's schema stands against the current one.
+async fn schema_state(ctx: &mut Ctx) -> SyncResult<SchemaState> {
+    let schema = ctx.schema().await?;
+    db::schema_state(&ctx.host, &schema.migration_id).await
+}
+
+/// Whether the local vault is still on a schema the codec cannot canonicalize.
+async fn vault_predates_current_schema(ctx: &mut Ctx) -> SyncResult<bool> {
+    Ok(schema_state(ctx).await? != SchemaState::Current)
+}
+
 /// Whether the vault still has to run the manifest migration: a stale schema, or a missing account key hierarchy.
 async fn vault_requires_manifest_migration(ctx: &mut Ctx) -> SyncResult<bool> {
-    let schema = ctx.schema().await?;
-    Ok(db::requires_schema_migration(&ctx.host, &schema.migration_id).await? || !keys::has_local_vault_key(&ctx.host).await?)
+    Ok(schema_state(ctx).await? == SchemaState::Stale || !keys::has_local_vault_key(&ctx.host).await?)
 }
 
 /// Carry out the work the server has addressed to the current client (e.g. shared groups revocation/rotation actions).
@@ -340,132 +352,100 @@ async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -
     Ok(true)
 }
 
-/// Outcome for a sync that stored a freshly materialized vault.
-async fn materialized_vault_result(ctx: &mut Ctx, revision: i64, email_routing: EmailRoutingDto) -> SyncResult<FullSyncResult> {
-    let sqlite_blob_upgrade_required = db::requires_legacy_sqlite_blob_migration(&ctx.host, Db::Local).await?;
-    let manifest_migration_required = vault_requires_manifest_migration(ctx).await?;
-    Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required, manifest_migration_required, pulled_revision: Some(revision), email_routing: Some(email_routing), ..Default::default() })
+/// Outcome for a sync that stored a freshly pulled vault.
+async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<FullSyncResult> {
+    let schema = schema_state(ctx).await?;
+    let manifest_migration_required = schema == SchemaState::Stale || !keys::has_local_vault_key(&ctx.host).await?;
+    Ok(FullSyncResult { success: true, has_new_vault: true, sqlite_blob_upgrade_required: schema == SchemaState::LegacyChain, manifest_migration_required, pulled_revision: Some(pulled.revision), email_routing: Some(pulled.email_routing.clone()), ..Default::default() })
 }
 
-/// Store a pulled vault as the local vault, refusing (and re-syncing) when a mutation raced the pull.
-async fn store_pulled_vault(ctx: &mut Ctx, encrypted_vault: &str, revision: i64) -> SyncResult<bool> {
-    let stored = state::store_vault(&ctx.host, encrypted_vault, false, Some(ctx.mutation_sequence), Some(revision)).await?;
+/// Store a pulled vault as the local one and only then commit its revisions as the local truth. A store the host
+/// refuses (a mutation raced the pull) re-runs the sync instead, which is the returned flow.
+async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Option<Flow>> {
+    let stored = state::store_vault(&ctx.host, &pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?;
     if !stored.success {
         ctx.log("[VaultSync] Mutation detected during sync, re-syncing...").await;
-        return Ok(false);
+        return Ok(Some(Flow::Resync { outdated: false }));
     }
     ctx.vault_changed = true;
-    Ok(true)
+    pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await?;
+    Ok(None)
 }
 
-/// Store the server's vault as the local vault, replacing whatever was there.
-async fn adopt_server_vault(ctx: &mut Ctx, encrypted_vault: &str, revision: i64, email_routing: EmailRoutingDto) -> SyncResult<Flow> {
-    if !store_pulled_vault(ctx, encrypted_vault, revision).await? {
-        return Ok(Flow::Resync { outdated: false });
+/// Store the server's vault as the local vault, replacing whatever was there, and report it.
+async fn adopt_server_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Flow> {
+    if let Some(resync) = commit_pulled_vault(ctx, pulled).await? {
+        return Ok(resync);
     }
-    Ok(Flow::Done(materialized_vault_result(ctx, revision, email_routing).await?))
+    Ok(Flow::Done(materialized_vault_result(ctx, pulled).await?))
 }
 
 /// Pull the server's latest vault and merge it with what is stored locally when needed.
 async fn pull_and_materialize_server_vault(ctx: &mut Ctx, grant_sync_changed_vault: bool) -> SyncResult<Flow> {
-    let mut facts = SnapshotFacts::new();
-
     if !ctx.is_dirty || !ctx.has_local_vault().await? {
-        return adopt_pulled_vault(ctx, &mut facts).await;
+        return adopt_pulled_vault(ctx).await;
     }
 
     // A dirty vault the codec cannot canonicalize is not merged.
     if vault_predates_current_schema(ctx).await? {
         ctx.warn("[VaultSync] The local vault predates the current storage model, so its pending changes can be neither merged nor uploaded; taking the server's vault.").await;
-        return adopt_pulled_vault(ctx, &mut facts).await;
+        return adopt_pulled_vault(ctx).await;
     }
-    canonical_pull_and_merge(ctx, &mut facts, grant_sync_changed_vault).await
+    canonical_pull_and_merge(ctx, grant_sync_changed_vault).await
 }
 
 /// Pull the server's vault and store it as the local one.
-async fn adopt_pulled_vault(ctx: &mut Ctx, facts: &mut SnapshotFacts) -> SyncResult<Flow> {
-    match pull::pull(ctx, facts).await? {
-        PullOutcome::Legacy(legacy, routing) => adopt_server_vault(ctx, &legacy.encrypted_blob, legacy.revision, routing).await,
-        PullOutcome::Materialized { encrypted_vault, revision, email_routing } => adopt_server_vault(ctx, &encrypted_vault, revision, email_routing).await,
-    }
-}
-
-/// Whether the local vault is still on a schema the codec cannot canonicalize.
-async fn vault_predates_current_schema(ctx: &mut Ctx) -> SyncResult<bool> {
-    if db::requires_legacy_sqlite_blob_migration(&ctx.host, Db::Local).await? {
-        return Ok(true);
-    }
-    let schema = ctx.schema().await?;
-    db::requires_schema_migration(&ctx.host, &schema.migration_id).await
+async fn adopt_pulled_vault(ctx: &mut Ctx) -> SyncResult<Flow> {
+    let pulled = pull::pull(ctx).await?;
+    adopt_server_vault(ctx, &pulled).await
 }
 
 /// Canonical-merge path of a dirty pull.
-async fn canonical_pull_and_merge(ctx: &mut Ctx, facts: &mut SnapshotFacts, grant_sync_changed_vault: bool) -> SyncResult<Flow> {
-    match merge::pull_and_merge(ctx, facts).await? {
-        PullAndMergeOutcome::LegacyServer(legacy) => {
-            ctx.warn(format!("[VaultSync] Server vault (revision {}) is still on the legacy storage format while the local vault is migrated; pushing the local vault.", legacy.revision)).await;
-            match push_and_report(ctx, None, true, false).await? {
-                Some(flow) => Ok(flow),
-                None => Ok(Flow::Done(FullSyncResult { success: true, has_new_vault: grant_sync_changed_vault, ..Default::default() })),
+async fn canonical_pull_and_merge(ctx: &mut Ctx, grant_sync_changed_vault: bool) -> SyncResult<Flow> {
+    match merge::pull_and_merge(ctx).await? {
+        PullAndMergeOutcome::LegacyServer { revision } => {
+            ctx.warn(format!("[VaultSync] Server vault (revision {}) is still on the legacy storage format while the local vault is migrated; pushing the local vault.", revision)).await;
+            if push_local_changes(ctx, None, true, false).await?.is_none() {
+                return Ok(Flow::Resync { outdated: true });
             }
+            Ok(Flow::Done(FullSyncResult { success: true, has_new_vault: grant_sync_changed_vault, ..Default::default() }))
         }
-        PullAndMergeOutcome::ServerOnly { encrypted_vault, revision, email_routing, manifest_revisions, bucket_revisions } => {
-            if !store_pulled_vault(ctx, &encrypted_vault, revision).await? {
-                return Ok(Flow::Resync { outdated: false });
+        PullAndMergeOutcome::ServerOnly(pulled) => adopt_server_vault(ctx, &pulled).await,
+        PullAndMergeOutcome::Merged { pulled, stats, fallback_manifest_ids, dropped_local_manifest_ids, push_canonical } => {
+            if let Some(resync) = commit_pulled_vault(ctx, &pulled).await? {
+                return Ok(resync);
             }
-            pull::commit_revisions(ctx, &manifest_revisions, &bucket_revisions).await?;
-            Ok(Flow::Done(materialized_vault_result(ctx, revision, email_routing).await?))
-        }
-        PullAndMergeOutcome::Merged { encrypted_vault, revision, email_routing, stats, fallback_manifest_ids, dropped_local_manifest_ids, manifest_revisions, bucket_revisions, push_canonical } => {
-            if !store_pulled_vault(ctx, &encrypted_vault, revision).await? {
-                return Ok(Flow::Resync { outdated: false });
-            }
-            // Only now do the pulled revisions become the local truth.
-            pull::commit_revisions(ctx, &manifest_revisions, &bucket_revisions).await?;
             ctx.log(format!("[VaultSync] Canonical vault merge completed: {:?}; {} validation fallback(s), {} dropped local manifest(s).", stats, fallback_manifest_ids.len(), dropped_local_manifest_ids.len())).await;
-
-            if let Some(flow) = push_and_report(ctx, push_canonical.map(|set| (ctx.mutation_sequence, set)), false, false).await? {
-                return Ok(flow);
+            let cache = push_canonical.map(|set| (ctx.mutation_sequence, set));
+            if push_local_changes(ctx, cache, false, false).await?.is_none() {
+                return Ok(Flow::Resync { outdated: true });
             }
-            Ok(Flow::Done(materialized_vault_result(ctx, revision, email_routing).await?))
+            Ok(Flow::Done(materialized_vault_result(ctx, &pulled).await?))
         }
     }
 }
 
-/// Push path: server and client agree on every revision, so the pending local changes upload as-is.
-async fn push_pending_local_changes(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, grant_sync_changed_vault: bool) -> SyncResult<Flow> {
-    let upload = push::upload_vault(ctx, cache, false, false).await?;
-    match upload.status {
-        PushStatus::Ok => {
-            state::mark_clean(&ctx.host, upload.mutation_seq_at_start).await?;
-            Ok(Flow::Done(FullSyncResult { success: true, has_new_vault: upload.vault_changed || grant_sync_changed_vault, ..Default::default() }))
-        }
-        PushStatus::Outdated => Ok(Flow::Resync { outdated: true }),
-    }
-}
-
-/// Push the pending local changes. None on success, else the flow to return.
-async fn push_and_report(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, force_full_write: bool, create_vault_key: bool) -> SyncResult<Option<Flow>> {
+/// Push the pending local changes and clear the dirty flag.
+async fn push_local_changes(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, force_full_write: bool, create_vault_key: bool) -> SyncResult<Option<bool>> {
     let upload = push::upload_vault(ctx, cache, force_full_write, create_vault_key).await?;
     match upload.status {
         PushStatus::Ok => {
             state::mark_clean(&ctx.host, upload.mutation_seq_at_start).await?;
-            Ok(None)
+            Ok(Some(upload.vault_changed))
         }
-        PushStatus::Outdated => Ok(Some(Flow::Resync { outdated: true })),
+        PushStatus::Outdated => Ok(None),
     }
 }
 
 /// Check for any pending migrations of the stored vault.
 async fn pending_migration_result(ctx: &mut Ctx) -> SyncResult<Option<FullSyncResult>> {
     let checked: SyncResult<Option<FullSyncResult>> = async {
-        if db::requires_legacy_sqlite_blob_migration(&ctx.host, Db::Local).await? {
-            return Ok(Some(FullSyncResult { success: true, sqlite_blob_upgrade_required: true, ..Default::default() }));
-        }
-        if vault_requires_manifest_migration(ctx).await? {
-            return Ok(Some(FullSyncResult { success: true, manifest_migration_required: true, ..Default::default() }));
-        }
-        Ok(None)
+        Ok(match schema_state(ctx).await? {
+            SchemaState::LegacyChain => Some(FullSyncResult { success: true, sqlite_blob_upgrade_required: true, ..Default::default() }),
+            SchemaState::Stale => Some(FullSyncResult { success: true, manifest_migration_required: true, ..Default::default() }),
+            SchemaState::Current if !keys::has_local_vault_key(&ctx.host).await? => Some(FullSyncResult { success: true, manifest_migration_required: true, ..Default::default() }),
+            SchemaState::Current => None,
+        })
     }
     .await;
     match checked {
@@ -485,25 +465,21 @@ async fn pending_migration_result(ctx: &mut Ctx) -> SyncResult<Option<FullSyncRe
 /// executor with the chain outstanding is a caller bug, while asking the classifier about it is not.
 async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
     let classified: SyncResult<MigrationKind> = async {
-        if db::requires_legacy_sqlite_blob_migration(&ctx.host, Db::Local).await? {
+        let schema = schema_state(ctx).await?;
+        if schema == SchemaState::LegacyChain {
             return Ok(MigrationKind::None);
         }
         match keys::fetch_vault_key(&ctx.host).await {
-            Ok((_, vault_key)) => {
-                if vault_key.is_some() {
-                    keys::adopt_remote_vault_key_if_needed(ctx).await?;
-                }
+            Ok(Some(_)) => {
+                keys::adopt_remote_vault_key_if_needed(ctx).await?;
             }
+            Ok(None) => {}
             Err(error) => ctx.warn(format!("[ManifestMigration] Vault key probe failed, classifying from local state: {}", error)).await,
         }
         if !keys::has_local_vault_key(&ctx.host).await? {
             return Ok(MigrationKind::StorageFormatUpgrade);
         }
-        let schema = ctx.schema().await?;
-        if db::requires_schema_migration(&ctx.host, &schema.migration_id).await? {
-            return Ok(MigrationKind::SchemaRebuild);
-        }
-        Ok(MigrationKind::None)
+        Ok(if schema == SchemaState::Stale { MigrationKind::SchemaRebuild } else { MigrationKind::None })
     }
     .await;
     let kind = match classified {
@@ -520,14 +496,14 @@ async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
 async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     let migrated: SyncResult<bool> = async {
         let encryption_key = ctx.encryption_key()?;
-        if db::requires_legacy_sqlite_blob_migration(&ctx.host, Db::Local).await? {
+        let schema = schema_state(ctx).await?;
+        if schema == SchemaState::LegacyChain {
             return Err(SyncError::LegacyUpgradePending);
         }
         if !keys::adopt_remote_vault_key_if_needed(ctx).await? {
             return Err(SyncError::KeyOutOfSync);
         }
-        let schema = ctx.schema().await?;
-        let needs_schema_migration = db::requires_schema_migration(&ctx.host, &schema.migration_id).await?;
+        let needs_schema_migration = schema == SchemaState::Stale;
         let needs_vault_key = !keys::has_local_vault_key(&ctx.host).await?;
         if !needs_schema_migration && !needs_vault_key {
             return Ok(true);
@@ -559,11 +535,7 @@ async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
         Ok(pushed) => MigrateManifestResult { success: true, pushed, ..Default::default() },
         Err(error) => {
             ctx.warn(format!("[ManifestMigration] Migration failed: {}", error)).await;
-            let (error_code, error_key) = match error.failure() {
-                Failure::Coded(code) => (Some(code), None),
-                Failure::Logout(reason) => (None, Some(reason)),
-            };
-            MigrateManifestResult { success: false, pushed: false, error: Some(error.to_string()), error_code, error_key, requires_logout: error_key.is_some(), ..Default::default() }
+            MigrateManifestResult { failure: (&error).into(), ..Default::default() }
         }
     }
 }
@@ -583,7 +555,7 @@ async fn status_check(ctx: &mut Ctx) -> StatusCheckResult {
             None
         };
         if let Some(reason) = logout_reason {
-            return Ok(StatusCheckResult { requires_logout: true, error_key: Some(reason), server_version: Some(status.server_version), ..Default::default() });
+            return Ok(StatusCheckResult { failure: FailureFields::logout(reason), server_version: Some(status.server_version), ..Default::default() });
         }
         assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
         let has_newer_vault = server_state_needs_pull(ctx, &status).await?;
@@ -594,16 +566,7 @@ async fn status_check(ctx: &mut Ctx) -> StatusCheckResult {
         Ok(result) => result,
         Err(error) => {
             let outcome = map_sync_failure(ctx, error).await;
-            StatusCheckResult {
-                success: outcome.success,
-                has_dirty_changes: ctx.is_dirty,
-                is_offline: outcome.was_offline,
-                requires_logout: outcome.requires_logout,
-                error_key: outcome.error_key,
-                error: outcome.error,
-                error_code: outcome.error_code,
-                ..Default::default()
-            }
+            StatusCheckResult { success: outcome.success, has_dirty_changes: ctx.is_dirty, is_offline: outcome.was_offline, failure: outcome.failure, ..Default::default() }
         }
     }
 }
@@ -615,12 +578,12 @@ mod tests {
 
     #[test]
     fn failures_carry_a_code_or_a_logout_reason_never_both() {
-        let coded = failure(&SyncError::Timeout("slow".to_string()));
+        let coded = failure(&SyncError::Timeout("slow".to_string())).failure;
         assert_eq!(coded.error_code, Some(ErrorCode::UploadTimeout));
         assert_eq!(coded.error_key, None);
         assert!(!coded.requires_logout);
 
-        let logout = failure(&SyncError::VaultVersionIncompatible("3.0.0".to_string()));
+        let logout = failure(&SyncError::VaultVersionIncompatible("3.0.0".to_string())).failure;
         assert_eq!(logout.error_key, Some(LogoutReason::VaultVersionIncompatible));
         assert_eq!(logout.error_code, None);
         assert!(logout.requires_logout);

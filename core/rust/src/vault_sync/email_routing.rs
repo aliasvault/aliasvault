@@ -5,7 +5,8 @@ use std::collections::{HashMap, HashSet};
 use serde_json::Value;
 
 use super::types::{ClaimedEmailAddress, EmailRoutingPush};
-use super::db::{truthy, value_string};
+use super::db::value_string;
+use crate::vault_codec::row::{rows_of, truthy};
 use crate::vault_codec::Manifest;
 
 /// The field key of an item's login email.
@@ -17,13 +18,13 @@ pub fn build_email_routing(manifests: &[Manifest], private_email_domains: &[Stri
     let mut order: Vec<String> = Vec::new();
 
     for manifest in manifests {
-        let live_item_ids: HashSet<String> = rows_of(manifest, "Items")
+        let live_item_ids: HashSet<String> = rows_of(&manifest.tables, "Items")
             .iter()
             .filter(|row| !truthy(row.get("IsDeleted")) && row.get("DeletedAt").map_or(true, Value::is_null))
             .filter_map(|row| row.get("Id").map(value_string))
             .collect();
 
-        for field_value in rows_of(manifest, "FieldValues") {
+        for field_value in rows_of(&manifest.tables, "FieldValues") {
             if field_value.get("FieldKey").and_then(Value::as_str) != Some(FIELD_KEY_LOGIN_EMAIL) || truthy(field_value.get("IsDeleted")) {
                 continue;
             }
@@ -58,10 +59,6 @@ pub fn build_email_routing(manifests: &[Manifest], private_email_domains: &[Stri
         email_address_list: order.into_iter().filter_map(|key| by_pair.remove(&key)).collect(),
         covered_manifest_ids: manifests.iter().map(|manifest| manifest.manifest_id.clone()).collect(),
     }
-}
-
-fn rows_of<'a>(manifest: &'a Manifest, table: &str) -> &'a [crate::vault_codec::CodecRecord] {
-    manifest.tables.get(table).map(Vec::as_slice).unwrap_or(&[])
 }
 
 #[cfg(test)]

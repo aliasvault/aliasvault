@@ -60,6 +60,35 @@ pub(crate) async fn delete(host: &Host, path: &str) -> SyncResult<()> {
     Ok(())
 }
 
+/// The v2 vault endpoint (`GET`/`POST v2/Vault`).
+pub(crate) const VAULT_ENDPOINT: &str = "Vault";
+
+/// Max base64 characters in one blob transfer request or response body.
+pub(crate) const BLOB_TRANSFER_BATCH_MAX_CHARS: usize = 4 * 1024 * 1024;
+
+/// Upper bound on the number of blobs in one transfer batch.
+pub(crate) const BLOB_TRANSFER_BATCH_MAX_COUNT: usize = 100;
+
+/// Split items into transfer batches bounded by both blob transfer limits.
+pub(crate) fn batch_by_transfer_cost<T>(items: Vec<T>, cost_of: impl Fn(&T) -> usize) -> Vec<Vec<T>> {
+    let mut batches = Vec::new();
+    let mut batch = Vec::new();
+    let mut chars = 0usize;
+    for item in items {
+        let cost = cost_of(&item);
+        if !batch.is_empty() && (chars + cost > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.len() >= BLOB_TRANSFER_BATCH_MAX_COUNT) {
+            batches.push(std::mem::take(&mut batch));
+            chars = 0;
+        }
+        batch.push(item);
+        chars += cost;
+    }
+    if !batch.is_empty() {
+        batches.push(batch);
+    }
+    batches
+}
+
 /// Turn a 404 from a v2 vault endpoint into "the server predates the v2 API".
 pub(crate) fn with_outdated_server_guard<T>(result: SyncResult<T>) -> SyncResult<T> {
     match result {

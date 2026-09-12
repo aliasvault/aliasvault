@@ -5,61 +5,55 @@ use serde::{Deserialize, Serialize};
 use super::types::CommandKind;
 use crate::error::VaultError;
 
-macro_rules! error_codes {
-    ($($(#[$doc:meta])* $variant:ident = $code:literal),* $(,)?) => {
-        /// Client error codes, shared with the client apps (`AppErrorCodes` in the client core).
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-        pub enum ErrorCode {
-            $($(#[$doc])* #[serde(rename = $code)] $variant,)*
-        }
-
-        impl ErrorCode {
-            /// The wire form of the code (`E-202`).
-            pub const fn as_str(self) -> &'static str {
-                match self {
-                    $(ErrorCode::$variant => $code,)*
-                }
-            }
-        }
-    };
-}
-
-error_codes! {
-    UnknownError = "E-001",
+/// Client error codes, shared with the client apps (`AppErrorCodes` in the client core).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ErrorCode {
+    #[serde(rename = "E-001")]
+    UnknownError,
     /// No encryption key in the session.
-    VaultLocked = "E-202",
+    #[serde(rename = "E-202")]
+    VaultLocked,
     /// The stored vault does not decrypt with the session key.
-    VaultDecryptFailed = "E-203",
+    #[serde(rename = "E-203")]
+    VaultDecryptFailed,
     /// The server's snapshot cannot be assembled into a vault.
-    SyncVaultFetchFailed = "E-502",
+    #[serde(rename = "E-502")]
+    SyncVaultFetchFailed,
     /// A server manifest or bucket fails its hash check or does not decrypt.
-    SyncVaultDecryptFailed = "E-503",
+    #[serde(rename = "E-503")]
+    SyncVaultDecryptFailed,
     /// The server cannot be reached and there is no local vault to fall back on.
-    SyncServerUnreachable = "E-505",
+    #[serde(rename = "E-505")]
+    SyncServerUnreachable,
     /// The server answered a request with an unexpected HTTP failure.
-    SyncServerError = "E-506",
+    #[serde(rename = "E-506")]
+    SyncServerError,
     /// The host failed a read command (state, database, at-rest blob).
-    StorageReadFailed = "E-601",
+    #[serde(rename = "E-601")]
+    StorageReadFailed,
     /// The host failed a write command (state, database, at-rest blob, dirty flag).
-    StorageWriteFailed = "E-602",
+    #[serde(rename = "E-602")]
+    StorageWriteFailed,
     /// The host could not open the staging database.
-    DatabaseInitFailed = "E-603",
-    MergeFailed = "E-701",
+    #[serde(rename = "E-603")]
+    DatabaseInitFailed,
+    #[serde(rename = "E-701")]
+    MergeFailed,
     /// The server kept refusing the write as outdated after the re-sync limit.
-    MergeConflict = "E-702",
+    #[serde(rename = "E-702")]
+    MergeConflict,
     /// The write was rejected: integrity check, or blobs the server asked for that this client cannot supply.
-    UploadFailed = "E-801",
-    UploadTooLarge = "E-804",
-    UploadTimeout = "E-805",
-    /// A migration cannot run yet (the vault still has to walk the legacy upgrade chain).
-    MigrationCheckFailed = "E-901",
-    ServerUpdateRequired = "E-903",
-}
-
-impl std::fmt::Display for ErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.as_str())
-    }
+    #[serde(rename = "E-801")]
+    UploadFailed,
+    #[serde(rename = "E-804")]
+    UploadTooLarge,
+    #[serde(rename = "E-805")]
+    UploadTimeout,
+    /// LEGACY: a migration cannot run yet (the vault is not on the latest pre-manifest-v1 schema).
+    #[serde(rename = "E-901")]
+    MigrationCheckFailed,
+    #[serde(rename = "E-903")]
+    ServerUpdateRequired,
 }
 
 /// Why the sync has to end and host needs to logout user session.
@@ -135,7 +129,7 @@ pub enum SyncError {
     /// The server asked for blobs this client cannot supply.
     #[error("Server reported blobs this client cannot supply: {}", .0.join(", "))]
     MissingBlobs(Vec<String>),
-    /// The manifest migration cannot run before the legacy sqlite-blob upgrade chain.
+    /// LEGACY: the manifest migration cannot run before the sqlite-blob upgrade chain.
     #[error("The vault has to walk the legacy upgrade chain first")]
     LegacyUpgradePending,
     /// The host reported a failure for a command.
@@ -177,21 +171,6 @@ impl SyncError {
         }
     }
 
-    /// The client error code for this failure; `None` when it is a logout instead.
-    pub fn code(&self) -> Option<ErrorCode> {
-        match self.failure() {
-            Failure::Coded(code) => Some(code),
-            Failure::Logout(_) => None,
-        }
-    }
-
-    /// The logout reason for this failure; `None` when it is a coded error instead.
-    pub fn logout_reason(&self) -> Option<LogoutReason> {
-        match self.failure() {
-            Failure::Logout(reason) => Some(reason),
-            Failure::Coded(_) => None,
-        }
-    }
 }
 
 impl CommandKind {
@@ -215,11 +194,10 @@ mod tests {
     #[test]
     fn codes_and_reasons_serialize_to_the_client_vocabulary() {
         assert_eq!(serde_json::to_string(&ErrorCode::VaultLocked).unwrap(), "\"E-202\"");
-        assert_eq!(ErrorCode::UploadTimeout.as_str(), "E-805");
+        assert_eq!(serde_json::to_string(&ErrorCode::UploadTimeout).unwrap(), "\"E-805\"");
         assert_eq!(serde_json::to_string(&LogoutReason::PasswordChanged).unwrap(), "\"passwordChanged\"");
-        assert_eq!(SyncError::Auth.logout_reason(), Some(LogoutReason::SessionExpired));
-        assert_eq!(SyncError::Auth.code(), None);
-        assert_eq!(SyncError::Host { command: CommandKind::DbOpen, message: String::new() }.code(), Some(ErrorCode::DatabaseInitFailed));
-        assert_eq!(SyncError::Host { command: CommandKind::DbExec, message: String::new() }.code(), Some(ErrorCode::StorageWriteFailed));
+        assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
+        assert_eq!(SyncError::Host { command: CommandKind::DbOpen, message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
+        assert_eq!(SyncError::Host { command: CommandKind::DbExec, message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
     }
 }

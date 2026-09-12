@@ -12,8 +12,10 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
-use super::{get_key, get_updated_at, MergeStats, TableConfig, SYNCABLE_TABLES};
+use super::{get_key, MergeStats};
 use crate::error::VaultResult;
+use crate::timestamp::updated_at;
+use crate::vault_model::{id_key, TableConfig, SYNCABLE_TABLES};
 use crate::vault_codec::{bucket_categories, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
 
 /// Input of the canonical merge. The server side is the base (kept on ties); the local side is the
@@ -52,13 +54,13 @@ pub struct CanonicalMergeOutput {
 pub fn merge_canonical(input: CanonicalMergeInput) -> VaultResult<CanonicalMergeOutput> {
     let CanonicalMergeInput { server_manifests, server_buckets, contentless_server_manifest_ids, local_manifests, local_buckets, schema_columns } = input;
 
-    let mut local_by_id: HashMap<String, Manifest> = local_manifests.into_iter().map(|m| (m.manifest_id.to_lowercase(), m)).collect();
+    let mut local_by_id: HashMap<String, Manifest> = local_manifests.into_iter().map(|m| (id_key(&m.manifest_id), m)).collect();
     let mut local_buckets_by_id = group_buckets(local_buckets);
     let mut server_buckets_by_id = group_buckets(server_buckets);
 
     let mut manifests: Vec<CanonicalManifestMerge> = Vec::new();
     for server_manifest in server_manifests {
-        let key = server_manifest.manifest_id.to_lowercase();
+        let key = id_key(&server_manifest.manifest_id);
         let local = local_by_id.remove(&key);
         let local_buckets = local_buckets_by_id.remove(&key).unwrap_or_default();
         let server_buckets = server_buckets_by_id.remove(&key).unwrap_or_default();
@@ -67,7 +69,7 @@ pub fn merge_canonical(input: CanonicalMergeInput) -> VaultResult<CanonicalMerge
 
     // A contentless server manifest has no base; the local counterpart passes through whole.
     for manifest_id in contentless_server_manifest_ids {
-        let key = manifest_id.to_lowercase();
+        let key = id_key(&manifest_id);
         if let Some(local) = local_by_id.remove(&key) {
             manifests.push(pass_through(local, local_buckets_by_id.remove(&key).unwrap_or_default()));
         }
@@ -79,17 +81,11 @@ pub fn merge_canonical(input: CanonicalMergeInput) -> VaultResult<CanonicalMerge
     Ok(CanonicalMergeOutput { manifests, dropped_local_manifest_ids })
 }
 
-/// JSON convenience wrapper for FFI.
-pub fn merge_canonical_json(input_json: &str) -> VaultResult<String> {
-    let input: CanonicalMergeInput = serde_json::from_str(input_json)?;
-    Ok(serde_json::to_string(&merge_canonical(input)?)?)
-}
-
 /// Group buckets by their manifest id (lowercased).
 fn group_buckets(buckets: Vec<DataBucket>) -> HashMap<String, Vec<DataBucket>> {
     let mut grouped: HashMap<String, Vec<DataBucket>> = HashMap::new();
     for bucket in buckets {
-        grouped.entry(bucket.manifest_id.to_lowercase()).or_default().push(bucket);
+        grouped.entry(id_key(&bucket.manifest_id)).or_default().push(bucket);
     }
     grouped
 }
@@ -206,13 +202,7 @@ fn merge_rows(
     let identity_columns = config.identity_columns();
     // Rows arrive normalized to the wire shape here, so a canonical-only key may rely on stripped
     // derived ids (see the FieldValues registry comment).
-    let match_columns: &[&str] = if !config.canonical_key_columns.is_empty() {
-        config.canonical_key_columns
-    } else if config.uses_composite_key() {
-        config.composite_key_columns
-    } else {
-        &identity_columns
-    };
+    let match_columns: &[&str] = if config.canonical_key_columns.is_empty() { &identity_columns } else { config.canonical_key_columns };
     let known_columns: Option<HashSet<&str>> = schema_columns.get(config.name).map(|cols| cols.iter().map(String::as_str).collect());
 
     // Winner per match key among incoming rows; on duplicates the latest UpdatedAt wins.
@@ -220,7 +210,7 @@ fn merge_rows(
     for record in &incoming_rows {
         let key = get_key(record, match_columns);
         match incoming_map.get(&key) {
-            Some(existing) if get_updated_at(record) <= get_updated_at(existing) => {}
+            Some(existing) if updated_at(record) <= updated_at(existing) => {}
             _ => {
                 incoming_map.insert(key, record);
             }
@@ -232,7 +222,7 @@ fn merge_rows(
         let key = get_key(&base_record, match_columns);
         match incoming_map.remove(&key) {
             Some(incoming) => {
-                let (incoming_ts, base_ts) = (get_updated_at(incoming), get_updated_at(&base_record));
+                let (incoming_ts, base_ts) = (updated_at(incoming), updated_at(&base_record));
                 match (incoming_ts, base_ts) {
                     (Some(i_ts), Some(b_ts)) if i_ts > b_ts => {
                         stats.conflicts += 1;

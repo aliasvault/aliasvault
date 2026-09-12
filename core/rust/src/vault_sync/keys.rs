@@ -14,11 +14,11 @@ pub(crate) async fn has_local_vault_key(host: &Host) -> SyncResult<bool> {
     Ok(state::get::<String>(host, state::ENCRYPTED_ACCOUNT_KEY).await?.is_some())
 }
 
-/// `GET v2/VaultKey/Password`.
-pub(crate) async fn fetch_vault_key(host: &Host) -> SyncResult<(bool, Option<VaultKeyResponse>)> {
+/// `GET v2/VaultKey/Password`: the account's vault key, `None` when the server holds none.
+pub(crate) async fn fetch_vault_key(host: &Host) -> SyncResult<Option<VaultKeyResponse>> {
     match http::get::<VaultKeyGetResponse>(host, "VaultKey/Password", false).await {
-        Ok(response) => Ok((true, response.vault_key)),
-        Err(SyncError::Http { status: 404, .. }) => Ok((false, None)),
+        Ok(response) => Ok(response.vault_key),
+        Err(SyncError::Http { status: 404, .. }) => Ok(None),
         Err(error) => Err(error),
     }
 }
@@ -125,7 +125,7 @@ pub(crate) async fn adopt_remote_vault_key_if_needed(ctx: &mut Ctx) -> SyncResul
     }
     let Some(session_key) = ctx.encryption_key.clone() else { return Ok(true) };
 
-    let (_, vault_key) = match fetch_vault_key(&ctx.host).await {
+    let vault_key = match fetch_vault_key(&ctx.host).await {
         Ok(result) => result,
         Err(error) => {
             ctx.warn(format!("[VaultSync] Vault key probe failed, deferring vault key adoption: {}", error)).await;

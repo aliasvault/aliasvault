@@ -15,7 +15,6 @@ pub static SYNCABLE_TABLES: &[TableConfig] = &[
     TableConfig::new("FieldValues")
         .manifest_scoped()
         .item_child()
-        .with_composite_key(&["ManifestId", "ItemId", "FieldKey", "FieldDefinitionId"])
         .with_canonical_key(&["ManifestId", "ItemId", "FieldKey", "FieldDefinitionId", "Id"]),
     TableConfig::new("Folders").manifest_scoped(),
     TableConfig::new("Tags").manifest_scoped(),
