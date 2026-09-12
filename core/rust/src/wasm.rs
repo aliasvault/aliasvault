@@ -10,7 +10,7 @@ use crate::password_generator::{available_languages, generate_password};
 use crate::vault_codec::{
     self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput,
 };
-use crate::vault_merge::{merge_canonical, merge_vaults, CanonicalMergeInput, CanonicalMergeOutput, MergeInput, MergeOutput};
+use crate::vault_merge::{merge_canonical, CanonicalMergeInput, CanonicalMergeOutput};
 use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
 use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
 
@@ -40,35 +40,10 @@ pub fn get_core_version_js() -> String {
 // Vault Merge WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Get the list of syncable table names a platform must read into the merge input.
+/// Get the list of table names that take part in a vault sync.
 #[wasm_bindgen(js_name = getSyncableTableNames)]
-pub fn get_syncable_table_names() -> Vec<String> {
-    crate::vault_merge::merge_table_names().iter().map(|s| s.to_string()).collect()
-}
-
-/// Merge vaults using LWW strategy.
-///
-/// Takes a JsValue (MergeInput) and returns a JsValue (MergeOutput). Serialized via `codec_to_js`
-/// so `{ __b64 }` byte params survive as plain objects (the default serializer would render them
-/// as JS Maps) and null params reach sql.js as null.
-#[wasm_bindgen(js_name = mergeVaults)]
-pub fn merge_vaults_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: MergeInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse input: {}", e)))?;
-
-    let output: MergeOutput = merge_vaults(input)
-        .map_err(|e| JsValue::from_str(&format!("Merge failed: {}", e)))?;
-
-    codec_to_js(&output)
-}
-
-/// Merge vaults using JSON strings (alternative API).
-///
-/// Takes a JSON string and returns a JSON string.
-#[wasm_bindgen(js_name = mergeVaultsJson)]
-pub fn merge_vaults_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::vault_merge::merge_vaults_json(input_json)
-        .map_err(|e| JsValue::from_str(&format!("Merge failed: {}", e)))
+pub fn get_syncable_table_names_js() -> Vec<String> {
+    crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
 
 /// Merge the local canonical vault onto the server canonical vault (manifest-v1 format).
@@ -113,8 +88,7 @@ pub fn prune_vault_js(input: JsValue) -> Result<JsValue, JsValue> {
 /// Takes a JSON string and returns a JSON string.
 #[wasm_bindgen(js_name = pruneVaultJson)]
 pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::vault_pruner::prune_vault_json(input_json)
-        .map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))
+    crate::error::json_call(input_json, prune_vault).map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))
 }
 
 /// Get the per-table SELECT queries used to build prune input.
@@ -320,8 +294,7 @@ pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
 /// Takes a JSON string and returns a JSON string.
 #[wasm_bindgen(js_name = filterCredentialsJson)]
 pub fn filter_credentials_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::credential_matcher::filter_credentials_json(input_json)
-        .map_err(|e| JsValue::from_str(&e))
+    crate::credential_matcher::filter_credentials_json(input_json).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
 /// Extract domain from URL.
@@ -484,7 +457,7 @@ pub fn get_identity_age_ranges_js() -> Vec<String> {
 /// The derived key as 32 bytes
 #[wasm_bindgen(js_name = argon2DeriveKey)]
 pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &str) -> Result<Vec<u8>, JsValue> {
-    crate::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings)
+    crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings)
         .map_err(|e| JsValue::from_str(&format!("Argon2 error: {}", e)))
 }
 
@@ -496,7 +469,7 @@ pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &st
 /// Returns a 32-byte random salt as an uppercase hex string.
 #[wasm_bindgen(js_name = srpGenerateSalt)]
 pub fn srp_generate_salt_js() -> String {
-    crate::srp::srp_generate_salt()
+    crate::crypto::srp::srp_generate_salt()
 }
 
 /// Derive the SRP private key (x) from credentials.
@@ -514,7 +487,7 @@ pub fn srp_derive_private_key_js(
     identity: &str,
     password_hash: &str,
 ) -> Result<String, JsValue> {
-    crate::srp::srp_derive_private_key(salt, identity, password_hash)
+    crate::crypto::srp::srp_derive_private_key(salt, identity, password_hash)
         .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
 }
 
@@ -527,7 +500,7 @@ pub fn srp_derive_private_key_js(
 /// Verifier as uppercase hex string (for registration)
 #[wasm_bindgen(js_name = srpDeriveVerifier)]
 pub fn srp_derive_verifier_js(private_key: &str) -> Result<String, JsValue> {
-    crate::srp::srp_derive_verifier(private_key)
+    crate::crypto::srp::srp_derive_verifier(private_key)
         .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
 }
 
@@ -535,7 +508,7 @@ pub fn srp_derive_verifier_js(private_key: &str) -> Result<String, JsValue> {
 /// Returns a JsValue object with `public` and `secret` properties (uppercase hex strings).
 #[wasm_bindgen(js_name = srpGenerateEphemeral)]
 pub fn srp_generate_ephemeral_js() -> Result<JsValue, JsValue> {
-    let ephemeral = crate::srp::srp_generate_ephemeral();
+    let ephemeral = crate::crypto::srp::srp_generate_ephemeral();
     serde_wasm_bindgen::to_value(&ephemeral)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize ephemeral: {}", e)))
 }
@@ -559,7 +532,7 @@ pub fn srp_derive_session_js(
     identity: &str,
     private_key: &str,
 ) -> Result<JsValue, JsValue> {
-    let session = crate::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key)
+    let session = crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key)
         .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))?;
     serde_wasm_bindgen::to_value(&session)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize session: {}", e)))
@@ -574,7 +547,7 @@ pub fn srp_derive_session_js(
 /// JsValue object with `public` and `secret` properties (uppercase hex strings)
 #[wasm_bindgen(js_name = srpGenerateEphemeralServer)]
 pub fn srp_generate_ephemeral_server_js(verifier: &str) -> Result<JsValue, JsValue> {
-    let ephemeral = crate::srp::srp_generate_ephemeral_server(verifier)
+    let ephemeral = crate::crypto::srp::srp_generate_ephemeral_server(verifier)
         .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))?;
     serde_wasm_bindgen::to_value(&ephemeral)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize ephemeral: {}", e)))
@@ -601,7 +574,7 @@ pub fn srp_derive_session_server_js(
     verifier: &str,
     client_proof: &str,
 ) -> Result<JsValue, JsValue> {
-    let session = crate::srp::srp_derive_session_server(
+    let session = crate::crypto::srp::srp_derive_session_server(
         server_secret,
         client_public,
         salt,
@@ -631,12 +604,79 @@ pub fn srp_derive_session_server_js(
 /// # Returns
 /// True if verification succeeds, false otherwise
 #[wasm_bindgen(js_name = srpVerifySession)]
-pub fn srp_verify_session_wasm(
+pub fn srp_verify_session_js(
     client_public: &str,
     client_proof: &str,
     session_key: &str,
     server_proof: &str,
 ) -> Result<bool, JsValue> {
-    crate::srp::srp_verify_session(client_public, client_proof, session_key, server_proof)
+    crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof)
         .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Crypto WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// AES-256-GCM encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
+#[wasm_bindgen(js_name = aesGcmEncrypt)]
+pub fn aes_gcm_encrypt_js(plaintext: &[u8], key_base64: &str) -> Result<String, JsValue> {
+    crate::crypto::symmetric_encrypt_bytes(plaintext, key_base64).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// AES-256-GCM decrypt base64 `IV | ciphertext | tag` with a base64 key.
+#[wasm_bindgen(js_name = aesGcmDecrypt)]
+pub fn aes_gcm_decrypt_js(base64_ciphertext: &str, key_base64: &str) -> Result<Vec<u8>, JsValue> {
+    let bytes = crate::encoding::base64_decode(base64_ciphertext).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    crate::crypto::symmetric_decrypt_bytes(&bytes, key_base64).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// Generate an RSA-OAEP-256 key pair as `{ publicKey, privateKey }` JWK strings.
+#[wasm_bindgen(js_name = rsaGenerateKeyPair)]
+pub fn rsa_generate_key_pair_js() -> Result<JsValue, JsValue> {
+    let pair = crate::crypto::generate_rsa_key_pair().map_err(|e| JsValue::from_str(&e.to_string()))?;
+    serde_wasm_bindgen::to_value(&pair).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// RSA-OAEP-256 encrypt bytes for a JWK public key. Returns base64 ciphertext.
+#[wasm_bindgen(js_name = rsaEncrypt)]
+pub fn rsa_encrypt_js(plaintext: &[u8], public_key_jwk: &str) -> Result<String, JsValue> {
+    crate::crypto::encrypt_with_public_key(plaintext, public_key_jwk).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+/// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
+#[wasm_bindgen(js_name = rsaDecrypt)]
+pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
+    crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Vault sync engine WASM Bindings
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// One engine operation. The host loops on `nextCommand` / `resume` until the command is `done`; see the
+/// `vault_sync` module docs for the command and response shapes.
+#[wasm_bindgen(js_name = VaultSyncSession)]
+pub struct VaultSyncSessionJs {
+    inner: crate::vault_sync::SyncSession,
+}
+
+#[wasm_bindgen(js_class = VaultSyncSession)]
+impl VaultSyncSessionJs {
+    /// Start an operation from its `SyncRequest` JSON.
+    #[wasm_bindgen(constructor)]
+    pub fn new(request_json: &str) -> Result<VaultSyncSessionJs, JsValue> {
+        Ok(Self { inner: crate::vault_sync::SyncSession::new(request_json).map_err(|e| JsValue::from_str(&e.to_string()))? })
+    }
+
+    /// The next command for the host, as JSON.
+    #[wasm_bindgen(js_name = nextCommand)]
+    pub fn next_command(&self) -> Result<String, JsValue> {
+        self.inner.next_command().map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// Hand the host's response to the last command back, as JSON.
+    pub fn resume(&self, response_json: &str) -> Result<(), JsValue> {
+        self.inner.resume(response_json).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
 }

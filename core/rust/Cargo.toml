@@ -51,7 +51,7 @@ argon2 = "0.5"
 # AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
 aes-gcm = "0.10"
 rsa = "0.9"
-rand_core06 = { package = "rand_core", version = "0.6" }
+rand_core06 = { package = "rand_core", version = "0.6", features = ["getrandom"] }
 
 # Wipes key material from memory on drop
 zeroize = { version = "1.8", features = ["derive"] }
