@@ -17,7 +17,7 @@ import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
 export { AutofillMatchingMode } from './RustCoreTypes';
-export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
+export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecTableData, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
 
 /**
  * The host's Rust core binding.

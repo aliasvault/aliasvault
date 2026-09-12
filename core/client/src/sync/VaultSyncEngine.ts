@@ -22,7 +22,7 @@ import type { StorageKey } from '../platform/KeyValueStore';
 import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
-export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck';
+export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey';
 
 /** What the host hands the engine at session start (the Rust `SyncRequest`). */
 export type VaultSyncEngineRequest = {
@@ -45,7 +45,6 @@ export type VaultSyncEngineRequest = {
 export type VaultSyncSessionUpdates = {
   encryptionKey?: string;
   accountPrivateKey?: string;
-  clearAccountPrivateKey?: boolean;
 };
 
 /** The email routing a pulled vault came with. */
@@ -89,6 +88,20 @@ export type VaultSyncMigrationStatusResult = EngineResultBase & {
 export type VaultSyncMigrateManifestResult = EngineResultBase & {
   success: boolean;
   pushed: boolean;
+  error?: string;
+  errorCode?: string;
+  errorKey?: string;
+  requiresLogout: boolean;
+};
+
+/**
+ * Outcome of the login-time key resolution: the vault key to store as the session key (the VEK behind the
+ * account's key chain, or the password-derived key itself for a legacy account without a chain).
+ */
+export type VaultSyncResolveVaultKeyResult = EngineResultBase & {
+  success: boolean;
+  hasVaultKey: boolean;
+  encryptionKey?: string;
   error?: string;
   errorCode?: string;
   errorKey?: string;
@@ -522,8 +535,6 @@ async function applySessionUpdates(updates: VaultSyncSessionUpdates | undefined)
   }
   if (updates.accountPrivateKey) {
     await storage.set(StorageKeys.ACCOUNT_PRIVATE_KEY, updates.accountPrivateKey);
-  } else if (updates.clearAccountPrivateKey) {
-    await storage.remove(StorageKeys.ACCOUNT_PRIVATE_KEY);
   }
 }
 
@@ -611,6 +622,23 @@ export async function runFullVaultSync(host: IVaultSyncEngineHost, options: Vaul
 export async function runVaultStatusCheck(host: IVaultSyncEngineHost, webApi?: WebApiService): Promise<VaultSyncStatusCheckResult> {
   const result = await runVaultSyncEngine<VaultSyncStatusCheckResult>(host, await buildVaultSyncRequest('statusCheck'), webApi);
   await recordServerStatus(result.serverVersion, result.capabilities);
+  return result;
+}
+
+/**
+ * Resolve the vault key right after login: open the account's key chain with the password-derived key (the cached
+ * chain when the server cannot be reached) and store the VEK as the session key. A legacy account keeps the derived
+ * key. The sync operations assume the key this stored.
+ * @param host - the host
+ * @param derivedKeyBase64 - the password-derived key (KEK)
+ * @param webApi - the API the HTTP commands run on
+ */
+export async function runVaultKeyResolution(host: IVaultSyncEngineHost, derivedKeyBase64: string, webApi?: WebApiService): Promise<VaultSyncResolveVaultKeyResult> {
+  const request = { ...await buildVaultSyncRequest('resolveVaultKey'), encryptionKey: derivedKeyBase64 };
+  const result = await runVaultSyncEngine<VaultSyncResolveVaultKeyResult>(host, request, webApi);
+  if (result.success && result.encryptionKey) {
+    await getPlatform().storage.set(StorageKeys.ENCRYPTION_KEY, result.encryptionKey);
+  }
   return result;
 }
 

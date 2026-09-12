@@ -1,25 +1,28 @@
+import { DEFAULT_API_URL, DEFAULT_CLIENT_URL, MIN_SERVER_VERSION } from '@aliasvault/models/defaults';
+
 import { getPlatform } from './ClientPlatform';
 
 /**
  * Version and server compatibility information. Version and client name come from the host's
- * {@link IAppIdentity}; the server floor and the default URLs are shared by every client.
+ * {@link IAppIdentity}; the server floor and the default URLs are shared by every client (see AppDefaults in
+ * the models package, which also generates the native AppInfo files).
  */
 export class AppInfo {
   /**
    * The minimum supported AliasVault server (API) version. If the server version is below this, the
    * client will throw an error stating that the server should be updated.
    */
-  public static readonly MIN_SERVER_VERSION = '0.12.0-dev';
+  public static readonly MIN_SERVER_VERSION = MIN_SERVER_VERSION;
 
   /**
    * The default AliasVault client URL.
    */
-  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.com';
+  public static readonly DEFAULT_CLIENT_URL = DEFAULT_CLIENT_URL;
 
   /**
    * The default AliasVault web API URL.
    */
-  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.com/api';
+  public static readonly DEFAULT_API_URL = DEFAULT_API_URL;
 
   /**
    * Prevent instantiation of this utility class
