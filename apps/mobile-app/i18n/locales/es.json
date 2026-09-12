@@ -232,7 +232,7 @@
       "pinEnabled": "Desbloqueo de PIN activado correctamente",
       "pinDisabled": "El desbloqueo PIN ha sido desactivado",
       "passwordHelp": "Vuelva a introducir su contraseña maestra para desbloquear su bóveda. Esto siempre está habilitado como opción de retroceso.",
-      "keystoreIOS": "Llavero iOS",
+      "keystoreIOS": "Almacén de claves de iOS",
       "keystoreAndroid": "Almacén de claves de Android"
     },
     "autoLockSettings": {
@@ -241,7 +241,7 @@
     "identityGeneratorSettings": {
       "description": "Configurar el idioma por defecto y la preferencia de género para generar nuevas identidades.",
       "languageSection": "Idioma",
-      "languageDescription": "Establece el idioma que se utilizará al generar nuevas identidades.",
+      "languageDescription": "Establecer el idioma que se utilizará al generar nuevas identidades.",
       "genderSection": "Género",
       "genderDescription": "Establecer la preferencia de género para generar nuevas identidades.",
       "ageRangeSection": "Rango de edad",
@@ -491,7 +491,7 @@
       "title": "Enlace a credenciales existentes",
       "intro": "Selecciona una credencial existente en tu bóveda para vincular a \"{{target}}\".",
       "confirmTitle": "¿Enlace a la credencial?",
-      "confirmMessage": "¿Está seguro de que desea vincular \"{{url}}\" a esta credencial?"
+      "confirmMessage": "¿Realmente desea vincular \"{{url}}\" a esta credencial?"
     },
     "autofillUrlAdded": {
       "title": "Credencial vinculado",
@@ -551,7 +551,7 @@
     "viewHistory": "Ver historial",
     "history": "Historial",
     "noHistoryAvailable": "Sin historial disponible",
-    "deleteHistoryConfirm": "¿Está seguro de que desea eliminar este registro del historial?",
+    "deleteHistoryConfirm": "¿Realmente desea eliminar este registro del historial?",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
     "folders": {
       "folder": "Folder",
@@ -559,7 +559,7 @@
       "createFolder": "Create Folder",
       "editFolder": "Editar carpeta",
       "folderName": "Nombre de la carpeta",
-      "folderNamePlaceholder": "ej. Trabajo, Personal",
+      "folderNamePlaceholder": "e.g., Trabajo, Personal",
       "folderNameRequired": "El nombre de la carpeta es obligatorio",
       "deleteFolder": "Borrar carpeta",
       "deleteFolderKeepItems": "Eliminar solo la carpeta",
@@ -690,12 +690,12 @@
       "selfHosted": "Autoalojado",
       "customApiUrl": "URL de API personalizada",
       "customApiUrlPlaceholder": "https://mi-instancia-Aliasvault.com/api",
-      "version": "Versión {{version}}",
+      "version": "Versión: {{version}}",
       "advancedSettings": "Configuración avanzada",
       "customProxyHeaders": "Cabeceras proxy personalizadas",
       "customProxyHeadersDescription": "Añade cabeceras HTTP que se enviarán con cada petición a tu servidor AliasVault. Puede utilizarse para configuraciones autoalojadas detrás de un proxy inverso, que comprueba cabeceras personalizadas (por ejemplo, Pangolin, Cloudflare Access).",
       "headerName": "Nombre del encabezado",
-      "headerNamePlaceholder": "X-Custom-Header",
+      "headerNamePlaceholder": "X-Encabezado-Personalizado",
       "headerValue": "Valor de cabecera"
     }
   },
@@ -714,7 +714,7 @@
     "status": {
       "preparingUpgrade": "Preparando actualización...",
       "vaultAlreadyUpToDate": "La bóveda ya está actualizada",
-      "applyingDatabaseMigrations": "Aplicando migraciones de base de datos...",
+      "applyingDatabaseMigrations": "Aplicando migración de base de datos...",
       "applyingMigration": "Aplicando migración {{current}} de {{total}}...",
       "committingChanges": "Confirmando los cambios..."
     },
