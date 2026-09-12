@@ -8,8 +8,8 @@
 //! - **favicon**: Favicon handling and source selection
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
-//! - **srp**: Secure Remote Password (SRP-6a) protocol for authentication
-//! - **argon2**: Argon2id key derivation
+//! - **crypto**: Argon2id derivation, AES-256-GCM, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
+//! - **vault_sync**: the sans-IO vault sync engine every client drives
 //!
 //! This library accepts data as JSON and returns results as JSON.
 //! Each platform (browser, iOS, Android, .NET) handles its own I/O
@@ -17,6 +17,7 @@
 
 pub mod error;
 mod hex;
+pub mod timestamp;
 mod rng;
 pub mod vault_model;
 pub mod vault_merge;
@@ -28,14 +29,13 @@ pub mod email_parser;
 pub mod favicon;
 pub mod password_generator;
 pub mod identity_generator;
-pub mod srp;
-pub mod argon2;
+pub mod crypto;
+pub mod vault_sync;
 
 pub use error::VaultError;
 pub use vault_merge::{
-    merge_canonical, merge_canonical_json, merge_vaults, CanonicalManifestMerge, CanonicalMergeInput,
-    CanonicalMergeOutput, MergeInput, MergeOutput, MergeStats, SqlStatement, TableData,
-    SYNCABLE_TABLE_NAMES,
+    merge_canonical, merge_canonical_json, CanonicalManifestMerge, CanonicalMergeInput,
+    CanonicalMergeOutput, MergeStats, SqlStatement, SYNCABLE_TABLE_NAMES,
 };
 pub use vault_codec::{
     compute_ciphertext_hash, compute_content_fingerprint, canonicalize_from_sqlite,
@@ -60,13 +60,13 @@ pub use email_parser::{ParsedEmail, ParsedEmailAttachment};
 pub use favicon::{favicon_source_key, select_favicon_target, FaviconTarget};
 pub use password_generator::{generate_password, PasswordSettings};
 pub use identity_generator::{generate_identity, Identity, IdentityRequest};
-pub use srp::{
+pub use crypto::{
+    argon2_derive_key, argon2_derive_key_from_settings, Argon2Error, Argon2Params,
     srp_generate_salt, srp_derive_private_key, srp_derive_verifier,
     srp_generate_ephemeral, srp_derive_session,
     srp_generate_ephemeral_server, srp_derive_session_server,
     SrpEphemeral, SrpSession, SrpError,
 };
-pub use crate::argon2::{argon2_derive_key, argon2_derive_key_from_settings, Argon2Error, Argon2Params};
 
 // WASM bindings
 #[cfg(feature = "wasm")]

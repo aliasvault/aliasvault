@@ -7,50 +7,7 @@ use std::ffi::{c_char, CStr, CString};
 use std::ptr;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput};
-use crate::vault_merge::{merge_vaults, MergeInput};
 use crate::vault_pruner::{prune_vault, PruneInput};
-
-/// Merge two vaults using LWW strategy.
-///
-/// # Safety
-///
-/// - `input_json` must be a valid null-terminated C string
-/// - The returned pointer must be freed by calling `free_string`
-///
-/// # Returns
-///
-/// A null-terminated C string containing the JSON result (MergeOutput).
-/// Returns null on error.
-#[no_mangle]
-pub unsafe extern "C" fn merge_vaults_ffi(input_json: *const c_char) -> *mut c_char {
-    if input_json.is_null() {
-        return ptr::null_mut();
-    }
-
-    let c_str = match CStr::from_ptr(input_json).to_str() {
-        Ok(s) => s,
-        Err(_) => return ptr::null_mut(),
-    };
-
-    let input: MergeInput = match serde_json::from_str(c_str) {
-        Ok(i) => i,
-        Err(e) => {
-            return create_error_response(&format!("Failed to parse input: {}", e));
-        }
-    };
-
-    let output = match merge_vaults(input) {
-        Ok(o) => o,
-        Err(e) => {
-            return create_error_response(&format!("Merge failed: {}", e));
-        }
-    };
-
-    match serde_json::to_string(&output) {
-        Ok(json) => string_to_c_char(json),
-        Err(e) => create_error_response(&format!("Failed to serialize output: {}", e)),
-    }
-}
 
 /// Prune expired items from trash.
 ///
@@ -144,7 +101,7 @@ pub unsafe extern "C" fn filter_credentials_ffi(input_json: *const c_char) -> *m
 /// A null-terminated C string containing a JSON array of table names.
 #[no_mangle]
 pub extern "C" fn get_syncable_table_names_ffi() -> *mut c_char {
-    let names = crate::vault_merge::merge_table_names();
+    let names = crate::vault_merge::syncable_table_names();
     match serde_json::to_string(&names) {
         Ok(json) => string_to_c_char(json),
         Err(_) => ptr::null_mut(),
@@ -379,7 +336,7 @@ pub unsafe extern "C" fn vault_codec_unpack_payload_ffi(base64_plain_bytes: *con
 /// A null-terminated C string containing the salt as uppercase hex.
 #[no_mangle]
 pub extern "C" fn srp_generate_salt_ffi() -> *mut c_char {
-    string_to_c_char(crate::srp::srp_generate_salt())
+    string_to_c_char(crate::crypto::srp::srp_generate_salt())
 }
 
 /// Derive the SRP private key from credentials.
@@ -418,7 +375,7 @@ pub unsafe extern "C" fn srp_derive_private_key_ffi(
         Err(_) => return create_error_response("Invalid UTF-8 in password_hash"),
     };
 
-    match crate::srp::srp_derive_private_key(salt_str, identity_str, password_hash_str) {
+    match crate::crypto::srp::srp_derive_private_key(salt_str, identity_str, password_hash_str) {
         Ok(key) => string_to_c_char(key),
         Err(e) => create_error_response(&format!("SRP error: {}", e)),
     }
@@ -446,7 +403,7 @@ pub unsafe extern "C" fn srp_derive_verifier_ffi(private_key: *const c_char) -> 
         Err(_) => return create_error_response("Invalid UTF-8 in private_key"),
     };
 
-    match crate::srp::srp_derive_verifier(private_key_str) {
+    match crate::crypto::srp::srp_derive_verifier(private_key_str) {
         Ok(verifier) => string_to_c_char(verifier),
         Err(e) => create_error_response(&format!("SRP error: {}", e)),
     }
@@ -463,7 +420,7 @@ pub unsafe extern "C" fn srp_derive_verifier_ffi(private_key: *const c_char) -> 
 /// A null-terminated C string containing JSON: {"public": "...", "secret": "..."}
 #[no_mangle]
 pub extern "C" fn srp_generate_ephemeral_ffi() -> *mut c_char {
-    let ephemeral = crate::srp::srp_generate_ephemeral();
+    let ephemeral = crate::crypto::srp::srp_generate_ephemeral();
     match serde_json::to_string(&ephemeral) {
         Ok(json) => string_to_c_char(json),
         Err(e) => create_error_response(&format!("Failed to serialize ephemeral: {}", e)),
@@ -520,7 +477,7 @@ pub unsafe extern "C" fn srp_derive_session_ffi(
         Err(_) => return create_error_response("Invalid UTF-8 in private_key"),
     };
 
-    match crate::srp::srp_derive_session(
+    match crate::crypto::srp::srp_derive_session(
         client_secret_str,
         server_public_str,
         salt_str,
@@ -557,7 +514,7 @@ pub unsafe extern "C" fn srp_generate_ephemeral_server_ffi(verifier: *const c_ch
         Err(_) => return create_error_response("Invalid UTF-8 in verifier"),
     };
 
-    match crate::srp::srp_generate_ephemeral_server(verifier_str) {
+    match crate::crypto::srp::srp_generate_ephemeral_server(verifier_str) {
         Ok(ephemeral) => match serde_json::to_string(&ephemeral) {
             Ok(json) => string_to_c_char(json),
             Err(e) => create_error_response(&format!("Failed to serialize ephemeral: {}", e)),
@@ -624,7 +581,7 @@ pub unsafe extern "C" fn srp_derive_session_server_ffi(
         Err(_) => return create_error_response("Invalid UTF-8 in client_proof"),
     };
 
-    match crate::srp::srp_derive_session_server(
+    match crate::crypto::srp::srp_derive_session_server(
         server_secret_str,
         client_public_str,
         salt_str,
@@ -664,9 +621,6 @@ mod tests {
     #[test]
     fn test_null_input() {
         unsafe {
-            let result = merge_vaults_ffi(ptr::null());
-            assert!(result.is_null());
-
             let result = prune_vault_ffi(ptr::null());
             assert!(result.is_null());
 
@@ -679,7 +633,7 @@ mod tests {
     fn test_invalid_json_input() {
         let invalid_json = CString::new("not valid json").unwrap();
         unsafe {
-            let result = merge_vaults_ffi(invalid_json.as_ptr());
+            let result = prune_vault_ffi(invalid_json.as_ptr());
             assert!(!result.is_null());
 
             let c_str = CStr::from_ptr(result);

@@ -11,35 +11,17 @@ pub fn get_core_version() -> String {
     crate::get_core_version().to_string()
 }
 
-/// Get the list of syncable table names a platform must read into the merge input.
+/// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
 pub fn get_syncable_table_names() -> Vec<String> {
-    crate::vault_merge::merge_table_names().iter().map(|s| s.to_string()).collect()
+    crate::vault_merge::syncable_table_names().iter().map(|s| s.to_string()).collect()
 }
 
-/// Merge local and server vaults using Last-Write-Wins strategy.
-///
-/// # Arguments
-/// * `input_json` - JSON string with format:
-///   ```json
-///   {
-///     "local_tables": [{"name": "Items", "records": [...]}],
-///     "server_tables": [{"name": "Items", "records": [...]}]
-///   }
-///   ```
-///
-/// # Returns
-/// JSON string with format:
-///   ```json
-///   {
-///     "success": true,
-///     "statements": [{"sql": "UPDATE ...", "params": [...]}],
-///     "stats": {"tablesProcessed": 11, "conflicts": 0, ...}
-///   }
-///   ```
+/// Merge the local canonical vault onto the server canonical vault (manifest-v1 format), one
+/// manifest at a time, rows out. Input: `CanonicalMergeInput` JSON. Output: `CanonicalMergeOutput` JSON.
 #[uniffi::export]
-pub fn merge_vaults_json(input_json: String) -> Result<String, VaultError> {
-    crate::vault_merge::merge_vaults_json(&input_json)
+pub fn merge_canonical_json(input_json: String) -> Result<String, VaultError> {
+    crate::vault_merge::merge_canonical_json(&input_json)
 }
 
 /// Prune expired items from trash (items with DeletedAt older than retention_days).
@@ -283,6 +265,12 @@ pub fn vault_codec_bucket_layout() -> Result<String, VaultError> {
     crate::vault_codec::bucket_layout_json()
 }
 
+/// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
+#[uniffi::export]
+pub fn vault_codec_overflow_table() -> String {
+    crate::vault_codec::OVERFLOW_TABLE.to_string()
+}
+
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
 #[uniffi::export]
 pub fn vault_codec_generate_manifest_salt() -> String {
@@ -358,7 +346,7 @@ pub fn vault_codec_extract_encryption_key_for_public_key(manifest_json: String, 
 // Argon2id Key Derivation Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub use crate::argon2::Argon2Error;
+pub use crate::crypto::argon2::Argon2Error;
 
 /// Derive a key from a password using Argon2id.
 ///
@@ -371,7 +359,7 @@ pub use crate::argon2::Argon2Error;
 /// The derived key as 32 bytes
 #[uniffi::export]
 pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
-    crate::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
+    crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
 }
 
 /// Derive a key from a password using Argon2id, taking the password and salt as raw bytes.
@@ -388,21 +376,21 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
 /// The derived key as 32 bytes
 #[uniffi::export]
 pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
-    let params = crate::argon2::Argon2Params::from_settings_json(&encryption_settings)?;
-    crate::argon2::argon2_derive_key(&password, &salt, params)
+    let params = crate::crypto::argon2::Argon2Params::from_settings_json(&encryption_settings)?;
+    crate::crypto::argon2::argon2_derive_key(&password, &salt, params)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub use crate::srp::{SrpEphemeral, SrpSession, SrpError};
+pub use crate::crypto::srp::{SrpEphemeral, SrpSession, SrpError};
 
 /// Generate a cryptographic salt for SRP.
 /// Returns a 32-byte random salt as an uppercase hex string.
 #[uniffi::export]
 pub fn srp_generate_salt() -> String {
-    crate::srp::srp_generate_salt()
+    crate::crypto::srp::srp_generate_salt()
 }
 
 /// Derive the SRP private key (x) from credentials.
@@ -420,7 +408,7 @@ pub fn srp_derive_private_key(
     identity: String,
     password_hash: String,
 ) -> Result<String, SrpError> {
-    crate::srp::srp_derive_private_key(&salt, &identity, &password_hash)
+    crate::crypto::srp::srp_derive_private_key(&salt, &identity, &password_hash)
 }
 
 /// Derive the SRP verifier (v) from a private key.
@@ -432,14 +420,14 @@ pub fn srp_derive_private_key(
 /// Verifier as uppercase hex string (for registration)
 #[uniffi::export]
 pub fn srp_derive_verifier(private_key: String) -> Result<String, SrpError> {
-    crate::srp::srp_derive_verifier(&private_key)
+    crate::crypto::srp::srp_derive_verifier(&private_key)
 }
 
 /// Generate a client ephemeral key pair.
 /// Returns a pair of public (A) and secret (a) values as uppercase hex strings.
 #[uniffi::export]
 pub fn srp_generate_ephemeral() -> SrpEphemeral {
-    crate::srp::srp_generate_ephemeral()
+    crate::crypto::srp::srp_generate_ephemeral()
 }
 
 /// Derive the client session from server response.
@@ -461,7 +449,7 @@ pub fn srp_derive_session(
     identity: String,
     private_key: String,
 ) -> Result<SrpSession, SrpError> {
-    crate::srp::srp_derive_session(&client_secret, &server_public, &salt, &identity, &private_key)
+    crate::crypto::srp::srp_derive_session(&client_secret, &server_public, &salt, &identity, &private_key)
 }
 
 /// Generate a server ephemeral key pair.
@@ -473,7 +461,7 @@ pub fn srp_derive_session(
 /// Ephemeral containing public (B) and secret (b) as uppercase hex strings
 #[uniffi::export]
 pub fn srp_generate_ephemeral_server(verifier: String) -> Result<SrpEphemeral, SrpError> {
-    crate::srp::srp_generate_ephemeral_server(&verifier)
+    crate::crypto::srp::srp_generate_ephemeral_server(&verifier)
 }
 
 /// Derive and verify the server session from client response.
@@ -497,7 +485,7 @@ pub fn srp_derive_session_server(
     verifier: String,
     client_proof: String,
 ) -> Result<Option<SrpSession>, SrpError> {
-    crate::srp::srp_derive_session_server(
+    crate::crypto::srp::srp_derive_session_server(
         &server_secret,
         &client_public,
         &salt,
@@ -519,22 +507,8 @@ mod tests {
         assert!(names.contains(&"Settings".to_string()));
         assert!(names.contains(&"ItemStats".to_string()));
         assert!(names.contains(&"EncryptionKeys".to_string()));
-        assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "overflow carrier is not in the merge input; the server base owns it");
+        assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "the overflow carrier is not synced as a table of its own; it rides inside the manifest");
         assert_eq!(names.len(), 14);
-    }
-
-    #[test]
-    fn test_merge_vaults_json() {
-        let input = r#"{
-            "local_tables": [{"name": "Items", "records": []}],
-            "server_tables": [{"name": "Items", "records": []}]
-        }"#;
-
-        let result = merge_vaults_json(input.to_string());
-        assert!(result.is_ok());
-
-        let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
-        assert_eq!(output["success"], true);
     }
 
     #[test]
@@ -564,5 +538,89 @@ mod tests {
     fn test_extract_root_domain() {
         assert_eq!(extract_root_domain("www.example.com".to_string()), "example.com");
         assert_eq!(extract_root_domain("github.com".to_string()), "github.com");
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Crypto
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// AES-256-GCM encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
+#[uniffi::export]
+pub fn aes_gcm_encrypt(plaintext: Vec<u8>, key_base64: String) -> Result<String, VaultError> {
+    crate::crypto::symmetric_encrypt_bytes(&plaintext, &key_base64)
+}
+
+/// AES-256-GCM decrypt base64 `IV | ciphertext | tag` with a base64 key.
+#[uniffi::export]
+pub fn aes_gcm_decrypt(base64_ciphertext: String, key_base64: String) -> Result<Vec<u8>, VaultError> {
+    let bytes = crate::crypto::aes_gcm::decode_base64(&base64_ciphertext)?;
+    crate::crypto::symmetric_decrypt_bytes(&bytes, &key_base64)
+}
+
+/// Unwrap a wrapped key (base64 of `IV | ciphertext | tag`) with a base64 key. Returns the key as base64.
+#[uniffi::export]
+pub fn unwrap_key(wrapped_key_base64: String, wrapping_key_base64: String) -> Result<String, VaultError> {
+    // The caller owns the copy it gets across the FFI boundary; nothing here can wipe that one.
+    Ok(crate::crypto::unwrap_key(&wrapped_key_base64, &wrapping_key_base64)?.to_string())
+}
+
+/// Wrap a base64 key with another base64 key.
+#[uniffi::export]
+pub fn wrap_key(key_base64: String, wrapping_key_base64: String) -> Result<String, VaultError> {
+    crate::crypto::wrap_key(&key_base64, &wrapping_key_base64)
+}
+
+/// Generate an RSA-OAEP-256 key pair. Output: `RsaKeyPair` JSON (`publicKey`, `privateKey` as JWK strings).
+#[uniffi::export]
+pub fn rsa_generate_key_pair_json() -> Result<String, VaultError> {
+    Ok(serde_json::to_string(&crate::crypto::generate_rsa_key_pair()?)?)
+}
+
+/// RSA-OAEP-256 encrypt bytes for a JWK public key. Returns base64 ciphertext.
+#[uniffi::export]
+pub fn rsa_encrypt(plaintext: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {
+    crate::crypto::encrypt_with_public_key(&plaintext, &public_key_jwk)
+}
+
+/// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
+#[uniffi::export]
+pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result<Vec<u8>, VaultError> {
+    crate::crypto::decrypt_with_private_key(&base64_ciphertext, &private_key_jwk)
+}
+
+/// Create a new account key hierarchy under a base64 KEK. Output: `AccountKeyHierarchy` JSON.
+#[uniffi::export]
+pub fn create_account_key_hierarchy_json(kek_base64: String) -> Result<String, VaultError> {
+    Ok(serde_json::to_string(&crate::crypto::create_account_key_hierarchy(&kek_base64)?)?)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Vault sync engine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// One engine operation. The host loops on `next_command` / `resume` until the command is `done`; see the
+/// `vault_sync` module docs for the command and response shapes.
+#[derive(uniffi::Object)]
+pub struct VaultSyncSession {
+    inner: crate::vault_sync::SyncSession,
+}
+
+#[uniffi::export]
+impl VaultSyncSession {
+    /// Start an operation from its `SyncRequest` JSON.
+    #[uniffi::constructor]
+    pub fn new(request_json: String) -> Result<std::sync::Arc<Self>, VaultError> {
+        Ok(std::sync::Arc::new(Self { inner: crate::vault_sync::SyncSession::new(&request_json)? }))
+    }
+
+    /// The next command for the host, as JSON.
+    pub fn next_command(&self) -> Result<String, VaultError> {
+        self.inner.next_command()
+    }
+
+    /// Hand the host's response to the last command back, as JSON.
+    pub fn resume(&self, response_json: String) -> Result<(), VaultError> {
+        self.inner.resume(&response_json)
     }
 }
