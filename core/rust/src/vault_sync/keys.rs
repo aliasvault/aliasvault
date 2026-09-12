@@ -116,15 +116,81 @@ pub(crate) async fn open_shared_manifest_veks(ctx: &Ctx) -> SyncResult<HashMap<S
     Ok(veks)
 }
 
-/// Adopt a server-side vault key this device does not know about yet (another device performed the KEK/VEK
-/// migration while this one held the old password-derived key). False only when this device's key matches
-/// neither the KEK nor the VEK, which requires a re-login.
-pub(crate) async fn adopt_remote_vault_key_if_needed(ctx: &mut Ctx) -> SyncResult<bool> {
-    if has_local_vault_key(&ctx.host).await? {
+/// The cached account-key chain, when this device holds one.
+async fn cached_chain(host: &Host) -> SyncResult<Option<(String, String)>> {
+    let Some(encrypted_account_key) = state::get::<String>(host, state::ENCRYPTED_ACCOUNT_KEY).await? else { return Ok(None) };
+    let Some(encrypted_vek) = state::get::<String>(host, state::ENCRYPTED_VEK).await? else { return Ok(None) };
+    Ok(Some((encrypted_account_key, encrypted_vek)))
+}
+
+/// Whether the transport reached the server and got an answer other than an auth or version refusal.
+fn is_server_unreachable(error: &SyncError) -> bool {
+    matches!(error, SyncError::Network(_) | SyncError::Timeout(_) | SyncError::Http { .. })
+}
+
+/// Clear the cached key chain: the account has none (legacy), so the password-derived key is the vault key.
+async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
+    for key in [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY] {
+        state::remove(host, key).await?;
+    }
+    Ok(())
+}
+
+/// Open a key chain with the password-derived key: the VEK becomes the session key and the private key is staged.
+async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, kek: &str) -> SyncResult<()> {
+    let (vek, account_key) = crypto::resolve_vault_encryption_key(encrypted_account_key, encrypted_vek, kek).map_err(|_| SyncError::VaultDecryptFailed("the password-derived key does not open the account key chain".to_string()))?;
+    ctx.set_encryption_key(vek.to_string());
+    stage_account_private_key(ctx, &account_key, encrypted_private_key).await;
+    Ok(())
+}
+
+/// The login-time key resolution (the `resolveVaultKey` operation). The request carries the password-derived key
+/// (KEK); the account's key chain is fetched from the server (the cached one stands in when the server cannot be
+/// reached or predates the endpoint), opened with the KEK, cached for offline unlock, and the VEK becomes the
+/// session key. An account without a chain is a sqlite-blob legacy account whose KEK is the vault key itself; its
+/// hierarchy is created later by the migration push. Returns whether the account has a chain.
+pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
+    let kek = ctx.encryption_key()?;
+    let fetched = http::get::<VaultKeyGetResponse>(&ctx.host, "VaultKey/Password", false).await;
+    ctx.vault_key_probed = true;
+    match fetched {
+        Ok(response) => match response.vault_key {
+            Some(vault_key) if vault_key.encrypted_vek.is_some() => {
+                let encrypted_vek = vault_key.encrypted_vek.clone().unwrap_or_default();
+                open_chain(ctx, &vault_key.encrypted_account_key, &encrypted_vek, vault_key.encrypted_account_private_key.as_deref(), &kek).await?;
+                cache_vault_key_blobs(&ctx.host, &vault_key).await?;
+                ctx.log("[VaultSync] Opened the account's key chain; the session key is the VEK.").await;
+                Ok(true)
+            }
+            _ => {
+                clear_cached_chain(&ctx.host).await?;
+                ctx.log("[VaultSync] The account has no key chain yet (legacy vault); the password-derived key is the vault key.").await;
+                Ok(false)
+            }
+        },
+        Err(error) if is_server_unreachable(&error) => {
+            ctx.warn(format!("[VaultSync] Could not fetch the key chain, opening the cached one: {}", error)).await;
+            let Some((encrypted_account_key, encrypted_vek)) = cached_chain(&ctx.host).await? else { return Ok(false) };
+            let encrypted_private_key = state::get::<String>(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY).await?;
+            open_chain(ctx, &encrypted_account_key, &encrypted_vek, encrypted_private_key.as_deref(), &kek).await?;
+            Ok(true)
+        }
+        Err(error) => Err(error),
+    }
+}
+
+/// The cross-device race: this device holds no key chain (it logged in while the account was still a legacy
+/// vault), and another device may have created the hierarchy since. Probes the server once per run; when the
+/// hierarchy exists, the stored vault is brought under the VEK and the session key swapped, which the host adopts
+/// through the store command. Callers gate this on the absence of a cached chain and on a sync that pulls or
+/// pushes: another device's migration shows up as a revision change, so that is when it becomes visible.
+/// False only when the session key does not open the server's chain, which requires a re-login.
+pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
+    if ctx.vault_key_probed {
         return Ok(true);
     }
-    let Some(session_key) = ctx.encryption_key.clone() else { return Ok(true) };
-
+    ctx.vault_key_probed = true;
+    let session_key = ctx.encryption_key()?;
     let vault_key = match fetch_vault_key(&ctx.host).await {
         Ok(result) => result,
         Err(error) => {
@@ -136,27 +202,45 @@ pub(crate) async fn adopt_remote_vault_key_if_needed(ctx: &mut Ctx) -> SyncResul
     let Some(encrypted_vek) = vault_key.encrypted_vek.clone() else { return Ok(true) };
 
     let adopted: SyncResult<()> = async {
-        let (vek, _account_key) = crypto::resolve_vault_encryption_key(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
-        if let Some(encrypted_vault) = state::load_vault(&ctx.host).await? {
-            let plaintext = state::decrypt_vault_blob(&encrypted_vault, &session_key)?;
-            let re_encrypted = crypto::symmetric_encrypt_bytes(&plaintext, &vek)?;
-            state::store_vault_with_key(&ctx.host, &re_encrypted, false, None, None, Some(vek.to_string())).await?;
-        }
-        re_encrypt_shared_manifest_records(ctx, &vek).await?;
+        let (vek, account_key) = crypto::resolve_vault_encryption_key(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
+        adopt_vek(ctx, &session_key, &vek).await?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
-        ctx.set_encryption_key(vek.to_string());
+        stage_account_private_key(ctx, &account_key, vault_key.encrypted_account_private_key.as_deref()).await;
         Ok(())
     }
     .await;
 
     match adopted {
         Ok(()) => {
-            ctx.log("[VaultSync] Adopted vault key created by another client; session key swapped to the VEK.").await;
+            ctx.log("[VaultSync] Another device created the account's key hierarchy; adopted it and swapped the session key to the VEK.").await;
             Ok(true)
         }
         Err(error) => {
-            ctx.warn(format!("[VaultSync] Session key matches neither the KEK nor the VEK, forcing re-login: {}", error)).await;
+            ctx.warn(format!("[VaultSync] The session key does not open the key hierarchy the server holds, forcing re-login: {}", error)).await;
             Ok(false)
         }
+    }
+}
+
+/// Swap the session key for the VEK: re-encrypt the stored vault and the shared-manifest records under it, then
+/// report it to the host.
+async fn adopt_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()> {
+    if let Some(encrypted_vault) = state::load_vault(&ctx.host).await? {
+        let plaintext = state::decrypt_vault_blob(&encrypted_vault, old_key)?;
+        let re_encrypted = crypto::symmetric_encrypt_bytes(&plaintext, vek)?;
+        state::store_vault_with_key(&ctx.host, &re_encrypted, false, None, None, Some(vek.to_string())).await?;
+    }
+    re_encrypt_shared_manifest_records(ctx, vek).await?;
+    ctx.set_encryption_key(vek.to_string());
+    Ok(())
+}
+
+/// Open the account private key with the Account Key and stage it for the grant flows of this run. A chain without
+/// a keypair, or one whose private key does not open, leaves grant decryption to the personal manifest's key rows.
+async fn stage_account_private_key(ctx: &mut Ctx, account_key: &str, encrypted_private_key: Option<&str>) {
+    let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) else { return };
+    match crypto::symmetric_decrypt(encrypted, account_key) {
+        Ok(private_key) => ctx.set_account_private_key(private_key),
+        Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants fall back to the vault's key rows. {}", error)).await,
     }
 }

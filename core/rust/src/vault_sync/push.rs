@@ -173,10 +173,10 @@ async fn resolve_bucket_write_keys(ctx: &Ctx, personal_vek: &str) -> SyncResult<
  */
 
 /// Upload the stored vault: bucket-only when every pending mutation is bucket-scoped, full otherwise. Fails
-/// with `KeyOutOfSync` when the session key matches neither the server's KEK nor its VEK.
+/// with `KeyOutOfSync` when the session key does not open a hierarchy another device created meanwhile.
 pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, force_full_write: bool, create_vault_key: bool) -> SyncResult<UploadOutcome> {
     let mutation_seq_at_start = ctx.mutation_sequence;
-    if !keys::adopt_remote_vault_key_if_needed(ctx).await? {
+    if !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
         return Err(SyncError::KeyOutOfSync);
     }
 
@@ -253,8 +253,7 @@ async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedS
     let key_after = ctx.encryption_key()?;
     if vault_pruned || key_after != key_before {
         let bytes = db::export(&ctx.host, Db::Local).await?;
-        let new_key = if key_after != key_before { Some(key_after.clone()) } else { None };
-        state::store_vault_with_key(&ctx.host, &state::encrypt_vault_blob(&bytes, &key_after)?, false, None, None, new_key).await?;
+        ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key_after)?, false, None, None).await?;
         ctx.vault_changed = true;
     }
     Ok((status, vault_pruned))

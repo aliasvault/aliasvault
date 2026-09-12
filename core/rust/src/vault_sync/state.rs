@@ -24,6 +24,7 @@ pub(crate) struct Ctx {
     pub updates: SessionUpdates,
     pub vault_changed: bool,
     pub schema: Option<SchemaInfo>,
+    pub vault_key_probed: bool,
     has_local_vault: bool,
 }
 
@@ -45,6 +46,7 @@ impl Ctx {
             updates: SessionUpdates::default(),
             vault_changed: false,
             schema: None,
+            vault_key_probed: false,
             has_local_vault: false,
             host,
             request,
@@ -74,6 +76,11 @@ impl Ctx {
     pub fn set_account_private_key(&mut self, key: String) {
         self.updates.account_private_key = Some(key.clone());
         self.account_private_key = Some(key);
+    }
+
+    /// Persist the at-rest vault blob.
+    pub async fn store_vault(&self, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
+        store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.updates.encryption_key.clone()).await
     }
 
     /// The current schema.
@@ -152,11 +159,6 @@ pub fn fingerprint_bucket_key(manifest_id: &str, category: &str) -> String {
 pub(crate) async fn load_vault(host: &Host) -> SyncResult<Option<String>> {
     let stored: StoredVault = host.call(Command::VaultLoad).await?;
     Ok(stored.encrypted_blob.filter(|blob| !blob.is_empty()))
-}
-
-/// Persist the at-rest vault blob through the host.
-pub(crate) async fn store_vault(host: &Host, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
-    store_vault_with_key(host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, None).await
 }
 
 /// Persist the at-rest vault blob, telling the host the (new) key it is encrypted under.

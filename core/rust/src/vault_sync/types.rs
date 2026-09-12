@@ -20,6 +20,8 @@ pub enum SyncOperation {
     MigrateManifest,
     /// Run a status check.
     StatusCheck,
+    /// Open the account's key chain with the password-derived key right after login; see `ResolveVaultKeyResult`.
+    ResolveVaultKey,
 }
 
 /// Sync request.
@@ -179,6 +181,28 @@ pub struct MigrateManifestResult {
 }
 
 impl OperationResult for MigrateManifestResult {
+    fn session_mut(&mut self) -> &mut SessionOutcome {
+        &mut self.session
+    }
+}
+
+/// Outcome of the login-time key resolution: the vault key the host stores as its session key (the VEK behind
+/// the account's key chain, or the password-derived key itself for a legacy account without a chain).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolveVaultKeyResult {
+    pub success: bool,
+    /// Whether the account has a key chain (false: legacy vault, the migration push creates one).
+    pub has_vault_key: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encryption_key: Option<String>,
+    #[serde(flatten)]
+    pub failure: FailureFields,
+    #[serde(flatten)]
+    pub session: SessionOutcome,
+}
+
+impl OperationResult for ResolveVaultKeyResult {
     fn session_mut(&mut self) -> &mut SessionOutcome {
         &mut self.session
     }

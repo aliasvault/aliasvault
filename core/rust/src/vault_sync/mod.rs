@@ -20,4 +20,4 @@ mod tests;
 
 pub use errors::{ErrorCode, Failure, LogoutReason, SyncError};
 pub use session::SyncSession;
-pub use types::{Command, CommandKind, Db, FullSyncResult, HttpMethod, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, SessionOutcome, SessionUpdates, SqlStatement, StatusCheckResult, SyncOperation, SyncRequest};
+pub use types::{Command, CommandKind, Db, FullSyncResult, HttpMethod, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, ResolveVaultKeyResult, SessionOutcome, SessionUpdates, SqlStatement, StatusCheckResult, SyncOperation, SyncRequest};

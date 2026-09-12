@@ -11,7 +11,7 @@ use super::pull::{self, PulledVault};
 use super::push::{self, CanonicalizedSet, PushStatus};
 use super::session::Host;
 use super::state::{self, Ctx};
-use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
+use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, ResolveVaultKeyResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
 use super::{db, http, keys, legacy, version};
 use crate::crypto;
 
@@ -42,6 +42,10 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         }
         SyncOperation::StatusCheck => {
             let result = status_check(&mut ctx).await;
+            finish(&ctx, result)
+        }
+        SyncOperation::ResolveVaultKey => {
+            let result = resolve_vault_key(&mut ctx).await;
             finish(&ctx, result)
         }
     }
@@ -196,7 +200,11 @@ async fn run_sync_preflight(ctx: &mut Ctx) -> SyncResult<Preflight> {
     // A changed server salt means the password was changed elsewhere, which warrants a logout.
     assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
 
-    if needs_pull && !keys::adopt_remote_vault_key_if_needed(ctx).await? {
+    // The session key is the VEK (or a legacy account's KEK) by contract; the host resolved it at login. The one
+    // case the sync has to catch itself: this device holds no chain because the account was still legacy when it
+    // logged in, and another device created the hierarchy since. That shows up as a revision change, so a pull
+    // (or a push about to hit the server) is where it is checked.
+    if (needs_pull || ctx.is_dirty) && !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
         return Ok(Preflight::Finish(logout(LogoutReason::PasswordChanged)));
     }
 
@@ -343,7 +351,7 @@ async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -
 
     let key = ctx.encryption_key()?;
     let bytes = db::export(&ctx.host, Db::Local).await?;
-    let stored = state::store_vault(&ctx.host, &state::encrypt_vault_blob(&bytes, &key)?, true, None, None).await?;
+    let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key)?, true, None, None).await?;
     let was_dirty = ctx.is_dirty;
     ctx.is_dirty = true;
     ctx.mutation_sequence = stored.mutation_sequence;
@@ -365,7 +373,7 @@ async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncR
 /// Store a pulled vault as the local one and only then commit its revisions as the local truth. A store the host
 /// refuses (a mutation raced the pull) re-runs the sync instead, which is the returned flow.
 async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Option<Flow>> {
-    let stored = state::store_vault(&ctx.host, &pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?;
+    let stored = ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?;
     if !stored.success {
         ctx.log("[VaultSync] Mutation detected during sync, re-syncing...").await;
         return Ok(Some(Flow::Resync { outdated: false }));
@@ -472,12 +480,9 @@ async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
         if schema == SchemaState::LegacyChain {
             return Ok(MigrationKind::None);
         }
-        match keys::fetch_vault_key(&ctx.host).await {
-            Ok(Some(_)) => {
-                keys::adopt_remote_vault_key_if_needed(ctx).await?;
-            }
-            Ok(None) => {}
-            Err(error) => ctx.warn(format!("[ManifestMigration] Vault key probe failed, classifying from local state: {}", error)).await,
+        if !keys::has_local_vault_key(&ctx.host).await? {
+            // A hierarchy another device created since this device logged in classifies as no migration at all.
+            keys::adopt_hierarchy_created_elsewhere(ctx).await?;
         }
         if !keys::has_local_vault_key(&ctx.host).await? {
             return Ok(MigrationKind::StorageFormatUpgrade);
@@ -503,7 +508,7 @@ async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
         if schema == SchemaState::LegacyChain {
             return Err(SyncError::LegacyUpgradePending);
         }
-        if !keys::adopt_remote_vault_key_if_needed(ctx).await? {
+        if !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
             return Err(SyncError::KeyOutOfSync);
         }
         let needs_schema_migration = schema == SchemaState::Stale;
@@ -513,7 +518,7 @@ async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
         }
         if needs_schema_migration {
             let migrated_bytes = legacy::migrate_vault_to_current_schema(ctx).await?;
-            let stored = state::store_vault(&ctx.host, &state::encrypt_vault_blob(&migrated_bytes, &encryption_key)?, true, None, None).await?;
+            let stored = ctx.store_vault(&state::encrypt_vault_blob(&migrated_bytes, &encryption_key)?, true, None, None).await?;
             ctx.mutation_sequence = stored.mutation_sequence;
             ctx.is_dirty = true;
             ctx.vault_changed = true;
@@ -539,6 +544,17 @@ async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
         Err(error) => {
             ctx.warn(format!("[ManifestMigration] Migration failed: {}", error)).await;
             MigrateManifestResult { failure: (&error).into(), ..Default::default() }
+        }
+    }
+}
+
+/// The login-time key resolution; see `keys::resolve_vault_key`.
+async fn resolve_vault_key(ctx: &mut Ctx) -> ResolveVaultKeyResult {
+    match keys::resolve_vault_key(ctx).await {
+        Ok(has_vault_key) => ResolveVaultKeyResult { success: true, has_vault_key, encryption_key: ctx.encryption_key.clone(), ..Default::default() },
+        Err(error) => {
+            ctx.warn(format!("[VaultSync] Key resolution failed: {}", error)).await;
+            ResolveVaultKeyResult { failure: (&error).into(), ..Default::default() }
         }
     }
 }
