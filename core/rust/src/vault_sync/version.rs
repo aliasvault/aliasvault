@@ -1,4 +1,4 @@
-//! Version rules: server support, and the frozen legacy sqlite-blob vault version chain.
+//! Version rules: which server versions this client supports.
 
 /// Whether `version1 >= version2` under the client's SemVer rules: a pre-release sorts below its release, and
 /// two pre-releases compare lexically.
@@ -35,57 +35,6 @@ fn split(version: &str) -> (&str, Option<&str>) {
     }
 }
 
-/// The frozen sqlite-blob upgrade chain: (revision, data version). It ends at 2.0.0, the first schema compatible
-/// with manifest-v1; later schema changes ship through the full schema only which is used by every materilization directly.
-const LEGACY_VAULT_VERSIONS: &[(u32, &str)] = &[
-    (1, "1.0.0"),
-    (2, "1.0.1"),
-    (3, "1.0.2"),
-    (4, "1.1.0"),
-    (5, "1.2.0"),
-    (6, "1.3.0"),
-    (7, "1.3.1"),
-    (8, "1.4.0"),
-    (9, "1.4.1"),
-    (10, "1.5.0"),
-    (11, "1.6.0"),
-    (12, "1.7.0"),
-    (13, "2.0.0"),
-];
-
-/// The revision of the last entry in the legacy chain.
-pub fn latest_legacy_revision() -> u32 {
-    LEGACY_VAULT_VERSIONS.last().map(|(revision, _)| *revision).unwrap_or(0)
-}
-
-/// The data version embedded in an EF migration id (`20250101000000_2.0.0-Name`).
-pub fn extract_version_from_migration_id(migration_id: &str) -> Option<String> {
-    let start = migration_id.find('_')? + 1;
-    let rest = &migration_id[start..];
-    let end = rest.find('-')?;
-    let candidate = &rest[..end];
-    let parts: Vec<&str> = candidate.split('.').collect();
-    if parts.len() == 3 && parts.iter().all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit())) {
-        Some(candidate.to_string())
-    } else {
-        None
-    }
-}
-
-/// The legacy-chain revision a database version maps to. A known version maps to its entry; an unknown but
-/// well-formed version is treated as the latest (backwards compatible); a malformed version is incompatible.
-pub fn legacy_revision_for(database_version: &str) -> Result<u32, String> {
-    if let Some((revision, _)) = LEGACY_VAULT_VERSIONS.iter().find(|(_, version)| *version == database_version) {
-        return Ok(*revision);
-    }
-    let well_formed = database_version.split('.').count() == 3 && database_version.split('.').all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()));
-    if well_formed {
-        Ok(latest_legacy_revision())
-    } else {
-        Err(format!("Vault version {} is not compatible with this client", database_version))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,15 +47,5 @@ mod tests {
         assert!(!version_gte("0.11.9", "0.12.0-dev"));
         assert!(version_gte("1.0", "1.0.0"));
         assert!(version_gte("0.12.0-beta", "0.12.0-alpha"));
-    }
-
-    #[test]
-    fn migration_ids_yield_their_version() {
-        assert_eq!(extract_version_from_migration_id("20250101000000_2.0.0-Squashed").as_deref(), Some("2.0.0"));
-        assert_eq!(extract_version_from_migration_id("20250101000000_Initial"), None);
-        assert_eq!(legacy_revision_for("1.7.0"), Ok(12));
-        assert_eq!(legacy_revision_for("2.0.0"), Ok(13));
-        assert_eq!(legacy_revision_for("2.1.0"), Ok(13));
-        assert!(legacy_revision_for("nope").is_err());
     }
 }

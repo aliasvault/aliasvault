@@ -3,21 +3,15 @@
 
 use std::collections::HashMap;
 
-use super::db::ids_equal;
+use crate::vault_model::ids_equal;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
 use super::types::{self, BlobDto, BlobHashesRequest, Db, EmailRoutingDto, GetResponse, ManifestDto, SharedManifestRecord, StoredBlobRef};
-use super::{db, http, keys};
+use super::{db, http, keys, legacy};
 use crate::crypto;
 use crate::vault_codec::{self, DataBucket, Manifest, MaterializeInput};
 
-const VAULT_ENDPOINT: &str = "Vault";
 const BLOBS_DOWNLOAD_ENDPOINT: &str = "Vault/blobs/download";
-
-/// Max base64 characters in one blob transfer request or response body.
-pub(crate) const BLOB_TRANSFER_BATCH_MAX_CHARS: usize = 4 * 1024 * 1024;
-/// Upper bound on the number of blobs in one transfer batch.
-pub(crate) const BLOB_TRANSFER_BATCH_MAX_COUNT: usize = 100;
 
 /// One manifest of a pull, opened.
 pub(crate) struct ResolvedManifest {
@@ -45,72 +39,29 @@ impl OpenedManifestSet {
     pub fn manifests(&self) -> Vec<Manifest> {
         self.resolved.iter().map(|m| m.manifest.clone()).collect()
     }
+
+    /// The opened set as a vault ready to become the local one.
+    pub fn pulled_vault(&self, encrypted_vault: String, email_routing: EmailRoutingDto) -> PulledVault {
+        PulledVault { encrypted_vault, revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone() }
+    }
 }
 
-/// A not-yet-migrated server's vault, passed through as served.
-/// TODO: remove all legacy related code once all users have migrated to the manifest-v1 storage model.
-pub(crate) struct LegacyPassthrough {
-    pub encrypted_blob: String,
+/// A pulled vault, encrypted for local storage, with the revisions that become the local truth once it is stored.
+pub(crate) struct PulledVault {
+    pub encrypted_vault: String,
     pub revision: i64,
-}
-
-/// What a pull produced.
-pub(crate) enum PullOutcome {
-    Legacy(LegacyPassthrough, EmailRoutingDto),
-    Materialized { encrypted_vault: String, revision: i64, email_routing: EmailRoutingDto },
-}
-
-/// What the last snapshot this run fetched looked like.
-pub(crate) struct SnapshotFacts {
-    pub served_manifest_ids: Vec<String>,
-    /// Whether the snapshot is still on the legacy sqlite-blob format.
-    pub legacy: bool,
-}
-
-impl SnapshotFacts {
-    pub fn new() -> Self {
-        Self { served_manifest_ids: Vec::new(), legacy: false }
-    }
-
-    fn record(&mut self, snapshot: &GetResponse) {
-        self.served_manifest_ids = snapshot.manifests.iter().map(|m| m.manifest_id.clone()).collect();
-        self.legacy = is_legacy_sqlite_blob_snapshot(snapshot);
-    }
+    pub email_routing: EmailRoutingDto,
+    pub manifest_revisions: HashMap<String, i64>,
+    pub bucket_revisions: HashMap<String, i64>,
 }
 
 /// `GET v2/Vault`.
-pub(crate) async fn fetch_snapshot(ctx: &Ctx, facts: &mut SnapshotFacts) -> SyncResult<GetResponse> {
-    let snapshot = http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, VAULT_ENDPOINT, true).await)?;
-    facts.record(&snapshot);
-    Ok(snapshot)
-}
-
-pub(crate) fn is_legacy_sqlite_blob_snapshot(snapshot: &GetResponse) -> bool {
-    snapshot.storage_format != Some(types::STORAGE_FORMAT_MANIFEST)
+pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<GetResponse> {
+    http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, http::VAULT_ENDPOINT, true).await)
 }
 
 pub(crate) fn email_routing_of(snapshot: &GetResponse) -> EmailRoutingDto {
     snapshot.email_routing.clone().unwrap_or_default()
-}
-
-/// Split items into request batches bounded by both transfer limits.
-pub(crate) fn batch_by_transfer_cost<T>(items: Vec<T>, cost_of: impl Fn(&T) -> usize) -> Vec<Vec<T>> {
-    let mut batches = Vec::new();
-    let mut batch = Vec::new();
-    let mut chars = 0usize;
-    for item in items {
-        let cost = cost_of(&item);
-        if !batch.is_empty() && (chars + cost > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.len() >= BLOB_TRANSFER_BATCH_MAX_COUNT) {
-            batches.push(std::mem::take(&mut batch));
-            chars = 0;
-        }
-        batch.push(item);
-        chars += cost;
-    }
-    if !batch.is_empty() {
-        batches.push(batch);
-    }
-    batches
 }
 
 fn base64_chars(size_bytes: i64) -> usize {
@@ -125,7 +76,7 @@ fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, expected_ciphertext
         }
     }
     let unreadable = |e: crate::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
-    let encrypted = crypto::aes_gcm::decode_base64(base64_ciphertext).map_err(unreadable)?;
+    let encrypted = crate::encoding::base64_decode(base64_ciphertext).map_err(unreadable)?;
     let plain = crypto::symmetric_decrypt_bytes(&encrypted, vek).map_err(unreadable)?;
     vault_codec::unpack_payload(&plain).map_err(unreadable)
 }
@@ -143,43 +94,24 @@ fn select_personal_manifest(snapshot: &GetResponse) -> Option<&ManifestDto> {
     snapshot.manifests.iter().find(|m| m.manifest_id == personal_id)
 }
 
-/// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 state
-/// is reset, and the personal manifest id is recorded for the migration push.
-pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> SyncResult<LegacyPassthrough> {
-    state::remove(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS).await?;
-    let revision = snapshot.legacy_revision.unwrap_or(0);
-    if let Some(personal) = &snapshot.personal_manifest_id {
-        state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, personal).await?;
-        let mut revisions = HashMap::new();
-        revisions.insert(personal.clone(), revision);
-        state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &revisions).await?;
-    }
-    ctx.log("[V2Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
-    Ok(LegacyPassthrough { encrypted_blob: snapshot.legacy_vault_blob.clone().unwrap_or_default(), revision })
-}
-
 /// Pull the latest vault: fetch, open, materialize and re-encrypt for local storage.
-pub(crate) async fn pull(ctx: &mut Ctx, facts: &mut SnapshotFacts) -> SyncResult<PullOutcome> {
+pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
     let vek = ctx.encryption_key()?;
     ctx.log("[V2Pull] Step 1/4: fetching vault snapshot (GET /v2/Vault)...").await;
-    let snapshot = fetch_snapshot(ctx, facts).await?;
-    let email_routing = email_routing_of(&snapshot);
-
-    if facts.legacy {
-        return Ok(PullOutcome::Legacy(open_legacy_snapshot(ctx, &snapshot).await?, email_routing));
+    let snapshot = fetch_snapshot(ctx).await?;
+    if legacy::is_legacy_sqlite_blob_snapshot(&snapshot) {
+        return legacy::open_legacy_snapshot(ctx, &snapshot).await;
     }
 
     ctx.log("[V2Pull] Step 2/4: manifest format: decrypting and reassembling local SQLite...").await;
     let opened = open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
-    commit_revisions(ctx, &opened.manifest_revisions, &opened.bucket_revisions).await?;
     let sqlite_bytes = materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map).await?;
     ctx.log(format!("[V2Pull] Step 3/4: materialized SQLite ({} bytes); re-encrypting for local storage...", sqlite_bytes.len())).await;
-    let encrypted_vault = state::encrypt_vault_blob(&sqlite_bytes, &vek)?;
-    Ok(PullOutcome::Materialized { encrypted_vault, revision: opened.personal_revision, email_routing })
+    Ok(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing_of(&snapshot)))
 }
 
 /// Open every manifest a snapshot carries, personal first, and record the snapshot as this device's sync state.
-/// The revision maps are returned for the caller to commit once the pulled state is local truth.
+/// The revision maps travel on the result for the caller to commit once the pulled vault is stored.
 pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot: &GetResponse, vek: &str) -> SyncResult<OpenedManifestSet> {
     let personal_dto = select_personal_manifest(snapshot).ok_or_else(|| SyncError::Snapshot("server returned no personal manifest, refusing to assemble".to_string()))?;
     if personal_dto.blob.as_deref().unwrap_or("").is_empty() {
@@ -300,7 +232,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     let missing: Vec<StoredBlobRef> = refs.iter().filter(|r| !cache.contains_key(&r.hash)).cloned().collect();
     ctx.log(format!("[V2Pull] Blob refs: {} referenced, {} cached locally, {} to download.", refs.len(), refs.len() - missing.len(), missing.len())).await;
 
-    let batches = batch_by_transfer_cost(missing, |r| base64_chars(r.size_bytes));
+    let batches = http::batch_by_transfer_cost(missing, |r| base64_chars(r.size_bytes));
     let batch_count = batches.len();
     for (index, chunk) in batches.into_iter().enumerate() {
         let blobs: Vec<BlobDto> = http::post(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?;
@@ -318,7 +250,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
             continue;
         };
         let key = owners.get(&reference.hash).map(|o| o.vek.as_str()).unwrap_or(fallback_vek);
-        match crypto::aes_gcm::decode_base64(ciphertext).and_then(|bytes| crypto::symmetric_decrypt_bytes(&bytes, key)) {
+        match crate::encoding::base64_decode(ciphertext).and_then(|bytes| crypto::symmetric_decrypt_bytes(&bytes, key)) {
             Ok(bytes) => {
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), ciphertext.clone());

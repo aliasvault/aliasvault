@@ -6,7 +6,7 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-use super::errors::{ErrorCode, LogoutReason};
+use super::errors::{ErrorCode, Failure, LogoutReason, SyncError};
 
 /// The operation a session runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -60,9 +60,6 @@ pub struct SessionUpdates {
     pub encryption_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account_private_key: Option<String>,
-    /// Set when the account private key must be dropped from the session.
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub clear_account_private_key: bool,
 }
 
 /// What every operation reports on top of its own outcome.
@@ -81,6 +78,35 @@ pub(crate) trait OperationResult: Serialize {
     fn session_mut(&mut self) -> &mut SessionOutcome;
 }
 
+/// How a failed operation reports itself: a coded error the host translates, or a forced logout.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FailureFields {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_code: Option<ErrorCode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error_key: Option<LogoutReason>,
+    pub requires_logout: bool,
+}
+
+impl FailureFields {
+    /// A forced logout for the given reason.
+    pub fn logout(reason: LogoutReason) -> Self {
+        Self { error_key: Some(reason), requires_logout: true, ..Default::default() }
+    }
+}
+
+impl From<&SyncError> for FailureFields {
+    fn from(error: &SyncError) -> Self {
+        match error.failure() {
+            Failure::Logout(reason) => Self::logout(reason),
+            Failure::Coded(code) => Self { error: Some(error.to_string()), error_code: Some(code), ..Default::default() },
+        }
+    }
+}
+
 /// Outcome of a full sync.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -90,13 +116,8 @@ pub struct FullSyncResult {
     pub was_offline: bool,
     pub sqlite_blob_upgrade_required: bool,
     pub manifest_migration_required: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_code: Option<ErrorCode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_key: Option<LogoutReason>,
-    pub requires_logout: bool,
+    #[serde(flatten)]
+    pub failure: FailureFields,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub server_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -151,13 +172,8 @@ pub struct MigrateManifestResult {
     pub success: bool,
     /// Whether the migrated vault reached the server; false leaves it dirty for the next sync.
     pub pushed: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_code: Option<ErrorCode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_key: Option<LogoutReason>,
-    pub requires_logout: bool,
+    #[serde(flatten)]
+    pub failure: FailureFields,
     #[serde(flatten)]
     pub session: SessionOutcome,
 }
@@ -176,13 +192,8 @@ pub struct StatusCheckResult {
     pub has_newer_vault: bool,
     pub has_dirty_changes: bool,
     pub is_offline: bool,
-    pub requires_logout: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_key: Option<LogoutReason>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_code: Option<ErrorCode>,
+    #[serde(flatten)]
+    pub failure: FailureFields,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub server_version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -209,16 +220,6 @@ pub enum HttpMethod {
     Get,
     Post,
     Delete,
-}
-
-impl fmt::Display for HttpMethod {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(match self {
-            HttpMethod::Get => "GET",
-            HttpMethod::Post => "POST",
-            HttpMethod::Delete => "DELETE",
-        })
-    }
 }
 
 /// The databases a command may address.
@@ -492,7 +493,7 @@ pub struct PendingAction {
 pub struct GetResponse {
     #[serde(default)]
     pub status: i32,
-    /// 0 = sqlite-blob, 1 = manifest-v1; absent on servers predating the field.
+    /// LEGACY: 0 = sqlite-blob, 1 = manifest-v1; absent on servers predating the field.
     #[serde(default)]
     pub storage_format: Option<i32>,
     #[serde(default)]
@@ -510,8 +511,6 @@ pub struct GetResponse {
     #[serde(default)]
     pub email_routing: Option<EmailRoutingDto>,
 }
-
-pub const STORAGE_FORMAT_MANIFEST: i32 = 1;
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -715,4 +714,32 @@ pub struct SharedManifestRecord {
     pub name: Option<String>,
     #[serde(default)]
     pub can_administer: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The failure fields flatten into every result exactly where the four loose fields used to sit.
+    #[test]
+    fn failure_fields_flatten_into_the_result_wire_shape() {
+        let coded = FailureFields::from(&SyncError::VaultLocked);
+        let full = serde_json::to_string(&FullSyncResult { failure: coded, ..Default::default() }).unwrap();
+        assert_eq!(full, r#"{"success":false,"hasNewVault":false,"wasOffline":false,"sqliteBlobUpgradeRequired":false,"manifestMigrationRequired":false,"error":"No encryption key available","errorCode":"E-202","requiresLogout":false,"isOfflineMode":false,"sessionUpdates":{},"vaultChanged":false}"#);
+        let round_trip: FullSyncResult = serde_json::from_str(&full).unwrap();
+        assert_eq!(serde_json::to_string(&round_trip).unwrap(), full);
+
+        let logout = FailureFields::logout(LogoutReason::SessionExpired);
+        let migrate = serde_json::to_string(&MigrateManifestResult { failure: logout.clone(), ..Default::default() }).unwrap();
+        assert_eq!(migrate, r#"{"success":false,"pushed":false,"errorKey":"sessionExpired","requiresLogout":true,"sessionUpdates":{},"vaultChanged":false}"#);
+        let round_trip: MigrateManifestResult = serde_json::from_str(&migrate).unwrap();
+        assert_eq!(round_trip.failure, logout);
+
+        let status = serde_json::to_value(StatusCheckResult { failure: logout.clone(), ..Default::default() }).unwrap();
+        assert_eq!(status["errorKey"], "sessionExpired");
+        assert_eq!(status["requiresLogout"], true);
+        assert!(status.get("error").is_none() && status.get("errorCode").is_none() && status.get("failure").is_none());
+        let round_trip: StatusCheckResult = serde_json::from_value(status.clone()).unwrap();
+        assert_eq!(serde_json::to_value(&round_trip).unwrap(), status);
+    }
 }

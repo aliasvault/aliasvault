@@ -3,17 +3,15 @@
 
 use std::collections::{HashMap, HashSet};
 
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use serde::{Deserialize, Serialize};
 
-use super::db::{id_key, ids_equal};
+use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
-use super::pull::{self, LegacyPassthrough, OpenedManifestSet, SnapshotFacts};
+use super::pull::{self, OpenedManifestSet, PulledVault};
 use super::push::{canonicalize_vault, CanonicalizedSet, ManifestRecord};
 use super::state::{self, Ctx};
 use super::types::EmailRoutingDto;
-use crate::crypto;
+use super::legacy;
 use crate::vault_codec::{self, BlobEntry, CanonicalizedVault, DataBucket, Manifest};
 use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, MergeStats};
 
@@ -42,38 +40,32 @@ impl MergeSummary {
 
 /// What a dirty pull (pull and merge) produced.
 pub(crate) enum PullAndMergeOutcome {
-    LegacyServer(LegacyPassthrough),
+    /// LEGACY: the server's vault is still a sqlite blob at this revision; the caller pushes the local vault over it.
+    LegacyServer { revision: i64 },
     Merged {
-        encrypted_vault: String,
-        revision: i64,
-        email_routing: EmailRoutingDto,
+        pulled: PulledVault,
         stats: MergeSummary,
         fallback_manifest_ids: Vec<String>,
         dropped_local_manifest_ids: Vec<String>,
-        manifest_revisions: HashMap<String, i64>,
-        bucket_revisions: HashMap<String, i64>,
         push_canonical: Option<CanonicalizedSet>,
     },
-    ServerOnly {
-        encrypted_vault: String,
-        revision: i64,
-        email_routing: EmailRoutingDto,
-        manifest_revisions: HashMap<String, i64>,
-        bucket_revisions: HashMap<String, i64>,
-    },
+    /// The merge failed, so the server's vault stands as pulled and the local changes are dropped.
+    ServerOnly(PulledVault),
 }
 
 /// Pull the latest snapshot and merge the local vault onto it at canonical level, one manifest at a time.
-pub(crate) async fn pull_and_merge(ctx: &mut Ctx, facts: &mut SnapshotFacts) -> SyncResult<PullAndMergeOutcome> {
+pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutcome> {
     let vek = ctx.encryption_key()?;
     ctx.log("[V2Merge] Fetching vault snapshot for canonical merge (GET /v2/Vault)...").await;
-    let snapshot = pull::fetch_snapshot(ctx, facts).await?;
-    let email_routing = pull::email_routing_of(&snapshot);
+    let snapshot = pull::fetch_snapshot(ctx).await?;
 
     // LEGACY: a server still on the sqlite-blob format cannot merge with a manifest-v1 vault; the caller pushes over it.
-    if facts.legacy {
-        return Ok(PullAndMergeOutcome::LegacyServer(pull::open_legacy_snapshot(ctx, &snapshot).await?));
+    if legacy::is_legacy_sqlite_blob_snapshot(&snapshot) {
+        let legacy = legacy::open_legacy_snapshot(ctx, &snapshot).await?;
+        pull::commit_revisions(ctx, &legacy.manifest_revisions, &legacy.bucket_revisions).await?;
+        return Ok(PullAndMergeOutcome::LegacyServer { revision: legacy.revision });
     }
+    let email_routing = pull::email_routing_of(&snapshot);
 
     let opened = pull::open_manifests_and_record_sync_state(ctx, &snapshot, &vek).await?;
     let local_side = canonicalize_vault(ctx, None).await?;
@@ -91,13 +83,7 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx, facts: &mut SnapshotFacts) -> 
             // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
             ctx.warn(format!("[V2Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
             let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map).await?;
-            Ok(PullAndMergeOutcome::ServerOnly {
-                encrypted_vault: state::encrypt_vault_blob(&sqlite_bytes, &vek)?,
-                revision: opened.personal_revision,
-                email_routing,
-                manifest_revisions: opened.manifest_revisions,
-                bucket_revisions: opened.bucket_revisions,
-            })
+            Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing)))
         }
     }
 }
@@ -174,7 +160,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
         for (hash, blob) in &canonicalized.blobs {
             local_blobs.insert(hash.clone(), blob.clone());
             if !blob_map.contains_key(hash) {
-                blob_map.insert(hash.clone(), crypto::aes_gcm::decode_base64(&blob.bytes_base64)?);
+                blob_map.insert(hash.clone(), crate::encoding::base64_decode(&blob.bytes_base64)?);
             }
         }
     }
@@ -186,17 +172,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
     ctx.log(format!("[V2Merge] Canonical merge complete: {} conflict(s), {} offline row(s) kept, {} validation fallback(s), {} dropped local manifest(s).", stats.conflicts, stats.records_inserted, fallback_manifest_ids.len(), merge_output.dropped_local_manifest_ids.len())).await;
 
     let push_canonical = merge_output_for_push(&manifests, &data_buckets, merged_blobs, &local_side.manifest_records, !fallback_manifest_ids.is_empty());
-    Ok(PullAndMergeOutcome::Merged {
-        encrypted_vault,
-        revision: opened.personal_revision,
-        email_routing,
-        stats,
-        fallback_manifest_ids,
-        dropped_local_manifest_ids: merge_output.dropped_local_manifest_ids,
-        manifest_revisions: opened.manifest_revisions.clone(),
-        bucket_revisions: opened.bucket_revisions.clone(),
-        push_canonical,
-    })
+    Ok(PullAndMergeOutcome::Merged { pulled: opened.pulled_vault(encrypted_vault, email_routing), stats, fallback_manifest_ids, dropped_local_manifest_ids: merge_output.dropped_local_manifest_ids, push_canonical })
 }
 
 /// The merged vault in the shape the push writes from.
@@ -257,7 +233,7 @@ async fn resolve_merged_blob_refs(ctx: &Ctx, manifests: &[Manifest], blob_map: &
                     if let Some(local) = local_blobs.get(reference) {
                         blobs.insert(reference.to_string(), local.clone());
                     } else if let Some(kind) = kind {
-                        blobs.insert(reference.to_string(), BlobEntry { kind: kind.to_string(), bytes_base64: BASE64.encode(bytes) });
+                        blobs.insert(reference.to_string(), BlobEntry { kind: kind.to_string(), bytes_base64: crate::encoding::base64_encode(bytes) });
                     } else {
                         complete = false;
                     }

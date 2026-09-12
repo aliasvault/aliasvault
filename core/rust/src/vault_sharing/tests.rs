@@ -177,7 +177,7 @@ fn the_json_boundary_round_trips() {
         "displayNames": { "man-1": "Family" }
     }"#;
 
-    let output: serde_json::Value = serde_json::from_str(&resolve_manifest_write_set_json(input).unwrap()).unwrap();
+    let output: serde_json::Value = serde_json::from_str(&crate::error::json_call(input, |request| Ok(resolve_manifest_write_set(request))).unwrap()).unwrap();
     assert_eq!(output["records"][1]["manifestId"], "MAN-1");
     assert_eq!(output["records"][1]["name"], "Family");
     assert_eq!(output["records"][1]["isPersonal"], false);

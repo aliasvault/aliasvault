@@ -3,11 +3,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// Lower-cased comparison key for a manifest id.
-pub(crate) fn id_key(id: &str) -> String {
-    id.trim().to_lowercase()
-}
-
 /// A shared manifest's key record.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

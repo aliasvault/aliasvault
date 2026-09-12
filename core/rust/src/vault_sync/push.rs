@@ -3,18 +3,16 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::db::{id_key, ids_equal};
+use crate::vault_model::{id_key, ids_equal};
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
-use super::pull::{BLOB_TRANSFER_BATCH_MAX_CHARS, BLOB_TRANSFER_BATCH_MAX_COUNT};
 use super::state::{self, Ctx};
-use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketWrite, Db, ManifestWrite, MissingBlobsResponse, VaultWriteRequest, VaultWriteResponse};
+use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteRequest, VaultWriteResponse};
 use super::{db, http, keys};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
 use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest, SharedManifestRecord as SharingRecord};
 
-const VAULT_ENDPOINT: &str = "Vault";
 const BLOBS_ENDPOINT: &str = "Vault/blobs";
 const BLOBS_MISSING_ENDPOINT: &str = "Vault/blobs/missing";
 
@@ -120,17 +118,17 @@ pub(crate) async fn resolve_personal_manifest_id(ctx: &Ctx) -> SyncResult<String
 /// result too, so a push right after does not canonicalize a second time.
 pub(crate) async fn detect_no_op_mutation(ctx: &Ctx) -> SyncResult<(bool, CanonicalizedSet)> {
     let set = canonicalize_vault(ctx, None).await?;
-    let fingerprints: HashMap<String, String> = state::get(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS).await?.unwrap_or_default();
+    let baselines = PushBaselines::load(ctx).await?;
     let writable: HashSet<String> = set.manifest_records.iter().map(|r| id_key(&r.manifest_id)).collect();
     for entry in set.canonicalized.manifests.iter().filter(|m| writable.contains(&id_key(&m.manifest.manifest_id))) {
-        let fingerprint = vault_codec::compute_content_fingerprint(&serde_json::to_string(&entry.manifest)?);
-        if fingerprints.get(&state::fingerprint_manifest_key(&entry.manifest.manifest_id)) != Some(&fingerprint) {
+        let (_, fingerprint) = fingerprinted(&entry.manifest)?;
+        if !baselines.unchanged(&state::fingerprint_manifest_key(&entry.manifest.manifest_id), &fingerprint) {
             return Ok((false, set));
         }
     }
     for bucket in &set.canonicalized.data_buckets {
-        let fingerprint = vault_codec::compute_content_fingerprint(&serde_json::to_string(bucket)?);
-        if fingerprints.get(&state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category)) != Some(&fingerprint) {
+        let (_, fingerprint) = fingerprinted(bucket)?;
+        if !baselines.unchanged(&state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category), &fingerprint) {
             return Ok((false, set));
         }
     }
@@ -290,6 +288,15 @@ impl PushBaselines {
             known_server_hashes: state::get::<Vec<String>>(&ctx.host, state::VAULT_SERVER_BLOB_HASHES).await?.unwrap_or_default().into_iter().collect(),
         })
     }
+
+    /// Whether the content behind a fingerprint key still matches the last-known server state.
+    fn unchanged(&self, fingerprint_key: &str, fingerprint: &str) -> bool {
+        self.fingerprints.get(fingerprint_key).map(String::as_str) == Some(fingerprint)
+    }
+
+    fn bucket_revision(&self, bucket: &DataBucket) -> i64 {
+        self.bucket_revisions.get(&state::bucket_revision_key(&bucket.manifest_id, &bucket.category)).copied().unwrap_or(0)
+    }
 }
 
 /// What decides whether an unchanged element still goes into the write.
@@ -350,12 +357,8 @@ struct LegacyAccountKeyMigration {
     account_private_key: String,
 }
 
-/// The change fingerprints of everything one write carried, to become the new baselines on success.
-#[derive(Default)]
-struct WrittenFingerprints {
-    manifests: HashMap<String, String>,
-    buckets: HashMap<String, String>,
-}
+/// The content fingerprints one write carried, keyed like the baselines, to become the new baselines on success.
+type WrittenFingerprints = HashMap<String, String>;
 
 /// A byte or character count for log lines.
 fn format_kb(chars: usize) -> String {
@@ -366,10 +369,26 @@ fn format_kb(chars: usize) -> String {
     }
 }
 
-/// Pack-then-encrypt a JSON payload. Returns the base64 ciphertext plus the packed size, for logging.
-fn pack_encrypt(payload_json: &str, vek: &str) -> SyncResult<(String, usize)> {
-    let packed = vault_codec::pack_payload(payload_json)?;
-    Ok((crypto::symmetric_encrypt_bytes(&packed, vek)?, packed.len()))
+/// A payload as JSON text plus its content fingerprint.
+fn fingerprinted<T: serde::Serialize>(payload: &T) -> SyncResult<(String, String)> {
+    let plaintext = serde_json::to_string(payload)?;
+    let fingerprint = vault_codec::compute_content_fingerprint(&plaintext);
+    Ok((plaintext, fingerprint))
+}
+
+/// A payload packed and encrypted for the write, with the hash the server verifies it by.
+struct Sealed {
+    ciphertext: String,
+    hash: String,
+}
+
+/// Pack and encrypt a JSON payload under `key`, logging its size at every stage.
+async fn seal(ctx: &Ctx, label: &str, plaintext: &str, key: &str) -> SyncResult<Sealed> {
+    let packed = vault_codec::pack_payload(plaintext)?;
+    let ciphertext = crypto::symmetric_encrypt_bytes(&packed, key)?;
+    ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
+    let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
+    Ok(Sealed { ciphertext, hash })
 }
 
 /// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a KEK/VEK
@@ -426,7 +445,8 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
         return Ok((PushStatus::Outdated, None));
     }
 
-    commit_push_baselines(ctx, baselines, &response, written, &blobs, &uploaded).await?;
+    commit_push_baselines(ctx, baselines, &response.manifest_revisions, &response.bucket_revisions, written).await?;
+    commit_blob_baselines(ctx, &blobs, &uploaded).await?;
     if let Some(migration) = &migration {
         complete_account_key_migration(ctx, migration).await?;
         ctx.log("[V2Push] Account-key migration complete: hierarchy created server-side, blob chain cached locally.").await;
@@ -470,7 +490,7 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
                 continue;
             }
             blobs.order.push(hash.clone());
-            blobs.entries.insert(hash.clone(), UploadBlobEntry { bytes: crypto::aes_gcm::decode_base64(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
+            blobs.entries.insert(hash.clone(), UploadBlobEntry { bytes: crate::encoding::base64_decode(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
         }
     }
     Ok(blobs)
@@ -483,9 +503,8 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
     for bucket in buckets {
         let label = format!("Data bucket \"{}\" of manifest {}", bucket.category, bucket.manifest_id);
         let fingerprint_key = state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category);
-        let plaintext = serde_json::to_string(bucket)?;
-        let fingerprint = vault_codec::compute_content_fingerprint(&plaintext);
-        if !gate.force_full_write && !gate.migrating && baselines.fingerprints.get(&fingerprint_key) == Some(&fingerprint) {
+        let (plaintext, fingerprint) = fingerprinted(bucket)?;
+        if !gate.force_full_write && !gate.migrating && baselines.unchanged(&fingerprint_key, &fingerprint) {
             ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
         }
@@ -497,12 +516,9 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
         if !validation.ok {
             return Err(SyncError::UploadRejected(vec![format!("{} validation failed: {}. {}", label, validation.failed_rules.join(", "), validation.message).trim().to_string()]));
         }
-        let (ciphertext, compressed) = pack_encrypt(&plaintext, bucket_key)?;
-        let ciphertext_hash = vault_codec::compute_ciphertext_hash(&ciphertext);
-        let current_revision = baselines.bucket_revisions.get(&state::bucket_revision_key(&bucket.manifest_id, &bucket.category)).copied().unwrap_or(0);
-        ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(compressed), format_kb(ciphertext.len()))).await;
-        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: ciphertext, ciphertext_hash, current_revision });
-        written.buckets.insert(fingerprint_key, fingerprint);
+        let sealed = seal(ctx, &label, &plaintext, bucket_key).await?;
+        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext, ciphertext_hash: sealed.hash, current_revision: baselines.bucket_revision(bucket) });
+        written.insert(fingerprint_key, fingerprint);
     }
     Ok(writes)
 }
@@ -512,10 +528,10 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
     let mut writes = Vec::new();
     for candidate in candidates {
         let label = candidate.label();
-        let plaintext = serde_json::to_string(candidate.manifest)?;
-        let fingerprint = vault_codec::compute_content_fingerprint(&plaintext);
+        let fingerprint_key = state::fingerprint_manifest_key(&candidate.record.manifest_id);
+        let (plaintext, fingerprint) = fingerprinted(candidate.manifest)?;
         let rekeyed = gate.migrating && candidate.record.is_personal;
-        if !gate.force_full_write && !rekeyed && baselines.fingerprints.get(&state::fingerprint_manifest_key(&candidate.record.manifest_id)) == Some(&fingerprint) {
+        if !gate.force_full_write && !rekeyed && baselines.unchanged(&fingerprint_key, &fingerprint) {
             ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
         }
@@ -527,9 +543,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             ctx.warn(format!("[V2Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
             continue;
         }
-        let (ciphertext, compressed) = pack_encrypt(&plaintext, &candidate.vek)?;
-        let ciphertext_hash = vault_codec::compute_ciphertext_hash(&ciphertext);
-        ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(compressed), format_kb(ciphertext.len()))).await;
+        let sealed = seal(ctx, &label, &plaintext, &candidate.vek).await?;
 
         // Publish the public half of this manifest's mail delivery keypair; only admins may publish a shared one.
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
@@ -542,14 +556,14 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
         blob_refs.sort_by(|a, b| a.hash.cmp(&b.hash));
         writes.push(ManifestWrite {
             manifest_id: candidate.record.manifest_id.clone(),
-            manifest_blob: ciphertext,
-            manifest_ciphertext_hash: ciphertext_hash,
+            manifest_blob: sealed.ciphertext,
+            manifest_ciphertext_hash: sealed.hash,
             current_revision: candidate.current_revision,
             credentials_count: candidate.manifest.tables.get("Items").map(Vec::len).unwrap_or(0),
             blob_references: blob_refs,
             encryption_public_key: manifest_key.and_then(|row| row.get("PublicKey").and_then(serde_json::Value::as_str).map(str::to_string)),
         });
-        written.manifests.insert(candidate.record.manifest_id.clone(), fingerprint);
+        written.insert(fingerprint_key, fingerprint);
     }
     Ok(writes)
 }
@@ -585,7 +599,7 @@ async fn missing_on_server(ctx: &Ctx, hashes: Vec<String>) -> SyncResult<Vec<Str
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
 /// them and retry the identical write once; blobs this client cannot supply fail the push.
 async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, gate: WriteGate, uploaded: &mut HashMap<String, String>) -> SyncResult<VaultWriteResponse> {
-    let response: VaultWriteResponse = http::post(&ctx.host, VAULT_ENDPOINT, payload, true).await?;
+    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if response.missing_blob_hashes.is_empty() {
         return Ok(response);
     }
@@ -597,35 +611,35 @@ async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs
     let (missing_personal, missing_shared): (Vec<String>, Vec<String>) = response.missing_blob_hashes.iter().cloned().partition(|h| blobs.entries[h].from_personal);
     uploaded.extend(upload_blobs(ctx, &blobs.entries, &missing_personal, gate.migrating).await?);
     uploaded.extend(upload_blobs(ctx, &blobs.entries, &missing_shared, false).await?);
-    let response: VaultWriteResponse = http::post(&ctx.host, VAULT_ENDPOINT, payload, true).await?;
+    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if !response.missing_blob_hashes.is_empty() {
         return Err(SyncError::MissingBlobs(response.missing_blob_hashes));
     }
     Ok(response)
 }
 
-/// Advance the local baselines of everything a successful write carried, and refresh the encrypted blob cache.
-async fn commit_push_baselines(ctx: &Ctx, baselines: PushBaselines, response: &VaultWriteResponse, written: WrittenFingerprints, blobs: &UploadBlobs, uploaded: &HashMap<String, String>) -> SyncResult<()> {
-    let PushBaselines { mut fingerprints, mut manifest_revisions, mut bucket_revisions, .. } = baselines;
-    if !response.bucket_revisions.is_empty() {
-        for br in &response.bucket_revisions {
-            bucket_revisions.insert(state::bucket_revision_key(&br.manifest_id, &br.category), br.revision);
+/// Advance the revision and fingerprint baselines of everything a successful write carried.
+async fn commit_push_baselines(ctx: &Ctx, baselines: PushBaselines, manifest_revisions: &[ManifestRevision], bucket_revisions: &[BucketRevision], written: WrittenFingerprints) -> SyncResult<()> {
+    let PushBaselines { mut fingerprints, manifest_revisions: mut known_manifests, bucket_revisions: mut known_buckets, .. } = baselines;
+    if !bucket_revisions.is_empty() {
+        for br in bucket_revisions {
+            known_buckets.insert(state::bucket_revision_key(&br.manifest_id, &br.category), br.revision);
         }
-        state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, &bucket_revisions).await?;
+        state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, &known_buckets).await?;
     }
-    for mr in &response.manifest_revisions {
-        manifest_revisions.insert(mr.manifest_id.clone(), mr.revision);
+    if !manifest_revisions.is_empty() {
+        for mr in manifest_revisions {
+            known_manifests.insert(mr.manifest_id.clone(), mr.revision);
+        }
+        state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &known_manifests).await?;
     }
-    state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &manifest_revisions).await?;
+    fingerprints.extend(written);
+    state::set(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS, &fingerprints).await
+}
 
-    fingerprints.extend(written.buckets);
-    for (manifest_id, fingerprint) in written.manifests {
-        fingerprints.insert(state::fingerprint_manifest_key(&manifest_id), fingerprint);
-    }
-    state::set(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS, &fingerprints).await?;
+/// Record the server's blob set as this write left it, and keep the encrypted blob cache to what is still referenced.
+async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMap<String, String>) -> SyncResult<()> {
     state::set(&ctx.host, state::VAULT_SERVER_BLOB_HASHES, &blobs.order).await?;
-
-    // The encrypted blob cache: entries still referenced, plus the ciphertexts just uploaded.
     let cache: HashMap<String, String> = state::get(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE).await?.unwrap_or_default();
     let mut new_cache: HashMap<String, String> = HashMap::new();
     for hash in &blobs.order {
@@ -644,7 +658,7 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
     state::set(&ctx.host, state::ACCOUNT_PUBLIC_KEY, &blobs.account_public_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, &blobs.encrypted_account_private_key).await?;
     ctx.account_public_key = Some(blobs.account_public_key.clone());
-    ctx.set_account_private_key(Some(migration.account_private_key.clone()));
+    ctx.set_account_private_key(migration.account_private_key.clone());
     Ok(())
 }
 
@@ -652,25 +666,16 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
 /// ciphertext for the local encrypted blob cache.
 async fn upload_blobs(ctx: &Ctx, entries: &HashMap<String, UploadBlobEntry>, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, String>> {
     let mut ciphertexts = HashMap::new();
-    if hashes.is_empty() {
-        return Ok(ciphertexts);
-    }
-    let mut batch: Vec<BlobDto> = Vec::new();
-    let mut batch_chars = 0usize;
+    let mut dtos = Vec::new();
     for hash in hashes {
         let Some(entry) = entries.get(hash) else { continue };
         let ciphertext = crypto::symmetric_encrypt_bytes(&entry.bytes, &entry.vek)?;
         ciphertexts.insert(hash.clone(), ciphertext.clone());
-        if !batch.is_empty() && (batch_chars + ciphertext.len() > BLOB_TRANSFER_BATCH_MAX_CHARS || batch.len() >= BLOB_TRANSFER_BATCH_MAX_COUNT) {
-            ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(batch_chars))).await;
-            http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { blobs: std::mem::take(&mut batch), overwrite }).await?;
-            batch_chars = 0;
-        }
-        batch_chars += ciphertext.len();
-        batch.push(BlobDto { hash: hash.clone(), category: entry.kind.clone(), encrypted_data_base64: ciphertext });
+        dtos.push(BlobDto { hash: hash.clone(), category: entry.kind.clone(), encrypted_data_base64: ciphertext });
     }
-    if !batch.is_empty() {
-        ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(batch_chars))).await;
+    for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
+        let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
+        ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
         http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { blobs: batch, overwrite }).await?;
     }
     Ok(ciphertexts)
@@ -686,37 +691,30 @@ async fn push_data_bucket_only(ctx: &Ctx, bucket: &DataBucket, vek: &str) -> Syn
 }
 
 async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &str) -> SyncResult<(PushStatus, i64)> {
-    let label = format!("Bucket \"{}\" of manifest {}", bucket.category, bucket.manifest_id);
-    let revision_key = state::bucket_revision_key(&bucket.manifest_id, &bucket.category);
-    let plaintext = serde_json::to_string(bucket)?;
-
-    let mut fingerprints: HashMap<String, String> = state::get(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS).await?.unwrap_or_default();
-    let mut bucket_revisions: HashMap<String, i64> = state::get(&ctx.host, state::VAULT_BUCKET_REVISIONS).await?.unwrap_or_default();
-    let fingerprint = vault_codec::compute_content_fingerprint(&plaintext);
+    let label = format!("Bucket \"{}\" of manifest {} (bucket-only)", bucket.category, bucket.manifest_id);
     let fingerprint_key = state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category);
-    if fingerprints.get(&fingerprint_key) == Some(&fingerprint) {
-        ctx.log(format!("[V2Push] {} (bucket-only) unchanged versus server baseline, skipping upload.", label)).await;
-        return Ok((PushStatus::Ok, bucket_revisions.get(&revision_key).copied().unwrap_or(0)));
+    let baselines = PushBaselines::load(ctx).await?;
+    let (plaintext, fingerprint) = fingerprinted(bucket)?;
+    if baselines.unchanged(&fingerprint_key, &fingerprint) {
+        ctx.log(format!("[V2Push] {} unchanged versus server baseline, skipping upload.", label)).await;
+        return Ok((PushStatus::Ok, baselines.bucket_revision(bucket)));
     }
-
-    let (ciphertext, compressed) = pack_encrypt(&plaintext, vek)?;
-    let ciphertext_hash = vault_codec::compute_ciphertext_hash(&ciphertext);
-    ctx.log(format!("[V2Push] {} (bucket-only): raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(compressed), format_kb(ciphertext.len()))).await;
+    let sealed = seal(ctx, &label, &plaintext, vek).await?;
 
     let post = |current_revision: i64| {
         let payload = VaultWriteRequest {
             username: ctx.request.username.clone(),
             manifests: Vec::new(),
-            buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: ciphertext.clone(), ciphertext_hash: ciphertext_hash.clone(), current_revision }],
+            buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext.clone(), ciphertext_hash: sealed.hash.clone(), current_revision }],
             new_blobs: Vec::new(),
             email_routing: None,
             account_keys: None,
         };
-        async move { http::post::<_, VaultWriteResponse>(&ctx.host, VAULT_ENDPOINT, &payload, true).await }
+        async move { http::post::<_, VaultWriteResponse>(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await }
     };
     let reported = |response: &VaultWriteResponse| response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);
 
-    let mut current_revision = bucket_revisions.get(&revision_key).copied().unwrap_or(0);
+    let mut current_revision = baselines.bucket_revision(bucket);
     let mut response = post(current_revision).await?;
     if response.status != 0 {
         let server_revision = reported(&response).unwrap_or(current_revision);
@@ -729,9 +727,7 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
     }
 
     let new_revision = reported(&response).unwrap_or(current_revision + 1);
-    bucket_revisions.insert(revision_key, new_revision);
-    state::set(&ctx.host, state::VAULT_BUCKET_REVISIONS, &bucket_revisions).await?;
-    fingerprints.insert(fingerprint_key, fingerprint);
-    state::set(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS, &fingerprints).await?;
+    let advanced = BucketRevision { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), revision: new_revision };
+    commit_push_baselines(ctx, baselines, &[], &[advanced], HashMap::from([(fingerprint_key, fingerprint)])).await?;
     Ok((PushStatus::Ok, new_revision))
 }

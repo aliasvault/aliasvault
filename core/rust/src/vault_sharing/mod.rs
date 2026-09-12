@@ -6,14 +6,12 @@ mod tests;
 
 use std::collections::HashMap;
 
-use crate::error::VaultResult;
-
 pub use types::{
     ManifestAccessPartition, ManifestAccessRequest, ManifestWriteRecord, ManifestWriteSet,
     ManifestWriteSetRequest, SharedManifestRecord, SkippedManifest, WriteSkipReason,
 };
 
-use types::id_key;
+use crate::vault_model::id_key;
 
 /// Resolve which manifests the next push writes, personal manifest first.
 ///
@@ -86,14 +84,4 @@ fn resolve_name(display_names: &HashMap<String, String>, manifest_id: &str, reco
         .map(|(_, name)| name.clone())
         .or_else(|| record_name.map(|name| name.to_string()))
         .filter(|name| !name.is_empty())
-}
-
-/// Resolve a push's write set. Input: `ManifestWriteSetRequest` JSON. Output: `ManifestWriteSet` JSON.
-pub fn resolve_manifest_write_set_json(input_json: &str) -> VaultResult<String> {
-    Ok(serde_json::to_string(&resolve_manifest_write_set(serde_json::from_str(input_json)?))?)
-}
-
-/// Partition manifest access. Input: `ManifestAccessRequest` JSON. Output: `ManifestAccessPartition` JSON.
-pub fn partition_manifest_access_json(input_json: &str) -> VaultResult<String> {
-    Ok(serde_json::to_string(&partition_manifest_access(serde_json::from_str(input_json)?))?)
 }
