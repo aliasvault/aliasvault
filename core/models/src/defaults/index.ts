@@ -3,3 +3,4 @@
  */
 export * from './PasswordGeneratorDefaults';
 export * from './Languages';
+export * from './AppDefaults';

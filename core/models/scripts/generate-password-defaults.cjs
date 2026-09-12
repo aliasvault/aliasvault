@@ -7,7 +7,7 @@
  *   - core/rust/src/password_generator/defaults.rs (Rust)
  *   - apps/server/Databases/AliasClientDb/Models/PasswordGeneratorDefaults.cs (C#)
  * 
- * Note: Typescript clients can import the constants directly from the distributed `@/utils/dist/core/models/vault`.
+ * Note: Typescript clients import the constants directly from `@aliasvault/models/defaults`.
  */
 
 const fs = require('fs');

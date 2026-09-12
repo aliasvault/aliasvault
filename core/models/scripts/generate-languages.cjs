@@ -5,8 +5,8 @@
  * Input:  core/models/src/defaults/Languages.ts (compiled to dist/defaults/index.js)
  * Output: apps/server/AliasVault.Client/Main/Models/Languages.cs (C#)
  *
- * The TypeScript clients (browser extension + mobile) import the metadata directly from the
- * distributed `@/utils/dist/core/models/defaults`, so only the C# variant needs to be generated.
+ * The TypeScript clients (browser extension + mobile) import the metadata directly from
+ * `@aliasvault/models/defaults`, so only the C# variant needs to be generated.
  */
 
 const fs = require('fs');
