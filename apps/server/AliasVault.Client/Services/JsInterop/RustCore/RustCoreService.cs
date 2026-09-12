@@ -77,42 +77,6 @@ public class RustCoreService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Merge two vaults using Last-Write-Wins (LWW) strategy.
-    /// </summary>
-    /// <param name="input">The merge input containing local and server tables.</param>
-    /// <returns>The merge output with SQL statements to execute.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if merge fails or WASM module is unavailable.</exception>
-    public async Task<MergeOutput> MergeVaultsAsync(MergeInput input)
-    {
-        // Wait for WASM to be available with retries, as it may still be loading.
-        if (!await WaitForAvailabilityAsync())
-        {
-            throw new InvalidOperationException("Rust WASM module is not available.");
-        }
-
-        var inputJson = JsonSerializer.Serialize(input, JsonOptions);
-        var resultJson = await jsRuntime.InvokeAsync<string>("rustCoreMergeVaults", inputJson);
-
-        if (string.IsNullOrEmpty(resultJson))
-        {
-            throw new InvalidOperationException("Merge operation returned empty result.");
-        }
-
-        var result = JsonSerializer.Deserialize<MergeOutput>(resultJson, JsonOptions);
-        if (result == null)
-        {
-            throw new InvalidOperationException("Failed to deserialize merge result.");
-        }
-
-        if (!result.Success && !string.IsNullOrEmpty(result.Error))
-        {
-            throw new InvalidOperationException($"Merge failed: {result.Error}");
-        }
-
-        return result;
-    }
-
-    /// <summary>
     /// Get the list of table names that need to be synced.
     /// </summary>
     /// <returns>Array of table names.</returns>

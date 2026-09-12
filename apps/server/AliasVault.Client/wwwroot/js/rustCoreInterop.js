@@ -94,35 +94,6 @@ window.rustCoreIsAvailable = async function() {
 };
 
 /**
- * Merge two vaults using LWW strategy.
- * @param {string} inputJson - JSON string containing MergeInput.
- * @returns {Promise<string>} JSON string containing MergeOutput.
- */
-window.rustCoreMergeVaults = async function(inputJson) {
-    if (!await initRustCore()) {
-        return JSON.stringify({
-            success: false,
-            error: 'Rust WASM module not available',
-            statements: [],
-            stats: {}
-        });
-    }
-
-    try {
-        const result = wasmModule.mergeVaultsJson(inputJson);
-        return result;
-    } catch (error) {
-        console.error('[RustCore] Merge failed:', error);
-        return JSON.stringify({
-            success: false,
-            error: error.toString(),
-            statements: [],
-            stats: {}
-        });
-    }
-};
-
-/**
  * Filter credentials for autofill.
  * @param {string} inputJson - JSON string containing CredentialMatcherInput.
  * @returns {Promise<string>} JSON string containing CredentialMatcherOutput.
