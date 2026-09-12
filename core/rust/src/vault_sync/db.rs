@@ -2,14 +2,13 @@
 
 use std::collections::HashMap;
 
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use serde_json::{json, Map, Value};
 
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::types::{Ack, Command, Db, DbBytes, DbRows, LogLevel, SqlStatement};
-use super::version;
+use super::legacy;
+use crate::encoding::{base64_decode, base64_encode};
 use crate::vault_codec::{CodecRecord, CodecTableData, MaterializedTables};
 
 pub(crate) type Row = Map<String, Value>;
@@ -39,37 +38,18 @@ pub(crate) async fn exec_one(host: &Host, db: Db, sql: &str, params: Vec<Value>)
 
 /// Open the staging database: fresh with the current schema, or from SQLite bytes.
 pub(crate) async fn open_staging(host: &Host, bytes: Option<&[u8]>) -> SyncResult<()> {
-    host.call::<Ack>(Command::DbOpen { db: Db::Staging, bytes: bytes.map(|b| BASE64.encode(b)) }).await?;
+    host.call::<Ack>(Command::DbOpen { db: Db::Staging, bytes: bytes.map(base64_encode) }).await?;
     Ok(())
 }
 
 /// Serialize a database to SQLite bytes.
 pub(crate) async fn export(host: &Host, db: Db) -> SyncResult<Vec<u8>> {
     let response: DbBytes = host.call(Command::DbExport { db }).await?;
-    BASE64.decode(response.bytes).map_err(|_| SyncError::Other("host returned invalid database bytes".to_string()))
+    base64_decode(&response.bytes).map_err(|_| SyncError::Other("host returned invalid database bytes".to_string()))
 }
 
 pub(crate) fn b64_param(bytes: &[u8]) -> Value {
-    json!({ "__b64": BASE64.encode(bytes) })
-}
-
-/// The lookup key of a manifest id: ids compare case-insensitively.
-pub(crate) fn id_key(id: &str) -> String {
-    id.to_lowercase()
-}
-
-pub(crate) fn ids_equal(a: &str, b: &str) -> bool {
-    a.eq_ignore_ascii_case(b)
-}
-
-/// SQLite booleans arrive as 0/1 numbers or as JSON booleans.
-pub(crate) fn truthy(value: Option<&Value>) -> bool {
-    match value {
-        Some(Value::Bool(b)) => *b,
-        Some(Value::Number(n)) => n.as_i64().unwrap_or(0) != 0 || n.as_f64().unwrap_or(0.0) != 0.0,
-        Some(Value::String(s)) => s == "1" || s.eq_ignore_ascii_case("true"),
-        _ => false,
-    }
+    json!({ "__b64": base64_encode(bytes) })
 }
 
 /// A cell as text: strings as they are, null as empty, anything else in its JSON form.
@@ -141,27 +121,26 @@ pub(crate) async fn latest_migration_id(host: &Host, db: Db) -> SyncResult<Strin
     Ok(rows.first().and_then(|row| row.get("MigrationId")).and_then(Value::as_str).unwrap_or("").to_string())
 }
 
-/// Whether the local vault still has to walk the frozen sqlite-blob upgrade chain (a pre-2.0.0 vault).
-pub(crate) async fn requires_legacy_sqlite_blob_migration(host: &Host, db: Db) -> SyncResult<bool> {
-    let migration_id = latest_migration_id(host, db).await?;
-    if migration_id.is_empty() {
-        return Err(SyncError::Other("No migrations found in the database.".to_string()));
-    }
-    let database_version = version::extract_version_from_migration_id(&migration_id).ok_or_else(|| SyncError::Other("Could not extract version from migration ID".to_string()))?;
-    let revision = version::legacy_revision_for(&database_version).map_err(SyncError::VaultVersionIncompatible)?;
-    Ok(revision < version::latest_legacy_revision())
+/// Where the local vault's schema stands against the current one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SchemaState {
+    /// LEGACY: still on the frozen sqlite-blob upgrade chain (a pre-2.0.0 vault), which the host walks first.
+    LegacyChain,
+    /// Predates the current full schema; the manifest migration rebuilds it locally.
+    Stale,
+    Current,
 }
 
-/// Whether the local schema predates the current full schema (whose stamp the staging database carries).
-pub(crate) async fn requires_schema_migration(host: &Host, schema_migration_id: &str) -> SyncResult<bool> {
-    if requires_legacy_sqlite_blob_migration(host, Db::Local).await? {
-        return Ok(false);
-    }
+/// Classify the local vault's schema against the current one (whose stamp the staging database carries).
+pub(crate) async fn schema_state(host: &Host, current_migration_id: &str) -> SyncResult<SchemaState> {
     let local = latest_migration_id(host, Db::Local).await?;
-    if local.is_empty() || schema_migration_id.is_empty() {
-        return Ok(false);
+    if local.is_empty() {
+        return Err(SyncError::Other("No migrations found in the database.".to_string()));
     }
-    Ok(local.as_str() < schema_migration_id)
+    if legacy::stamp_predates_manifest_schema(&local)? {
+        return Ok(SchemaState::LegacyChain);
+    }
+    Ok(if !current_migration_id.is_empty() && local.as_str() < current_migration_id { SchemaState::Stale } else { SchemaState::Current })
 }
 
 pub(crate) async fn has_column(host: &Host, db: Db, table: &str, column: &str) -> SyncResult<bool> {
@@ -256,12 +235,10 @@ pub(crate) fn now_iso() -> String {
 /// A random lowercase UUID v4.
 pub(crate) fn new_id() -> String {
     let mut bytes = [0u8; 16];
-    crate::crypto::fill_random(&mut bytes);
+    crate::rng::fill_random(&mut bytes);
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    let hex: Vec<String> = bytes.iter().map(|b| format!("{:02x}", b)).collect();
-    let hex = hex.join("");
-    format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
+    crate::encoding::format_uuid(&bytes)
 }
 
 pub(crate) const GET_ACTIVE_KEY_FOR_MANIFEST: &str = "SELECT x.Id, x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";

@@ -12,8 +12,6 @@
 
 use std::collections::HashMap;
 
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use serde_json::{json, Value};
 
 use super::normalize::{normalize_id_spelling, normalize_row_shapes};
@@ -286,7 +284,7 @@ fn extract_blob_cell(
         None => return serde_json::Value::Null,
     };
 
-    let bytes = match BASE64.decode(b64) {
+    let bytes = match crate::encoding::base64_decode(b64) {
         Ok(b) if !b.is_empty() => b,
         _ => return serde_json::Value::Null,
     };
@@ -336,8 +334,9 @@ fn primary_key_of(identity: &str) -> &str {
     identity.rsplit('\u{1f}').next().unwrap_or(identity)
 }
 
-/// Build `category`'s data buckets from its already-normalized tables (name > rows): the bucket-only push
-/// path, taken when a bucket changed but the manifest did not.
+/// Build `category`'s data buckets, one per manifest in `manifest_ids`, from the category's tables as the
+/// platform reads them out of its local vault (name > rows): the bucket-only push path, taken when a bucket
+/// changed but the manifest did not. Rows route by the manifest each one names, exactly as the full push routes them.
 ///
 /// Include the [`OVERFLOW_TABLE`] row in `tables` (read it alongside the category's tables) so a newer
 /// writer's columns/tables re-merge and survive; it is consumed and never emitted into a bucket.

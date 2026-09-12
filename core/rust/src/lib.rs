@@ -1,22 +1,27 @@
 //! AliasVault Core Library
 //!
 //! Cross-platform core functionality for AliasVault, including:
+//! - **vault_model**: the client vault datamodel registry, generated from `core/models`
+//! - **vault_codec**: the manifest-v1 storage format, mapped to and from the local SQLite vault
 //! - **vault_merge**: Vault merge using Last-Write-Wins (LWW) strategy
 //! - **vault_sharing**: Sharing write logic for multi-manifest vaults
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
+//! - **vault_sync**: the vault sync engine that every client uses for syncing with the server
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
+//! - **email_parser**: RFC 822 email parsing into bodies and attachment metadata
 //! - **favicon**: Favicon handling and source selection
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **crypto**: Argon2id derivation, AES-256-GCM, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
-//! - **vault_sync**: the sans-IO vault sync engine every client drives
+//! - **timestamp**: the vault datetime formats and the `UpdatedAt` comparison the merge relies on
+//! - **error**: the `VaultError` type and the JSON-in/JSON-out call helper the bindings share
 //!
 //! This library accepts data as JSON and returns results as JSON.
 //! Each platform (browser, iOS, Android, .NET) handles its own I/O
 //! and calls this library for the core logic.
 
 pub mod error;
-mod hex;
+mod encoding;
 pub mod timestamp;
 mod rng;
 pub mod vault_model;
@@ -33,10 +38,8 @@ pub mod crypto;
 pub mod vault_sync;
 
 pub use error::VaultError;
-pub use vault_merge::{
-    merge_canonical, merge_canonical_json, CanonicalManifestMerge, CanonicalMergeInput,
-    CanonicalMergeOutput, MergeStats, SqlStatement, SYNCABLE_TABLE_NAMES,
-};
+pub use vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, CanonicalMergeOutput, MergeStats, SqlStatement};
+pub use vault_model::{SYNCABLE_TABLES, SYNCABLE_TABLE_NAMES};
 pub use vault_codec::{
     compute_ciphertext_hash, compute_content_fingerprint, canonicalize_from_sqlite,
     extract_buckets, generate_manifest_salt, unpack_payload, materialize_as_sqlite, pack_payload,
@@ -61,9 +64,9 @@ pub use favicon::{favicon_source_key, select_favicon_target, FaviconTarget};
 pub use password_generator::{generate_password, PasswordSettings};
 pub use identity_generator::{generate_identity, Identity, IdentityRequest};
 pub use crypto::{
-    argon2_derive_key, argon2_derive_key_from_settings, Argon2Error, Argon2Params,
+    argon2_derive_key, argon2_derive_key_bytes_from_settings, argon2_derive_key_from_settings, Argon2Error, Argon2Params,
     srp_generate_salt, srp_derive_private_key, srp_derive_verifier,
-    srp_generate_ephemeral, srp_derive_session,
+    srp_generate_ephemeral, srp_derive_session, srp_verify_session,
     srp_generate_ephemeral_server, srp_derive_session_server,
     SrpEphemeral, SrpSession, SrpError,
 };
@@ -72,9 +75,6 @@ pub use crypto::{
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
-#[cfg(feature = "wasm")]
-pub use wasm::*;
-
 // C FFI exports for .NET P/Invoke
 #[cfg(feature = "ffi")]
 pub mod ffi;
@@ -82,9 +82,6 @@ pub mod ffi;
 // UniFFI bindings for Swift/Kotlin
 #[cfg(feature = "uniffi")]
 pub mod uniffi_api;
-
-#[cfg(feature = "uniffi")]
-pub use uniffi_api::*;
 
 // UniFFI scaffolding - generates the FFI glue code
 #[cfg(feature = "uniffi")]

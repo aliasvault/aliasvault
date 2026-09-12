@@ -8,8 +8,8 @@
 //! one platform and re-hashed by another would fail integrity even when byte-identical. This module is
 //! the single canonical-serialization contract every binding reproduces.
 //!
-//! [`canonical_json`] is intentionally byte-compatible with the original `VaultIntegrity.ts`
-//! `canonicalize()`:
+//! [`canonical_json`] is intentionally byte-compatible with the TypeScript `canonicalize()` the
+//! clients used before the codec moved into Rust:
 //!   - object keys sorted ascending, recursively;
 //!   - arrays kept in order;
 //!   - primitives serialized exactly as `JSON.stringify` would (serde_json matches JS for the
@@ -17,58 +17,25 @@
 
 use sha2::{Digest, Sha256};
 
-/// Lowercase hex of a byte slice. Matches the browser extension's lowercase hashing.
-pub fn bytes_to_hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{:02x}", b));
-    }
-    s
-}
+use crate::encoding::{format_uuid, hex_decode, hex_encode_lower};
 
-/// Generate a GUID derived from a string.
+/// A UUIDv8 derived from a string: the first 16 bytes of its sha256, version and variant bits set.
 pub fn derived_uuid(material: &str) -> String {
-    let digest = sha256_hex(material.as_bytes());
+    let digest = Sha256::digest(material.as_bytes());
     let mut bytes = [0u8; 16];
-    for (i, byte) in bytes.iter_mut().enumerate() {
-        *byte = u8::from_str_radix(&digest[i * 2..i * 2 + 2], 16).unwrap_or(0);
-    }
+    bytes.copy_from_slice(&digest[..16]);
     bytes[6] = (bytes[6] & 0x0f) | 0x80;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    let hex = bytes_to_hex(&bytes);
-    format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
-}
-
-/// Decode a lowercase/uppercase hex string into bytes. Returns `None` on malformed input.
-pub fn hex_to_bytes(hex: &str) -> Option<Vec<u8>> {
-    if hex.len() % 2 != 0 {
-        return None;
-    }
-    let mut out = Vec::with_capacity(hex.len() / 2);
-    let bytes = hex.as_bytes();
-    let mut i = 0;
-    while i < bytes.len() {
-        let hi = (bytes[i] as char).to_digit(16)?;
-        let lo = (bytes[i + 1] as char).to_digit(16)?;
-        out.push(((hi << 4) | lo) as u8);
-        i += 2;
-    }
-    Some(out)
+    format_uuid(&bytes)
 }
 
 /// SHA-256 of arbitrary bytes, returned as lowercase hex.
 pub fn sha256_hex(bytes: &[u8]) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    bytes_to_hex(&hasher.finalize())
+    hex_encode_lower(&Sha256::digest(bytes))
 }
 
-/// Canonicalize a JSON value into a stable string for hashing.
-///
-/// Serializes JSON with object keys sorted recursively, arrays kept in order, 
-// and primitives serialized using `serde_json::to_string` for string-escaping 
-// and integer values present in vault data.
+/// Canonicalize a JSON value into a stable string for hashing: object keys sorted recursively, arrays
+/// kept in order, primitives as `serde_json::to_string` renders them.
 pub fn canonical_json(value: &serde_json::Value) -> String {
     match value {
         serde_json::Value::Object(map) => {
@@ -110,11 +77,11 @@ pub fn content_hash(value: &serde_json::Value) -> String {
 
 /// Per-manifest salted blob hash `sha256(salt_bytes ‖ plaintext_bytes)`, lowercase hex.
 pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> String {
-    let salt_bytes = hex_to_bytes(manifest_salt).unwrap_or_default();
+    let salt_bytes = hex_decode(manifest_salt).unwrap_or_default();
     let mut hasher = Sha256::new();
     hasher.update(&salt_bytes);
     hasher.update(bytes);
-    bytes_to_hex(&hasher.finalize())
+    hex_encode_lower(&hasher.finalize())
 }
 
 #[cfg(test)]
@@ -142,11 +109,12 @@ mod tests {
     }
 
     #[test]
-    fn hex_roundtrip() {
-        let bytes = vec![0x00u8, 0x1f, 0xab, 0xff];
-        let hex = bytes_to_hex(&bytes);
-        assert_eq!(hex, "001fabff");
-        assert_eq!(hex_to_bytes(&hex).unwrap(), bytes);
+    fn derived_uuid_is_stable_and_well_formed() {
+        let id = derived_uuid("aliasvault:test");
+        assert_eq!(id, derived_uuid("aliasvault:test"));
+        assert_eq!(id.len(), 36);
+        assert_eq!(&id[14..15], "8");
+        assert!(matches!(&id[19..20], "8" | "9" | "a" | "b"));
     }
 
     #[test]

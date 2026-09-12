@@ -7,6 +7,8 @@ use std::ffi::{c_char, CStr, CString};
 use std::ptr;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput};
+use crate::error::json_call;
+use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
 use crate::vault_pruner::{prune_vault, PruneInput};
 
 /// Prune expired items from trash.
@@ -101,7 +103,7 @@ pub unsafe extern "C" fn filter_credentials_ffi(input_json: *const c_char) -> *m
 /// A null-terminated C string containing a JSON array of table names.
 #[no_mangle]
 pub extern "C" fn get_syncable_table_names_ffi() -> *mut c_char {
-    let names = crate::vault_merge::syncable_table_names();
+    let names = crate::vault_model::SYNCABLE_TABLE_NAMES;
     match serde_json::to_string(&names) {
         Ok(json) => string_to_c_char(json),
         Err(_) => ptr::null_mut(),
@@ -189,7 +191,7 @@ unsafe fn codec_json_ffi(
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_canonicalize_from_sqlite_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::canonicalize_from_sqlite_json)
+    codec_json_ffi(input_json, "input_json", |s| json_call(s, |input: CanonicalizeInput| vault_codec::canonicalize_from_sqlite(input)))
 }
 
 /// Materialize manifest + metadata. Input: `MaterializeInput` JSON. Output: `MaterializedTables` JSON.
@@ -198,7 +200,7 @@ pub unsafe extern "C" fn vault_codec_canonicalize_from_sqlite_ffi(input_json: *c
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_materialize_as_sqlite_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::materialize_as_sqlite_json)
+    codec_json_ffi(input_json, "input_json", |s| json_call(s, |input: MaterializeInput| vault_codec::materialize_as_sqlite(input)))
 }
 
 /// Build a bucket category's data buckets, one per manifest. Input: `{ category, manifestIds, tables }` JSON.
@@ -208,7 +210,7 @@ pub unsafe extern "C" fn vault_codec_materialize_as_sqlite_ffi(input_json: *cons
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_extract_buckets_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::extract_buckets_json)
+    codec_json_ffi(input_json, "input_json", |s| json_call(s, |input: ExtractBucketsInput| vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables)))
 }
 
 /// Validate a manifest. Input: `Manifest` JSON. Output: `ValidationResult` JSON.
@@ -217,7 +219,7 @@ pub unsafe extern "C" fn vault_codec_extract_buckets_ffi(input_json: *const c_ch
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_validate_manifest_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_manifest_json)
+    codec_json_ffi(input_json, "input_json", |s| json_call(s, |manifest: Manifest| Ok(vault_codec::validate_manifest(&manifest))))
 }
 
 /// Validate a data bucket. Input: `DataBucket` JSON. Output: `ValidationResult` JSON.
@@ -226,7 +228,7 @@ pub unsafe extern "C" fn vault_codec_validate_manifest_ffi(input_json: *const c_
 /// `input_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const c_char) -> *mut c_char {
-    codec_json_ffi(input_json, "input_json", crate::vault_codec::validate_data_bucket_json)
+    codec_json_ffi(input_json, "input_json", |s| json_call(s, |bucket: DataBucket| Ok(vault_codec::validate_data_bucket(&bucket))))
 }
 
 /// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
@@ -238,7 +240,7 @@ pub unsafe extern "C" fn vault_codec_validate_data_bucket_ffi(input_json: *const
 pub unsafe extern "C" fn vault_codec_extract_encryption_key_for_public_key_ffi(input_json: *const c_char, public_key: *const c_char) -> *mut c_char {
     let manifest = ffi_read_str!(input_json, "input_json");
     let key = ffi_read_str!(public_key, "public_key");
-    match crate::vault_codec::extract_encryption_key_for_public_key_json(manifest, key) {
+    match json_call(manifest, |manifest: Manifest| Ok(vault_codec::extract_encryption_key_for_public_key(&manifest, key))) {
         Ok(json) => string_to_c_char(json),
         Err(e) => create_error_response(&format!("vault_codec error: {}", e)),
     }
@@ -250,7 +252,7 @@ pub unsafe extern "C" fn vault_codec_extract_encryption_key_for_public_key_ffi(i
 /// Free the result with `free_string`.
 #[no_mangle]
 pub extern "C" fn vault_codec_bucket_layout_ffi() -> *mut c_char {
-    match crate::vault_codec::bucket_layout_json() {
+    match serde_json::to_string(&vault_codec::bucket_layout()) {
         Ok(json) => string_to_c_char(json),
         Err(e) => create_error_response(&format!("vault_codec error: {}", e)),
     }
@@ -293,11 +295,9 @@ pub unsafe extern "C" fn vault_codec_compute_content_fingerprint_ffi(payload_jso
 /// `payload_json` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_pack_payload_ffi(payload_json: *const c_char) -> *mut c_char {
-    use base64::engine::general_purpose::STANDARD as BASE64;
-    use base64::Engine;
     let s = ffi_read_str!(payload_json, "payload_json");
     match crate::vault_codec::pack_payload(s) {
-        Ok(bytes) => string_to_c_char(BASE64.encode(bytes)),
+        Ok(bytes) => string_to_c_char(crate::encoding::base64_encode(&bytes)),
         Err(e) => create_error_response(&format!("pack_payload error: {}", e)),
     }
 }
@@ -308,10 +308,8 @@ pub unsafe extern "C" fn vault_codec_pack_payload_ffi(payload_json: *const c_cha
 /// `base64_plain_bytes` must be a valid null-terminated C string; free the result with `free_string`.
 #[no_mangle]
 pub unsafe extern "C" fn vault_codec_unpack_payload_ffi(base64_plain_bytes: *const c_char) -> *mut c_char {
-    use base64::engine::general_purpose::STANDARD as BASE64;
-    use base64::Engine;
     let s = ffi_read_str!(base64_plain_bytes, "base64_plain_bytes");
-    let bytes = match BASE64.decode(s) {
+    let bytes = match crate::encoding::base64_decode(s) {
         Ok(b) => b,
         Err(e) => return create_error_response(&format!("invalid base64: {}", e)),
     };

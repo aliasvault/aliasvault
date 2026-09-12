@@ -168,7 +168,7 @@ fn same_seed_yields_same_output() {
 
 #[test]
 fn same_seed_different_separator_keeps_words() {
-    // With the same seed, only the separator should change — the words stay identical.
+    // With the same seed, only the separator should change; the words stay identical.
     let dash = generate_password(&format!(
         r#"{{"Type":"diceware","WordCount":4,"Separator":"Dash","Seed":"{TEST_SEED}"}}"#
     ))
@@ -186,7 +186,7 @@ fn same_seed_different_separator_keeps_words() {
 
 #[test]
 fn invalid_seed_falls_back_to_random() {
-    // A malformed seed must not error — it falls back to a random seed.
+    // A malformed seed must not error; it falls back to a random seed.
     let pw = generate_password(r#"{"Type":"diceware","Seed":"not-hex"}"#).unwrap();
     assert!(!pw.is_empty());
 }
