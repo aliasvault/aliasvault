@@ -29,14 +29,8 @@ export type VaultTableDefinition = {
   /** True when the table's rows hang off an Item row (re-stamped with their item, cascaded on delete). */
   ItemChild: boolean;
   /**
-   * Match columns for the legacy statement merge. When absent, matching falls back to
-   * (ManifestId, PrimaryKey).
-   */
-  LegacyMergeKey?: string[];
-  /**
-   * Match columns for the canonical merge only, where both sides are first normalized to the
-   * manifest shape (see the Rust vault_codec::normalize module). Absent means the canonical merge
-   * uses the same rule as the statement merge.
+   * Merge match columns, applied after both sides are normalized to the manifest shape (see the
+   * Rust vault_codec::normalize module). Absent means rows match on (ManifestId, PrimaryKey).
    */
   CanonicalMergeKey?: string[];
   /**
@@ -70,20 +64,18 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
    */
   { Name: 'ItemStats', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true, BucketCategory: 'Stats' },
   /*
-   * FieldValues legacy statement merge: a field value matches on the field it belongs to (FieldKey
-   * for system fields, FieldDefinitionId for custom ones; exactly one is set), so independently
-   * created rows of the same field converge. Canonical merge: both sides are normalized first,
-   * which strips the derived id of every single-value row, so adding Id to the key makes a
-   * single-value row match by its field (id part empty on both sides) while a multi-value row
-   * matches by its OWNED id: two devices each adding a login.url are two different rows that must
-   * both survive, and the id, unlike ValueIndex, is stable under reordering.
+   * FieldValues: a field value matches on the field it belongs to (FieldKey for system fields,
+   * FieldDefinitionId for custom ones; exactly one is set), so independently created rows of the
+   * same field are merged into one. Both sides are normalized first, which strips the derived id of every
+   * single-value row, so adding Id to the key makes a single-value row match by its field while a 
+   * multi-value row matches by its OWNED id: two devices each adding a login.url are two different 
+   * rows that must both survive, and the id, unlike ValueIndex, is stable under reordering.
    */
   {
     Name: 'FieldValues',
     ManifestScoped: true,
     PrimaryKey: ['Id'],
     ItemChild: true,
-    LegacyMergeKey: ['ManifestId', 'ItemId', 'FieldKey', 'FieldDefinitionId'],
     CanonicalMergeKey: ['ManifestId', 'ItemId', 'FieldKey', 'FieldDefinitionId', 'Id'],
   },
   { Name: 'Folders', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: false },
@@ -115,10 +107,9 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
     ReferencedBy: [{ Table: 'FieldValues', Column: 'FieldDefinitionId' }, { Table: 'FieldHistories', Column: 'FieldDefinitionId' }],
   },
   /*
-   * FieldHistories canonical merge: every history row derives its id from (item, field, ChangedAt),
-   * so after normalization the natural key IS the identity: concurrent changes union (distinct
-   * ChangedAt), same-millisecond snapshots converge. Legacy statement merge keeps plain
-   * (ManifestId, Id).
+   * FieldHistories: every history row derives its id from (item, field, ChangedAt), so after
+   * normalization the natural key IS the identity: concurrent changes union (distinct ChangedAt),
+   * same-millisecond snapshots converge.
    */
   {
     Name: 'FieldHistories',

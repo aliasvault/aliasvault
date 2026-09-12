@@ -31,10 +31,8 @@ function validateRegistry(registry) {
     throw new Error('VAULT_TABLES must list Items first: registry order is merge insert order.');
   }
   for (const table of tables) {
-    for (const key of [table.LegacyMergeKey, table.CanonicalMergeKey]) {
-      if (key && table.ManifestScoped && key[0] !== registry.VAULT_MANIFEST_ID_COLUMN) {
-        throw new Error(`${table.Name}: merge keys of a manifest-scoped table must start with ${registry.VAULT_MANIFEST_ID_COLUMN}.`);
-      }
+    if (table.CanonicalMergeKey && table.ManifestScoped && table.CanonicalMergeKey[0] !== registry.VAULT_MANIFEST_ID_COLUMN) {
+      throw new Error(`${table.Name}: the merge key of a manifest-scoped table must start with ${registry.VAULT_MANIFEST_ID_COLUMN}.`);
     }
   }
   if (!Array.isArray(registry.MULTI_VALUE_FIELD_KEYS) || registry.MULTI_VALUE_FIELD_KEYS.length === 0) {
@@ -83,9 +81,6 @@ function emitRustTableEntry(table) {
   }
   if (table.PrimaryKey.length !== 1 || table.PrimaryKey[0] !== 'Id') {
     calls.push(`.with_primary_key(${rustStrSlice(table.PrimaryKey)})`);
-  }
-  if (table.LegacyMergeKey) {
-    calls.push(`.with_composite_key(${rustStrSlice(table.LegacyMergeKey)})`);
   }
   if (table.CanonicalMergeKey) {
     calls.push(`.with_canonical_key(${rustStrSlice(table.CanonicalMergeKey)})`);
