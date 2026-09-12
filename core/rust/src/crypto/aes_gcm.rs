@@ -2,11 +2,11 @@
 
 use aes_gcm::aead::{Aead, KeyInit, Payload};
 use aes_gcm::{Aes256Gcm, Nonce};
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use zeroize::{Zeroize, Zeroizing};
 
+use crate::encoding::{base64_decode, base64_encode};
 use crate::error::{VaultError, VaultResult};
+use crate::rng::fill_random;
 
 const IV_LENGTH: usize = 12;
 const KEY_LENGTH: usize = 32;
@@ -14,15 +14,15 @@ const KEY_LENGTH: usize = 32;
 /// A fresh random 256-bit key as base64.
 pub fn generate_key_base64() -> String {
     let mut key = Zeroizing::new([0u8; KEY_LENGTH]);
-    super::fill_random(&mut key[..]);
-    BASE64.encode(&key[..])
+    fill_random(&mut key[..]);
+    base64_encode(&key[..])
 }
 
 /// Encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
 pub fn symmetric_encrypt_bytes(plaintext: &[u8], key_base64: &str) -> VaultResult<String> {
     let cipher = cipher_for(key_base64)?;
     let mut iv = [0u8; IV_LENGTH];
-    super::fill_random(&mut iv);
+    fill_random(&mut iv);
 
     let ciphertext = cipher
         .encrypt(Nonce::from_slice(&iv), Payload { msg: plaintext, aad: &[] })
@@ -31,7 +31,7 @@ pub fn symmetric_encrypt_bytes(plaintext: &[u8], key_base64: &str) -> VaultResul
     let mut combined = Vec::with_capacity(IV_LENGTH + ciphertext.len());
     combined.extend_from_slice(&iv);
     combined.extend_from_slice(&ciphertext);
-    Ok(BASE64.encode(combined))
+    Ok(base64_encode(&combined))
 }
 
 /// Decrypt `IV | ciphertext | tag` bytes with a base64 key.
@@ -59,7 +59,7 @@ pub fn symmetric_decrypt(base64_ciphertext: &str, key_base64: &str) -> VaultResu
     if base64_ciphertext.is_empty() {
         return Ok(String::new());
     }
-    let bytes = decode_base64(base64_ciphertext)?;
+    let bytes = base64_decode(base64_ciphertext)?;
     let plaintext = symmetric_decrypt_bytes(&bytes, key_base64)?;
     match String::from_utf8(plaintext) {
         Ok(text) => Ok(text),
@@ -70,13 +70,8 @@ pub fn symmetric_decrypt(base64_ciphertext: &str, key_base64: &str) -> VaultResu
     }
 }
 
-/// Decode a base64 string, with the error the callers report.
-pub(crate) fn decode_base64(value: &str) -> VaultResult<Vec<u8>> {
-    BASE64.decode(value).map_err(|_| VaultError::General("Invalid base64".to_string()))
-}
-
 fn cipher_for(key_base64: &str) -> VaultResult<Aes256Gcm> {
-    let key = Zeroizing::new(decode_base64(key_base64)?);
+    let key = Zeroizing::new(base64_decode(key_base64)?);
     if key.len() != KEY_LENGTH {
         return Err(VaultError::General(format!("AES-GCM key must be {} bytes, got {}", KEY_LENGTH, key.len())));
     }
@@ -92,7 +87,7 @@ mod tests {
         let key = generate_key_base64();
         let bytes: Vec<u8> = (0..=255u8).collect();
         let encrypted = symmetric_encrypt_bytes(&bytes, &key).unwrap();
-        assert_eq!(symmetric_decrypt_bytes(&decode_base64(&encrypted).unwrap(), &key).unwrap(), bytes);
+        assert_eq!(symmetric_decrypt_bytes(&base64_decode(&encrypted).unwrap(), &key).unwrap(), bytes);
 
         let encrypted = symmetric_encrypt("héllo ✓", &key).unwrap();
         assert_eq!(symmetric_decrypt(&encrypted, &key).unwrap(), "héllo ✓");
@@ -112,7 +107,7 @@ mod tests {
     #[test]
     fn layout_is_iv_then_ciphertext_then_tag() {
         let key = generate_key_base64();
-        let encrypted = decode_base64(&symmetric_encrypt_bytes(b"abc", &key).unwrap()).unwrap();
+        let encrypted = base64_decode(&symmetric_encrypt_bytes(b"abc", &key).unwrap()).unwrap();
         assert_eq!(encrypted.len(), IV_LENGTH + 3 + 16);
     }
 }

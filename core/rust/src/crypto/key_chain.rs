@@ -5,11 +5,10 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-use super::aes_gcm::{decode_base64, generate_key_base64, symmetric_decrypt_bytes, symmetric_encrypt, symmetric_encrypt_bytes};
+use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes, symmetric_encrypt, symmetric_encrypt_bytes};
 use super::rsa_oaep::generate_rsa_key_pair;
+use crate::encoding::{base64_decode, base64_encode};
 use crate::error::VaultResult;
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 
 /// The wrapped halves of an account key hierarchy: what the server stores.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,13 +43,13 @@ impl fmt::Debug for AccountKeyHierarchy {
 
 /// Wrap a base64 key with another base64 key. Returns base64 of `IV | ciphertext | tag`.
 pub fn wrap_key(key_base64: &str, wrapping_key_base64: &str) -> VaultResult<String> {
-    symmetric_encrypt_bytes(&Zeroizing::new(decode_base64(key_base64)?), wrapping_key_base64)
+    symmetric_encrypt_bytes(&Zeroizing::new(base64_decode(key_base64)?), wrapping_key_base64)
 }
 
 /// Unwrap a wrapped key. Returns the key as base64.
 pub fn unwrap_key(wrapped_key_base64: &str, wrapping_key_base64: &str) -> VaultResult<Zeroizing<String>> {
-    let raw = Zeroizing::new(symmetric_decrypt_bytes(&decode_base64(wrapped_key_base64)?, wrapping_key_base64)?);
-    Ok(Zeroizing::new(BASE64.encode(&raw[..])))
+    let raw = Zeroizing::new(symmetric_decrypt_bytes(&base64_decode(wrapped_key_base64)?, wrapping_key_base64)?);
+    Ok(Zeroizing::new(base64_encode(&raw[..])))
 }
 
 /// Turn a password-derived key into the vault encryption key: KEK > Account Key > VEK. Returns the VEK and the

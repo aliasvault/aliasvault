@@ -127,6 +127,22 @@ pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> 
 /// # Returns
 /// The derived key, [`ARGON2_OUTPUT_LENGTH`] bytes long.
 pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
+    argon2_derive_key_bytes_from_settings(password.as_bytes(), salt.as_bytes(), settings_json)
+}
+
+/// Derives a 32-byte key from raw password and salt bytes using the cost parameters stated as settings JSON.
+///
+/// The mobile PIN unlock draws its salt from the Keychain/Keystore as random bytes, which are not
+/// valid UTF-8, so it needs this byte entry point rather than the string one.
+///
+/// # Arguments
+/// * `password` - The password bytes.
+/// * `salt` - The salt bytes, at least 8 bytes long.
+/// * `settings_json` - The `EncryptionSettings` JSON, or an empty string for the defaults.
+///
+/// # Returns
+/// The derived key, [`ARGON2_OUTPUT_LENGTH`] bytes long.
+pub fn argon2_derive_key_bytes_from_settings(password: &[u8], salt: &[u8], settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
     let params = Argon2Params::from_settings_json(settings_json)?;
-    argon2_derive_key(password.as_bytes(), salt.as_bytes(), params)
+    argon2_derive_key(password, salt, params)
 }

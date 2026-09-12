@@ -1,6 +1,6 @@
 //! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings compatible with the WebCrypto API.
 
-use base64::engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD as BASE64_URL};
+use base64::engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL;
 use base64::Engine;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
 use rsa::{BigUint, Oaep, RsaPrivateKey, RsaPublicKey};
@@ -9,6 +9,7 @@ use sha2::Sha256;
 use std::fmt;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
+use crate::encoding::{base64_decode, base64_encode};
 use crate::error::{VaultError, VaultResult};
 
 const MODULUS_BITS: usize = 2048;
@@ -50,37 +51,9 @@ struct RsaJwk {
     qi: Option<String>,
 }
 
-/// Adapts the crate's CSPRNG to the `rand_core` version the `rsa` crate draws from.
-struct CoreRng;
-
-impl rand_core06::RngCore for CoreRng {
-    fn next_u32(&mut self) -> u32 {
-        let mut bytes = [0u8; 4];
-        super::fill_random(&mut bytes);
-        u32::from_le_bytes(bytes)
-    }
-
-    fn next_u64(&mut self) -> u64 {
-        let mut bytes = [0u8; 8];
-        super::fill_random(&mut bytes);
-        u64::from_le_bytes(bytes)
-    }
-
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        super::fill_random(dest);
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core06::Error> {
-        super::fill_random(dest);
-        Ok(())
-    }
-}
-
-impl rand_core06::CryptoRng for CoreRng {}
-
 /// Generate a 2048-bit RSA key pair for RSA-OAEP-256 grants.
 pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
-    let private = RsaPrivateKey::new(&mut CoreRng, MODULUS_BITS).map_err(|e| VaultError::General(format!("RSA key generation failed: {}", e)))?;
+    let private = RsaPrivateKey::new(&mut rand_core06::OsRng, MODULUS_BITS).map_err(|e| VaultError::General(format!("RSA key generation failed: {}", e)))?;
     let public = private.to_public_key();
     Ok(RsaKeyPair { public_key: public_to_jwk(&public)?, private_key: private_to_jwk(&private)? })
 }
@@ -89,19 +62,19 @@ pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
 pub fn encrypt_with_public_key(plaintext: &[u8], public_key_jwk: &str) -> VaultResult<String> {
     let public = public_from_jwk(public_key_jwk)?;
     let ciphertext = public
-        .encrypt(&mut CoreRng, Oaep::new::<Sha256>(), plaintext)
+        .encrypt(&mut rand_core06::OsRng, Oaep::new::<Sha256>(), plaintext)
         .map_err(|e| VaultError::General(format!("RSA-OAEP encryption failed: {}", e)))?;
-    Ok(BASE64.encode(ciphertext))
+    Ok(base64_encode(&ciphertext))
 }
 
 /// Decrypt base64 ciphertext with a JWK private key.
 pub fn decrypt_with_private_key(base64_ciphertext: &str, private_key_jwk: &str) -> VaultResult<Vec<u8>> {
     let private = private_from_jwk(private_key_jwk)?;
-    let ciphertext = super::aes_gcm::decode_base64(base64_ciphertext)?;
+    let ciphertext = base64_decode(base64_ciphertext)?;
     // Blinded: plain `decrypt` runs the exponentiation on the ciphertext as given, which leaks timing an
     // attacker who can submit chosen ciphertexts turns into key recovery (RUSTSEC-2023-0071, Marvin attack).
     private
-        .decrypt_blinded(&mut CoreRng, Oaep::new::<Sha256>(), &ciphertext)
+        .decrypt_blinded(&mut rand_core06::OsRng, Oaep::new::<Sha256>(), &ciphertext)
         .map_err(|_| VaultError::General("RSA-OAEP decryption failed (wrong key or corrupt data)".to_string()))
 }
 

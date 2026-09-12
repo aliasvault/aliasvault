@@ -15,7 +15,8 @@ use srp::utils::{compute_k, compute_u};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
 
-use crate::hex::bytes_to_hex;
+use crate::encoding::{hex_decode, hex_encode_upper as bytes_to_hex};
+use crate::rng::fill_random;
 
 /// Byte length of the 2048-bit group modulus N; all padded values use this size.
 const N_BYTES: usize = 256;
@@ -53,49 +54,20 @@ pub enum SrpError {
 // Hex / Byte Helpers
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Convert hex string (upper- or lowercase, optional 0x prefix) to bytes.
+/// Decode a hex parameter (either case, optional 0x prefix).
 fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, SrpError> {
     let hex = hex.trim();
+    let hex = hex.strip_prefix("0x").or_else(|| hex.strip_prefix("0X")).unwrap_or(hex);
     if hex.is_empty() {
         return Err(SrpError::InvalidHex("empty hex string".to_string()));
     }
-
-    let hex = hex
-        .strip_prefix("0x")
-        .or_else(|| hex.strip_prefix("0X"))
-        .unwrap_or(hex);
-
-    let bytes = hex.as_bytes();
-    if bytes.len() % 2 != 0 {
-        return Err(SrpError::InvalidHex(format!(
-            "odd length hex string: {}",
-            bytes.len()
-        )));
-    }
-
-    fn nibble(b: u8, pos: usize) -> Result<u8, SrpError> {
-        match b {
-            b'0'..=b'9' => Ok(b - b'0'),
-            b'a'..=b'f' => Ok(b - b'a' + 10),
-            b'A'..=b'F' => Ok(b - b'A' + 10),
-            _ => Err(SrpError::InvalidHex(format!(
-                "invalid hex at position {}",
-                pos
-            ))),
-        }
-    }
-
-    bytes
-        .chunks_exact(2)
-        .enumerate()
-        .map(|(i, pair)| Ok(nibble(pair[0], i * 2)? << 4 | nibble(pair[1], i * 2 + 1)?))
-        .collect()
+    hex_decode(hex).ok_or_else(|| SrpError::InvalidHex(format!("malformed hex string of length {}", hex.len())))
 }
 
 /// Generate cryptographically secure random bytes.
 fn generate_random_bytes(len: usize) -> Vec<u8> {
     let mut bytes = vec![0u8; len];
-    super::fill_random(&mut bytes);
+    fill_random(&mut bytes);
     bytes
 }
 
