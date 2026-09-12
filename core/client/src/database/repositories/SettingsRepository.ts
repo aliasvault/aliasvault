@@ -5,6 +5,8 @@ import { getIdentityLanguages } from '../../rust/RustCore';
 import { BaseRepository } from '../BaseRepository';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
+import type { IDatabaseClient } from '../BaseRepository';
+import type { DbOp } from '../DbOp';
 import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
@@ -15,20 +17,21 @@ export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical'
 /**
  * Repository for the vault's user preferences: the manifest-scoped key/value rows of the Settings table.
  */
-export class SettingsRepository extends BaseRepository {
+export class SettingsRepository extends BaseRepository<IDatabaseClient> {
   /**
    * Get setting from database for a given key, from the manifest this client writes into.
    * @param key - The setting key
    * @param defaultValue - Default value if setting not found
    * @returns The setting value
    */
-  public getSetting(key: string, defaultValue: string = ''): string {
-    const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
+  public *getSetting(key: string, defaultValue: string = ''): DbOp<string> {
+    const { active, personal } = yield* this.manifestScope();
+    const manifestId = active ?? personal;
     if (!manifestId) {
       return defaultValue;
     }
 
-    const results = this.client.executeQuery<{ Value: string }>(SettingsQueries.GET_SETTING, [manifestId, key]);
+    const results = yield* this.query<{ Value: string }>(SettingsQueries.GET_SETTING, [manifestId, key]);
     return results.length > 0 ? results[0].Value : defaultValue;
   }
 
@@ -36,32 +39,32 @@ export class SettingsRepository extends BaseRepository {
    * Get the default identity language from the database.
    * @returns The stored override value if set, otherwise empty string
    */
-  public getDefaultIdentityLanguage(): string {
-    return this.getSetting('DefaultIdentityLanguage');
+  public *getDefaultIdentityLanguage(): DbOp<string> {
+    return yield* this.getSetting('DefaultIdentityLanguage');
   }
 
   /**
    * Get the default identity gender preference from the database.
    * @returns The gender preference or 'random' if not set
    */
-  public getDefaultIdentityGender(): string {
-    return this.getSetting('DefaultIdentityGender', 'random');
+  public *getDefaultIdentityGender(): DbOp<string> {
+    return yield* this.getSetting('DefaultIdentityGender', 'random');
   }
 
   /**
    * Get the default identity age range from the database.
    * @returns The age range preference or 'random' if not set
    */
-  public getDefaultIdentityAgeRange(): string {
-    return this.getSetting('DefaultIdentityAgeRange', 'random');
+  public *getDefaultIdentityAgeRange(): DbOp<string> {
+    return yield* this.getSetting('DefaultIdentityAgeRange', 'random');
   }
 
   /**
    * Get the password settings from the database.
    * @returns Password settings object
    */
-  public getPasswordSettings(): PasswordSettings {
-    const settingsJson = this.getSetting('PasswordGenerationSettings');
+  public *getPasswordSettings(): DbOp<PasswordSettings> {
+    const settingsJson = yield* this.getSetting('PasswordGenerationSettings');
 
     const defaultSettings: PasswordSettings = {
       Length: DEFAULT_PASSWORD_LENGTH,
@@ -95,16 +98,16 @@ export class SettingsRepository extends BaseRepository {
    * Mirrors the `PasswordGenerationSettings` key used by the other AliasVault clients.
    * @param settings - The password settings to store.
    */
-  public setPasswordSettings(settings: PasswordSettings): void {
-    this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
+  public *setPasswordSettings(settings: PasswordSettings): DbOp<void> {
+    yield* this.updateSetting('PasswordGenerationSettings', JSON.stringify(settings));
   }
 
   /**
    * Get the default email domain for new aliases.
    * @returns The default email domain or empty string if not set
    */
-  public getDefaultEmailDomain(): string {
-    return this.getSetting('DefaultEmailDomain');
+  public *getDefaultEmailDomain(): DbOp<string> {
+    return yield* this.getSetting('DefaultEmailDomain');
   }
 
   /**
@@ -115,7 +118,7 @@ export class SettingsRepository extends BaseRepository {
    * @returns The effective language code
    */
   public async getEffectiveIdentityLanguage(): Promise<string> {
-    const storedLanguage = this.getDefaultIdentityLanguage();
+    const storedLanguage = await this.run(this.getDefaultIdentityLanguage());
     if (storedLanguage) {
       return storedLanguage;
     }
@@ -127,8 +130,8 @@ export class SettingsRepository extends BaseRepository {
    * Uses the same key the other clients use for cross-platform sync.
    * @returns The sort order preference
    */
-  public getCredentialsSortOrder(): CredentialSortOrder {
-    const value = this.getSetting('CredentialsSortOrder', 'NewestFirst');
+  public *getCredentialsSortOrder(): DbOp<CredentialSortOrder> {
+    const value = yield* this.getSetting('CredentialsSortOrder', 'NewestFirst');
     // Validate the value is a valid sort order
     if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
       return value;
@@ -141,27 +144,18 @@ export class SettingsRepository extends BaseRepository {
    * @param key - The setting key
    * @param value - The setting value
    */
-  public updateSetting(key: string, value: string): void {
+  public *updateSetting(key: string, value: string): DbOp<void> {
     const now = this.now();
-    const manifestId = this.activeManifestId();
+    const manifestId = yield* this.writeManifestId();
 
     // Check if setting exists within this manifest.
-    const results = this.client.executeQuery<{ count: number }>(
-      SettingsQueries.COUNT_BY_KEY,
-      [manifestId, key]
-    );
+    const results = yield* this.query<{ count: number }>(SettingsQueries.COUNT_BY_KEY, [manifestId, key]);
     const exists = results[0]?.count > 0;
 
     if (exists) {
-      this.client.executeUpdate(
-        SettingsQueries.UPDATE_SETTING,
-        [value, now, manifestId, key]
-      );
+      yield* this.execute(SettingsQueries.UPDATE_SETTING, [value, now, manifestId, key]);
     } else {
-      this.client.executeUpdate(
-        SettingsQueries.INSERT_SETTING,
-        [manifestId, key, value, now, now, 0]
-      );
+      yield* this.execute(SettingsQueries.INSERT_SETTING, [manifestId, key, value, now, now, 0]);
     }
   }
 
@@ -170,7 +164,7 @@ export class SettingsRepository extends BaseRepository {
    * Uses the same key the other clients use for cross-platform sync.
    * @param order - The sort order to set
    */
-  public setCredentialsSortOrder(order: CredentialSortOrder): void {
-    this.updateSetting('CredentialsSortOrder', order);
+  public *setCredentialsSortOrder(order: CredentialSortOrder): DbOp<void> {
+    yield* this.updateSetting('CredentialsSortOrder', order);
   }
 }

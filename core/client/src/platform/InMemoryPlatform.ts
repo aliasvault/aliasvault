@@ -64,10 +64,10 @@ export class InMemoryKeyValueStore implements IKeyValueStore {
 }
 
 /**
- * A Rust core or SQLite engine that refuses every call, for platforms that did not provide one.
- * @param what - the member name, for the error message
+ * A platform service that refuses every call, for hosts that do not provide it.
+ * @param what - the service name, for the error message
  */
-function unavailable<T extends object>(what: string): T {
+export function unavailableService<T extends object>(what: string): T {
   return new Proxy({} as T, {
     /** Every member access yields a rejecting function. */
     get: (_target, property): unknown => (): Promise<never> => Promise.reject(new Error(`No ${what} configured for this platform (${String(property)}).`)),
@@ -91,8 +91,8 @@ export function createInMemoryPlatform(overrides: Partial<IClientPlatform> = {})
       error: (): void => {},
     },
     app: { version: '0.0.0-test', clientName: 'test', isDevelopment: false },
-    rustCore: unavailable<IRustCore>('Rust core'),
-    sqlite: unavailable<ISqliteEngine>('SQLite engine'),
+    rustCore: unavailableService<IRustCore>('Rust core'),
+    sqlite: unavailableService<ISqliteEngine>('SQLite engine'),
     /**
      * Echo the message id.
      */

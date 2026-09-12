@@ -1,22 +1,37 @@
 import * as dateFormatter from '../utilities/DateFormatter';
 
+import { runAsync } from './DbOp';
 import { BaseQueries } from './queries/BaseQueries';
 
+import type { DbOp, ManifestScope } from './DbOp';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
 
 export type SqliteBindValue = string | number | null | Uint8Array;
 
 /**
- * Interface for the core database operations needed by repositories.
+ * The database operations repositories need from their host. A host may answer synchronously (sql.js) or
+ * asynchronously (the mobile native bridge); repositories reach it through DbOps and {@link BaseRepository.run}.
  */
 export interface IDatabaseClient {
+  executeQuery<T>(query: string, params?: SqliteBindValue[]): T[] | Promise<T[]>;
+  executeUpdate(query: string, params?: SqliteBindValue[]): number | Promise<number>;
+  beginTransaction(): void | Promise<void>;
+  commitTransaction(): Promise<void>;
+  rollbackTransaction(): void | Promise<void>;
+  isInTransaction(): boolean;
+  getActiveManifestId(): string | null;
+  getPersonalManifestId(): string | null | Promise<string | null>;
+}
+
+/**
+ * A database client that answers every call synchronously, like sql.js.
+ */
+export interface ISyncDatabaseClient extends IDatabaseClient {
   getDb(): ISqliteDatabase | null;
   executeQuery<T>(query: string, params?: SqliteBindValue[]): T[];
   executeUpdate(query: string, params?: SqliteBindValue[]): number;
   beginTransaction(): void;
-  commitTransaction(): Promise<void>;
   rollbackTransaction(): void;
-  getActiveManifestId(): string | null;
   getPersonalManifestId(): string | null;
 }
 
@@ -24,12 +39,62 @@ export interface IDatabaseClient {
  * Base repository class with common database operations.
  * Provides transaction handling, soft delete, and other shared functionality.
  */
-export abstract class BaseRepository {
+export abstract class BaseRepository<TClient extends IDatabaseClient = ISyncDatabaseClient> {
   /**
    * Constructor for the BaseRepository class.
    * @param client - The database client to use for the repository
    */
-  public constructor(protected client: IDatabaseClient) {}
+  public constructor(protected client: TClient) {}
+
+  /**
+   * Run a SELECT and return its rows.
+   * @param sql - The statement
+   * @param params - The bound parameters
+   * @returns The rows
+   */
+  protected *query<T>(sql: string, params: SqliteBindValue[] = []): DbOp<T[]> {
+    return (yield { kind: 'query', sql, params }) as T[];
+  }
+
+  /**
+   * Run an INSERT, UPDATE or DELETE.
+   * @param sql - The statement
+   * @param params - The bound parameters
+   * @returns The number of rows changed
+   */
+  protected *execute(sql: string, params: SqliteBindValue[] = []): DbOp<number> {
+    return (yield { kind: 'execute', sql, params }) as number;
+  }
+
+  /**
+   * The active and personal manifest ids of the client this op runs on.
+   * @returns Both ids, each null when unknown
+   */
+  protected *manifestScope(): DbOp<ManifestScope> {
+    return (yield { kind: 'manifestScope' }) as ManifestScope;
+  }
+
+  /**
+   * The manifest new rows are written into: the active manifest, else the personal one.
+   * @returns The manifest id
+   */
+  protected *writeManifestId(): DbOp<string> {
+    const { active, personal } = yield* this.manifestScope();
+    const manifestId = active ?? personal;
+    if (!manifestId) {
+      throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
+    }
+    return manifestId;
+  }
+
+  /**
+   * Run a DbOp from an async method, on whichever client this repository was given.
+   * @param op - The op to run
+   * @returns The op's result
+   */
+  protected run<T>(op: DbOp<T>): Promise<T> {
+    return runAsync(op, this.client);
+  }
 
   /**
    * Execute a function within a transaction.
@@ -38,15 +103,23 @@ export abstract class BaseRepository {
    * @returns The result of the function
    */
   protected async withTransaction<T>(fn: () => T | Promise<T>): Promise<T> {
-    this.client.beginTransaction();
+    await this.client.beginTransaction();
     try {
       const result = await fn();
       await this.client.commitTransaction();
       return result;
     } catch (error) {
-      this.client.rollbackTransaction();
+      await this.client.rollbackTransaction();
       throw error;
     }
+  }
+
+  /**
+   * The client as a synchronous one, for the helpers below. Only repositories whose methods are not DbOps yet use
+   * them, and those are only ever constructed on a synchronous client.
+   */
+  private get syncClient(): ISyncDatabaseClient {
+    return this.client as unknown as ISyncDatabaseClient;
   }
 
   /**
@@ -57,7 +130,7 @@ export abstract class BaseRepository {
    */
   protected softDelete(table: string, id: string): number {
     const now = dateFormatter.now();
-    return this.client.executeUpdate(
+    return this.syncClient.executeUpdate(
       `UPDATE ${table} SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`,
       [now, id]
     );
@@ -72,7 +145,7 @@ export abstract class BaseRepository {
    */
   protected softDeleteByForeignKey(table: string, foreignKey: string, foreignKeyValue: string): number {
     const now = dateFormatter.now();
-    return this.client.executeUpdate(
+    return this.syncClient.executeUpdate(
       `UPDATE ${table} SET IsDeleted = 1, UpdatedAt = ? WHERE ${foreignKey} = ?`,
       [now, foreignKeyValue]
     );
@@ -85,7 +158,7 @@ export abstract class BaseRepository {
    * @returns Number of rows affected
    */
   protected hardDelete(table: string, id: string): number {
-    return this.client.executeUpdate(`DELETE FROM ${table} WHERE Id = ?`, [id]);
+    return this.syncClient.executeUpdate(`DELETE FROM ${table} WHERE Id = ?`, [id]);
   }
 
   /**
@@ -96,7 +169,7 @@ export abstract class BaseRepository {
    * @returns Number of rows affected
    */
   protected hardDeleteByForeignKey(table: string, foreignKey: string, foreignKeyValue: string): number {
-    return this.client.executeUpdate(
+    return this.syncClient.executeUpdate(
       `DELETE FROM ${table} WHERE ${foreignKey} = ?`,
       [foreignKeyValue]
     );
@@ -111,7 +184,7 @@ export abstract class BaseRepository {
    * @returns Number of rows affected
    */
   protected hardDeleteByScopedForeignKey(table: string, foreignKey: string, foreignKeyValue: string, manifestId: string): number {
-    return this.client.executeUpdate(
+    return this.syncClient.executeUpdate(
       `DELETE FROM ${table} WHERE ${foreignKey} = ? AND ManifestId = ?`,
       [foreignKeyValue, manifestId]
     );
@@ -123,7 +196,7 @@ export abstract class BaseRepository {
    * @returns True if the table exists
    */
   protected tableExists(tableName: string): boolean {
-    const results = this.client.executeQuery<{ name: string }>(
+    const results = this.syncClient.executeQuery<{ name: string }>(
       `SELECT name FROM sqlite_master WHERE type='table' AND name=?`,
       [tableName]
     );
@@ -138,7 +211,7 @@ export abstract class BaseRepository {
    * @returns The manifest id, or null when no such row exists
    */
   protected resolveRowManifestId(table: string, id: string, column: string = 'Id'): string | null {
-    const rows = this.client.executeQuery<{ ManifestId: string }>(
+    const rows = this.syncClient.executeQuery<{ ManifestId: string }>(
       `SELECT ManifestId FROM ${table} WHERE ${column} = ? ORDER BY ManifestId`,
       [id]
     );
@@ -146,7 +219,7 @@ export abstract class BaseRepository {
       return null;
     }
 
-    const activeId = this.client.getActiveManifestId() ?? this.personalManifestId();
+    const activeId = this.syncClient.getActiveManifestId() ?? this.personalManifestId();
     return (rows.find(row => row.ManifestId === activeId) ?? rows[0]).ManifestId;
   }
 
@@ -158,7 +231,7 @@ export abstract class BaseRepository {
    * @returns The manifest id to stamp the row with
    */
   protected manifestOfFolder(folderId: string | null): string {
-    const rows = this.client.executeQuery<{ ManifestId: string | null }>(BaseQueries.GET_MANIFEST_OF_FOLDER, [folderId, this.activeManifestId()]);
+    const rows = this.syncClient.executeQuery<{ ManifestId: string | null }>(BaseQueries.GET_MANIFEST_OF_FOLDER, [folderId, this.activeManifestId()]);
     const manifestId = rows[0]?.ManifestId;
     if (!manifestId) {
       throw new Error('BaseRepository: could not resolve the manifest for this write; refusing to write a row that names no manifest.');
@@ -171,7 +244,7 @@ export abstract class BaseRepository {
    * @returns The manifest id new rows are stamped with
    */
   protected activeManifestId(): string {
-    const manifestId = this.client.getActiveManifestId() ?? this.personalManifestId();
+    const manifestId = this.syncClient.getActiveManifestId() ?? this.personalManifestId();
     if (!manifestId) {
       throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
     }
@@ -184,7 +257,7 @@ export abstract class BaseRepository {
    * @returns The personal manifest id, or null when absent
    */
   protected personalManifestId(): string | null {
-    return this.client.getPersonalManifestId();
+    return this.syncClient.getPersonalManifestId();
   }
 
   /**

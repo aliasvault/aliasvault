@@ -2,7 +2,7 @@ import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm,
 
 import { getFolderPath } from '../../items/FolderUtils';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
-import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
+import { BaseRepository, type ISyncDatabaseClient } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type DraftItem, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
 import { ItemMapper, type ItemRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
@@ -30,7 +30,7 @@ export class ItemRepository extends BaseRepository {
    * @param logoRepository - The logo repository to use for the repository
    */
   public constructor(
-    client: IDatabaseClient,
+    client: ISyncDatabaseClient,
     private logoRepository: LogoRepository
   ) {
     super(client);

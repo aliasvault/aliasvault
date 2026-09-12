@@ -5,7 +5,7 @@ import { BaseRepository } from '../BaseRepository';
 import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
 
-import type { IDatabaseClient } from '../BaseRepository';
+import type { ISyncDatabaseClient } from '../BaseRepository';
 import type { LogoRepository } from './LogoRepository';
 
 /**
@@ -28,7 +28,7 @@ export class FolderRepository extends BaseRepository {
    * @param client - The database client to use for the repository
    * @param logoRepository - The logo repository, to follow items across manifest boundaries
    */
-  public constructor(client: IDatabaseClient, private logoRepository: LogoRepository) {
+  public constructor(client: ISyncDatabaseClient, private logoRepository: LogoRepository) {
     super(client);
   }
 

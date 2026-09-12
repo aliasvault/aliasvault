@@ -1,30 +1,20 @@
 #!/usr/bin/env node
-// Installs the dependencies of the core packages this extension links with `file:`
+// Installs the dependencies of the core packages an app links with `file:`
 // references (core/client, core/models, core/vault).
 //
-// npm symlinks a `file:` dependency but never installs that package's own
-// dependencies, so core/client is left without `sql.js` and `otpauth`. Both are
-// resolved from core/client's own node_modules when the extension is built (the
-// linked package lives outside this project's node_modules tree), and
-// wxt.config.ts copies the sql.js wasm file out of it, so the build fails without
-// this step. Running it from `preinstall` also makes the Firefox sources archive,
-// which ships core/* next to the extension, build with a plain `npm install`.
-//
-// Usage:
-//   node scripts/install-core-deps.mjs
+// Usage, from the app directory (npm runs `preinstall` there):
+//   node ../../core/scripts/install-linked-deps.mjs
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { env, exit, platform } from "node:process";
+import { cwd, env, exit, platform } from "node:process";
 
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const extensionDir = path.resolve(scriptDir, "..");
+const appDir = cwd();
 
 /*
  * npm exports its own project root to lifecycle scripts, and a nested npm picks that
- * up over the cwd we hand it, which would install into the extension instead of the
+ * up over the cwd we hand it, which would install into the app instead of the
  * core package. Drop the path-scoped config so the child install stays in its own
  * directory, and keep the rest (registry, cache, proxy) intact.
  */
@@ -59,18 +49,18 @@ function linkedDirs(packageDir, manifest) {
 }
 
 /**
- * Collect every `file:` linked package reachable from the extension.
+ * Collect every `file:` linked package reachable from the app.
  * @returns {string[]}
  */
 function collectLinkedPackages() {
-  const extensionManifest = readManifest(extensionDir);
-  if (!extensionManifest) {
+  const appManifest = readManifest(appDir);
+  if (!appManifest) {
     return [];
   }
 
   const collected = [];
-  const seen = new Set([extensionDir]);
-  const queue = linkedDirs(extensionDir, extensionManifest);
+  const seen = new Set([appDir]);
+  const queue = linkedDirs(appDir, appManifest);
 
   while (queue.length > 0) {
     const packageDir = queue.shift();
@@ -92,15 +82,13 @@ function collectLinkedPackages() {
 }
 
 /**
- * List the registry dependencies of a package that are not installed in it yet.
+ * List the dependencies of a package that are not installed in it yet.
  * @param {string} packageDir
  * @returns {string[]}
  */
 function missingDependencies(packageDir) {
   const manifest = readManifest(packageDir);
-  return Object.entries(manifest?.dependencies ?? {})
-    .filter(([, spec]) => !(typeof spec === "string" && spec.startsWith("file:")))
-    .map(([name]) => name)
+  return Object.keys(manifest?.dependencies ?? {})
     .filter((name) => !existsSync(path.join(packageDir, "node_modules", name)));
 }
 
@@ -110,7 +98,7 @@ for (const packageDir of collectLinkedPackages()) {
     continue;
   }
 
-  const relativeDir = path.relative(extensionDir, packageDir);
+  const relativeDir = path.relative(appDir, packageDir);
   console.log(`[core-deps] Installing dependencies for ${relativeDir} (missing: ${missing.join(", ")})`);
 
   const result = spawnSync("npm", ["install", "--omit=dev", "--no-audit", "--no-fund"], {

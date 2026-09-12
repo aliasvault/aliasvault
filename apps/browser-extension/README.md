@@ -6,7 +6,7 @@ The browser extension is built using WXT and React:
 
 The extension links the shared core packages (`core/client`, `core/models`, `core/vault`) as `file:`
 dependencies, so this folder expects to sit in the repository next to the `core` folder. `npm install`
-also installs the dependencies of those linked packages (see `scripts/install-core-deps.mjs`), so one
+also installs the dependencies of those linked packages (see `core/scripts/install-linked-deps.mjs`), so one
 install in this directory is all that is needed.
 
 To build the browser extension, run the following command in this directory:

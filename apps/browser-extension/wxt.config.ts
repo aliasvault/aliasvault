@@ -151,6 +151,7 @@ export default defineConfig({
       'core/client/**/*',
       'core/models/**/*',
       'core/vault/**/*',
+      'core/scripts/**/*',
       'core/rust/**/*',
       'core/rust/.cargo/**/*',
       'LICENSE.md',

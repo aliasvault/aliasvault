@@ -26,7 +26,7 @@
     "zip:firefox": "wxt zip -b firefox",
     "zip:edge": "wxt zip -b edge",
     "compile": "tsc --noEmit",
-    "preinstall": "node scripts/install-core-deps.mjs",
+    "preinstall": "node ../../core/scripts/install-linked-deps.mjs",
     "postinstall": "wxt prepare"
   },
   "dependencies": {

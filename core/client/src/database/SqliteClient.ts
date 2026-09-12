@@ -7,6 +7,8 @@ import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { VaultCodec } from '../sync/VaultCodec';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 
+import { syncRepository } from './DbOp';
+
 import {
   ItemRepository,
   ItemStatsRepository,
@@ -17,7 +19,8 @@ import {
   LogoRepository
 } from './index';
 
-import type { IDatabaseClient, SqliteBindValue } from './BaseRepository';
+import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
+import type { SyncRepository } from './DbOp';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
 import type { VaultVersion } from '@aliasvault/vault';
 
@@ -31,9 +34,9 @@ const VACUUM_FREE_PAGE_RATIO = 10;
  * Core SQLite database client.
  * Provides low-level database operations and exposes repositories for domain-specific operations.
  */
-export class SqliteClient implements IDatabaseClient {
+export class SqliteClient implements ISyncDatabaseClient {
   private db: ISqliteDatabase | null = null;
-  private isInTransaction: boolean = false;
+  private transactionOpen: boolean = false;
 
   /**
    * The manifest this client writes new rows into, when the user has switched to one explicitly.
@@ -51,7 +54,7 @@ export class SqliteClient implements IDatabaseClient {
   private _itemStats: ItemStatsRepository | null = null;
   private _passkeys: PasskeyRepository | null = null;
   private _folders: FolderRepository | null = null;
-  private _settings: SettingsRepository | null = null;
+  private _settings: SyncRepository<SettingsRepository> | null = null;
   private _encryptionKeys: EncryptionKeyRepository | null = null;
   private _logos: LogoRepository | null = null;
 
@@ -126,9 +129,9 @@ export class SqliteClient implements IDatabaseClient {
   /**
    * Repository for the vault's user preferences.
    */
-  public get settings(): SettingsRepository {
+  public get settings(): SyncRepository<SettingsRepository> {
     if (!this._settings) {
-      this._settings = new SettingsRepository(this);
+      this._settings = syncRepository(new SettingsRepository(this), this);
     }
     return this._settings;
   }
@@ -195,6 +198,13 @@ export class SqliteClient implements IDatabaseClient {
   }
 
   /**
+   * Whether a transaction is open.
+   */
+  public isInTransaction(): boolean {
+    return this.transactionOpen;
+  }
+
+  /**
    * Begin a new transaction.
    */
   public beginTransaction(): void {
@@ -202,13 +212,13 @@ export class SqliteClient implements IDatabaseClient {
       throw new Error('Database not initialized');
     }
 
-    if (this.isInTransaction) {
+    if (this.transactionOpen) {
       throw new Error('Transaction already in progress');
     }
 
     try {
       this.db.exec('BEGIN TRANSACTION');
-      this.isInTransaction = true;
+      this.transactionOpen = true;
     } catch (error) {
       console.error('Error beginning transaction:', error);
       throw error;
@@ -223,13 +233,13 @@ export class SqliteClient implements IDatabaseClient {
       throw new Error('Database not initialized');
     }
 
-    if (!this.isInTransaction) {
+    if (!this.transactionOpen) {
       throw new Error('No transaction in progress');
     }
 
     try {
       this.db.exec('COMMIT');
-      this.isInTransaction = false;
+      this.transactionOpen = false;
     } catch (error) {
       console.error('Error committing transaction:', error);
       throw error;
@@ -244,13 +254,13 @@ export class SqliteClient implements IDatabaseClient {
       throw new Error('Database not initialized');
     }
 
-    if (!this.isInTransaction) {
+    if (!this.transactionOpen) {
       throw new Error('No transaction in progress');
     }
 
     try {
       this.db.exec('ROLLBACK');
-      this.isInTransaction = false;
+      this.transactionOpen = false;
     } catch (error) {
       console.error('Error rolling back transaction:', error);
       throw error;

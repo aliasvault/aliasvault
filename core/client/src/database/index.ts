@@ -1,5 +1,6 @@
 // Base
-export { BaseRepository, type IDatabaseClient, type SqliteBindValue } from './BaseRepository';
+export { BaseRepository, type IDatabaseClient, type ISyncDatabaseClient, type SqliteBindValue } from './BaseRepository';
+export { asyncRepository, runAsync, runSync, syncRepository, type AsyncRepository, type AsyncRunOptions, type DbOp, type SyncRepository } from './DbOp';
 
 // Mappers
 export { FieldMapper, type FieldRow } from './mappers/FieldMapper';
