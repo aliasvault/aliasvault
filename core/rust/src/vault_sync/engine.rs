@@ -16,6 +16,9 @@ use super::{db, http, keys, legacy, version};
 use crate::crypto;
 
 /// How many times a chain of syncs may re-sync after an outdated push before giving up.
+/// This is a auto-healing mechanism in case two clients are pushing at the same time, which could
+/// result in a race condition. The sync mechanism retries to pull/merge/push up to 3 times if the
+/// server refuses any write as outdated.
 const MAX_OUTDATED_RESYNCS: u32 = 3;
 
 /// The pending action type this build carries out.
