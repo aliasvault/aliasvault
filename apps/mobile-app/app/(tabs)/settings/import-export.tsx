@@ -1,11 +1,10 @@
+import { getFieldValue, getFieldValues } from '@aliasvault/models/vault';
 import { Ionicons } from '@expo/vector-icons';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue, getFieldValues } from '@/utils/dist/core/models/vault';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -17,6 +16,8 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * CSV record for Item objects (matching server ItemCsvRecord format).

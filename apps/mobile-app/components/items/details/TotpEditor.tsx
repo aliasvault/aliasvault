@@ -10,8 +10,8 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { useDialog } from '@/context/DialogContext';
 import { useColors } from '@/hooks/useColorScheme';
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import type { TotpCode } from '@/utils/dist/core/models/vault';
-import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@/utils/dist/core/models/vault';
+import type { TotpCode } from '@aliasvault/models/vault';
+import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import { buildOtpAuthUri, parseOtpAuthUri } from '@/utils/TotpUtility';
 
 type TotpFormData = {

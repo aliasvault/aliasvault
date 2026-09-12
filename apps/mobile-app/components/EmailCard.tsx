@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import type { MailboxEmail } from '@/utils/dist/core/models/webapi';
+import type { Item } from '@aliasvault/models/vault';
+import type { MailboxEmail } from '@aliasvault/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';

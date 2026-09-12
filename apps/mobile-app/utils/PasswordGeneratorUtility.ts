@@ -2,8 +2,8 @@
  * Typed wrapper around the native Rust core for password/passphrase generation.
  */
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import { resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { resolveDefaultLanguage } from '@aliasvault/models/defaults';
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
  * Generate a password or passphrase from the given settings.

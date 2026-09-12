@@ -4,9 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/core/models/webapi';
-import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
+import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@aliasvault/models/webapi';
+import { FieldKey, getFieldValue } from '@aliasvault/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 

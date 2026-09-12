@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 
-import type { ItemField } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { ItemField } from '@aliasvault/models/vault';
+import { FieldTypes } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';

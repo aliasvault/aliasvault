@@ -1,4 +1,4 @@
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField } from '@aliasvault/models/vault';
 
 import FieldBlock from '@/components/items/details/FieldBlock';
 import { ThemedView } from '@/components/themed/ThemedView';

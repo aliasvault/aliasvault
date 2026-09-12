@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+import { DEFAULT_API_URL, DEFAULT_CLIENT_URL } from '@aliasvault/models/defaults';
+
 /**
  * AppInfo class which contains information about the application version
  * and default server URLs.
@@ -37,14 +39,14 @@ export class AppInfo {
   })();
 
   /**
-   * The default AliasVault client URL.
+   * The default AliasVault client URL (shared by every client, see AppDefaults in the models package).
    */
-  public static readonly DEFAULT_CLIENT_URL = 'https://app.aliasvault.com';
+  public static readonly DEFAULT_CLIENT_URL = DEFAULT_CLIENT_URL;
 
   /**
-   * The default AliasVault web API URL.
+   * The default AliasVault web API URL (shared by every client, see AppDefaults in the models package).
    */
-  public static readonly DEFAULT_API_URL = 'https://app.aliasvault.com/api';
+  public static readonly DEFAULT_API_URL = DEFAULT_API_URL;
 
   /**
    * Prevent instantiation of this utility class

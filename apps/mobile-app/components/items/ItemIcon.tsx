@@ -3,11 +3,11 @@ import { Buffer } from 'buffer';
 import { Image, ImageStyle, StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
-import type { Item } from '@/utils/dist/core/models/vault';
+import type { Item } from '@aliasvault/models/vault';
 import {
   ItemTypes,
   FieldKey,
-} from '@/utils/dist/core/models/vault';
+} from '@aliasvault/models/vault';
 
 import servicePlaceholder from '@/assets/images/service-placeholder.webp';
 

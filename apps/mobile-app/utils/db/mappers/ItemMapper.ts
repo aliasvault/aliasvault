@@ -1,4 +1,4 @@
-import type { Item, ItemField, ItemTagRef, ItemType } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField, ItemTagRef, ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item with optional DeletedAt field for recently deleted items.
@@ -15,6 +15,7 @@ export type ItemWithArchivedAt = Item & { ArchivedAt?: string };
  */
 export type ItemRow = {
   Id: string;
+  ManifestId: string;
   Name: string;
   ItemType: string;
   FolderId: string | null;
@@ -58,6 +59,7 @@ export class ItemMapper {
   ): Item {
     return {
       Id: row.Id,
+      ManifestId: row.ManifestId,
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ?? undefined,
@@ -150,6 +152,7 @@ export class ItemMapper {
   ): ItemWithDeletedAt {
     return {
       Id: row.Id,
+      ManifestId: row.ManifestId,
       Name: row.Name,
       ItemType: row.ItemType as ItemType,
       Logo: row.Logo ? new Uint8Array(row.Logo) : undefined,

@@ -2,7 +2,7 @@
  * Typed wrapper around the native Rust core for identity (alias persona) generation.
  */
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import type { Identity } from '@/utils/dist/core/models/identity';
+import type { Identity } from '@aliasvault/models/identity';
 
 /**
  * Request for {@link generateIdentity}. All fields except `language` are optional.

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/core/models/metadata';
+import type { EncryptionKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import SqliteClient from '@/utils/SqliteClient';
 

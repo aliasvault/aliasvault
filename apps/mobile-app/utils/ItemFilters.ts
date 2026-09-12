@@ -1,5 +1,5 @@
-import type { Item, ItemType } from './dist/core/models/vault';
-import { ItemTypes } from './dist/core/models/vault';
+import type { Item, ItemType } from '@aliasvault/models/vault';
+import { ItemTypes } from '@aliasvault/models/vault';
 
 /**
  * Filter types for the items list.

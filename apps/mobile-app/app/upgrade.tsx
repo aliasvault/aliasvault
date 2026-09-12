@@ -1,11 +1,9 @@
+import { VaultSqlGenerator } from '@aliasvault/vault';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
-
-import type { VaultVersion } from '@/utils/dist/core/vault';
-import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
@@ -23,6 +21,8 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+
+import type { VaultVersion } from '@aliasvault/vault';
 
 /**
  * Upgrade screen.

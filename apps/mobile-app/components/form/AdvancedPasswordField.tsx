@@ -4,8 +4,8 @@ import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useC
 import { useTranslation } from 'react-i18next';
 import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
+import type { PasswordSettings } from '@aliasvault/models/vault';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';

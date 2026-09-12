@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@/utils/dist/core/models/webapi';
+import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@aliasvault/models/webapi';
 
 import i18n from '@/i18n';
 

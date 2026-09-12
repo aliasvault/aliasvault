@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item } from '@/utils/dist/core/models/vault';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Sort order options with their translation keys.

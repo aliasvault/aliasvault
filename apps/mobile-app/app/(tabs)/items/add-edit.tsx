@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
 
+import { IdentityHelperUtils } from '@aliasvault/models/identity';
+import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -10,11 +12,6 @@ import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView,
 import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { Identity } from '@/utils/dist/core/models/identity';
-import { IdentityHelperUtils } from '@/utils/dist/core/models/identity';
-import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@/utils/dist/core/models/vault';
-import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@/utils/dist/core/models/vault';
-import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
 import emitter from '@/utils/EventEmitter';
 import { selectFaviconTarget } from '@/utils/FaviconUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
@@ -46,6 +43,10 @@ import { AliasVaultToast } from '@/components/Toast';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+import type { Identity } from '@aliasvault/models/identity';
+import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
+import type { FaviconExtractModel } from '@aliasvault/models/webapi';
 
 // Valid item types from the shared model
 const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -537,6 +538,7 @@ export default function AddEditItemScreen(): React.ReactNode {
 
         const newItem: Item = {
           Id: crypto.randomUUID(),
+          ManifestId: '',
           Name: serviceName,
           ItemType: effectiveType,
           FolderId: folderIdParam || null,

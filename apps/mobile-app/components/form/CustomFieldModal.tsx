@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import type { FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { FieldType } from '@aliasvault/models/vault';
+import { FieldTypes } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

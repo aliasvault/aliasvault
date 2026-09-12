@@ -1,10 +1,10 @@
+import { getLanguageInfo } from '@aliasvault/models/defaults';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
 import { getIdentityLanguages } from '@/utils/IdentityGeneratorUtility';
 
 import { useColors } from '@/hooks/useColorScheme';

@@ -16,8 +16,8 @@ import { generateTotpCode } from '@/utils/TotpUtility';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
+import type { Item } from '@aliasvault/models/vault';
+import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
   item: Item;

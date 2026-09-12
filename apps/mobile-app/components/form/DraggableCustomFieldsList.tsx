@@ -5,8 +5,8 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 
-import type { FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { FieldType } from '@aliasvault/models/vault';
+import { FieldTypes } from '@aliasvault/models/vault';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';

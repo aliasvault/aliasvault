@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import { FieldCategories, groupFieldsByCategory, ItemTypes } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField } from '@aliasvault/models/vault';
+import { FieldCategories, groupFieldsByCategory, ItemTypes } from '@aliasvault/models/vault';
 
 import FieldBlock from '@/components/items/details/FieldBlock';
 import { ThemedText } from '@/components/themed/ThemedText';

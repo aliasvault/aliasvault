@@ -3,8 +3,6 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
@@ -14,6 +12,8 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
  * Password Generator Settings screen. Configures the default password and passphrase generator

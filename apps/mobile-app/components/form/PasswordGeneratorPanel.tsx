@@ -4,8 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import type { PasswordSettings, DicewareCapitalization, DicewareSeparator, DicewareSalt } from '@/utils/dist/core/models/vault';
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
+import type { PasswordSettings, DicewareCapitalization, DicewareSeparator, DicewareSalt } from '@aliasvault/models/vault';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/models/defaults';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
 import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
 

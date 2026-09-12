@@ -6,7 +6,7 @@ import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item, TotpCode } from '@/utils/dist/core/models/vault';
+import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/themed/ThemedText';

@@ -10,8 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -32,6 +30,9 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+
+import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * Login screen.
@@ -257,8 +258,14 @@ export default function LoginScreen() : React.ReactNode {
      * the vault and store it (including metadata) through native code.
      */
     await authContext.setAuthTokens(ConversionUtility.normalizeUsername(credentials.username), token, refreshToken);
-    await dbContext.storeEncryptionKey(passwordHashBase64);
     await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
+
+    /*
+     * The derived key is the password KEK. The Rust core opens the account's key chain with it (fetched from the
+     * server, or the cached one when offline) and stores the VEK as the vault key; a legacy account without a
+     * chain keeps the KEK. Every sync assumes the key stored here.
+     */
+    await NativeVaultManager.resolveVaultKey(passwordHashBase64);
 
     /*
      * Forced logout recovery check:

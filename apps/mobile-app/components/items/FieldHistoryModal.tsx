@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { FieldHistory, FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
+import { FieldTypes } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';

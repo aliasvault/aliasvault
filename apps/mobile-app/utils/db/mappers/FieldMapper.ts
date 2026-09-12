@@ -1,5 +1,5 @@
-import type { ItemField, FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes, getSystemField } from '@/utils/dist/core/models/vault';
+import type { ItemField, FieldType } from '@aliasvault/models/vault';
+import { FieldTypes, getSystemField } from '@aliasvault/models/vault';
 
 /**
  * Raw field row from database query.

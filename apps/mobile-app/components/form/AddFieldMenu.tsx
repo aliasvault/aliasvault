@@ -9,8 +9,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 
-import type { FieldType, SystemFieldDefinition } from '@/utils/dist/core/models/vault';
-import { FieldCategories } from '@/utils/dist/core/models/vault';
+import type { FieldType, SystemFieldDefinition } from '@aliasvault/models/vault';
+import { FieldCategories } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

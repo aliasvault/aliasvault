@@ -8,7 +8,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useColors } from '@/hooks/useColorScheme';
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
   attachments: Attachment[];

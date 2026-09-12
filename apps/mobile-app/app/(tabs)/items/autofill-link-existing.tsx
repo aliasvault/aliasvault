@@ -1,3 +1,10 @@
+import {
+  FieldKey,
+  FieldTypes,
+  ItemTypes,
+  getFieldValue,
+  getFieldValues,
+} from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -5,14 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Platform, StyleSheet, TextInput, TouchableOpacity, View, type ListRenderItem } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import {
-  FieldKey,
-  FieldTypes,
-  ItemTypes,
-  getFieldValue,
-  getFieldValues,
-} from '@/utils/dist/core/models/vault';
 import { sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -25,6 +24,8 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { Item, ItemField } from '@aliasvault/models/vault';
 
 /**
  * Screen for picking an existing credential to attach the autofill

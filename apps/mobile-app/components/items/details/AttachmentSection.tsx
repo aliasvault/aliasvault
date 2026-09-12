@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
-import type { Item, Attachment } from '@/utils/dist/core/models/vault';
+import type { Item, Attachment } from '@aliasvault/models/vault';
 import emitter from '@/utils/EventEmitter';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';

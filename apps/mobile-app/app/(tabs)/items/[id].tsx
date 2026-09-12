@@ -1,3 +1,4 @@
+import { FieldTypes, getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -7,8 +8,6 @@ import ContextMenu from 'react-native-context-menu-view';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldTypes, getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -33,6 +32,7 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
+import type { Item } from '@aliasvault/models/vault';
 import type { NativeSyntheticEvent } from 'react-native';
 import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 

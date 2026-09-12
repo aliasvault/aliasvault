@@ -1,3 +1,4 @@
+import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -8,8 +9,6 @@ import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
@@ -39,6 +38,8 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+
+import type { Item, ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type filter option configuration.
