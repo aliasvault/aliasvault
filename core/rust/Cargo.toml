@@ -48,6 +48,14 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 # Argon2 password hashing
 argon2 = "0.5"
 
+# AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
+aes-gcm = "0.10"
+rsa = "0.9"
+rand_core06 = { package = "rand_core", version = "0.6" }
+
+# Wipes key material from memory on drop
+zeroize = { version = "1.8", features = ["derive"] }
+
 # gzip compression for the vault_codec packaged format
 flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }
 
@@ -55,8 +63,6 @@ flate2 = { version = "1.0", default-features = false, features = ["rust_backend"
 base64 = "0.22"
 
 # UniFFI for Swift/Kotlin bindings (optional)
-# Note: Don't add "cli" feature here - it pulls in heavy bindgen dependencies
-# The uniffi-cli feature enables CLI separately for the uniffi-bindgen binary only
 uniffi = { version = "0.28", optional = true }
 
 # WASM bindings (optional)
@@ -67,7 +73,13 @@ console_error_panic_hook = { version = "0.1", optional = true }
 # Parse emails from source
 mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
+# rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }
+
 [dev-dependencies]
+# The sync engine tests drive the engine against a real SQLite host.
+rusqlite = { version = "0.32", features = ["bundled", "serialize", "backup"] }
 
 # Build dependencies for UniFFI
 [build-dependencies]

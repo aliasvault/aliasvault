@@ -43,7 +43,7 @@ Cross-platform core library providing shared business logic for all AliasVault c
 ## Core Modules
 
 ### vault_merge
-Last-Write-Wins (LWW) merge algorithm for syncing local and server vaults.
+Last-Write-Wins (LWW) merge of a local vault onto the server's, one manifest at a time, rows out.
 
 ### vault_pruner
 Permanently deletes items in trash older than retention period (default: 30 days).
@@ -101,7 +101,7 @@ All interfaces follow a JSON-in/JSON-out pattern for simplicity. Each platform h
 | Function | WASM | UniFFI | C FFI | Description |
 |----------|------|--------|-------|-------------|
 | `getSyncableTableNames` | ✓ | ✓ | ✓ | Returns list of syncable table names |
-| `mergeVaults` / `mergeVaultsJson` | ✓ | ✓ (JSON only) | ✓ | LWW merge of local + server vaults |
+| `mergeCanonical` / `mergeCanonicalJson` | ✓ | ✓ (JSON only) | - | LWW merge of local + server manifests |
 | `pruneVault` / `pruneVaultJson` | ✓ | ✓ (JSON only) | ✓ | Remove expired trash items |
 | `filterCredentials` / `filterCredentialsJson` | ✓ | ✓ (JSON only) | ✓ | Credential matching for autofill |
 | `extractDomain` | ✓ | ✓ | - | Extract domain from URL |
@@ -365,7 +365,8 @@ pub fn my_function() -> VaultResult<String> {
 |------|---------|
 | `src/lib.rs` | Entry point, exports all modules |
 | `src/error.rs` | `VaultError` and `VaultResult` types |
-| `src/vault_merge/mod.rs` | LWW merge implementation |
+| `src/vault_merge/mod.rs` | The record type, SQL statement shape and LWW primitives the merge and the pruner share |
+| `src/vault_merge/canonical.rs` | LWW merge implementation (manifests in, rows out) |
 | `src/vault_merge/types.rs` | Re-exports the table registry for merge call sites |
 | `src/vault_model/mod.rs` | `TableConfig` type; owns the generated registry data |
 | `src/vault_model/generated.rs` | Registry data generated from `core/models/src/vault/VaultTableRegistry.ts` (do not edit) |
@@ -378,6 +379,12 @@ pub fn my_function() -> VaultResult<String> {
 | `src/identity_generator/mod.rs` | Identity (alias persona) generation |
 | `src/identity_generator/username_email.rs` | Username and email prefix derivation |
 | `src/identity_generator/dictionaries/` | Embedded per-language name dictionaries |
+| `src/crypto/mod.rs` | Crypto module root; shared CSPRNG helper |
+| `src/crypto/argon2.rs` | Argon2id key derivation (master password to KEK) |
+| `src/crypto/key_chain.rs` | Account key hierarchy: KEK wraps the Account Key, which wraps the vault key and private key |
+| `src/crypto/aes_gcm.rs` | AES-256-GCM encryption, WebCrypto byte-compatible |
+| `src/crypto/rsa_oaep.rs` | RSA-OAEP-SHA256 encryption and JWK key pair generation |
+| `src/crypto/srp.rs` | SRP-6a login handshake (client and server sides) |
 | `src/rng.rs` | Shared RNG helpers (seeding, unbiased sampling) |
 | `src/wasm.rs` | WASM bindings (browser) |
 | `src/uniffi_api.rs` | UniFFI bindings (iOS/Android) |
