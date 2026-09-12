@@ -1,6 +1,7 @@
 //! Unit tests for vault_codec, covering the round-trip contract.
 use super::*;
-use super::types::OVERFLOW_ROW_ID;
+use super::types::{bucket_category_for, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, SCHEMA_VERSION};
+use crate::vault_model::names::LOGO_KIND_FAVICON;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::json;
@@ -81,7 +82,7 @@ fn bucket_layout_matches_bucket_tables_source_of_truth() {
         }
     }
     assert_eq!(layout.iter().map(|e| e.category.as_str()).collect::<Vec<_>>(), vec!["Settings", "Stats"]);
-    assert_eq!(bucket_layout_json().unwrap(), serde_json::to_string(&layout).unwrap());
+    assert_eq!(serde_json::to_string(&bucket_layout()).unwrap(), serde_json::to_string(&layout).unwrap());
 }
 
 #[test]
@@ -89,7 +90,7 @@ fn every_bucketed_table_is_manifest_scoped_with_a_composite_identity() {
     // The invariant that makes per-manifest buckets work at all: a bucket is addressed by `(manifest_id, category)`, so a row that carries no manifest cannot be routed into one.
     for (table, category) in super::types::BUCKET_TABLES {
         assert!(
-            crate::vault_merge::SYNCABLE_TABLES.iter().any(|t| t.name == *table),
+            crate::vault_model::SYNCABLE_TABLES.iter().any(|t| t.name == *table),
             "bucketed table {} ({}) is not registered in SYNCABLE_TABLES, so it would never row-merge",
             table,
             category
@@ -339,7 +340,7 @@ fn canonicalize_rederives_legacy_logo_ids_and_collapses_duplicate_sources() {
     ]))
     .unwrap();
 
-    let expected_id = json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, scoped_assets::KIND_FAVICON, "github.com"));
+    let expected_id = json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, LOGO_KIND_FAVICON, "github.com"));
     let logos = &out.first().manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["Id"], expected_id, "id derived from (personal manifest id, source)");
@@ -379,7 +380,7 @@ fn canonicalize_dedup_tiebreak_prefers_the_row_with_favicon_bytes() {
     let logos = &out.first().manifest.tables["Logos"];
     assert_eq!(logos.len(), 1, "duplicate Source collapsed to one row");
     assert_eq!(logos[0]["MimeType"], json!("image/png"), "the row with bytes supplies the surviving content");
-    assert_eq!(out.first().manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")));
+    assert_eq!(out.first().manifest.tables["Items"][0]["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, LOGO_KIND_FAVICON, "github.com")));
 }
 
 #[test]
@@ -404,7 +405,7 @@ fn canonicalize_nulls_dangling_logo_reference() {
     let items = &out.first().manifest.tables["Items"];
     let i1 = items.iter().find(|r| r["Id"] == json!("i1")).unwrap();
     let i2 = items.iter().find(|r| r["Id"] == json!("i2")).unwrap();
-    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, scoped_assets::KIND_FAVICON, "github.com")), "valid reference follows the re-derive");
+    assert_eq!(i1["LogoId"], json!(scoped_assets::logo_id_for(PERSONAL_MANIFEST, LOGO_KIND_FAVICON, "github.com")), "valid reference follows the re-derive");
     assert_eq!(i2["LogoId"], serde_json::Value::Null, "dangling reference nulled");
 }
 
@@ -488,7 +489,7 @@ fn materialize_splits_unknown_columns_into_overflow_table_and_canonicalize_remer
     }]))
     .unwrap();
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.first().manifest.clone(), vec![], out.data_buckets.clone(), narrow_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifests: vec![out.first().manifest.clone()], data_buckets: out.data_buckets.clone(), schema_columns: narrow_client_schema() }).unwrap();
     let items = re.tables.iter().find(|t| t.name == "Items").unwrap();
     assert!(!items.records[0].contains_key("AliasEnabled"), "unknown column filtered out of the insert set");
     assert_eq!(items.records[0]["Name"], json!("GitHub"));
@@ -537,11 +538,11 @@ fn materialize_splits_unknown_tables_into_overflow_and_canonicalize_reemits() {
     let settings_bucket = out.data_buckets.iter_mut().find(|b| b.category == "Settings").expect("Settings bucket");
     settings_bucket.tables.insert("Preferences".to_string(), vec![row(&[("Key", json!("p1"))])]);
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.first().manifest.clone(), vec![], out.data_buckets.clone(), narrow_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifests: vec![out.first().manifest.clone()], data_buckets: out.data_buckets.clone(), schema_columns: narrow_client_schema() }).unwrap();
     assert!(!re.tables.iter().any(|t| t.name == "NewTable" || t.name == "Preferences"), "unknown tables never reach the insert set");
     assert_eq!(re.overflow.tables["NewTable"].len(), 1);
     assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"].len(), 1);
-    // Materialize stamps every row with the manifest it arrived in — unknown tables included. The stamp is what routes the row back to its own manifest on the next canonicalize.
+    // Materialize stamps every row with the manifest it arrived in, unknown tables included. The stamp is what routes the row back to its own manifest on the next canonicalize.
     assert_eq!(re.overflow.tables["NewTable"][0]["ManifestId"], json!(PERSONAL_MANIFEST));
     assert_eq!(re.overflow.bucket_tables["Settings"]["Preferences"][0]["ManifestId"], json!(PERSONAL_MANIFEST));
     let overflow_table = overflow_table_of(&re).expect("overflow emitted as a regular table row").clone();
@@ -686,7 +687,7 @@ fn materialize_drops_overflow_table_smuggled_into_a_manifest() {
     let mut out = canonicalize_from_sqlite(basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("AliasEnabled", json!(true))])] }])).unwrap();
     out.manifests[0].manifest.tables.insert(OVERFLOW_TABLE.to_string(), vec![row(&[("Id", json!("smuggled")), ("Data", json!("{}"))])]);
 
-    let re = materialize_as_sqlite(MaterializeInput::new(out.first().manifest.clone(), vec![], out.data_buckets.clone(), narrow_client_schema())).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifests: vec![out.first().manifest.clone()], data_buckets: out.data_buckets.clone(), schema_columns: narrow_client_schema() }).unwrap();
     let overflow_table = overflow_table_of(&re).expect("legitimate overflow row still emitted");
     assert_eq!(overflow_table.records.len(), 1);
     assert_eq!(overflow_table.records[0]["Id"], json!(OVERFLOW_ROW_ID), "smuggled row dropped, only the codec's own row remains");
@@ -696,13 +697,13 @@ fn materialize_drops_overflow_table_smuggled_into_a_manifest() {
 fn json_siblings_roundtrip() {
     let input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }]);
     let input_json = serde_json::to_string(&input).unwrap();
-    let canonicalized_json = canonicalize_from_sqlite_json(&input_json).unwrap();
+    let canonicalized_json = crate::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
     let canonicalized: CanonicalizedVault = serde_json::from_str(&canonicalized_json).unwrap();
     assert!(canonicalized.first().manifest.tables.contains_key("Items"));
 
     let schema = fitting_schema(std::iter::once(&canonicalized.first().manifest), &canonicalized.data_buckets.clone());
     let input_value = json!({ "manifests": [canonicalized.first().manifest], "dataBuckets": canonicalized.data_buckets.clone(), "schemaColumns": schema });
-    let materialized_json = materialize_as_sqlite_json(&input_value.to_string()).unwrap();
+    let materialized_json = crate::error::json_call(&input_value.to_string(), |input: MaterializeInput| materialize_as_sqlite(input)).unwrap();
     let materialized: MaterializedTables = serde_json::from_str(&materialized_json).unwrap();
     assert!(materialized.tables.iter().any(|t| t.name == "Items"));
 }
@@ -830,7 +831,7 @@ pub(super) fn fitting_schema<'a>(manifests: impl IntoIterator<Item = &'a Manifes
 /// buckets hung off it and a schema fitted to everything they carry (see [`fitting_schema`]).
 pub(super) fn materialize_input(own: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>) -> MaterializeInput {
     let schema = fitting_schema(std::iter::once(&own).chain(others.iter()), &data_buckets);
-    MaterializeInput::new(own, others, data_buckets, schema)
+    MaterializeInput { manifests: std::iter::once(own).chain(others).collect(), data_buckets, schema_columns: schema }
 }
 
 /// A `MaterializeInput` from an explicit manifest list, for the tests that assert on inputs

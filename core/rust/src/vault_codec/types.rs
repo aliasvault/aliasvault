@@ -54,6 +54,11 @@ pub fn is_skip_table(table_name: &str) -> bool {
     SKIP_TABLES.contains(&table_name)
 }
 
+/// True when a table lives only in the local vault DB: a skip-table or the codec overflow carrier.
+pub fn is_local_only_table(table_name: &str) -> bool {
+    is_skip_table(table_name) || table_name == OVERFLOW_TABLE
+}
+
 /// The data-bucket category a table belongs to, if it is bucketed out of the manifest.
 pub fn bucket_category_for(table_name: &str) -> Option<&'static str> {
     BUCKET_TABLES.iter().find(|(t, _)| *t == table_name).map(|(_, c)| *c)
@@ -96,22 +101,22 @@ pub fn is_bucketed_table(table_name: &str) -> bool {
 
 /// Get the primary key columns for a table.
 pub fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
-    crate::vault_merge::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&["Id"])
+    crate::vault_model::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&["Id"])
 }
 
 /// True when `table_name`'s rows are namespaced per manifest.
 pub fn is_manifest_scoped(table_name: &str) -> bool {
-    crate::vault_merge::SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
+    crate::vault_model::SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
 }
 
 /// Every manifest-scoped table, in registry order.
 pub fn manifest_scoped_tables() -> Vec<&'static str> {
-    crate::vault_merge::SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
+    crate::vault_model::SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
 }
 
 /// The columns that together identify one row of `table_name`.
 pub fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
-    crate::vault_merge::SYNCABLE_TABLES
+    crate::vault_model::SYNCABLE_TABLES
         .iter()
         .find(|t| t.name == table_name)
         .map(|t| t.identity_columns())

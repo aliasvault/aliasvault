@@ -20,18 +20,10 @@ use std::collections::{HashMap, HashSet};
 use serde_json::{json, Value};
 
 use super::manifest::CodecRecord;
+use super::row::{is_deleted, str_col};
 use super::types::MANIFEST_ID_COL;
-use crate::vault_model::names::{FILE_DATA_COL, ID_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_ID_COL, SOURCE_COL, UPDATED_AT_COL};
-
-/// The kind of a logo fetched automatically from an item's URL. Also what a row that carries no
-/// `Kind` at all means: it was written before the column existed, when every logo was a favicon.
-pub use crate::vault_model::names::LOGO_KIND_FAVICON as KIND_FAVICON;
-
-/// The kind of a logo picked from the built-in catalog.
-pub use crate::vault_model::names::LOGO_KIND_BUILTIN as KIND_BUILTIN;
-
-/// The kind of a logo the user uploaded.
-pub use crate::vault_model::names::LOGO_KIND_CUSTOM as KIND_CUSTOM;
+use crate::vault_model::id_key;
+use crate::vault_model::names::{FILE_DATA_COL, ID_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_ID_COL, LOGO_KIND_CUSTOM, LOGO_KIND_FAVICON, SOURCE_COL, UPDATED_AT_COL};
 
 /// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
 /// every favicon row that already exists keeps its id: changing it would re-derive the logo id of
@@ -59,26 +51,27 @@ pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
 /// way, and the rows simply round-trip until this client learns to render them.
 fn namespace_for_kind(kind: &str) -> String {
     match normalize_kind(kind) {
-        k if k == KIND_FAVICON => FAVICON_ID_NAMESPACE.to_string(),
+        k if k == LOGO_KIND_FAVICON => FAVICON_ID_NAMESPACE.to_string(),
         k => format!("aliasvault:logo:{}:v1", k),
     }
 }
 
-/// A row's kind, defaulting to [`KIND_FAVICON`] when absent or empty (pre-`Kind` writers) and
-/// lowercased so `Kind` matching is case-insensitive like the rest of the natural key.
+/// A row's kind, lowercased so `Kind` matching is case-insensitive like the rest of the natural key.
+/// Absent or empty means [`LOGO_KIND_FAVICON`]: the row was written before the column existed, when
+/// every logo was a favicon.
 fn normalize_kind(kind: &str) -> String {
     let trimmed = kind.trim();
     if trimmed.is_empty() {
-        return KIND_FAVICON.to_string();
+        return LOGO_KIND_FAVICON.to_string();
     }
     trimmed.to_lowercase()
 }
 
-/// True when a row holds an image the user supplied themselves ([`KIND_CUSTOM`]) rather than one the
+/// True when a row holds an image the user supplied themselves ([`LOGO_KIND_CUSTOM`]) rather than one the
 /// client can produce again on its own: a favicon it can refetch from the domain, a built-in logo it
 /// draws from the catalog. Only that first group is worth keeping around once nothing references it.
 pub(super) fn is_custom_logo(row: &CodecRecord) -> bool {
-    normalize_kind(str_col(row, KIND_COL).unwrap_or("")) == KIND_CUSTOM
+    normalize_kind(str_col(row, KIND_COL).unwrap_or("")) == LOGO_KIND_CUSTOM
 }
 
 /// The `(kind, source)` natural key of a row, or `None` when it carries no `Source` to key on.
@@ -127,8 +120,7 @@ fn rewrite_logo_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str
         let (Some((kind, source)), Some(old_id)) = (natural_key(row), str_col(row, ID_COL)) else { continue };
         let new_id = logo_id_for(scope, &kind, &source);
         if old_id != new_id || !survivors.contains(&idx) {
-            // GUIDs are case-insensitive and should be stored/compared as such.
-            remap.insert(old_id.to_lowercase(), new_id);
+            remap.insert(id_key(old_id), new_id);
         }
     }
 
@@ -162,8 +154,8 @@ fn repoint_items(tables: &mut HashMap<String, Vec<CodecRecord>>, remap: &HashMap
     let Some(items) = tables.get_mut(ITEMS_TABLE) else { return };
     for item in items.iter_mut() {
         let Some(current) = str_col(item, LOGO_ID_COL).map(str::to_string) else { continue };
-        let resolved = remap.get(&current.to_lowercase()).cloned().unwrap_or(current);
-        let repaired = if valid_ids.contains(&resolved.to_lowercase()) { json!(resolved) } else { Value::Null };
+        let resolved = remap.get(&id_key(&current)).cloned().unwrap_or(current);
+        let repaired = if valid_ids.contains(&id_key(&resolved)) { json!(resolved) } else { Value::Null };
         item.insert(LOGO_ID_COL.to_string(), repaired);
     }
 }
@@ -181,7 +173,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         let mut ids: Vec<String> = tables[ITEMS_TABLE]
             .iter()
             .filter_map(|item| str_col(item, LOGO_ID_COL))
-            .filter(|id| !present.contains(&id.to_lowercase()))
+            .filter(|id| !present.contains(&id_key(id)))
             .map(str::to_string)
             .collect();
         ids.sort();
@@ -209,7 +201,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
 
         if let Some(existing_id) = id_by_key.get(&(kind.clone(), source.clone())).cloned() {
             refill_empty_scope_row(tables, &existing_id, origin);
-            remap.insert(missing_id.to_lowercase(), existing_id);
+            remap.insert(id_key(&missing_id), existing_id);
             continue;
         }
 
@@ -220,7 +212,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         clone.insert(MANIFEST_ID_COL.to_string(), scope_value.clone());
         clones.push(clone);
         id_by_key.insert((kind, source), scoped_id.clone());
-        remap.insert(missing_id.to_lowercase(), scoped_id);
+        remap.insert(id_key(&missing_id), scoped_id);
     }
 
     if !clones.is_empty() {
@@ -234,7 +226,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
 fn refill_empty_scope_row(tables: &mut HashMap<String, Vec<CodecRecord>>, existing_id: &str, origin: &CodecRecord) {
     let Some(logos) = tables.get_mut(LOGOS_TABLE) else { return };
     let Some(existing) = logos.iter_mut().find(|r| str_col(r, ID_COL) == Some(existing_id)) else { return };
-    let upgrades = (!has_file_data(existing) && has_file_data(origin)) || (is_tombstoned(existing) && !is_tombstoned(origin));
+    let upgrades = (!has_file_data(existing) && has_file_data(origin)) || (is_deleted(existing) && !is_deleted(origin));
     if !upgrades {
         return;
     }
@@ -259,7 +251,7 @@ fn refill_empty_scope_row(tables: &mut HashMap<String, Vec<CodecRecord>>, existi
 fn logo_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> HashSet<String> {
     tables
         .get(LOGOS_TABLE)
-        .map(|rows| rows.iter().filter_map(|r| str_col(r, ID_COL).map(str::to_lowercase)).collect())
+        .map(|rows| rows.iter().filter_map(|r| str_col(r, ID_COL).map(id_key)).collect())
         .unwrap_or_default()
 }
 
@@ -267,8 +259,8 @@ fn logo_ids(tables: &HashMap<String, Vec<CodecRecord>>) -> HashSet<String> {
 /// (the id is derived either way): a live row beats a tombstoned one, a row with image bytes beats an
 /// empty one, and the lexicographically-highest (newest) `Id` breaks the remaining ties.
 fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
-    let cand_live = !is_tombstoned(candidate);
-    let inc_live = !is_tombstoned(incumbent);
+    let cand_live = !is_deleted(candidate);
+    let inc_live = !is_deleted(incumbent);
     if cand_live != inc_live {
         return cand_live;
     }
@@ -293,16 +285,3 @@ fn has_file_data(row: &CodecRecord) -> bool {
     }
 }
 
-/// SQLite-tolerant `IsDeleted` truthiness (boolean, 0/1 number, or "1"/"true" string).
-fn is_tombstoned(row: &CodecRecord) -> bool {
-    match row.get("IsDeleted") {
-        Some(Value::Bool(b)) => *b,
-        Some(Value::Number(n)) => n.as_f64().map(|f| f != 0.0).unwrap_or(false),
-        Some(Value::String(s)) => s == "1" || s.eq_ignore_ascii_case("true"),
-        _ => false,
-    }
-}
-
-fn str_col<'a>(row: &'a CodecRecord, column: &str) -> Option<&'a str> {
-    row.get(column).and_then(|v| v.as_str())
-}

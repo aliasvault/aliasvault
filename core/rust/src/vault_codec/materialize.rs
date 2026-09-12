@@ -20,7 +20,7 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
-use super::types::{is_skip_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
+use super::types::{is_local_only_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
 use crate::error::{VaultError, VaultResult};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
@@ -39,7 +39,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
 
-    // The first manifest is the caller's own (see `MaterializeInput::new`).
+    // The first manifest is the caller's own (see `MaterializeInput::manifests`).
     let base = manifests.remove(0);
     let others: Vec<Manifest> = manifests;
 
@@ -57,9 +57,9 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
     for (name, records) in combined {
-        // OVERFLOW_TABLE is local-only bookkeeping: it must never occur in a manifest, and passing
-        // one through would collide with the row this function emits below.
-        if is_skip_table(&name) || name == OVERFLOW_TABLE {
+        // A local-only table must never occur in a manifest, and passing an OVERFLOW_TABLE row
+        // through would collide with the row this function emits below.
+        if is_local_only_table(&name) {
             continue;
         }
         match split_for_schema(&name, records, &schema_columns, &mut overflow.columns) {
@@ -74,7 +74,7 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     for bucket in data_buckets {
         for (name, mut records) in bucket.tables {
-            if is_skip_table(&name) || name == OVERFLOW_TABLE {
+            if is_local_only_table(&name) {
                 continue;
             }
             for row in records.iter_mut() {

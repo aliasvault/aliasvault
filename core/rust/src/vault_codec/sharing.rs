@@ -34,15 +34,16 @@ use std::collections::{HashMap, HashSet};
 use serde_json::{json, Value};
 
 use super::manifest::{CodecRecord, Manifest, ManifestSpec};
+use super::row::{str_col, truthy};
 use super::scoped_assets::{is_custom_logo, normalize_logo_scope, reconcile_logo_references};
 use super::types::{
-    is_bucketed_table, is_manifest_scoped, is_personal_table, is_skip_table, manifest_scoped_tables, row_identity, ENCRYPTION_KEYS_TABLE,
-    MANIFEST_ID_COL, OVERFLOW_TABLE,
+    is_bucketed_table, is_local_only_table, is_manifest_scoped, is_personal_table, manifest_scoped_tables, row_identity, ENCRYPTION_KEYS_TABLE,
+    MANIFEST_ID_COL,
 };
 use crate::error::{VaultError, VaultResult};
 use crate::vault_model::names::{
     FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FOLDERS_TABLE,
-    FOLDER_ID_COL, ID_COL, IS_DELETED_COL, IS_PRIMARY_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE,
+    FOLDER_ID_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE,
     LOGO_ID_COL, PARENT_FOLDER_ID_COL, PUBLIC_KEY_COL, TAGS_TABLE, TAG_ID_COL,
 };
 
@@ -433,7 +434,7 @@ pub(super) fn combine_manifest_tables(
              * skip-tables never travel inside one. Dropping them here also means a manifest authored by
              * another user cannot inject rows into this vault's personal scope.
              */
-            if is_skip_table(&name) || name == OVERFLOW_TABLE || is_bucketed_table(&name) || is_personal_table(&name) {
+            if is_local_only_table(&name) || is_bucketed_table(&name) || is_personal_table(&name) {
                 continue;
             }
 
@@ -612,33 +613,7 @@ pub fn extract_encryption_key_for_public_key(manifest: &Manifest, public_key: &s
         .tables
         .get(ENCRYPTION_KEYS_TABLE)?
         .iter()
-        .find(|row| str_col(row, PUBLIC_KEY_COL) == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get(IS_DELETED_COL)))
+        .find(|row| str_col(row, PUBLIC_KEY_COL) == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !truthy(row.get(IS_DELETED_COL)))
         .cloned()
 }
 
-/// The manifest's *active* keypair: the live `IsPrimary` row stamped with the manifest's own id, whose
-/// public half is published to the server for SMTP delivery. Superseded rows stay in the manifest, so
-/// mail received before a rotation remains decryptable, but are never returned here.
-pub fn active_encryption_key(manifest: &Manifest) -> Option<CodecRecord> {
-    let scope = Some(manifest.manifest_id.as_str());
-    manifest
-        .tables
-        .get(ENCRYPTION_KEYS_TABLE)?
-        .iter()
-        .find(|row| is_truthy(row.get(IS_PRIMARY_COL)) && str_col(row, MANIFEST_ID_COL) == scope && !is_truthy(row.get(IS_DELETED_COL)))
-        .cloned()
-}
-
-fn str_col<'a>(row: &'a CodecRecord, column: &str) -> Option<&'a str> {
-    row.get(column).and_then(|v| v.as_str())
-}
-
-/// SQLite-tolerant truthiness: boolean true, non-zero number, or "1"/"true" strings.
-fn is_truthy(value: Option<&Value>) -> bool {
-    match value {
-        Some(Value::Bool(b)) => *b,
-        Some(Value::Number(n)) => n.as_f64().map(|f| f != 0.0).unwrap_or(false),
-        Some(Value::String(s)) => s == "1" || s.eq_ignore_ascii_case("true"),
-        _ => false,
-    }
-}

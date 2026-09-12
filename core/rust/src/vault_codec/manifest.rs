@@ -105,6 +105,7 @@ pub struct CanonicalizedVault {
     pub data_buckets: Vec<DataBucket>,
 }
 
+#[cfg(test)]
 impl CanonicalizedVault {
     /// The first manifest, which is the one the caller wrote this vault from. Canonicalize refuses empty input, so it always exists.
     pub fn first(&self) -> &CanonicalizedManifest {
@@ -216,18 +217,9 @@ pub struct ExtractBucketsInput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterializeInput {
+    /// Every manifest to combine, the caller's own manifest first: the others are combined into it.
     pub manifests: Vec<Manifest>,
     pub data_buckets: Vec<DataBucket>,
+    /// The caller's local schema, table name > column names; what it cannot hold goes to [`CodecOverflow`].
     pub schema_columns: HashMap<String, Vec<String>>,
-}
-
-impl MaterializeInput {
-    /// Build an input from the caller's own manifest, the other manifests combined into it, and the
-    /// vault's data buckets.
-    pub fn new(own: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>, schema_columns: HashMap<String, Vec<String>>) -> Self {
-        let mut manifests = Vec::with_capacity(1 + others.len());
-        manifests.push(own);
-        manifests.extend(others);
-        Self { manifests, data_buckets, schema_columns }
-    }
 }

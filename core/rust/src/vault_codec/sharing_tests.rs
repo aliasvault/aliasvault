@@ -7,7 +7,8 @@
 
 use super::*;
 use super::tests::{fitting_schema, materialize_manifests, materialize_input, stamp_unstamped};
-use super::types::manifest_scoped_tables;
+use super::types::{is_bucketed_table, is_personal_table, manifest_scoped_tables, SCHEMA_VERSION};
+use crate::vault_model::names::LOGO_KIND_FAVICON;
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
 use serde_json::json;
@@ -16,7 +17,7 @@ use std::collections::{HashMap, HashSet};
 const SALT_PERSONAL: &str = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff";
 const SALT_SHARED: &str = "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100";
 
-/// The personal manifest id every test canonicalizes against. Personal rows are stamped with it — there is
+/// The personal manifest id every test canonicalizes against. Personal rows are stamped with it, there is
 /// no NULL-scope convention anywhere in the format.
 const PERSONAL_M: &str = "m-personal";
 
@@ -91,7 +92,7 @@ fn tag_links(records: &[CodecRecord]) -> Vec<(String, String)> {
 /// The scoped logo id the codec derives for `(manifest id, source)`, what tests assert against, since
 /// a logo's identity is a function of its manifest and domain rather than whatever id the writer generated.
 fn logo_id(scope: &str, source: &str) -> String {
-    scoped_assets::logo_id_for(scope, scoped_assets::KIND_FAVICON, source)
+    scoped_assets::logo_id_for(scope, LOGO_KIND_FAVICON, source)
 }
 
 /// The `Logos` row for `source` in a manifest, resolved through its manifest-id-derived id.
@@ -110,7 +111,7 @@ fn logo_sources(m: &Manifest) -> Vec<&str> {
     out
 }
 
-/// Stamp a folder's whole subtree — its folders and the items in them — into `manifest_id`. Mirrors
+/// Stamp a folder's whole subtree (its folders and the items in them) into `manifest_id`. Mirrors
 /// exactly what the client's `FolderRepository.restampSubtree` writes when a folder starts being
 /// shared, so fixtures carry the membership the codec now routes on.
 ///
@@ -308,7 +309,7 @@ fn split_gives_each_manifest_its_own_copy_of_the_tags_it_uses() {
 
     /*
      * A tag is manifest-scoped like everything else, so the shared manifest gets its own stamped copy
-     * of the two its items carry — the composite `(ManifestId, TagId)` foreign key cannot reach into
+     * of the two its items carry, the composite `(ManifestId, TagId)` foreign key cannot reach into
      * another namespace. The copies are copies: the base keeps every tag it holds, including the one
      * only shared items use now and the one nothing uses at all. An unused tag is still the user's.
      */
@@ -408,8 +409,8 @@ fn sqlite_blob_migration_stamps_every_row_of_a_vault_that_has_no_manifest_id_col
     /*
      * The sqlite-blob > manifest-v1 migration, end to end: a vault whose schema stops short of the
      * `ManifestId` column (so no row carries the key at all) is canonicalized and materialized straight
-     * back out, with no share in sight. Nothing stamps those rows beforehand — the column they would be
-     * stamped in does not exist yet — so canonicalize adopting them into the manifest being written from
+     * back out, with no share in sight. Nothing stamps those rows beforehand, the column they would be
+     * stamped in does not exist yet, so canonicalize adopting them into the manifest being written from
      * IS the conversion. Every row must come out carrying a real manifest id: the materialized schema
      * declares the column NOT NULL, so a single unstamped row fails the whole migration.
      */
@@ -486,7 +487,7 @@ fn manifests_drop_logos_no_item_references() {
 fn orphan_favicons_are_pruned_everywhere_and_uploads_survive_everywhere() {
     /*
      * A favicon nothing references is refetchable, so it goes, in every manifest alike. An image the
-     * user uploaded is not reproducible, so it stays — also in every manifest alike: each one carries
+     * user uploaded is not reproducible, so it stays, also in every manifest alike: each one carries
      * its own library, and which of them a client offers to pick from is a runtime choice, not
      * something the format decides by anointing one manifest.
      */
@@ -556,7 +557,7 @@ fn split_keeps_bucketed_and_foreign_key_tables_out_of_shared_manifests() {
     assert!(!out.data_buckets.iter().any(|b| b.category == "EncryptionKeys"), "EncryptionKeys is no longer a bucket category");
 
     /*
-     * Every manifest gets its own Settings bucket, holding exactly its own rows — the shared one empty
+     * Every manifest gets its own Settings bucket, holding exactly its own rows, the shared one empty
      * here, since the single Settings row belongs to the personal manifest. Leaving a manifest's bucket
      * out would read as "unchanged" rather than "emptied", so its last row could never be deleted.
      */
@@ -645,7 +646,7 @@ fn extract_buckets_splits_a_category_the_way_canonicalize_does() {
      * the caller hands over the whole category and gets one bucket per manifest it can write. Every
      * manifest asked for gets a bucket even when it holds nothing (otherwise deleting its last row
      * would never reach the server), a row naming a manifest this vault does not carry is dropped with
-     * that manifest, and a row that names no manifest has no scope the codec may invent — it refuses.
+     * that manifest, and a row that names no manifest has no scope the codec may invent, it refuses.
      */
     let settings = |rows: Vec<CodecRecord>| -> HashMap<String, Vec<CodecRecord>> { [("Settings".to_string(), rows)].into_iter().collect() };
 
@@ -687,8 +688,8 @@ fn extract_buckets_splits_a_category_the_way_canonicalize_does() {
 #[test]
 fn split_routes_unregistered_tables_by_their_own_stamps() {
     /*
-     * A table this build's registry does not know — a newer writer's table carried through the codec
-     * overflow — routes by its rows' own stamps like every registered table. The writing (personal)
+     * A table this build's registry does not know, a newer writer's table carried through the codec
+     * overflow, routes by its rows' own stamps like every registered table. The writing (personal)
      * manifest is not special: it gets exactly its own rows, a shared manifest gets exactly its own,
      * and a row stamped for a manifest this vault no longer carries is dropped with it.
      */
@@ -866,7 +867,7 @@ fn split_regrafts_overflow_columns_onto_shared_rows() {
     // A newer writer added a column to a shared item; this client's schema couldn't hold it, so it
     // rode in the overflow carrier. On push it must re-graft and travel with the row into the
     // shared manifest, not the personal one.
-    // Recorded under the identity the row had when the overflow was written — before the folder was
+    // Recorded under the identity the row had when the overflow was written, before the folder was
     // shared, so under the personal scope. The re-graft has to survive the row changing manifest.
     let overflow = CodecOverflow {
         columns: [(
@@ -1111,7 +1112,7 @@ fn item_moved_into_shared_manifest_adopts_its_existing_logo() {
 fn combine_scopes_a_legacy_shared_manifest_before_it_can_collide() {
     // A shared manifest whose ROWS predate manifest-id scoping: its logos were generated at random and
     // carry no scope stamp. Materializing it next to the recipient's own rows must not collide on
-    // UNIQUE(ManifestId, Kind, Source) — combine normalizes every row to the manifest's own id.
+    // UNIQUE(ManifestId, Kind, Source), combine normalizes every row to the manifest's own id.
     let (recipient_manifest, buckets) = recipient_personal_manifest();
     let legacy_shared = Manifest {
         schema_version: SCHEMA_VERSION,
@@ -1146,8 +1147,8 @@ fn combine_scopes_a_legacy_shared_manifest_before_it_can_collide() {
 #[test]
 fn combine_keeps_both_rows_when_two_manifests_share_a_primary_key() {
     // Ids are client-generated, so a shared manifest may legitimately carry a row whose Id equals one of
-    // the reader's own. Because rows are keyed by (ManifestId, Id) — the primary key the local schema
-    // declares — both survive in their own namespace and neither shadows the other.
+    // the reader's own. Because rows are keyed by (ManifestId, Id), the primary key the local schema
+    // declares, both survive in their own namespace and neither shadows the other.
     let mut personal = canonicalize_from_sqlite(input_with_shares(
         vec![table("Items", vec![row(&[("Id", json!("i-dup")), ("Name", json!("personal-version")), ("FolderId", serde_json::Value::Null)])])],
         vec![],
@@ -1211,7 +1212,7 @@ fn combine_keeps_each_manifests_own_copy_of_a_shared_tag() {
 #[test]
 fn split_stamps_item_scoped_rows_with_the_manifest_their_item_joined() {
     // A child row's foreign key is (ManifestId, ItemId), so it has to carry the same stamp as the item
-    // it followed — otherwise it points at a row in a namespace it isn't in.
+    // it followed, otherwise it points at a row in a namespace it isn't in.
     let tables = stamp_subtree(owner_tables(), "f-shared", "m-f-shared");
     let out = canonicalize_from_sqlite(input_with_shares(tables, vec![spec("f-shared")])).unwrap();
 
@@ -1336,7 +1337,7 @@ fn combine_applies_schema_overflow_to_shared_rows_too() {
     .collect();
 
     let (recipient_manifest, buckets) = recipient_personal_manifest();
-    let re = materialize_as_sqlite(MaterializeInput::new(recipient_manifest, vec![shared], buckets, schema)).unwrap();
+    let re = materialize_as_sqlite(MaterializeInput { manifests: vec![recipient_manifest, shared], data_buckets: buckets, schema_columns: schema }).unwrap();
     let map = materialized_map(&re);
     assert!(map["Items"].iter().all(|r| !r.contains_key("FutureCol")));
     let overflowed: Vec<&String> = re.overflow.columns.get("Items").map(|m| m.keys().collect()).unwrap_or_default();
@@ -1375,8 +1376,17 @@ fn extract_encryption_key_for_public_key_picks_matching_row_over_primary() {
     let cur = extract_encryption_key_for_public_key(&out.first().manifest, "pub-cur").expect("current key present");
     assert_eq!(cur["Id"], json!("ek-cur"));
 
-    // The manifest's active key is the primary row of its own scope.
-    assert_eq!(active_encryption_key(&out.first().manifest).expect("primary key present")["Id"], json!("ek-cur"));
+    // The manifest's live primary row, the one whose public half is published for delivery, is the current key.
+    assert_eq!(ids(&primary_keys(&out.first().manifest)), vec!["ek-cur"]);
+}
+
+/// The live `IsPrimary` rows of a manifest's `EncryptionKeys` table stamped with the manifest's own id.
+fn primary_keys(m: &Manifest) -> Vec<CodecRecord> {
+    rows(m, "EncryptionKeys")
+        .iter()
+        .filter(|r| r["IsPrimary"] == json!(1) && r["ManifestId"] == json!(m.manifest_id) && r.get("IsDeleted").is_none_or(|d| *d == json!(0)))
+        .cloned()
+        .collect()
 }
 
 #[test]
@@ -1398,11 +1408,11 @@ fn extract_encryption_key_for_public_key_skips_deleted_and_returns_none_on_miss(
 fn extract_encryption_key_for_public_key_json_sibling_roundtrips() {
     let out = canonicalize_from_sqlite(input_with_shares(owner_tables(), vec![])).unwrap();
     let manifest_json = serde_json::to_string(&out.first().manifest).unwrap();
-    let key_json = extract_encryption_key_for_public_key_json(&manifest_json, "pub").unwrap();
+    let key_json = crate::error::json_call(&manifest_json, |m: Manifest| Ok(extract_encryption_key_for_public_key(&m, "pub"))).unwrap();
     let key: serde_json::Value = serde_json::from_str(&key_json).unwrap();
     assert_eq!(key["PrivateKey"], json!("priv"));
 
-    let miss = extract_encryption_key_for_public_key_json(&manifest_json, "nope").unwrap();
+    let miss = crate::error::json_call(&manifest_json, |m: Manifest| Ok(extract_encryption_key_for_public_key(&m, "nope"))).unwrap();
     assert_eq!(miss, "null");
 }
 
@@ -1412,7 +1422,7 @@ fn extract_encryption_key_for_public_key_json_sibling_roundtrips() {
 
 #[test]
 fn manifest_specs_deserialize_from_camel_case_json() {
-    // Every manifest is described the same way on the wire — id, salt, optional name — with nothing
+    // Every manifest is described the same way on the wire (id, salt, optional name) with nothing
     // marking one of them as special. A manifest carries a name, never a folder anchor.
     let input_json = json!({
         "tables": [{ "name": "Items", "records": [] }],
@@ -1423,7 +1433,7 @@ fn manifest_specs_deserialize_from_camel_case_json() {
         ]
     })
     .to_string();
-    let out_json = canonicalize_from_sqlite_json(&input_json).unwrap();
+    let out_json = crate::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
     let out: CanonicalizedVault = serde_json::from_str(&out_json).unwrap();
     assert_eq!(out.rest().len(), 1);
     assert_eq!(out.rest()[0].manifest.manifest_id, "m-1");
@@ -1450,7 +1460,7 @@ fn materialize_input_accepts_every_manifest_in_one_list_from_json() {
         "schemaColumns": schema,
     })
     .to_string();
-    let out_json = materialize_as_sqlite_json(&input_json).unwrap();
+    let out_json = crate::error::json_call(&input_json, |input: MaterializeInput| materialize_as_sqlite(input)).unwrap();
     let out: MaterializedTables = serde_json::from_str(&out_json).unwrap();
     let items = out.tables.iter().find(|t| t.name == "Items").unwrap();
     assert_eq!(items.records.len(), 4);
@@ -1465,7 +1475,7 @@ fn materialize_rejects_an_empty_manifest_list() {
 }
 
 /// Nothing marks a manifest as the caller's own: the list order says it. The first entry is the base
-/// the others combine into, and the bookkeeping rows record every manifest alike — id and name, no
+/// the others combine into, and the bookkeeping rows record every manifest alike: id and name, no
 /// claim about which one is whose. Nothing about the base becomes a vault-wide fact either: the base
 /// contributes no schema/version claim the other manifests are then held to.
 #[test]
@@ -1722,7 +1732,7 @@ fn a_builtin_logo_survives_without_any_image_bytes() {
 // Folder keypairs (manifest-stamped `EncryptionKeys` rows)
 //
 // One table serves every manifest: personal-stamped rows are the personal manifest's own delivery keys,
-// shared-manifest-stamped rows are that folder's delivery keypair. The guards point both ways — a
+// shared-manifest-stamped rows are that folder's delivery keypair. The guards point both ways, a
 // personal key must never travel INTO a shared manifest, and a folder key must never travel OUT of
 // its own. Both directions are attacks a folder co-owner can attempt by writing rows into a manifest
 // the victim materializes.
@@ -1777,7 +1787,7 @@ fn split_drops_a_keypair_stamped_for_a_manifest_that_is_not_in_this_push() {
 #[test]
 fn split_drops_folder_keypair_whose_scope_is_not_shared() {
     // A key row stamped for a manifest that is not part of this push (revoked, deleted, or fabricated
-    // locally) has nowhere to go: it must be dropped, NOT fall back into the personal manifest — a stale
+    // locally) has nowhere to go: it must be dropped, NOT fall back into the personal manifest, a stale
     // copy demoted into the personal manifest would resurrect the old keypair on a future re-share, and would
     // leave a private delivery key in a namespace revocation cannot reach.
     let out = canonicalize_from_sqlite(input_with_shares(
@@ -1882,7 +1892,7 @@ fn encryption_keys_is_scoped_rather_than_personal_or_bucketed() {
 
     /*
      * And pins the two axes apart. Bucketed says where a table syncs; personal says which manifests may
-     * hold it. Settings is bucketed and NOT personal — its bucket belongs to a manifest, so a shared
+     * hold it. Settings is bucketed and NOT personal, its bucket belongs to a manifest, so a shared
      * manifest carrying its own settings is a routing question, never a rule violation.
      */
     assert!(is_bucketed_table("Settings"));
@@ -1915,7 +1925,7 @@ fn active_folder_key_is_the_primary_row_and_rotated_keys_stay_resolvable() {
     .unwrap();
     let shared = &out.rest()[0].manifest;
 
-    assert_eq!(active_encryption_key(shared).expect("primary key present")["Id"], json!("sfk-cur"));
+    assert_eq!(ids(&primary_keys(shared)), vec!["sfk-cur"]);
     assert_eq!(
         extract_encryption_key_for_public_key(shared, "pub-old").expect("rotated key still resolvable")["PrivateKey"],
         json!("priv-pub-old")
@@ -1975,11 +1985,11 @@ fn validate_rejects_misplaced_folder_keypairs_before_upload() {
 // Cross-manifest routing: the same id in two manifests
 // ─────────────────────────────────────────────────────────────────────────────
 //
-// A manifest is a namespace, so two of them may each hold a row with the same `Id` — and they do, for
+// A manifest is a namespace, so two of them may each hold a row with the same `Id`, and they do, for
 // ordinary reasons: a member moves a shared item into their own vault (the client re-stamps the row and
 // keeps its id), or an item that was moved out comes back through another member's push. Every rule
 // that resolves a reference therefore has to resolve it by `(ManifestId, Id)`, both halves. Anything
-// that keys on the bare id sends rows across a manifest boundary — which for a shared manifest means
+// that keys on the bare id sends rows across a manifest boundary, which for a shared manifest means
 // handing them to other people.
 
 /// Two manifests each holding an item with the same id, each with its own child rows. `personal_secret`
@@ -2086,7 +2096,7 @@ fn split_never_pulls_a_shared_items_child_into_the_personal_manifest() {
 #[test]
 fn split_keeps_child_rows_when_a_manifest_this_vault_lost_shares_their_item_id() {
     /*
-     * A row stamped for a manifest this vault no longer carries is dropped — but only its own rows. An
+     * A row stamped for a manifest this vault no longer carries is dropped, but only its own rows. An
      * item left behind by a revoked share must not take the child rows of a live item that happens to
      * carry the same id down with it.
      */
@@ -2130,7 +2140,7 @@ fn split_still_follows_an_item_whose_children_were_left_unstamped() {
 fn split_falls_back_to_a_rows_own_stamp_when_two_items_could_claim_it() {
     /*
      * The fallback above is only safe while it is unambiguous. With two same-id items in different
-     * manifests, a child naming neither (its own manifest holds no such item) has no item to follow —
+     * manifests, a child naming neither (its own manifest holds no such item) has no item to follow,
      * so it routes by its own stamp rather than being handed to whichever manifest happens to be found
      * first.
      */
@@ -2149,7 +2159,7 @@ fn split_falls_back_to_a_rows_own_stamp_when_two_items_could_claim_it() {
 fn split_keeps_a_parent_folder_link_that_resolves_in_the_folders_own_manifest() {
     /*
      * The same-id rule for folders. A personal folder carrying the id of the share's subfolder must not
-     * make the share's own parent link look foreign — nulling it would silently flatten the shared tree.
+     * make the share's own parent link look foreign, nulling it would silently flatten the shared tree.
      */
     let tables = vec![
         table("Folders", vec![

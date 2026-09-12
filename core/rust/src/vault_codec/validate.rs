@@ -4,7 +4,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::manifest::{DataBucket, Manifest, CodecRecord};
+use super::manifest::{DataBucket, Manifest};
+use super::row::{rows_of, str_col};
 use crate::vault_model::names::{
     FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_VALUES_TABLE, FOLDERS_TABLE, FOLDER_ID_COL, ID_COL,
     ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_KIND_FAVICON, SOURCE_COL, TAGS_TABLE, TAG_ID_COL,
@@ -19,14 +20,6 @@ pub struct ValidationResult {
     pub failed_rules: Vec<String>,
     /// Human-readable explanation. Empty when ok.
     pub message: String,
-}
-
-fn table<'a>(m: &'a Manifest, name: &str) -> &'a [CodecRecord] {
-    m.tables.get(name).map(|v| v.as_slice()).unwrap_or(&[])
-}
-
-fn str_field<'a>(r: &'a CodecRecord, key: &str) -> Option<&'a str> {
-    r.get(key).and_then(|v| v.as_str())
 }
 
 /// Structurally validate a fresh manifest before it is encrypted/uploaded.
@@ -50,7 +43,7 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
         return ValidationResult {
             ok: false,
             failed_rules: failed,
-            message: "Manifest has no tables — refusing upload.".to_string(),
+            message: "Manifest has no tables, refusing upload.".to_string(),
         };
     }
 
@@ -78,73 +71,73 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
      * Every EncryptionKeys row must be stamped with the manifest's own id.
      */
     let expected_scope = Some(manifest.manifest_id.as_str());
-    if table(manifest, super::types::ENCRYPTION_KEYS_TABLE).iter().any(|r| str_field(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+    if rows_of(&manifest.tables, super::types::ENCRYPTION_KEYS_TABLE).iter().any(|r| str_col(r, super::types::MANIFEST_ID_COL) != expected_scope) {
         failed.push("encryption-keys-scope-mismatch".to_string());
         explain.push("EncryptionKeys carries rows stamped for another manifest".to_string());
     }
 
     // Items and Folders are restamped by canonicalize: a mismatched stamp here means a codec bug.
     for name in [ITEMS_TABLE, FOLDERS_TABLE] {
-        if table(manifest, name).iter().any(|r| str_field(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+        if rows_of(&manifest.tables, name).iter().any(|r| str_col(r, super::types::MANIFEST_ID_COL) != expected_scope) {
             failed.push("content-scope-mismatch".to_string());
             explain.push(format!("{} carries rows stamped for another manifest", name));
             break;
         }
     }
 
-    let items = table(manifest, ITEMS_TABLE);
-    let folders = table(manifest, FOLDERS_TABLE);
-    let tags = table(manifest, TAGS_TABLE);
-    let item_tags = table(manifest, ITEM_TAGS_TABLE);
-    let field_values = table(manifest, FIELD_VALUES_TABLE);
-    let field_defs = table(manifest, FIELD_DEFINITIONS_TABLE);
+    let items = rows_of(&manifest.tables, ITEMS_TABLE);
+    let folders = rows_of(&manifest.tables, FOLDERS_TABLE);
+    let tags = rows_of(&manifest.tables, TAGS_TABLE);
+    let item_tags = rows_of(&manifest.tables, ITEM_TAGS_TABLE);
+    let field_values = rows_of(&manifest.tables, FIELD_VALUES_TABLE);
+    let field_defs = rows_of(&manifest.tables, FIELD_DEFINITIONS_TABLE);
 
-    let item_ids: std::collections::HashSet<&str> = items.iter().filter_map(|i| str_field(i, ID_COL)).collect();
-    let folder_ids: std::collections::HashSet<&str> = folders.iter().filter_map(|f| str_field(f, ID_COL)).collect();
-    let tag_ids: std::collections::HashSet<&str> = tags.iter().filter_map(|t| str_field(t, ID_COL)).collect();
-    let field_def_ids: std::collections::HashSet<&str> = field_defs.iter().filter_map(|f| str_field(f, ID_COL)).collect();
+    let item_ids: std::collections::HashSet<&str> = items.iter().filter_map(|i| str_col(i, ID_COL)).collect();
+    let folder_ids: std::collections::HashSet<&str> = folders.iter().filter_map(|f| str_col(f, ID_COL)).collect();
+    let tag_ids: std::collections::HashSet<&str> = tags.iter().filter_map(|t| str_col(t, ID_COL)).collect();
+    let field_def_ids: std::collections::HashSet<&str> = field_defs.iter().filter_map(|f| str_col(f, ID_COL)).collect();
 
     // Referential integrity.
     for item in items {
-        if let Some(folder_id) = str_field(item, FOLDER_ID_COL) {
+        if let Some(folder_id) = str_col(item, FOLDER_ID_COL) {
             if !folder_ids.contains(folder_id) {
                 failed.push("item-folder-fk-broken".to_string());
-                explain.push(format!("Item {} references missing folder {}", str_field(item, ID_COL).unwrap_or(""), folder_id));
+                explain.push(format!("Item {} references missing folder {}", str_col(item, ID_COL).unwrap_or(""), folder_id));
                 break;
             }
         }
     }
 
     for it in item_tags {
-        if let Some(item_id) = str_field(it, ITEM_ID_COL) {
+        if let Some(item_id) = str_col(it, ITEM_ID_COL) {
             if !item_ids.contains(item_id) {
                 failed.push("itemtag-item-fk-broken".to_string());
-                explain.push(format!("ItemTag {} references missing item {}", str_field(it, ID_COL).unwrap_or(""), item_id));
+                explain.push(format!("ItemTag {} references missing item {}", str_col(it, ID_COL).unwrap_or(""), item_id));
                 break;
             }
         }
     }
     for it in item_tags {
-        if let Some(tag_id) = str_field(it, TAG_ID_COL) {
+        if let Some(tag_id) = str_col(it, TAG_ID_COL) {
             if !tag_ids.contains(tag_id) {
                 failed.push("itemtag-tag-fk-broken".to_string());
-                explain.push(format!("ItemTag {} references missing tag {}", str_field(it, ID_COL).unwrap_or(""), tag_id));
+                explain.push(format!("ItemTag {} references missing tag {}", str_col(it, ID_COL).unwrap_or(""), tag_id));
                 break;
             }
         }
     }
 
     for fv in field_values {
-        if let Some(item_id) = str_field(fv, ITEM_ID_COL) {
+        if let Some(item_id) = str_col(fv, ITEM_ID_COL) {
             if !item_ids.contains(item_id) {
                 failed.push("fieldvalue-item-fk-broken".to_string());
-                explain.push(format!("FieldValue {} references missing item {}", str_field(fv, ID_COL).unwrap_or(""), item_id));
+                explain.push(format!("FieldValue {} references missing item {}", str_col(fv, ID_COL).unwrap_or(""), item_id));
                 break;
             }
         }
     }
     for fv in field_values {
-        if let Some(field_def_id) = str_field(fv, FIELD_DEFINITION_ID_COL) {
+        if let Some(field_def_id) = str_col(fv, FIELD_DEFINITION_ID_COL) {
             if !field_def_ids.contains(field_def_id) {
                 failed.push("fieldvalue-fielddef-fk-broken".to_string());
                 break;
@@ -164,19 +157,19 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
      * A logo belongs to exactly one manifest: (ManifestId, Kind, Source) must be UNIQUE in the
      * client schema.
      */
-    let logos = table(manifest, LOGOS_TABLE);
+    let logos = rows_of(&manifest.tables, LOGOS_TABLE);
     let logo_keys: std::collections::HashSet<(String, String)> = logos
         .iter()
-        .filter_map(|l| Some((str_field(l, KIND_COL).unwrap_or(LOGO_KIND_FAVICON).to_lowercase(), str_field(l, SOURCE_COL)?.to_lowercase())))
+        .filter_map(|l| Some((str_col(l, KIND_COL).unwrap_or(LOGO_KIND_FAVICON).to_lowercase(), str_col(l, SOURCE_COL)?.to_lowercase())))
         .collect();
-    let logos_with_source = logos.iter().filter(|l| str_field(l, SOURCE_COL).is_some()).count();
+    let logos_with_source = logos.iter().filter(|l| str_col(l, SOURCE_COL).is_some()).count();
     if logo_keys.len() != logos_with_source {
         failed.push("logo-sources-not-unique".to_string());
     }
 
     // Every logo in a manifest must claim that manifest's scope, otherwise the row would materialize
     // into the wrong uniqueness bucket and could collide with the reader's own rows.
-    if logos.iter().any(|l| str_field(l, super::types::MANIFEST_ID_COL) != expected_scope) {
+    if logos.iter().any(|l| str_col(l, super::types::MANIFEST_ID_COL) != expected_scope) {
         failed.push("logo-scope-mismatch".to_string());
         explain.push("Logos carry a ManifestId that is not this manifest's own id".to_string());
     }
@@ -212,7 +205,7 @@ pub fn validate_data_bucket(bucket: &DataBucket) -> ValidationResult {
         if !super::types::is_manifest_scoped(name) {
             continue;
         }
-        if rows.iter().any(|row| str_field(row, super::types::MANIFEST_ID_COL) != expected_scope) {
+        if rows.iter().any(|row| str_col(row, super::types::MANIFEST_ID_COL) != expected_scope) {
             failed.push("dataBucket-scope-mismatch".to_string());
             explain.push(format!("{} carries rows stamped for another manifest", name));
             break;
