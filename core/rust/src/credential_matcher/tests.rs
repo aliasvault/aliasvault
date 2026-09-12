@@ -80,10 +80,6 @@ fn filter(credentials: Vec<Credential>, current_url: &str, page_title: &str) -> 
         .collect()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Test cases ported from CredentialMatcher.test.ts
-// ═══════════════════════════════════════════════════════════════════════════════
-
 /// [#1] - Exact URL match
 #[test]
 fn test_exact_url_match() {
