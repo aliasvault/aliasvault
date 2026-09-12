@@ -3,12 +3,13 @@
 
 use std::collections::HashMap;
 
+use super::db::SchemaState;
 use super::errors::{SyncError, SyncResult};
-use super::pull::{email_routing_of, materialize_to_sqlite, PulledVault};
-use super::push::{canonicalize_vault, resolve_personal_manifest_id};
+use super::pull::{self, email_routing_of, PulledVault};
+use super::push::resolve_personal_manifest_id;
 use super::state::{self, Ctx};
 use super::types::GetResponse;
-use crate::vault_codec::Manifest;
+use super::{engine, keys};
 
 /// The `storageFormat` a manifest-v1 snapshot declares; 0 (or absent) is a sqlite blob.
 const STORAGE_FORMAT_MANIFEST: i32 = 1;
@@ -30,6 +31,51 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
     }
     ctx.log("[V2Pull] Legacy sqlite-blob pass-through (user not yet migrated), returning the blob as-is.").await;
     Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), revision, email_routing: email_routing_of(snapshot), manifest_revisions, bucket_revisions: HashMap::new() })
+}
+
+/// The one-way move of a sqlite-blob account onto the manifest storage format: the local vault is rebuilt onto the
+/// current schema with its unstamped rows adopted into the personal manifest, and the push that carries it mints the
+/// account key hierarchy. Returns whether that push reached the server.
+pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
+    if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
+        return Err(SyncError::LegacyUpgradePending);
+    }
+    // Another device may have created the hierarchy since this one logged in. Adopting it swaps the session key to the VEK, which the baseline pull below needs.
+    if !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
+        return Err(SyncError::KeyOutOfSync);
+    }
+    record_server_baseline_if_missing(ctx).await?;
+    if keys::has_local_vault_key(&ctx.host).await? {
+        // The account turned out to be migrated already (adopted above, or pulled with the baseline); a schema rebuild is all that can remain.
+        return engine::migrate_schema(ctx).await;
+    }
+    if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
+        // The baseline pull adopted a server vault that is still on the chain.
+        return Err(SyncError::LegacyUpgradePending);
+    }
+    let personal = resolve_personal_manifest_id(ctx).await?;
+    engine::rebuild_local_schema(ctx, Some(personal)).await?;
+    engine::push_migrated_vault(ctx, true).await
+}
+
+/// A session that logged in through a client predating the manifest storage format never pulled through this engine,
+/// so it holds neither the personal manifest id nor the revision baseline, and the migration push needs both (the
+/// server refuses a write whose revision it does not know). Calling this method before a push fixes this.
+pub(crate) async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
+    if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_some() {
+        return Ok(());
+    }
+    ctx.log("[ManifestMigration] The session predates the manifest storage format and never pulled; fetching the server vault for the personal manifest id and the revision baseline.").await;
+    let pulled = pull::pull(ctx).await?;
+    if ctx.is_dirty && ctx.has_local_vault().await? {
+        ctx.warn("[ManifestMigration] The local vault has pending changes; keeping it and recording only the server's revisions so the migration push carries them.").await;
+        return pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await;
+    }
+    if !ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?.success {
+        return Err(SyncError::Other("a mutation raced the baseline pull; run the migration again".to_string()));
+    }
+    ctx.vault_changed = true;
+    pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await
 }
 
 /// The frozen sqlite-blob upgrade chain: (revision, data version). It ends at 2.0.0, the first schema compatible
@@ -82,24 +128,6 @@ pub(crate) fn stamp_predates_manifest_schema(migration_id: &str) -> SyncResult<b
     let database_version = extract_version_from_migration_id(migration_id).ok_or_else(|| SyncError::Other("Could not extract version from migration ID".to_string()))?;
     let revision = legacy_revision_for(&database_version).map_err(SyncError::VaultVersionIncompatible)?;
     Ok(revision < latest_legacy_revision())
-}
-
-/// Migrate the local vault onto the current schema, entirely locally.
-pub(crate) async fn migrate_vault_to_current_schema(ctx: &mut Ctx) -> SyncResult<Vec<u8>> {
-    ctx.log("[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...").await;
-    // A sqlite-blob vault's rows carry no ManifestId yet, so this one canonicalize adopts them.
-    let personal = resolve_personal_manifest_id(ctx).await?;
-    let set = canonicalize_vault(ctx, Some(personal)).await?;
-    let mut blob_map = HashMap::new();
-    for entry in &set.canonicalized.manifests {
-        for (hash, blob) in &entry.blobs {
-            blob_map.insert(hash.clone(), crate::encoding::base64_decode(&blob.bytes_base64)?);
-        }
-    }
-    let manifests: Vec<Manifest> = set.canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
-    let bytes = materialize_to_sqlite(ctx, &manifests, &set.canonicalized.data_buckets, &blob_map).await?;
-    ctx.log(format!("[ManifestMigration] Migration complete: {} blobs re-embedded, {} bytes.", blob_map.len(), bytes.len())).await;
-    Ok(bytes)
 }
 
 #[cfg(test)]

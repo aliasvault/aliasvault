@@ -276,7 +276,7 @@ async fn enter_offline_mode(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
 }
 
 /// Where the local vault's schema stands against the current one.
-async fn schema_state(ctx: &mut Ctx) -> SyncResult<SchemaState> {
+pub(crate) async fn schema_state(ctx: &mut Ctx) -> SyncResult<SchemaState> {
     let schema = ctx.schema().await?;
     db::schema_state(&ctx.host, &schema.migration_id).await
 }
@@ -500,43 +500,14 @@ async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
     MigrationStatusResult { kind, session: SessionOutcome::default() }
 }
 
-/// Upgrade the local vault to the current storage model and push it.
+/// Bring the local vault onto the current storage model and push it: a schema rebuild for a migrated account, the
+/// whole sqlite-blob move (`legacy::migrate_sqlite_blob`) for an account without a key hierarchy yet.
 async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     let migrated: SyncResult<bool> = async {
-        let encryption_key = ctx.encryption_key()?;
-        let schema = schema_state(ctx).await?;
-        if schema == SchemaState::LegacyChain {
-            return Err(SyncError::LegacyUpgradePending);
+        if !keys::has_local_vault_key(&ctx.host).await? {
+            return legacy::migrate_sqlite_blob(ctx).await;
         }
-        if !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
-            return Err(SyncError::KeyOutOfSync);
-        }
-        let needs_schema_migration = schema == SchemaState::Stale;
-        let needs_vault_key = !keys::has_local_vault_key(&ctx.host).await?;
-        if !needs_schema_migration && !needs_vault_key {
-            return Ok(true);
-        }
-        if needs_schema_migration {
-            let migrated_bytes = legacy::migrate_vault_to_current_schema(ctx).await?;
-            let stored = ctx.store_vault(&state::encrypt_vault_blob(&migrated_bytes, &encryption_key)?, true, None, None).await?;
-            ctx.mutation_sequence = stored.mutation_sequence;
-            ctx.is_dirty = true;
-            ctx.vault_changed = true;
-        }
-        match push::upload_vault(ctx, None, false, needs_vault_key).await {
-            Ok(upload) if upload.status == PushStatus::Ok => {
-                state::mark_clean(&ctx.host, upload.mutation_seq_at_start).await?;
-                Ok(true)
-            }
-            Ok(upload) => {
-                ctx.warn(format!("[ManifestMigration] Migration push did not succeed ({:?}), vault stays dirty for the next sync.", upload.status)).await;
-                Ok(false)
-            }
-            Err(error) => {
-                ctx.warn(format!("[ManifestMigration] Migration push failed, vault stays dirty for the next sync: {}", error)).await;
-                Ok(false)
-            }
-        }
+        migrate_schema(ctx).await
     }
     .await;
     match migrated {
@@ -544,6 +515,61 @@ async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
         Err(error) => {
             ctx.warn(format!("[ManifestMigration] Migration failed: {}", error)).await;
             MigrateManifestResult { failure: (&error).into(), ..Default::default() }
+        }
+    }
+}
+
+/// The permanent migration: rebuild a stale local schema onto the current one and push it. Returns whether the
+/// push reached the server; a vault already on the current schema counts as pushed.
+pub(crate) async fn migrate_schema(ctx: &mut Ctx) -> SyncResult<bool> {
+    match schema_state(ctx).await? {
+        SchemaState::Current => Ok(true),
+        SchemaState::LegacyChain => Err(SyncError::LegacyUpgradePending),
+        SchemaState::Stale => {
+            rebuild_local_schema(ctx, None).await?;
+            push_migrated_vault(ctx, false).await
+        }
+    }
+}
+
+/// Rebuild the local vault onto the current schema (a local round-trip through the codec, no server involved) and
+/// store it as a pending change. `adopt_unstamped_into` stamps rows that carry no manifest yet, which only a
+/// sqlite-blob vault has.
+pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, adopt_unstamped_into: Option<String>) -> SyncResult<()> {
+    ctx.log("[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...").await;
+    let set = push::canonicalize_vault(ctx, adopt_unstamped_into).await?;
+    let mut blob_map = HashMap::new();
+    for entry in &set.canonicalized.manifests {
+        for (hash, blob) in &entry.blobs {
+            blob_map.insert(hash.clone(), crate::encoding::base64_decode(&blob.bytes_base64)?);
+        }
+    }
+    let manifests: Vec<_> = set.canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
+    let bytes = pull::materialize_to_sqlite(ctx, &manifests, &set.canonicalized.data_buckets, &blob_map).await?;
+    ctx.log(format!("[ManifestMigration] Migration complete: {} blobs re-embedded, {} bytes.", blob_map.len(), bytes.len())).await;
+
+    let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, &ctx.encryption_key()?)?, true, None, None).await?;
+    ctx.mutation_sequence = stored.mutation_sequence;
+    ctx.is_dirty = true;
+    ctx.vault_changed = true;
+    Ok(())
+}
+
+/// Push the migrated vault and clear the dirty flag. A push the server refuses, or that fails, is not a migration
+/// failure: the vault stays dirty and the next sync carries it. Returns whether the push reached the server.
+pub(crate) async fn push_migrated_vault(ctx: &mut Ctx, create_vault_key: bool) -> SyncResult<bool> {
+    match push::upload_vault(ctx, None, false, create_vault_key).await {
+        Ok(upload) if upload.status == PushStatus::Ok => {
+            state::mark_clean(&ctx.host, upload.mutation_seq_at_start).await?;
+            Ok(true)
+        }
+        Ok(upload) => {
+            ctx.warn(format!("[ManifestMigration] Migration push did not succeed ({:?}), vault stays dirty for the next sync.", upload.status)).await;
+            Ok(false)
+        }
+        Err(error) => {
+            ctx.warn(format!("[ManifestMigration] Migration push failed, vault stays dirty for the next sync: {}", error)).await;
+            Ok(false)
         }
     }
 }
