@@ -301,6 +301,11 @@ get_rust_core_version() {
     grep "^version = " "$REPO_ROOT/core/rust/Cargo.toml" | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2
 }
 
+# Function to extract version from core client package.json
+get_core_client_version() {
+    grep "\"version\": " "$REPO_ROOT/core/client/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+}
+
 # Check current versions
 server_version=$(get_server_version)
 browser_wxt_version=$(get_browser_extension_version)
@@ -312,6 +317,7 @@ ios_version=$(get_ios_version)
 android_version=$(get_android_version)
 safari_version=$(get_safari_version)
 rust_core_version=$(get_rust_core_version)
+core_client_version=$(get_core_client_version)
 
 # Create associative array of versions
 declare -A versions
@@ -325,6 +331,7 @@ versions["ios"]="$ios_version"
 versions["android"]="$android_version"
 versions["safari"]="$safari_version"
 versions["rust_core"]="$rust_core_version"
+versions["core_client"]="$core_client_version"
 
 # Create display names for output
 declare -A display_names
@@ -338,6 +345,7 @@ display_names["ios"]="iOS App"
 display_names["android"]="Android App"
 display_names["safari"]="Safari Extension"
 display_names["rust_core"]="Rust Core"
+display_names["core_client"]="Core Client (package.json)"
 
 # Function to normalize version by removing stage suffix
 normalize_version() {
@@ -651,6 +659,25 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
+
+    # Update core client package.json version (without suffix: npm requires plain semver
+    # and this package is consumed via a file: link, never published).
+    echo -e "${BLUE}Updating core client package.json version...${RESET}"
+    update_version "$REPO_ROOT/core/client/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+
+    # Update core client package-lock.json. The project version appears twice (the root
+    # object and the "" package entry), each on the line directly after a
+    # `"name": "@aliasvault/client"` line. Anchoring on that name leaves the dependency
+    # "version" lines untouched (same approach as the docs package-lock.json above).
+    echo -e "${BLUE}Updating core client package-lock.json version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/client/package-lock.json"
+
+    # The browser extension links core/client via file:, so npm inlines that manifest
+    # (name + version) into its own lockfile. Keep it in sync to avoid lockfile churn.
+    echo -e "${BLUE}Updating browser extension package-lock.json core client version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
     echo -e "${BLUE}Updating Rust core version...${RESET}"
