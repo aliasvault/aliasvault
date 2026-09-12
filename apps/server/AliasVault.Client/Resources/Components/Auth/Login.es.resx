@@ -103,7 +103,7 @@
   </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
-    <value>¿Perdiste contraseña?</value>
+    <value>¿Contraseña perdida?</value>
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
@@ -111,11 +111,11 @@
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Iniciar sesión con un código de recuperación en su lugar.</value>
+    <value>Iniciar sesión con un código de recuperación en cambio.</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Iniciar sesión con un código de autenticación en su lugar.</value>
+    <value>Iniciar sesión con un código de autenticación en cambio.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
