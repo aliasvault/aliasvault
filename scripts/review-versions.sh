@@ -62,12 +62,12 @@ get_android_build() {
 
 # Function to extract version from Safari extension
 get_safari_version() {
-    grep "MARKETING_VERSION = " ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " ../apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract Safari build number
 get_safari_build() {
-    grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Collect all versions

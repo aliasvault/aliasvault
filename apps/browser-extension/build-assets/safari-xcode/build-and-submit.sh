@@ -90,7 +90,7 @@ echo ""
 
 if [[ $CHOICE == "1" || $CHOICE == "2" ]]; then
   echo "Building browser extension..."
-  pushd "$SCRIPT_DIR/.." > /dev/null
+  pushd "$SCRIPT_DIR/../.." > /dev/null
   npm run build:safari
   popd > /dev/null
 
@@ -191,7 +191,7 @@ fi
 echo "✅ Proceeding with upload..."
 
 # Calculate path to repository root and metadata
-REPO_ROOT="$SCRIPT_DIR/../../.."
+REPO_ROOT="$SCRIPT_DIR/../../../.."
 METADATA_PATH="$REPO_ROOT/fastlane/metadata/browser-extension"
 
 # ------------------------------------------

@@ -293,7 +293,7 @@ get_android_version() {
 
 # Function to extract version from Safari extension
 get_safari_version() {
-    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from Rust core Cargo.toml
@@ -507,7 +507,7 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -656,7 +656,7 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
 
     # Update Safari extension version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
     echo -e "${BLUE}Updating Safari extension version...${RESET}"
-    update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+    update_version "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
 
@@ -733,7 +733,7 @@ if [[ "$MARKETING_UPDATE" != true ]]; then
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -759,7 +759,7 @@ update_version "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" \
     "versionCode $new_android_build" \
     "Android App"
 
-update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+update_version "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_safari_build;" \
     "Safari Extension"

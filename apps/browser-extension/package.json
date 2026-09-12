@@ -5,7 +5,7 @@
   "version": "0.31.0",
   "type": "module",
   "scripts": {
-    "build:rust": "cd ../../core/rust && ./build.sh --browser",
+    "build:rust": "cd ../../core/rust && bash ./build.sh --browser",
     "dev:chrome": "wxt -b chrome",
     "dev:firefox": "wxt -b firefox",
     "dev:edge": "wxt -b edge",
@@ -26,6 +26,7 @@
     "zip:firefox": "wxt zip -b firefox",
     "zip:edge": "wxt zip -b edge",
     "compile": "tsc --noEmit",
+    "preinstall": "node scripts/install-core-deps.mjs",
     "postinstall": "wxt prepare"
   },
   "dependencies": {

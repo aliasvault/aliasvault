@@ -72,18 +72,18 @@
 		CE0CAFC52D81A9F8006174AB /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
 		CE0CAFC72D81A9F8006174AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE0CAFC82D81A9F8006174AB /* AliasVault_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AliasVault_Extension.entitlements; sourceTree = "<group>"; };
-		CE0CAFD32D81A9F8006174AB /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = "../../dist/safari-mv2/background.js"; sourceTree = "<group>"; };
-		CE0CAFD42D81A9F8006174AB /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = "../../dist/safari-mv2/popup.html"; sourceTree = "<group>"; };
-		CE0CAFD52D81A9F8006174AB /* chunks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = chunks; path = "../../dist/safari-mv2/chunks"; sourceTree = "<group>"; };
-		CE0CAFD62D81A9F8006174AB /* content-scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "content-scripts"; path = "../../dist/safari-mv2/content-scripts"; sourceTree = "<group>"; };
-		CE0CAFD72D81A9F8006174AB /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = "../../dist/safari-mv2/manifest.json"; sourceTree = "<group>"; };
-		CE0CAFD82D81A9F8006174AB /* icon */ = {isa = PBXFileReference; lastKnownFileType = folder; name = icon; path = "../../dist/safari-mv2/icon"; sourceTree = "<group>"; };
-		CE0CAFD92D81A9F8006174AB /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = "../../dist/safari-mv2/assets"; sourceTree = "<group>"; };
-		CE0CAFDA2D81A9F8006174AB /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = "../../dist/safari-mv2/src"; sourceTree = "<group>"; };
+		CE0CAFD32D81A9F8006174AB /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = "../../../dist/safari-mv2/background.js"; sourceTree = "<group>"; };
+		CE0CAFD42D81A9F8006174AB /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = "../../../dist/safari-mv2/popup.html"; sourceTree = "<group>"; };
+		CE0CAFD52D81A9F8006174AB /* chunks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = chunks; path = "../../../dist/safari-mv2/chunks"; sourceTree = "<group>"; };
+		CE0CAFD62D81A9F8006174AB /* content-scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "content-scripts"; path = "../../../dist/safari-mv2/content-scripts"; sourceTree = "<group>"; };
+		CE0CAFD72D81A9F8006174AB /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = "../../../dist/safari-mv2/manifest.json"; sourceTree = "<group>"; };
+		CE0CAFD82D81A9F8006174AB /* icon */ = {isa = PBXFileReference; lastKnownFileType = folder; name = icon; path = "../../../dist/safari-mv2/icon"; sourceTree = "<group>"; };
+		CE0CAFD92D81A9F8006174AB /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = "../../../dist/safari-mv2/assets"; sourceTree = "<group>"; };
+		CE0CAFDA2D81A9F8006174AB /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = "../../../dist/safari-mv2/src"; sourceTree = "<group>"; };
 		CE0E5BAF2E7D8BA600515C80 /* AliasVault.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AliasVault.icon; sourceTree = "<group>"; };
-		CEA194E32EB6221B00EAB23B /* webauthn.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = webauthn.js; path = "../../dist/safari-mv2/webauthn.js"; sourceTree = "<group>"; };
-		CEA194E52EB6248D00EAB23B /* offscreen.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = offscreen.html; path = "../../dist/safari-mv2/offscreen.html"; sourceTree = "<group>"; };
-		CEA194E62EB6248D00EAB23B /* offscreen.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = offscreen.js; path = "../../dist/safari-mv2/offscreen.js"; sourceTree = "<group>"; };
+		CEA194E32EB6221B00EAB23B /* webauthn.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = webauthn.js; path = "../../../dist/safari-mv2/webauthn.js"; sourceTree = "<group>"; };
+		CEA194E52EB6248D00EAB23B /* offscreen.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = offscreen.html; path = "../../../dist/safari-mv2/offscreen.html"; sourceTree = "<group>"; };
+		CEA194E62EB6248D00EAB23B /* offscreen.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = offscreen.js; path = "../../../dist/safari-mv2/offscreen.js"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

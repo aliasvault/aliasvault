@@ -1,7 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx,html}"
+    "./src/**/*.{js,jsx,ts,tsx,html}",
+    // Test fixtures are not shipped, so strip out of CSS.
+    "!./src/**/__tests__/**"
   ],
   darkMode: 'class',
   theme: {

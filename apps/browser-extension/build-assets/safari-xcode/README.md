@@ -14,7 +14,7 @@ To recreate this project, run the following command in the browser-extension roo
 npm run build:safari
 
 # Convert the safari extension to an Xcode project (requires MacOS/XCode command line interface)
-xcrun safari-web-extension-converter --bundle-identifier net.aliasvault.safari --macos-only dist/safari-mv2 --project-location safari-xcode --force
+xcrun safari-web-extension-converter --bundle-identifier net.aliasvault.safari --macos-only dist/safari-mv2 --project-location build-assets/safari-xcode --force
 
 # After the Xcode project is opened, you can run the extension by clicking the "Run" button in the top left corner of the Xcode window.
 # This will install the extension to your Safari browser and allow you to run it.

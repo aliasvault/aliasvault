@@ -441,7 +441,7 @@ temp
 *.keystore
 
 # Safari extension build files
-apps/browser-extension/safari-xcode/build
+apps/browser-extension/build-assets/safari-xcode/build
 
 # Rust core binaries (built by ./build.sh in core/rust)
 # These are platform-specific and must be built locally or by CI

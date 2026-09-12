@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
 import { defineConfig } from 'wxt';
@@ -32,6 +33,13 @@ function asciiOnlyJsPlugin(): Plugin {
 }
 
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
+
+/*
+ * README that is placed in the root of the Firefox sources archive. It is added after zipping because
+ * wxt keeps the path of every included file, and the archive root maps to the repository root which
+ * already has its own README.md.
+ */
+const SOURCES_README = path.resolve(import.meta.dirname, 'build-assets/firefox-sources/README.md');
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -126,6 +134,15 @@ export default defineConfig({
       })
     ],
   }),
+  hooks: {
+    'zip:sources:done': (_wxt, zipPath): void => {
+      try {
+        execFileSync('zip', ['-jq', zipPath, SOURCES_README]);
+      } catch (error) {
+        throw new Error(`Could not add README.md to ${path.basename(zipPath)}, is the 'zip' command available? ${error}`);
+      }
+    },
+  },
   zip: {
     // Firefox source archive (zip) requires all the files the build needs locally inside the archive.
     sourcesRoot: path.resolve(CORE_DIR, '..'),
@@ -134,16 +151,21 @@ export default defineConfig({
       'core/client/**/*',
       'core/models/**/*',
       'core/vault/**/*',
+      'core/rust/**/*',
+      'core/rust/.cargo/**/*',
+      'LICENSE.md',
     ],
     excludeSources: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.wxt/**',
-      'apps/browser-extension/safari-xcode/build/**',
+      'core/rust/target/**',
+      'apps/browser-extension/build-assets/safari-xcode/build/**',
       '**/xcuserdata/**',
       'apps/browser-extension/playwright-report/**',
       'apps/browser-extension/test-results/**',
       'apps/browser-extension/tests/**',
+      'apps/browser-extension/build-assets/firefox-sources/**',
       'apps/browser-extension/stats.html',
       'apps/browser-extension/stats-*.json',
       '**/*.log',

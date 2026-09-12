@@ -79,7 +79,7 @@ npm run build:edge
 npm run build:safari
 ```
 
-2. Open the Xcode project in the `safari-xcode/AliasVault.xcodeproj` folder and build / run the app.
+2. Open the Xcode project in the `build-assets/safari-xcode/AliasVault.xcodeproj` folder and build / run the app.
 
 3. The extension will be installed automatically in Safari. Follow the on-screen MacOS app instructions to complete the installation.
 
