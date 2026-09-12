@@ -28,6 +28,15 @@ pub enum ErrorCode {
     /// The server answered a request with an unexpected HTTP failure.
     #[serde(rename = "E-506")]
     SyncServerError,
+    /// A server response (or a request body) is not the JSON shape this client expects.
+    #[serde(rename = "E-507")]
+    SyncResponseInvalid,
+    /// The core library (codec, merge or crypto) refused the vault data.
+    #[serde(rename = "E-508")]
+    SyncCodecFailed,
+    /// The engine hit a state it has no rule for; the message says which.
+    #[serde(rename = "E-509")]
+    SyncEngineFailed,
     /// The host failed a read command (state, database, at-rest blob).
     #[serde(rename = "E-601")]
     StorageReadFailed,
@@ -167,7 +176,9 @@ impl SyncError {
             SyncError::UploadRejected(_) | SyncError::MissingBlobs(_) => Failure::Coded(ErrorCode::UploadFailed),
             SyncError::LegacyUpgradePending => Failure::Coded(ErrorCode::MigrationCheckFailed),
             SyncError::Host { command, .. } => Failure::Coded(command.storage_error_code()),
-            SyncError::Json(_) | SyncError::Core(_) | SyncError::Other(_) => Failure::Coded(ErrorCode::UnknownError),
+            SyncError::Json(_) => Failure::Coded(ErrorCode::SyncResponseInvalid),
+            SyncError::Core(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
+            SyncError::Other(_) => Failure::Coded(ErrorCode::SyncEngineFailed),
         }
     }
 
@@ -199,5 +210,13 @@ mod tests {
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
         assert_eq!(SyncError::Host { command: CommandKind::DbOpen, message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));
         assert_eq!(SyncError::Host { command: CommandKind::DbExec, message: String::new() }.failure(), Failure::Coded(ErrorCode::StorageWriteFailed));
+    }
+
+    #[test]
+    fn engine_internal_failures_carry_their_own_codes() {
+        assert_eq!(SyncError::Other("no rule".to_string()).failure(), Failure::Coded(ErrorCode::SyncEngineFailed));
+        assert_eq!(SyncError::Core(VaultError::General("codec".to_string())).failure(), Failure::Coded(ErrorCode::SyncCodecFailed));
+        assert_eq!(serde_json::from_str::<serde_json::Value>("nope").map_err(SyncError::Json).unwrap_err().failure(), Failure::Coded(ErrorCode::SyncResponseInvalid));
+        assert_eq!(serde_json::to_string(&ErrorCode::SyncEngineFailed).unwrap(), "\"E-509\"");
     }
 }

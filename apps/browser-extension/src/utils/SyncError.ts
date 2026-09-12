@@ -38,7 +38,8 @@ export function syncErrorMessage(detail: SyncErrorDetail, t: TFunction): string 
   }
   if (detail.errorCode) {
     const code = isErrorCode(detail.errorCode) ? detail.errorCode : AppErrorCode.UNKNOWN_ERROR;
-    return formatErrorWithCode(t(getErrorTranslationKey(code)), code);
+    const message = formatErrorWithCode(t(getErrorTranslationKey(code)), code);
+    return detail.error ? `${message}\n${detail.error}` : message;
   }
   return detail.error;
 }

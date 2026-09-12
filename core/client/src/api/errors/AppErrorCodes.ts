@@ -52,6 +52,9 @@ export enum AppErrorCode {
   SYNC_STORE_FAILED = 'E-504', // Failed to store synced vault locally
   SYNC_SERVER_UNREACHABLE = 'E-505', // Server unreachable and no local vault to fall back on
   SYNC_SERVER_ERROR = 'E-506', // The server answered a sync request with an unexpected HTTP failure
+  SYNC_RESPONSE_INVALID = 'E-507', // A server response is not the JSON shape this client expects
+  SYNC_CODEC_FAILED = 'E-508', // The core library (codec, merge or crypto) refused the vault data
+  SYNC_ENGINE_FAILED = 'E-509', // The sync engine hit a state it has no rule for (the detail says which)
 
   // Storage read/write errors (E-6xx)
   STORAGE_READ_FAILED = 'E-601',
@@ -150,6 +153,9 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.SYNC_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.SYNC_SERVER_UNREACHABLE]: 'common.errors.serverNotAvailable',
     [AppErrorCode.SYNC_SERVER_ERROR]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_RESPONSE_INVALID]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_ENGINE_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Storage read/write errors (E-6xx)
     [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
