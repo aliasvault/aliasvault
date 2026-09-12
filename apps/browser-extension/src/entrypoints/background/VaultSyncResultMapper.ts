@@ -52,7 +52,7 @@ export function toSyncErrorDetail(result: Pick<VaultSyncEngineResult, 'error' | 
     return { errorKey: logoutErrorKey(result.errorKey) };
   }
 
-  return { errorCode: result.errorCode && isErrorCode(result.errorCode) ? result.errorCode : AppErrorCode.UNKNOWN_ERROR };
+  return { errorCode: result.errorCode && isErrorCode(result.errorCode) ? result.errorCode : AppErrorCode.UNKNOWN_ERROR, error: result.error };
 }
 
 /**

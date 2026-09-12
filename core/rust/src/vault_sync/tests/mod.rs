@@ -667,3 +667,4 @@ fn dirty_legacy_account_probes_for_a_vault_key_once_per_run() {
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(host.requests_to("v2/VaultKey/Password").len(), 1);
 }
+

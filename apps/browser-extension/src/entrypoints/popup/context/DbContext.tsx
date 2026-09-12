@@ -287,7 +287,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes(AppErrorCode.VAULT_LOCKED)) {
         // Vault is locked which is expected when the popup is opened after auto-lock timeout or browser restart.
-        console.info('Vault is locked; popup will prompt for unlock');
       } else {
         console.error('Error retrieving vault from background:', error);
       }

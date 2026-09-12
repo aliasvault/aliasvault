@@ -29,7 +29,7 @@ import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorSta
 import { syncResult, toFullVaultSyncResult, toSyncErrorDetail } from '@/entrypoints/background/VaultSyncResultMapper';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
-import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
+import { devLog, devWarn } from '@/utils/devLogger/DevLogger';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -251,7 +251,6 @@ export async function handleGetVault(
     }
 
     if (!encryptionKey) {
-      console.info('Encryption key not available (vault locked)');
       // E-202: No encryption key available (vault is locked)
       return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
@@ -802,7 +801,7 @@ export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationKin
     const result = await runVaultMigrationStatus(syncEngineHost);
     return result.kind as VaultMigrationKind;
   } catch (error) {
-    devWarn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
+    console.warn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
     return VaultMigrationKind.StorageFormatUpgrade;
   }
 }
@@ -826,10 +825,12 @@ export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrati
     const result = await runVaultManifestMigration(syncEngineHost);
     if (result.success) {
       devLog(result.pushed ? '[ManifestMigration] Migration pushed to the server.' : '[ManifestMigration] Migration stored locally; the vault stays dirty for the next sync.');
+    } else {
+      console.error('[ManifestMigration] Manifest migration failed:', result);
     }
     return { success: result.success, pushed: result.pushed, ...toSyncErrorDetail(result) };
   } catch (error) {
-    devError('[ManifestMigration] Manifest migration failed:', error);
+    console.error('[ManifestMigration] Manifest migration threw:', error);
     return { success: false, pushed: false, error: error instanceof Error ? error.message : undefined };
   }
 }

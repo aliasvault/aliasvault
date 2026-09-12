@@ -6,6 +6,6 @@ export type SyncErrorDetail = {
   errorKey?: string;
   /** Client error code (`E-xxx`) whose translation is shown, tagged with the code. */
   errorCode?: string;
-  /** Message shown as-is when neither a key nor a code applies. */
+  /** The failure detail: shown as-is when neither a key nor a code applies, otherwise kept for logs and diagnostics. */
   error?: string;
 };

@@ -87,6 +87,7 @@ const Upgrade: React.FC = () => {
   const [stage, setStage] = useState<Stage>('classifying');
   const [kind, setKind] = useState<UpgradeKind | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
   const [latestVersion, setLatestVersion] = useState<VaultVersion | null>(null);
   const [showSelfHostedWarning, setShowSelfHostedWarning] = useState(false);
@@ -156,6 +157,7 @@ const Upgrade: React.FC = () => {
    */
   const runManifestMigration = useCallback(async (migrationKind: UpgradeKind): Promise<void> => {
     setError(null);
+    setErrorDetail(null);
     setKind(migrationKind);
     setStage('upgrading');
 
@@ -163,7 +165,10 @@ const Upgrade: React.FC = () => {
 
     if (!result.success) {
       // Back to the consent screen, where the same button retries and the error says why it has to.
-      setError(syncErrorMessage(result, t) ?? t('common.errors.unknownError'));
+      console.error('[Upgrade] Vault manifest migration failed:', result);
+      const message = syncErrorMessage(result, t) ?? t('common.errors.unknownError');
+      setError(message);
+      setErrorDetail(result.error && result.error !== message ? result.error : null);
       setStage('consent');
       setIsInitialLoading(false);
       return;
@@ -264,6 +269,7 @@ const Upgrade: React.FC = () => {
     }
 
     setError(null);
+    setErrorDetail(null);
     setStage('upgrading');
 
     try {
@@ -437,6 +443,9 @@ const Upgrade: React.FC = () => {
         {error && (
           <div className="mb-4 text-red-500 dark:text-red-400 break-words">
             {error}
+            {errorDetail && (
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 break-all">{errorDetail}</div>
+            )}
           </div>
         )}
 
