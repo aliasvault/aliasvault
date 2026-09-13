@@ -433,7 +433,7 @@ class VaultStore(
 
     /**
      * Execute a raw SQL command on the vault without parameters.
-     * Splits the query by semicolons to handle multiple statements.
+     * Splits the query by semicolons to handle multiple statements (see SqlScript).
      *
      * Note: Migration SQL scripts handle their own transactions and PRAGMA statements.
      * PRAGMA foreign_keys statements MUST be executed outside of transactions to take effect,
@@ -442,13 +442,7 @@ class VaultStore(
     fun executeRaw(queryString: String) {
         val db = database.dbConnection ?: error("Database not initialized")
 
-        // Strip BOM (U+FEFF) that may be present at the start of SQL strings.
-        val cleanedQuery = queryString.trimStart('\uFEFF')
-
-        // Split by semicolons to handle multiple statements and filter out empty ones
-        cleanedQuery.split(";")
-            .map { it.trim().trimStart('\uFEFF') }
-            .filter { it.isNotEmpty() && !it.startsWith("--") }
+        SqlScript.splitStatements(queryString)
             .forEach { trimmed ->
                 val upperTrimmed = trimmed.uppercase()
                 when {
@@ -780,6 +774,10 @@ class VaultStore(
      * account's VEK), persisting it to the keystore when biometrics are enabled.
      */
     fun adoptEncryptionKey(base64EncryptionKey: String) {
+        // Skip if the key is the same as the current one to prevent unnecessary keystore writes and therefore prompts to user.
+        if (crypto.encryptionKey?.contentEquals(android.util.Base64.decode(base64EncryptionKey, android.util.Base64.NO_WRAP)) == true) {
+            return
+        }
         crypto.storeEncryptionKey(base64EncryptionKey, auth.getAuthMethods())
     }
 

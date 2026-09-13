@@ -272,7 +272,7 @@ class VaultSyncEngine(
      * Run a multi-statement SQL script. Statements split on semicolons, except inside a trigger body.
      */
     private fun executeScript(db: SQLiteDatabase, script: String) {
-        for (statement in splitStatements(script)) {
+        for (statement in SqlScript.splitStatements(script)) {
             val upper = statement.uppercase()
             when {
                 upper.startsWith("PRAGMA") -> db.rawQuery(statement, null)?.close()
@@ -280,29 +280,6 @@ class VaultSyncEngine(
                 else -> db.compileStatement(statement).use { it.execute() }
             }
         }
-    }
-
-    /**
-     * Split a script into statements on semicolons, keeping a trigger body (`CREATE TRIGGER ... END`) whole.
-     */
-    private fun splitStatements(script: String): List<String> {
-        val statements = mutableListOf<String>()
-        val trigger = StringBuilder()
-        val chunks = script.trimStart('\uFEFF').split(";").map { it.trim().trimStart('\uFEFF') }
-        for (chunk in chunks.filter { it.isNotEmpty() && !it.startsWith("--") }) {
-            if (trigger.isNotEmpty()) {
-                trigger.append(chunk).append(";")
-                if (chunk.uppercase() == "END") {
-                    statements.add(trigger.toString())
-                    trigger.clear()
-                }
-            } else if (chunk.uppercase().contains("CREATE TRIGGER")) {
-                trigger.append(chunk).append(";")
-            } else {
-                statements.add(chunk)
-            }
-        }
-        return statements
     }
 
     private fun export(db: SQLiteDatabase): ByteArray {
