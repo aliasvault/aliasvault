@@ -128,7 +128,7 @@ extension VaultStore {
 
             // Try to decrypt the vault to verify the password is correct
             guard let encryptedDbBase64 = getEncryptedDatabase(),
-                  let encryptedDbData = Data(base64Encoded: encryptedDbBase64) else {
+                  let encryptedDbData = Data(base64Encoded: encryptedDbBase64, options: .ignoreUnknownCharacters) else {
                 return nil
             }
 

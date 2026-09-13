@@ -42,13 +42,13 @@ public struct PasskeyRow {
 
         // Handle optional blob fields
         if let userHandleBase64 = row["UserHandle"] as? String {
-            self.userHandle = Data(base64Encoded: userHandleBase64)
+            self.userHandle = Data(base64Encoded: userHandleBase64, options: .ignoreUnknownCharacters)
         } else {
             self.userHandle = nil
         }
 
         if let prfKeyBase64 = row["PrfKey"] as? String {
-            self.prfKey = Data(base64Encoded: prfKeyBase64)
+            self.prfKey = Data(base64Encoded: prfKeyBase64, options: .ignoreUnknownCharacters)
         } else {
             self.prfKey = nil
         }
