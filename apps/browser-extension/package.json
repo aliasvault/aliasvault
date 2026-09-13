@@ -49,7 +49,7 @@
     "react-router-dom": "^7.18.1",
     "secure-remote-password": "github:LinusU/secure-remote-password#73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0",
     "sql.js": "^1.12.0",
-    "vitest": "^4.1.8",
+    "vitest": "^5.0.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
