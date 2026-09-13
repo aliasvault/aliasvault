@@ -9,6 +9,7 @@ import { PasskeyRepository } from '@aliasvault/client/database/repositories/Pass
 import { SettingsRepository } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@aliasvault/vault';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { VaultCodec } from '@aliasvault/client/sync/VaultCodec';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import { NativeDatabaseClient } from '@/platform/NativeDatabaseClient';
@@ -218,19 +219,12 @@ class SqliteClient {
    * Uses semantic versioning to allow backwards-compatible minor/patch versions.
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
-    // Query the migrations history table for the latest migration
-    const results = await this.database.executeQuery<{ MigrationId: string }>(`
-      SELECT MigrationId
-      FROM __EFMigrationsHistory
-      ORDER BY MigrationId DESC
-      LIMIT 1`);
-
-    if (results.length === 0) {
+    const migrationId = await this.getLatestMigrationId();
+    if (!migrationId) {
       throw new Error('No migrations found');
     }
 
     // Extract version from migration ID (e.g., "20240917191243_1.4.1-RenameAttachmentsPlural" -> "1.4.1")
-    const migrationId = results[0].MigrationId;
     const databaseVersion = extractVersionFromMigrationId(migrationId);
 
     if (!databaseVersion) {
@@ -274,6 +268,50 @@ class SqliteClient {
     const vaultSqlGenerator = new VaultSqlGenerator();
     const allVersions = vaultSqlGenerator.getAllVersions();
     return allVersions[allVersions.length - 1];
+  }
+
+  /**
+   * Whether the vault still has to walk the sqlite-blob upgrade chain (VAULT_VERSIONS, frozen at 2.0.0) via the upgrade
+   * page before it is eligible for anything else. Throws VaultVersionIncompatibleError for a vault newer than this app.
+   *
+   * TODO: this is the legacy sqlite-blob migration path; delete once all users have migrated.
+   */
+  public async requiresLegacySqliteBlobMigration(): Promise<boolean> {
+    const currentVersion = await this.getDatabaseVersion();
+    const latestVersion = await this.getLatestDatabaseVersion();
+    return currentVersion.revision < latestVersion.revision;
+  }
+
+  /**
+   * Whether the local database schema is older than the current full schema (COMPLETE_SCHEMA_SQL), which the manifest
+   * migration rebuilds. Not applicable while the sqlite-blob chain is still pending.
+   */
+  public async requiresSchemaMigration(): Promise<boolean> {
+    if (await this.requiresLegacySqliteBlobMigration()) {
+      return false;
+    }
+
+    const localMigrationId = await this.getLatestMigrationId();
+    const schemaMigrationId = VaultCodec.getSchemaMigrationId(new VaultSqlGenerator().getCompleteSchemaSql());
+
+    // An unstamped database or an unreadable schema constant gives no evidence of staleness; don't block on a guess.
+    if (!localMigrationId || !schemaMigrationId) {
+      return false;
+    }
+
+    return localMigrationId < schemaMigrationId;
+  }
+
+  /**
+   * The latest EF migration id the vault is stamped with, or null when it carries none.
+   */
+  private async getLatestMigrationId(): Promise<string | null> {
+    const results = await this.database.executeQuery<{ MigrationId: string }>(`
+      SELECT MigrationId
+      FROM __EFMigrationsHistory
+      ORDER BY MigrationId DESC
+      LIMIT 1`);
+    return results[0]?.MigrationId ?? null;
   }
 }
 

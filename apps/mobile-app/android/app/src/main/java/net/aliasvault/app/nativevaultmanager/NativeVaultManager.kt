@@ -1476,6 +1476,66 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Classify the pending manifest migration (see VaultStore.getVaultMigrationStatus). Rejects with the native error code.
+     * @param promise The promise to resolve with the migration kind.
+     */
+    @ReactMethod
+    override fun getVaultMigrationStatus(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val kind = vaultStore.getVaultMigrationStatus(webApiService)
+                withContext(Dispatchers.Main) {
+                    promise.resolve(kind)
+                }
+            } catch (e: AppError) {
+                withContext(Dispatchers.Main) {
+                    promise.reject(e.code, e.message, e)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error classifying the pending vault migration", e)
+                    promise.reject("VAULT_MIGRATION_STATUS_ERROR", "Failed to classify the pending vault migration: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    /**
+     * Run the pending manifest migration and push it (see VaultStore.migrateVaultManifest). Failures resolve with the error code.
+     * @param promise The promise to resolve with the migration result.
+     */
+    @ReactMethod
+    override fun migrateVaultManifest(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = vaultStore.migrateVaultManifest(webApiService)
+                val resultMap = Arguments.createMap().apply {
+                    putBoolean("success", result.success)
+                    putBoolean("pushed", result.pushed)
+                    if (result.error != null) {
+                        putString("error", result.error)
+                    } else {
+                        putNull("error")
+                    }
+                    if (result.errorMessage != null) {
+                        putString("errorMessage", result.errorMessage)
+                    } else {
+                        putNull("errorMessage")
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    promise.resolve(resultMap)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error migrating the vault", e)
+                    promise.reject("VAULT_MIGRATION_ERROR", "Failed to migrate the vault: ${e.message}", e)
+                }
+            }
+        }
+    }
+
     // MARK: - PIN Unlock Methods
 
     /**

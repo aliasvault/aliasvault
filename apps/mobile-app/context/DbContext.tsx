@@ -27,6 +27,7 @@ type DbContextType = {
   refreshSyncState: () => Promise<void>;
   storeEncryptionKey: (derivedKey: string) => Promise<void>;
   storeEncryptionKeyDerivationParams: (keyDerivationParams: EncryptionKeyDerivationParams) => Promise<void>;
+  requiresLegacySqliteBlobMigration: () => Promise<boolean>;
   hasPendingMigrations: () => Promise<boolean>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
@@ -119,14 +120,24 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [sqliteClient]);
 
   /**
-   * Check if there are any pending migrations. This method also checks if the current vault version is known to the client.
-   * If the current vault version is not known to the client, the method will throw an exception which causes the app to logout.
+   * Whether the vault still has to walk the legacy sqlite-blob upgrade chain (pre-2.0.0). Throws when the vault version
+   * is unknown to this app, which makes the caller log out.
+   */
+  const requiresLegacySqliteBlobMigration = useCallback(async () => {
+    return await sqliteClient.requiresLegacySqliteBlobMigration();
+  }, [sqliteClient]);
+
+  /**
+   * Whether the vault has to go through the upgrade page before any other page may query it: the legacy sqlite-blob
+   * chain, a schema older than this app's, or an account without its key hierarchy yet (the manifest migration). The
+   * upgrade page classifies which applies. Throws when the vault version is unknown to this app, which makes the caller log out.
    */
   const hasPendingMigrations = useCallback(async () => {
-    const currentVersion = await sqliteClient.getDatabaseVersion();
-    const latestVersion = await sqliteClient.getLatestDatabaseVersion();
+    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
+      return true;
+    }
 
-    return currentVersion.revision < latestVersion.revision;
+    return await sqliteClient.requiresSchemaMigration() || (await NativeVaultManager.getAccountKeyChain()) === null;
   }, [sqliteClient]);
 
   const checkStoredVault = useCallback(async () => {
@@ -301,6 +312,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setIsOffline,
     shouldSuppressEmailErrors,
     refreshSyncState,
+    requiresLegacySqliteBlobMigration,
     hasPendingMigrations,
     clearDatabase,
     getVaultMetadata,
@@ -311,7 +323,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     storeEncryptionKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyEncryptionKey, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyEncryptionKey, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

@@ -37,8 +37,11 @@ export interface Spec extends TurboModule {
   // Store the encrypted vault blob for persistence and which is also accessed by the native autofill extensions.
   storeEncryptedDatabase(base64EncryptedDb: string): Promise<void>;
 
-  // Vault sync
-  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null; errorMessage: string | null }>;
+  // Vault sync. A vault that still has to be upgraded is reported through the two *Required flags and not synced.
+  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null; errorMessage: string | null; sqliteBlobUpgradeRequired: boolean; manifestMigrationRequired: boolean }>;
+  
+  getVaultMigrationStatus(): Promise<string>;
+  migrateVaultManifest(): Promise<{ success: boolean; pushed: boolean; error: string | null; errorMessage: string | null }>;
 
   // Quick check if sync is needed
   checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;

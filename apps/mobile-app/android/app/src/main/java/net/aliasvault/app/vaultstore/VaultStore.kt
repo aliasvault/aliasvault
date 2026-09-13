@@ -811,6 +811,20 @@ class VaultStore(
         return sync.syncVaultWithServer(webApiService)
     }
 
+    /**
+     * Classify the pending manifest migration (see VaultSync.getVaultMigrationStatus).
+     */
+    suspend fun getVaultMigrationStatus(webApiService: net.aliasvault.app.webapi.WebApiService): String {
+        return sync.getVaultMigrationStatus(webApiService)
+    }
+
+    /**
+     * Run the pending manifest migration and push it (see VaultSync.migrateVaultManifest).
+     */
+    suspend fun migrateVaultManifest(webApiService: net.aliasvault.app.webapi.WebApiService): VaultMigrationResult {
+        return sync.migrateVaultManifest(webApiService)
+    }
+
     // endregion
 
     // region Mutate Methods

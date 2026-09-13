@@ -33,12 +33,31 @@ enum class SyncAction(val value: String) {
  * @property wasOffline Whether the sync ran offline.
  * @property error The error code, if any.
  * @property errorMessage The error message, if any.
+ * @property sqliteBlobUpgradeRequired The local vault still has to walk the frozen sqlite-blob upgrade chain (pre-2.0.0); nothing was synced.
+ * @property manifestMigrationRequired The local vault still has to run the manifest migration (stale schema or no account key hierarchy); nothing was synced.
  */
 data class VaultSyncResult(
     val success: Boolean,
     val action: SyncAction,
     val newRevision: Int,
     val wasOffline: Boolean,
+    val error: String? = null,
+    val errorMessage: String? = null,
+    val sqliteBlobUpgradeRequired: Boolean = false,
+    val manifestMigrationRequired: Boolean = false,
+)
+
+/**
+ * Result of the manifest migration the app's upgrade page drives.
+ *
+ * @property success Whether the migration completed locally.
+ * @property pushed Whether the migrated vault reached the server; false leaves it dirty for the next sync.
+ * @property error The error code, if any.
+ * @property errorMessage The error message, if any.
+ */
+data class VaultMigrationResult(
+    val success: Boolean,
+    val pushed: Boolean,
     val error: String? = null,
     val errorMessage: String? = null,
 )

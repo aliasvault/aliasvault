@@ -43,9 +43,6 @@ class VaultSync(
                 val code = AppError.NetworkError(IllegalStateException("offline")).code
                 return VaultSyncResult(false, SyncAction.ERROR, metadata.getVaultRevisionNumber(), true, code)
             }
-            if (result.optBoolean("manifestMigrationRequired", false)) {
-                runPendingManifestMigration(webApiService)
-            }
 
             val hasNewVault = result.optBoolean("hasNewVault", false)
             val action = when {
@@ -54,7 +51,14 @@ class VaultSync(
                 wasDirty -> SyncAction.UPLOADED
                 else -> SyncAction.ALREADY_IN_SYNC
             }
-            return VaultSyncResult(true, action, metadata.getVaultRevisionNumber(), false, null)
+            return VaultSyncResult(
+                success = true,
+                action = action,
+                newRevision = metadata.getVaultRevisionNumber(),
+                wasOffline = false,
+                sqliteBlobUpgradeRequired = result.optBoolean("sqliteBlobUpgradeRequired", false),
+                manifestMigrationRequired = result.optBoolean("manifestMigrationRequired", false),
+            )
         } finally {
             metadata.setIsSyncing(false)
         }
@@ -157,23 +161,46 @@ class VaultSync(
     }
 
     /**
-     * Bring the local vault onto the current storage model when the engine reports that it has to (a schema
-     * rebuild after an app update, or the one-time account-key upgrade of a legacy vault), then push it.
+     * Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
+     * `storage-format-upgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
      */
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun runPendingManifestMigration(webApiService: WebApiService) {
-        try {
-            val status = VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrationStatus")
-            val kind = status.optString("kind", "none")
-            if (kind == "none") {
-                return
-            }
-            val result = VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrateManifest")
-            adoptSyncSideEffects(result)
-            Log.i(TAG, "Manifest migration ($kind): success=${result.optBoolean("success")} pushed=${result.optBoolean("pushed")}")
+    suspend fun getVaultMigrationStatus(webApiService: WebApiService): String {
+        val status = try {
+            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrationStatus")
         } catch (e: Exception) {
-            Log.w(TAG, "Manifest migration failed, the vault stays as it is until the next sync", e)
+            throw driverError(e)
         }
+        return status.optString("kind").takeIf { it.isNotEmpty() } ?: "storage-format-upgrade"
+    }
+
+    /**
+     * Bring the local vault onto the current storage model (a schema rebuild after an app update, or the one-time
+     * account-key upgrade of a legacy vault) and push it. Driven by the app's upgrade page only: a sync never runs
+     * it on its own, because the storage format move signs out every other client that predates the format.
+     */
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun migrateVaultManifest(webApiService: WebApiService): VaultMigrationResult {
+        val result = try {
+            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrateManifest")
+        } catch (e: Exception) {
+            return failedMigration(driverError(e))
+        }
+        adoptSyncSideEffects(result)
+        if (!result.optBoolean("success", false)) {
+            return failedMigration(syncError(result))
+        }
+        val pushed = result.optBoolean("pushed", false)
+        Log.i(TAG, "Manifest migration complete: pushed=$pushed")
+        return VaultMigrationResult(true, pushed)
+    }
+
+    /**
+     * A failed migration return.
+     */
+    private fun failedMigration(error: AppError): VaultMigrationResult {
+        Log.e(TAG, "Manifest migration failed (${error.code}): ${error.message}", error.cause)
+        return VaultMigrationResult(false, false, error.code, error.message)
     }
 
     /**
