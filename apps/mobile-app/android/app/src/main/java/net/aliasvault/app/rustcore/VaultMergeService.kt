@@ -177,7 +177,7 @@ object VaultMergeService {
                 val mergedData = localDbFile.readBytes()
                 val mergedBase64 = Base64.encodeToString(mergedData, Base64.NO_WRAP)
                 val encrypted = VaultCrypto.encrypt(mergedBase64.toByteArray(Charsets.UTF_8), encryptionKey)
-                return Base64.encodeToString(encrypted, Base64.DEFAULT)
+                return Base64.encodeToString(encrypted, Base64.NO_WRAP)
             } finally {
                 if (localDb.isOpen) localDb.close()
                 if (serverDb.isOpen) serverDb.close()
@@ -265,7 +265,7 @@ object VaultMergeService {
                 val prunedData = dbFile.readBytes()
                 val prunedBase64 = Base64.encodeToString(prunedData, Base64.NO_WRAP)
                 val encrypted = VaultCrypto.encrypt(prunedBase64.toByteArray(Charsets.UTF_8), encryptionKey)
-                return Pair(Base64.encodeToString(encrypted, Base64.DEFAULT), statements.size)
+                return Pair(Base64.encodeToString(encrypted, Base64.NO_WRAP), statements.size)
             } finally {
                 if (db.isOpen) db.close()
             }
@@ -301,7 +301,7 @@ object VaultMergeService {
                         android.database.Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(i)
                         android.database.Cursor.FIELD_TYPE_FLOAT -> cursor.getDouble(i)
                         android.database.Cursor.FIELD_TYPE_STRING -> cursor.getString(i)
-                        android.database.Cursor.FIELD_TYPE_BLOB -> Base64.encodeToString(cursor.getBlob(i), Base64.DEFAULT)
+                        android.database.Cursor.FIELD_TYPE_BLOB -> Base64.encodeToString(cursor.getBlob(i), Base64.NO_WRAP)
                         else -> JSONObject.NULL
                     }
                     record.put(columnName, value)
