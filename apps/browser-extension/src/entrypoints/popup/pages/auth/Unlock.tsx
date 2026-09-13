@@ -2,6 +2,7 @@ import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +23,6 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
-import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -58,7 +58,7 @@ const Unlock: React.FC = () => {
   const { setHeaderButtons } = useHeaderButtons();
 
   const webApi = useWebApi();
-  const srpUtil = new SrpUtility(webApi);
+  const srpUtil = new SrpLoginService(webApi);
 
   // Unlock mode state
   const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');

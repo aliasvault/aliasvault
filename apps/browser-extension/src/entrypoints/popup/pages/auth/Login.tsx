@@ -4,6 +4,7 @@ import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/Client
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useEffect, useState } from 'react';
@@ -22,7 +23,6 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
-import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
   const [vaultError, setVaultError] = useState<VaultProcessingError | null>(null);
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const webApi = useWebApi();
-  const srpUtil = new SrpUtility(webApi);
+  const srpUtil = new SrpLoginService(webApi);
 
   /**
    * Pull the vault from the server.

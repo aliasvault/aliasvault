@@ -1,6 +1,5 @@
-import { buildOtpAuthUri } from '@aliasvault/client/items/TotpUtility';
-import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
-import  * as OTPAuth from 'otpauth';
+import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
+import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import QRCode from 'qrcode';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -69,21 +68,18 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
     // Check if it's a TOTP URI
     if (secretKey.toLowerCase().startsWith('otpauth://totp/')) {
-      try {
-        const uri = OTPAuth.URI.parse(secretKey);
-        if (uri instanceof OTPAuth.TOTP) {
-          secretKey = uri.secret.base32;
-          // Keep the URI's parameters instead of silently regenerating codes with the defaults.
-          algorithm = normalizeTotpAlgorithm(uri.algorithm);
-          digits = normalizeTotpDigits(uri.digits);
-          period = normalizeTotpPeriod(uri.period);
-          // If name is empty, use the label from the URI
-          if (!name && uri.label) {
-            name = uri.label;
-          }
-        }
-      } catch {
+      const parsed = parseOtpAuthUri(secretKey);
+      if (!parsed) {
         throw new Error(t('totp.errors.invalidSecretKey'));
+      }
+      secretKey = parsed.secret;
+      // Keep the URI's parameters instead of silently regenerating codes with the defaults.
+      algorithm = parsed.algorithm;
+      digits = parsed.digits;
+      period = parsed.period;
+      // If name is empty, use the account from the URI label
+      if (!name && parsed.account) {
+        name = parsed.account;
       }
     }
 

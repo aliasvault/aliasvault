@@ -127,15 +127,6 @@ class ConversionUtility {
       return html;
     }
   }
-
-  /**
-   * Normalize a username by converting it to lowercase and trimming whitespace.
-   * @param username The username to normalize.
-   * @returns The normalized username.
-   */
-  public normalizeUsername(username: string): string {
-    return username.toLowerCase().trim();
-  }
 }
 
 export default new ConversionUtility();
