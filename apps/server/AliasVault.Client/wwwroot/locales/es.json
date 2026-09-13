@@ -1,7 +1,7 @@
 {
   "loading": {
     "title": "AliasVault está cargando",
-    "message": "Inicializando el entorno seguro. AliasVault prioriza su privacidad ejecutándose completamente en su navegador. La primera carga puede tardar un poco.",
+    "message": "Iniciando el entorno seguro. AliasVault prioriza su privacidad ejecutándose completamente en su navegador. La primera carga puede tardar un poco.",
     "refreshText": "Si la carga parece atascada, puede hacer clic en el botón de abajo para actualizar la página.",
     "refreshButtonText": "Actualizar página"
   },
@@ -12,12 +12,12 @@
   },
   "quotes": {
     "security": [
-      "Tu identidad es tu activo más valioso. Protéjala como uno.",
+      "Tu identidad es tu bien más preciado. Protéjala como tal.",
       "En el mundo digital, una contraseña fuerte es tu primera línea de defensa.",
       "La seguridad no es un producto, sino un proceso.",
       "El eslabón más débil de la cadena de seguridad es el elemento humano.",
       "La seguridad siempre es excesiva hasta que no es suficiente.",
-      "Confiar, pero también verificar - especialmente online.",
+      "Confiar, pero también verificar - especialmente en línea.",
       "Tus datos son tan seguros como tu contraseña más débil.",
       "La contraseña más segura es la que no puedes recordar."
     ]
