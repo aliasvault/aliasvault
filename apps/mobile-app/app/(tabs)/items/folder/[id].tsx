@@ -9,6 +9,7 @@ import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshC
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
@@ -39,7 +40,7 @@ import { useDialog } from '@/context/DialogContext';
 import type { FolderWithCount } from '@/components/folders/FolderPill';
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import type { Item, ItemType } from '@aliasvault/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type filter option configuration.
@@ -73,10 +74,10 @@ export default function FolderViewScreen(): React.ReactNode {
   const router = useRouter();
   const navigate = useNavigationDebounce();
   const insets = useSafeAreaInsets();
-  const flatListRef = useRef<FlatList<Item | null>>(null);
+  const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
 
-  const [itemsList, setItemsList] = useState<Item[]>([]);
-  const [allItemsInVault, setAllItemsInVault] = useState<Item[]>([]);
+  const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
+  const [allItemsInVault, setAllItemsInVault] = useState<DisplayItem[]>([]);
   const [folder, setFolder] = useState<Folder | null>(null);
   const [canCreateSubfolder, setCanCreateSubfolder] = useState(false);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
@@ -210,7 +211,7 @@ export default function FolderViewScreen(): React.ReactNode {
         dbContext.sqliteClient!.settings.getCredentialsSortOrder()
       ]);
       // Filter to only items in this folder
-      const folderItems = items.filter((item: Item) => item.FolderId === folderId);
+      const folderItems = items.filter((item: DisplayItem) => item.FolderId === folderId);
       setItemsList(folderItems);
       setAllItemsInVault(items);
 

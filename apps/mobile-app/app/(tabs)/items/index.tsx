@@ -8,6 +8,7 @@ import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
@@ -39,7 +40,7 @@ import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import type { Item, ItemType } from '@aliasvault/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type filter option configuration.
@@ -71,11 +72,11 @@ export default function ItemsScreen(): React.ReactNode {
   const [scrollY] = useState(() => new Animated.Value(0));
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const flatListRef = useRef<Animated.FlatList<Item | null>>(null);
+  const flatListRef = useRef<Animated.FlatList<DisplayItem | null>>(null);
   const [isTabFocused, setIsTabFocused] = useState(false);
   const router = useRouter();
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
-  const [itemsList, setItemsList] = useState<Item[]>([]);
+  const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
@@ -192,7 +193,7 @@ export default function ItemsScreen(): React.ReactNode {
      */
     const getRecursiveItemCount = (folderId: string): number => {
       // Get items directly in this folder
-      const directItems = itemsForCount.filter((item: Item) => item.FolderId === folderId);
+      const directItems = itemsForCount.filter((item: DisplayItem) => item.FolderId === folderId);
 
       // Get all child folders
       const childFolders = folders.filter(f => f.ParentFolderId === folderId);
@@ -245,7 +246,7 @@ export default function ItemsScreen(): React.ReactNode {
    * This is used to show a helpful message when the user has imported credentials that were all in folders.
    */
   const hasItemsInFoldersOnly = useMemo(() => {
-    return itemsList.length > 0 && itemsList.every((item: Item) => item.FolderId !== null);
+    return itemsList.length > 0 && itemsList.every((item: DisplayItem) => item.FolderId !== null);
   }, [itemsList]);
 
   /**

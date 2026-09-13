@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -48,7 +49,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
   const dbContext = useDb();
   const { executeVaultMutation } = useVaultMutate();
 
-  const [items, setItems] = useState<ItemWithDeletedAt[]>([]);
+  const [items, setItems] = useState<DisplayItem<ItemWithDeletedAt>[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -269,7 +270,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
   /**
    * Render an item card.
    */
-  const renderItem = (item: ItemWithDeletedAt): React.ReactElement => {
+  const renderItem = (item: DisplayItem<ItemWithDeletedAt>): React.ReactElement => {
     const daysRemaining = item.DeletedAt ? getDaysRemaining(item.DeletedAt) : TRASH_RETENTION_DAYS;
 
     return (

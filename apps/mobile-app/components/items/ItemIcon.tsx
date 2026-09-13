@@ -1,15 +1,16 @@
 import { Buffer } from 'buffer';
 
+import { useMemo } from 'react';
 import { Image, ImageStyle, StyleSheet, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
-import type { Item } from '@aliasvault/models/vault';
 import {
   ItemTypes,
   FieldKey,
 } from '@aliasvault/models/vault';
 
 import servicePlaceholder from '@/assets/images/service-placeholder.webp';
+import type { DisplayItem } from '@/utils/DisplayItem';
 
 // Import centralized icon components (auto-generated from core/models/src/icons/ItemTypeIcons.ts)
 import {
@@ -20,13 +21,15 @@ import {
 } from './ItemTypeIconComponents';
 
 /**
- * Item icon props - supports both legacy logo-only mode and new item-based mode.
+ * The start of an SVG logo's data URI.
+ */
+const SVG_DATA_URI_PREFIX = 'data:image/svg+xml;base64,';
+
+/**
+ * Item icon props.
  */
 type ItemIconProps = {
-  /** Legacy: Logo bytes for Login/Alias items */
-  logo?: Uint8Array | number[] | string | null;
-  /** New: Full item object for type-aware icon rendering */
-  item?: Item;
+  item: DisplayItem;
   style?: ImageStyle;
 };
 
@@ -55,59 +58,42 @@ const getCardIconComponent = (cardNumber: string | undefined) => {
 };
 
 /**
- * Item icon component - supports both item-based and legacy logo-based rendering.
+ * Item icon component: a type icon for notes and cards, the item's logo otherwise.
  */
-export function ItemIcon({ logo, item, style }: ItemIconProps) : React.ReactNode {
+export function ItemIcon({ item, style }: ItemIconProps) : React.ReactNode {
   const width = Number(style?.width ?? styles.logo.width);
   const height = Number(style?.height ?? styles.logo.height);
 
-  // New item-based rendering mode
-  if (item) {
-    // For Note type, always show note icon
-    if (item.ItemType === ItemTypes.Note) {
-      return (
-        <View style={[styles.iconContainer, style]}>
-          <NoteIcon width={width} height={height} />
-        </View>
-      );
-    }
-
-    // For CreditCard type, detect card brand and show appropriate icon
-    if (item.ItemType === ItemTypes.CreditCard) {
-      const cardNumberField = item.Fields?.find(f => f.FieldKey === FieldKey.CardNumber);
-      const cardNumber = cardNumberField?.Value
-        ? (Array.isArray(cardNumberField.Value) ? cardNumberField.Value[0] : cardNumberField.Value)
-        : undefined;
-
-      const CardIcon = getCardIconComponent(cardNumber);
-
-      return (
-        <View style={[styles.iconContainer, style]}>
-          <CardIcon width={width} height={height} />
-        </View>
-      );
-    }
-
-    // For Login/Alias types, use Logo if available, otherwise placeholder
-    const logoData = item.Logo;
-    if (logoData && logoData.length > 0) {
-      return renderLogo(logoData, style);
-    }
-
-    // Default placeholder for Login/Alias without logo
+  // For Note type, always show note icon
+  if (item.ItemType === ItemTypes.Note) {
     return (
       <View style={[styles.iconContainer, style]}>
-        <PlaceholderIcon width={width} height={height} />
+        <NoteIcon width={width} height={height} />
       </View>
     );
   }
 
-  // Legacy logo-only rendering mode
-  if (logo && (typeof logo === 'string' || logo.length > 0)) {
-    return renderLogo(logo, style);
+  // For CreditCard type, detect card brand and show appropriate icon
+  if (item.ItemType === ItemTypes.CreditCard) {
+    const cardNumberField = item.Fields?.find(f => f.FieldKey === FieldKey.CardNumber);
+    const cardNumber = cardNumberField?.Value
+      ? (Array.isArray(cardNumberField.Value) ? cardNumberField.Value[0] : cardNumberField.Value)
+      : undefined;
+
+    const CardIcon = getCardIconComponent(cardNumber);
+
+    return (
+      <View style={[styles.iconContainer, style]}>
+        <CardIcon width={width} height={height} />
+      </View>
+    );
   }
 
-  // Fallback to placeholder
+  // For Login/Alias types, use the logo if available, otherwise placeholder
+  if (item.LogoDataUri) {
+    return <LogoImage dataUri={item.LogoDataUri} style={style} />;
+  }
+
   return (
     <View style={[styles.iconContainer, style]}>
       <PlaceholderIcon width={width} height={height} />
@@ -116,106 +102,67 @@ export function ItemIcon({ logo, item, style }: ItemIconProps) : React.ReactNode
 }
 
 /**
- * Render logo from binary data.
+ * Render a logo from its data URI.
  */
-function renderLogo(
-  logoData: Uint8Array | number[] | string,
-  style?: ImageStyle
-): React.ReactNode {
-  /**
-   * Get the logo source. For SVGs, returns the raw XML string so SvgXml can
-   * render it safely with fallback/onError support. For other formats, returns
-   * a data URI for the Image component.
-   */
-  const getLogoSource = (data: Uint8Array | number[] | string | null | undefined) : { type: 'image' | 'svg', source: string | number } => {
-    if (!data) {
-      return { type: 'image', source: servicePlaceholder };
+function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }): React.ReactNode {
+  const svgWidth = Number(style?.width ?? styles.logo.width);
+  const svgHeight = Number(style?.height ?? styles.logo.height);
+  const isSvg = dataUri.startsWith(SVG_DATA_URI_PREFIX);
+
+  // Decode and sanitize an SVG once per logo and size, not on every render.
+  const svgXml = useMemo(() => {
+    if (!isSvg) {
+      return null;
     }
+    return sanitizeSvg(Buffer.from(dataUri.slice(SVG_DATA_URI_PREFIX.length), 'base64').toString('utf-8'), svgWidth, svgHeight);
+  }, [dataUri, isSvg, svgWidth, svgHeight]);
 
-    try {
-      // If logo is already a base64 string (from iOS SQLite query result)
-      if (typeof data === 'string') {
-        const mimeType = detectMimeTypeFromBase64(data);
-        if (mimeType === 'image/svg+xml') {
-          // Decode base64 to raw SVG XML for SvgXml component
-          return { type: 'svg', source: Buffer.from(data, 'base64').toString('utf-8') };
-        }
-        return { type: 'image', source: `data:${mimeType};base64,${data}` };
-      }
-
-      // Handle binary data (from Android or other sources)
-      const logoBytes = toUint8Array(data);
-      const mimeType = detectMimeType(logoBytes);
-      if (mimeType === 'image/svg+xml') {
-        // Decode bytes to raw SVG XML for SvgXml component
-        return { type: 'svg', source: new TextDecoder().decode(logoBytes) };
-      }
-      const base64Logo = Buffer.from(logoBytes).toString('base64');
-      return { type: 'image', source: `data:${mimeType};base64,${base64Logo}` };
-    } catch (error) {
-      console.error('Error converting logo:', error);
-      return { type: 'image', source: servicePlaceholder };
-    }
-  };
-
-  const logoSource = getLogoSource(logoData);
-
-  if (logoSource.type === 'svg') {
-    /*
-     * Use SvgXml instead of SvgUri to render SVG logos. SvgXml accepts raw XML
-     * and supports onError/fallback props, which lets us gracefully handle
-     * malformed SVGs that would otherwise crash the native renderer
-     * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
-     */
-    const svgWidth = Number(style?.width ?? styles.logo.width);
-    const svgHeight = Number(style?.height ?? styles.logo.height);
-
-    const svgXml = sanitizeSvg(logoSource.source as string, svgWidth, svgHeight);
-
-    // If sanitization failed (returned null), fall back to placeholder
-    if (!svgXml) {
-      return (
-        <Image
-          source={servicePlaceholder}
-          style={[styles.logo, style]}
-        />
-      );
-    }
-
-    const fallback = (
-      <Image
-        source={servicePlaceholder}
-        style={[styles.logo, style]}
-      />
-    );
-
+  if (!isSvg) {
     return (
-      <SvgXml
-        xml={svgXml}
-        width={svgWidth}
-        height={svgHeight}
-        onError={() => {
-          console.warn('SvgXml failed to render SVG logo');
-        }}
-        fallback={fallback}
-        style={{
-          borderRadius: styles.logo.borderRadius,
-          width: svgWidth,
-          height: svgHeight,
-          marginLeft: Number(style?.marginLeft ?? 0),
-          marginRight: Number(style?.marginRight ?? 0),
-          marginTop: Number(style?.marginTop ?? 0),
-          marginBottom: Number(style?.marginBottom ?? 0),
-        }}
+      <Image
+        source={{ uri: dataUri }}
+        style={[styles.logo, style]}
+        defaultSource={servicePlaceholder}
       />
     );
   }
 
-  return (
+  const fallback = (
     <Image
-      source={typeof logoSource.source === 'string' ? { uri: logoSource.source } : logoSource.source}
+      source={servicePlaceholder}
       style={[styles.logo, style]}
-      defaultSource={servicePlaceholder}
+    />
+  );
+
+  // If sanitization failed (returned null), fall back to placeholder
+  if (!svgXml) {
+    return fallback;
+  }
+
+  /*
+   * Use SvgXml instead of SvgUri to render SVG logos. SvgXml accepts raw XML
+   * and supports onError/fallback props, which lets us gracefully handle
+   * malformed SVGs that would otherwise crash the native renderer
+   * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
+   */
+  return (
+    <SvgXml
+      xml={svgXml}
+      width={svgWidth}
+      height={svgHeight}
+      onError={() => {
+        console.warn('SvgXml failed to render SVG logo');
+      }}
+      fallback={fallback}
+      style={{
+        borderRadius: styles.logo.borderRadius,
+        width: svgWidth,
+        height: svgHeight,
+        marginLeft: Number(style?.marginLeft ?? 0),
+        marginRight: Number(style?.marginRight ?? 0),
+        marginTop: Number(style?.marginTop ?? 0),
+        marginBottom: Number(style?.marginBottom ?? 0),
+      }}
     />
   );
 }
@@ -319,83 +266,6 @@ function sanitizeSvg(xml: string, targetWidth: number, targetHeight: number): st
     console.warn('Failed to sanitize SVG:', error);
     return null;
   }
-}
-
-/**
- * Detect MIME type from base64 string by decoding first few bytes
- */
-function detectMimeTypeFromBase64(base64: string): string {
-  try {
-    const binaryString = atob(base64.slice(0, 8));
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return detectMimeType(bytes);
-  } catch (error) {
-    console.warn('Error detecting mime type from base64:', error);
-    return 'image/x-icon';
-  }
-}
-
-/**
- * Detect MIME type from file signature (magic numbers)
- */
-function detectMimeType(bytes: Uint8Array): string {
-  /**
-   * Check if the file is an SVG.
-   */
-  const isSvg = (): boolean => {
-    const header = new TextDecoder().decode(bytes.slice(0, 5)).toLowerCase();
-    return header.includes('<?xml') || header.includes('<svg');
-  };
-
-  /**
-   * Check if the file is an ICO.
-   */
-  const isIco = (): boolean => {
-    return bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00;
-  };
-
-  /**
-   * Check if the file is a PNG.
-   */
-  const isPng = (): boolean => {
-    return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
-  };
-
-  if (isSvg()) {
-    return 'image/svg+xml';
-  }
-  if (isIco()) {
-    return 'image/x-icon';
-  }
-  if (isPng()) {
-    return 'image/png';
-  }
-
-  return 'image/x-icon';
-}
-
-/**
- * Convert various binary data formats to Uint8Array
- */
-function toUint8Array(buffer: Uint8Array | number[] | {[key: number]: number}): Uint8Array {
-  if (buffer instanceof Uint8Array) {
-    return buffer;
-  }
-
-  if (Array.isArray(buffer)) {
-    return new Uint8Array(buffer);
-  }
-
-  const length = Object.keys(buffer).length;
-  const arr = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    arr[i] = buffer[i];
-  }
-
-  return arr;
 }
 
 const styles = StyleSheet.create({

@@ -1,16 +1,18 @@
+import { Buffer } from 'buffer';
+
+import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons } from '@expo/vector-icons';
 import { File, Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewNavigation } from 'react-native-webview';
 
 import ConversionUtility from '@/utils/ConversionUtility';
-import type { Item } from '@/utils/dist/core/models/vault';
-import type { Email } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
+import type { DisplayItem } from '@/utils/DisplayItem';
+import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
@@ -24,6 +26,8 @@ import { IconSymbolName } from '@/components/ui/IconSymbolName';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+import type { Email } from '@aliasvault/models/webapi';
 
 /**
  * Email details screen.
@@ -39,13 +43,21 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const { openAttachment, viewerElement } = useAttachmentViewer();
   const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<Email | null>(null);
+  // The source bytes stay in a ref, out of state; decrypted only records whether there are any.
+  const [decrypted, setDecrypted] = useState<(Omit<DecryptedEmail, 'sourceBytes'> & { hasSource: boolean }) | null>(null);
+  const sourceBytesRef = useRef<Uint8Array | null>(null);
+  const [sourceText, setSourceText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMetadataMaximized, setMetadataMaximized] = useState(false);
   const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
   const isDarkMode = useColorScheme() === 'dark';
-  const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
+  const [associatedItem, setAssociatedItem] = useState<DisplayItem | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const email = decrypted?.email ?? null;
+  const htmlBody = decrypted?.htmlBody ?? null;
+  const textBody = decrypted?.textBody ?? null;
+  const hasSource = decrypted?.hasSource ?? false;
 
   /**
    * Load the email.
@@ -69,23 +81,27 @@ export default function EmailDetailsScreen() : React.ReactNode {
       const response = await webApi.get<Email>(`Email/${id}`);
 
       // Decrypt email locally using public/private key pairs
-      const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
+      const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
       const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
-      setEmail(decryptedEmail);
+      const { sourceBytes, ...parsedEmail } = decryptedEmail;
+      sourceBytesRef.current = sourceBytes;
+      setDecrypted({ ...parsedEmail, hasSource: sourceBytes !== null });
+      setSourceText(null);
 
       // Look up associated item
-      if (decryptedEmail.toLocal && decryptedEmail.toDomain) {
-        const emailAddress = `${decryptedEmail.toLocal}@${decryptedEmail.toDomain}`;
-        const item = await dbContext.sqliteClient.items.getByEmail(emailAddress);
+      if (decryptedEmail.email.toLocal && decryptedEmail.email.toDomain) {
+        const emailAddress = `${decryptedEmail.email.toLocal}@${decryptedEmail.email.toDomain}`;
+        const match = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
+        const item = match ? await dbContext.sqliteClient.items.getById(match.Id) : null;
         setAssociatedItem(item);
       }
 
-      // Set initial view mode based on content — prefer HTML, fall back to plain, then source.
-      if (decryptedEmail.messageHtml && decryptedEmail.messageHtml.length > 0) {
+      // Set initial view mode based on content: prefer HTML, fall back to plain, then source.
+      if (decryptedEmail.htmlBody) {
         setViewMode('html');
-      } else if (decryptedEmail.messagePlain) {
+      } else if (decryptedEmail.textBody) {
         setViewMode('plain');
-      } else if (decryptedEmail.messageSource) {
+      } else if (decryptedEmail.sourceBytes) {
         setViewMode('source');
       }
     } catch (err) {
@@ -108,6 +124,19 @@ export default function EmailDetailsScreen() : React.ReactNode {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loadEmail is async; setState only fires after data is fetched
     loadEmail();
   }, [id, loadEmail]);
+
+  /*
+   * The raw source is decoded on demand, the first time the source view is opened.
+   */
+  useEffect(() => {
+    const sourceBytes = sourceBytesRef.current;
+    if (viewMode !== 'source' || sourceText !== null || !decrypted?.hasSource || !sourceBytes) {
+      return;
+    }
+    decodeEmailSource(sourceBytes)
+      .then(decoded => setSourceText(Buffer.from(decoded).toString('utf8')))
+      .catch(err => setError(err instanceof Error ? err.message : t('common.errors.unknownError')));
+  }, [viewMode, sourceText, decrypted, t]);
 
   /**
    * Handle the delete button press.
@@ -143,30 +172,25 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }, []);
 
   /**
-   * Handle the download attachment button press.
+   * Handle the download attachment button press: the bytes come out of the parsed source, a detached part is
+   * fetched and decrypted first.
    */
-  const handleDownloadAttachment = async (attachment: Email['attachments'][0]) : Promise<void> => {
+  const handleDownloadAttachment = async (attachment: ParsedEmailAttachment, index: number) : Promise<void> => {
     try {
-      const encryptedBytes = await webApi.downloadBlob(
-        `Email/${id}/attachments/${attachment.id}`
-      );
-
-      if (!dbContext?.sqliteClient || !email) {
+      const sourceBytes = sourceBytesRef.current;
+      if (!dbContext?.sqliteClient || !email || !sourceBytes) {
         setError(t('common.errors.unknownError'));
         return;
       }
 
-      const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
-      const decryptedBytes = await EncryptionUtility.decryptAttachment(
-        encryptedBytes,
-        email,
-        encryptionKeys
-      );
-
-      if (!decryptedBytes) {
-        setError(t('common.errors.unknownError'));
-        return;
+      let detachedBody: Uint8Array | undefined;
+      if (attachment.detached && attachment.partIndex !== null) {
+        const encryptedPart = await webApi.downloadBlob(`Email/${id}/parts/${attachment.partIndex}`);
+        const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
+        detachedBody = await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys);
       }
+
+      const decryptedBytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
 
       const tempFile = new File(Paths.cache, attachment.filename);
       if (tempFile.exists) {
@@ -220,29 +244,26 @@ export default function EmailDetailsScreen() : React.ReactNode {
     }
   };
 
-  // Only offer formats the server actually provided. Source comes from the raw MessageSource column.
+  // Only offer the formats the parsed source actually holds.
   const availableModes = useMemo<Array<'html' | 'plain' | 'source'>>(() => {
-    if (!email) {
-      return [];
-    }
     const modes: Array<'html' | 'plain' | 'source'> = [];
-    if (email.messageHtml) {
+    if (htmlBody) {
       modes.push('html');
     }
-    if (email.messagePlain) {
+    if (textBody) {
       modes.push('plain');
     }
-    if (email.messageSource) {
+    if (hasSource) {
       modes.push('source');
     }
     return modes;
-  }, [email]);
+  }, [htmlBody, textBody, hasSource]);
 
   /*
-   * Emails stored by newer server versions only contain the raw source. Until this client can
-   * render those itself we show the source verbatim plus a notice to update.
+   * A source the parser found no body in is shown verbatim plus a notice to update the app, in case a newer
+   * server stores a shape this parser does not know yet.
    */
-  const isSourceOnly = Boolean(email?.messageSource) && !email?.messageHtml && !email?.messagePlain;
+  const isSourceOnly = hasSource && !htmlBody && !textBody;
 
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
@@ -573,9 +594,9 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }
 
   let emailView = null;
-  if (viewMode === 'html' && email.messageHtml) {
+  if (viewMode === 'html' && htmlBody) {
     // Sanitize HTML
-    const sanitizedHtml = ConversionUtility.sanitizeHtmlForEmailViewing(email.messageHtml);
+    const sanitizedHtml = ConversionUtility.sanitizeHtmlForEmailViewing(htmlBody);
     emailView = (
       <WebView
         style={styles.webView}
@@ -588,7 +609,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
     );
   } else {
     const isSource = viewMode === 'source';
-    const text = (isSource ? email.messageSource : email.messagePlain) ?? '';
+    const text = (isSource ? sourceText ?? t('common.loading') : textBody) ?? '';
     const textStyle = [
       styles.plainText,
       isSource ? styles.sourceText : null,
@@ -625,18 +646,18 @@ export default function EmailDetailsScreen() : React.ReactNode {
           </View>
         )}
         {emailView}
-        {email.attachments && email.attachments.length > 0 && (
+        {decrypted && decrypted.attachments.length > 0 && (
           <View style={styles.attachments}>
             <ThemedText style={styles.attachmentsTitle}>{t('emails.attachments')}</ThemedText>
-            {email.attachments.map((attachment) => (
+            {decrypted.attachments.map((attachment, index) => (
               <RobustPressable
-                key={attachment.id}
+                key={`${index}-${attachment.filename}`}
                 style={styles.attachment}
-                onPress={() => handleDownloadAttachment(attachment)}
+                onPress={() => handleDownloadAttachment(attachment, index)}
               >
                 <Ionicons name="attach" size={20} color="#666" />
                 <ThemedText style={styles.attachmentName}>
-                  {attachment.filename} ({Math.ceil(attachment.filesize / 1024)} {t('emails.sizeKB')})
+                  {attachment.filename} ({Math.ceil(attachment.size / 1024)} {t('emails.sizeKB')})
                 </ThemedText>
               </RobustPressable>
             ))}

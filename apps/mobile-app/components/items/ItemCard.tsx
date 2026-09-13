@@ -16,11 +16,11 @@ import { generateTotpCode } from '@/utils/TotpUtility';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item } from '@aliasvault/models/vault';
+import type { DisplayItem } from '@/utils/DisplayItem';
 import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
-  item: Item;
+  item: DisplayItem;
   onItemDelete?: (itemId: string) => Promise<void>;
   onItemDuplicate?: (itemId: string) => Promise<void>;
   showFolderPath?: boolean;
@@ -41,7 +41,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
    * Get the display text for an item, showing username by default,
    * falling back to email only if username is null/undefined/empty
    */
-  const getItemDisplayText = (itm: Item): string => {
+  const getItemDisplayText = (itm: DisplayItem): string => {
     // Show username if available
     const username = getFieldValue(itm, FieldKey.LoginUsername);
     if (username) {
@@ -62,7 +62,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   /**
    * Get the item name, trimming it to maximum length so it doesn't overflow the UI.
    */
-  const getItemName = (itm: Item): string => {
+  const getItemName = (itm: DisplayItem): string => {
     const returnValue = itm.Name || t('items.untitled');
 
     // Trim the return value to max. 33 characters.

@@ -8,6 +8,7 @@ import ContextMenu from 'react-native-context-menu-view';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -32,7 +33,6 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
-import type { Item } from '@aliasvault/models/vault';
 import type { NativeSyntheticEvent } from 'react-native';
 import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 
@@ -41,7 +41,7 @@ import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-vi
  */
 export default function ItemDetailsScreen() : React.ReactNode {
   const { id } = useLocalSearchParams();
-  const [item, setItem] = useState<Item | null>(null);
+  const [item, setItem] = useState<DisplayItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const dbContext = useDb();
   const navigation = useNavigation();

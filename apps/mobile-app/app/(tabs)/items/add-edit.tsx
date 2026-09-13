@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { extractServiceNameFromUrl, sanitizeServiceUrl } from '@/utils/UrlUtility';
@@ -82,8 +83,10 @@ export default function AddEditItemScreen(): React.ReactNode {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<Omit<Attachment, 'Blob'>[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
+  // The bytes of newly picked attachments by id, kept out of state until save.
+  const attachmentBlobsRef = useRef(new Map<string, Uint8Array>());
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
   const totpShowAddFormRef = useRef<(() => void) | null>(null);
@@ -96,7 +99,7 @@ export default function AddEditItemScreen(): React.ReactNode {
   const [pendingNavigationAction, setPendingNavigationAction] = useState<NavigationAction | null>(null);
 
   // Item state
-  const [item, setItem] = useState<Item | null>(null);
+  const [item, setItem] = useState<DisplayItem | null>(null);
 
   // Form state for dynamic fields - key is FieldKey, value is the field value
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
@@ -452,7 +455,8 @@ export default function AddEditItemScreen(): React.ReactNode {
 
         // Load attachments for this item
         const itemAttachments = await dbContext.sqliteClient!.items.getAttachmentsForItem(id);
-        setAttachments(itemAttachments);
+        // A saved attachment is only ever kept or removed on save, so its bytes are not needed here.
+        setAttachments(itemAttachments.map(({ Blob: _blob, ...attachment }) => attachment));
         setOriginalAttachmentIds(itemAttachments.map(a => a.Id));
         if (itemAttachments.length > 0) {
           setShowAttachments(true);
@@ -731,6 +735,13 @@ export default function AddEditItemScreen(): React.ReactNode {
   }, [totpCodes]);
 
   /**
+   * Keep the bytes of a newly picked attachment until save.
+   */
+  const handleAttachmentRead = useCallback((attachmentId: string, bytes: Uint8Array): void => {
+    attachmentBlobsRef.current.set(attachmentId, bytes);
+  }, []);
+
+  /**
    * Show the attachments section.
    */
   const handleAttachmentsAdd = useCallback((): void => {
@@ -856,6 +867,9 @@ export default function AddEditItemScreen(): React.ReactNode {
       itemToSave.Logo = undefined;
     }
 
+    // Only newly picked attachments are inserted, so only they need their bytes back.
+    const attachmentsToSave = attachments.map(attachment => ({ ...attachment, Blob: attachmentBlobsRef.current.get(attachment.Id) ?? null }));
+
     /*
      * Execute mutation - local save + background sync (non-blocking).
      * Navigate immediately after local save; sync happens in background via ServerSyncIndicator.
@@ -863,7 +877,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     try {
       await executeVaultMutation(async () => {
         if (isEditMode) {
-          await dbContext.sqliteClient!.items.update(itemToSave, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes);
+          await dbContext.sqliteClient!.items.update(itemToSave, originalAttachmentIds, attachmentsToSave, originalTotpCodeIds, totpCodes);
 
           // Delete passkeys if marked for deletion
           if (passkeyIdsMarkedForDeletion.length > 0) {
@@ -872,7 +886,7 @@ export default function AddEditItemScreen(): React.ReactNode {
             }
           }
         } else {
-          await dbContext.sqliteClient!.items.create(itemToSave, attachments, totpCodes);
+          await dbContext.sqliteClient!.items.create(itemToSave, attachmentsToSave, totpCodes);
         }
       });
 
@@ -1627,6 +1641,7 @@ export default function AddEditItemScreen(): React.ReactNode {
                 <AttachmentUploader
                   attachments={attachments}
                   onAttachmentsChange={setAttachments}
+                  onAttachmentRead={handleAttachmentRead}
                 />
               </FormSection>
             )}

@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Item } from '@aliasvault/models/vault';
+import type { DisplayItem } from '@/utils/DisplayItem';
 import type { MailboxEmail } from '@aliasvault/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -27,7 +27,7 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   const { t } = useTranslation();
   const navigate = useNavigationDebounce();
   const dbContext = useDb();
-  const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
+  const [associatedItem, setAssociatedItem] = useState<DisplayItem | null>(null);
 
   /**
    * Load the associated item for this email.

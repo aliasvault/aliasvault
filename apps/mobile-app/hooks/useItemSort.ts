@@ -101,7 +101,7 @@ export function useItemSort(initialSortOrder: CredentialSortOrder = 'NewestFirst
  * @param sortOrder - The sort order to apply
  * @returns Memoized sorted items array
  */
-export function useSortedItems(filteredItems: Item[], sortOrder: CredentialSortOrder): Item[] {
+export function useSortedItems<T extends Item>(filteredItems: T[], sortOrder: CredentialSortOrder): T[] {
   return useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {

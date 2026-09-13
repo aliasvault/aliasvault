@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Platform, StyleSheet, TextInput, TouchableOpacity, View, type ListRenderItem } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import type { DisplayItem } from '@/utils/DisplayItem';
 import { sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -55,7 +56,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
     }
   }, [itemUrl]);
 
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<DisplayItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -116,7 +117,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
    * Append the autofill URL/package to the chosen item's `login.url`
    * multi-value field and persist via the vault mutation pipeline.
    */
-  const linkItem = useCallback(async (item: Item): Promise<void> => {
+  const linkItem = useCallback(async (item: DisplayItem): Promise<void> => {
     if (!decodedAppInfo) {
       return;
     }
@@ -197,7 +198,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   /**
    * Confirm with the user before mutating the credential.
    */
-  const handleSelectItem = useCallback((item: Item) => {
+  const handleSelectItem = useCallback((item: DisplayItem) => {
     if (isSaving) {
       return;
     }
@@ -301,7 +302,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   /**
    * Render an individual credential row.
    */
-  const renderItem: ListRenderItem<Item> = useCallback((info) => {
+  const renderItem: ListRenderItem<DisplayItem> = useCallback((info) => {
     const row = info.item;
     const username = getFieldValue(row, FieldKey.LoginUsername);
     const email = getFieldValue(row, FieldKey.LoginEmail);

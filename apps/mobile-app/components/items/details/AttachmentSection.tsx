@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Directory, File, Paths } from 'expo-file-system';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -23,7 +23,8 @@ type AttachmentSectionProps = {
  * Attachment section component.
  */
 export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): React.ReactNode => {
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<Omit<Attachment, 'Blob'>[]>([]);
+  const blobsRef = useRef(new Map<string, Attachment['Blob']>());
   const colors = useColors();
   const dbContext = useDb();
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
   /**
    * Handle attachment action - preview or download.
    */
-  const handleAttachment = async (attachment: Attachment): Promise<void> => {
+  const handleAttachment = async (attachment: Omit<Attachment, 'Blob'>): Promise<void> => {
     try {
       // Sanitize filename
       const sanitizedFilename = attachment.Filename.replace(/[/\\]/g, '_');
@@ -48,10 +49,11 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
       }
       file.create();
 
-      if (typeof attachment.Blob === 'string') {
-        file.write(attachment.Blob, { encoding: 'base64' });
+      const blob = blobsRef.current.get(attachment.Id);
+      if (typeof blob === 'string') {
+        file.write(blob, { encoding: 'base64' });
       } else {
-        file.write((attachment.Blob ?? new Uint8Array(0)) as unknown as Uint8Array);
+        file.write((blob ?? new Uint8Array(0)) as unknown as Uint8Array);
       }
 
       await openAttachment({ filePath: file.uri, fileName: sanitizedFilename });
@@ -71,7 +73,8 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
 
     try {
       const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem(item.Id);
-      setAttachments(attachmentList);
+      blobsRef.current = new Map(attachmentList.map(attachment => [attachment.Id, attachment.Blob]));
+      setAttachments(attachmentList.map(({ Blob: _blob, ...attachment }) => attachment));
     } catch (error) {
       console.error('Error loading attachments:', error);
     }

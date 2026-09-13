@@ -12,6 +12,7 @@ import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/Vau
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import { NativeDatabaseClient } from '@/platform/NativeDatabaseClient';
+import { withDisplayItems } from '@/utils/DisplayItem';
 
 /**
  * The vault as the app reads and writes it: the client core's repositories over the native vault store, plus the
@@ -29,9 +30,9 @@ class SqliteClient {
   private readonly logoRepository = new LogoRepository(this.database);
 
   /**
-   * Repository for Item CRUD operations.
+   * Repository for Item CRUD operations. Item reads return display items, which carry no logo bytes.
    */
-  public readonly items = asyncRepository(new ItemRepository(this.database, this.logoRepository), this.database);
+  public readonly items = withDisplayItems(asyncRepository(new ItemRepository(this.database, this.logoRepository), this.database));
 
   /**
    * Repository for Folder operations.
