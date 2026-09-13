@@ -32,31 +32,27 @@ fn parse<T: DeserializeOwned>(body: &str) -> SyncResult<T> {
     serde_json::from_str(body).map_err(|e| SyncError::Other(format!("Unexpected API response: {}", e)))
 }
 
-fn v2(path: &str) -> String {
-    format!("v2/{}", path)
-}
-
 /// Authenticated GET of a v2 endpoint.
 pub(crate) async fn get<T: DeserializeOwned>(host: &Host, path: &str, large_transfer: bool) -> SyncResult<T> {
-    let body = check(send(host, HttpMethod::Get, &v2(path), None, true, large_transfer).await?)?;
+    let body = check(send(host, HttpMethod::Get, path, None, true, large_transfer).await?)?;
     parse(&body)
 }
 
 /// Authenticated POST of a v2 endpoint with a JSON body.
 pub(crate) async fn post<B: Serialize, T: DeserializeOwned>(host: &Host, path: &str, body: &B, large_transfer: bool) -> SyncResult<T> {
-    let body = check(send(host, HttpMethod::Post, &v2(path), Some(serde_json::to_string(body)?), true, large_transfer).await?)?;
+    let body = check(send(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, large_transfer).await?)?;
     parse(&body)
 }
 
 /// Authenticated POST that returns no body.
 pub(crate) async fn post_no_content<B: Serialize>(host: &Host, path: &str, body: &B) -> SyncResult<()> {
-    check(send(host, HttpMethod::Post, &v2(path), Some(serde_json::to_string(body)?), true, false).await?)?;
+    check(send(host, HttpMethod::Post, path, Some(serde_json::to_string(body)?), true, false).await?)?;
     Ok(())
 }
 
 /// Authenticated DELETE of a v2 endpoint.
 pub(crate) async fn delete(host: &Host, path: &str) -> SyncResult<()> {
-    check(send(host, HttpMethod::Delete, &v2(path), None, true, false).await?)?;
+    check(send(host, HttpMethod::Delete, path, None, true, false).await?)?;
     Ok(())
 }
 

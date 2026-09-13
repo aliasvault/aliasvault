@@ -119,7 +119,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
         const isPublic = await isPublicDomain(email);
         const isPrivate = await isPrivateDomain(email);
-        const isSupported = isPublic || isPrivate;
+        const isRoutable = !isPrivate || (await dbContext.sqliteClient?.items.isEmailAddressRoutable(email) ?? false);
+        const isSupported = (isPublic || isPrivate) && isRoutable;
 
         setIsSpamOk(isPublic);
         setIsSupportedDomain(isSupported);

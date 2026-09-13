@@ -143,19 +143,12 @@ class WebApiService(private val context: Context) {
     }
 
     /**
-     * Get the API root URL (no version segment), for paths that carry their own.
-     */
-    private fun getApiRootUrl(): String {
-        return getApiUrl().trimEnd('/') + "/"
-    }
-
-    /**
-     * Get the base URL with /v1/ appended.
+     * Get the base URL with /v2/ appended.
      */
     private fun getBaseUrl(): String {
         val apiUrl = getApiUrl()
         val trimmedUrl = apiUrl.trimEnd('/')
-        return "$trimmedUrl/v1/"
+        return "$trimmedUrl/v2/"
     }
 
     // MARK: - Token Management
@@ -199,14 +192,12 @@ class WebApiService(private val context: Context) {
     /**
      * Execute a WebAPI request with support for authentication and token refresh.
      */
-    @Suppress("LongParameterList") // One optional flag past the threshold; splitting the signature would hurt every caller
     suspend fun executeRequest(
         method: String,
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
         requiresAuth: Boolean,
-        versioned: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val requestHeaders = headers.toMutableMap()
 
@@ -227,7 +218,6 @@ class WebApiService(private val context: Context) {
             endpoint = endpoint,
             body = body,
             headers = requestHeaders,
-            versioned = versioned,
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -247,7 +237,6 @@ class WebApiService(private val context: Context) {
                     endpoint = endpoint,
                     body = body,
                     headers = retryHeaders,
-                    versioned = versioned,
                 )
 
                 return@withContext retryResponse
@@ -262,20 +251,6 @@ class WebApiService(private val context: Context) {
     }
 
     /**
-     * Execute a request whose path carries its own API version segment (e.g. `v2/Vault`), with
-     * authentication and token refresh. This is what the Rust sync engine's HTTP commands go through.
-     */
-    suspend fun executeVersionedRequest(
-        method: String,
-        path: String,
-        body: String?,
-        headers: Map<String, String>,
-        requiresAuth: Boolean,
-    ): WebApiResponse {
-        return executeRequest(method, path, body, headers, requiresAuth, versioned = true)
-    }
-
-    /**
      * Execute a raw HTTP request without token refresh logic.
      */
     private suspend fun executeRawRequest(
@@ -283,10 +258,8 @@ class WebApiService(private val context: Context) {
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
-        versioned: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
-        val baseUrl = if (versioned) getApiRootUrl() else getBaseUrl()
-        val urlString = "$baseUrl$endpoint"
+        val urlString = "${getBaseUrl()}$endpoint"
 
         var connection: HttpURLConnection? = null
         try {

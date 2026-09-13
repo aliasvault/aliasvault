@@ -102,8 +102,8 @@ fn fresh_client_pulls_and_materializes_the_server_vault() {
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
-    host.respond("GET", "v2/Status", status);
-    host.respond("GET", "v2/Vault", vault);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
 
     let session = SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap();
     let result = host.drive(&session);
@@ -118,7 +118,7 @@ fn fresh_client_pulls_and_materializes_the_server_vault() {
     assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 7);
     assert_eq!(host.state[state::VAULT_PERSONAL_MANIFEST_ID], PERSONAL_MANIFEST_ID);
     assert!(host.state[state::VAULT_CONTENT_FINGERPRINTS].as_object().unwrap().contains_key(&format!("manifest:{}", PERSONAL_MANIFEST_ID)));
-    assert!(host.requests_to("v2/Vault").len() == 1);
+    assert!(host.requests_to("Vault").len() == 1);
 }
 
 #[test]
@@ -129,14 +129,14 @@ fn clean_client_in_sync_does_nothing() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.store_local_as_blob();
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let session = SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap();
     let result = host.drive(&session);
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasNewVault"], false);
-    assert!(host.requests_to("v2/Vault").is_empty());
+    assert!(host.requests_to("Vault").is_empty());
     assert!(host.store_calls.is_empty());
 }
 
@@ -151,21 +151,21 @@ fn dirty_client_pushes_only_what_changed() {
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, vault) = snapshot_of(&server_db, &vek, 7, &salt);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
-    host.respond("GET", "v2/Status", status.clone());
-    host.respond("GET", "v2/Vault", vault);
+    host.respond("GET", "Status", status.clone());
+    host.respond("GET", "Vault", vault);
     host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     insert_item(&host.local, "aaaaaaaa-0000-4000-8000-000000000002", "Local item", PERSONAL_MANIFEST_ID);
     host.store_local_as_blob();
     host.mutation_sequence = 1;
     host.is_dirty = true;
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "v2/Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, 1)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    let writes = host.requests_to("v2/Vault");
+    let writes = host.requests_to("Vault");
     let posts: Vec<_> = writes.iter().filter(|r| r.method == "POST").collect();
     assert_eq!(posts.len(), 1, "one write expected");
     let body = posts[0].body.as_ref().unwrap();
@@ -194,8 +194,8 @@ fn no_op_mutation_clears_the_dirty_flag_without_a_write() {
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
-    host.respond("GET", "v2/Status", status);
-    host.respond("GET", "v2/Vault", vault);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
     host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     // Marked dirty, nothing actually changed.
@@ -218,8 +218,8 @@ fn outdated_push_merges_the_server_change_and_retries() {
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, vault) = snapshot_of(&server_db, &vek, 7, &salt);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
-    host.respond("GET", "v2/Status", status);
-    host.respond("GET", "v2/Vault", vault);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
     host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     // Another client adds an item on the server (revision 8) while this one adds a different item locally.
@@ -231,11 +231,11 @@ fn outdated_push_merges_the_server_change_and_retries() {
     host.is_dirty = true;
 
     host.responders.clear();
-    host.respond("GET", "v2/Status", status8);
-    host.respond("GET", "v2/Vault", vault8);
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("GET", "Status", status8);
+    host.respond("GET", "Vault", vault8);
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond_with(Box::new(|method, path, body| {
-        if method != "POST" || path != "v2/Vault" {
+        if method != "POST" || path != "Vault" {
             return None;
         }
         let current = body.and_then(|b| b["manifests"][0]["currentRevision"].as_i64()).unwrap_or(-1);
@@ -252,7 +252,7 @@ fn outdated_push_merges_the_server_change_and_retries() {
     assert_eq!(result["hasNewVault"], true);
     assert_eq!(item_names(&host.local), vec!["Local item", "Other device item", "Server item"]);
     assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 9);
-    let posts: Vec<_> = host.requests_to("v2/Vault").into_iter().filter(|r| r.method == "POST").collect();
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     assert_eq!(posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["currentRevision"], 8);
     let merged: Value = {
         let blob = posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["manifestBlob"].as_str().unwrap();
@@ -279,7 +279,7 @@ fn unreachable_server_with_a_local_vault_goes_offline() {
 fn expired_session_requires_logout() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);
-    host.respond_with(Box::new(|_, path, _| if path == "v2/Status" { Some((401, json!({}))) } else { None }));
+    host.respond_with(Box::new(|_, path, _| if path == "Status" { Some((401, json!({}))) } else { None }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
@@ -293,7 +293,7 @@ fn password_changed_elsewhere_requires_logout() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);
     host.state.insert(state::ENCRYPTION_KEY_DERIVATION_PARAMS.to_string(), json!({ "salt": "old-salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" }));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "new-salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "new-salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
@@ -308,7 +308,7 @@ fn legacy_account_without_vault_key_reports_the_manifest_migration() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.store_local_as_blob();
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
@@ -329,9 +329,9 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(salt));
-    host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "v2/VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "v2/Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
 
@@ -339,7 +339,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert_eq!(result["pushed"], true);
     let new_key = result["sessionUpdates"]["encryptionKey"].as_str().expect("the session adopts the new VEK");
     assert_ne!(new_key, kek);
-    let posts: Vec<_> = host.requests_to("v2/Vault").into_iter().filter(|r| r.method == "POST").collect();
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
     let (vek, _) = crypto::resolve_vault_encryption_key(body["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["accountKeys"]["encryptedVek"].as_str().unwrap(), &kek).unwrap();
@@ -366,8 +366,8 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(vault_codec::generate_manifest_salt()));
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "v2/Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let status = host.drive(&SyncSession::new(&request("migrationStatus", &vek, false, 0)).unwrap());
     assert_eq!(status["kind"], "schema-rebuild");
@@ -378,8 +378,8 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     assert_eq!(result["pushed"], true);
     assert_eq!(latest_migration_id(&host.local), current_stamp, "the local vault is rebuilt onto the current schema");
     assert_eq!(item_names(&host.local), vec!["Kept item"]);
-    assert!(host.requests_to("v2/VaultKey/Password").is_empty(), "a migrated account is not probed for a key hierarchy");
-    let posts: Vec<_> = host.requests_to("v2/Vault").into_iter().filter(|r| r.method == "POST").collect();
+    assert!(host.requests_to("VaultKey/Password").is_empty(), "a migrated account is not probed for a key hierarchy");
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     assert!(posts[0].body.as_ref().unwrap()["accountKeys"].is_null(), "no key hierarchy is minted");
     assert!(result["sessionUpdates"]["encryptionKey"].is_null(), "the session key stays the VEK");
 }
@@ -405,10 +405,10 @@ fn pre_format_session_host(kek: &str, local_item: &str, server_item: &str) -> Te
     host.store_local_as_blob();
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000002", server_item, PERSONAL_MANIFEST_ID);
-    host.respond("GET", "v2/Vault", legacy_snapshot_of(&server_db, kek, 3));
-    host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "v2/VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "v2/Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("GET", "Vault", legacy_snapshot_of(&server_db, kek, 3));
+    host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
     host
 }
 
@@ -421,10 +421,10 @@ fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
-    assert_eq!(host.requests_to("v2/Vault").iter().filter(|r| r.method == "GET").count(), 1, "the baseline is pulled once");
+    assert_eq!(host.requests_to("Vault").iter().filter(|r| r.method == "GET").count(), 1, "the baseline is pulled once");
     assert_eq!(host.state[state::VAULT_PERSONAL_MANIFEST_ID], PERSONAL_MANIFEST_ID);
     assert_eq!(item_names(&host.local), vec!["Server item"], "a clean local vault is replaced by the server's, like a login does");
-    let posts: Vec<_> = host.requests_to("v2/Vault").into_iter().filter(|r| r.method == "POST").collect();
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the migration push names the revision the server holds");
     assert!(body["accountKeys"]["encryptedAccountKey"].is_string());
@@ -443,7 +443,7 @@ fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
     assert_eq!(result["pushed"], true);
     assert_eq!(host.state[state::VAULT_PERSONAL_MANIFEST_ID], PERSONAL_MANIFEST_ID);
     assert_eq!(item_names(&host.local), vec!["Local item"], "pending local changes are not thrown away");
-    let posts: Vec<_> = host.requests_to("v2/Vault").into_iter().filter(|r| r.method == "POST").collect();
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the baseline still comes from the server");
     let manifest_json = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), result["sessionUpdates"]["encryptionKey"].as_str().unwrap()).unwrap();
@@ -459,7 +459,7 @@ fn session_reports_when_a_response_is_missing() {
     session.resume("{}").unwrap();
     let second: Value = serde_json::from_str(&session.next_command().unwrap()).unwrap();
     assert_eq!(second["kind"], "http");
-    assert_eq!(second["path"], "v2/Status");
+    assert_eq!(second["path"], "Status");
 }
 
 #[test]
@@ -475,7 +475,7 @@ fn status_check_reports_newer_server_state_without_touching_the_vault() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let result = host.drive(&SyncSession::new(&request("statusCheck", &vek, true, 2)).unwrap());
 
@@ -484,7 +484,7 @@ fn status_check_reports_newer_server_state_without_touching_the_vault() {
     assert_eq!(result["hasDirtyChanges"], true);
     assert_eq!(result["isOffline"], false);
     assert!(host.store_calls.is_empty());
-    assert!(host.requests.iter().all(|r| r.path == "v2/Status"));
+    assert!(host.requests.iter().all(|r| r.path == "Status"));
 }
 
 /// The `GET v2/VaultKey/Password` answer for a hierarchy the server holds.
@@ -506,9 +506,9 @@ fn a_hierarchy_created_on_another_device_is_adopted_on_the_next_pull() {
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
     let (status, vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
-    host.respond("GET", "v2/Status", status);
-    host.respond("GET", "v2/VaultKey/Password", vault_key_body(&hierarchy));
-    host.respond("GET", "v2/Vault", vault);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
+    host.respond("GET", "Vault", vault);
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
@@ -529,7 +529,7 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     let kek = crypto::generate_key_base64();
     let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
     let mut host = TestHost::new(&kek);
-    host.respond("GET", "v2/VaultKey/Password", vault_key_body(&hierarchy));
+    host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 
     let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
 
@@ -548,7 +548,7 @@ fn resolve_vault_key_keeps_the_kek_for_a_legacy_account() {
     let kek = crypto::generate_key_base64();
     let mut host = TestHost::new(&kek);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("stale"));
-    host.respond("GET", "v2/VaultKey/Password", json!({ "vaultKey": null }));
+    host.respond("GET", "VaultKey/Password", json!({ "vaultKey": null }));
 
     let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
 
@@ -581,7 +581,7 @@ fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
     let hierarchy = crypto::create_account_key_hierarchy(&crypto::generate_key_base64()).unwrap();
     let wrong_kek = crypto::generate_key_base64();
     let mut host = TestHost::new(&wrong_kek);
-    host.respond("GET", "v2/VaultKey/Password", vault_key_body(&hierarchy));
+    host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 
     let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &wrong_kek, false, 0)).unwrap());
 
@@ -602,12 +602,12 @@ fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!(hierarchy.account_keys.encrypted_account_key));
     host.state.insert(state::ENCRYPTED_VEK.to_string(), json!(hierarchy.account_keys.encrypted_vek));
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
     assert!(result["sessionUpdates"].get("encryptionKey").is_none());
-    assert!(host.requests_to("v2/VaultKey/Password").is_empty(), "a device with a cached chain is never probed");
+    assert!(host.requests_to("VaultKey/Password").is_empty(), "a device with a cached chain is never probed");
 }
 
 /// The VEK itself opens nothing in the chain and stands as the session key.
@@ -621,7 +621,7 @@ fn a_vek_session_key_is_left_alone() {
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!(hierarchy.account_keys.encrypted_account_key));
     host.state.insert(state::ENCRYPTED_VEK.to_string(), json!(hierarchy.account_keys.encrypted_vek));
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
@@ -638,12 +638,12 @@ fn clean_legacy_account_in_sync_is_not_probed_for_a_vault_key() {
     host.store_local_as_blob();
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    assert!(host.requests_to("v2/VaultKey/Password").is_empty());
+    assert!(host.requests_to("VaultKey/Password").is_empty());
 }
 
 /// A dirty legacy account probes the server for a vault key once per run, not once per step.
@@ -657,14 +657,14 @@ fn dirty_legacy_account_probes_for_a_vault_key_once_per_run() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(salt));
-    host.respond("GET", "v2/Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
-    host.respond("GET", "v2/VaultKey/Password", json!({ "vaultKey": null }));
-    host.respond("POST", "v2/Vault/blobs/missing", json!({ "missing": [] }));
-    host.respond("POST", "v2/Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
+    host.respond("GET", "VaultKey/Password", json!({ "vaultKey": null }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, true, 1)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    assert_eq!(host.requests_to("v2/VaultKey/Password").len(), 1);
+    assert_eq!(host.requests_to("VaultKey/Password").len(), 1);
 }
 

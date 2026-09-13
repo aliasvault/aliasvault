@@ -15,7 +15,7 @@ export interface Spec extends TurboModule {
   setCustomProxyHeaders(headersJson: string): Promise<void>;
   getCustomProxyHeaders(): Promise<string>;
 
-  // WebAPI request execution
+  // WebAPI request execution against the v2 API base URL.
   executeWebApiRequest(method: string, endpoint: string, body: string | null, headers: string, requiresAuth: boolean): Promise<string>;
 
   // Vault state management

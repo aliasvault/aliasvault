@@ -101,18 +101,12 @@ public class WebApiService {
     }
 
     /**
-     * Get the base URL with /v1/ appended
+     * Get the base URL with /v2/ appended
      */
-    private func getApiRootUrl() -> String {
-        let apiUrl = getApiUrl()
-        let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
-        return "\(trimmedUrl)/"
-    }
-
     private func getBaseUrl() -> String {
         let apiUrl = getApiUrl()
         let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
-        return "\(trimmedUrl)/v1/"
+        return "\(trimmedUrl)/v2/"
     }
 
     // MARK: - Token Management
@@ -159,8 +153,7 @@ public class WebApiService {
         endpoint: String,
         body: String?,
         headers: [String: String],
-        requiresAuth: Bool,
-        versioned: Bool = false
+        requiresAuth: Bool
     ) async throws -> WebApiResponse {
         var requestHeaders = headers
 
@@ -177,8 +170,7 @@ public class WebApiService {
             method: method,
             endpoint: endpoint,
             body: body,
-            headers: requestHeaders,
-            versioned: versioned
+            headers: requestHeaders
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -194,8 +186,7 @@ public class WebApiService {
                     method: method,
                     endpoint: endpoint,
                     body: body,
-                    headers: retryHeaders,
-                    versioned: versioned
+                    headers: retryHeaders
                 )
 
                 return retryResponse
@@ -210,31 +201,15 @@ public class WebApiService {
     }
 
     /**
-     * Execute a request whose path carries its own API version segment (e.g. `v2/Vault`), with
-     * authentication and token refresh. This is what the Rust sync engine's HTTP commands go through.
-     */
-    public func executeVersionedRequest(
-        method: String,
-        path: String,
-        body: String?,
-        headers: [String: String],
-        requiresAuth: Bool
-    ) async throws -> WebApiResponse {
-        return try await executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: requiresAuth, versioned: true)
-    }
-
-    /**
      * Execute a raw HTTP request without token refresh logic
      */
     private func executeRawRequest(
         method: String,
         endpoint: String,
         body: String?,
-        headers: [String: String],
-        versioned: Bool = false
+        headers: [String: String]
     ) async throws -> WebApiResponse {
-        let baseUrl = versioned ? getApiRootUrl() : getBaseUrl()
-        let urlString = "\(baseUrl)\(endpoint)"
+        let urlString = "\(getBaseUrl())\(endpoint)"
 
         guard let url = URL(string: urlString) else {
             throw NSError(

@@ -24,7 +24,7 @@ type NativeWebApiResponse = {
 
 /**
  * Service class for interacting with the web API.
- * This class now acts as a proxy to the native layer, where all WebAPI calls are executed.
+ * Endpoints are unversioned (e.g. `Email/1`); the native layer resolves them against the current base URL (v2).
  */
 export class WebApiService {
   /**
@@ -32,7 +32,7 @@ export class WebApiService {
    */
   public async getBaseUrl(): Promise<string> {
     const apiUrl = await this.getApiUrl();
-    return apiUrl.replace(/\/$/, '') + '/v1/';
+    return apiUrl.replace(/\/$/, '') + '/v2/';
   }
 
   /**
@@ -47,7 +47,6 @@ export class WebApiService {
 
   /**
    * Fetch data from the API with authentication headers and access token refresh retry.
-   * This method now proxies to the native layer which handles auth and token refresh.
    */
   public async authFetch<T>(
     endpoint: string,
@@ -81,13 +80,12 @@ export class WebApiService {
         endpoint,
         options.body as string | null ?? null,
         JSON.stringify(headers),
-        true // requiresAuth
+        true, // requiresAuth
       );
 
       const response: NativeWebApiResponse = JSON.parse(responseJson);
 
-      // If native layer returns 401 session is truly expired
-      // The native layer has already tried to refresh the token, so this is a final failure
+      // If native layer returns 401 session is truly expired (native layer already attempted token refresh automatically).
       if (response.statusCode === 401) {
         logoutEventEmitter.emit('auth.errors.sessionExpired');
         throw new Error(i18n.t('auth.errors.sessionExpired'));
@@ -121,7 +119,6 @@ export class WebApiService {
 
   /**
    * Fetch data from the API without authentication headers and without access token refresh retry.
-   * This method now proxies to the native layer.
    */
   public async rawFetch(
     endpoint: string,
@@ -152,7 +149,7 @@ export class WebApiService {
         endpoint,
         options.body as string | null ?? null,
         JSON.stringify(headers),
-        false // requiresAuth = false
+        false, // requiresAuth
       );
 
       const nativeResponse: NativeWebApiResponse = JSON.parse(responseJson);
@@ -232,7 +229,7 @@ export class WebApiService {
         endpoint,
         null,
         JSON.stringify(headers),
-        true // requiresAuth
+        true, // requiresAuth
       );
 
       const response: NativeWebApiResponse = JSON.parse(responseJson);

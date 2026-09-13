@@ -206,7 +206,7 @@ export class WebApiService {
    * Run a request on behalf of the Rust sync engine.
    */
   public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean): Promise<EngineHttpResponse> {
-    const url = (await this.getApiUrl()).replace(/\/$/, '') + '/' + path.replace(/^\/+/, '');
+    const url = await this.getBaseUrl() + path.replace(/^\/+/, '');
     const headers = new Headers({ Accept: 'application/json' });
     if (body !== undefined) {
       headers.set('Content-Type', 'application/json');

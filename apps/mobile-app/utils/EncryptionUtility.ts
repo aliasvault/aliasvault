@@ -370,13 +370,16 @@ class EncryptionUtility {
   /**
    * Decrypts a list of emails based on the provided public/private key pairs. The publicKeys table is the one the
    * API sent alongside the emails; each email's decryption keys reference it by index.
+   *
+   * Emails that cannot be decrypted are skipped rather than failing the batch, so one unreadable record cannot
+   * break the whole list view.
    */
   public static async decryptEmailList(
     emails: MailboxEmail[],
     publicKeys: string[],
     encryptionKeys: EncryptionKey[]
   ): Promise<MailboxEmail[]> {
-    return Promise.all(emails.map(async email => {
+    const results = await Promise.all(emails.map(async email => {
       try {
         const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, publicKeys, encryptionKeys);
 
@@ -395,9 +398,12 @@ class EncryptionUtility {
 
         return decryptedEmail;
       } catch (err) {
-        throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
+        console.warn(`[Email] Skipping email ${email.id}, it could not be decrypted:`, err);
+        return null;
       }
     }));
+
+    return results.filter((email): email is MailboxEmail => email !== null);
   }
 
   /**

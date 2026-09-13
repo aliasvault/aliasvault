@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -85,6 +86,10 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    attachmentIcon: {
+      marginRight: 2,
+      opacity: 0.6,
+    },
     emailCard: {
       backgroundColor: colors.accentBackground,
       borderRadius: 8,
@@ -109,6 +114,11 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginBottom: 8,
+    },
+    emailMeta: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexShrink: 0,
     },
     emailPreview: {
       color: colors.text,
@@ -145,9 +155,14 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
         <ThemedText style={styles.emailSubject} numberOfLines={1}>
           {email.subject}
         </ThemedText>
-        <ThemedText style={styles.emailDate}>
-          {formatEmailDate(email.dateSystem)}
-        </ThemedText>
+        <View style={styles.emailMeta}>
+          {email.hasAttachments && (
+            <MaterialIcons name="attach-file" size={14} color={colors.textMuted} style={styles.attachmentIcon} />
+          )}
+          <ThemedText style={styles.emailDate}>
+            {formatEmailDate(email.dateSystem)}
+          </ThemedText>
+        </View>
       </View>
       <ThemedText style={styles.emailPreview} numberOfLines={2}>
         {email.messagePreview}
