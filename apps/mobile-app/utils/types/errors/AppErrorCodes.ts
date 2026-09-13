@@ -24,6 +24,9 @@ export enum AppErrorCode {
   // Generic errors (E-0xx) - from AppError.kt
   UNKNOWN_ERROR = 'E-001',
   PARSE_ERROR = 'E-002',
+  SYNC_RESPONSE_INVALID = 'E-003', // Sync engine: a server response is not the JSON shape the client expects
+  SYNC_CODEC_FAILED = 'E-004', // Sync engine: the core library (codec, merge or crypto) refused the vault data
+  SYNC_ENGINE_FAILED = 'E-005', // Sync engine: a state it has no rule for (the detail says which)
 
   // Authentication errors (E-1xx) - from AppError.kt
   AUTHENTICATION_FAILED = 'E-101',
@@ -34,6 +37,7 @@ export enum AppErrorCode {
   SERVER_UNAVAILABLE = 'E-201',
   NETWORK_ERROR = 'E-202',
   TIMEOUT = 'E-203',
+  SERVER_ERROR = 'E-204', // The server answered a sync request with an unexpected HTTP failure
 
   // Version/compatibility errors (E-3xx) - from AppError.kt
   CLIENT_VERSION_NOT_SUPPORTED = 'E-301',
@@ -44,6 +48,7 @@ export enum AppErrorCode {
   VAULT_MERGE_REQUIRED = 'E-401',
   VAULT_OUTDATED = 'E-402',
   VAULT_NOT_FOUND = 'E-403', // VaultSync.kt: no local vault for merge
+  SYNC_VAULT_FETCH_FAILED = 'E-404', // Sync engine: the server's vault snapshot cannot be assembled
 
   // Decryption/Encryption errors (E-5xx) - from AppError.kt
   VAULT_DECRYPT_FAILED = 'E-501',
@@ -64,6 +69,9 @@ export enum AppErrorCode {
   BIOMETRIC_LOCKOUT = 'E-516', // iOS: biometric locked out due to too many failed attempts
 
   // Database/Storage errors (E-6xx) - from VaultSync.kt
+  STORAGE_READ_FAILED = 'E-601', // Sync engine: a state, database or at-rest vault read failed
+  STORAGE_WRITE_FAILED = 'E-602', // Sync engine: a state, database or at-rest vault write failed
+  DATABASE_INIT_FAILED = 'E-603', // Sync engine: the staging database could not be opened
   VAULT_STORE_FAILED = 'E-604', // AppError: failed to store vault
 
   // Merge errors (E-7xx) - from VaultSync.kt
@@ -77,6 +85,7 @@ export enum AppErrorCode {
   // Native module/retry errors (E-9xx)
   MAX_RETRIES_REACHED = 'E-901', // AppError: max sync retries reached
   NATIVE_UNLOCK_FAILED = 'E-902', // useVaultSync.ts: vault unlock failed
+  MIGRATION_CHECK_FAILED = 'E-903', // Sync engine: the vault migration check failed
 }
 
 /**
@@ -195,6 +204,9 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Generic errors
     [AppErrorCode.UNKNOWN_ERROR]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.PARSE_ERROR]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_RESPONSE_INVALID]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_ENGINE_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Authentication errors
     [AppErrorCode.AUTHENTICATION_FAILED]: 'auth.errors.sessionExpired',
@@ -205,6 +217,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.SERVER_UNAVAILABLE]: 'auth.errors.serverError',
     [AppErrorCode.NETWORK_ERROR]: 'auth.errors.networkError',
     [AppErrorCode.TIMEOUT]: 'auth.errors.networkError',
+    [AppErrorCode.SERVER_ERROR]: 'auth.errors.serverError',
 
     // Version errors
     [AppErrorCode.CLIENT_VERSION_NOT_SUPPORTED]: 'vault.errors.versionNotSupported',
@@ -215,6 +228,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.VAULT_MERGE_REQUIRED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_OUTDATED]: 'vault.errors.vaultOutdated',
     [AppErrorCode.VAULT_NOT_FOUND]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Decryption/Encryption errors
     [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
@@ -235,6 +249,9 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.BIOMETRIC_LOCKOUT]: 'common.errors.unknownErrorTryAgain',
 
     // Database/Storage errors
+    [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.STORAGE_WRITE_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.DATABASE_INIT_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Merge errors
@@ -248,6 +265,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Native module/retry errors
     [AppErrorCode.MAX_RETRIES_REACHED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.NATIVE_UNLOCK_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
   };
 
   return codeToKeyMap[code] || 'common.errors.unknownErrorTryAgain';

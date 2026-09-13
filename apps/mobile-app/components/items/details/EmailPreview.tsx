@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
-import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -171,12 +171,12 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
           try {
             // Get all encryption keys
-            const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
+            const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
 
             // Use single emailbox operator instead of bulk
             const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
             try {
-              const data = response as { mails: MailboxEmail[] };
+              const data = response as { mails: MailboxEmail[]; publicKeys: string[] };
 
               // Store all emails, sorted by date
               const allMails = data.mails
@@ -186,6 +186,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails = await EncryptionUtility.decryptEmailList(
                   allMails,
+                  data.publicKeys,
                   encryptionKeys
                 );
 

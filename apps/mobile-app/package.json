@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "compile": "tsc --noEmit"
+    "compile": "tsc --noEmit",
+    "preinstall": "node ../../core/scripts/install-linked-deps.mjs"
   },
   "codegenConfig": {
     "name": "NativeVaultManagerSpec",
@@ -25,6 +26,7 @@
     }
   },
   "dependencies": {
+    "@aliasvault/client": "file:../../core/client",
     "@aliasvault/models": "file:../../core/models",
     "@aliasvault/vault": "file:../../core/vault",
     "@expo/vector-icons": "^15.0.2",

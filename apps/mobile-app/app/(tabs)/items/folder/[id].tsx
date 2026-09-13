@@ -1,3 +1,5 @@
+import { canHaveSubfolders, getRecursiveItemCount } from '@aliasvault/client/items/FolderUtils';
+import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
@@ -7,12 +9,8 @@ import { StyleSheet, Platform, View, Text, TextInput, TouchableOpacity, RefreshC
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import emitter from '@/utils/EventEmitter';
-import { canHaveSubfolders, getRecursiveItemCount } from '@/utils/FolderUtils';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -39,6 +37,8 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
 import type { FolderWithCount } from '@/components/folders/FolderPill';
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { Item, ItemType } from '@aliasvault/models/vault';
 
 /**

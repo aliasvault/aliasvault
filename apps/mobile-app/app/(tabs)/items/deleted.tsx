@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { ItemWithDeletedAt } from '@/utils/db/mappers/ItemMapper';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -23,6 +22,8 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { TRASH_RETENTION_DAYS } from '@/constants/vault';
 import { useDb } from '@/context/DbContext';
+
+import type { ItemWithDeletedAt } from '@aliasvault/client/database/mappers/ItemMapper';
 
 /**
  * Calculate days remaining until permanent deletion.

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { AppInfo } from '@/utils/AppInfo';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 

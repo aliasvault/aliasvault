@@ -5,7 +5,6 @@ import { StyleSheet, Platform, View, ScrollView, RefreshControl, Animated, Touch
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
@@ -21,6 +20,8 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 /**
  * Emails screen.
@@ -63,7 +64,7 @@ export default function EmailsScreen() : React.ReactNode {
       }
 
       // Get unique email addresses from all items
-      const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
+      const emailAddresses = await dbContext.sqliteClient.items.getRoutableEmailAddresses();
 
       try {
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -73,10 +74,10 @@ export default function EmailsScreen() : React.ReactNode {
         });
 
         // Decrypt emails locally using private key associated with the email address
-        const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
+        const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
 
         // Decrypt emails locally using public/private key pairs
-        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
         if (reset) {
           setEmails(decryptedEmails);
@@ -121,7 +122,7 @@ export default function EmailsScreen() : React.ReactNode {
       setIsLoadingMore(true);
       setError(null);
 
-      const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
+      const emailAddresses = await dbContext.sqliteClient.items.getRoutableEmailAddresses();
       const nextPage = currentPage + 1;
 
       const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -131,8 +132,8 @@ export default function EmailsScreen() : React.ReactNode {
       });
 
       // Decrypt emails locally
-      const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
-      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+      const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
+      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
       // Append to existing emails
       setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);

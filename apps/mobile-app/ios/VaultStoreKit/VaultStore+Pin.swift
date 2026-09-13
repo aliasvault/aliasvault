@@ -114,8 +114,8 @@ extension VaultStore {
             try storePinFailedAttemptsInKeychain(0)
             markSuccessfulAuth()
 
-            // Return the decrypted vault encryption key as base64
-            return decryptedKey.base64EncodedString()
+            // Return the decrypted vault encryption key as base64.
+            return resolveStoredUnlockKey(base64Key: decryptedKey.base64EncodedString())
         } catch {
             // Increment failed attempts
             let currentAttempts = getPinFailedAttempts()

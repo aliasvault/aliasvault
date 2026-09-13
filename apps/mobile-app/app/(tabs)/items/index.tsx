@@ -1,3 +1,4 @@
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
@@ -7,11 +8,8 @@ import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import emitter from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
@@ -39,6 +37,8 @@ import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { Item, ItemType } from '@aliasvault/models/vault';
 
 /**

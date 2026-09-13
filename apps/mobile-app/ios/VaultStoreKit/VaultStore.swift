@@ -33,6 +33,9 @@ public class VaultStore {
     /// The encryption key for the vault.
     internal var encryptionKey: Data?
 
+    /// The account private key (JWK) of the unlocked session.
+    internal var accountPrivateKey: String?
+
     /// Last successful biometric/PIN auth operation.
     private var lastSuccessfulAuthAt: TimeInterval?
 

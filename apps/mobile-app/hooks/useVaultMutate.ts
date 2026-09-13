@@ -8,12 +8,12 @@ import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata'
 import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@aliasvault/models/webapi';
 import { FieldKey, getFieldValue } from '@aliasvault/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { SrpUtility } from '@/utils/SrpUtility';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
-import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
+import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
 
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -203,7 +203,7 @@ export function useVaultMutate() : {
     const srpIdentity = data.srpIdentity ?? username;
 
     // Derive the SRP client proof for the current password to authorize the change.
-    const currentClientProof = await SrpUtility.deriveClientProof(
+    const currentClientProof = await SrpAuthService.deriveClientProof(
       currentSalt,
       srpIdentity,
       currentPasswordHashString,
@@ -211,7 +211,7 @@ export function useVaultMutate() : {
     );
 
     // Generate salt and verifier for new password using native SRP
-    const newSalt = await SrpUtility.generateSalt();
+    const newSalt = await SrpAuthService.generateSalt();
     const newPasswordHash = await EncryptionUtility.deriveKeyFromPassword(newPasswordPlainText, newSalt, data.encryptionType, data.encryptionSettings);
     const newPasswordHashString = Buffer.from(newPasswordHash).toString('hex').toUpperCase();
 
@@ -242,7 +242,7 @@ export function useVaultMutate() : {
     }
 
     // Generate SRP password change data (verifier for the new password) using native SRP
-    const newVerifier = await SrpUtility.deriveVerifier(newSalt, srpIdentity, newPasswordHashString);
+    const newVerifier = await SrpAuthService.deriveVerifier(await SrpAuthService.derivePrivateKey(newSalt, srpIdentity, newPasswordHashString));
 
     // Prepare vault for password change
     const vault = await prepareVaultForPasswordChange();

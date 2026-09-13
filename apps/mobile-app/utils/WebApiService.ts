@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer';
 
-import { AppInfo } from '@/utils/AppInfo';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@aliasvault/models/webapi';
 
 import i18n from '@/i18n';
 
-import { ClientUpgradeRequiredError } from './types/errors/ClientUpgradeRequiredError';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from './types/errors/LocalAuthError';
-import { PayloadTooLargeError } from './types/errors/PayloadTooLargeError';
+import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
 import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -365,7 +365,7 @@ export class WebApiService {
   /**
    * Get the currently configured API URL from native storage.
    */
-  private async getApiUrl(): Promise<string> {
+  public async getApiUrl(): Promise<string> {
     try {
       const apiUrl = await NativeVaultManager.getApiUrl();
       return apiUrl || AppInfo.DEFAULT_API_URL;

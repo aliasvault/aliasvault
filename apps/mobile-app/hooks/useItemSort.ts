@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { Item } from '@aliasvault/models/vault';
 
 /**

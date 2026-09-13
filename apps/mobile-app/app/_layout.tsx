@@ -8,6 +8,7 @@ import 'react-native-get-random-values';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { install } from 'react-native-quick-crypto';
 
+import '@/platform/MobilePlatform';
 import { resolveDeepLink } from '@/utils/DeepLinkResolver';
 
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';

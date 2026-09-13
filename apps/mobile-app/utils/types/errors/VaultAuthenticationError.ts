@@ -13,8 +13,7 @@ export class VaultAuthenticationError extends Error {
     this.name = 'VaultAuthenticationError';
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, VaultAuthenticationError);
-    }
+    const errorWithTrace = Error as { captureStackTrace?: (target: object, constructor: unknown) => void };
+    errorWithTrace.captureStackTrace?.(this, VaultAuthenticationError);
   }
 }

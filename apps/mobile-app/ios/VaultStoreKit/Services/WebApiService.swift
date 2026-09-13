@@ -26,8 +26,8 @@ public class WebApiService {
     private let refreshTokenKey = "refreshToken"
     private let customProxyHeadersKey = "customProxyHeaders"
 
-    // Default API URL
-    private let defaultApiUrl = "https://app.aliasvault.com/api"
+    // Default API URL, shared by every client (generated from the models package).
+    private let defaultApiUrl = AppInfo.defaultApiUrl
 
     /// Shared UserDefaults for communication between main app and extension
     private let userDefaults = UserDefaults(suiteName: VaultConstants.userDefaultsSuite)!
@@ -103,6 +103,12 @@ public class WebApiService {
     /**
      * Get the base URL with /v1/ appended
      */
+    private func getApiRootUrl() -> String {
+        let apiUrl = getApiUrl()
+        let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
+        return "\(trimmedUrl)/"
+    }
+
     private func getBaseUrl() -> String {
         let apiUrl = getApiUrl()
         let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
@@ -153,7 +159,8 @@ public class WebApiService {
         endpoint: String,
         body: String?,
         headers: [String: String],
-        requiresAuth: Bool
+        requiresAuth: Bool,
+        versioned: Bool = false
     ) async throws -> WebApiResponse {
         var requestHeaders = headers
 
@@ -170,7 +177,8 @@ public class WebApiService {
             method: method,
             endpoint: endpoint,
             body: body,
-            headers: requestHeaders
+            headers: requestHeaders,
+            versioned: versioned
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -186,7 +194,8 @@ public class WebApiService {
                     method: method,
                     endpoint: endpoint,
                     body: body,
-                    headers: retryHeaders
+                    headers: retryHeaders,
+                    versioned: versioned
                 )
 
                 return retryResponse
@@ -201,15 +210,30 @@ public class WebApiService {
     }
 
     /**
+     * Execute a request whose path carries its own API version segment (e.g. `v2/Vault`), with
+     * authentication and token refresh. This is what the Rust sync engine's HTTP commands go through.
+     */
+    public func executeVersionedRequest(
+        method: String,
+        path: String,
+        body: String?,
+        headers: [String: String],
+        requiresAuth: Bool
+    ) async throws -> WebApiResponse {
+        return try await executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: requiresAuth, versioned: true)
+    }
+
+    /**
      * Execute a raw HTTP request without token refresh logic
      */
     private func executeRawRequest(
         method: String,
         endpoint: String,
         body: String?,
-        headers: [String: String]
+        headers: [String: String],
+        versioned: Bool = false
     ) async throws -> WebApiResponse {
-        let baseUrl = getBaseUrl()
+        let baseUrl = versioned ? getApiRootUrl() : getBaseUrl()
         let urlString = "\(baseUrl)\(endpoint)"
 
         guard let url = URL(string: urlString) else {
@@ -279,7 +303,7 @@ public class WebApiService {
     }
 
     /**
-     * Refresh the access token using the refresh token
+     * Refresh the access token using the refresh token.
      */
     private func refreshAccessToken() async throws -> String? {
         guard let refreshToken = getRefreshToken() else {
@@ -307,34 +331,33 @@ public class WebApiService {
         ]
         headers["X-AliasVault-Client"] = getClientVersionHeader()
 
-        do {
-            let response = try await executeRawRequest(
-                method: "POST",
-                endpoint: "Auth/refresh",
-                body: jsonString,
-                headers: headers
-            )
+        let response = try await executeRawRequest(
+            method: "POST",
+            endpoint: "Auth/refresh",
+            body: jsonString,
+            headers: headers
+        )
 
-            guard response.statusCode == 200 else {
-                return nil
-            }
-
-            // Parse the response JSON
-            guard let data = response.body.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let newToken = json["token"] as? String,
-                  let newRefreshToken = json["refreshToken"] as? String else {
-                return nil
-            }
-
-            // Update stored tokens
-            try setAuthTokens(accessToken: newToken, refreshToken: newRefreshToken)
-
-            return newToken
-        } catch {
-            print("WebApiService: Token refresh failed: \(error)")
+        if response.statusCode == 401 || response.statusCode == 403 {
             return nil
         }
+        guard response.statusCode == 200 else {
+            print("WebApiService: Token refresh failed with status \(response.statusCode), treating the server as unreachable")
+            throw URLError(.badServerResponse)
+        }
+
+        // Parse the response JSON
+        guard let data = response.body.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let newToken = json["token"] as? String,
+              let newRefreshToken = json["refreshToken"] as? String else {
+            return nil
+        }
+
+        // Update stored tokens
+        try setAuthTokens(accessToken: newToken, refreshToken: newRefreshToken)
+
+        return newToken
     }
 
     // MARK: - Helper Methods

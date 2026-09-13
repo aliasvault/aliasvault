@@ -1,5 +1,9 @@
 import { Buffer } from 'buffer';
 
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
@@ -9,11 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
-import ConversionUtility from '@/utils/ConversionUtility';
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { SrpUtility } from '@/utils/SrpUtility';
-import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from '@/utils/types/errors/LocalAuthError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -154,7 +154,7 @@ export default function LoginScreen() : React.ReactNode {
   const webApi = useWebApi();
   const { syncVault } = useVaultSync();
 
-  const srpUtil = new SrpUtility(webApi);
+  const srpUtil = new SrpLoginService(webApi);
 
   /**
    * Process the vault response by storing the vault and logging in the user.
@@ -257,7 +257,7 @@ export default function LoginScreen() : React.ReactNode {
      * Store auth tokens and encryption credentials. syncVault will download
      * the vault and store it (including metadata) through native code.
      */
-    await authContext.setAuthTokens(ConversionUtility.normalizeUsername(credentials.username), token, refreshToken);
+    await authContext.setAuthTokens(SrpAuthService.normalizeUsername(credentials.username), token, refreshToken);
     await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
 
     /*
@@ -277,7 +277,7 @@ export default function LoginScreen() : React.ReactNode {
     const hasExistingVault = await NativeVaultManager.hasEncryptedDatabase();
     if (hasExistingVault) {
       const storedUsername = await NativeVaultManager.getUsername();
-      const normalizedLoginUsername = ConversionUtility.normalizeUsername(credentials.username);
+      const normalizedLoginUsername = SrpAuthService.normalizeUsername(credentials.username);
 
       if (storedUsername && storedUsername !== normalizedLoginUsername) {
         // Different user: clear vault and download fresh
@@ -385,7 +385,7 @@ export default function LoginScreen() : React.ReactNode {
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
-      const initiateLoginResponse = await srpUtil.initiateLogin(ConversionUtility.normalizeUsername(credentials.username));
+      const initiateLoginResponse = await srpUtil.initiateLogin(SrpAuthService.normalizeUsername(credentials.username));
 
       const passwordHash = await EncryptionUtility.deriveKeyFromPassword(
         credentials.password,
@@ -400,7 +400,7 @@ export default function LoginScreen() : React.ReactNode {
       setLoginStatus(t('auth.validatingCredentials'));
       await new Promise(resolve => requestAnimationFrame(resolve));
       const validationResponse = await srpUtil.validateLogin(
-        ConversionUtility.normalizeUsername(credentials.username),
+        SrpAuthService.normalizeUsername(credentials.username),
         passwordHashString,
         true,
         initiateLoginResponse
@@ -471,7 +471,7 @@ export default function LoginScreen() : React.ReactNode {
       }
 
       const validationResponse = await srpUtil.validateLogin2Fa(
-        ConversionUtility.normalizeUsername(credentials.username),
+        SrpAuthService.normalizeUsername(credentials.username),
         passwordHashString,
         true,
         initiateLoginResponse,

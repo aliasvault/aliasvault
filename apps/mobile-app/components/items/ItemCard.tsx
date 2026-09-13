@@ -169,7 +169,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
         {
           if (dbContext?.sqliteClient) {
             try {
-              const totpCodes = await dbContext.sqliteClient.settings.getTotpCodesForItem(item.Id);
+              const totpCodes = await dbContext.sqliteClient.items.getTotpCodesForItem(item.Id);
               const activeTotp = totpCodes.find(tc => !tc.IsDeleted);
               if (activeTotp) {
                 const code = await generateTotpCode(activeTotp.SecretKey, activeTotp);

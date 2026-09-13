@@ -125,7 +125,7 @@ export default function ImportExportScreen(): React.ReactNode {
      */
     for (const item of items) {
       // Get TOTP codes for this item
-      const totpCodes = await dbContext.sqliteClient?.settings.getTotpCodesForItem(item.Id) ?? [];
+      const totpCodes = await dbContext.sqliteClient?.items.getTotpCodesForItem(item.Id) ?? [];
       const totpSecret = totpCodes.length > 0 ? totpCodes[0].SecretKey : '';
 
       /*

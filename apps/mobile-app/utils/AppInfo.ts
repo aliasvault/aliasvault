@@ -1,28 +1,18 @@
 import { Platform } from 'react-native';
 
-import { DEFAULT_API_URL, DEFAULT_CLIENT_URL } from '@aliasvault/models/defaults';
-
 /**
- * AppInfo class which contains information about the application version
- * and default server URLs.
+ * How the mobile app identifies itself to the client core (registered in platform/MobilePlatform.ts). Everything
+ * else about the app and its defaults is read from the client core's AppInfo. The version scripts in /scripts
+ * update the VERSION line in this file.
  */
-export class AppInfo {
+export class MobileAppIdentity {
   /**
    * The current mobile app version. This should be updated with each release of the mobile app.
    */
   public static readonly VERSION = '0.31.0-alpha';
 
   /**
-   * The API version to send to the server (base semver without stage suffixes).
-   * Apple app store requires semver format without stage suffixes.
-   */
-  public static readonly API_VERSION = (() => {
-    return AppInfo.VERSION.split('-')[0];
-  })();
-
-  /**
    * The client name to use in the X-AliasVault-Client header.
-   * Detects the specific browser being used.
    */
   public static readonly CLIENT_NAME = (() : 'ios' | 'android' | 'app' => {
     const os = Platform.OS;
@@ -37,16 +27,6 @@ export class AppInfo {
 
     return 'app';
   })();
-
-  /**
-   * The default AliasVault client URL (shared by every client, see AppDefaults in the models package).
-   */
-  public static readonly DEFAULT_CLIENT_URL = DEFAULT_CLIENT_URL;
-
-  /**
-   * The default AliasVault web API URL (shared by every client, see AppDefaults in the models package).
-   */
-  public static readonly DEFAULT_API_URL = DEFAULT_API_URL;
 
   /**
    * Prevent instantiation of this utility class

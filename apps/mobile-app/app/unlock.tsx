@@ -1,3 +1,4 @@
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,7 +8,6 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimension
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { AppErrorCode, getAppErrorCode, getErrorTranslationKey, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';

@@ -51,7 +51,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
       if (typeof attachment.Blob === 'string') {
         file.write(attachment.Blob, { encoding: 'base64' });
       } else {
-        file.write(attachment.Blob as unknown as Uint8Array);
+        file.write((attachment.Blob ?? new Uint8Array(0)) as unknown as Uint8Array);
       }
 
       await openAttachment({ filePath: file.uri, fileName: sanitizedFilename });
@@ -70,7 +70,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
     }
 
     try {
-      const attachmentList = await dbContext.sqliteClient.settings.getAttachmentsForItem(item.Id);
+      const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem(item.Id);
       setAttachments(attachmentList);
     } catch (error) {
       console.error('Error loading attachments:', error);

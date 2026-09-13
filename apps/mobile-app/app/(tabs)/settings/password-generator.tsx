@@ -41,7 +41,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
        */
       const loadSettings = async (): Promise<void> => {
         try {
-          const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
+          const passwordSettings = await dbContext.sqliteClient!.settings.getPasswordSettings();
           setSettings(passwordSettings);
           latestSettings.current = passwordSettings;
           persistedJson.current = JSON.stringify(passwordSettings);
@@ -66,7 +66,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
         }
 
         executeVaultMutation(async () => {
-          await dbContext.sqliteClient!.updateSetting('PasswordGenerationSettings', currentJson);
+          await dbContext.sqliteClient!.settings.updateSetting('PasswordGenerationSettings', currentJson);
         }).then(() => {
           persistedJson.current = currentJson;
         }).catch((error) => {

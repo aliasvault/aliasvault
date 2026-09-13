@@ -1,3 +1,4 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -5,7 +6,6 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Lin
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
-import { AppInfo } from '@/utils/AppInfo';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 
 import { useColors } from '@/hooks/useColorScheme';

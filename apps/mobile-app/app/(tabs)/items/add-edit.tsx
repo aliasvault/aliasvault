@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { IdentityHelperUtils } from '@aliasvault/models/identity';
 import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -11,12 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
 import emitter from '@/utils/EventEmitter';
-import { selectFaviconTarget } from '@/utils/FaviconUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import * as IdentityGenerator from '@/utils/IdentityGeneratorUtility';
-import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
 import { extractServiceNameFromUrl, sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -44,6 +41,7 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
 import type { FaviconExtractModel } from '@aliasvault/models/webapi';
@@ -273,11 +271,11 @@ export default function AddEditItemScreen(): React.ReactNode {
    * Generate a random identity.
    */
   const generateRandomIdentity = useCallback(async (): Promise<Identity> => {
-    const identityLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
-    const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();
-    const ageRange = await dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+    const identityLanguage = await dbContext.sqliteClient!.settings.getEffectiveIdentityLanguage();
+    const genderPreference = await dbContext.sqliteClient!.settings.getDefaultIdentityGender();
+    const ageRange = await dbContext.sqliteClient!.settings.getDefaultIdentityAgeRange();
 
-    return IdentityGenerator.generateIdentity({
+    return RustCore.generateIdentity({
       language: identityLanguage,
       gender: genderPreference,
       ageRange
@@ -288,9 +286,9 @@ export default function AddEditItemScreen(): React.ReactNode {
    * Generate a random alias and password.
    */
   const generateRandomAlias = useCallback(async (): Promise<void> => {
-    const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
+    const passwordSettings = await dbContext.sqliteClient!.settings.getPasswordSettings();
     const identity = await generateRandomIdentity();
-    const password = await PasswordGenerator.generatePassword(passwordSettings);
+    const password = await RustCore.generatePassword(passwordSettings);
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
@@ -349,7 +347,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         const randomIdentity = await generateRandomIdentity();
         username = randomIdentity.nickName;
       } else {
-        username = await IdentityGenerator.generateIdentityUsername({ firstName, lastName, birthDate });
+        username = await RustCore.generateIdentityUsername({ firstName, lastName, birthDate });
       }
 
       handleFieldChange('login.username', username);
@@ -372,10 +370,10 @@ export default function AddEditItemScreen(): React.ReactNode {
 
     if (!firstName.trim() && !lastName.trim()) {
       // No alias identity fields filled in, fall back to random prefix.
-      prefix = await IdentityGenerator.generateRandomEmailPrefix();
+      prefix = await RustCore.generateRandomEmailPrefix();
     } else {
       const birthDate = (fieldValues['alias.birthdate'] as string) || '';
-      prefix = await IdentityGenerator.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
+      prefix = await RustCore.generateIdentityEmailPrefix({ firstName, lastName, birthDate });
     }
 
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
@@ -390,7 +388,7 @@ export default function AddEditItemScreen(): React.ReactNode {
    * has no persona fields to base the email on.
    */
   const handleGenerateRandomEmail = useCallback(async () => {
-    const prefix = await IdentityGenerator.generateRandomEmailPrefix();
+    const prefix = await RustCore.generateRandomEmailPrefix();
 
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${prefix}@${defaultEmailDomain}` : prefix;
@@ -453,7 +451,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load attachments for this item
-        const itemAttachments = await dbContext.sqliteClient!.settings.getAttachmentsForItem(id);
+        const itemAttachments = await dbContext.sqliteClient!.items.getAttachmentsForItem(id);
         setAttachments(itemAttachments);
         setOriginalAttachmentIds(itemAttachments.map(a => a.Id));
         if (itemAttachments.length > 0) {
@@ -461,7 +459,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         }
 
         // Load TOTP codes for this item
-        const itemTotpCodes = await dbContext.sqliteClient!.settings.getTotpCodesForItem(id);
+        const itemTotpCodes = await dbContext.sqliteClient!.items.getTotpCodesForItem(id);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map(tc => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -503,7 +501,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       if (isEditMode) {
         // Load password settings BEFORE loading item so it's available when components render
         try {
-          const settings = await dbContext.sqliteClient!.getPasswordSettings();
+          const settings = await dbContext.sqliteClient!.settings.getPasswordSettings();
           setPasswordSettings(settings);
         } catch (err) {
           console.error('Error loading password settings:', err);
@@ -512,7 +510,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       } else {
         // Create mode
         try {
-          const settings = await dbContext.sqliteClient!.getPasswordSettings();
+          const settings = await dbContext.sqliteClient!.settings.getPasswordSettings();
           setPasswordSettings(settings);
         } catch (err) {
           console.error('Error loading password settings:', err);
@@ -827,11 +825,11 @@ export default function AddEditItemScreen(): React.ReactNode {
     };
 
     // Extract favicon from URL if present.
-    const faviconTarget = await selectFaviconTarget(fieldValues['login.url']);
+    const faviconTarget = await RustCore.selectFaviconTarget(RustCore.toUrlList(fieldValues['login.url']));
 
     if (faviconTarget && dbContext.sqliteClient) {
       // Only fetch favicon if no logo exists for this source (deduplication)
-      const hasExistingLogo = await dbContext.sqliteClient.logos.hasLogoForSource(faviconTarget.source);
+      const hasExistingLogo = await dbContext.sqliteClient.logos.hasFaviconForSource(faviconTarget.source);
 
       if (!hasExistingLogo) {
         // Only show loading indicator when fetching favicon
@@ -870,7 +868,7 @@ export default function AddEditItemScreen(): React.ReactNode {
           // Delete passkeys if marked for deletion
           if (passkeyIdsMarkedForDeletion.length > 0) {
             for (const passkeyId of passkeyIdsMarkedForDeletion) {
-              await dbContext.sqliteClient!.passkeys.delete(passkeyId);
+              await dbContext.sqliteClient!.passkeys.deleteById(passkeyId);
             }
           }
         } else {

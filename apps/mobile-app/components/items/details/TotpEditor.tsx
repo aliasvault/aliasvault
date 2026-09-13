@@ -12,7 +12,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { TotpCode } from '@aliasvault/models/vault';
 import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
-import { buildOtpAuthUri, parseOtpAuthUri } from '@/utils/TotpUtility';
+import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
 
 type TotpFormData = {
   name: string;
@@ -109,7 +109,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       if (scannedData) {
         // Parse the otpauth:// URL
         const parsed = parseOtpAuthUri(scannedData);
-        if (parsed && parsed.type === 'totp') {
+        if (parsed) {
           const secretKey = parsed.secret.replace(/\s/g, '').replace(/=+$/, '');
           const name = parsed.label || '';
 
@@ -164,7 +164,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     // Check if it's a TOTP URI
     if (secretKey.toLowerCase().startsWith('otpauth://totp/')) {
       const parsed = parseOtpAuthUri(secretKey);
-      if (!parsed || parsed.type !== 'totp') {
+      if (!parsed) {
         throw new Error(t('totp.errors.invalidSecretKey'));
       }
       secretKey = parsed.secret;
