@@ -1,0 +1,38 @@
+<!--
+  Password step of a multi-step sign-in flow. The password input is named
+  "credentials.passcode" (a name also used for TOTP challenge inputs), so the
+  "passcode" term alone must not turn a type="password" field into a 2FA field.
+-->
+<html>
+  <body>
+    <form method="POST" action="/oauth2/v1/authorize" data-se="o-form" slot="content" id="form76" class="ion-form o-form o-form-edit-mode">
+      <div data-se="o-form-content" class="o-form-content o-form-theme clearfix">
+        <h2 data-se="o-form-head" class="form-title o-form-head" style="color: rgb(5, 5, 4);">Verify with your password</h2>
+        <div class="identifier-container no-overflow">
+          <span class="identifier no-translate mfa-selection-id" data-se="identifier" title="test@test.com">test@test.com</span>
+          <a data-se="cancel" href="#" class="link js-cancel mfa-selection-change-id">Change</a>
+        </div>
+        <div class="o-form-info-container"></div>
+        <div class="o-form-error-container" data-se="o-form-error-container" role="alert"></div>
+        <div class="o-form-fieldset-container" data-se="o-form-fieldset-container">
+          <div class="infobox infobox-error invalid-pw-error" role="alert" style="display: none;">
+            <span class="icon error-16"></span>
+            <p class="invalid-pw-error"><span class="pw-err-1">Oops! The entered password is invalid</span><span class="pw-err-2">Please check for typos </span><span class="pw-err-3">or refer to your notes. Have you recently changed your password?</span><span class="pw-err-sp"></span><span class="pw-err-4">You can also choose to </span><a data-se="switchAuthenticator" href="#" class="link js-switchAuthenticator custom-link">use another sign-in method</a><span class="pw-err-5"> or click </span><a data-se="forgot-password" href="#" class="link js-forgot-password custom-link">reset your password</a><span class="pw-err-6"> now.</span></p>
+          </div>
+          <div data-se="o-form-fieldset-credentials.passcode" class="o-form-fieldset o-form-label-top">
+            <div data-se="o-form-label" class="form-label o-form-label">
+              <label for="input84" style="font-size: 16px; line-height: 24px; font-weight: 700;">Password&nbsp;</label>
+            </div>
+            <div data-se="o-form-input-container" class="o-form-input">
+              <span data-se="o-form-input-credentials.passcode" class="o-form-input-name-credentials.passcode o-form-control form-input-field input-fix">
+                <input type="password" placeholder="" name="credentials.passcode" id="input84" value="" aria-label="" autocomplete="off" class="password-with-toggle">
+                <span class="password-toggle"><span class="eyeicon visibility-16 button-show"></span><span class="eyeicon visibility-off-16 button-hide"></span></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="o-form-button-bar"><input class="button button-primary" type="submit" value="VERIFY" data-type="save"></div>
+    </form>
+  </body>
+</html>
