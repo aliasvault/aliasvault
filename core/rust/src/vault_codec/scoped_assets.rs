@@ -273,8 +273,7 @@ fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
 }
 
 /// True when `FileData` holds actual bytes: a non-empty inline `{ __b64 }` or an extracted
-/// `{ __blobRef }`. A tombstoned row's blanked `X''` reads as `{ "__b64": "" }`, which is present but
-/// carries no image and must not beat a row that has one.
+/// `{ __blobRef }`. A tombstoned row drops its bytes (NULL) which is present but carries no image and must not beat a row that has one.
 fn has_file_data(row: &CodecRecord) -> bool {
     match row.get(FILE_DATA_COL) {
         None | Some(Value::Null) => false,

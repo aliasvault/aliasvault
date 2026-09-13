@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260910094449_2.1.1-ItemChildManifestTrigger")]
-    partial class _211ItemChildManifestTrigger
+    [Migration("20260913090000_2.1.0-ManifestScopedStorage")]
+    partial class _210ManifestScopedStorage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,7 +35,6 @@ namespace AliasClientDb.Migrations
                         .UseCollation("NOCASE");
 
                     b.Property<byte[]>("Blob")
-                        .IsRequired()
                         .HasColumnType("BLOB");
 
                     b.Property<DateTime>("CreatedAt")
@@ -61,7 +60,10 @@ namespace AliasClientDb.Migrations
 
                     b.HasIndex("ManifestId", "ItemId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", t =>
+                        {
+                            t.HasCheckConstraint("CK_Attachments_Blob_Tombstone", "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("AliasClientDb.CodecOverflow", b =>

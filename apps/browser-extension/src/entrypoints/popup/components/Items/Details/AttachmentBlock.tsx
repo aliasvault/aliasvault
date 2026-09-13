@@ -24,9 +24,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
   const downloadAttachment = (attachment: Attachment): void => {
     try {
       // Convert Uint8Array or number[] to Uint8Array
-      const byteArray = attachment.Blob instanceof Uint8Array
-        ? attachment.Blob
-        : new Uint8Array(attachment.Blob);
+      const byteArray = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
 
       // Create blob and download
       const blob = new Blob([byteArray as BlobPart]);

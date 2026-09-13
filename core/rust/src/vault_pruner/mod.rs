@@ -130,9 +130,9 @@ fn blob_column_for(table_name: &str) -> Option<&'static str> {
     BLOB_COLUMNS.iter().find(|(t, _, _)| *t == table_name).map(|(_, col, _)| *col)
 }
 
-/// The `, <blob> = X''` SET fragment that drops a table's blob bytes, empty for a table without one.
+/// The `, <blob> = NULL` SET fragment that drops a table's blob bytes, empty for a table without one.
 fn blob_clear_fragment(table_name: &str) -> String {
-    blob_column_for(table_name).map(|col| format!(", {} = X''", col)).unwrap_or_default()
+    blob_column_for(table_name).map(|col| format!(", {} = NULL", col)).unwrap_or_default()
 }
 
 /// The records of the named table, `None` when the input does not carry it.
@@ -276,7 +276,7 @@ fn clear_tombstoned_blobs(tables: &[TableData], now_str: &str, statements: &mut 
         for row in stale {
             let Some(id) = str_col(row, ID_COL) else { continue };
             statements.push(SqlStatement {
-                sql: format!("UPDATE {} SET {} = X'', {} = ? WHERE {} = ?", table, blob_col, UPDATED_AT_COL, ID_COL),
+                sql: format!("UPDATE {} SET {} = NULL, {} = ? WHERE {} = ?", table, blob_col, UPDATED_AT_COL, ID_COL),
                 params: vec![serde_json::json!(now_str), serde_json::json!(id)],
             });
             *stats.blobs_cleared.entry(table.to_string()).or_default() += 1;

@@ -362,13 +362,13 @@ fn test_orphan_logo_pruning_emits_filedata_clear_in_same_statement() {
     let output = prune_vault(input).unwrap();
 
     assert_eq!(output.stats.logos_pruned, 1);
-    assert!(output.statements.iter().any(|s| s.sql.contains("FileData = X''")));
+    assert!(output.statements.iter().any(|s| s.sql.contains("FileData = NULL")));
 }
 
 #[test]
 fn test_tombstoned_logo_with_blob_bytes_is_swept() {
     // Pass 3 must catch historical logos that are IsDeleted=1 but still carry FileData
-    // (e.g. tombstoned by an older client before the FileData=X'' fix landed).
+    // (e.g. tombstoned by an older client that did not drop FileData).
     let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
     let input = PruneInput {
         tables: vec![
@@ -492,8 +492,8 @@ fn test_trash_purge_clears_attachment_blobs() {
     let attachment_update = output.statements.iter()
         .find(|s| s.sql.starts_with("UPDATE Attachments"))
         .expect("expected an UPDATE Attachments statement");
-    assert!(attachment_update.sql.contains("Blob = X''"),
-        "attachment trash purge must zero the blob: {}", attachment_update.sql);
+    assert!(attachment_update.sql.contains("Blob = NULL"),
+        "attachment trash purge must drop the blob: {}", attachment_update.sql);
     // The pass-3 sweeper should NOT also fire for the same row in this call.
     assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
 }
@@ -525,7 +525,7 @@ fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
 
     assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 1);
     let stmt = output.statements.iter()
-        .find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = X''"))
+        .find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = NULL"))
         .expect("expected the sweeper UPDATE");
     // params: [updated_at, attachment_id]
     assert_eq!(stmt.params.len(), 2);

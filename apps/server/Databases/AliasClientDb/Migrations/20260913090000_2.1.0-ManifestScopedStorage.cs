@@ -596,6 +596,19 @@ namespace AliasClientDb.Migrations
                 table: "Attachments",
                 columns: new[] { "ManifestId", "Id" });
 
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "Blob",
+                table: "Attachments",
+                type: "BLOB",
+                nullable: true,
+                oldClrType: typeof(byte[]),
+                oldType: "BLOB");
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CK_Attachments_Blob_Tombstone",
+                table: "Attachments",
+                sql: "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL");
+
             migrationBuilder.CreateTable(
                 name: "CodecOverflows",
                 columns: table => new
@@ -968,6 +981,20 @@ namespace AliasClientDb.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_EncryptionKeys_ManifestId_IsPrimary",
                 table: "EncryptionKeys");
+
+            migrationBuilder.DropCheckConstraint(
+                name: "CK_Attachments_Blob_Tombstone",
+                table: "Attachments");
+
+            migrationBuilder.AlterColumn<byte[]>(
+                name: "Blob",
+                table: "Attachments",
+                type: "BLOB",
+                nullable: false,
+                defaultValue: new byte[0],
+                oldClrType: typeof(byte[]),
+                oldType: "BLOB",
+                oldNullable: true);
 
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Attachments",

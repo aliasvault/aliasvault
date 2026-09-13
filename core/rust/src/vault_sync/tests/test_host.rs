@@ -65,10 +65,12 @@ pub fn open_from_bytes(bytes: &[u8]) -> Connection {
     conn
 }
 
+/// A fresh database on the client schema similar to the app hosts.
 pub fn open_schema_db(schema_sql: &str) -> Connection {
     let conn = Connection::open_in_memory().unwrap();
     conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
     conn.execute_batch(schema_sql).unwrap();
+    conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
     conn
 }
 

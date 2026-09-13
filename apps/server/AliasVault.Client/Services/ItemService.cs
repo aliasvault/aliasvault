@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="ItemService.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -791,7 +791,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachment.UpdatedAt = deleteDateTime;
 
             // Reclaim attachment bytes immediately. Tombstone row stays for sync.
-            attachment.Blob = Array.Empty<byte>();
+            attachment.Blob = null;
         }
 
         foreach (var totp in item.TotpCodes)
@@ -857,7 +857,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachment.UpdatedAt = deleteDateTime;
 
             // Reclaim attachment bytes immediately. Tombstone row stays for sync.
-            attachment.Blob = Array.Empty<byte>();
+            attachment.Blob = null;
         }
 
         foreach (var totp in item.TotpCodes)
@@ -1450,10 +1450,8 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachmentToRemove.IsDeleted = true;
             attachmentToRemove.UpdatedAt = updateDateTime;
 
-            // Drop the blob bytes immediately. The tombstone row stays so the deletion
-            // syncs to other devices via LWW; an empty blob keeps the column non-null
-            // while reclaiming the storage on next save.
-            attachmentToRemove.Blob = Array.Empty<byte>();
+            // Drop the blob bytes immediately. The tombstone row stays so the deletion syncs to other devices via LWW.
+            attachmentToRemove.Blob = null;
         }
 
         // Process attachments from the new item (excluding deleted ones, which are handled above)

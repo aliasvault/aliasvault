@@ -27,9 +27,9 @@ public class Attachment : ManifestScopedEntity
     public string Filename { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the file blob.
+    /// Gets or sets the file bytes; null once the attachment is deleted (see the tombstone check constraint).
     /// </summary>
-    public byte[] Blob { get; set; } = null!;
+    public byte[]? Blob { get; set; }
 
     /// <summary>
     /// Gets or sets the item foreign key.

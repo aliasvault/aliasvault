@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260910094359_2.1.0-ManifestScopedStorage")]
-    partial class _210ManifestScopedStorage
+    [Migration("20260913090100_2.1.1-ItemChildManifestTrigger")]
+    partial class _211ItemChildManifestTrigger
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

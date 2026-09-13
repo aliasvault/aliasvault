@@ -276,7 +276,7 @@ else
             {
                 Id = a.Id,
                 Filename = a.Filename,
-                SizeBytes = a.Blob.Length,
+                SizeBytes = a.Blob != null ? a.Blob.Length : 0,
                 ItemId = a.ItemId,
                 ItemName = a.Item.Name,
                 CreatedAt = a.CreatedAt,

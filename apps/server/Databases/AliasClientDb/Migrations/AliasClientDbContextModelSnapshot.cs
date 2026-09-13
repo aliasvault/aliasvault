@@ -32,7 +32,6 @@ namespace AliasClientDb.Migrations
                         .UseCollation("NOCASE");
 
                     b.Property<byte[]>("Blob")
-                        .IsRequired()
                         .HasColumnType("BLOB");
 
                     b.Property<DateTime>("CreatedAt")
@@ -58,7 +57,10 @@ namespace AliasClientDb.Migrations
 
                     b.HasIndex("ManifestId", "ItemId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", t =>
+                        {
+                            t.HasCheckConstraint("CK_Attachments_Blob_Tombstone", "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("AliasClientDb.CodecOverflow", b =>
