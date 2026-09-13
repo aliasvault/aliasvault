@@ -56,8 +56,8 @@ export interface ISqliteDatabase {
 }
 
 /**
- * The SQLite engine a host provides. The browser and web hosts use sql.js (see SqlJsEngine); the mobile host uses
- * expo-sqlite. Databases live in memory only: the vault at rest is the encrypted blob, never a database file.
+ * The in-JS SQLite engine a host provides: sql.js on the browser and web hosts (see SqlJsEngine). Databases are opened
+ * in memory only. The mobile host provides none, since its vault database is owned by the native vault store.
  */
 export interface ISqliteEngine {
   /**

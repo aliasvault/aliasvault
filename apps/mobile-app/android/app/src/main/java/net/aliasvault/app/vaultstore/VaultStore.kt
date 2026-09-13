@@ -125,8 +125,7 @@ class VaultStore(
         },
         onBackground = { clearLastSuccessfulAuth() },
     )
-    private val sync = VaultSync(database, metadata, crypto, storageProvider, itemRepository)
-    private val mutate = VaultMutate(database, itemRepository, metadata, crypto, auth, storageProvider)
+    private val sync = VaultSync(this, storageProvider)
     private val cache = VaultCache(crypto, database, keystoreProvider, storageProvider)
     private val passkey = VaultPasskey(database)
     private val pin by lazy {
@@ -219,6 +218,29 @@ class VaultStore(
     }
 
     /**
+     * Store the account-key chain the native password unlock unwraps (null for a legacy account).
+     */
+    fun storeAccountKeyChain(chainJson: String?) {
+        crypto.storeAccountKeyChain(chainJson)
+    }
+
+    /**
+     * Get the stored account-key chain JSON, or null for a legacy account.
+     */
+    fun getAccountKeyChain(): String? {
+        return crypto.getAccountKeyChain()
+    }
+
+    /**
+     * The account private key (JWK) of the unlocked session, or null until a sync opened it; memory only.
+     */
+    internal var accountPrivateKey: String?
+        get() = crypto.accountPrivateKey
+        set(value) {
+            crypto.accountPrivateKey = value
+        }
+
+    /**
      * Derive a key from a password using Argon2Id.
      */
     fun deriveKeyFromPassword(
@@ -238,11 +260,11 @@ class VaultStore(
     }
 
     /**
-     * Verify password and return encryption key if correct.
-     * Returns null if password is incorrect.
+     * Verify the password and return the vault encryption key if correct: the VEK unwrapped through the
+     * account-key chain, or the derived key itself for a legacy account. Returns null if the password is incorrect.
      *
      * @param password The password to verify
-     * @return The base64-encoded encryption key if password is correct, null otherwise
+     * @return The base64-encoded vault encryption key if password is correct, null otherwise
      */
     @Suppress("SwallowedException")
     fun verifyPassword(password: String): String? {
@@ -254,18 +276,19 @@ class VaultStore(
             val encryptionType = paramsJson.getString("encryptionType")
             val encryptionSettings = paramsJson.getString("encryptionSettings")
 
-            // Derive key from password
+            // Derive the KEK from the password and unwrap the chain; a wrong password fails the unwrap.
             val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
+            val vaultKey = crypto.resolveVaultEncryptionKey(derivedKey)
 
             // Try to decrypt the vault to verify the password is correct
             val encryptedDb = database.getEncryptedDatabase()
             val encryptedDbBytes = android.util.Base64.decode(encryptedDb, android.util.Base64.NO_WRAP)
 
             // Attempt decryption to verify password is correct
-            VaultCrypto.decrypt(encryptedDbBytes, derivedKey)
+            VaultCrypto.decrypt(encryptedDbBytes, vaultKey)
 
-            // If decryption succeeded, return the key as base64
-            android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
+            // If decryption succeeded, return the vault key as base64
+            android.util.Base64.encodeToString(vaultKey, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
             // Password incorrect or decryption failed - intentionally return null
             // We don't log the error as this is expected when password is incorrect
@@ -680,25 +703,6 @@ class VaultStore(
     // region Sync Methods
 
     /**
-     * Check if a new vault version is available on the server.
-     */
-    suspend fun isNewVaultVersionAvailable(webApiService: net.aliasvault.app.webapi.WebApiService): Map<String, Any?> {
-        return sync.isNewVaultVersionAvailable(webApiService)
-    }
-
-    /**
-     * Download and store the vault from the server.
-     */
-    suspend fun downloadVault(webApiService: net.aliasvault.app.webapi.WebApiService, newRevision: Int): Boolean {
-        val result = sync.downloadVault(webApiService, newRevision)
-        // Re-unlock vault if it was unlocked before download
-        if (result && isVaultUnlocked()) {
-            unlockVault()
-        }
-        return result
-    }
-
-    /**
      * Get the sync state.
      */
     fun getSyncState(): net.aliasvault.app.vaultstore.models.SyncState {
@@ -765,36 +769,48 @@ class VaultStore(
     }
 
     /**
-     * Upload the vault to the server.
+     * The vault encryption key held in memory, as base64, or null while the vault is locked.
      */
-    suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
-        return mutate.uploadVault(webApiService)
+    fun getEncryptionKeyBase64(): String? {
+        return encryptionKey?.let { android.util.Base64.encodeToString(it, android.util.Base64.NO_WRAP) }
     }
 
     /**
-     * Fetch the server vault (encrypted blob).
+     * Adopt a new vault encryption key for this session (the sync engine swapped a password-derived key for the
+     * account's VEK), persisting it to the keystore when biometrics are enabled.
      */
-    suspend fun fetchServerVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultResponse {
-        return sync.fetchServerVault(webApiService)
+    fun adoptEncryptionKey(base64EncryptionKey: String) {
+        crypto.storeEncryptionKey(base64EncryptionKey, auth.getAuthMethods())
     }
 
     /**
-     * Check vault version including sync state.
+     * Forget what the sync engine learned about the stored vault (revisions, fingerprints, key chain), so the next
+     * sync starts from the server as if this device had never pulled. Used when the vault is discarded.
+     */
+    fun clearSyncEngineState() {
+        storageProvider.clearSyncEngineState()
+        crypto.storeAccountKeyChain(null)
+    }
+
+    /**
+     * One status call: whether the server holds newer state than this device.
      */
     suspend fun checkVaultVersion(webApiService: net.aliasvault.app.webapi.WebApiService): VaultVersionCheckResult {
         return sync.checkVaultVersion(webApiService)
     }
 
     /**
-     * Unified vault sync method that handles all sync scenarios.
+     * Resolve and store the vault key right after login from the password-derived key (see VaultSync.resolveVaultKey).
+     */
+    suspend fun resolveVaultKey(webApiService: net.aliasvault.app.webapi.WebApiService, derivedKeyBase64: String): String {
+        return sync.resolveVaultKey(webApiService, derivedKeyBase64)
+    }
+
+    /**
+     * Full vault sync through the Rust sync engine.
      */
     suspend fun syncVaultWithServer(webApiService: net.aliasvault.app.webapi.WebApiService): VaultSyncResult {
-        val result = sync.syncVaultWithServer(webApiService)
-        // Re-unlock vault if it was unlocked before sync and action was download/merge
-        if (result.success && (result.action == SyncAction.DOWNLOADED || result.action == SyncAction.MERGED) && isVaultUnlocked()) {
-            unlockVault()
-        }
-        return result
+        return sync.syncVaultWithServer(webApiService)
     }
 
     // endregion
@@ -802,10 +818,10 @@ class VaultStore(
     // region Mutate Methods
 
     /**
-     * Execute a vault mutation operation.
+     * Push the pending local changes (after a native mutation).
      */
     suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
-        return mutate.mutateVault(webApiService)
+        return sync.mutateVault(webApiService)
     }
 
     // endregion
@@ -995,7 +1011,8 @@ class VaultStore(
      */
     @Throws(Exception::class)
     fun unlockWithPin(pinValue: String): String {
-        val key = pin.unlockWithPin(pinValue)
+        // A PIN set up before the account moved onto the key hierarchy still holds the password-derived key.
+        val key = crypto.resolveStoredUnlockKey(pin.unlockWithPin(pinValue))
         markSuccessfulAuth()
         return key
     }

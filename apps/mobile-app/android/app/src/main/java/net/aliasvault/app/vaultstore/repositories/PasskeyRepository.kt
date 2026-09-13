@@ -11,6 +11,7 @@ import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
 import net.aliasvault.app.vaultstore.queries.LogoQueries
 import net.aliasvault.app.vaultstore.queries.PasskeyQueries
+import uniffi.aliasvault_core.vaultCodecLogoIdFor
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -125,6 +126,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             it.bindString(9, DateHelpers.toStandardFormat(passkey.createdAt))
             it.bindString(10, DateHelpers.toStandardFormat(passkey.updatedAt))
             it.bindLong(11, if (passkey.isDeleted) 1 else 0)
+            it.bindString(12, passkey.parentItemId.toString().lowercase())
+            it.bindString(13, activeManifestId())
             it.executeInsert()
         }
     }
@@ -171,6 +174,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                     timestamp,
                     0,
                     null,
+                    null, // FolderId again, for the manifest lookup
+                    activeManifestId(),
                 ),
             )
 
@@ -188,6 +193,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                         timestamp,
                         timestamp,
                         0,
+                        itemId.toString().lowercase(),
+                        activeManifestId(),
                     ),
                 )
             }
@@ -206,6 +213,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                         timestamp,
                         timestamp,
                         0,
+                        itemId.toString().lowercase(),
+                        activeManifestId(),
                     ),
                 )
             }
@@ -560,11 +569,13 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             return existingLogoId
         }
 
-        // Create new logo entry
-        val logoId = generateId()
+        // Create new logo entry. The id is derived from (manifest, kind, source) by the Rust core, like every other
+        // client does, so the same favicon never produces two rows across devices.
+        val manifestId = activeManifestId()
+        val logoId = vaultCodecLogoIdFor(manifestId, "favicon", source)
         executeUpdate(
             LogoQueries.INSERT,
-            arrayOf(logoId, source, logoData, "image/png", null, timestamp, timestamp, 0),
+            arrayOf(logoId, source, manifestId, logoData, "image/png", null, timestamp, timestamp, 0),
         )
 
         return logoId

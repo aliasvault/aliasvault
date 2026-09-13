@@ -63,6 +63,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         cause: Throwable? = null,
     ) : AppError(message, cause)
 
+    /**
+     * Error indicating the server answered a request with an unexpected HTTP failure.
+     */
+    class ServerError(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Server error: $message", cause)
+
     // Version/compatibility errors
     /**
      * Error indicating client version not supported.
@@ -104,6 +112,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         message: String = "Vault outdated",
         cause: Throwable? = null,
     ) : AppError(message, cause)
+
+    /**
+     * Error indicating the server's vault snapshot could not be assembled into a vault.
+     */
+    class SyncVaultFetchFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Server vault could not be assembled: $message", cause)
 
     // Decryption errors
     /**
@@ -236,6 +252,30 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError(message, cause)
 
     /**
+     * Error indicating a storage read (state, database, at-rest vault) failed.
+     */
+    class StorageReadFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Storage read failed: $message", cause)
+
+    /**
+     * Error indicating a storage write (state, database, at-rest vault) failed.
+     */
+    class StorageWriteFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Storage write failed: $message", cause)
+
+    /**
+     * Error indicating the staging database could not be opened.
+     */
+    class DatabaseInitFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Database init failed: $message", cause)
+
+    /**
      * Error indicating failed to store vault.
      */
     class VaultStoreFailed(
@@ -286,6 +326,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         cause: Throwable? = null,
     ) : AppError(message, cause)
 
+    /**
+     * Error indicating the vault migration check failed.
+     */
+    class MigrationCheckFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Migration check failed: $message", cause)
+
     // Generic errors
     /**
      * Error indicating unknown error.
@@ -302,6 +350,31 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         message: String,
         cause: Throwable? = null,
     ) : AppError("Parse error: $message", cause)
+
+    // Sync engine failures that name their cause in the message
+    /**
+     * Error indicating a server response is not the JSON shape this client expects.
+     */
+    class SyncResponseInvalid(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Invalid server response: $message", cause)
+
+    /**
+     * Error indicating the core library (codec, merge or crypto) refused the vault data.
+     */
+    class SyncCodecFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Vault codec failed: $message", cause)
+
+    /**
+     * Error indicating the sync engine hit a state it has no rule for.
+     */
+    class SyncEngineFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Sync engine failed: $message", cause)
 
     /**
      * Get the error code string for React Native bridge.
@@ -326,11 +399,13 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is ServerUnavailable -> "E-201"
             is NetworkError -> "E-202"
             is Timeout -> "E-203"
+            is ServerError -> "E-204"
             is ClientVersionNotSupported -> "E-301"
             is ServerVersionNotSupported -> "E-302"
             is VaultVersionIncompatible -> "E-303"
             is VaultMergeRequired -> "E-401"
             is VaultOutdated -> "E-402"
+            is SyncVaultFetchFailed -> "E-404"
             is VaultDecryptFailed -> "E-501"
             is EncryptionKeyNotFound -> "E-502"
             is Base64DecodeFailed -> "E-503"
@@ -347,14 +422,21 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is BiometricNotAvailable -> "E-514"
             is BiometricNotEnrolled -> "E-515"
             is BiometricLockout -> "E-516"
+            is StorageReadFailed -> "E-601"
+            is StorageWriteFailed -> "E-602"
+            is DatabaseInitFailed -> "E-603"
             is VaultStoreFailed -> "E-604"
             is VaultMergeFailed -> "E-701"
             is MergeUploadFailed -> "E-705"
             is VaultUploadFailed -> "E-801"
             is VaultTooLarge -> "E-804"
             is MaxRetriesReached -> "E-901"
+            is MigrationCheckFailed -> "E-903"
             is UnknownError -> "E-001"
             is ParseError -> "E-002"
+            is SyncResponseInvalid -> "E-003"
+            is SyncCodecFailed -> "E-004"
+            is SyncEngineFailed -> "E-005"
         }
 
     /**

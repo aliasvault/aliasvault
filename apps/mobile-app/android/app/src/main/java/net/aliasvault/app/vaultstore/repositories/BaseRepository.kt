@@ -12,6 +12,14 @@ open class BaseRepository(
     /** The database component used for executing queries. */
     protected val database: VaultDatabase,
 ) {
+    /**
+     * The manifest new rows outside any folder or item are stamped with: the personal manifest. Rows inside a
+     * folder or item take that parent's manifest through the SQL instead.
+     */
+    protected fun activeManifestId(): String {
+        return database.getPersonalManifestId() ?: ""
+    }
+
     // MARK: - Transaction Helpers
 
     /**

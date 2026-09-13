@@ -47,6 +47,15 @@ class VaultDatabase(
 
     // endregion
 
+    /**
+     * The id of the user's personal manifest as the last sync recorded it (engine state, stored as `{"v": id}`),
+     * or null before the first pull.
+     */
+    fun getPersonalManifestId(): String? {
+        val json = storageProvider.getSyncEngineState("vaultPersonalManifestId") ?: return null
+        return org.json.JSONObject(json).optString("v").takeIf { it.isNotEmpty() }
+    }
+
     // region Vault Unlock
 
     /**
@@ -54,10 +63,10 @@ class VaultDatabase(
      */
     fun unlockVault(authMethods: String) {
         val encryptedDbBase64 = getEncryptedDatabase()
-        val decryptedDbBase64 = crypto.decryptData(encryptedDbBase64, authMethods)
+        val decrypted = crypto.decryptDataBytes(encryptedDbBase64, authMethods)
 
         try {
-            setupDatabaseWithDecryptedData(decryptedDbBase64)
+            setupDatabaseWithDecryptedData(decrypted)
         } catch (e: Exception) {
             Log.e(TAG, "Error unlocking vault", e)
             throw e
@@ -81,16 +90,24 @@ class VaultDatabase(
      * foreign keys, indexes, triggers, and views from file to memory.
      * This is equivalent to the Swift implementation using the backup API.
      */
-    private fun setupDatabaseWithDecryptedData(decryptedDbBase64: String) {
+    /**
+     * Setup the database with the decrypted data. The plaintext is either the raw SQLite bytes (what the app
+     * writes now, same as the browser extension) or base64 text of them (what older builds wrote).
+     */
+    private fun setupDatabaseWithDecryptedData(decrypted: ByteArray) {
         var tempDbFile: File? = null
         var sourceDb: io.requery.android.database.sqlite.SQLiteDatabase? = null
         try {
-            // Step 1: Decode base64
-            val decryptedDbData = try {
-                Base64.decode(decryptedDbBase64, Base64.NO_WRAP)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to decode base64 data after decryption", e)
-                throw AppError.Base64DecodeFailed(cause = e)
+            // Step 1: Take the SQLite bytes as-is, or decode the legacy base64 text.
+            val decryptedDbData = if (isSqliteDatabase(decrypted)) {
+                decrypted
+            } else {
+                try {
+                    Base64.decode(String(decrypted, Charsets.UTF_8), Base64.NO_WRAP)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to decode base64 data after decryption", e)
+                    throw AppError.Base64DecodeFailed(cause = e)
+                }
             }
 
             // Step 2: Write decrypted data to temp file
@@ -359,4 +376,12 @@ class VaultDatabase(
     }
 
     // endregion
+
+    /**
+     * Whether these plaintext bytes are a SQLite database rather than base64 text of one.
+     */
+    private fun isSqliteDatabase(bytes: ByteArray): Boolean {
+        val header = "SQLite format 3\u0000".toByteArray(Charsets.UTF_8)
+        return bytes.size >= header.size && header.indices.all { bytes[it] == header[it] }
+    }
 }

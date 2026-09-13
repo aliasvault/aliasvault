@@ -53,6 +53,22 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         return sharedPreferences.getString("key_derivation_params", "") ?: ""
     }
 
+    override fun getAccountKeyChain(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("account_key_chain", null)
+    }
+
+    override fun setAccountKeyChain(chainJson: String?) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (chainJson == null) {
+                remove("account_key_chain")
+            } else {
+                putString("account_key_chain", chainJson)
+            }
+        }
+    }
+
     override fun setAuthMethods(authMethods: String) {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         sharedPreferences.edit {
@@ -203,4 +219,25 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     override fun getCacheDir(): File {
         return context.cacheDir
     }
+
+    // region Sync engine state
+
+    override fun getSyncEngineState(key: String): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(key, null)
+    }
+
+    override fun setSyncEngineState(key: String, json: String?) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (json == null) remove(key) else putString(key, json)
+        }
+    }
+
+    override fun clearSyncEngineState() {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        sharedPreferences.edit { clear() }
+    }
+
+    // endregion
 }

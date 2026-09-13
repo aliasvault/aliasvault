@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.aliasvault.app.utils.AppInfo
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -37,7 +38,7 @@ class WebApiService(private val context: Context) {
         private const val REFRESH_TOKEN_KEY = "refreshToken"
         private const val APP_INSTANCE_ID_KEY = "appInstanceId"
         private const val CUSTOM_PROXY_HEADERS_KEY = "customProxyHeaders"
-        private const val DEFAULT_API_URL = "https://app.aliasvault.com/api"
+        private const val DEFAULT_API_URL = AppInfo.DEFAULT_API_URL
         private const val SHARED_PREFS_NAME = "aliasvault"
 
         /**
@@ -142,6 +143,13 @@ class WebApiService(private val context: Context) {
     }
 
     /**
+     * Get the API root URL (no version segment), for paths that carry their own.
+     */
+    private fun getApiRootUrl(): String {
+        return getApiUrl().trimEnd('/') + "/"
+    }
+
+    /**
      * Get the base URL with /v1/ appended.
      */
     private fun getBaseUrl(): String {
@@ -191,12 +199,14 @@ class WebApiService(private val context: Context) {
     /**
      * Execute a WebAPI request with support for authentication and token refresh.
      */
+    @Suppress("LongParameterList") // One optional flag past the threshold; splitting the signature would hurt every caller
     suspend fun executeRequest(
         method: String,
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
         requiresAuth: Boolean,
+        versioned: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val requestHeaders = headers.toMutableMap()
 
@@ -217,6 +227,7 @@ class WebApiService(private val context: Context) {
             endpoint = endpoint,
             body = body,
             headers = requestHeaders,
+            versioned = versioned,
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -236,6 +247,7 @@ class WebApiService(private val context: Context) {
                     endpoint = endpoint,
                     body = body,
                     headers = retryHeaders,
+                    versioned = versioned,
                 )
 
                 return@withContext retryResponse
@@ -250,6 +262,20 @@ class WebApiService(private val context: Context) {
     }
 
     /**
+     * Execute a request whose path carries its own API version segment (e.g. `v2/Vault`), with
+     * authentication and token refresh. This is what the Rust sync engine's HTTP commands go through.
+     */
+    suspend fun executeVersionedRequest(
+        method: String,
+        path: String,
+        body: String?,
+        headers: Map<String, String>,
+        requiresAuth: Boolean,
+    ): WebApiResponse {
+        return executeRequest(method, path, body, headers, requiresAuth, versioned = true)
+    }
+
+    /**
      * Execute a raw HTTP request without token refresh logic.
      */
     private suspend fun executeRawRequest(
@@ -257,8 +283,9 @@ class WebApiService(private val context: Context) {
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
+        versioned: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
-        val baseUrl = getBaseUrl()
+        val baseUrl = if (versioned) getApiRootUrl() else getBaseUrl()
         val urlString = "$baseUrl$endpoint"
 
         var connection: HttpURLConnection? = null
@@ -341,7 +368,9 @@ class WebApiService(private val context: Context) {
     }
 
     /**
-     * Refresh the access token using the refresh token.
+     * Refresh the access token using the refresh token. Returns null when the server refused the refresh (the
+     * session is over); a refresh that never reached the server throws, so the caller can go offline instead of
+     * treating a network blip as an expired session.
      */
     private suspend fun refreshAccessToken(): String? = withContext(Dispatchers.IO) {
         val refreshToken = getRefreshToken()
@@ -352,48 +381,47 @@ class WebApiService(private val context: Context) {
             return@withContext null
         }
 
-        try {
-            // Prepare refresh request body
-            val refreshBody = JSONObject()
-            refreshBody.put("token", accessToken)
-            refreshBody.put("refreshToken", refreshToken)
+        // Prepare refresh request body
+        val refreshBody = JSONObject()
+        refreshBody.put("token", accessToken)
+        refreshBody.put("refreshToken", refreshToken)
 
-            val headers = mutableMapOf(
-                "Content-Type" to "application/json",
-                "X-Ignore-Failure" to "true",
-            )
-            headers["X-AliasVault-Client"] = getClientVersionHeader()
-            headers["X-AliasVault-AppInstanceId"] = appInstanceId
+        val headers = mutableMapOf(
+            "Content-Type" to "application/json",
+            "X-Ignore-Failure" to "true",
+        )
+        headers["X-AliasVault-Client"] = getClientVersionHeader()
+        headers["X-AliasVault-AppInstanceId"] = appInstanceId
 
-            val response = executeRawRequest(
-                method = "POST",
-                endpoint = "Auth/refresh",
-                body = refreshBody.toString(),
-                headers = headers,
-            )
+        val response = executeRawRequest(
+            method = "POST",
+            endpoint = "Auth/refresh",
+            body = refreshBody.toString(),
+            headers = headers,
+        )
 
-            if (response.statusCode != 200) {
-                Log.w(TAG, "Token refresh failed with status ${response.statusCode}")
-                return@withContext null
-            }
-
-            // Parse the response JSON
-            val json = JSONObject(response.body)
-            val newToken = if (json.has("token")) json.getString("token") else null
-            val newRefreshToken = if (json.has("refreshToken")) json.getString("refreshToken") else null
-
-            if (newToken == null || newRefreshToken == null) {
-                Log.w(TAG, "Token refresh response missing tokens")
-                return@withContext null
-            }
-
-            // Update stored tokens
-            setAuthTokens(accessToken = newToken, refreshToken = newRefreshToken)
-            newToken
-        } catch (e: Exception) {
-            Log.e(TAG, "Token refresh failed", e)
-            null
+        if (response.statusCode == 401 || response.statusCode == 403) {
+            Log.w(TAG, "Token refresh refused with status ${response.statusCode}")
+            return@withContext null
         }
+        if (response.statusCode != 200) {
+            Log.w(TAG, "Token refresh failed with status ${response.statusCode}, treating the server as unreachable")
+            throw java.io.IOException("Token refresh failed with status ${response.statusCode}")
+        }
+
+        // Parse the response JSON
+        val json = JSONObject(response.body)
+        val newToken = if (json.has("token")) json.getString("token") else null
+        val newRefreshToken = if (json.has("refreshToken")) json.getString("refreshToken") else null
+
+        if (newToken == null || newRefreshToken == null) {
+            Log.w(TAG, "Token refresh response missing tokens")
+            return@withContext null
+        }
+
+        // Update stored tokens
+        setAuthTokens(accessToken = newToken, refreshToken = newRefreshToken)
+        newToken
     }
 
     // MARK: - Helper Methods

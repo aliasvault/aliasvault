@@ -11,6 +11,7 @@ class TestStorageProvider : StorageProvider {
     private val tempFile = File.createTempFile("encrypted_database", ".db")
     private var tempMetadata = String()
     private var tempKeyDerivationParams = String()
+    private var tempAccountKeyChain: String? = null
     private var tempAuthMethods = "[]"
     private var tempAutoLockTimeout = defaultAutoLockTimeout
     private var username: String? = null
@@ -48,6 +49,14 @@ class TestStorageProvider : StorageProvider {
         return tempKeyDerivationParams
     }
 
+    override fun getAccountKeyChain(): String? {
+        return tempAccountKeyChain
+    }
+
+    override fun setAccountKeyChain(chainJson: String?) {
+        tempAccountKeyChain = chainJson
+    }
+
     override fun setAuthMethods(authMethods: String) {
         tempAuthMethods = authMethods
     }
@@ -68,6 +77,7 @@ class TestStorageProvider : StorageProvider {
         tempFile.delete()
         tempMetadata = ""
         tempKeyDerivationParams = ""
+        tempAccountKeyChain = null
         tempAuthMethods = "[]"
         tempAutoLockTimeout = defaultAutoLockTimeout
     }
@@ -141,4 +151,22 @@ class TestStorageProvider : StorageProvider {
     override fun getCacheDir(): File {
         return File(System.getProperty("java.io.tmpdir") ?: "/tmp")
     }
+
+    // region Sync engine state
+
+    private val syncEngineState = mutableMapOf<String, String>()
+
+    override fun getSyncEngineState(key: String): String? {
+        return syncEngineState[key]
+    }
+
+    override fun setSyncEngineState(key: String, json: String?) {
+        if (json == null) syncEngineState.remove(key) else syncEngineState[key] = json
+    }
+
+    override fun clearSyncEngineState() {
+        syncEngineState.clear()
+    }
+
+    // endregion
 }

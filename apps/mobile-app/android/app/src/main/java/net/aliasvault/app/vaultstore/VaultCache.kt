@@ -54,6 +54,7 @@ class VaultCache(
         keystoreProvider.clearKeys()
 
         storageProvider.clearStorage()
+        storageProvider.clearSyncEngineState()
     }
 
     // endregion

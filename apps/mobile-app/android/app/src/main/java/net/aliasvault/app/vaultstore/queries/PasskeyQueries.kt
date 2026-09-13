@@ -55,8 +55,8 @@ object PasskeyQueries {
      */
     const val INSERT = """
         INSERT INTO Passkeys (Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                             DisplayName, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                             DisplayName, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
     """
 
     /**
@@ -141,16 +141,16 @@ object PasskeyQueries {
      * Create an Item record for passkey registration.
      */
     const val CREATE_ITEM = """
-        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, DeletedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, DeletedAt, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?))
     """
 
     /**
      * Insert a URL field value.
      */
     const val INSERT_FIELD_VALUE = """
-        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
     """
 
     /**
@@ -176,8 +176,8 @@ object LogoQueries {
      * Insert a new logo.
      */
     const val INSERT = """
-        INSERT INTO Logos (Id, Source, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, 'favicon', ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     /**

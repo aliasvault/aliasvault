@@ -25,7 +25,7 @@ class VaultCrypto(
         private const val BIOMETRICS_AUTH_METHOD = "faceid"
 
         /**
-         * Raw AES-GCM encryption (for VaultMergeService).
+         * Raw AES-GCM encryption with a caller-supplied key.
          * Encrypts data using AES-256-GCM with a provided key.
          */
         fun encrypt(data: ByteArray, key: ByteArray): ByteArray {
@@ -49,7 +49,7 @@ class VaultCrypto(
         }
 
         /**
-         * Raw AES-GCM decryption (for VaultMergeService).
+         * Raw AES-GCM decryption with a caller-supplied key.
          * Decrypts data using AES-256-GCM with a provided key.
          */
         fun decrypt(encryptedData: ByteArray, key: ByteArray): ByteArray {
@@ -75,6 +75,11 @@ class VaultCrypto(
      * The encryption key.
      */
     internal var encryptionKey: ByteArray? = null
+
+    /**
+     * The account private key (JWK) of the unlocked session, when the sync engine opened it; memory only.
+     */
+    internal var accountPrivateKey: String? = null
 
     // region Key Derivation
 
@@ -155,6 +160,7 @@ class VaultCrypto(
      */
     fun clearEncryptionKeyFromMemory() {
         this.encryptionKey = null
+        this.accountPrivateKey = null
     }
 
     /**
@@ -169,6 +175,49 @@ class VaultCrypto(
      */
     fun getEncryptionKeyDerivationParams(): String {
         return storageProvider.getKeyDerivationParams()
+    }
+
+    /**
+     * Store the account-key chain the native password unlock unwraps: JSON with the Account Key wrapped by the
+     * password-derived KEK ("encryptedAccountKey") and the VEK wrapped by the Account Key ("encryptedVek").
+     * Null means a legacy account whose KEK encrypts the vault directly.
+     */
+    fun storeAccountKeyChain(chainJson: String?) {
+        storageProvider.setAccountKeyChain(chainJson?.takeIf { it.isNotEmpty() })
+    }
+
+    /**
+     * The stored account-key chain JSON, or null for a legacy account.
+     */
+    fun getAccountKeyChain(): String? {
+        return storageProvider.getAccountKeyChain()
+    }
+
+    /**
+     * Turn a password-derived key (KEK) into the vault encryption key: unwrap KEK > Account Key > VEK when the
+     * account has a key chain, otherwise the derived key is the vault key itself (legacy account).
+     */
+    fun resolveVaultEncryptionKey(derivedKey: ByteArray): ByteArray {
+        val chainJson = getAccountKeyChain() ?: return derivedKey
+        val chain = JSONObject(chainJson)
+        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return derivedKey
+        val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
+
+        val accountKey = decrypt(Base64.decode(encryptedAccountKey, Base64.NO_WRAP), derivedKey)
+        return decrypt(Base64.decode(encryptedVek, Base64.NO_WRAP), accountKey)
+    }
+
+    /**
+     * The vault key an unlock method (PIN) stored, as base64. A snapshot taken before the account moved onto the key
+     * hierarchy still holds the password-derived key; when that opens the stored chain, the VEK behind it is returned.
+     */
+    @Suppress("SwallowedException")
+    fun resolveStoredUnlockKey(base64Key: String): String {
+        return try {
+            Base64.encodeToString(resolveVaultEncryptionKey(Base64.decode(base64Key, Base64.NO_WRAP)), Base64.NO_WRAP)
+        } catch (e: Exception) {
+            base64Key
+        }
     }
 
     /**
@@ -217,6 +266,7 @@ class VaultCrypto(
      */
     fun clearKey() {
         encryptionKey = null
+        accountPrivateKey = null
     }
 
     // endregion
@@ -224,10 +274,17 @@ class VaultCrypto(
     // region Encryption/Decryption
 
     /**
-     * Decrypt data.
+     * Decrypt data to text.
      */
     fun decryptData(encryptedData: String, authMethods: String): String {
-        var decryptedResult: String? = null
+        return String(decryptDataBytes(encryptedData, authMethods), Charsets.UTF_8)
+    }
+
+    /**
+     * Decrypt data to raw bytes.
+     */
+    fun decryptDataBytes(encryptedData: String, authMethods: String): ByteArray {
+        var decryptedResult: ByteArray? = null
         var error: Exception? = null
 
         val latch = java.util.concurrent.CountDownLatch(1)
@@ -247,8 +304,7 @@ class VaultCrypto(
 
                         cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec)
 
-                        val decrypted = cipher.doFinal(encryptedContent)
-                        decryptedResult = String(decrypted, Charsets.UTF_8)
+                        decryptedResult = cipher.doFinal(encryptedContent)
                     } catch (e: Exception) {
                         error = AppError.VaultDecryptFailed(cause = e)
                         Log.e(TAG, "Error decrypting data", e)

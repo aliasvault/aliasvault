@@ -38,6 +38,18 @@ interface StorageProvider {
     fun setKeyDerivationParams(keyDerivationParams: String)
 
     /**
+     * Get the account-key chain JSON, or null for a legacy account.
+     * @return The account-key chain JSON or null
+     */
+    fun getAccountKeyChain(): String?
+
+    /**
+     * Set the account-key chain JSON. Null clears it.
+     * @param chainJson The account-key chain JSON or null
+     */
+    fun setAccountKeyChain(chainJson: String?)
+
+    /**
      * Get the metadata.
      * @return The metadata as a string
      */
@@ -174,4 +186,27 @@ interface StorageProvider {
      * @return The cache directory
      */
     fun getCacheDir(): File
+
+    // region Sync engine state
+
+    /**
+     * Read one persisted value of the Rust sync engine (revisions, fingerprints, key blobs), as JSON text.
+     * @param key The engine's storage key
+     * @return The JSON text, or null when absent
+     */
+    fun getSyncEngineState(key: String): String?
+
+    /**
+     * Write (or with null, delete) one persisted value of the Rust sync engine.
+     * @param key The engine's storage key
+     * @param json The JSON text, or null to delete
+     */
+    fun setSyncEngineState(key: String, json: String?)
+
+    /**
+     * Forget every persisted value of the Rust sync engine (revisions, fingerprints, blob cache, key chain).
+     */
+    fun clearSyncEngineState()
+
+    // endregion
 }
