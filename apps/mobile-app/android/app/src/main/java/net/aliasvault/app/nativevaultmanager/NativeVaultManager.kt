@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -323,6 +324,65 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Store the account-key chain the native password unlock unwraps (null for a legacy account).
+     * @param chainJson The chain as JSON, or null
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun storeAccountKeyChain(chainJson: String?, promise: Promise) {
+        try {
+            vaultStore.storeAccountKeyChain(chainJson)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error storing account key chain", e)
+            promise.reject("ERR_STORE_ACCOUNT_KEY_CHAIN", "Failed to store account key chain: ${e.message}", e)
+        }
+    }
+
+    /**
+     * The id of the user's personal manifest as the last sync recorded it, or null before the first pull.
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getPersonalManifestId(promise: Promise) {
+        promise.resolve(vaultStore.database.getPersonalManifestId())
+    }
+
+    /**
+     * Resolve and store the vault key right after login from the password-derived key (see VaultStore.resolveVaultKey).
+     * Resolves with the stored key; rejects with the native error code when the chain does not open or the session is gone.
+     * @param base64DerivedKey The password-derived key as base64
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun resolveVaultKey(base64DerivedKey: String, promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val key = vaultStore.resolveVaultKey(webApiService, base64DerivedKey)
+                withContext(Dispatchers.Main) { promise.resolve(key) }
+            } catch (e: AppError) {
+                withContext(Dispatchers.Main) { promise.reject(e.code, e.message, e) }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) { promise.reject("E-001", "Failed to resolve the vault key: ${e.message}", e) }
+            }
+        }
+    }
+
+    /**
+     * Get the stored account-key chain JSON, or null for a legacy account.
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getAccountKeyChain(promise: Promise) {
+        try {
+            promise.resolve(vaultStore.getAccountKeyChain())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting account key chain", e)
+            promise.reject("ERR_GET_ACCOUNT_KEY_CHAIN", "Failed to get account key chain: ${e.message}", e)
+        }
+    }
+
+    /**
      * Encrypt the decryption key for mobile login.
      * @param publicKeyJWK The public key in JWK format
      * @param promise The promise to resolve
@@ -405,9 +465,10 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                         is Float -> rowMap.putDouble(key, value.toDouble())
                         is Double -> rowMap.putDouble(key, value)
                         is String -> rowMap.putString(key, value)
+                        // Tagged so the JS client can decode BLOB columns back to bytes.
                         is ByteArray -> rowMap.putString(
                             key,
-                            android.util.Base64.encodeToString(value, android.util.Base64.NO_WRAP),
+                            "av-blob-base64:" + android.util.Base64.encodeToString(value, android.util.Base64.NO_WRAP),
                         )
                         else -> rowMap.putString(key, value.toString())
                     }
@@ -1397,6 +1458,11 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     } else {
                         putNull("error")
                     }
+                    if (result.errorMessage != null) {
+                        putString("errorMessage", result.errorMessage)
+                    } else {
+                        putNull("errorMessage")
+                    }
                 }
                 withContext(Dispatchers.Main) {
                     promise.resolve(resultMap)
@@ -1883,6 +1949,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             // Reset sync state - set isDirty=false and revision=0 so sync sees server as newer
             vaultStore.metadata.setIsDirty(false)
             vaultStore.setVaultRevisionNumber(0)
+            vaultStore.clearSyncEngineState()
 
             promise.resolve(null)
         } catch (e: Exception) {
@@ -1891,266 +1958,66 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
-    // MARK: - SRP Functions (via Rust Core UniFFI)
+    // region Client core bridge
 
     /**
-     * Generate a cryptographic salt for SRP.
-     * @param promise The promise to resolve with the generated salt (hex string).
+     * Call one Rust core function by name with JSON-encoded positional arguments. The client core's Rust
+     * binding (platform/NativeRustCore.ts) routes every call through here.
+     * @param name The uniffi function name in camelCase.
+     * @param argsJson The positional arguments as a JSON array.
+     * @param promise Resolves with the result as JSON text.
      */
     @ReactMethod
-    override fun srpGenerateSalt(promise: Promise) {
-        try {
-            val salt = uniffi.aliasvault_core.srpGenerateSalt()
-            promise.resolve(salt)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating SRP salt", e)
-            promise.reject("ERR_SRP_GENERATE_SALT", "Failed to generate SRP salt: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Derive the SRP private key (x) from credentials.
-     * @param salt The salt (hex string).
-     * @param identity The identity (username).
-     * @param passwordHash The password hash (hex string).
-     * @param promise The promise to resolve with the private key (hex string).
-     */
-    @ReactMethod
-    override fun srpDerivePrivateKey(salt: String, identity: String, passwordHash: String, promise: Promise) {
-        try {
-            val privateKey = uniffi.aliasvault_core.srpDerivePrivateKey(salt, identity, passwordHash)
-            promise.resolve(privateKey)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error deriving SRP private key", e)
-            promise.reject("ERR_SRP_DERIVE_PRIVATE_KEY", "Failed to derive SRP private key: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Derive the SRP verifier (v) from a private key.
-     * @param privateKey The private key (hex string).
-     * @param promise The promise to resolve with the verifier (hex string).
-     */
-    @ReactMethod
-    override fun srpDeriveVerifier(privateKey: String, promise: Promise) {
-        try {
-            val verifier = uniffi.aliasvault_core.srpDeriveVerifier(privateKey)
-            promise.resolve(verifier)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error deriving SRP verifier", e)
-            promise.reject("ERR_SRP_DERIVE_VERIFIER", "Failed to derive SRP verifier: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Generate client ephemeral values (a, A) for SRP.
-     * @param promise The promise to resolve with JSON containing public and secret values.
-     */
-    @ReactMethod
-    override fun srpGenerateEphemeral(promise: Promise) {
-        try {
-            val ephemeral = uniffi.aliasvault_core.srpGenerateEphemeral()
-            val result = Arguments.createMap()
-            result.putString("public", ephemeral.public)
-            result.putString("secret", ephemeral.secret)
-            promise.resolve(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating SRP ephemeral", e)
-            promise.reject("ERR_SRP_GENERATE_EPHEMERAL", "Failed to generate SRP ephemeral: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Derive the SRP session key and proof.
-     * @param clientSecret The client secret (a, hex string).
-     * @param serverPublic The server public value (B, hex string).
-     * @param salt The salt (hex string).
-     * @param identity The identity (username).
-     * @param privateKey The private key (x, hex string).
-     * @param promise The promise to resolve with JSON containing key and proof.
-     */
-    @ReactMethod
-    override fun srpDeriveSession(
-        clientSecret: String,
-        serverPublic: String,
-        salt: String,
-        identity: String,
-        privateKey: String,
-        promise: Promise,
-    ) {
-        try {
-            val session = uniffi.aliasvault_core.srpDeriveSession(
-                clientSecret,
-                serverPublic,
-                salt,
-                identity,
-                privateKey,
-            )
-            val result = Arguments.createMap()
-            result.putString("key", session.key)
-            result.putString("proof", session.proof)
-            promise.resolve(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error deriving SRP session", e)
-            promise.reject("ERR_SRP_DERIVE_SESSION", "Failed to derive SRP session: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
-     * key it is stored under.
-     * @param urls The item's URLs, in the order the item lists them.
-     * @param promise Resolves with a JSON string, or null when no URL qualifies.
-     */
-    @ReactMethod
-    override fun selectFaviconTarget(urls: ReadableArray, promise: Promise) {
-        try {
-            val urlList = (0 until urls.size()).mapNotNull { urls.getString(it) }
-            val target = uniffi.aliasvault_core.selectFaviconTarget(urlList)
-            if (target == null) {
-                promise.resolve(null)
-                return
+    override fun rustCall(name: String, argsJson: String, promise: Promise) {
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                promise.resolve(RustCoreDispatcher.call(name, argsJson))
+            } catch (e: Exception) {
+                Log.e(TAG, "Rust core call '$name' failed", e)
+                promise.reject("RUST_CORE_ERROR", "Rust core call '$name' failed: ${e.message}", e)
             }
-
-            val json = JSONObject()
-                .put("url", target.url)
-                .put("source", target.source)
-            promise.resolve(json.toString())
-        } catch (e: Exception) {
-            Log.e(TAG, "Error selecting favicon target", e)
-            promise.reject("ERR_SELECT_FAVICON_TARGET", "Failed to select favicon target: ${e.message}", e)
         }
     }
 
     /**
-     * Generate a password or passphrase from a JSON-serialized PasswordSettings object.
-     * The "Type" field selects the generator ("basic" or "diceware").
-     * @param settingsJson The JSON-serialized password settings.
-     * @param promise The promise to resolve with the generated password/passphrase.
+     * Store the encrypted vault blob the app produced, so the native store and the autofill service read it.
+     * @param base64EncryptedDb The encrypted vault as base64.
+     * @param promise The promise to resolve.
      */
     @ReactMethod
-    override fun generatePassword(settingsJson: String, promise: Promise) {
+    override fun storeEncryptedDatabase(base64EncryptedDb: String, promise: Promise) {
         try {
-            val password = uniffi.aliasvault_core.generatePassword(settingsJson)
-            promise.resolve(password)
+            vaultStore.storeEncryptedDatabase(base64EncryptedDb)
+            promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error generating password", e)
-            promise.reject("ERR_GENERATE_PASSWORD", "Failed to generate password: ${e.message}", e)
+            Log.e(TAG, "Error storing encrypted database", e)
+            promise.reject("ERR_STORE_DATABASE", "Failed to store encrypted database: ${e.message}", e)
         }
     }
 
     /**
-     * List the bundled Diceware wordlist language codes (first is the default, English).
-     * @param promise The promise to resolve with the array of language codes.
+     * The vault encryption key as base64, for the app to open the vault after a biometric or PIN unlock.
+     * @param promise Resolves with the key, rejects with the native error code when the store holds none.
      */
     @ReactMethod
-    override fun getDicewareLanguages(promise: Promise) {
-        try {
-            val languages = uniffi.aliasvault_core.getDicewareLanguages()
-            val result = Arguments.createArray()
-            languages.forEach { result.pushString(it) }
-            promise.resolve(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting diceware languages", e)
-            promise.reject("ERR_GET_DICEWARE_LANGUAGES", "Failed to get diceware languages: ${e.message}", e)
-        }
+    override fun getEncryptionKey(promise: Promise) {
+        vaultStore.getEncryptionKey(
+            object : CryptoOperationCallback {
+                override fun onSuccess(result: String) {
+                    promise.resolve(result)
+                }
+
+                override fun onError(e: Exception) {
+                    Log.e(TAG, "Error getting encryption key", e)
+                    if (e is AppError) {
+                        promise.reject(e.code, e.message, e)
+                    } else {
+                        promise.reject("E-001", "Failed to get encryption key: ${e.message}", e)
+                    }
+                }
+            },
+        )
     }
 
-    /**
-     * Generate a random identity from a JSON-serialized request.
-     * @param requestJson The JSON-serialized identity request (language, gender, ageRange).
-     * @param promise The promise to resolve with the identity as a JSON string.
-     */
-    @ReactMethod
-    override fun generateIdentity(requestJson: String, promise: Promise) {
-        try {
-            val identityJson = uniffi.aliasvault_core.generateIdentity(requestJson)
-            promise.resolve(identityJson)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating identity", e)
-            promise.reject("ERR_GENERATE_IDENTITY", "Failed to generate identity: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Generate a username from a JSON-serialized name input (firstName, lastName, birthDate).
-     * @param inputJson The JSON-serialized name input.
-     * @param promise The promise to resolve with the generated username.
-     */
-    @ReactMethod
-    override fun generateIdentityUsername(inputJson: String, promise: Promise) {
-        try {
-            val username = uniffi.aliasvault_core.generateIdentityUsername(inputJson)
-            promise.resolve(username)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating identity username", e)
-            promise.reject("ERR_GENERATE_IDENTITY_USERNAME", "Failed to generate username: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Generate an email prefix from a JSON-serialized name input (firstName, lastName, birthDate).
-     * @param inputJson The JSON-serialized name input.
-     * @param promise The promise to resolve with the generated email prefix.
-     */
-    @ReactMethod
-    override fun generateIdentityEmailPrefix(inputJson: String, promise: Promise) {
-        try {
-            val emailPrefix = uniffi.aliasvault_core.generateIdentityEmailPrefix(inputJson)
-            promise.resolve(emailPrefix)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating identity email prefix", e)
-            promise.reject("ERR_GENERATE_IDENTITY_EMAIL_PREFIX", "Failed to generate email prefix: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Generate a random alphanumeric email prefix that is not based on any identity.
-     * @param length The desired prefix length.
-     * @param promise The promise to resolve with the generated prefix.
-     */
-    @ReactMethod
-    override fun generateRandomEmailPrefix(length: Double, promise: Promise) {
-        try {
-            val prefix = uniffi.aliasvault_core.generateRandomEmailPrefix(length.toUInt())
-            promise.resolve(prefix)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error generating random email prefix", e)
-            promise.reject("ERR_GENERATE_RANDOM_EMAIL_PREFIX", "Failed to generate random email prefix: ${e.message}", e)
-        }
-    }
-
-    /**
-     * List the bundled identity dictionary language codes.
-     * @param promise The promise to resolve with the array of language codes.
-     */
-    @ReactMethod
-    override fun getIdentityLanguages(promise: Promise) {
-        try {
-            val languages = uniffi.aliasvault_core.getIdentityLanguages()
-            val result = Arguments.createArray()
-            languages.forEach { result.pushString(it) }
-            promise.resolve(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting identity languages", e)
-            promise.reject("ERR_GET_IDENTITY_LANGUAGES", "Failed to get identity languages: ${e.message}", e)
-        }
-    }
-
-    /**
-     * List the identity age range option values ("random" plus 5-year ranges).
-     * @param promise The promise to resolve with the array of age range values.
-     */
-    @ReactMethod
-    override fun getIdentityAgeRanges(promise: Promise) {
-        try {
-            val ageRanges = uniffi.aliasvault_core.getIdentityAgeRanges()
-            val result = Arguments.createArray()
-            ageRanges.forEach { result.pushString(it) }
-            promise.resolve(result)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting identity age ranges", e)
-            promise.reject("ERR_GET_IDENTITY_AGE_RANGES", "Failed to get identity age ranges: ${e.message}", e)
-        }
-    }
+    // endregion
 }

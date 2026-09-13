@@ -74,7 +74,7 @@ class VaultSync(
     private fun driverError(e: Exception): AppError = e as? AppError ?: AppError.SyncEngineFailed(e.toString(), e)
 
     /**
-     * Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the VEK 
+     * Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the VEK
      * is stored as the session key; a legacy account keeps the derived key. Every sync assumes the key this stored. Returns the stored key (base64).
      */
     @Suppress("TooGenericExceptionCaught")

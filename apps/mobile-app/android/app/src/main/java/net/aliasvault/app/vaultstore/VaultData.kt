@@ -32,6 +32,7 @@ enum class SyncAction(val value: String) {
  * @property newRevision The vault revision after the sync.
  * @property wasOffline Whether the sync ran offline.
  * @property error The error code, if any.
+ * @property errorMessage The error message, if any.
  */
 data class VaultSyncResult(
     val success: Boolean,

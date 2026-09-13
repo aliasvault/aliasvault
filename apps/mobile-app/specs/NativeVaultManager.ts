@@ -25,8 +25,20 @@ export interface Spec extends TurboModule {
   clearSession(): Promise<void>;  // Clears session only, preserves vault for potential RPO recovery
   clearVault(): Promise<void>;    // Clears everything including vault data
 
+  // Rust core dispatch. The client core's Rust binding routes every call through here: `name` is the uniffi
+  // function name in camelCase, `argsJson` a JSON array of its positional arguments (bytes as base64), and the
+  // result is JSON text. Swift/Kotlin hold one case per function and no logic; see platform/NativeRustCore.ts.
+  rustCall(name: string, argsJson: string): Promise<string>;
+
+  // The vault encryption key as base64, for the app to decrypt the vault after a biometric or PIN unlock. Throws
+  // when the native store holds no key (locked); may prompt for biometrics when the key lives in the keychain.
+  getEncryptionKey(): Promise<string>;
+
+  // Store the encrypted vault blob for persistence and which is also accessed by the native autofill extensions.
+  storeEncryptedDatabase(base64EncryptedDb: string): Promise<void>;
+
   // Vault sync
-  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null }>;
+  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null; errorMessage: string | null }>;
 
   // Quick check if sync is needed
   checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;
@@ -36,7 +48,7 @@ export interface Spec extends TurboModule {
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
   clearEncryptedVaultForFreshDownload(): Promise<void>;
 
-  // Vault SQL operations
+  // Vault SQL operations. executeQuery returns BLOB columns as base64 behind an "av-blob-base64:" prefix.
   executeQuery(query: string, params: (string | number | null)[]): Promise<string[]>;
   executeUpdate(query: string, params:(string | number | null)[]): Promise<number>;
   executeRaw(query: string): Promise<void>;
@@ -57,6 +69,10 @@ export interface Spec extends TurboModule {
   storeEncryptionKey(base64EncryptionKey: string): Promise<void>;
   storeEncryptionKeyDerivationParams(keyDerivationParams: string): Promise<void>;
   getEncryptionKeyDerivationParams(): Promise<string | null>;
+  storeAccountKeyChain(chainJson: string | null): Promise<void>;
+  getAccountKeyChain(): Promise<string | null>;
+  resolveVaultKey(base64DerivedKey: string): Promise<string>;
+  getPersonalManifestId(): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
   getEncryptedDatabase(): Promise<string | null>;
 
@@ -148,52 +164,6 @@ export interface Spec extends TurboModule {
   requestAppReview(): Promise<boolean>;
   // The install date as a unix timestamp in milliseconds, or 0 when it cannot be determined.
   getAppInstallDate(): Promise<number>;
-
-  // Favicon URL handling and selection.
-  selectFaviconTarget(urls: string[]): Promise<string | null>;
-
-  // Password generator (uses the native Rust core, shared with the other AliasVault clients)
-  // Generate a password or passphrase from a JSON-serialized PasswordSettings object.
-  generatePassword(settingsJson: string): Promise<string>;
-  // List the bundled Diceware wordlist language codes (first is the default, English).
-  getDicewareLanguages(): Promise<string[]>;
-
-  // Identity generator (uses the native Rust core, shared with the other AliasVault clients)
-  // Generate a random identity from a JSON-serialized request
-  // (e.g. {"language":"en","gender":"random","ageRange":"21-25"}).
-  // Returns the identity as a JSON string with camelCase fields.
-  generateIdentity(requestJson: string): Promise<string>;
-  // Generate a username from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
-  generateIdentityUsername(inputJson: string): Promise<string>;
-  // Generate an email prefix from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
-  generateIdentityEmailPrefix(inputJson: string): Promise<string>;
-  // Generate a random alphanumeric email prefix that is not based on any identity.
-  generateRandomEmailPrefix(length: number): Promise<string>;
-  // List the bundled identity dictionary language codes.
-  getIdentityLanguages(): Promise<string[]>;
-  // List the identity age range option values ("random" plus 5-year ranges).
-  getIdentityAgeRanges(): Promise<string[]>;
-
-  // SRP (Secure Remote Password) operations
-  // These methods use the native Rust SRP implementation for secure authentication.
-  // All hex values are uppercase strings.
-
-  // Generate a 32-byte random salt as uppercase hex string
-  srpGenerateSalt(): Promise<string>;
-
-  // Derive SRP private key: x = H(salt | H(identity | ":" | passwordHash))
-  // passwordHash should be uppercase hex string (from Argon2id derivation)
-  srpDerivePrivateKey(salt: string, identity: string, passwordHash: string): Promise<string>;
-
-  // Derive SRP verifier: v = g^x mod N (for registration)
-  srpDeriveVerifier(privateKey: string): Promise<string>;
-
-  // Generate client ephemeral key pair (public A and secret a)
-  srpGenerateEphemeral(): Promise<{public: string; secret: string}>;
-
-  // Derive client session from server response
-  // Returns proof (M1) and shared key (K) as uppercase hex strings
-  srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<{proof: string; key: string}>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');
