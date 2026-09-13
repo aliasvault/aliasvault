@@ -29,7 +29,7 @@ extension VaultStore {
             throw AppError.encryptionKeyNotFound
         }
 
-        guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64) else {
+        guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64, options: .ignoreUnknownCharacters) else {
             throw AppError.base64DecodeFailed
         }
 
@@ -61,7 +61,7 @@ extension VaultStore {
     /// Setup the database with the decrypted data
     private func setupDatabaseWithDecryptedData(_ decryptedDbBase64: Data) throws {
         // Step 1: Decode base64
-        guard let decryptedDbData = Data(base64Encoded: decryptedDbBase64) else {
+        guard let decryptedDbData = Data(base64Encoded: decryptedDbBase64, options: .ignoreUnknownCharacters) else {
             throw AppError.base64DecodeFailed
         }
 

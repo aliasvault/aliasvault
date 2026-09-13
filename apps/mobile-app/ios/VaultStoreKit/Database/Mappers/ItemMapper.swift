@@ -33,7 +33,7 @@ public struct ItemRow {
 
         // Handle logo data - can be base64 string or Blob
         if let logoBase64 = row["Logo"] as? String {
-            self.logo = Data(base64Encoded: logoBase64)
+            self.logo = Data(base64Encoded: logoBase64, options: .ignoreUnknownCharacters)
         } else if let logoBlob = row["Logo"] as? SQLite.Blob {
             self.logo = Data(logoBlob.bytes)
         } else {

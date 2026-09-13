@@ -50,8 +50,8 @@ public class VaultMergeService {
         // Decrypt both vaults
         // Format is: base64(encrypted(base64(rawSqlite)))
         // Step 1: Decode outer base64 to get encrypted bytes
-        guard let localVaultData = Data(base64Encoded: localVaultBase64),
-              let serverVaultData = Data(base64Encoded: serverVaultBase64) else {
+        guard let localVaultData = Data(base64Encoded: localVaultBase64, options: .ignoreUnknownCharacters),
+              let serverVaultData = Data(base64Encoded: serverVaultBase64, options: .ignoreUnknownCharacters) else {
             print("[VaultMergeService] Failed to decode outer base64")
             throw VaultMergeError.invalidInput("Invalid base64 vault data")
         }
@@ -62,11 +62,11 @@ public class VaultMergeService {
 
         // Step 3: Decode inner base64 to get raw SQLite bytes
         guard let localDecryptedString = String(data: localDecryptedBase64, encoding: .utf8),
-              let localDecrypted = Data(base64Encoded: localDecryptedString) else {
+              let localDecrypted = Data(base64Encoded: localDecryptedString, options: .ignoreUnknownCharacters) else {
             throw VaultMergeError.invalidInput("Invalid inner base64 in local vault")
         }
         guard let serverDecryptedString = String(data: serverDecryptedBase64, encoding: .utf8),
-              let serverDecrypted = Data(base64Encoded: serverDecryptedString) else {
+              let serverDecrypted = Data(base64Encoded: serverDecryptedString, options: .ignoreUnknownCharacters) else {
             throw VaultMergeError.invalidInput("Invalid inner base64 in server vault")
         }
 
@@ -138,7 +138,7 @@ public class VaultMergeService {
     ) throws -> (vaultBase64: String, prunedCount: Int) {
         // Decrypt vault: base64(encrypted(base64(sqlite)))
         // Step 1: Decode outer base64 to get encrypted bytes
-        guard let vaultData = Data(base64Encoded: vaultBase64) else {
+        guard let vaultData = Data(base64Encoded: vaultBase64, options: .ignoreUnknownCharacters) else {
             throw VaultMergeError.invalidInput("Invalid base64 vault data")
         }
 
@@ -147,7 +147,7 @@ public class VaultMergeService {
 
         // Step 3: Decode inner base64 to get raw SQLite bytes
         guard let decryptedString = String(data: decryptedBase64, encoding: .utf8),
-              let decrypted = Data(base64Encoded: decryptedString) else {
+              let decrypted = Data(base64Encoded: decryptedString, options: .ignoreUnknownCharacters) else {
             throw VaultMergeError.invalidInput("Invalid inner base64 in vault")
         }
 
