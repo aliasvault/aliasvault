@@ -1,4 +1,4 @@
-import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
+import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
 import * as OTPAuth from 'otpauth';
 
 /**
@@ -66,32 +66,4 @@ export function getTotpRemainingSeconds(parameters?: TotpParameters): number {
 export function getTotpElapsedPercentage(parameters?: TotpParameters): number {
   const period = normalizeTotpPeriod(parameters?.Period);
   return Math.floor(((period - getTotpRemainingSeconds(parameters)) / period) * 100);
-}
-
-/**
- * Serialize a TOTP code back to an `otpauth://` URI. Non-default parameters are written out so a
- * scanned QR reproduces the same codes.
- *
- * @param label - URL-encoded label, typically "Issuer:account"
- * @param secretKey - Base32 secret
- * @param issuer - Issuer name
- * @param parameters - Stored algorithm/digits/period
- * @returns The otpauth:// URI
- */
-export function buildOtpAuthUri(label: string, secretKey: string, issuer: string, parameters?: TotpParameters): string {
-  const algorithm = normalizeTotpAlgorithm(parameters?.Algorithm);
-  const digits = normalizeTotpDigits(parameters?.Digits);
-  const period = normalizeTotpPeriod(parameters?.Period);
-
-  let uri = `otpauth://totp/${label}?secret=${secretKey}&issuer=${encodeURIComponent(issuer)}`;
-  if (algorithm !== TOTP_DEFAULT_ALGORITHM) {
-    uri += `&algorithm=${algorithm}`;
-  }
-  if (digits !== TOTP_DEFAULT_DIGITS) {
-    uri += `&digits=${digits}`;
-  }
-  if (period !== TOTP_DEFAULT_PERIOD) {
-    uri += `&period=${period}`;
-  }
-  return uri;
 }

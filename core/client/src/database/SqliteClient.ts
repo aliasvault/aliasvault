@@ -16,7 +16,7 @@ import {
   FolderRepository,
   SettingsRepository,
   EncryptionKeyRepository,
-  LogoRepository
+  LogoRepository,
 } from './index';
 
 import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
@@ -50,13 +50,14 @@ export class SqliteClient implements ISyncDatabaseClient {
   private personalManifestId: string | null = null;
 
   // Lazy-initialized repositories
-  private _items: ItemRepository | null = null;
-  private _itemStats: ItemStatsRepository | null = null;
-  private _passkeys: PasskeyRepository | null = null;
-  private _folders: FolderRepository | null = null;
+  private _items: SyncRepository<ItemRepository> | null = null;
+  private _itemStats: SyncRepository<ItemStatsRepository> | null = null;
+  private _passkeys: SyncRepository<PasskeyRepository> | null = null;
+  private _folders: SyncRepository<FolderRepository> | null = null;
   private _settings: SyncRepository<SettingsRepository> | null = null;
-  private _encryptionKeys: EncryptionKeyRepository | null = null;
-  private _logos: LogoRepository | null = null;
+  private _encryptionKeys: SyncRepository<EncryptionKeyRepository> | null = null;
+  private _logos: SyncRepository<LogoRepository> | null = null;
+  private _logoRepository: LogoRepository | null = null;
 
   /**
    * The manifest new rows are stamped with when they cannot inherit one from a parent row, or null when
@@ -89,9 +90,9 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for Item CRUD operations.
    */
-  public get items(): ItemRepository {
+  public get items(): SyncRepository<ItemRepository> {
     if (!this._items) {
-      this._items = new ItemRepository(this, this.logos);
+      this._items = syncRepository(new ItemRepository(this, this.logoRepository), this);
     }
     return this._items;
   }
@@ -99,9 +100,9 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for per-item usage statistics (last used, use counts).
    */
-  public get itemStats(): ItemStatsRepository {
+  public get itemStats(): SyncRepository<ItemStatsRepository> {
     if (!this._itemStats) {
-      this._itemStats = new ItemStatsRepository(this);
+      this._itemStats = syncRepository(new ItemStatsRepository(this), this);
     }
     return this._itemStats;
   }
@@ -109,9 +110,9 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for Passkey operations.
    */
-  public get passkeys(): PasskeyRepository {
+  public get passkeys(): SyncRepository<PasskeyRepository> {
     if (!this._passkeys) {
-      this._passkeys = new PasskeyRepository(this);
+      this._passkeys = syncRepository(new PasskeyRepository(this), this);
     }
     return this._passkeys;
   }
@@ -119,9 +120,9 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for Folder operations.
    */
-  public get folders(): FolderRepository {
+  public get folders(): SyncRepository<FolderRepository> {
     if (!this._folders) {
-      this._folders = new FolderRepository(this, this.logos);
+      this._folders = syncRepository(new FolderRepository(this, this.logoRepository), this);
     }
     return this._folders;
   }
@@ -139,9 +140,9 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for the per-manifest keypairs that receive mail.
    */
-  public get encryptionKeys(): EncryptionKeyRepository {
+  public get encryptionKeys(): SyncRepository<EncryptionKeyRepository> {
     if (!this._encryptionKeys) {
-      this._encryptionKeys = new EncryptionKeyRepository(this);
+      this._encryptionKeys = syncRepository(new EncryptionKeyRepository(this), this);
     }
     return this._encryptionKeys;
   }
@@ -149,11 +150,21 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Repository for item logo operations (favicons, built-in logos and uploaded images alike).
    */
-  public get logos(): LogoRepository {
+  public get logos(): SyncRepository<LogoRepository> {
     if (!this._logos) {
-      this._logos = new LogoRepository(this);
+      this._logos = syncRepository(this.logoRepository, this);
     }
     return this._logos;
+  }
+
+  /**
+   * The logo repository itself, which the item and folder repositories call into.
+   */
+  private get logoRepository(): LogoRepository {
+    if (!this._logoRepository) {
+      this._logoRepository = new LogoRepository(this);
+    }
+    return this._logoRepository;
   }
 
   // ===== IDatabaseClient Implementation =====

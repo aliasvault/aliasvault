@@ -5,6 +5,8 @@ import importPlugin from "eslint-plugin-import";
 import jsdocPlugin from "eslint-plugin-jsdoc";
 import globals from "globals";
 
+import noFloatingDbOp from "./eslint-rules/no-floating-db-op.mjs";
+
 export default [
     {
         ignores: [
@@ -113,6 +115,17 @@ export default [
                     project: './tsconfig.json',
                 },
             },
+        },
+    },
+    {
+        // Repositories are written as DbOps (src/database/DbOp.ts): a DbOp or a Promise left unhandled never runs or loses its error.
+        files: ["src/database/**/*.ts"],
+        plugins: {
+            "local": { rules: { "no-floating-db-op": noFloatingDbOp } },
+        },
+        rules: {
+            "local/no-floating-db-op": "error",
+            "@typescript-eslint/no-floating-promises": "error",
         },
     },
 ];

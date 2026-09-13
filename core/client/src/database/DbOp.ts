@@ -27,17 +27,6 @@ export type DbEffect =
 export type DbOp<T> = Generator<DbEffect, T, unknown>;
 
 /**
- * How ops run on an asynchronous host.
- */
-export type AsyncRunOptions = {
-  /**
-   * Wrap an op that writes outside a transaction in one, committed when the op returns. For hosts that only
-   * persist the vault on commit, like the mobile native vault store.
-   */
-  commitWrites?: boolean;
-};
-
-/**
  * A repository as a synchronous host sees it: DbOp methods return their value, everything else is unchanged.
  */
 export type SyncRepository<R> = {
@@ -73,20 +62,20 @@ export function runSync<T>(op: DbOp<T>, client: ISyncDatabaseClient): T {
 }
 
 /**
- * Run an op to completion on any client, awaiting each step.
+ * Run an op to completion on any client, awaiting each step. On a client that persists on commit, an op that writes
+ * outside a transaction runs in one of its own.
  * @param op - The op to run
  * @param client - The client that performs its steps
- * @param options - How to run it
  * @returns The op's result
  */
-export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient, options: AsyncRunOptions = {}): Promise<T> {
+export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient): Promise<T> {
   let ownsTransaction = false;
   try {
     let step = op.next();
     while (!step.done) {
       let result: unknown;
       try {
-        if (options.commitWrites && step.value.kind === 'execute' && !ownsTransaction && !client.isInTransaction()) {
+        if (client.persistsOnCommit && step.value.kind === 'execute' && !ownsTransaction && !client.isInTransaction()) {
           await client.beginTransaction();
           ownsTransaction = true;
         }
@@ -129,11 +118,10 @@ export function syncRepository<R extends object>(repository: R, client: ISyncDat
  * Wrap a repository for an asynchronous client.
  * @param repository - The repository
  * @param client - The client its ops run on
- * @param options - How its ops run
  * @returns The repository with its DbOp methods returning Promises
  */
-export function asyncRepository<R extends object>(repository: R, client: IDatabaseClient, options: AsyncRunOptions = {}): AsyncRepository<R> {
-  return bindRepository(repository, (op) => runAsync(op, client, options)) as AsyncRepository<R>;
+export function asyncRepository<R extends object>(repository: R, client: IDatabaseClient): AsyncRepository<R> {
+  return bindRepository(repository, (op) => runAsync(op, client)) as AsyncRepository<R>;
 }
 
 /**

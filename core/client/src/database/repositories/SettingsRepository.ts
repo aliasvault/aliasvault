@@ -5,7 +5,6 @@ import { getIdentityLanguages } from '../../rust/RustCore';
 import { BaseRepository } from '../BaseRepository';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
-import type { IDatabaseClient } from '../BaseRepository';
 import type { DbOp } from '../DbOp';
 import type { PasswordSettings } from '@aliasvault/models/vault';
 
@@ -17,7 +16,7 @@ export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical'
 /**
  * Repository for the vault's user preferences: the manifest-scoped key/value rows of the Settings table.
  */
-export class SettingsRepository extends BaseRepository<IDatabaseClient> {
+export class SettingsRepository extends BaseRepository {
   /**
    * Get setting from database for a given key, from the manifest this client writes into.
    * @param key - The setting key

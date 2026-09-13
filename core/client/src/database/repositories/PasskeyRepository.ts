@@ -2,6 +2,7 @@ import { BaseRepository } from '../BaseRepository';
 import { PasskeyMapper, type PasskeyRow, type PasskeyWithItemRow, type PasskeyWithItem } from '../mappers/PasskeyMapper';
 import { PasskeyQueries } from '../queries/PasskeyQueries';
 
+import type { DbOp } from '../DbOp';
 import type { Passkey } from '@aliasvault/models/vault';
 
 /**
@@ -13,11 +14,8 @@ export class PasskeyRepository extends BaseRepository {
    * @param rpId - The relying party identifier (domain)
    * @returns Array of passkey objects with credential info
    */
-  public getByRpId(rpId: string): PasskeyWithItem[] {
-    const results = this.client.executeQuery<PasskeyWithItemRow>(
-      PasskeyQueries.GET_BY_RP_ID,
-      [rpId]
-    );
+  public *getByRpId(rpId: string): DbOp<PasskeyWithItem[]> {
+    const results = yield* this.query<PasskeyWithItemRow>(PasskeyQueries.GET_BY_RP_ID, [rpId]);
     return PasskeyMapper.mapRowsWithItem(results);
   }
 
@@ -26,11 +24,8 @@ export class PasskeyRepository extends BaseRepository {
    * @param passkeyId - The passkey ID
    * @returns The passkey object or null if not found
    */
-  public getById(passkeyId: string): PasskeyWithItem | null {
-    const results = this.client.executeQuery<PasskeyWithItemRow>(
-      PasskeyQueries.GET_BY_ID_WITH_ITEM,
-      [passkeyId]
-    );
+  public *getById(passkeyId: string): DbOp<PasskeyWithItem | null> {
+    const results = yield* this.query<PasskeyWithItemRow>(PasskeyQueries.GET_BY_ID_WITH_ITEM, [passkeyId]);
 
     if (results.length === 0) {
       return null;
@@ -45,16 +40,13 @@ export class PasskeyRepository extends BaseRepository {
    * @param manifestId - The manifest the item belongs to, when known
    * @returns Array of passkey objects
    */
-  public getByItemId(itemId: string, manifestId?: string): Passkey[] {
-    const scope = manifestId ?? this.resolveRowManifestId('Items', itemId);
+  public *getByItemId(itemId: string, manifestId?: string): DbOp<Passkey[]> {
+    const scope = manifestId ?? (yield* this.resolveRowManifestId('Items', itemId));
     if (!scope) {
       return [];
     }
 
-    const results = this.client.executeQuery<PasskeyRow>(
-      PasskeyQueries.GET_BY_ITEM_ID,
-      [itemId, scope]
-    );
+    const results = yield* this.query<PasskeyRow>(PasskeyQueries.GET_BY_ITEM_ID, [itemId, scope]);
     return PasskeyMapper.mapRows(results);
   }
 
@@ -85,11 +77,12 @@ export class PasskeyRepository extends BaseRepository {
           : new Uint8Array(passkey.UserHandle);
       }
 
-      this.client.executeUpdate(PasskeyQueries.INSERT, [
+      const manifestId = await this.run(this.writeManifestId());
+      await this.run(this.execute(PasskeyQueries.INSERT, [
         passkey.Id,
         passkey.ItemId,
         passkey.ItemId,
-        this.activeManifestId(),
+        manifestId,
         passkey.RpId,
         userHandleData,
         passkey.PublicKey,
@@ -100,7 +93,7 @@ export class PasskeyRepository extends BaseRepository {
         currentDateTime,
         currentDateTime,
         0
-      ]);
+      ]));
     });
   }
 
@@ -112,16 +105,11 @@ export class PasskeyRepository extends BaseRepository {
    */
   public async deleteById(passkeyId: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
-      const currentDateTime = this.now();
-      const scope = manifestId ?? this.resolveRowManifestId('Passkeys', passkeyId);
+      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Passkeys', passkeyId));
       if (!scope) {
         return 0;
       }
-      return this.client.executeUpdate(PasskeyQueries.SOFT_DELETE, [
-        currentDateTime,
-        passkeyId,
-        scope
-      ]);
+      return this.run(this.execute(PasskeyQueries.SOFT_DELETE, [this.now(), passkeyId, scope]));
     });
   }
 
@@ -133,16 +121,11 @@ export class PasskeyRepository extends BaseRepository {
    */
   public async deleteByItemId(itemId: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
-      const currentDateTime = this.now();
-      const scope = manifestId ?? this.resolveRowManifestId('Items', itemId);
+      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Items', itemId));
       if (!scope) {
         return 0;
       }
-      return this.client.executeUpdate(PasskeyQueries.SOFT_DELETE_BY_ITEM, [
-        currentDateTime,
-        itemId,
-        scope
-      ]);
+      return this.run(this.execute(PasskeyQueries.SOFT_DELETE_BY_ITEM, [this.now(), itemId, scope]));
     });
   }
 
@@ -155,17 +138,11 @@ export class PasskeyRepository extends BaseRepository {
    */
   public async updateDisplayName(passkeyId: string, displayName: string, manifestId?: string): Promise<number> {
     return this.withTransaction(async () => {
-      const currentDateTime = this.now();
-      const scope = manifestId ?? this.resolveRowManifestId('Passkeys', passkeyId);
+      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Passkeys', passkeyId));
       if (!scope) {
         return 0;
       }
-      return this.client.executeUpdate(PasskeyQueries.UPDATE_DISPLAY_NAME, [
-        displayName,
-        currentDateTime,
-        passkeyId,
-        scope
-      ]);
+      return this.run(this.execute(PasskeyQueries.UPDATE_DISPLAY_NAME, [displayName, this.now(), passkeyId, scope]));
     });
   }
 }

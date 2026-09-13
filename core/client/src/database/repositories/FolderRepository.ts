@@ -5,7 +5,8 @@ import { BaseRepository } from '../BaseRepository';
 import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
 
-import type { ISyncDatabaseClient } from '../BaseRepository';
+import type { IDatabaseClient } from '../BaseRepository';
+import type { DbOp } from '../DbOp';
 import type { LogoRepository } from './LogoRepository';
 
 /**
@@ -28,7 +29,7 @@ export class FolderRepository extends BaseRepository {
    * @param client - The database client to use for the repository
    * @param logoRepository - The logo repository, to follow items across manifest boundaries
    */
-  public constructor(client: ISyncDatabaseClient, private logoRepository: LogoRepository) {
+  public constructor(client: IDatabaseClient, private logoRepository: LogoRepository) {
     super(client);
   }
 
@@ -44,17 +45,18 @@ export class FolderRepository extends BaseRepository {
     return this.withTransaction(async () => {
       const folderId = id ?? crypto.randomUUID();
       const currentDateTime = this.now();
+      const manifestId = await this.run(this.writeManifestId());
 
-      this.client.executeUpdate(FolderQueries.INSERT, [
+      await this.run(this.execute(FolderQueries.INSERT, [
         folderId,
         name,
         parentFolderId || null,
         // Second bind of the parent id, then the manifest a top-level folder joins (see INSERT).
         parentFolderId || null,
-        this.activeManifestId(),
+        manifestId,
         currentDateTime,
         currentDateTime
-      ]);
+      ]));
 
       return folderId;
     });
@@ -64,9 +66,9 @@ export class FolderRepository extends BaseRepository {
    * Get all folders.
    * @returns Array of folder objects (empty array if Folders table doesn't exist yet)
    */
-  public getAll(): Folder[] {
+  public *getAll(): DbOp<Folder[]> {
     try {
-      return this.client.executeQuery<Folder>(FolderQueries.GET_ALL);
+      return yield* this.query<Folder>(FolderQueries.GET_ALL);
     } catch (error) {
       // Table may not exist in older vault versions - return empty array
       if (error instanceof Error && error.message.includes('no such table')) {
@@ -81,11 +83,8 @@ export class FolderRepository extends BaseRepository {
    * @param folderId - The ID of the folder
    * @returns Folder object or null if not found
    */
-  public getById(folderId: string): Omit<Folder, 'Weight'> | null {
-    const results = this.client.executeQuery<Omit<Folder, 'Weight'>>(
-      FolderQueries.GET_BY_ID,
-      [folderId]
-    );
+  public *getById(folderId: string): DbOp<Omit<Folder, 'Weight'> | null> {
+    const results = yield* this.query<Omit<Folder, 'Weight'>>(FolderQueries.GET_BY_ID, [folderId]);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -96,14 +95,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async update(folderId: string, name: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const currentDateTime = this.now();
-      return this.client.executeUpdate(FolderQueries.UPDATE_NAME, [
-        name,
-        currentDateTime,
-        folderId
-      ]);
-    });
+    return this.withTransaction(() => this.run(this.execute(FolderQueries.UPDATE_NAME, [name, this.now(), folderId])));
   }
 
   /**
@@ -111,19 +103,15 @@ export class FolderRepository extends BaseRepository {
    * @param folderId - The parent folder ID
    * @returns Array of all descendant folder IDs
    */
-  private getAllChildFolderIds(folderId: string): string[] {
-    const directChildren = this.client.executeQuery<{ Id: string }>(
-      FolderQueries.GET_CHILD_FOLDER_IDS,
-      [folderId]
-    );
+  private *getAllChildFolderIds(folderId: string): DbOp<string[]> {
+    const directChildren = yield* this.query<{ Id: string }>(FolderQueries.GET_CHILD_FOLDER_IDS, [folderId]);
 
     const allChildIds: string[] = [];
 
     for (const child of directChildren) {
       allChildIds.push(child.Id);
       // Recursively get all descendants
-      const descendants = this.getAllChildFolderIds(child.Id);
-      allChildIds.push(...descendants);
+      allChildIds.push(...(yield* this.getAllChildFolderIds(child.Id)));
     }
 
     return allChildIds;
@@ -140,48 +128,43 @@ export class FolderRepository extends BaseRepository {
    */
   public async delete(folderId: string): Promise<number> {
     await this.assertDeletable(folderId);
+    return this.withTransaction(() => this.run(this.deleteKeepingContents(folderId)));
+  }
 
-    return this.withTransaction(async () => {
-      const currentDateTime = this.now();
+  /**
+   * Soft delete a folder, moving its items and child folders up to its parent.
+   * @param folderId - The ID of the folder to delete
+   * @returns The number of rows updated
+   */
+  private *deleteKeepingContents(folderId: string): DbOp<number> {
+    const currentDateTime = this.now();
 
-      // Get the parent folder of the folder being deleted
-      const folder = this.getById(folderId);
-      const targetParentId = folder?.ParentFolderId || null;
+    // Get the parent folder of the folder being deleted
+    const folder = yield* this.getById(folderId);
+    const targetParentId = folder?.ParentFolderId || null;
+    const manifestId = yield* this.writeManifestId();
 
-      // Move only items in this folder to the parent folder (or root if no parent)
-      if (targetParentId) {
-        // Has parent: move items to parent folder
-        this.client.executeUpdate(FolderQueries.MOVE_ITEMS_TO_FOLDER, [
-          targetParentId,
-          // Second bind of the destination: the items adopt that folder's manifest.
-          targetParentId,
-          this.activeManifestId(),
-          currentDateTime,
-          folderId
-        ]);
-      } else {
-        // No parent: move items to root (NULL)
-        this.client.executeUpdate(FolderQueries.CLEAR_ITEMS_FOLDER, [
-          // Out of every folder means into the default manifest.
-          this.activeManifestId(),
-          currentDateTime,
-          folderId
-        ]);
-      }
-
-      // Move direct child folders to the parent of the deleted folder
-      this.client.executeUpdate(FolderQueries.UPDATE_PARENT_FOLDER, [
+    // Move only items in this folder to the parent folder (or root if no parent)
+    if (targetParentId) {
+      // Has parent: move items to parent folder
+      yield* this.execute(FolderQueries.MOVE_ITEMS_TO_FOLDER, [
         targetParentId,
+        // Second bind of the destination: the items adopt that folder's manifest.
+        targetParentId,
+        manifestId,
         currentDateTime,
         folderId
       ]);
+    } else {
+      // No parent: move items to root (NULL); out of every folder means into the default manifest.
+      yield* this.execute(FolderQueries.CLEAR_ITEMS_FOLDER, [manifestId, currentDateTime, folderId]);
+    }
 
-      // Soft delete the folder
-      return this.client.executeUpdate(FolderQueries.SOFT_DELETE, [
-        currentDateTime,
-        folderId
-      ]);
-    });
+    // Move direct child folders to the parent of the deleted folder
+    yield* this.execute(FolderQueries.UPDATE_PARENT_FOLDER, [targetParentId, currentDateTime, folderId]);
+
+    // Soft delete the folder
+    return yield* this.execute(FolderQueries.SOFT_DELETE, [currentDateTime, folderId]);
   }
 
   /**
@@ -194,47 +177,31 @@ export class FolderRepository extends BaseRepository {
    */
   public async deleteWithContents(folderId: string): Promise<number> {
     await this.assertDeletable(folderId);
+    return this.withTransaction(() => this.run(this.deleteFolderTree(folderId)));
+  }
 
-    return this.withTransaction(async () => {
-      const currentDateTime = this.now();
+  /**
+   * Soft delete a folder and its child folders, moving every item inside them to the trash.
+   * @param folderId - The ID of the folder to delete
+   * @returns The number of items trashed
+   */
+  private *deleteFolderTree(folderId: string): DbOp<number> {
+    const currentDateTime = this.now();
+    const allChildFolderIds = yield* this.getAllChildFolderIds(folderId);
 
-      // Get all child folder IDs recursively
-      const allChildFolderIds = this.getAllChildFolderIds(folderId);
+    let totalItemsDeleted = 0;
 
-      let totalItemsDeleted = 0;
+    // Move all items in this folder and in its child folders to trash
+    for (const id of [folderId, ...allChildFolderIds]) {
+      totalItemsDeleted += yield* this.execute(FolderQueries.TRASH_ITEMS_IN_FOLDER, [currentDateTime, currentDateTime, id]);
+    }
 
-      // Move all items in this folder to trash
-      totalItemsDeleted += this.client.executeUpdate(FolderQueries.TRASH_ITEMS_IN_FOLDER, [
-        currentDateTime,
-        currentDateTime,
-        folderId
-      ]);
+    // Soft delete all child folders, then the folder itself
+    for (const id of [...allChildFolderIds, folderId]) {
+      yield* this.execute(FolderQueries.SOFT_DELETE, [currentDateTime, id]);
+    }
 
-      // Move all items in child folders to trash
-      for (const childFolderId of allChildFolderIds) {
-        totalItemsDeleted += this.client.executeUpdate(FolderQueries.TRASH_ITEMS_IN_FOLDER, [
-          currentDateTime,
-          currentDateTime,
-          childFolderId
-        ]);
-      }
-
-      // Soft delete all child folders
-      for (const childFolderId of allChildFolderIds) {
-        this.client.executeUpdate(FolderQueries.SOFT_DELETE, [
-          currentDateTime,
-          childFolderId
-        ]);
-      }
-
-      // Soft delete the parent folder
-      this.client.executeUpdate(FolderQueries.SOFT_DELETE, [
-        currentDateTime,
-        folderId
-      ]);
-
-      return totalItemsDeleted;
-    });
+    return totalItemsDeleted;
   }
 
   /**
@@ -242,7 +209,7 @@ export class FolderRepository extends BaseRepository {
    * @param folderId - The folder about to be deleted
    */
   private async assertDeletable(folderId: string): Promise<void> {
-    const folder = this.getById(folderId);
+    const folder = await this.run(this.getById(folderId));
     if (folder && multiManifestRendering.isManifestRoot(folder)) {
       throw new Error(await getPlatform().translate(TranslatableMessage.SharedFolderDeleteRefused));
     }
@@ -256,8 +223,8 @@ export class FolderRepository extends BaseRepository {
    */
   public async restampSubtree(folderId: string, manifestId: string): Promise<number> {
     return this.withTransaction(async () => {
-      const folders = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]);
-      const items = this.client.executeUpdate(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]);
+      const folders = await this.run(this.execute(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]));
+      const items = await this.run(this.execute(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]));
       // The items moved; the images they point at have to follow them into the new manifest.
       await this.logoRepository.reconcileItemLogoScopes(this.now());
       return folders + items;
@@ -273,14 +240,15 @@ export class FolderRepository extends BaseRepository {
   public async moveItem(itemId: string, folderId: string | null): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const moved = this.client.executeUpdate(FolderQueries.MOVE_ITEM, [
+      const manifestId = await this.run(this.writeManifestId());
+      const moved = await this.run(this.execute(FolderQueries.MOVE_ITEM, [
         folderId,
         // Second bind of the destination: the item adopts that folder's manifest.
         folderId,
-        this.activeManifestId(),
+        manifestId,
         currentDateTime,
         itemId
-      ]);
+      ]));
       // The destination folder may sit in another manifest; the item's logo has to follow it there.
       await this.logoRepository.reconcileItemLogoScopes(currentDateTime);
       return moved;

@@ -4,6 +4,7 @@ import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '../../rust/RustC
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
 
+import type { DbOp } from '../DbOp';
 import type { ItemLogo, LogoKind } from '@aliasvault/models/vault';
 
 /**
@@ -27,8 +28,8 @@ export class LogoRepository extends BaseRepository {
    * The manifest the user's own logo library lives in: this client's own.
    * @returns The manifest id, or the empty scope when it is not known yet
    */
-  private ownScope(): string {
-    return this.personalManifestId() ?? '';
+  private *ownScope(): DbOp<string> {
+    return (yield* this.personalManifestId()) ?? '';
   }
 
   /**
@@ -36,8 +37,8 @@ export class LogoRepository extends BaseRepository {
    * @param source The normalized source domain (e.g., 'github.com')
    * @returns True if any manifest holds a favicon for this domain
    */
-  public hasFaviconForSource(source: string): boolean {
-    const rows = this.client.executeQuery<{ Id: string }>(LogoQueries.FIND_ANY_ID_FOR_KEY, [LogoKinds.Favicon, source]);
+  public *hasFaviconForSource(source: string): DbOp<boolean> {
+    const rows = yield* this.query<{ Id: string }>(LogoQueries.FIND_ANY_ID_FOR_KEY, [LogoKinds.Favicon, source]);
     return rows.length > 0;
   }
 
@@ -46,8 +47,8 @@ export class LogoRepository extends BaseRepository {
    * @param source The normalized source domain (e.g., 'github.com')
    * @returns The favicon bytes, or null when no manifest holds one for this domain
    */
-  public getFaviconData(source: string): Uint8Array | null {
-    const row = this.client.executeQuery<{ FileData: Uint8Array | null }>(LogoQueries.GET_BEST_FOR_KEY, [LogoKinds.Favicon, source])[0];
+  public *getFaviconData(source: string): DbOp<Uint8Array | null> {
+    const row = (yield* this.query<{ FileData: Uint8Array | null }>(LogoQueries.GET_BEST_FOR_KEY, [LogoKinds.Favicon, source]))[0];
     return row?.FileData && row.FileData.length > 0 ? new Uint8Array(row.FileData) : null;
   }
 
@@ -58,8 +59,8 @@ export class LogoRepository extends BaseRepository {
    * @param source The natural key within that kind
    * @returns The logo id if found, null otherwise
    */
-  public getIdForKey(manifestId: string, kind: LogoKind, source: string): string | null {
-    const rows = this.client.executeQuery<{ Id: string }>(LogoQueries.GET_ID_FOR_KEY, [manifestId, kind, source]);
+  public *getIdForKey(manifestId: string, kind: LogoKind, source: string): DbOp<string | null> {
+    const rows = yield* this.query<{ Id: string }>(LogoQueries.GET_ID_FOR_KEY, [manifestId, kind, source]);
     return rows.length > 0 ? rows[0].Id : null;
   }
 
@@ -72,15 +73,15 @@ export class LogoRepository extends BaseRepository {
    * @returns The logo id inside this manifest, or null when the vault holds no such logo at all
    */
   public async adoptIntoScope(manifestId: string, kind: LogoKind, source: string, currentDateTime: string): Promise<string | null> {
-    const inScope = this.getIdForKey(manifestId, kind, source);
+    const inScope = await this.run(this.getIdForKey(manifestId, kind, source));
     if (inScope) {
       return inScope;
     }
 
-    const origin = this.client.executeQuery<{ FileData: Uint8Array | null; MimeType: string | null; Name: string | null }>(
+    const origin = (await this.run(this.query<{ FileData: Uint8Array | null; MimeType: string | null; Name: string | null }>(
       LogoQueries.GET_BEST_FOR_KEY,
       [kind, source]
-    )[0];
+    )))[0];
     if (!origin) {
       return null;
     }
@@ -94,8 +95,8 @@ export class LogoRepository extends BaseRepository {
    * @param logoId The logo id to look up
    * @returns The logo, or null
    */
-  public getById(logoId: string): ItemLogo | null {
-    const rows = this.client.executeQuery<{ Id: string; Kind: LogoKind; Source: string; Name: string | null }>(LogoQueries.GET_BY_ID, [logoId]);
+  public *getById(logoId: string): DbOp<ItemLogo | null> {
+    const rows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null }>(LogoQueries.GET_BY_ID, [logoId]);
     return rows.length > 0 ? rows[0] : null;
   }
 
@@ -105,15 +106,15 @@ export class LogoRepository extends BaseRepository {
    * @returns The number of items repointed
    */
   public async reconcileItemLogoScopes(currentDateTime: string): Promise<number> {
-    const foreign = this.client.executeQuery<{ Id: string; ManifestId: string; Kind: LogoKind; Source: string }>(
+    const foreign = await this.run(this.query<{ Id: string; ManifestId: string; Kind: LogoKind; Source: string }>(
       LogoQueries.FIND_ITEMS_WITH_FOREIGN_LOGO
-    );
+    ));
 
     let repointed = 0;
     for (const item of foreign) {
       const logoId = await this.adoptIntoScope(item.ManifestId, item.Kind, item.Source, currentDateTime);
       if (logoId) {
-        repointed += this.client.executeUpdate(LogoQueries.REPOINT_ITEM_LOGO, [logoId, item.Id, item.ManifestId]);
+        repointed += await this.run(this.execute(LogoQueries.REPOINT_ITEM_LOGO, [logoId, item.Id, item.ManifestId]));
       }
     }
     return repointed;
@@ -134,7 +135,7 @@ export class LogoRepository extends BaseRepository {
    */
   public async getOrCreate(manifestId: string, kind: LogoKind, source: string, fileData: Uint8Array | null, currentDateTime: string, options: { mimeType?: string | null; name?: string | null } = {}): Promise<string> {
     const logoId = await vaultCodecLogoIdFor(manifestId, kind, source);
-    this.client.executeUpdate(LogoQueries.UPSERT, [
+    await this.run(this.execute(LogoQueries.UPSERT, [
       logoId,
       kind,
       source,
@@ -144,7 +145,7 @@ export class LogoRepository extends BaseRepository {
       options.name ?? null,
       currentDateTime,
       currentDateTime
-    ]);
+    ]));
     return logoId;
   }
 
@@ -166,11 +167,9 @@ export class LogoRepository extends BaseRepository {
    * The user's own library of uploaded logos, newest first.
    * @returns The uploaded logos, with their image data
    */
-  public listCustom(): CustomLogoEntry[] {
-    const rows = this.client.executeQuery<{ Id: string; Kind: LogoKind; Source: string; Name: string | null; FileData: Uint8Array | null }>(
-      LogoQueries.LIST_CUSTOM,
-      [this.ownScope()]
-    );
+  public *listCustom(): DbOp<CustomLogoEntry[]> {
+    const scope = yield* this.ownScope();
+    const rows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null; FileData: Uint8Array | null }>(LogoQueries.LIST_CUSTOM, [scope]);
     return rows.map(row => ({ ...row, FileData: row.FileData ? new Uint8Array(row.FileData) : null }));
   }
 
@@ -180,8 +179,8 @@ export class LogoRepository extends BaseRepository {
    * @param currentDateTime The current date/time string for timestamps
    * @returns The number of rows modified
    */
-  public deleteById(logoId: string, currentDateTime: string): number {
-    return this.client.executeUpdate(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
+  public *deleteById(logoId: string, currentDateTime: string): DbOp<number> {
+    return yield* this.execute(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
   }
 
   /**

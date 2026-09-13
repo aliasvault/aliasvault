@@ -1,6 +1,7 @@
 import { BaseRepository } from '../BaseRepository';
 import { EncryptionKeyQueries } from '../queries/EncryptionKeyQueries';
 
+import type { DbOp } from '../DbOp';
 import type { EncryptionKey } from '@aliasvault/models/vault';
 
 /**
@@ -15,8 +16,8 @@ export class EncryptionKeyRepository extends BaseRepository {
    * Fetch every keypair that can decrypt inbound mail (both personal manifest and optional shared manifest keys).
    * @returns Array of encryption keys
    */
-  public getAll(): EncryptionKey[] {
-    return this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ALL);
+  public *getAll(): DbOp<EncryptionKey[]> {
+    return yield* this.query<EncryptionKey>(EncryptionKeyQueries.GET_ALL);
   }
 
   /**
@@ -25,8 +26,8 @@ export class EncryptionKeyRepository extends BaseRepository {
    * @param manifestId - The manifest id the keypair is stamped with
    * @returns The active keypair, or null when the manifest has none
    */
-  public getActiveForManifest(manifestId: string): EncryptionKey | null {
-    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ACTIVE_FOR_MANIFEST, [manifestId]);
+  public *getActiveForManifest(manifestId: string): DbOp<EncryptionKey | null> {
+    const results = yield* this.query<EncryptionKey>(EncryptionKeyQueries.GET_ACTIVE_FOR_MANIFEST, [manifestId]);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -35,12 +36,12 @@ export class EncryptionKeyRepository extends BaseRepository {
    * @param publicKey - The public half the grant was encrypted for
    * @returns The keypair, or null when this vault holds no account key with that public half
    */
-  public getAccountKeypair(publicKey: string): EncryptionKey | null {
-    const personalManifestId = this.personalManifestId();
+  public *getAccountKeypair(publicKey: string): DbOp<EncryptionKey | null> {
+    const personalManifestId = yield* this.personalManifestId();
     if (!personalManifestId) {
       return null;
     }
-    const results = this.client.executeQuery<EncryptionKey>(EncryptionKeyQueries.GET_ACCOUNT_KEY_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
+    const results = yield* this.query<EncryptionKey>(EncryptionKeyQueries.GET_ACCOUNT_KEY_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -51,9 +52,9 @@ export class EncryptionKeyRepository extends BaseRepository {
    * @param publicKey - The public half, published to the server for delivery
    * @param privateKey - The private half, which never leaves the manifest
    */
-  public setActiveForManifest(manifestId: string, publicKey: string, privateKey: string): void {
+  public *setActiveForManifest(manifestId: string, publicKey: string, privateKey: string): DbOp<void> {
     const now = this.now();
-    this.client.executeUpdate(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
-    this.client.executeUpdate(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
+    yield* this.execute(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
+    yield* this.execute(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
   }
 }
