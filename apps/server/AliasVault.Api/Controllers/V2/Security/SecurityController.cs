@@ -58,7 +58,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
     /// </summary>
     /// <param name="id">The ID of the refresh token to revoke.</param>
     /// <returns>Http200 if success.</returns>
-    [HttpDelete("sessions/{id}")]
+    [HttpDelete("sessions/{id:guid}")]
     public async Task<IActionResult> RevokeSession(Guid id)
     {
         var user = await GetCurrentUserAsync();

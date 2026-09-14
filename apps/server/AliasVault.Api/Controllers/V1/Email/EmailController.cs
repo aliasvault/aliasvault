@@ -31,7 +31,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to open.</param>
     /// <returns>List of aliases in JSON format.</returns>
-    [HttpGet(template: "{id}", Name = "GetEmail")]
+    [HttpGet(template: "{id:int}", Name = "GetEmail")]
     public async Task<IActionResult> GetEmail(int id)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -81,7 +81,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to delete.</param>
     /// <returns>A response indicating the success or failure of the deletion.</returns>
-    [HttpDelete(template: "{id}", Name = "DeleteEmail")]
+    [HttpDelete(template: "{id:int}", Name = "DeleteEmail")]
     public async Task<IActionResult> DeleteEmail(int id)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -114,7 +114,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// <param name="id">The email ID.</param>
     /// <param name="attachmentId">The attachment ID.</param>
     /// <returns>Attachment bytes in encrypted form.</returns>
-    [HttpGet(template: "{id}/attachments/{attachmentId}", Name = "GetEmailAttachment")]
+    [HttpGet(template: "{id:int}/attachments/{attachmentId:int}", Name = "GetEmailAttachment")]
     public async Task<IActionResult> GetEmailAttachment(int id, int attachmentId)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();

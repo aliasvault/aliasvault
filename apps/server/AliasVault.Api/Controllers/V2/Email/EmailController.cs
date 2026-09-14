@@ -32,7 +32,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to open.</param>
     /// <returns>List of aliases in JSON format.</returns>
-    [HttpGet(template: "{id}", Name = "GetEmail")]
+    [HttpGet(template: "{id:int}", Name = "GetEmail")]
     public async Task<IActionResult> GetEmail(int id)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -69,7 +69,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// </summary>
     /// <param name="id">The email ID to delete.</param>
     /// <returns>A response indicating the success or failure of the deletion.</returns>
-    [HttpDelete(template: "{id}", Name = "DeleteEmail")]
+    [HttpDelete(template: "{id:int}", Name = "DeleteEmail")]
     public async Task<IActionResult> DeleteEmail(int id)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
@@ -102,7 +102,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
     /// <param name="id">The email ID.</param>
     /// <param name="partIndex">The part index, as advertised by the X-AliasVault-Part header on the attachment in the message source.</param>
     /// <returns>Part bytes in encrypted form.</returns>
-    [HttpGet(template: "{id}/parts/{partIndex}", Name = "GetEmailPart")]
+    [HttpGet(template: "{id:int}/parts/{partIndex:int}", Name = "GetEmailPart")]
     public async Task<IActionResult> GetEmailPart(int id, int partIndex)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
