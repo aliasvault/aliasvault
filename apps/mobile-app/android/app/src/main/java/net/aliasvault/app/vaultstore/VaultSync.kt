@@ -23,6 +23,7 @@ class VaultSync(
      */
     @Suppress("TooGenericExceptionCaught")
     suspend fun syncVaultWithServer(webApiService: WebApiService): VaultSyncResult {
+        val startNanos = System.nanoTime()
         val metadata = vaultStore.metadata
         metadata.setIsSyncing(true)
         try {
@@ -61,6 +62,7 @@ class VaultSync(
             )
         } finally {
             metadata.setIsSyncing(false)
+            Log.d(TAG, "Sync finished in ${VaultSyncRunLog.elapsedMsSince(startNanos)}ms")
         }
     }
 

@@ -1,12 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { useAppReviewDebug } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
-import { useDeveloperToolsUnlock } from '@/hooks/useDeveloperToolsUnlock';
 
 import { ThemedButton } from '@/components/themed/ThemedButton';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -14,7 +12,7 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 
 /**
- * Row in one of the state readouts below.
+ * Row in the review state readout below.
  */
 type StateRow = {
   label: string;
@@ -23,12 +21,11 @@ type StateRow = {
 };
 
 /**
- * Developer tools screen. Note: not required to be translated.
+ * Developer tools: the app store review prompt state. Note: not required to be translated.
  */
-export default function DeveloperToolsScreen(): React.ReactNode {
+export default function AppReviewDebugScreen(): React.ReactNode {
   const colors = useColors();
   const { state: reviewState, reset: resetReviewState, requestNow: requestReviewNow } = useAppReviewDebug();
-  const { hide: hideDeveloperTools } = useDeveloperToolsUnlock();
 
   /**
    * Ask the OS for its review prompt right now, skipping every condition.
@@ -50,15 +47,6 @@ export default function DeveloperToolsScreen(): React.ReactNode {
       visibilityTime: 2000,
     });
   }, [resetReviewState]);
-
-  /**
-   * Hide the developer tools again, which also puts the unlock gesture back at the start. Useful
-   * to get the app into a clean state for app store screenshots.
-   */
-  const handleHideDeveloperTools = useCallback(async (): Promise<void> => {
-    await hideDeveloperTools();
-    router.back();
-  }, [hideDeveloperTools]);
 
   const reviewRows: StateRow[] = reviewState ? [
     {
@@ -138,15 +126,8 @@ export default function DeveloperToolsScreen(): React.ReactNode {
     section: {
       backgroundColor: colors.accentBackground,
       borderRadius: 10,
-      marginTop: 8,
+      marginTop: 16,
       overflow: 'hidden',
-    },
-    sectionTitle: {
-      color: colors.textMuted,
-      fontSize: 13,
-      fontWeight: '600',
-      marginTop: 24,
-      textTransform: 'uppercase',
     },
   });
 
@@ -154,10 +135,9 @@ export default function DeveloperToolsScreen(): React.ReactNode {
     <ThemedContainer>
       <ThemedScrollView>
         <ThemedText style={styles.headerText}>
-          These tools are for development and manual testing purposes.
+          The conditions that decide when the app store review prompt is shown.
         </ThemedText>
 
-        <ThemedText style={styles.sectionTitle}>App store review</ThemedText>
         {reviewRows.length > 0 && (
           <View style={styles.section}>
             {reviewRows.map((row, index) => (
@@ -187,13 +167,6 @@ export default function DeveloperToolsScreen(): React.ReactNode {
           style={styles.buttonSecondary}
           title="Reset app review state"
           onPress={handleResetReviewState}
-        />
-
-        <ThemedText style={styles.sectionTitle}>Developer tools</ThemedText>
-        <ThemedButton
-          style={styles.buttonSecondary}
-          title="Hide developer tools"
-          onPress={handleHideDeveloperTools}
         />
       </ThemedScrollView>
     </ThemedContainer>

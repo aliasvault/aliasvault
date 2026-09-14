@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.VaultSyncRunLog
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -1166,6 +1167,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve.
      */
     @ReactMethod
+    @Suppress("LongParameterList") // Signature is dictated by the TurboModule spec
     override fun executeWebApiRequest(
         method: String,
         endpoint: String,
@@ -1474,6 +1476,15 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 }
             }
         }
+    }
+
+    /**
+     * The logs of the recent sync engine runs as JSON text, newest first (developer tools).
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getVaultSyncLogs(promise: Promise) {
+        promise.resolve(vaultStore.getVaultSyncLogs())
     }
 
     /**

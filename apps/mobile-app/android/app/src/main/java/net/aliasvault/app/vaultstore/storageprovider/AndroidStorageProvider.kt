@@ -240,4 +240,16 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     }
 
     // endregion
+
+    // region Sync logs
+
+    override fun getSyncLogs(): String? {
+        return context.getSharedPreferences("aliasvault_sync_logs", Context.MODE_PRIVATE).getString("logs", null)
+    }
+
+    override fun setSyncLogs(json: String) {
+        context.getSharedPreferences("aliasvault_sync_logs", Context.MODE_PRIVATE).edit { putString("logs", json) }
+    }
+
+    // endregion
 }

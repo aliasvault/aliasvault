@@ -42,6 +42,7 @@ class VaultSyncEngine(
 
     private var staging: SQLiteDatabase? = null
     private var stagingFile: File? = null
+    private var runLog = VaultSyncRunLog("")
 
     /**
      * Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`) and
@@ -49,20 +50,30 @@ class VaultSyncEngine(
      */
     suspend fun run(operation: String, forcePull: Boolean = false, encryptionKey: String? = null): JSONObject {
         JnaInitializer.ensureInitialized()
+        val log = VaultSyncRunLog(operation)
+        runLog = log
+        var success: Boolean? = null
         val session = VaultSyncSession(buildRequest(operation, forcePull, encryptionKey))
         try {
             while (true) {
-                val command = JSONObject(session.nextCommand())
+                val commandJson = log.engine { session.nextCommand() }
+                val command = log.json { JSONObject(commandJson) }
                 val kind = command.optString("kind")
                 if (kind == "done") {
-                    return command.optJSONObject("result") ?: JSONObject()
+                    val result = command.optJSONObject("result") ?: JSONObject()
+                    success = if (result.has("success")) result.optBoolean("success") else null
+                    return result
                 }
+                val startNanos = System.nanoTime()
                 val response = handle(kind, command)
-                session.resume(response.toString())
+                log.recordCommand(kind, command, response, System.nanoTime() - startNanos)
+                val responseJson = log.json { response.toString() }
+                log.engine { session.resume(responseJson) }
             }
         } finally {
             closeStaging()
             session.destroy()
+            log.finish(success, storageProvider)
         }
     }
 
@@ -127,7 +138,7 @@ class VaultSyncEngine(
                     JSONObject().put("cleared", cleared)
                 }
                 "log" -> {
-                    Log.d(TAG, command.optString("message"))
+                    runLog.engineLine(command.optString("level", "log"), command.optString("message"))
                     JSONObject()
                 }
                 else -> JSONObject().put("error", "Unknown engine command $kind")
@@ -146,9 +157,9 @@ class VaultSyncEngine(
             headers["Content-Type"] = "application/json"
         }
         try {
-            val response = webApiService.executeVersionedRequest(
+            val response = webApiService.executeRequest(
                 method = command.optString("method", "GET"),
-                path = command.optString("path"),
+                endpoint = command.optString("path"),
                 body = body,
                 headers = headers,
                 requiresAuth = command.optBoolean("auth", true),
@@ -221,7 +232,9 @@ class VaultSyncEngine(
         )
         if (result.success && vaultStore.isVaultUnlocked()) {
             // The contract: after a store, the live database is the vault just stored.
+            val reloadStartNanos = System.nanoTime()
             vaultStore.unlockVault()
+            runLog.note("Live vault reloaded (decrypt and open) in ${VaultSyncRunLog.elapsedMsSince(reloadStartNanos)}ms")
         }
         return JSONObject().put("success", result.success).put("mutationSequence", result.mutationSequence)
     }

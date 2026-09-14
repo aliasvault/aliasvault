@@ -26,6 +26,7 @@ public final class VaultSyncEngine {
     private let vaultStore: VaultStore
     private let webApiService: WebApiService
     private var staging: OpaquePointer?
+    private var runLog = VaultSyncRunLog(operation: "")
 
     public init(vaultStore: VaultStore, webApiService: WebApiService) {
         self.vaultStore = vaultStore
@@ -39,17 +40,29 @@ public final class VaultSyncEngine {
     /// Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`) and
     /// return its result. `encryptionKey` overrides the store's key for the one operation that runs before it is known.
     public func run(operation: String, forcePull: Bool = false, encryptionKey: String? = nil) async throws -> [String: Any] {
+        let log = VaultSyncRunLog(operation: operation)
+        runLog = log
+        var finalResult: [String: Any]?
         let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey))
-        defer { closeStaging() }
+        defer {
+            closeStaging()
+            log.finish(result: finalResult, userDefaults: vaultStore.userDefaults)
+        }
 
         while true {
-            let command = try Self.parseJson(try session.nextCommand())
+            let commandJson = try log.engine { try session.nextCommand() }
+            let command = try log.json { try Self.parseJson(commandJson) }
             let kind = command["kind"] as? String ?? ""
             if kind == "done" {
-                return command["result"] as? [String: Any] ?? [:]
+                let result = command["result"] as? [String: Any] ?? [:]
+                finalResult = result
+                return result
             }
+            let commandStartedAt = Date()
             let response = await handle(kind: kind, command: command)
-            try session.resume(responseJson: try Self.serializeJson(response))
+            log.recordCommand(kind, command: command, response: response, since: commandStartedAt)
+            let responseJson = try log.json { try Self.serializeJson(response) }
+            try log.engine { try session.resume(responseJson: responseJson) }
         }
     }
 
@@ -118,7 +131,7 @@ public final class VaultSyncEngine {
                 let cleared = vaultStore.markVaultClean(mutationSeqAtStart: command["mutationSeqAtStart"] as? Int ?? 0, newServerRevision: vaultStore.getCurrentVaultRevisionNumber())
                 return ["cleared": cleared]
             case "log":
-                print("[VaultSyncEngine] [\(command["level"] as? String ?? "log")] \(command["message"] as? String ?? "")")
+                runLog.engineLine(level: command["level"] as? String ?? "log", message: command["message"] as? String ?? "")
                 return [:]
             default:
                 return ["error": "Unknown engine command \(kind)"]
@@ -140,7 +153,7 @@ public final class VaultSyncEngine {
             headers["Content-Type"] = "application/json"
         }
         do {
-            let response = try await webApiService.executeVersionedRequest(method: method, path: path, body: body, headers: headers, requiresAuth: auth)
+            let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth)
             return ["status": response.statusCode, "body": response.body]
         } catch {
             let timedOut = (error as? URLError)?.code == .timedOut
@@ -218,7 +231,9 @@ public final class VaultSyncEngine {
         )
         if result.success && vaultStore.isVaultUnlocked {
             // The contract: after a store, the live database is the vault just stored.
+            let reloadStartedAt = Date()
             try vaultStore.unlockVault()
+            runLog.note("Live vault reloaded (decrypt and open) in \(VaultSyncRunLog.elapsedMs(since: reloadStartedAt))ms")
         }
         return ["success": result.success, "mutationSequence": result.mutationSequence]
     }

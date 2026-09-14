@@ -209,4 +209,20 @@ interface StorageProvider {
     fun clearSyncEngineState()
 
     // endregion
+
+    // region Sync logs
+
+    /**
+     * Get the persisted logs of the recent sync engine runs.
+     * @return The JSON array text, newest first, or null when none were recorded
+     */
+    fun getSyncLogs(): String?
+
+    /**
+     * Set the persisted logs of the recent sync engine runs.
+     * @param json The JSON array text, newest first
+     */
+    fun setSyncLogs(json: String)
+
+    // endregion
 }

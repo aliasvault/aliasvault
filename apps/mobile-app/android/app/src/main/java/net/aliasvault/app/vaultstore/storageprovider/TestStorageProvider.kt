@@ -169,4 +169,16 @@ class TestStorageProvider : StorageProvider {
     }
 
     // endregion
+
+    // region Sync logs
+
+    private var syncLogs: String? = null
+
+    override fun getSyncLogs(): String? = syncLogs
+
+    override fun setSyncLogs(json: String) {
+        syncLogs = json
+    }
+
+    // endregion
 }

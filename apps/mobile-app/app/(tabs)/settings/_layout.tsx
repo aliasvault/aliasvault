@@ -135,12 +135,26 @@ export default function SettingsLayout(): React.ReactNode {
           ...defaultHeaderOptions,
         }}
       />
-      {/* Developer only screen. Note: not required to be translated. */}
+      {/* Developer only screens. Note: not required to be translated. */}
       <Stack.Screen
-        name="developer-tools"
+        name="developer-tools/index"
         options={{
           title: 'Developer tools',
           headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="developer-tools/app-review"
+        options={{
+          title: 'App review',
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="developer-tools/sync-logs"
+        options={{
+          title: 'Sync logs',
           ...defaultHeaderOptions,
         }}
       />

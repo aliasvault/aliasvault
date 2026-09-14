@@ -812,6 +812,13 @@ class VaultStore(
     }
 
     /**
+     * The logs of the recent sync engine runs as JSON text, newest first (developer tools).
+     */
+    fun getVaultSyncLogs(): String {
+        return VaultSyncRunLog.persisted(storageProvider)
+    }
+
+    /**
      * Classify the pending manifest migration (see VaultSync.getVaultMigrationStatus).
      */
     suspend fun getVaultMigrationStatus(webApiService: net.aliasvault.app.webapi.WebApiService): String {
