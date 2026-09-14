@@ -1,5 +1,7 @@
-//! LEGACY: everything only a vault still on the sqlite-blob storage format needs. TODO: remove this module and all callers once
-//! all users have migrated to the manifest-v1 storage model.
+//! LEGACY: everything only a vault still on the sqlite-blob storage format needs. Remove this module once every
+//! account has migrated to the manifest-v1 storage model, together with its callers:
+//! `pull::pull` (the legacy snapshot branch), `merge::pull_and_merge` (the legacy server branch),
+//! `db::schema_state` (the frozen chain check) and `engine::migrate_manifest` (the branch without a vault key).
 
 use std::collections::HashMap;
 

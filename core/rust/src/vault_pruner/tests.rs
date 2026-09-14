@@ -1,5 +1,5 @@
 use super::*;
-use chrono::Utc;
+use crate::vault_codec::test_support::{days_ago_iso, now_iso};
 use crate::vault_model::names::{ATTACHMENTS_TABLE, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, ITEM_TAGS_TABLE};
 
 /// The counter of one table in a per-table stats map, 0 when the table was not touched.
@@ -7,7 +7,7 @@ fn count(map: &HashMap<String, u32>, table: &str) -> u32 {
     map.get(table).copied().unwrap_or(0)
 }
 
-fn make_item_record(id: &str, deleted_at: Option<&str>, is_deleted: bool) -> Record {
+fn make_item_record(id: &str, deleted_at: Option<&str>, is_deleted: bool) -> CodecRecord {
     let mut record = HashMap::new();
     record.insert("Id".to_string(), serde_json::json!(id));
     record.insert("UpdatedAt".to_string(), serde_json::json!("2024-01-01T00:00:00Z"));
@@ -20,7 +20,7 @@ fn make_item_record(id: &str, deleted_at: Option<&str>, is_deleted: bool) -> Rec
     record
 }
 
-fn make_field_value_record(id: &str, item_id: &str, is_deleted: bool) -> Record {
+fn make_field_value_record(id: &str, item_id: &str, is_deleted: bool) -> CodecRecord {
     let mut record = HashMap::new();
     record.insert("Id".to_string(), serde_json::json!(id));
     record.insert("ItemId".to_string(), serde_json::json!(item_id));
@@ -34,7 +34,7 @@ fn make_attachment_record(
     item_id: &str,
     is_deleted: bool,
     blob: serde_json::Value,
-) -> Record {
+) -> CodecRecord {
     let mut record = HashMap::new();
     record.insert("Id".to_string(), serde_json::json!(id));
     record.insert("ItemId".to_string(), serde_json::json!(item_id));
@@ -49,7 +49,7 @@ fn make_item_with_logo(
     logo_id: Option<&str>,
     deleted_at: Option<&str>,
     is_deleted: bool,
-) -> Record {
+) -> CodecRecord {
     let mut record = make_item_record(id, deleted_at, is_deleted);
     match logo_id {
         Some(lid) => record.insert("LogoId".to_string(), serde_json::json!(lid)),
@@ -58,7 +58,7 @@ fn make_item_with_logo(
     record
 }
 
-fn make_logo_record(id: &str, is_deleted: bool) -> Record {
+fn make_logo_record(id: &str, is_deleted: bool) -> CodecRecord {
     let mut record = HashMap::new();
     record.insert("Id".to_string(), serde_json::json!(id));
     record.insert("Source".to_string(), serde_json::json!("example.com"));
@@ -67,7 +67,7 @@ fn make_logo_record(id: &str, is_deleted: bool) -> Record {
     record
 }
 
-fn make_logo_record_with_blob(id: &str, is_deleted: bool, blob: serde_json::Value) -> Record {
+fn make_logo_record_with_blob(id: &str, is_deleted: bool, blob: serde_json::Value) -> CodecRecord {
     let mut record = make_logo_record(id, is_deleted);
     record.insert("FileData".to_string(), blob);
     record
@@ -75,18 +75,17 @@ fn make_logo_record_with_blob(id: &str, is_deleted: bool, blob: serde_json::Valu
 
 #[test]
 fn test_prune_expired_items() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Create an item deleted 60 days ago
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let old_date = days_ago_iso(60);
 
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_record("item-1", Some(&old_date), false)],
             },
-            TableData {
+            CodecTableData {
                 name: "FieldValues".to_string(),
                 records: vec![make_field_value_record("fv-1", "item-1", false)],
             },
@@ -105,14 +104,13 @@ fn test_prune_expired_items() {
 
 #[test]
 fn test_no_prune_recent_items() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Create an item deleted 10 days ago (within retention)
-    let recent_date = (now - Duration::days(10)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let recent_date = days_ago_iso(10);
 
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_record("item-1", Some(&recent_date), false)],
             },
@@ -130,11 +128,11 @@ fn test_no_prune_recent_items() {
 
 #[test]
 fn test_no_prune_active_items() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Create an item that's not in trash (DeletedAt is null)
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_record("item-1", None, false)],
             },
@@ -152,14 +150,13 @@ fn test_no_prune_active_items() {
 
 #[test]
 fn test_no_prune_already_deleted() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Create an item that's already permanently deleted
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let old_date = days_ago_iso(60);
 
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_record("item-1", Some(&old_date), true)],
             },
@@ -177,9 +174,8 @@ fn test_no_prune_already_deleted() {
 
 #[test]
 fn test_prune_json_api() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
+    let old_date = days_ago_iso(60);
 
     let input_json = format!(r#"{{
         "tables": [{{
@@ -210,14 +206,14 @@ fn logo_update_count(output: &PruneOutput) -> usize {
 
 #[test]
 fn test_orphan_logo_with_no_referencing_items_is_pruned() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-orphan", false)],
             },
@@ -235,14 +231,14 @@ fn test_orphan_logo_with_no_referencing_items_is_pruned() {
 
 #[test]
 fn test_logo_referenced_by_active_item_is_kept() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-1", false)],
             },
@@ -260,16 +256,16 @@ fn test_logo_referenced_by_active_item_is_kept() {
 
 #[test]
 fn test_logo_referenced_only_by_tombstoned_item_is_pruned() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // The tombstoned item (IsDeleted=1) still has LogoId set; the logo
     // should be considered orphan since no active item references it.
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_with_logo("item-1", Some("logo-1"), None, true)],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-1", false)],
             },
@@ -285,18 +281,17 @@ fn test_logo_referenced_only_by_tombstoned_item_is_pruned() {
 
 #[test]
 fn test_logo_referenced_only_by_item_being_purged_is_pruned() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Item is in trash older than retention, so Pass 1 will tombstone it,
     // Pass 2 should reclaim its logo in the same call.
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let old_date = days_ago_iso(60);
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&old_date), false)],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-1", false)],
             },
@@ -313,18 +308,17 @@ fn test_logo_referenced_only_by_item_being_purged_is_pruned() {
 
 #[test]
 fn test_logo_referenced_by_item_in_recent_trash_is_kept() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     // Item is in trash but within retention, so it could still be restored,
     // so its logo must be preserved.
-    let recent_date = (now - Duration::days(10)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let recent_date = days_ago_iso(10);
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_with_logo("item-1", Some("logo-1"), Some(&recent_date), false)],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-1", false)],
             },
@@ -343,14 +337,14 @@ fn test_logo_referenced_by_item_in_recent_trash_is_kept() {
 fn test_orphan_logo_pruning_emits_filedata_clear_in_same_statement() {
     // Pass 2 must clear FileData when it tombstones a logo, otherwise the
     // encrypted vault keeps the blob bytes even after the row is "deleted".
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record_with_blob("logo-orphan", false, serde_json::json!("aGVsbG8="))],
             },
@@ -369,14 +363,14 @@ fn test_orphan_logo_pruning_emits_filedata_clear_in_same_statement() {
 fn test_tombstoned_logo_with_blob_bytes_is_swept() {
     // Pass 3 must catch historical logos that are IsDeleted=1 but still carry FileData
     // (e.g. tombstoned by an older client that did not drop FileData).
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record_with_blob("logo-tombstoned", true, serde_json::json!("aGVsbG8="))],
             },
@@ -394,14 +388,14 @@ fn test_tombstoned_logo_with_blob_bytes_is_swept() {
 #[test]
 fn test_tombstoned_logo_without_blob_is_not_touched() {
     // Logos already cleared shouldn't generate redundant updates.
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record_with_blob("logo-tombstoned", true, serde_json::Value::Null)],
             },
@@ -417,14 +411,14 @@ fn test_tombstoned_logo_without_blob_is_not_touched() {
 
 #[test]
 fn test_already_soft_deleted_logo_is_not_re_pruned() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record("logo-1", true)],
             },
@@ -440,10 +434,10 @@ fn test_already_soft_deleted_logo_is_not_re_pruned() {
 
 #[test]
 fn test_logo_pruning_skipped_when_logos_table_absent() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_with_logo("item-1", Some("logo-1"), None, false)],
             },
@@ -460,17 +454,16 @@ fn test_logo_pruning_skipped_when_logos_table_absent() {
 
 #[test]
 fn test_trash_purge_clears_attachment_blobs() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
+    let old_date = days_ago_iso(60);
 
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![make_item_record("item-1", Some(&old_date), false)],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![make_attachment_record(
                     "att-1",
@@ -500,14 +493,14 @@ fn test_trash_purge_clears_attachment_blobs() {
 
 #[test]
 fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![make_attachment_record(
                     "att-old",
@@ -534,14 +527,14 @@ fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
 
 #[test]
 fn test_sweeper_skips_already_empty_blob() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![
                     // Empty string (already cleared): should be skipped.
@@ -566,18 +559,18 @@ fn test_sweeper_skips_already_empty_blob() {
 #[test]
 fn test_sweeper_skips_empty_uint8array_object_blob() {
     // An already-cleared blob must not generate a clear statement on every prune.
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![make_attachment_record("att-empty-object", "item-1", true, serde_json::json!({}))],
             },
-            TableData {
+            CodecTableData {
                 name: "Logos".to_string(),
                 records: vec![make_logo_record_with_blob("logo-empty-object", true, serde_json::json!({}))],
             },
@@ -596,14 +589,14 @@ fn test_sweeper_skips_empty_uint8array_object_blob() {
 #[test]
 fn test_sweeper_clears_nonempty_uint8array_object_blob() {
     // Non-empty blobs are serialized as {"0":104,...}.
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![make_attachment_record("att-object", "item-1", true, serde_json::json!({"0": 104, "1": 105}))],
             },
@@ -619,14 +612,14 @@ fn test_sweeper_clears_nonempty_uint8array_object_blob() {
 
 #[test]
 fn test_sweeper_skips_active_attachment_with_blob() {
-    let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
     let input = PruneInput {
         tables: vec![
-            TableData {
+            CodecTableData {
                 name: "Items".to_string(),
                 records: vec![],
             },
-            TableData {
+            CodecTableData {
                 name: "Attachments".to_string(),
                 records: vec![make_attachment_record(
                     "att-active",
@@ -658,9 +651,8 @@ fn prune_queries_cover_every_item_child_table() {
 
 #[test]
 fn test_prune_cascades_to_field_histories_and_item_tags() {
-    let now = Utc::now();
-    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
-    let old_date = (now - Duration::days(60)).format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+    let now_str = now_iso();
+    let old_date = days_ago_iso(60);
 
     let mut history = HashMap::new();
     history.insert("ItemId".to_string(), serde_json::json!("item-1"));
@@ -671,9 +663,9 @@ fn test_prune_cascades_to_field_histories_and_item_tags() {
 
     let input = PruneInput {
         tables: vec![
-            TableData { name: "Items".to_string(), records: vec![make_item_record("item-1", Some(&old_date), false)] },
-            TableData { name: "FieldHistories".to_string(), records: vec![history] },
-            TableData { name: "ItemTags".to_string(), records: vec![item_tag] },
+            CodecTableData { name: "Items".to_string(), records: vec![make_item_record("item-1", Some(&old_date), false)] },
+            CodecTableData { name: "FieldHistories".to_string(), records: vec![history] },
+            CodecTableData { name: "ItemTags".to_string(), records: vec![item_tag] },
         ],
         retention_days: 30,
         current_time: now_str,

@@ -1,19 +1,11 @@
 //! Unit tests for vault_codec, covering the round-trip contract.
 use super::*;
-use super::types::{bucket_category_for, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, SCHEMA_VERSION};
+use super::test_support::{b64, row};
+use super::types::{bucket_category_for, SCHEMA_VERSION};
 use crate::vault_model::names::LOGO_KIND_FAVICON;
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
+use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, OVERFLOW_TABLE};
 use serde_json::json;
 use std::collections::{HashMap, HashSet};
-
-fn b64(bytes: &[u8]) -> String {
-    BASE64.encode(bytes)
-}
-
-fn row(pairs: &[(&str, serde_json::Value)]) -> CodecRecord {
-    pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
-}
 
 /// The rows of `table` inside the data bucket for `category` (empty if absent).
 fn bucket_rows<'a>(out: &'a CanonicalizedVault, category: &str, table: &str) -> &'a [CodecRecord] {
@@ -88,7 +80,7 @@ fn bucket_layout_matches_bucket_tables_source_of_truth() {
 #[test]
 fn every_bucketed_table_is_manifest_scoped_with_a_composite_identity() {
     // The invariant that makes per-manifest buckets work at all: a bucket is addressed by `(manifest_id, category)`, so a row that carries no manifest cannot be routed into one.
-    for (table, category) in super::types::BUCKET_TABLES {
+    for (table, category) in crate::vault_model::BUCKET_TABLES {
         assert!(
             crate::vault_model::SYNCABLE_TABLES.iter().any(|t| t.name == *table),
             "bucketed table {} ({}) is not registered in SYNCABLE_TABLES, so it would never row-merge",
@@ -101,7 +93,7 @@ fn every_bucketed_table_is_manifest_scoped_with_a_composite_identity() {
             table,
             category
         );
-        let mut expected = vec![super::types::MANIFEST_ID_COL];
+        let mut expected = vec![MANIFEST_ID_COL];
         expected.extend_from_slice(super::types::primary_key_columns_for(table));
         assert_eq!(
             super::types::identity_columns_for(table),

@@ -181,7 +181,6 @@ impl SyncError {
             SyncError::Other(_) => Failure::Coded(ErrorCode::SyncEngineFailed),
         }
     }
-
 }
 
 impl CommandKind {

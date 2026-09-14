@@ -8,25 +8,20 @@
 //! one platform and re-hashed by another would fail integrity even when byte-identical. This module is
 //! the single canonical-serialization contract every binding reproduces.
 //!
-//! [`canonical_json`] is intentionally byte-compatible with the TypeScript `canonicalize()` the
-//! clients used before the codec moved into Rust:
-//!   - object keys sorted ascending, recursively;
-//!   - arrays kept in order;
-//!   - primitives serialized exactly as `JSON.stringify` would (serde_json matches JS for the
-//!     escaping + integer cases that occur in vault data).
+//! [`canonical_json`] is that contract: object keys sorted ascending, recursively; arrays kept in
+//! order; primitives as serde_json renders them, which matches `JSON.stringify` for the escaping and
+//! integer cases that occur in vault data, so a hash computed here agrees with one a client computed.
 
 use sha2::{Digest, Sha256};
 
-use crate::encoding::{format_uuid, hex_decode, hex_encode_lower};
+use crate::encoding::{hex_decode, hex_encode_lower, uuid_from_bytes};
 
 /// A UUIDv8 derived from a string: the first 16 bytes of its sha256, version and variant bits set.
 pub fn derived_uuid(material: &str) -> String {
     let digest = Sha256::digest(material.as_bytes());
     let mut bytes = [0u8; 16];
     bytes.copy_from_slice(&digest[..16]);
-    bytes[6] = (bytes[6] & 0x0f) | 0x80;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    format_uuid(&bytes)
+    uuid_from_bytes(bytes, 8)
 }
 
 /// SHA-256 of arbitrary bytes, returned as lowercase hex.

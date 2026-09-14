@@ -2,8 +2,9 @@
 //! changed under the key of the manifest that owns it, upload the blobs the server lacks, and `POST v2/Vault`.
 
 use std::collections::{HashMap, HashSet};
+use std::ops::Deref;
 
-use crate::vault_model::{id_key, ids_equal};
+use crate::vault_model::{id_key, ids_equal, OVERFLOW_TABLE, TRASH_RETENTION_DEFAULT_DAYS};
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
@@ -11,26 +12,29 @@ use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, Bucke
 use super::{db, http, keys};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
-use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest, SharedManifestRecord as SharingRecord};
+use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteRecord, ManifestWriteSetRequest, SharedManifestRecord};
 
 const BLOBS_ENDPOINT: &str = "Vault/blobs";
 const BLOBS_MISSING_ENDPOINT: &str = "Vault/blobs/missing";
 
-/// Days an item stays in the trash before a push prunes it.
-const TRASH_RETENTION_DAYS: u32 = 30;
 /// The mutation scope that requires a full manifest push.
 const MANIFEST_SCOPE: &str = "Main";
 
-/// One manifest this vault can write, resolved from local state before canonicalizing.
+/// One manifest this vault can write, resolved from local state before canonicalizing: the write record the
+/// sharing logic produced plus the key it encrypts under. Derefs to the record so its fields read directly.
 #[derive(Debug, Clone)]
 pub(crate) struct ManifestRecord {
-    pub manifest_id: String,
-    pub is_personal: bool,
-    pub salt: String,
+    pub record: ManifestWriteRecord,
     /// The key this manifest encrypts with; None for the personal manifest, whose content key the push supplies.
     pub vek: Option<String>,
-    pub name: Option<String>,
-    pub can_administer: bool,
+}
+
+impl Deref for ManifestRecord {
+    type Target = ManifestWriteRecord;
+
+    fn deref(&self) -> &ManifestWriteRecord {
+        &self.record
+    }
 }
 
 /// The canonicalized vault plus the records it was split against, personal manifest first.
@@ -65,7 +69,7 @@ pub(crate) async fn canonicalize_vault(ctx: &Ctx, adopt_unstamped_into: Option<S
     let tables = db::read_tables(&ctx.host, Db::Local).await?;
     let manifest_records = resolve_manifest_records(ctx).await?;
     let manifests: Vec<ManifestSpec> = manifest_records.iter().map(|r| ManifestSpec { manifest_id: r.manifest_id.clone(), manifest_salt: r.salt.clone(), name: r.name.clone() }).collect();
-    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: db::now_iso(), manifests, adopt_unstamped_into })?;
+    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests, adopt_unstamped_into })?;
     Ok(CanonicalizedSet { canonicalized, manifest_records })
 }
 
@@ -86,7 +90,7 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
         personal_manifest_salt: manifest_salt,
         stamped_manifest_ids: db::manifest_ids_in_vault(&ctx.host, Db::Local).await?,
         opened_manifest_ids: shared_veks.keys().cloned().collect(),
-        held_records: held.values().map(|r| SharingRecord { manifest_id: r.manifest_id.clone(), salt: r.salt.clone(), name: r.name.clone(), can_administer: r.can_administer }).collect(),
+        held_records: held.values().map(|r| SharedManifestRecord { manifest_id: r.manifest_id.clone(), salt: r.salt.clone(), name: r.name.clone(), can_administer: r.can_administer }).collect(),
         display_names: db::manifest_display_names(&ctx.host).await?,
     });
     for skipped in &write_set.skipped {
@@ -104,7 +108,7 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
         if !record.is_personal && vek.is_none() {
             return Err(SyncError::Other(format!("manifest {} is in the write set without a key, refusing to write it", record.manifest_id)));
         }
-        records.push(ManifestRecord { manifest_id: record.manifest_id, is_personal: record.is_personal, salt: record.salt, vek, name: record.name, can_administer: record.can_administer });
+        records.push(ManifestRecord { record, vek });
     }
     Ok(records)
 }
@@ -232,7 +236,7 @@ async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedS
     let key_before = ctx.encryption_key()?;
     let mut cached = cached;
     let mut vault_pruned = false;
-    match db::prune_in_place(&ctx.host, TRASH_RETENTION_DAYS).await {
+    match db::prune_in_place(&ctx.host, TRASH_RETENTION_DEFAULT_DAYS).await {
         Ok(0) => {}
         Ok(count) => {
             ctx.log(format!("[VaultMerge] Pruned expired items from trash ({} SQL statements executed)", count)).await;
@@ -262,7 +266,7 @@ async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedS
 /// The tables of one bucket category read from the local vault, as extract_buckets takes them.
 async fn read_bucket_tables(ctx: &Ctx, category_tables: &[String]) -> SyncResult<HashMap<String, Vec<vault_codec::CodecRecord>>> {
     let mut names: Vec<String> = category_tables.to_vec();
-    names.push(vault_codec::OVERFLOW_TABLE.to_string());
+    names.push(OVERFLOW_TABLE.to_string());
     db::read_named_tables(&ctx.host, Db::Local, &names).await
 }
 

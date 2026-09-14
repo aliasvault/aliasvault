@@ -59,6 +59,9 @@ pub(crate) async fn delete(host: &Host, path: &str) -> SyncResult<()> {
 /// The v2 vault endpoint (`GET`/`POST v2/Vault`).
 pub(crate) const VAULT_ENDPOINT: &str = "Vault";
 
+/// The v2 vault key endpoint (`GET v2/VaultKey/Password`): the account's password-wrapped key chain.
+pub(crate) const VAULT_KEY_PASSWORD_ENDPOINT: &str = "VaultKey/Password";
+
 /// Max base64 characters in one blob transfer request or response body.
 pub(crate) const BLOB_TRANSFER_BATCH_MAX_CHARS: usize = 4 * 1024 * 1024;
 

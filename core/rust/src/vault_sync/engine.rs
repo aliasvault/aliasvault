@@ -12,8 +12,9 @@ use super::push::{self, CanonicalizedSet, PushStatus};
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, ResolveVaultKeyResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
-use super::{db, http, keys, legacy, version};
+use super::{db, http, keys, legacy};
 use crate::crypto;
+use crate::vault_model::ids_equal;
 
 /// How many times a chain of syncs may re-sync after an outdated push before giving up.
 /// This is a auto-healing mechanism in case two clients are pushing at the same time, which could
@@ -230,7 +231,43 @@ async fn run_sync_preflight(ctx: &mut Ctx) -> SyncResult<Preflight> {
 
 /// Whether the server is older than the oldest version this client supports.
 fn server_too_old(ctx: &Ctx, status: &StatusResponse) -> bool {
-    ctx.request.min_server_version.as_deref().map(|min| !version::version_gte(&status.server_version, min)).unwrap_or(false)
+    ctx.request.min_server_version.as_deref().map(|min| !version_gte(&status.server_version, min)).unwrap_or(false)
+}
+
+/// Whether `version1 >= version2` under the client's SemVer rules: a pre-release sorts below its release, and
+/// two pre-releases compare lexically.
+fn version_gte(version1: &str, version2: &str) -> bool {
+    let (core1, pre1) = split_version(version1);
+    let (core2, pre2) = split_version(version2);
+    let parts1: Vec<u64> = core1.split('.').map(|part| part.parse().unwrap_or(0)).collect();
+    let parts2: Vec<u64> = core2.split('.').map(|part| part.parse().unwrap_or(0)).collect();
+
+    for index in 0..parts1.len().max(parts2.len()) {
+        let part1 = parts1.get(index).copied().unwrap_or(0);
+        let part2 = parts2.get(index).copied().unwrap_or(0);
+        if part1 > part2 {
+            return true;
+        }
+        if part1 < part2 {
+            return false;
+        }
+    }
+
+    match (pre1, pre2) {
+        (None, Some(_)) => true,
+        (Some(_), None) => false,
+        (None, None) => true,
+        (Some(a), Some(b)) => a >= b,
+    }
+}
+
+/// A version's `core` and optional pre-release tag (`0.12.0-dev`).
+fn split_version(version: &str) -> (&str, Option<&str>) {
+    match version.split_once('-') {
+        Some((core, pre)) if !pre.is_empty() => (core, Some(pre)),
+        Some((core, _)) => (core, None),
+        None => (version, None),
+    }
 }
 
 /// Whether the client has to pull and re-materialize: any manifest or data bucket changed on the server.
@@ -318,7 +355,7 @@ async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -
                     ctx.log(format!("[PendingActions] Action type {} is not known to this client; leaving it for one that knows it.", action.action_type)).await;
                     return Ok((false, false));
                 }
-                let record = shared.values().find(|r| action.manifest_id.as_deref().map(|id| id.eq_ignore_ascii_case(&r.manifest_id)).unwrap_or(false));
+                let record = shared.values().find(|r| action.manifest_id.as_deref().map(|id| ids_equal(id, &r.manifest_id)).unwrap_or(false));
                 let Some(record) = record.filter(|r| r.can_administer) else {
                     ctx.log(format!("[PendingActions] Manifest {:?} is not open to this session as an administrator; leaving its delivery key rotation for another sync.", action.manifest_id)).await;
                     return Ok((false, false));
@@ -632,5 +669,15 @@ mod tests {
         assert_eq!(logout.error_key, Some(LogoutReason::VaultVersionIncompatible));
         assert_eq!(logout.error_code, None);
         assert!(logout.requires_logout);
+    }
+
+    #[test]
+    fn semver_rules_match_the_client() {
+        assert!(version_gte("0.12.0", "0.12.0-dev"));
+        assert!(!version_gte("0.12.0-dev", "0.12.0"));
+        assert!(version_gte("0.13.1", "0.12.0-dev"));
+        assert!(!version_gte("0.11.9", "0.12.0-dev"));
+        assert!(version_gte("1.0", "1.0.0"));
+        assert!(version_gte("0.12.0-beta", "0.12.0-alpha"));
     }
 }

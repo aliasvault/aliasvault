@@ -1,24 +1,14 @@
-//! WASM bindings for browser extension.
+//! WASM bindings for web apps
 
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
-use crate::credential_matcher::{
-    filter_credentials, CredentialMatcherInput, CredentialMatcherOutput,
-};
+use crate::credential_matcher::{filter_credentials, CredentialMatcherInput, CredentialMatcherOutput};
 use crate::password_generator::{available_languages, generate_password};
-use crate::vault_codec::{
-    self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput,
-};
+use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
 use crate::vault_merge::{merge_canonical, CanonicalMergeInput, CanonicalMergeOutput};
 use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
-use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    pub fn log(s: &str);
-}
+use crate::vault_pruner::prune_vault;
 
 /// Initialize panic hook for better error messages.
 #[wasm_bindgen(start)]
@@ -26,14 +16,14 @@ pub fn init() {
     console_error_panic_hook::set_once();
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Version
-// ═══════════════════════════════════════════════════════════════════════════════
+/// A JS error carrying the core's error message.
+fn js_err(error: impl std::fmt::Display) -> JsValue {
+    JsValue::from_str(&error.to_string())
+}
 
-/// Get the version of the aliasvault-core library.
-#[wasm_bindgen(js_name = getCoreVersion)]
-pub fn get_core_version_js() -> String {
-    crate::get_core_version().to_string()
+/// Serialize a core value to a JsValue with Rust maps rendered as plain JS objects and absent optionals as null.
+fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
+    value.serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true)).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -52,43 +42,20 @@ pub fn get_syncable_table_names_js() -> Vec<String> {
 /// manifests + data buckets, one entry per server manifest, rows out instead of SQL statements.
 #[wasm_bindgen(js_name = mergeCanonical)]
 pub fn merge_canonical_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: CanonicalMergeInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse canonical merge input: {}", e)))?;
-
-    let output: CanonicalMergeOutput = merge_canonical(input)
-        .map_err(|e| JsValue::from_str(&format!("Canonical merge failed: {}", e)))?;
-
-    codec_to_js(&output)
+    let input: CanonicalMergeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    let output: CanonicalMergeOutput = merge_canonical(input).map_err(js_err)?;
+    to_js(&output)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Vault Pruner WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Prune expired items from trash.
-///
-/// Items with DeletedAt older than retention_days are marked as permanently deleted (IsDeleted = true).
-/// Default retention is 30 days.
-///
-/// Takes a JsValue (PruneInput) and returns a JsValue (PruneOutput).
-#[wasm_bindgen(js_name = pruneVault)]
-pub fn prune_vault_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: PruneInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse input: {}", e)))?;
-
-    let output: PruneOutput = prune_vault(input)
-        .map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))?;
-
-    serde_wasm_bindgen::to_value(&output)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
-}
-
-/// Prune vault using JSON strings (alternative API).
-///
-/// Takes a JSON string and returns a JSON string.
+/// Prune expired items from trash (items with DeletedAt older than retention_days, default 30).
+/// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
 #[wasm_bindgen(js_name = pruneVaultJson)]
 pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::error::json_call(input_json, prune_vault).map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))
+    crate::error::json_call(input_json, prune_vault).map_err(js_err)
 }
 
 /// Get the per-table SELECT queries used to build prune input.
@@ -97,20 +64,12 @@ pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
 /// 1-byte presence marker to avoid serializing large binary data to JSON.
 #[wasm_bindgen(js_name = getPruneTableQueries)]
 pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
-    serde_wasm_bindgen::to_value(&crate::vault_pruner::get_prune_table_queries())
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+    serde_wasm_bindgen::to_value(&crate::vault_pruner::get_prune_table_queries()).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Vault Codec WASM Bindings (manifest-v1 storage format)
 // ═══════════════════════════════════════════════════════════════════════════════
-
-/// Serialize a codec output to a JsValue with Rust maps rendered as plain JS objects.
-fn codec_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
-    value
-        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize codec output: {}", e)))
-}
 
 /// The `Logos.Id` to use for `source` inside the manifest with id `manifestId`. Every platform derives
 /// logo ids through this so independent writers produce the same row instead of colliding on
@@ -138,39 +97,33 @@ pub fn vault_codec_logo_id_for_js(manifest_id: String, kind: String, source: Str
 /// Input: `CanonicalizeInput`. Output: `CanonicalizedVault`.
 #[wasm_bindgen(js_name = vaultCodecCanonicalizeFromSqlite)]
 pub fn vault_codec_canonicalize_from_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: CanonicalizeInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse canonicalize_from_sqlite input: {}", e)))?;
-    let output = vault_codec::canonicalize_from_sqlite(input)
-        .map_err(|e| JsValue::from_str(&format!("canonicalize_from_sqlite failed: {}", e)))?;
-    codec_to_js(&output)
+    let input: CanonicalizeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    let output = vault_codec::canonicalize_from_sqlite(input).map_err(js_err)?;
+    to_js(&output)
 }
 
 /// Materialize the manifest + data buckets into the table set the platform inserts into a fresh schema DB.
 /// Input: `MaterializeInput`. Output: `MaterializedTables`.
 #[wasm_bindgen(js_name = vaultCodecMaterializeAsSqlite)]
 pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: MaterializeInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse materialize_as_sqlite input: {}", e)))?;
-    let output = vault_codec::materialize_as_sqlite(input)
-        .map_err(|e| JsValue::from_str(&format!("materialize_as_sqlite failed: {}", e)))?;
-    codec_to_js(&output)
+    let input: MaterializeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    let output = vault_codec::materialize_as_sqlite(input).map_err(js_err)?;
+    to_js(&output)
 }
 
 /// Build a bucket category's data buckets, one per manifest this vault writes: rows route by the manifest
 /// each one names. Input: `{ category, manifestIds, tables: { <name>: [rows] } }`. Output: `DataBucket[]`.
 #[wasm_bindgen(js_name = vaultCodecExtractBuckets)]
 pub fn vault_codec_extract_buckets_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ExtractBucketsInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse extract-buckets input: {}", e)))?;
-    let buckets = vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables)
-        .map_err(|e| JsValue::from_str(&format!("extract_buckets failed: {}", e)))?;
-    codec_to_js(&buckets)
+    let input: ExtractBucketsInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    let buckets = vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables).map_err(js_err)?;
+    to_js(&buckets)
 }
 
 /// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.
 #[wasm_bindgen(js_name = vaultCodecBucketLayout)]
 pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {
-    codec_to_js(&vault_codec::bucket_layout())
+    to_js(&vault_codec::bucket_layout())
 }
 
 /// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
@@ -178,7 +131,7 @@ pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {
 /// unknown columns/tables re-merge and survive.
 #[wasm_bindgen(js_name = vaultCodecOverflowTable)]
 pub fn vault_codec_overflow_table_js() -> String {
-    vault_codec::OVERFLOW_TABLE.to_string()
+    crate::vault_model::OVERFLOW_TABLE.to_string()
 }
 
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
@@ -190,33 +143,27 @@ pub fn vault_codec_generate_manifest_salt_js() -> String {
 /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). Encryption is done by platform.
 #[wasm_bindgen(js_name = vaultCodecPackPayload)]
 pub fn vault_codec_pack_payload_js(payload_json: &str) -> Result<Vec<u8>, JsValue> {
-    vault_codec::pack_payload(payload_json)
-        .map_err(|e| JsValue::from_str(&format!("pack_payload failed: {}", e)))
+    vault_codec::pack_payload(payload_json).map_err(js_err)
 }
 
 /// Unpack a (decrypted) payload: gunzip > verify content hash > return payload JSON string.
 #[wasm_bindgen(js_name = vaultCodecUnpackPayload)]
 pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsValue> {
-    vault_codec::unpack_payload(plain_bytes)
-        .map_err(|e| JsValue::from_str(&format!("unpack_payload failed: {}", e)))
+    vault_codec::unpack_payload(plain_bytes).map_err(js_err)
 }
 
 /// Structurally validate a manifest. Input: `Manifest`. Output: `ValidationResult`.
 #[wasm_bindgen(js_name = vaultCodecValidateManifest)]
 pub fn vault_codec_validate_manifest_js(manifest: JsValue) -> Result<JsValue, JsValue> {
-    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
-    serde_wasm_bindgen::to_value(&vault_codec::validate_manifest(&m))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
+    let m: Manifest = serde_wasm_bindgen::from_value(manifest).map_err(js_err)?;
+    serde_wasm_bindgen::to_value(&vault_codec::validate_manifest(&m)).map_err(js_err)
 }
 
 /// Validate a data bucket. Input: `DataBucket`. Output: `ValidationResult`.
 #[wasm_bindgen(js_name = vaultCodecValidateDataBucket)]
 pub fn vault_codec_validate_data_bucket_js(data_bucket: JsValue) -> Result<JsValue, JsValue> {
-    let b: DataBucket = serde_wasm_bindgen::from_value(data_bucket)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse data bucket: {}", e)))?;
-    serde_wasm_bindgen::to_value(&vault_codec::validate_data_bucket(&b))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
+    let b: DataBucket = serde_wasm_bindgen::from_value(data_bucket).map_err(js_err)?;
+    serde_wasm_bindgen::to_value(&vault_codec::validate_data_bucket(&b)).map_err(js_err)
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string.
@@ -237,79 +184,57 @@ pub fn vault_codec_compute_content_fingerprint_js(payload_json: &str) -> String 
 /// delivery keypair on a shared manifest).
 #[wasm_bindgen(js_name = vaultCodecExtractEncryptionKeyForPublicKey)]
 pub fn vault_codec_extract_encryption_key_for_public_key_js(manifest: JsValue, public_key: &str) -> Result<JsValue, JsValue> {
-    let m: Manifest = serde_wasm_bindgen::from_value(manifest)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
-    codec_to_js(&vault_codec::extract_encryption_key_for_public_key(&m, public_key))
+    let m: Manifest = serde_wasm_bindgen::from_value(manifest).map_err(js_err)?;
+    to_js(&vault_codec::extract_encryption_key_for_public_key(&m, public_key))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Vault Sharing WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Serialize a sharing output to a JsValue.
-fn sharing_to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
-    value
-        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize sharing output: {}", e)))
-}
-
 /// Resolve which manifests the next push writes, personal manifest first.
 /// Input: `ManifestWriteSetRequest`. Output: `ManifestWriteSet`.
 #[wasm_bindgen(js_name = vaultSharingResolveManifestWriteSet)]
 pub fn vault_sharing_resolve_manifest_write_set_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ManifestWriteSetRequest = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest-write-set request: {}", e)))?;
-    sharing_to_js(&vault_sharing::resolve_manifest_write_set(input))
+    let input: ManifestWriteSetRequest = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    to_js(&vault_sharing::resolve_manifest_write_set(input))
 }
 
 /// Split what the vault holds into what cannot be written and what access was lost.
 /// Input: `ManifestAccessRequest`. Output: `ManifestAccessPartition`.
 #[wasm_bindgen(js_name = vaultSharingPartitionManifestAccess)]
 pub fn vault_sharing_partition_manifest_access_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ManifestAccessRequest = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest-access request: {}", e)))?;
-    sharing_to_js(&vault_sharing::partition_manifest_access(input))
+    let input: ManifestAccessRequest = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
+    to_js(&vault_sharing::partition_manifest_access(input))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Credential Matcher WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Filter credentials for autofill.
-///
-/// Takes a JsValue (CredentialMatcherInput) and returns a JsValue (CredentialMatcherOutput).
+/// Filter credentials for autofill. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.
 #[wasm_bindgen(js_name = filterCredentials)]
 pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: CredentialMatcherInput = serde_wasm_bindgen::from_value(input)
-        .map_err(|e| JsValue::from_str(&format!("Failed to parse input: {}", e)))?;
+    let input: CredentialMatcherInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
 
     let output: CredentialMatcherOutput = filter_credentials(input);
 
-    serde_wasm_bindgen::to_value(&output)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+    serde_wasm_bindgen::to_value(&output).map_err(js_err)
 }
 
-/// Filter credentials using JSON strings (alternative API).
-///
-/// Takes a JSON string and returns a JSON string.
+/// JSON sibling of `filterCredentials`.
 #[wasm_bindgen(js_name = filterCredentialsJson)]
 pub fn filter_credentials_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::credential_matcher::filter_credentials_json(input_json).map_err(|e| JsValue::from_str(&e.to_string()))
+    crate::credential_matcher::filter_credentials_json(input_json).map_err(js_err)
 }
 
-/// Extract domain from URL.
-///
-/// Handles both full URLs and partial domains, returning normalized domain
-/// without protocol, www prefix, path, query, or fragment.
+/// The domain of a URL or partial domain: no protocol, `www.` prefix, path, query or fragment.
 #[wasm_bindgen(js_name = extractDomain)]
 pub fn extract_domain_js(url: &str) -> String {
     crate::credential_matcher::extract_domain(url)
 }
 
-/// Extract root domain from a domain string.
-///
-/// E.g., "sub.example.com" -> "example.com"
-/// E.g., "sub.example.co.uk" -> "example.co.uk"
+/// The root domain of a domain: `sub.example.co.uk` gives `example.co.uk`.
 #[wasm_bindgen(js_name = extractRootDomain)]
 pub fn extract_root_domain_js(domain: &str) -> String {
     crate::credential_matcher::extract_root_domain(domain)
@@ -319,39 +244,23 @@ pub fn extract_root_domain_js(domain: &str) -> String {
 // Favicon WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Pick the favicon target for an item from its URLs, in the order the item lists them.
-///
-/// Returns the URL to fetch from and the `Logos.Source` key to store the result under, or
-/// `null` when no URL qualifies.
+/// The favicon target for an item's URLs (in item order): the URL to fetch and the `Logos.Source` key, or null.
 #[wasm_bindgen(js_name = selectFaviconTarget)]
 pub fn select_favicon_target_js(urls: Vec<String>) -> Result<JsValue, JsValue> {
     match crate::favicon::select_favicon_target(&urls) {
-        Some(target) => serde_wasm_bindgen::to_value(&target)
-            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e))),
+        Some(target) => serde_wasm_bindgen::to_value(&target).map_err(js_err),
         None => Ok(JsValue::NULL),
     }
-}
-
-/// Derive the `Logos.Source` key for a URL.
-///
-/// Returns an empty string when the URL is not something a favicon can be fetched from.
-#[wasm_bindgen(js_name = faviconSourceKey)]
-pub fn favicon_source_key_js(url: &str) -> String {
-    crate::favicon::favicon_source_key(url)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Password Generator WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a password or passphrase from JSON-serialized settings.
-///
-/// Takes a JSON string (PasswordSettings) and returns the generated password string.
-/// The `Type` field selects the generator ("basic" or "diceware").
+/// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware".
 #[wasm_bindgen(js_name = generatePassword)]
 pub fn generate_password_js(settings_json: &str) -> Result<String, JsValue> {
-    generate_password(settings_json)
-        .map_err(|e| JsValue::from_str(&format!("Password generation failed: {}", e)))
+    generate_password(settings_json).map_err(js_err)
 }
 
 /// Get the list of bundled Diceware language codes (first is the default, English).
@@ -364,31 +273,25 @@ pub fn get_diceware_languages_js() -> Vec<String> {
 // Identity Generator WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a random identity from a JSON-serialized request.
-///
-/// The request accepts `language`, `gender` ("male"/"female"/"random"), `ageRange`
-/// (e.g. "21-25" or "random") and/or explicit `birthdateOptions`. Returns the
-/// generated identity as a JSON string with camelCase fields.
+/// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
+/// returns `Identity` JSON.
 #[wasm_bindgen(js_name = generateIdentity)]
 pub fn generate_identity_js(request_json: &str) -> Result<String, JsValue> {
-    crate::identity_generator::generate_identity(request_json)
-        .map_err(|e| JsValue::from_str(&format!("Identity generation failed: {}", e)))
+    crate::identity_generator::generate_identity(request_json).map_err(js_err)
 }
 
 /// Generate a username from a JSON-serialized name input
 /// (`firstName`, `lastName`, `birthDate`).
 #[wasm_bindgen(js_name = generateIdentityUsername)]
 pub fn generate_identity_username_js(input_json: &str) -> Result<String, JsValue> {
-    crate::identity_generator::generate_username(input_json)
-        .map_err(|e| JsValue::from_str(&format!("Username generation failed: {}", e)))
+    crate::identity_generator::generate_username(input_json).map_err(js_err)
 }
 
 /// Generate an email prefix from a JSON-serialized name input
 /// (`firstName`, `lastName`, `birthDate`).
 #[wasm_bindgen(js_name = generateIdentityEmailPrefix)]
 pub fn generate_identity_email_prefix_js(input_json: &str) -> Result<String, JsValue> {
-    crate::identity_generator::generate_email_prefix(input_json)
-        .map_err(|e| JsValue::from_str(&format!("Email prefix generation failed: {}", e)))
+    crate::identity_generator::generate_email_prefix(input_json).map_err(js_err)
 }
 
 /// Generate a random alphanumeric email prefix that is not based on any identity.
@@ -412,19 +315,13 @@ pub fn get_identity_languages_js() -> Vec<String> {
 /// decrypted `MessageSource` of both legacy and source-only emails can be passed as-is.
 #[wasm_bindgen(js_name = parseEmailSource)]
 pub fn parse_email_source_js(source: &[u8]) -> Result<JsValue, JsValue> {
-    let parsed = crate::email_parser::parse_email_source(source)
-        .map_err(|e| JsValue::from_str(&format!("Email parse failed: {}", e)))?;
-
-    parsed
-        .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true).serialize_missing_as_null(true))
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+    to_js(&crate::email_parser::parse_email_source(source).map_err(js_err)?)
 }
 
 /// Turn a stored email source into the raw RFC 822 message bytes for showing the message source without parsing it.
 #[wasm_bindgen(js_name = decodeEmailSource)]
 pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
-    crate::email_parser::decode_email_source(source)
-        .map_err(|e| JsValue::from_str(&format!("Email source decode failed: {}", e)))
+    crate::email_parser::decode_email_source(source).map_err(js_err)
 }
 
 /// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
@@ -432,8 +329,7 @@ pub fn decode_email_source_js(source: &[u8]) -> Result<Vec<u8>, JsValue> {
 /// fetched body as `detachedBody`. It is ignored for attachments that are still inline.
 #[wasm_bindgen(js_name = extractEmailAttachment)]
 pub fn extract_email_attachment_js(source: &[u8], index: usize, detached_body: Option<Box<[u8]>>) -> Result<Vec<u8>, JsValue> {
-    crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref())
-        .map_err(|e| JsValue::from_str(&format!("Email attachment extraction failed: {}", e)))
+    crate::email_parser::extract_email_attachment(source, index, detached_body.as_deref()).map_err(js_err)
 }
 
 /// Get the list of age range option values ("random" plus 5-year ranges).
@@ -446,172 +342,71 @@ pub fn get_identity_age_ranges_js() -> Vec<String> {
 // Argon2id Key Derivation WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Derive a key from a password using Argon2id.
-///
-/// # Arguments
-/// * `password` - The password, hashed as its UTF-8 bytes
-/// * `salt` - The salt, hashed as its UTF-8 bytes, at least 8 bytes long
-/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
-///
-/// # Returns
-/// The derived key as 32 bytes
+/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings`
+/// JSON, or the defaults for an empty string.
 #[wasm_bindgen(js_name = argon2DeriveKey)]
 pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings)
-        .map_err(|e| JsValue::from_str(&format!("Argon2 error: {}", e)))
+    crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a cryptographic salt for SRP.
-/// Returns a 32-byte random salt as an uppercase hex string.
+/// A random 32-byte SRP salt as an uppercase hex string.
 #[wasm_bindgen(js_name = srpGenerateSalt)]
 pub fn srp_generate_salt_js() -> String {
     crate::crypto::srp::srp_generate_salt()
 }
 
-/// Derive the SRP private key (x) from credentials.
-///
-/// # Arguments
-/// * `salt` - Salt as uppercase hex string
-/// * `identity` - User identity (username or SRP identity GUID)
-/// * `password_hash` - Pre-hashed password as uppercase hex string (from Argon2id)
-///
-/// # Returns
-/// Private key as uppercase hex string
+/// The SRP private key (x) as uppercase hex from the hex salt, the identity and the hex password hash.
 #[wasm_bindgen(js_name = srpDerivePrivateKey)]
-pub fn srp_derive_private_key_js(
-    salt: &str,
-    identity: &str,
-    password_hash: &str,
-) -> Result<String, JsValue> {
-    crate::crypto::srp::srp_derive_private_key(salt, identity, password_hash)
-        .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
+pub fn srp_derive_private_key_js(salt: &str, identity: &str, password_hash: &str) -> Result<String, JsValue> {
+    crate::crypto::srp::srp_derive_private_key(salt, identity, password_hash).map_err(js_err)
 }
 
-/// Derive the SRP verifier (v) from a private key.
-///
-/// # Arguments
-/// * `private_key` - Private key as uppercase hex string
-///
-/// # Returns
-/// Verifier as uppercase hex string (for registration)
+/// The SRP verifier (v) as uppercase hex from the hex private key, for registration.
 #[wasm_bindgen(js_name = srpDeriveVerifier)]
 pub fn srp_derive_verifier_js(private_key: &str) -> Result<String, JsValue> {
-    crate::crypto::srp::srp_derive_verifier(private_key)
-        .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
+    crate::crypto::srp::srp_derive_verifier(private_key).map_err(js_err)
 }
 
-/// Generate a client ephemeral key pair.
-/// Returns a JsValue object with `public` and `secret` properties (uppercase hex strings).
+/// A client ephemeral pair as `{ public, secret }` (uppercase hex).
 #[wasm_bindgen(js_name = srpGenerateEphemeral)]
 pub fn srp_generate_ephemeral_js() -> Result<JsValue, JsValue> {
     let ephemeral = crate::crypto::srp::srp_generate_ephemeral();
-    serde_wasm_bindgen::to_value(&ephemeral)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize ephemeral: {}", e)))
+    serde_wasm_bindgen::to_value(&ephemeral).map_err(js_err)
 }
 
-/// Derive the client session from server response.
-///
-/// # Arguments
-/// * `client_secret` - Client secret ephemeral (a) as hex string
-/// * `server_public` - Server public ephemeral (B) as hex string
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (username or SRP identity GUID)
-/// * `private_key` - Private key (x) as hex string
-///
-/// # Returns
-/// JsValue object with `proof` and `key` properties (uppercase hex strings)
+/// The client session as `{ proof, key }` (uppercase hex) from the server's public ephemeral; hex inputs.
 #[wasm_bindgen(js_name = srpDeriveSession)]
-pub fn srp_derive_session_js(
-    client_secret: &str,
-    server_public: &str,
-    salt: &str,
-    identity: &str,
-    private_key: &str,
-) -> Result<JsValue, JsValue> {
-    let session = crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key)
-        .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))?;
-    serde_wasm_bindgen::to_value(&session)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize session: {}", e)))
+pub fn srp_derive_session_js(client_secret: &str, server_public: &str, salt: &str, identity: &str, private_key: &str) -> Result<JsValue, JsValue> {
+    let session = crate::crypto::srp::srp_derive_session(client_secret, server_public, salt, identity, private_key).map_err(js_err)?;
+    serde_wasm_bindgen::to_value(&session).map_err(js_err)
 }
 
-/// Generate a server ephemeral key pair.
-///
-/// # Arguments
-/// * `verifier` - Password verifier (v) as hex string
-///
-/// # Returns
-/// JsValue object with `public` and `secret` properties (uppercase hex strings)
+/// A server ephemeral pair as `{ public, secret }` (uppercase hex) from the hex verifier.
 #[wasm_bindgen(js_name = srpGenerateEphemeralServer)]
 pub fn srp_generate_ephemeral_server_js(verifier: &str) -> Result<JsValue, JsValue> {
-    let ephemeral = crate::crypto::srp::srp_generate_ephemeral_server(verifier)
-        .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))?;
-    serde_wasm_bindgen::to_value(&ephemeral)
-        .map_err(|e| JsValue::from_str(&format!("Failed to serialize ephemeral: {}", e)))
+    let ephemeral = crate::crypto::srp::srp_generate_ephemeral_server(verifier).map_err(js_err)?;
+    serde_wasm_bindgen::to_value(&ephemeral).map_err(js_err)
 }
 
-/// Derive and verify the server session from client response.
-///
-/// # Arguments
-/// * `server_secret` - Server secret ephemeral (b) as hex string
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (username or SRP identity GUID)
-/// * `verifier` - Password verifier (v) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-///
-/// # Returns
-/// JsValue: object with `proof` and `key` if valid, null if client proof is invalid
+/// The server session as `{ proof, key }` once the client's proof verifies, null when it does not; hex inputs.
 #[wasm_bindgen(js_name = srpDeriveSessionServer)]
-pub fn srp_derive_session_server_js(
-    server_secret: &str,
-    client_public: &str,
-    salt: &str,
-    identity: &str,
-    verifier: &str,
-    client_proof: &str,
-) -> Result<JsValue, JsValue> {
-    let session = crate::crypto::srp::srp_derive_session_server(
-        server_secret,
-        client_public,
-        salt,
-        identity,
-        verifier,
-        client_proof,
-    )
-    .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))?;
+pub fn srp_derive_session_server_js(server_secret: &str, client_public: &str, salt: &str, identity: &str, verifier: &str, client_proof: &str) -> Result<JsValue, JsValue> {
+    let session = crate::crypto::srp::srp_derive_session_server(server_secret, client_public, salt, identity, verifier, client_proof).map_err(js_err)?;
 
     match session {
-        Some(s) => serde_wasm_bindgen::to_value(&s)
-            .map_err(|e| JsValue::from_str(&format!("Failed to serialize session: {}", e))),
+        Some(s) => serde_wasm_bindgen::to_value(&s).map_err(js_err),
         None => Ok(JsValue::NULL),
     }
 }
 
-/// Verify the server's session proof (M2) on the client side.
-///
-/// This confirms that the server successfully derived the same session key.
-///
-/// # Arguments
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-/// * `session_key` - Session key (K) as hex string
-/// * `server_proof` - Server proof (M2) as hex string to verify
-///
-/// # Returns
-/// True if verification succeeds, false otherwise
+/// Whether the server's proof (M2) matches, which confirms it derived the same session key; hex inputs.
 #[wasm_bindgen(js_name = srpVerifySession)]
-pub fn srp_verify_session_js(
-    client_public: &str,
-    client_proof: &str,
-    session_key: &str,
-    server_proof: &str,
-) -> Result<bool, JsValue> {
-    crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof)
-        .map_err(|e| JsValue::from_str(&format!("SRP error: {}", e)))
+pub fn srp_verify_session_js(client_public: &str, client_proof: &str, session_key: &str, server_proof: &str) -> Result<bool, JsValue> {
+    crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -621,33 +416,33 @@ pub fn srp_verify_session_js(
 /// AES-256-GCM encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
 #[wasm_bindgen(js_name = aesGcmEncrypt)]
 pub fn aes_gcm_encrypt_js(plaintext: &[u8], key_base64: &str) -> Result<String, JsValue> {
-    crate::crypto::symmetric_encrypt_bytes(plaintext, key_base64).map_err(|e| JsValue::from_str(&e.to_string()))
+    crate::crypto::symmetric_encrypt_bytes(plaintext, key_base64).map_err(js_err)
 }
 
 /// AES-256-GCM decrypt base64 `IV | ciphertext | tag` with a base64 key.
 #[wasm_bindgen(js_name = aesGcmDecrypt)]
 pub fn aes_gcm_decrypt_js(base64_ciphertext: &str, key_base64: &str) -> Result<Vec<u8>, JsValue> {
-    let bytes = crate::encoding::base64_decode(base64_ciphertext).map_err(|e| JsValue::from_str(&e.to_string()))?;
-    crate::crypto::symmetric_decrypt_bytes(&bytes, key_base64).map_err(|e| JsValue::from_str(&e.to_string()))
+    let bytes = crate::encoding::base64_decode(base64_ciphertext).map_err(js_err)?;
+    crate::crypto::symmetric_decrypt_bytes(&bytes, key_base64).map_err(js_err)
 }
 
 /// Generate an RSA-OAEP-256 key pair as `{ publicKey, privateKey }` JWK strings.
 #[wasm_bindgen(js_name = rsaGenerateKeyPair)]
 pub fn rsa_generate_key_pair_js() -> Result<JsValue, JsValue> {
-    let pair = crate::crypto::generate_rsa_key_pair().map_err(|e| JsValue::from_str(&e.to_string()))?;
-    serde_wasm_bindgen::to_value(&pair).map_err(|e| JsValue::from_str(&e.to_string()))
+    let pair = crate::crypto::generate_rsa_key_pair().map_err(js_err)?;
+    serde_wasm_bindgen::to_value(&pair).map_err(js_err)
 }
 
 /// RSA-OAEP-256 encrypt bytes for a JWK public key. Returns base64 ciphertext.
 #[wasm_bindgen(js_name = rsaEncrypt)]
 pub fn rsa_encrypt_js(plaintext: &[u8], public_key_jwk: &str) -> Result<String, JsValue> {
-    crate::crypto::encrypt_with_public_key(plaintext, public_key_jwk).map_err(|e| JsValue::from_str(&e.to_string()))
+    crate::crypto::encrypt_with_public_key(plaintext, public_key_jwk).map_err(js_err)
 }
 
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[wasm_bindgen(js_name = rsaDecrypt)]
 pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(|e| JsValue::from_str(&e.to_string()))
+    crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -666,18 +461,18 @@ impl VaultSyncSessionJs {
     /// Start an operation from its `SyncRequest` JSON.
     #[wasm_bindgen(constructor)]
     pub fn new(request_json: &str) -> Result<VaultSyncSessionJs, JsValue> {
-        Ok(Self { inner: crate::vault_sync::SyncSession::new(request_json).map_err(|e| JsValue::from_str(&e.to_string()))? })
+        Ok(Self { inner: crate::vault_sync::SyncSession::new(request_json).map_err(js_err)? })
     }
 
     /// The next command for the host, as JSON.
     #[wasm_bindgen(js_name = nextCommand)]
     pub fn next_command(&self) -> Result<String, JsValue> {
-        self.inner.next_command().map_err(|e| JsValue::from_str(&e.to_string()))
+        self.inner.next_command().map_err(js_err)
     }
 
     /// Hand the host's response to the last command back, as JSON.
     pub fn resume(&self, response_json: &str) -> Result<(), JsValue> {
-        self.inner.resume(response_json).map_err(|e| JsValue::from_str(&e.to_string()))
+        self.inner.resume(response_json).map_err(js_err)
     }
 }
 
@@ -689,6 +484,7 @@ mod sqlite_js {
     use js_sys::{Array, Object, Reflect, Uint8Array};
     use wasm_bindgen::prelude::*;
 
+    use super::js_err;
     use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 
     /// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
@@ -702,38 +498,32 @@ mod sqlite_js {
         /// Open a database from its SQLite file bytes.
         #[wasm_bindgen(js_name = fromBytes)]
         pub fn from_bytes(bytes: &[u8]) -> Result<SqliteMemoryDatabaseJs, JsValue> {
-            Ok(Self { inner: Some(MemoryDatabase::from_bytes(bytes).map_err(error)?) })
+            Ok(Self { inner: Some(MemoryDatabase::from_bytes(bytes).map_err(js_err)?) })
         }
 
         /// Open an empty database.
         pub fn empty() -> Result<SqliteMemoryDatabaseJs, JsValue> {
-            Ok(Self { inner: Some(MemoryDatabase::empty().map_err(error)?) })
-        }
-
-        /// Open an empty database and run a schema script on it.
-        #[wasm_bindgen(js_name = withSchema)]
-        pub fn with_schema(schema_sql: &str) -> Result<SqliteMemoryDatabaseJs, JsValue> {
-            Ok(Self { inner: Some(MemoryDatabase::with_schema(schema_sql).map_err(error)?) })
+            Ok(Self { inner: Some(MemoryDatabase::empty().map_err(js_err)?) })
         }
 
         /// Run a statement that returns no rows and report how many rows it changed.
         pub fn run(&self, sql: &str, params: JsValue) -> Result<f64, JsValue> {
-            Ok(self.db()?.execute(sql, &params_from_js(params)?).map_err(error)? as f64)
+            Ok(self.db()?.execute(sql, &params_from_js(params)?).map_err(js_err)? as f64)
         }
 
         /// Run a statement and return its rows.
         pub fn query(&self, sql: &str, params: JsValue) -> Result<JsValue, JsValue> {
-            Ok(rows_to_js(&self.db()?.query_values(sql, &params_from_js(params)?).map_err(error)?))
+            Ok(rows_to_js(&self.db()?.query_values(sql, &params_from_js(params)?).map_err(js_err)?))
         }
 
         /// Run one or more statements separated by semicolons, without parameters.
         pub fn exec(&self, sql: &str) -> Result<(), JsValue> {
-            self.db()?.execute_batch(sql).map_err(error)
+            self.db()?.execute_batch(sql).map_err(js_err)
         }
 
         /// The database as SQLite file bytes.
         pub fn export(&self) -> Result<Vec<u8>, JsValue> {
-            self.db()?.export().map_err(error)
+            self.db()?.export().map_err(js_err)
         }
 
         /// Close the database and free its memory.
@@ -744,10 +534,6 @@ mod sqlite_js {
         fn db(&self) -> Result<&MemoryDatabase, JsValue> {
             self.inner.as_ref().ok_or_else(|| JsValue::from_str("The database is closed"))
         }
-    }
-
-    fn error(error: crate::VaultError) -> JsValue {
-        JsValue::from_str(&error.to_string())
     }
 
     fn params_from_js(params: JsValue) -> Result<Vec<SqlValue>, JsValue> {

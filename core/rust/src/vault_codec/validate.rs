@@ -5,11 +5,13 @@
 use serde::{Deserialize, Serialize};
 
 use super::manifest::{DataBucket, Manifest};
-use super::row::{rows_of, str_col};
+use super::row::{logo_kind, rows_of, str_col};
+use super::types::{is_bucketed_table, is_manifest_scoped, is_personal_table};
 use crate::vault_model::names::{
-    FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_VALUES_TABLE, FOLDERS_TABLE, FOLDER_ID_COL, ID_COL,
-    ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_KIND_FAVICON, SOURCE_COL, TAGS_TABLE, TAG_ID_COL,
+    ENCRYPTION_KEYS_TABLE, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_VALUES_TABLE, FOLDERS_TABLE, FOLDER_ID_COL, ID_COL,
+    ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE, SOURCE_COL, TAGS_TABLE, TAG_ID_COL,
 };
+use crate::vault_model::MANIFEST_ID_COL;
 
 /// Outcome of a structural validation run.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,14 +55,14 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
      * personal-only table may not leave the user's own vault at all.
      */
     for name in manifest.tables.keys().filter(|name| !manifest.tables[*name].is_empty()) {
-        if super::types::is_bucketed_table(name) {
+        if is_bucketed_table(name) {
             failed.push("manifest-carries-bucketed-table".to_string());
             explain.push(format!("Manifest carries bucketed table {}, which belongs in its data bucket", name));
             break;
         }
     }
     for name in manifest.tables.keys().filter(|name| !manifest.tables[*name].is_empty()) {
-        if super::types::is_personal_table(name) {
+        if is_personal_table(name) {
             failed.push("manifest-carries-personal-table".to_string());
             explain.push(format!("Manifest carries personal table {}", name));
             break;
@@ -71,14 +73,14 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
      * Every EncryptionKeys row must be stamped with the manifest's own id.
      */
     let expected_scope = Some(manifest.manifest_id.as_str());
-    if rows_of(&manifest.tables, super::types::ENCRYPTION_KEYS_TABLE).iter().any(|r| str_col(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+    if rows_of(&manifest.tables, ENCRYPTION_KEYS_TABLE).iter().any(|r| str_col(r, MANIFEST_ID_COL) != expected_scope) {
         failed.push("encryption-keys-scope-mismatch".to_string());
         explain.push("EncryptionKeys carries rows stamped for another manifest".to_string());
     }
 
     // Items and Folders are restamped by canonicalize: a mismatched stamp here means a codec bug.
     for name in [ITEMS_TABLE, FOLDERS_TABLE] {
-        if rows_of(&manifest.tables, name).iter().any(|r| str_col(r, super::types::MANIFEST_ID_COL) != expected_scope) {
+        if rows_of(&manifest.tables, name).iter().any(|r| str_col(r, MANIFEST_ID_COL) != expected_scope) {
             failed.push("content-scope-mismatch".to_string());
             explain.push(format!("{} carries rows stamped for another manifest", name));
             break;
@@ -160,7 +162,7 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
     let logos = rows_of(&manifest.tables, LOGOS_TABLE);
     let logo_keys: std::collections::HashSet<(String, String)> = logos
         .iter()
-        .filter_map(|l| Some((str_col(l, KIND_COL).unwrap_or(LOGO_KIND_FAVICON).to_lowercase(), str_col(l, SOURCE_COL)?.to_lowercase())))
+        .filter_map(|l| Some((logo_kind(l), str_col(l, SOURCE_COL)?.to_lowercase())))
         .collect();
     let logos_with_source = logos.iter().filter(|l| str_col(l, SOURCE_COL).is_some()).count();
     if logo_keys.len() != logos_with_source {
@@ -169,7 +171,7 @@ pub fn validate_manifest(manifest: &Manifest) -> ValidationResult {
 
     // Every logo in a manifest must claim that manifest's scope, otherwise the row would materialize
     // into the wrong uniqueness bucket and could collide with the reader's own rows.
-    if logos.iter().any(|l| str_col(l, super::types::MANIFEST_ID_COL) != expected_scope) {
+    if logos.iter().any(|l| str_col(l, MANIFEST_ID_COL) != expected_scope) {
         failed.push("logo-scope-mismatch".to_string());
         explain.push("Logos carry a ManifestId that is not this manifest's own id".to_string());
     }
@@ -202,10 +204,10 @@ pub fn validate_data_bucket(bucket: &DataBucket) -> ValidationResult {
 
     let expected_scope = Some(bucket.manifest_id.as_str());
     for (name, rows) in &bucket.tables {
-        if !super::types::is_manifest_scoped(name) {
+        if !is_manifest_scoped(name) {
             continue;
         }
-        if rows.iter().any(|row| str_col(row, super::types::MANIFEST_ID_COL) != expected_scope) {
+        if rows.iter().any(|row| str_col(row, MANIFEST_ID_COL) != expected_scope) {
             failed.push("dataBucket-scope-mismatch".to_string());
             explain.push(format!("{} carries rows stamped for another manifest", name));
             break;

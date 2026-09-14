@@ -107,19 +107,19 @@ impl Ctx {
  * Persisted state.
  */
 
-pub const SERVER_MANIFEST_REVISIONS: &str = "serverManifestRevisions";
-pub const VAULT_BUCKET_REVISIONS: &str = "vaultBucketRevisions";
-pub const VAULT_MANIFEST_SALT: &str = "vaultManifestSalt";
-pub const VAULT_PERSONAL_MANIFEST_ID: &str = "vaultPersonalManifestId";
-pub const VAULT_CONTENT_FINGERPRINTS: &str = "vaultContentFingerprints";
-pub const VAULT_BLOB_CIPHER_CACHE: &str = "vaultBlobCipherCache";
-pub const VAULT_SERVER_BLOB_HASHES: &str = "vaultServerBlobHashes";
-pub const SHARED_MANIFESTS: &str = "sharedManifests";
-pub const ENCRYPTED_VEK: &str = "encryptedVek";
-pub const ENCRYPTED_ACCOUNT_KEY: &str = "encryptedAccountKey";
-pub const ACCOUNT_PUBLIC_KEY: &str = "accountPublicKey";
-pub const ENCRYPTED_ACCOUNT_PRIVATE_KEY: &str = "encryptedAccountPrivateKey";
-pub const ENCRYPTION_KEY_DERIVATION_PARAMS: &str = "encryptionKeyDerivationParams";
+pub(crate) const SERVER_MANIFEST_REVISIONS: &str = "serverManifestRevisions";
+pub(crate) const VAULT_BUCKET_REVISIONS: &str = "vaultBucketRevisions";
+pub(crate) const VAULT_MANIFEST_SALT: &str = "vaultManifestSalt";
+pub(crate) const VAULT_PERSONAL_MANIFEST_ID: &str = "vaultPersonalManifestId";
+pub(crate) const VAULT_CONTENT_FINGERPRINTS: &str = "vaultContentFingerprints";
+pub(crate) const VAULT_BLOB_CIPHER_CACHE: &str = "vaultBlobCipherCache";
+pub(crate) const VAULT_SERVER_BLOB_HASHES: &str = "vaultServerBlobHashes";
+pub(crate) const SHARED_MANIFESTS: &str = "sharedManifests";
+pub(crate) const ENCRYPTED_VEK: &str = "encryptedVek";
+pub(crate) const ENCRYPTED_ACCOUNT_KEY: &str = "encryptedAccountKey";
+pub(crate) const ACCOUNT_PUBLIC_KEY: &str = "accountPublicKey";
+pub(crate) const ENCRYPTED_ACCOUNT_PRIVATE_KEY: &str = "encryptedAccountPrivateKey";
+pub(crate) const ENCRYPTION_KEY_DERIVATION_PARAMS: &str = "encryptionKeyDerivationParams";
 
 /// Read a value, `None` when absent or null.
 pub(crate) async fn get<T: DeserializeOwned>(host: &Host, key: &str) -> SyncResult<Option<T>> {
@@ -143,15 +143,15 @@ pub(crate) async fn remove(host: &Host, key: &str) -> SyncResult<()> {
 }
 
 /// The record key of one data bucket's revision and fingerprint.
-pub fn bucket_revision_key(manifest_id: &str, category: &str) -> String {
+pub(crate) fn bucket_revision_key(manifest_id: &str, category: &str) -> String {
     format!("{}:{}", manifest_id, category)
 }
 
-pub fn fingerprint_manifest_key(manifest_id: &str) -> String {
+pub(crate) fn fingerprint_manifest_key(manifest_id: &str) -> String {
     format!("manifest:{}", manifest_id)
 }
 
-pub fn fingerprint_bucket_key(manifest_id: &str, category: &str) -> String {
+pub(crate) fn fingerprint_bucket_key(manifest_id: &str, category: &str) -> String {
     format!("bucket:{}:{}", manifest_id, category)
 }
 

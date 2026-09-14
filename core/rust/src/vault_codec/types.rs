@@ -2,16 +2,10 @@
 //!
 //! The datamodel registry data (tables, keys, bucket layout, blob columns, sentinels) lives in
 //! [`crate::vault_model`], generated from the TypeScript source of truth in
-//! core/models/src/vault/VaultTableRegistry.ts; this module re-exports it for the codec and adds
-//! the codec-owned accessors on top.
-
-pub use crate::vault_model::{
-    BLOB_COLUMNS, BUCKET_TABLES, ENCRYPTION_KEYS_TABLE, MANIFESTS_TABLE, MANIFEST_ID_COL,
-    MULTI_VALUE_FIELD_KEYS, OVERFLOW_ROW_ID, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES,
-    UNSTAMPED_SCOPE_SENTINEL,
-};
+//! core/models/src/vault/VaultTableRegistry.ts; this module adds the codec-owned accessors on top.
 
 use crate::vault_model::names::ID_COL;
+use crate::vault_model::{ids_equal, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
 
 /// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
@@ -85,7 +79,7 @@ pub fn tables_for_category(category: &str) -> Vec<&'static str> {
 pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
     match scope {
         None => true,
-        Some(value) => value.is_empty() || value.eq_ignore_ascii_case(UNSTAMPED_SCOPE_SENTINEL),
+        Some(value) => value.is_empty() || ids_equal(value, UNSTAMPED_SCOPE_SENTINEL),
     }
 }
 
@@ -100,30 +94,27 @@ pub fn is_bucketed_table(table_name: &str) -> bool {
 }
 
 /// Get the primary key columns for a table.
-pub fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
-    crate::vault_model::SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&["Id"])
+pub(crate) fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
+    SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&[ID_COL])
 }
 
 /// True when `table_name`'s rows are namespaced per manifest.
 pub fn is_manifest_scoped(table_name: &str) -> bool {
-    crate::vault_model::SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
+    SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
 }
 
 /// Every manifest-scoped table, in registry order.
 pub fn manifest_scoped_tables() -> Vec<&'static str> {
-    crate::vault_model::SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
+    SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
 }
 
 /// The columns that together identify one row of `table_name`.
-pub fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
-    crate::vault_model::SYNCABLE_TABLES
-        .iter()
-        .find(|t| t.name == table_name)
-        .map(|t| t.identity_columns())
-        .unwrap_or_else(|| vec!["Id"])
+pub(crate) fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
+    SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.identity_columns()).unwrap_or_else(|| vec![ID_COL])
 }
 
-/// Stable string key identifying `row` within `table_name`.
+/// Stable string key identifying `row` within `table_name`: the identity parts joined by `\u{1f}`, a
+/// null or absent column skipped. See also `vault_merge::get_key`, whose empty-part rule the merge relies on.
 pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Option<String> {
     let mut columns = identity_columns_for(table_name);
     if !columns.contains(&MANIFEST_ID_COL) && row.get(MANIFEST_ID_COL).filter(|value| !value.is_null()).is_some() {

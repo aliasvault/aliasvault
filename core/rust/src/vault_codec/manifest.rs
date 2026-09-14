@@ -4,7 +4,10 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use super::row::str_col;
 use super::types::SCHEMA_VERSION;
+use crate::vault_model::names::ID_COL;
+use crate::vault_model::OVERFLOW_ROW_ID;
 
 /// A codec record is a map of column names to JSON values.
 pub type CodecRecord = HashMap<String, serde_json::Value>;
@@ -155,7 +158,7 @@ impl CodecOverflow {
     /// Render this overflow as the single `OVERFLOW_TABLE` row the platform inserts into the vault DB.
     pub fn to_table_records(&self) -> Vec<CodecRecord> {
         let mut row: CodecRecord = HashMap::new();
-        row.insert("Id".to_string(), serde_json::Value::String(super::types::OVERFLOW_ROW_ID.to_string()));
+        row.insert(ID_COL.to_string(), serde_json::Value::String(OVERFLOW_ROW_ID.to_string()));
         row.insert("Data".to_string(), serde_json::Value::String(serde_json::to_string(self).unwrap_or_default()));
         vec![row]
     }
@@ -166,8 +169,7 @@ impl CodecOverflow {
     pub fn from_table_records(records: &[CodecRecord]) -> Self {
         records
             .first()
-            .and_then(|row| row.get("Data"))
-            .and_then(|v| v.as_str())
+            .and_then(|row| str_col(row, "Data"))
             .and_then(|json| serde_json::from_str(json).ok())
             .unwrap_or_default()
     }
@@ -190,12 +192,12 @@ pub struct MaterializedTables {
 #[serde(rename_all = "camelCase")]
 pub struct CanonicalizeInput {
     /// All local vault tables (a plain `SELECT *` read from the vault DB). When the read includes the
-    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row written by the last materialize, its overflow 
+    /// [`OVERFLOW_TABLE`](crate::vault_model::OVERFLOW_TABLE) row written by the last materialize, its overflow
     /// (a newer writer's tables/columns this schema can't hold) is re-merged automatically.
     pub tables: Vec<CodecTableData>,
     pub canonicalized_at: String,
     pub manifests: Vec<ManifestSpec>,
-    /// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. 
+    /// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
     /// TODO: delete this field once the migration is complete.
     #[serde(default)]
     pub adopt_unstamped_into: Option<String>,
@@ -209,7 +211,7 @@ pub struct ExtractBucketsInput {
     /// Every manifest this vault can write. Each gets a bucket back; rows naming anything else are dropped.
     pub manifest_ids: Vec<String>,
     /// The category's tables as read from the local vault, plus the
-    /// [`OVERFLOW_TABLE`](super::types::OVERFLOW_TABLE) row so a newer writer's columns/tables re-merge.
+    /// [`OVERFLOW_TABLE`](crate::vault_model::OVERFLOW_TABLE) row so a newer writer's columns/tables re-merge.
     pub tables: HashMap<String, Vec<CodecRecord>>,
 }
 

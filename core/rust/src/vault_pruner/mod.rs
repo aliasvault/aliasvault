@@ -10,31 +10,20 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
 use crate::error::{VaultError, VaultResult};
-use crate::vault_codec::row::{is_deleted, str_col};
-use crate::vault_merge::SqlStatement;
+use crate::sqlite_host::SqlStatement;
+use crate::vault_codec::row::{has_bytes, is_deleted, logo_kind, str_col};
+use crate::vault_codec::{CodecRecord, CodecTableData};
 use crate::vault_model::names::{
     DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_STATS_TABLE, KIND_COL, LOGOS_TABLE,
     LOGO_ID_COL, LOGO_KIND_FAVICON, UPDATED_AT_COL,
 };
-use crate::vault_model::{BLOB_COLUMNS, SYNCABLE_TABLES};
-
-/// A record is a map of column names to JSON values.
-pub type Record = crate::vault_codec::CodecRecord;
-
-/// Data for a single table.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TableData {
-    /// Table name
-    pub name: String,
-    /// All records in this table
-    pub records: Vec<Record>,
-}
+use crate::vault_model::{BLOB_COLUMNS, SYNCABLE_TABLES, TRASH_RETENTION_DEFAULT_DAYS};
 
 /// Input for the prune operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PruneInput {
     /// Tables from the local database (at minimum, Items table is required)
-    pub tables: Vec<TableData>,
+    pub tables: Vec<CodecTableData>,
     /// Current time in ISO 8601 UTC format: `YYYY-MM-DDTHH:MM:SS.sssZ`.
     /*
      * Callers: JavaScript `new Date().toISOString()`, C# `DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")`,
@@ -47,7 +36,7 @@ pub struct PruneInput {
 }
 
 fn default_retention_days() -> u32 {
-    crate::vault_model::TRASH_RETENTION_DEFAULT_DAYS
+    TRASH_RETENTION_DEFAULT_DAYS
 }
 
 /// Statistics about what was pruned.
@@ -136,7 +125,7 @@ fn blob_clear_fragment(table_name: &str) -> String {
 }
 
 /// The records of the named table, `None` when the input does not carry it.
-fn records_of<'a>(tables: &'a [TableData], name: &str) -> Option<&'a [Record]> {
+fn records_of<'a>(tables: &'a [CodecTableData], name: &str) -> Option<&'a [CodecRecord]> {
     tables.iter().find(|t| t.name == name).map(|t| t.records.as_slice())
 }
 
@@ -176,7 +165,7 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
 }
 
 /// Pass 1: the ids of live items whose trash date (`DeletedAt`) lies before the cutoff.
-fn expired_item_ids(items: &[Record], cutoff_date: DateTime<Utc>) -> Vec<String> {
+fn expired_item_ids(items: &[CodecRecord], cutoff_date: DateTime<Utc>) -> Vec<String> {
     let mut expired = Vec::new();
     for item in items.iter().filter(|item| !is_deleted(item)) {
         let Some(deleted_at) = str_col(item, DELETED_AT_COL) else { continue };
@@ -196,7 +185,7 @@ fn expired_item_ids(items: &[Record], cutoff_date: DateTime<Utc>) -> Vec<String>
  * extracted blob column has its bytes dropped in the same statement, leaving the column non-null
  * while reclaiming the storage on the next save.
  */
-fn tombstone_item_children(tables: &[TableData], item_id: &str, now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
+fn tombstone_item_children(tables: &[CodecTableData], item_id: &str, now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
     for child in item_child_tables() {
         let Some(records) = records_of(tables, child.name) else { continue };
         let match_col = item_ref_column(child.name);
@@ -228,8 +217,8 @@ fn tombstone_item_children(tables: &[TableData], item_id: &str, now_str: &str, s
  * then reclaims the bytes.
  */
 fn sweep_orphan_favicons(
-    tables: &[TableData],
-    items: &[Record],
+    tables: &[CodecTableData],
+    items: &[CodecRecord],
     expired: &[String],
     now_str: &str,
     statements: &mut Vec<SqlStatement>,
@@ -246,8 +235,7 @@ fn sweep_orphan_favicons(
         .collect();
 
     for logo in logos.iter().filter(|logo| !is_deleted(logo)) {
-        let kind = str_col(logo, KIND_COL).unwrap_or(LOGO_KIND_FAVICON);
-        if !kind.trim().is_empty() && !kind.eq_ignore_ascii_case(LOGO_KIND_FAVICON) {
+        if logo_kind(logo) != LOGO_KIND_FAVICON {
             continue;
         }
         let Some(logo_id) = str_col(logo, ID_COL) else { continue };
@@ -269,10 +257,10 @@ fn sweep_orphan_favicons(
  * user deleting one from their logo library tombstones the row and this pass reclaims the bytes.
  * Rows tombstoned by Pass 1 or Pass 2 in this same call are already cleared there.
  */
-fn clear_tombstoned_blobs(tables: &[TableData], now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
+fn clear_tombstoned_blobs(tables: &[CodecTableData], now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
     for (table, blob_col, _) in BLOB_COLUMNS {
         let Some(records) = records_of(tables, table) else { continue };
-        let stale = records.iter().filter(|row| is_deleted(row) && value_has_bytes(row.get(*blob_col)));
+        let stale = records.iter().filter(|row| is_deleted(row) && has_bytes(row.get(*blob_col)));
         for row in stale {
             let Some(id) = str_col(row, ID_COL) else { continue };
             statements.push(SqlStatement {
@@ -284,20 +272,8 @@ fn clear_tombstoned_blobs(tables: &[TableData], now_str: &str, statements: &mut 
     }
 }
 
-/// True if a JSON value represents non-empty blob bytes.
-fn value_has_bytes(value: Option<&serde_json::Value>) -> bool {
-    match value {
-        None => false,
-        Some(serde_json::Value::Null) => false,
-        Some(serde_json::Value::String(s)) => !s.is_empty(),
-        Some(serde_json::Value::Array(a)) => !a.is_empty(),
-        Some(serde_json::Value::Object(o)) => !o.is_empty(),
-        Some(_) => true,
-    }
-}
-
 /// Count related records that match a foreign key value and are not already deleted.
-fn count_related_records(records: &[Record], fk_column: &str, fk_value: &str) -> u32 {
+fn count_related_records(records: &[CodecRecord], fk_column: &str, fk_value: &str) -> u32 {
     records.iter().filter(|r| str_col(r, fk_column) == Some(fk_value) && !is_deleted(r)).count() as u32
 }
 

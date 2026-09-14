@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::state::{self, Ctx};
-use super::types::{SharedManifestRecord, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
+use super::types::{SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
 use super::{db, http};
 use crate::crypto;
 
@@ -16,7 +16,7 @@ pub(crate) async fn has_local_vault_key(host: &Host) -> SyncResult<bool> {
 
 /// `GET v2/VaultKey/Password`: the account's vault key, `None` when the server holds none.
 pub(crate) async fn fetch_vault_key(host: &Host) -> SyncResult<Option<VaultKeyResponse>> {
-    match http::get::<VaultKeyGetResponse>(host, "VaultKey/Password", false).await {
+    match http::get::<VaultKeyGetResponse>(host, http::VAULT_KEY_PASSWORD_ENDPOINT, false).await {
         Ok(response) => Ok(response.vault_key),
         Err(SyncError::Http { status: 404, .. }) => Ok(None),
         Err(error) => Err(error),
@@ -41,7 +41,7 @@ pub(crate) async fn cache_vault_key_blobs(host: &Host, vault_key: &VaultKeyRespo
 }
 
 /// The shared-manifest key records, keyed by manifest id.
-pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<String, SharedManifestRecord>> {
+pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<String, SharedManifestDto>> {
     let Some(ciphertext) = state::get::<String>(&ctx.host, state::SHARED_MANIFESTS).await? else { return Ok(HashMap::new()) };
     let Some(key) = &ctx.encryption_key else { return Ok(HashMap::new()) };
     match crypto::symmetric_decrypt(&ciphertext, key).and_then(|json| serde_json::from_str(&json).map_err(Into::into)) {
@@ -54,7 +54,7 @@ pub(crate) async fn shared_manifest_records(ctx: &Ctx) -> SyncResult<HashMap<Str
 }
 
 /// Persist the shared-manifest key records.
-pub(crate) async fn set_shared_manifest_records(host: &Host, records: &HashMap<String, SharedManifestRecord>, key: &str) -> SyncResult<()> {
+pub(crate) async fn set_shared_manifest_records(host: &Host, records: &HashMap<String, SharedManifestDto>, key: &str) -> SyncResult<()> {
     let ciphertext = crypto::symmetric_encrypt(&serde_json::to_string(records)?, key)?;
     state::set(host, state::SHARED_MANIFESTS, &ciphertext).await?;
     Ok(())
@@ -87,7 +87,7 @@ pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, private_key_jwk: &str) -
 }
 
 /// Unwrap one shared manifest's VEK from the grant this account holds on it.
-pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestRecord) -> SyncResult<Option<String>> {
+pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestDto) -> SyncResult<Option<String>> {
     if record.algorithm != ALGORITHM_RSA_OAEP_SHA256 {
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
         return Ok(None);
@@ -151,7 +151,7 @@ async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &
 /// hierarchy is created later by the migration push. Returns whether the account has a chain.
 pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
     let kek = ctx.encryption_key()?;
-    let fetched = http::get::<VaultKeyGetResponse>(&ctx.host, "VaultKey/Password", false).await;
+    let fetched = http::get::<VaultKeyGetResponse>(&ctx.host, http::VAULT_KEY_PASSWORD_ENDPOINT, false).await;
     ctx.vault_key_probed = true;
     match fetched {
         Ok(response) => match response.vault_key {

@@ -31,7 +31,7 @@ fn request(operation: &str, key: &str, dirty: bool, mutation_sequence: u64) -> S
 }
 
 fn insert_item(conn: &rusqlite::Connection, id: &str, name: &str, manifest_id: &str) {
-    let now = crate::vault_sync::db::now();
+    let now = crate::timestamp::now_vault_datetime();
     conn.execute(
         "INSERT INTO Items (Id, ManifestId, Name, ItemType, FolderId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 'Login', NULL, ?, ?, 0)",
         rusqlite::params![id, manifest_id, name, now, now],
@@ -181,7 +181,7 @@ fn dirty_client_pushes_only_what_changed() {
 
     // The written manifest decrypts with the VEK and carries both items.
     let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&base64::Engine::decode(&base64::engine::general_purpose::STANDARD, blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["tables"]["Items"].as_array().unwrap().len(), 2);
 }
@@ -256,7 +256,7 @@ fn outdated_push_merges_the_server_change_and_retries() {
     assert_eq!(posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["currentRevision"], 8);
     let merged: Value = {
         let blob = posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["manifestBlob"].as_str().unwrap();
-        let plain = crypto::symmetric_decrypt_bytes(&base64::Engine::decode(&base64::engine::general_purpose::STANDARD, blob).unwrap(), &vek).unwrap();
+        let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(merged["tables"]["Items"].as_array().unwrap().len(), 3);

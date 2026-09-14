@@ -6,18 +6,19 @@ use serde_json::{json, Map, Value};
 
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
-use super::types::{Ack, Command, Db, DbBytes, DbRows, LogLevel, SqlStatement};
+use super::types::{Ack, Command, Db, DbBytes, DbRows, LogLevel};
 use super::legacy;
-use crate::encoding::{base64_decode, base64_encode};
+use crate::encoding::{base64_decode, base64_encode, uuid_from_bytes};
+use crate::sqlite_host::SqlStatement;
+use crate::timestamp::{now_iso_utc, now_vault_datetime};
+use crate::vault_codec::row::{blob_ref_of, inline_bytes};
 use crate::vault_codec::{CodecRecord, CodecTableData, MaterializedTables};
+use crate::vault_model::{id_key, ids_equal, UNSTAMPED_SCOPE_SENTINEL};
 
 pub(crate) type Row = Map<String, Value>;
 
 /// Rows per `dbExec` batch when bulk-loading a materialized vault.
 const INSERT_BATCH_ROWS: usize = 400;
-
-/// The id a row carries while it belongs to no manifest yet.
-pub const UNSTAMPED_MANIFEST_ID: &str = "00000000-0000-0000-0000-000000000000";
 
 pub(crate) async fn query(host: &Host, db: Db, sql: &str, params: Vec<Value>) -> SyncResult<Vec<Row>> {
     let response: DbRows = host.call(Command::DbQuery { db, sql: sql.to_string(), params }).await?;
@@ -46,10 +47,6 @@ pub(crate) async fn open_staging(host: &Host, bytes: Option<&[u8]>) -> SyncResul
 pub(crate) async fn export(host: &Host, db: Db) -> SyncResult<Vec<u8>> {
     let response: DbBytes = host.call(Command::DbExport { db }).await?;
     base64_decode(&response.bytes).map_err(|_| SyncError::Other("host returned invalid database bytes".to_string()))
-}
-
-pub(crate) fn b64_param(bytes: &[u8]) -> Value {
-    json!({ "__b64": base64_encode(bytes) })
 }
 
 /// A cell as text: strings as they are, null as empty, anything else in its JSON form.
@@ -164,7 +161,7 @@ pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec
     for table in stamped_tables(host, db).await? {
         let rows = query(host, db, &format!("SELECT DISTINCT ManifestId FROM \"{}\" WHERE ManifestId IS NOT NULL AND ManifestId != ''", table), vec![]).await?;
         for id in rows.iter().filter_map(|row| row.get("ManifestId").and_then(Value::as_str)) {
-            if !id.eq_ignore_ascii_case(UNSTAMPED_MANIFEST_ID) && !ids.iter().any(|known| known == id) {
+            if !ids_equal(id, UNSTAMPED_SCOPE_SENTINEL) && !ids.iter().any(|known| known == id) {
                 ids.push(id.to_string());
             }
         }
@@ -216,45 +213,33 @@ pub(crate) async fn insert_materialized(host: &Host, materialized: &Materialized
 /// A materialized cell as a bind parameter: blob markers become bytes (NULL when the bytes are missing),
 /// inline `{ __b64 }` payloads bind as bytes, everything else binds as is.
 fn bind_value(value: &Value, blobs: &HashMap<String, Vec<u8>>) -> Value {
-    if let Some(reference) = value.get("__blobRef").and_then(Value::as_str) {
-        return blobs.get(reference).map(|bytes| b64_param(bytes)).unwrap_or(Value::Null);
+    if let Some((reference, _)) = blob_ref_of(value) {
+        return blobs.get(reference).map(|bytes| inline_bytes(bytes)).unwrap_or(Value::Null);
     }
     value.clone()
-}
-
-/// The current timestamp in the vault's row format (`yyyy-MM-dd HH:mm:ss.SSS`, UTC).
-pub(crate) fn now() -> String {
-    crate::timestamp::now_vault_datetime()
-}
-
-/// The current instant as ISO-8601 UTC with milliseconds.
-pub(crate) fn now_iso() -> String {
-    crate::timestamp::now_iso_utc()
 }
 
 /// A random lowercase UUID v4.
 pub(crate) fn new_id() -> String {
     let mut bytes = [0u8; 16];
     crate::rng::fill_random(&mut bytes);
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    crate::encoding::format_uuid(&bytes)
+    uuid_from_bytes(bytes, 4)
 }
 
-pub(crate) const GET_ACTIVE_KEY_FOR_MANIFEST: &str = "SELECT x.Id, x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";
-pub(crate) const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
-pub(crate) const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
-pub(crate) const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
-pub(crate) const INSERT_FOLDER: &str = "INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt) VALUES (?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?), 0, 0, ?, ?)";
-pub(crate) const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
-pub(crate) const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ? WHERE FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
-pub(crate) const FIND_ITEMS_WITH_FOREIGN_LOGO: &str = "SELECT i.Id, i.ManifestId, origin.Kind, origin.Source FROM Items i INNER JOIN Logos origin ON origin.Id = i.LogoId LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0";
-pub(crate) const GET_LOGO_ID_FOR_KEY: &str = "SELECT Id FROM Logos WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0 LIMIT 1";
-pub(crate) const GET_BEST_LOGO_FOR_KEY: &str = "SELECT FileData, MimeType, Name FROM Logos WHERE Kind = ? AND Source = ? AND IsDeleted = 0 ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC LIMIT 1";
-pub(crate) const UPSERT_LOGO: &str = "INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0) ON CONFLICT(ManifestId, Id) DO UPDATE SET FileData = excluded.FileData, MimeType = excluded.MimeType, Name = COALESCE(excluded.Name, Logos.Name), UpdatedAt = excluded.UpdatedAt, IsDeleted = 0";
-pub(crate) const REPOINT_ITEM_LOGO: &str = "UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?";
-pub(crate) const RENDERED_MANIFEST_FOLDER: &str = "SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL";
-pub(crate) const MANIFEST_ROOT_FOLDER_NAMES: &str = "SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)";
+const GET_ACTIVE_KEY_FOR_MANIFEST: &str = "SELECT x.Id, x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";
+const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
+const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
+const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
+const INSERT_FOLDER: &str = "INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt) VALUES (?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?), 0, 0, ?, ?)";
+const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
+const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ? WHERE FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
+const FIND_ITEMS_WITH_FOREIGN_LOGO: &str = "SELECT i.Id, i.ManifestId, origin.Kind, origin.Source FROM Items i INNER JOIN Logos origin ON origin.Id = i.LogoId LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0";
+const GET_LOGO_ID_FOR_KEY: &str = "SELECT Id FROM Logos WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0 LIMIT 1";
+const GET_BEST_LOGO_FOR_KEY: &str = "SELECT FileData, MimeType, Name FROM Logos WHERE Kind = ? AND Source = ? AND IsDeleted = 0 ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC LIMIT 1";
+const UPSERT_LOGO: &str = "INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0) ON CONFLICT(ManifestId, Id) DO UPDATE SET FileData = excluded.FileData, MimeType = excluded.MimeType, Name = COALESCE(excluded.Name, Logos.Name), UpdatedAt = excluded.UpdatedAt, IsDeleted = 0";
+const REPOINT_ITEM_LOGO: &str = "UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?";
+const RENDERED_MANIFEST_FOLDER: &str = "SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL";
+const MANIFEST_ROOT_FOLDER_NAMES: &str = "SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)";
 
 /// The active mail delivery keypair of a manifest, when it has one.
 pub(crate) async fn active_key_for_manifest(host: &Host, manifest_id: &str) -> SyncResult<Option<Row>> {
@@ -269,7 +254,7 @@ pub(crate) async fn account_private_key_for(host: &Host, personal_manifest_id: &
 
 /// Make a keypair the manifest's active one, demoting (never deleting) whatever it supersedes.
 pub(crate) async fn set_active_key_for_manifest(host: &Host, manifest_id: &str, public_key: &str, private_key: &str) -> SyncResult<()> {
-    let now = now();
+    let now = now_vault_datetime();
     exec(
         host,
         Db::Local,
@@ -290,7 +275,7 @@ pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<St
     let rows = query(host, Db::Local, MANIFEST_ROOT_FOLDER_NAMES, vec![]).await?;
     Ok(rows
         .iter()
-        .filter_map(|row| Some((row.get("ManifestId")?.as_str()?.to_lowercase(), row.get("Name")?.as_str()?.to_string())))
+        .filter_map(|row| Some((id_key(row.get("ManifestId")?.as_str()?), row.get("Name")?.as_str()?.to_string())))
         .collect())
 }
 
@@ -301,8 +286,8 @@ pub(crate) async fn has_rendered_manifest_folder(host: &Host, manifest_id: &str)
 
 /// Create the folder a shared manifest is rendered as and pull everything under it into the manifest.
 pub(crate) async fn render_manifest_folder(host: &Host, manifest_id: &str, name: &str, active_manifest_id: &str) -> SyncResult<()> {
-    let folder_id = manifest_id.to_lowercase();
-    let now = now();
+    let folder_id = id_key(manifest_id);
+    let now = now_vault_datetime();
     exec(
         host,
         Db::Local,
@@ -349,11 +334,11 @@ pub(crate) async fn prune_in_place(host: &Host, retention_days: u32) -> SyncResu
     let mut tables = Vec::new();
     for table_query in crate::vault_pruner::get_prune_table_queries() {
         let rows = query(host, Db::Local, &table_query.query, vec![]).await?;
-        tables.push(crate::vault_pruner::TableData { name: table_query.name, records: rows.into_iter().map(|row| row.into_iter().collect()).collect() });
+        tables.push(CodecTableData { name: table_query.name, records: rows.into_iter().map(row_to_record).collect() });
     }
-    let output = crate::vault_pruner::prune_vault(crate::vault_pruner::PruneInput { tables, current_time: now_iso(), retention_days })?;
+    let output = crate::vault_pruner::prune_vault(crate::vault_pruner::PruneInput { tables, current_time: now_iso_utc(), retention_days })?;
     let count = output.statements.len();
-    exec(host, Db::Local, output.statements.into_iter().map(|s| SqlStatement { sql: s.sql, params: s.params }).collect()).await?;
+    exec(host, Db::Local, output.statements).await?;
     Ok(count)
 }
 
@@ -368,13 +353,5 @@ mod tests {
         assert_eq!(id, id.to_lowercase());
         assert_eq!(&id[14..15], "4");
         assert!(matches!(&id[19..20], "8" | "9" | "a" | "b"));
-    }
-
-    #[test]
-    fn timestamps_use_the_vault_format() {
-        let stamp = now();
-        assert_eq!(stamp.len(), 23);
-        assert_eq!(&stamp[10..11], " ");
-        assert!(now_iso().ends_with('Z'));
     }
 }

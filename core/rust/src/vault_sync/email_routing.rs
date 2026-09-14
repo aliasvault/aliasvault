@@ -6,29 +6,30 @@ use serde_json::Value;
 
 use super::types::{ClaimedEmailAddress, EmailRoutingPush};
 use super::db::value_string;
-use crate::vault_codec::row::{rows_of, truthy};
+use crate::vault_codec::row::{is_deleted, rows_of, str_col, truthy};
 use crate::vault_codec::Manifest;
+use crate::vault_model::names::{DELETED_AT_COL, FIELD_KEY_COL, FIELD_VALUES_TABLE, ID_COL, ITEMS_TABLE, ITEM_ID_COL};
 
 /// The field key of an item's login email.
 const FIELD_KEY_LOGIN_EMAIL: &str = "login.email";
 
 /// Build the routing set from the canonicalized manifests, the user's own included.
-pub fn build_email_routing(manifests: &[Manifest], private_email_domains: &[String]) -> EmailRoutingPush {
+pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains: &[String]) -> EmailRoutingPush {
     let mut by_pair: HashMap<String, ClaimedEmailAddress> = HashMap::new();
     let mut order: Vec<String> = Vec::new();
 
     for manifest in manifests {
-        let live_item_ids: HashSet<String> = rows_of(&manifest.tables, "Items")
+        let live_item_ids: HashSet<String> = rows_of(&manifest.tables, ITEMS_TABLE)
             .iter()
-            .filter(|row| !truthy(row.get("IsDeleted")) && row.get("DeletedAt").map_or(true, Value::is_null))
-            .filter_map(|row| row.get("Id").map(value_string))
+            .filter(|row| !is_deleted(row) && row.get(DELETED_AT_COL).map_or(true, Value::is_null))
+            .filter_map(|row| row.get(ID_COL).map(value_string))
             .collect();
 
-        for field_value in rows_of(&manifest.tables, "FieldValues") {
-            if field_value.get("FieldKey").and_then(Value::as_str) != Some(FIELD_KEY_LOGIN_EMAIL) || truthy(field_value.get("IsDeleted")) {
+        for field_value in rows_of(&manifest.tables, FIELD_VALUES_TABLE) {
+            if str_col(field_value, FIELD_KEY_COL) != Some(FIELD_KEY_LOGIN_EMAIL) || is_deleted(field_value) {
                 continue;
             }
-            let item_id = field_value.get("ItemId").map(value_string).unwrap_or_default();
+            let item_id = field_value.get(ITEM_ID_COL).map(value_string).unwrap_or_default();
             if !live_item_ids.contains(&item_id) {
                 continue;
             }

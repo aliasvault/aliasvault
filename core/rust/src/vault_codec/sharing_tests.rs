@@ -6,11 +6,11 @@
 //! local vault holds every row) and a recipient (whose personal manifest knows nothing of the share).
 
 use super::*;
+use super::test_support::{b64, row, table};
 use super::tests::{fitting_schema, materialize_manifests, materialize_input, stamp_unstamped};
 use super::types::{is_bucketed_table, is_personal_table, manifest_scoped_tables, SCHEMA_VERSION};
 use crate::vault_model::names::LOGO_KIND_FAVICON;
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
+use crate::vault_model::OVERFLOW_TABLE;
 use serde_json::json;
 use std::collections::{HashMap, HashSet};
 
@@ -20,18 +20,6 @@ const SALT_SHARED: &str = "ffeeddccbbaa99887766554433221100ffeeddccbbaa998877665
 /// The personal manifest id every test canonicalizes against. Personal rows are stamped with it, there is
 /// no NULL-scope convention anywhere in the format.
 const PERSONAL_M: &str = "m-personal";
-
-fn b64(bytes: &[u8]) -> String {
-    BASE64.encode(bytes)
-}
-
-fn row(pairs: &[(&str, serde_json::Value)]) -> CodecRecord {
-    pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
-}
-
-fn table(name: &str, records: Vec<CodecRecord>) -> CodecTableData {
-    CodecTableData { name: name.to_string(), records }
-}
 
 /// A spec for `folder_id`, whose manifest id is derived as `m-<folder_id>` so every test can predict
 /// the scope stamp of a partition's rows.

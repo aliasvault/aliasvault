@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 use super::errors::{ErrorCode, Failure, LogoutReason, SyncError};
+use crate::sqlite_host::SqlStatement;
 
 /// The operation a session runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -267,14 +268,6 @@ pub enum LogLevel {
     Phase,
 }
 
-/// One parameterized SQL statement for the host to run.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SqlStatement {
-    pub sql: String,
-    #[serde(default)]
-    pub params: Vec<Value>,
-}
-
 /// What the engine can ask the host to do.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
@@ -515,15 +508,11 @@ pub struct PendingAction {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetResponse {
-    #[serde(default)]
-    pub status: i32,
     /// LEGACY: 0 = sqlite-blob, 1 = manifest-v1; absent on servers predating the field.
     #[serde(default)]
     pub storage_format: Option<i32>,
     #[serde(default)]
     pub legacy_vault_blob: Option<String>,
-    #[serde(default)]
-    pub version: Option<String>,
     #[serde(default)]
     pub legacy_revision: Option<i64>,
     #[serde(default)]
@@ -725,10 +714,11 @@ pub struct VaultKeyResponse {
     #[serde(default)]
     pub encryption_settings: String,
 }
+
 /// A shared manifest as this account holds it: the grant on its key plus what the last pull learned about it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SharedManifestRecord {
+pub struct SharedManifestDto {
     pub manifest_id: String,
     pub encrypted_vek: String,
     pub encryption_public_key: String,

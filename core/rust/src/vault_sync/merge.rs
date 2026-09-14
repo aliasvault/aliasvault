@@ -3,8 +3,6 @@
 
 use std::collections::{HashMap, HashSet};
 
-use serde::{Deserialize, Serialize};
-
 use crate::vault_model::{id_key, ids_equal};
 use super::errors::{SyncError, SyncResult};
 use super::pull::{self, OpenedManifestSet, PulledVault};
@@ -12,31 +10,9 @@ use super::push::{canonicalize_vault, CanonicalizedSet, ManifestRecord};
 use super::state::{self, Ctx};
 use super::types::EmailRoutingDto;
 use super::legacy;
+use crate::vault_codec::row::blob_ref_of;
 use crate::vault_codec::{self, BlobEntry, CanonicalizedVault, DataBucket, Manifest};
 use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, MergeStats};
-
-/// Aggregate merge statistics across all manifests.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MergeSummary {
-    pub tables_processed: u32,
-    pub records_from_local: u32,
-    pub records_from_server: u32,
-    pub records_created_locally: u32,
-    pub conflicts: u32,
-    pub records_inserted: u32,
-}
-
-impl MergeSummary {
-    fn add(&mut self, stats: &MergeStats) {
-        self.tables_processed += stats.tables_processed;
-        self.records_from_local += stats.records_from_local;
-        self.records_from_server += stats.records_from_server;
-        self.records_created_locally += stats.records_created_locally;
-        self.conflicts += stats.conflicts;
-        self.records_inserted += stats.records_inserted;
-    }
-}
 
 /// What a dirty pull (pull and merge) produced.
 pub(crate) enum PullAndMergeOutcome {
@@ -44,7 +20,8 @@ pub(crate) enum PullAndMergeOutcome {
     LegacyServer { revision: i64 },
     Merged {
         pulled: PulledVault,
-        stats: MergeSummary,
+        /// The merge counters summed over every manifest.
+        stats: MergeStats,
         fallback_manifest_ids: Vec<String>,
         dropped_local_manifest_ids: Vec<String>,
         push_canonical: Option<CanonicalizedSet>,
@@ -130,7 +107,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
     let mut manifests: Vec<Manifest> = Vec::new();
     let mut data_buckets: Vec<DataBucket> = Vec::new();
     let mut fallback_manifest_ids = Vec::new();
-    let mut stats = MergeSummary::default();
+    let mut stats = MergeStats::default();
     for entry in merge_output.manifests {
         let failure = validate_merged_manifest(&entry);
         if let Some(failure) = &failure {
@@ -220,8 +197,7 @@ async fn resolve_merged_blob_refs(ctx: &Ctx, manifests: &[Manifest], blob_map: &
         for rows in manifest.tables.values() {
             for row in rows {
                 for value in row.values() {
-                    let Some(reference) = value.get("__blobRef").and_then(serde_json::Value::as_str) else { continue };
-                    let kind = value.get("__blobKind").and_then(serde_json::Value::as_str);
+                    let Some((reference, kind)) = blob_ref_of(value) else { continue };
                     let Some(bytes) = blob_map.get(reference) else {
                         if kind == Some("attachment") && is_personal {
                             return Err(SyncError::MergeFailed(format!("merged vault references attachment blob {} with no bytes available, refusing to materialize an incomplete vault", reference)));

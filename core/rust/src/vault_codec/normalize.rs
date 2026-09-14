@@ -6,9 +6,9 @@ use serde_json::json;
 
 use super::manifest::CodecRecord;
 use super::row::{str_col, truthy};
-use super::types::{is_guid, is_id_column, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS};
+use super::types::{is_guid, is_id_column};
 use crate::timestamp::updated_at;
-use crate::vault_model::id_key;
+use crate::vault_model::{id_key, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS};
 use crate::vault_model::names::{
     CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,
     FIELD_VALUES_TABLE, ID_COL, IS_MULTI_VALUE_COL, ITEM_ID_COL, ITEM_TAGS_TABLE, TAG_ID_COL, VALUE_INDEX_COL,
@@ -37,7 +37,7 @@ pub fn field_history_id_for(manifest_id: &str, item_id: &str, field_key: &str, f
 /// A UUIDv8 from `sha256(namespace | manifest | item | field | tail)`, ids lowercased.
 fn derived_field_id(namespace: &str, manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, tail: &str) -> String {
     let field = field_discriminator_of(field_key, field_definition_id);
-    super::hash::derived_uuid(&format!("{}\n{}\n{}\n{}\n{}", namespace, manifest_id.to_lowercase(), item_id.to_lowercase(), field, tail))
+    super::hash::derived_uuid(&format!("{}\n{}\n{}\n{}\n{}", namespace, id_key(manifest_id), id_key(item_id), field, tail))
 }
 
 /// Lowercase every id in `tables` which is the normalized spelling expected by all AliasVault clients.
@@ -117,7 +117,7 @@ fn normalize_field_values(rows: &mut Vec<CodecRecord>, multi_value_defs: &HashSe
 
     let mut removed: HashSet<usize> = HashSet::new();
     for ((manifest, _, _), mut positions) in groups {
-        let multi_value = rows[positions[0]].get(FIELD_KEY_COL).and_then(|v| v.as_str()).is_some_and(|key| MULTI_VALUE_FIELD_KEYS.contains(&key.to_lowercase().as_str()))
+        let multi_value = str_col(&rows[positions[0]], FIELD_KEY_COL).is_some_and(|key| MULTI_VALUE_FIELD_KEYS.contains(&key.to_lowercase().as_str()))
             || lower_str(&rows[positions[0]], FIELD_DEFINITION_ID_COL).is_some_and(|def| multi_value_defs.contains(&(manifest.clone(), def)));
 
         if multi_value {
@@ -232,7 +232,7 @@ fn field_discriminator_of(field_key: &str, field_definition_id: &str) -> String 
 }
 
 fn has_id(row: &CodecRecord) -> bool {
-    row.get(ID_COL).and_then(|v| v.as_str()).is_some_and(|s| !s.is_empty())
+    str_col(row, ID_COL).is_some_and(|s| !s.is_empty())
 }
 
 fn value_index_of(row: &CodecRecord) -> Option<i64> {

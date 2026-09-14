@@ -2,14 +2,13 @@
 
 use std::collections::HashMap;
 
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use rusqlite::{Connection, MAIN_DB};
 use serde_json::{json, Map, Value};
 
 use crate::crypto;
-use crate::sqlite_host;
-use crate::vault_sync::types::{Command, Db, SqlStatement};
+use crate::encoding::{base64_decode, base64_encode};
+use crate::sqlite_host::{self, SqlStatement};
+use crate::vault_sync::types::{Command, Db};
 use crate::vault_sync::session::SyncSession;
 
 /// One recorded HTTP request.
@@ -60,7 +59,6 @@ pub fn open_schema_db(schema_sql: &str) -> Connection {
     let conn = Connection::open_in_memory().unwrap();
     conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
     conn.execute_batch(schema_sql).unwrap();
-    conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
     conn
 }
 
@@ -127,7 +125,7 @@ impl TestHost {
                     self.staging = Some(match bytes {
                         None => open_schema_db(&self.schema_sql),
                         Some(b64) => {
-                            let conn = open_from_bytes(&BASE64.decode(b64).unwrap());
+                            let conn = open_from_bytes(&base64_decode(&b64).unwrap());
                             conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
                             conn
                         }
@@ -146,7 +144,7 @@ impl TestHost {
                     Ok(()) => json!({}),
                     Err(error) => json!({ "error": error }),
                 },
-                Command::DbExport { db } => json!({ "bytes": BASE64.encode(self.db(db).serialize(MAIN_DB).unwrap().to_vec()) }),
+                Command::DbExport { db } => json!({ "bytes": base64_encode(&self.db(db).serialize(MAIN_DB).unwrap()) }),
                 Command::VaultStore { encrypted_blob, mark_dirty, encryption_key, expected_mutation_seq, revision } => {
                     self.store_calls.push(Command::VaultStore { encrypted_blob: String::new(), mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
                     if let Some(key) = encryption_key {
@@ -189,7 +187,7 @@ impl TestHost {
     /// Store a blob and reload `local` from it, as the contract requires.
     fn adopt_blob(&mut self, encrypted_blob: &str) {
         self.vault_blob = Some(encrypted_blob.to_string());
-        let bytes = crypto::symmetric_decrypt_bytes(&BASE64.decode(encrypted_blob).unwrap(), &self.vault_key).expect("stored blob decrypts with the vault key");
+        let bytes = crypto::symmetric_decrypt_bytes(&base64_decode(encrypted_blob).unwrap(), &self.vault_key).expect("stored blob decrypts with the vault key");
         self.local = open_from_bytes(&bytes);
     }
 

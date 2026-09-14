@@ -34,20 +34,16 @@ use std::collections::{HashMap, HashSet};
 use serde_json::{json, Value};
 
 use super::manifest::{CodecRecord, Manifest, ManifestSpec};
-use super::row::{str_col, truthy};
+use super::row::{is_deleted, rows_of, str_col};
 use super::scoped_assets::{is_custom_logo, normalize_logo_scope, reconcile_logo_references};
-use super::types::{
-    is_bucketed_table, is_local_only_table, is_manifest_scoped, is_personal_table, manifest_scoped_tables, row_identity, ENCRYPTION_KEYS_TABLE,
-    MANIFEST_ID_COL,
-};
+use super::types::{is_bucketed_table, is_local_only_table, is_manifest_scoped, is_personal_table, manifest_scoped_tables, row_identity};
 use crate::error::{VaultError, VaultResult};
 use crate::vault_model::names::{
-    FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FOLDERS_TABLE,
-    FOLDER_ID_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE,
-    LOGO_ID_COL, PARENT_FOLDER_ID_COL, PUBLIC_KEY_COL, TAGS_TABLE, TAG_ID_COL,
+    ENCRYPTION_KEYS_TABLE, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FOLDERS_TABLE,
+    FOLDER_ID_COL, ID_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE, LOGO_ID_COL, PARENT_FOLDER_ID_COL, PUBLIC_KEY_COL,
+    TAGS_TABLE, TAG_ID_COL,
 };
-
-use crate::vault_model::REFERENCED_TABLES;
+use crate::vault_model::{ids_equal, MANIFEST_ID_COL, REFERENCED_TABLES};
 
 /// The tables a caller must snapshot before routing, so the referenced content can be copied out of
 /// them afterwards: every [`REFERENCED_TABLES`] target plus `Logos`.
@@ -141,12 +137,12 @@ pub(super) fn partition_by_manifest(
     // Where a row goes, read straight off its `ManifestId` stamp.
     let route = |row: &CodecRecord| -> Route {
         let Some(scope) = str_col(row, MANIFEST_ID_COL) else { return Route::Gone };
-        if scope.eq_ignore_ascii_case(writing_manifest_id) {
+        if ids_equal(scope, writing_manifest_id) {
             return Route::Base;
         }
         manifest_to_spec
             .iter()
-            .find(|(id, _)| id.eq_ignore_ascii_case(scope))
+            .find(|(id, _)| ids_equal(id, scope))
             .map(|(_, index)| Route::Partition(*index))
             .unwrap_or(Route::Gone)
     };
@@ -156,10 +152,7 @@ pub(super) fn partition_by_manifest(
      * same namespace. Both halves, because `Folders.ParentFolderId` resolves through the composite key:
      * the same id in another manifest is another folder, not this one's parent.
      */
-    let folder_identities: HashSet<(String, String)> = tables
-        .get(FOLDERS_TABLE)
-        .map(Vec::as_slice)
-        .unwrap_or(&[])
+    let folder_identities: HashSet<(String, String)> = rows_of(tables, FOLDERS_TABLE)
         .iter()
         .filter_map(|row| Some((str_col(row, MANIFEST_ID_COL)?.to_string(), str_col(row, ID_COL)?.to_string())))
         .collect();
@@ -358,7 +351,7 @@ pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord
 
         let mut missing: Vec<String> = referencing
             .iter()
-            .flat_map(|(ref_table, ref_column)| tables.get(*ref_table).map(Vec::as_slice).unwrap_or(&[]).iter().filter_map(move |row| str_col(row, ref_column)))
+            .flat_map(|(ref_table, ref_column)| rows_of(tables, ref_table).iter().filter_map(move |row| str_col(row, ref_column)))
             .filter(|id| !present.contains(*id))
             .map(str::to_string)
             .collect();
@@ -496,7 +489,7 @@ fn claim_manifest_scope(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest
 /// owns.
 fn retain_own_encryption_keys(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
     if let Some(rows) = tables.get_mut(ENCRYPTION_KEYS_TABLE) {
-        rows.retain(|row| str_col(row, MANIFEST_ID_COL) == Some(manifest_id));
+        rows.retain(|row| str_col(row, MANIFEST_ID_COL).is_some_and(|scope| ids_equal(scope, manifest_id)));
     }
 }
 
@@ -613,7 +606,7 @@ pub fn extract_encryption_key_for_public_key(manifest: &Manifest, public_key: &s
         .tables
         .get(ENCRYPTION_KEYS_TABLE)?
         .iter()
-        .find(|row| str_col(row, PUBLIC_KEY_COL) == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !truthy(row.get(IS_DELETED_COL)))
+        .find(|row| str_col(row, PUBLIC_KEY_COL) == Some(public_key) && str_col(row, MANIFEST_ID_COL) == scope && !is_deleted(row))
         .cloned()
 }
 

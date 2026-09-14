@@ -16,18 +16,20 @@ use serde_json::{json, Value};
 
 use super::normalize::{normalize_id_spelling, normalize_row_shapes};
 use super::hash::salted_blob_hash;
+use super::row::{blob_ref, inline_b64, str_col};
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
 use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
 use super::types::{
     blob_spec_for, bucket_categories, bucket_category_for, is_bucketed_table, is_skip_table, is_unstamped_scope,
-    manifest_scoped_tables, row_identity, MANIFEST_ID_COL, OVERFLOW_TABLE, SCHEMA_VERSION,
+    manifest_scoped_tables, row_identity, SCHEMA_VERSION,
 };
 use crate::error::VaultResult;
 use crate::vault_model::names::LOGOS_TABLE;
+use crate::vault_model::{ids_equal, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
 /// Canonicalize normalized tables into the split resources: the manifest, one data bucket per declared
-/// category (see [`BUCKET_TABLES`](super::types::BUCKET_TABLES)), and the content-addressed blob map.
+/// category (see [`BUCKET_TABLES`](crate::vault_model::BUCKET_TABLES)), and the content-addressed blob map.
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
     let writing_spec = match input.manifests.first() {
         Some(spec) if !spec.manifest_id.is_empty() => spec.clone(),
@@ -213,11 +215,11 @@ fn group_category_rows(tables: HashMap<String, Vec<CodecRecord>>, manifest_ids: 
 /// The manifest a bucketed row belongs to, spelled the way `manifest_ids` spells it, or `None` when the row
 /// names no manifest or one this vault does not carry.
 fn owning_manifest(row: &CodecRecord, manifest_ids: &[String]) -> Option<String> {
-    let stamp = row.get(MANIFEST_ID_COL).and_then(|value| value.as_str())?;
+    let stamp = str_col(row, MANIFEST_ID_COL)?;
     if is_unstamped_scope(Some(stamp)) {
         return None;
     }
-    manifest_ids.iter().find(|id| id.eq_ignore_ascii_case(stamp)).cloned()
+    manifest_ids.iter().find(|id| ids_equal(id, stamp)).cloned()
 }
 
 /// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
@@ -254,7 +256,7 @@ fn reject_unstamped_rows(tables: &HashMap<String, Vec<CodecRecord>>) -> VaultRes
 
 /// True when a row carries no usable `ManifestId`: absent, JSON null, a non-string, or the empty string.
 fn is_unstamped(row: &CodecRecord) -> bool {
-    is_unstamped_scope(row.get(MANIFEST_ID_COL).and_then(|value| value.as_str()))
+    is_unstamped_scope(str_col(row, MANIFEST_ID_COL))
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
@@ -279,7 +281,7 @@ fn extract_blob_cell(
     kind: &str,
     blobs: &mut HashMap<String, BlobEntry>,
 ) -> serde_json::Value {
-    let b64 = match cell.and_then(|v| v.get("__b64")).and_then(|v| v.as_str()) {
+    let b64 = match cell.and_then(inline_b64) {
         Some(s) => s,
         None => return serde_json::Value::Null,
     };
@@ -295,7 +297,7 @@ fn extract_blob_cell(
         bytes_base64: b64.to_string(),
     });
 
-    json!({ "__blobRef": hash, "__blobKind": kind })
+    blob_ref(&hash, kind)
 }
 
 /// Re-attach overflow columns.

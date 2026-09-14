@@ -20,10 +20,9 @@ use std::collections::{HashMap, HashSet};
 use serde_json::{json, Value};
 
 use super::manifest::CodecRecord;
-use super::row::{is_deleted, str_col};
-use super::types::MANIFEST_ID_COL;
-use crate::vault_model::id_key;
+use super::row::{has_bytes, is_deleted, logo_kind, normalize_logo_kind, str_col};
 use crate::vault_model::names::{FILE_DATA_COL, ID_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_ID_COL, LOGO_KIND_CUSTOM, LOGO_KIND_FAVICON, SOURCE_COL, UPDATED_AT_COL};
+use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL};
 
 /// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
 /// every favicon row that already exists keeps its id: changing it would re-derive the logo id of
@@ -50,34 +49,23 @@ pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
 /// client can add a kind without this one having to know about it: ids stay stable and distinct either
 /// way, and the rows simply round-trip until this client learns to render them.
 fn namespace_for_kind(kind: &str) -> String {
-    match normalize_kind(kind) {
+    match normalize_logo_kind(kind) {
         k if k == LOGO_KIND_FAVICON => FAVICON_ID_NAMESPACE.to_string(),
         k => format!("aliasvault:logo:{}:v1", k),
     }
-}
-
-/// A row's kind, lowercased so `Kind` matching is case-insensitive like the rest of the natural key.
-/// Absent or empty means [`LOGO_KIND_FAVICON`]: the row was written before the column existed, when
-/// every logo was a favicon.
-fn normalize_kind(kind: &str) -> String {
-    let trimmed = kind.trim();
-    if trimmed.is_empty() {
-        return LOGO_KIND_FAVICON.to_string();
-    }
-    trimmed.to_lowercase()
 }
 
 /// True when a row holds an image the user supplied themselves ([`LOGO_KIND_CUSTOM`]) rather than one the
 /// client can produce again on its own: a favicon it can refetch from the domain, a built-in logo it
 /// draws from the catalog. Only that first group is worth keeping around once nothing references it.
 pub(super) fn is_custom_logo(row: &CodecRecord) -> bool {
-    normalize_kind(str_col(row, KIND_COL).unwrap_or("")) == LOGO_KIND_CUSTOM
+    logo_kind(row) == LOGO_KIND_CUSTOM
 }
 
 /// The `(kind, source)` natural key of a row, or `None` when it carries no `Source` to key on.
 fn natural_key(row: &CodecRecord) -> Option<(String, String)> {
     let source = str_col(row, SOURCE_COL)?.to_lowercase();
-    Some((normalize_kind(str_col(row, KIND_COL).unwrap_or("")), source))
+    Some((logo_kind(row), source))
 }
 
 /// Normalize one table set's logo rows to `scope` (the owning manifest's id): stamp `ManifestId`,
@@ -196,7 +184,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
     let scope_value = json!(scope);
     for missing_id in missing {
         // The referenced row as it exists in its original scope, if it exists at all.
-        let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL).is_some_and(|id| id.eq_ignore_ascii_case(&missing_id))) else { continue };
+        let Some(origin) = all_logos.iter().find(|row| str_col(row, ID_COL).is_some_and(|id| ids_equal(id, &missing_id))) else { continue };
         let Some((kind, source)) = natural_key(origin) else { continue };
 
         if let Some(existing_id) = id_by_key.get(&(kind.clone(), source.clone())).cloned() {
@@ -272,15 +260,8 @@ fn is_better_logo(candidate: &CodecRecord, incumbent: &CodecRecord) -> bool {
     str_col(candidate, ID_COL).unwrap_or("") > str_col(incumbent, ID_COL).unwrap_or("")
 }
 
-/// True when `FileData` holds actual bytes: a non-empty inline `{ __b64 }` or an extracted
-/// `{ __blobRef }`. A tombstoned row drops its bytes (NULL) which is present but carries no image and must not beat a row that has one.
+/// True when `FileData` holds actual bytes; a tombstoned row's NULL must not beat a row with an image.
 fn has_file_data(row: &CodecRecord) -> bool {
-    match row.get(FILE_DATA_COL) {
-        None | Some(Value::Null) => false,
-        Some(value) => match value.get("__b64").and_then(|v| v.as_str()) {
-            Some(b64) => !b64.is_empty(),
-            None => value.get("__blobRef").is_some(),
-        },
-    }
+    has_bytes(row.get(FILE_DATA_COL))
 }
 

@@ -4,9 +4,6 @@
 //! projection of the canonical dataset, not an authoritative destination. Future targets would add
 //! sibling `materialize_as_*` entry points. The inverse direction lives in `canonicalize`.
 //!
-//! Rust does not handle actual SQLite operations. It only emits the destination table rows as-is
-//! to the caller and let the caller handle the actual SQLite database creation and data insertion.
-//!
 //! Forward compatibility: the caller supplies its local schema (`schema_columns`), and anything a
 //! newer writer put in the manifest that this schema cannot hold (whole unknown tables or unknown
 //! columns on known tables) is split into [`CodecOverflow`] instead of being emitted (which would
@@ -20,8 +17,10 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
-use super::types::{is_local_only_table, row_identity, MANIFEST_ID_COL, MANIFESTS_TABLE, OVERFLOW_TABLE};
+use super::types::{is_local_only_table, row_identity};
 use crate::error::{VaultError, VaultResult};
+use crate::vault_model::names::ID_COL;
+use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
 /// in one list, each carrying its own data buckets; they are combined into a single table set with
@@ -112,7 +111,7 @@ fn manifest_bookkeeping_records(manifests: &[Manifest]) -> Vec<CodecRecord> {
             continue;
         }
         let mut row: CodecRecord = HashMap::new();
-        row.insert("Id".to_string(), json!(id));
+        row.insert(ID_COL.to_string(), json!(id));
         row.insert("Name".to_string(), manifest.name.as_deref().map(|n| json!(n)).unwrap_or(serde_json::Value::Null));
         super::normalize::normalize_row_id_spelling(&mut row);
         records.push(row);
