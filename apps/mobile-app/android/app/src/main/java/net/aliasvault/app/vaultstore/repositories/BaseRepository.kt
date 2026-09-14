@@ -1,12 +1,12 @@
 package net.aliasvault.app.vaultstore.repositories
 
 import net.aliasvault.app.utils.DateHelpers
+import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultDatabase
 import java.util.UUID
 
 /**
  * Base repository class with common database operations.
- * Provides transaction handling, soft delete, and other shared functionality.
  */
 open class BaseRepository(
     /** The database component used for executing queries. */
@@ -14,17 +14,37 @@ open class BaseRepository(
 ) {
     /**
      * The manifest new rows outside any folder or item are stamped with: the personal manifest. Rows inside a
-     * folder or item take that parent's manifest through the SQL instead.
+     * folder or item take that parent's manifest through the SQL instead. Throws when no manifest has been
+     * recorded yet, since an unstamped row would make every later push of the vault fail.
      */
     protected fun activeManifestId(): String {
-        return database.getPersonalManifestId() ?: ""
+        return database.getPersonalManifestId() ?: throw AppError.ManifestNotRecorded()
+    }
+
+    /**
+     * The manifest a manifest-scoped row belongs to, looked up from the row itself: the personal manifest when
+     * the row exists there, else the lowest manifest id holding it. Null when no such row exists.
+     */
+    protected fun resolveRowManifestId(table: String, id: String, column: String = "Id"): String? {
+        val rows = executeQuery("SELECT ManifestId FROM $table WHERE $column = ? ORDER BY ManifestId", arrayOf(id))
+        val manifestIds = rows.mapNotNull { it["ManifestId"] as? String }
+        if (manifestIds.isEmpty()) return null
+        val personal = database.getPersonalManifestId()
+        return manifestIds.firstOrNull { it == personal } ?: manifestIds.first()
+    }
+
+    /**
+     * The grouping key of a manifest-scoped row, for joining rows of one query to rows of another in memory.
+     */
+    protected fun scopedKey(manifestId: String, id: String): String {
+        return "${manifestId.lowercase()}${id.lowercase()}"
     }
 
     // MARK: - Transaction Helpers
 
     /**
-     * Execute a function within a transaction.
-     * Automatically handles begin, commit, and rollback.
+     * Execute a function within a transaction. The commit persists the vault and marks it dirty, so every
+     * repository write reaches the next sync.
      * @param operation The function to execute within the transaction
      * @return The result of the function
      */
@@ -40,80 +60,7 @@ open class BaseRepository(
         }
     }
 
-    // MARK: - Soft Delete Helpers
-
-    /**
-     * Soft delete a record by setting IsDeleted = 1.
-     * @param table The table name
-     * @param id The record ID
-     * @return Number of rows affected
-     */
-    fun softDelete(table: String, id: String): Int {
-        val timestamp = now()
-        return executeUpdate(
-            "UPDATE $table SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?",
-            arrayOf(timestamp, id),
-        )
-    }
-
-    /**
-     * Soft delete records by a foreign key.
-     * @param table The table name
-     * @param foreignKey The foreign key column name
-     * @param foreignKeyValue The foreign key value
-     * @return Number of rows affected
-     */
-    fun softDeleteByForeignKey(table: String, foreignKey: String, foreignKeyValue: String): Int {
-        val timestamp = now()
-        return executeUpdate(
-            "UPDATE $table SET IsDeleted = 1, UpdatedAt = ? WHERE $foreignKey = ?",
-            arrayOf(timestamp, foreignKeyValue),
-        )
-    }
-
-    // MARK: - Hard Delete Helpers
-
-    /**
-     * Hard delete a record permanently.
-     * @param table The table name
-     * @param id The record ID
-     * @return Number of rows affected
-     */
-    fun hardDelete(table: String, id: String): Int {
-        return executeUpdate(
-            "DELETE FROM $table WHERE Id = ?",
-            arrayOf(id),
-        )
-    }
-
-    /**
-     * Hard delete records by a foreign key.
-     * @param table The table name
-     * @param foreignKey The foreign key column name
-     * @param foreignKeyValue The foreign key value
-     * @return Number of rows affected
-     */
-    fun hardDeleteByForeignKey(table: String, foreignKey: String, foreignKeyValue: String): Int {
-        return executeUpdate(
-            "DELETE FROM $table WHERE $foreignKey = ?",
-            arrayOf(foreignKeyValue),
-        )
-    }
-
     // MARK: - Utility Methods
-
-    /**
-     * Check if a table exists in the database.
-     * @param tableName The name of the table to check
-     * @return True if the table exists
-     */
-    fun tableExists(tableName: String): Boolean {
-        val results = executeQuery(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            arrayOf(tableName),
-        )
-        return results.isNotEmpty()
-    }
 
     /**
      * Generate a new id.
@@ -129,16 +76,6 @@ open class BaseRepository(
      */
     fun now(): String {
         return DateHelpers.now()
-    }
-
-    /**
-     * Build a parameterized IN clause for SQL queries.
-     * @param values Array of values for the IN clause
-     * @return Pair with placeholders string and values array
-     */
-    fun buildInClause(values: List<String>): Pair<String, Array<String>> {
-        val placeholders = values.joinToString(",") { "?" }
-        return Pair(placeholders, values.toTypedArray())
     }
 
     // MARK: - Database Operation Helpers

@@ -93,7 +93,8 @@ class VaultStoreTest {
 
     @Test
     fun testDatabaseWriteOperation() {
-        // Create a test setting
+        // Create a test setting. Settings are keyed by (ManifestId, Key).
+        val testManifestId = "00000000-0000-0000-0000-000000000001"
         val testKey = "test_setting_key"
         val testValue = "test_setting_value"
 
@@ -101,16 +102,16 @@ class VaultStoreTest {
         vaultStore.beginTransaction()
         try {
             // Insert the setting using raw SQL with parameters
-            val insertSql = "INSERT INTO Settings (Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?)"
+            val insertSql = "INSERT INTO Settings (ManifestId, Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?)"
             val insertResult = vaultStore.executeUpdate(
                 insertSql,
-                arrayOf(testKey, testValue, "2025-01-01 00:00:00", "2025-01-01 00:00:00", 0),
+                arrayOf(testManifestId, testKey, testValue, "2025-01-01 00:00:00", "2025-01-01 00:00:00", 0),
             )
             assertTrue(insertResult > 0, "Setting insertion should succeed")
 
             // Verify the setting was inserted by querying it
-            val querySql = "SELECT Value FROM Settings WHERE Key = ?"
-            val results = vaultStore.executeQuery(querySql, arrayOf(testKey))
+            val querySql = "SELECT Value FROM Settings WHERE ManifestId = ? AND Key = ?"
+            val results = vaultStore.executeQuery(querySql, arrayOf(testManifestId, testKey))
 
             assertTrue(results.isNotEmpty(), "Should get a result (amount of updated rows)")
 

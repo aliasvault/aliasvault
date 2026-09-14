@@ -96,6 +96,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         cause: Throwable? = null,
     ) : AppError(message, cause)
 
+    /**
+     * Error indicating the server predates the API this app needs; shown as an error, not a logout.
+     */
+    class ServerUpdateRequired(
+        message: String = "Server update required",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
     // Vault status errors
     /**
      * Error indicating vault merge required.
@@ -276,6 +284,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError("Database init failed: $message", cause)
 
     /**
+     * Error indicating no manifest is recorded yet, so nothing can be written until the vault has synced once.
+     */
+    class ManifestNotRecorded(
+        message: String = "No personal manifest recorded yet; sync once before writing",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
      * Error indicating failed to store vault.
      */
     class VaultStoreFailed(
@@ -403,6 +419,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is ClientVersionNotSupported -> "E-301"
             is ServerVersionNotSupported -> "E-302"
             is VaultVersionIncompatible -> "E-303"
+            is ServerUpdateRequired -> "E-304"
             is VaultMergeRequired -> "E-401"
             is VaultOutdated -> "E-402"
             is SyncVaultFetchFailed -> "E-404"
@@ -426,6 +443,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is StorageWriteFailed -> "E-602"
             is DatabaseInitFailed -> "E-603"
             is VaultStoreFailed -> "E-604"
+            is ManifestNotRecorded -> "E-605"
             is VaultMergeFailed -> "E-701"
             is MergeUploadFailed -> "E-705"
             is VaultUploadFailed -> "E-801"
@@ -458,11 +476,11 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         }
 
     /**
-     * Check if this is a network error (offline mode).
+     * Check if this is a network error (offline mode). A timeout is not: the sync engine reports it as a failed sync.
      */
     val isNetworkError: Boolean
         get() = when (this) {
-            is ServerUnavailable, is NetworkError, is Timeout -> true
+            is ServerUnavailable, is NetworkError -> true
             else -> false
         }
 

@@ -56,7 +56,7 @@ object RustItemMatcher {
             val itemMap = mutableMapOf<String, Item>()
 
             for (item in items) {
-                val idString = item.id.toString()
+                val idString = "${item.manifestId}${item.id}"
                 val urlsArray = JSONArray()
                 item.urls.forEach { urlsArray.put(it) }
                 val credJson = JSONObject().apply {
@@ -132,7 +132,7 @@ object RustItemMatcher {
             val itemMap = mutableMapOf<String, ItemWithCredentialInfo>()
 
             for (item in items) {
-                val idString = item.itemId.toString()
+                val idString = "${item.manifestId}${item.itemId}"
                 val urlsArray = JSONArray()
                 item.urls.forEach { urlsArray.put(it) }
 

@@ -6,7 +6,8 @@ import java.util.UUID
 /**
  * Item model representing vault entries in the new field-based data model.
  *
- * @property id The unique identifier of the item.
+ * @property id The identifier of the item within its manifest; only (manifestId, id) names one row.
+ * @property manifestId The manifest the item belongs to.
  * @property name The display name of the item.
  * @property itemType The type of item (Login, Alias, CreditCard, Note).
  * @property logo The logo image data in bytes.
@@ -21,6 +22,7 @@ import java.util.UUID
  */
 data class Item(
     val id: UUID,
+    val manifestId: String,
     val name: String?,
     val itemType: String,
     val logo: ByteArray?,
@@ -87,11 +89,11 @@ data class Item(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as Item
-        return id == other.id
+        return id == other.id && manifestId.equals(other.manifestId, ignoreCase = true)
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        return 31 * id.hashCode() + manifestId.lowercase().hashCode()
     }
 }
 

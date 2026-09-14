@@ -16,8 +16,7 @@ import java.util.TimeZone
 import java.util.UUID
 
 /**
- * Repository for Item CRUD operations.
- * Handles fetching, creating, updating, and deleting items with their related data.
+ * Repository for the item reads the autofill service needs.
  */
 class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     companion object {
@@ -37,40 +36,40 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     // MARK: - Read Operations
 
     /**
-     * Build folder paths for all folders.
-     * Returns a map of FolderId -> path array.
+     * Build folder paths for all folders, keyed by the folder's scoped key (manifest + id). The tree is walked
+     * one manifest at a time: a parent link only ever resolves inside its own namespace.
      *
-     * @return Map of folder ID to folder path array.
+     * @return Map of scoped folder key to folder path array.
      */
-    private fun buildFolderPaths(): Map<UUID, List<String>> {
-        val folderPathMap = mutableMapOf<UUID, List<String>>()
+    private fun buildFolderPaths(): Map<String, List<String>> {
+        val folderPathMap = mutableMapOf<String, List<String>>()
 
         try {
-            // Get all folders from database
             val folderResults = executeQuery(ItemQueries.GET_ALL_FOLDERS, emptyArray())
-
             if (folderResults.isEmpty()) {
                 return folderPathMap
             }
 
-            // Convert to FolderUtils.Folder format
-            val folders = folderResults.mapNotNull { row ->
+            val foldersByManifest = mutableMapOf<String, MutableList<FolderUtils.Folder>>()
+            for (row in folderResults) {
                 try {
-                    val id = UUID.fromString(row["Id"] as? String ?: return@mapNotNull null)
-                    val name = row["Name"] as? String ?: return@mapNotNull null
+                    val idString = row["Id"] as? String
+                    val manifestId = row["ManifestId"] as? String
+                    val name = row["Name"] as? String
+                    if (idString == null || manifestId == null || name == null) continue
                     val parentFolderId = (row["ParentFolderId"] as? String)?.let { UUID.fromString(it) }
-                    FolderUtils.Folder(id, name, parentFolderId)
+                    foldersByManifest.getOrPut(manifestId) { mutableListOf() }.add(FolderUtils.Folder(UUID.fromString(idString), name, parentFolderId))
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing folder row", e)
-                    null
                 }
             }
 
-            // Use shared utility to build paths for all folders
-            for (folder in folders) {
-                val path = FolderUtils.getFolderPath(folder.id, folders)
-                if (path.isNotEmpty()) {
-                    folderPathMap[folder.id] = path
+            for ((manifestId, folders) in foldersByManifest) {
+                for (folder in folders) {
+                    val path = FolderUtils.getFolderPath(folder.id, folders)
+                    if (path.isNotEmpty()) {
+                        folderPathMap[scopedKey(manifestId, folder.id.toString())] = path
+                    }
                 }
             }
 
@@ -83,14 +82,13 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Fetch all active items (not deleted, not in trash) with their fields.
+     * Fetch all active items (not deleted, not in trash, not archived) with their fields.
      *
      * @return List of Item objects.
      */
     @Suppress("LongMethod", "NestedBlockDepth", "LoopWithTooManyJumpStatements")
     fun getAll(): List<Item> {
         val items = mutableListOf<Item>()
-        val itemIds = mutableListOf<String>()
 
         // Build folder paths
         val folderPaths = buildFolderPaths()
@@ -99,6 +97,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
         for (row in itemResults) {
             try {
                 val idString = row["Id"] as? String ?: continue
+                val manifestId = row["ManifestId"] as? String ?: continue
                 val name = row["Name"] as? String
                 val itemType = row["ItemType"] as? String ?: continue
                 val folderId = row["FolderId"] as? String
@@ -111,24 +110,25 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
 
                 // Get folder path if item is in a folder
                 val folderUuid = folderId?.let { UUID.fromString(it) }
-                val folderPath = folderUuid?.let { folderPaths[it] }
+                val folderPath = folderId?.let { folderPaths[scopedKey(manifestId, it)] }
 
-                val item = Item(
-                    id = UUID.fromString(idString),
-                    name = name,
-                    itemType = itemType,
-                    logo = logo,
-                    folderId = folderUuid,
-                    folderPath = folderPath,
-                    fields = emptyList(), // Will be populated below
-                    hasPasskey = hasPasskey,
-                    hasAttachment = hasAttachment,
-                    hasTotp = hasTotp,
-                    createdAt = createdAt,
-                    updatedAt = updatedAt,
+                items.add(
+                    Item(
+                        id = UUID.fromString(idString),
+                        manifestId = manifestId,
+                        name = name,
+                        itemType = itemType,
+                        logo = logo,
+                        folderId = folderUuid,
+                        folderPath = folderPath,
+                        fields = emptyList(), // Will be populated below
+                        hasPasskey = hasPasskey,
+                        hasAttachment = hasAttachment,
+                        hasTotp = hasTotp,
+                        createdAt = createdAt,
+                        updatedAt = updatedAt,
+                    ),
                 )
-                items.add(item)
-                itemIds.add(idString)
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing item row", e)
             }
@@ -139,16 +139,18 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
             return emptyList()
         }
 
-        // Get all field values for these items
-        val fieldQuery = ItemQueries.getFieldValuesForItems(itemIds.size)
+        // Get all field values for these items, matched on the whole (manifest, id) key
+        val fieldQuery = ItemQueries.getFieldValuesForItems(items.size)
+        val keyBindings = items.flatMap { listOf<Any?>(it.manifestId, it.id.toString().lowercase()) }.toTypedArray()
 
-        // Build a map of itemId -> [ItemField]
-        val fieldsByItemId = mutableMapOf<String, MutableList<ItemField>>()
+        // Build a map of scoped item key -> [ItemField]
+        val fieldsByItem = mutableMapOf<String, MutableList<ItemField>>()
 
-        val fieldResults = executeQuery(fieldQuery, itemIds.toTypedArray())
+        val fieldResults = executeQuery(fieldQuery, keyBindings)
         for (row in fieldResults) {
             try {
                 val itemIdString = row["ItemId"] as? String ?: continue
+                val manifestId = row["ManifestId"] as? String ?: continue
                 val fieldKey = row["FieldKey"] as? String
                 val fieldDefinitionId = row["FieldDefinitionId"] as? String
                 val customLabel = row["CustomLabel"] as? String
@@ -185,7 +187,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                     enableHistory = metadata.enableHistory,
                 )
 
-                fieldsByItemId.getOrPut(itemIdString) { mutableListOf() }.add(field)
+                fieldsByItem.getOrPut(scopedKey(manifestId, itemIdString)) { mutableListOf() }.add(field)
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing field row", e)
             }
@@ -193,181 +195,9 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
 
         // Assign fields to items
         return items.map { item ->
-            val fields = fieldsByItemId[item.id.toString().lowercase()] ?: emptyList()
+            val fields = fieldsByItem[scopedKey(item.manifestId, item.id.toString())] ?: emptyList()
             item.copy(fields = fields)
         }
-    }
-
-    /**
-     * Fetch a single item by ID with its fields.
-     *
-     * @param itemId The ID of the item to fetch.
-     * @return Item object or null if not found.
-     */
-    fun getById(itemId: String): Item? {
-        val itemResults = executeQuery(ItemQueries.GET_BY_ID, arrayOf(itemId.lowercase()))
-        val row = itemResults.firstOrNull() ?: return null
-
-        // Build folder paths
-        val folderPaths = buildFolderPaths()
-
-        return try {
-            val idString = row["Id"] as? String ?: return null
-            val name = row["Name"] as? String
-            val itemType = row["ItemType"] as? String ?: return null
-            val folderId = row["FolderId"] as? String
-            val logo = row["Logo"] as? ByteArray
-            val hasPasskey = (row["HasPasskey"] as? Long) == 1L
-            val hasAttachment = (row["HasAttachment"] as? Long) == 1L
-            val hasTotp = (row["HasTotp"] as? Long) == 1L
-            val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
-            val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
-
-            // Get folder path if item is in a folder
-            val folderUuid = folderId?.let { UUID.fromString(it) }
-            val folderPath = folderUuid?.let { folderPaths[it] }
-
-            // Get field values for this item
-            val fields = mutableListOf<ItemField>()
-            val fieldResults = executeQuery(ItemQueries.GET_FIELD_VALUES_FOR_ITEM, arrayOf(idString))
-            for (fieldRow in fieldResults) {
-                val fieldKey = fieldRow["FieldKey"] as? String
-                val fieldDefinitionId = fieldRow["FieldDefinitionId"] as? String
-                val customLabel = fieldRow["CustomLabel"] as? String
-                val customFieldType = fieldRow["CustomFieldType"] as? String
-                val customIsHidden = (fieldRow["CustomIsHidden"] as? Long) == 1L
-                val customEnableHistory = (fieldRow["CustomEnableHistory"] as? Long) == 1L
-                val value = fieldRow["Value"] as? String ?: ""
-                val displayOrder = (fieldRow["DisplayOrder"] as? Long)?.toInt() ?: 0
-
-                val isCustomField = fieldDefinitionId != null && fieldKey == null
-                val effectiveFieldKey = fieldKey ?: fieldDefinitionId ?: ""
-
-                val metadata = resolveFieldMetadata(
-                    fieldKey = effectiveFieldKey,
-                    customLabel = customLabel,
-                    customFieldType = customFieldType,
-                    customIsHidden = customIsHidden,
-                    customEnableHistory = customEnableHistory,
-                    isCustomField = isCustomField,
-                )
-
-                fields.add(
-                    ItemField(
-                        fieldKey = effectiveFieldKey,
-                        label = metadata.label,
-                        fieldType = metadata.fieldType,
-                        value = value,
-                        isHidden = metadata.isHidden,
-                        displayOrder = displayOrder,
-                        isCustomField = isCustomField,
-                        enableHistory = metadata.enableHistory,
-                    ),
-                )
-            }
-
-            Item(
-                id = UUID.fromString(idString),
-                name = name,
-                itemType = itemType,
-                logo = logo,
-                folderId = folderUuid,
-                folderPath = folderPath,
-                fields = fields,
-                hasPasskey = hasPasskey,
-                hasAttachment = hasAttachment,
-                hasTotp = hasTotp,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing item by ID", e)
-            null
-        }
-    }
-
-    /**
-     * Fetch all unique email addresses from field values.
-     *
-     * @return List of email addresses.
-     */
-    fun getAllEmailAddresses(): List<String> {
-        val results = executeQuery(ItemQueries.GET_ALL_EMAIL_ADDRESSES, arrayOf(FieldKey.LOGIN_EMAIL))
-        return results.mapNotNull { it["Email"] as? String }
-    }
-
-    /**
-     * Get recently deleted items (in trash).
-     *
-     * @return List of items in trash.
-     */
-    fun getRecentlyDeleted(): List<Item> {
-        return getItemsWithoutFields(ItemQueries.GET_RECENTLY_DELETED, "recently deleted")
-    }
-
-    /**
-     * Get archived items.
-     *
-     * @return List of archived items.
-     */
-    fun getArchived(): List<Item> {
-        return getItemsWithoutFields(ItemQueries.GET_ARCHIVED, "archived")
-    }
-
-    /**
-     * Run an item list query and map the rows to Item objects without loading their fields.
-     *
-     * @param query The item query to run.
-     * @param label What the query returns, used in the parse-failure log line.
-     * @return The mapped items, skipping any row that fails to parse.
-     */
-    @Suppress("LoopWithTooManyJumpStatements")
-    private fun getItemsWithoutFields(query: String, label: String): List<Item> {
-        val items = mutableListOf<Item>()
-        val results = executeQuery(query, emptyArray())
-
-        // Build folder paths
-        val folderPaths = buildFolderPaths()
-
-        for (row in results) {
-            try {
-                val idString = row["Id"] as? String ?: continue
-                val name = row["Name"] as? String
-                val itemType = row["ItemType"] as? String ?: continue
-                val folderId = row["FolderId"] as? String
-                val logo = row["Logo"] as? ByteArray
-                val hasPasskey = (row["HasPasskey"] as? Long) == 1L
-                val hasAttachment = (row["HasAttachment"] as? Long) == 1L
-                val hasTotp = (row["HasTotp"] as? Long) == 1L
-                val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
-                val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
-
-                // Get folder path if item is in a folder
-                val folderUuid = folderId?.let { UUID.fromString(it) }
-                val folderPath = folderUuid?.let { folderPaths[it] }
-
-                items.add(
-                    Item(
-                        id = UUID.fromString(idString),
-                        name = name,
-                        itemType = itemType,
-                        logo = logo,
-                        folderId = folderUuid,
-                        folderPath = folderPath,
-                        fields = emptyList(), // Not loading fields for list-only items
-                        hasPasskey = hasPasskey,
-                        hasAttachment = hasAttachment,
-                        hasTotp = hasTotp,
-                        createdAt = createdAt,
-                        updatedAt = updatedAt,
-                    ),
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error parsing $label item row", e)
-            }
-        }
-
-        return items
     }
 
     /**
@@ -400,38 +230,16 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Get count of items in trash.
-     *
-     * @return Number of items in trash.
-     */
-    fun getRecentlyDeletedCount(): Int {
-        val results = executeQuery(ItemQueries.COUNT_RECENTLY_DELETED, emptyArray())
-        return (results.firstOrNull()?.get("count") as? Long)?.toInt() ?: 0
-    }
-
-    /**
-     * Get count of archived items.
-     *
-     * @return Number of archived items.
-     */
-    fun getArchivedCount(): Int {
-        val results = executeQuery(ItemQueries.COUNT_ARCHIVED, emptyArray())
-        return (results.firstOrNull()?.get("count") as? Long)?.toInt() ?: 0
-    }
-
-    /**
      * Get the first non-deleted TOTP code for an item, or null when there is none.
      * Used by the autofill service to copy the current TOTP code to the clipboard
      * when the user selects a credential to fill.
      *
      * @param itemId The UUID of the item.
+     * @param manifestId The manifest the item belongs to.
      * @return The TOTP code with its RFC 6238 parameters, or null.
      */
-    fun getTotpForItem(itemId: String): TotpCode? {
-        val results = executeQuery(
-            "SELECT SecretKey, Algorithm, Digits, Period FROM TotpCodes WHERE ItemId = ? AND IsDeleted = 0 ORDER BY Name ASC LIMIT 1",
-            arrayOf(itemId.lowercase()),
-        )
+    fun getTotpForItem(itemId: String, manifestId: String): TotpCode? {
+        val results = executeQuery("${ItemQueries.GET_TOTP_CODES_FOR_ITEM} LIMIT 1", arrayOf(itemId.lowercase(), manifestId))
         val row = results.firstOrNull() ?: return null
         val secretKey = row["SecretKey"] as? String ?: return null
 
@@ -441,121 +249,6 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
             digits = (row["Digits"] as? Long)?.toInt() ?: TotpCode.DEFAULT_DIGITS,
             period = (row["Period"] as? Long)?.toInt() ?: TotpCode.DEFAULT_PERIOD,
         )
-    }
-
-    // MARK: - Write Operations
-
-    /**
-     * Move an item to trash (set DeletedAt timestamp).
-     *
-     * @param itemId The ID of the item to trash.
-     * @return Number of rows affected.
-     */
-    fun trash(itemId: String): Int {
-        return withTransaction {
-            val now = now()
-            executeUpdate(ItemQueries.TRASH_ITEM, arrayOf(now, now, itemId))
-        }
-    }
-
-    /**
-     * Restore an item from trash (clear DeletedAt).
-     *
-     * @param itemId The ID of the item to restore.
-     * @return Number of rows affected.
-     */
-    fun restore(itemId: String): Int {
-        return withTransaction {
-            val now = now()
-            executeUpdate(ItemQueries.RESTORE_ITEM, arrayOf(now, itemId))
-        }
-    }
-
-    /**
-     * Archive an item: it disappears from the main list and from autofill, but keeps all of its
-     * data and its email aliases, and is never auto-pruned.
-     *
-     * @param itemId The ID of the item to archive.
-     * @return Number of rows affected.
-     */
-    fun archive(itemId: String): Int {
-        return withTransaction {
-            val now = now()
-            executeUpdate(ItemQueries.ARCHIVE_ITEM, arrayOf(now, now, itemId))
-        }
-    }
-
-    /**
-     * Unarchive an item, returning it to the main list and to autofill.
-     *
-     * @param itemId The ID of the item to unarchive.
-     * @return Number of rows affected.
-     */
-    fun unarchive(itemId: String): Int {
-        return withTransaction {
-            val now = now()
-            executeUpdate(ItemQueries.UNARCHIVE_ITEM, arrayOf(now, itemId))
-        }
-    }
-
-    /**
-     * Permanently delete an item (tombstone).
-     * Converts item to tombstone and soft deletes all related data.
-     *
-     * @param itemId The ID of the item to permanently delete.
-     * @return Number of rows affected.
-     */
-    fun permanentlyDelete(itemId: String): Int {
-        return withTransaction {
-            val now = now()
-
-            // Soft delete related FieldValues
-            softDeleteByForeignKey("FieldValues", "ItemId", itemId)
-
-            // Soft delete related data
-            softDeleteByForeignKey("TotpCodes", "ItemId", itemId)
-
-            // Soft delete attachments AND zero their blob bytes — tombstone stays
-            // for sync but storage is reclaimed immediately.
-            executeUpdate(
-                "UPDATE Attachments SET IsDeleted = 1, Blob = NULL, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0",
-                arrayOf(now, itemId),
-            )
-
-            softDeleteByForeignKey("Passkeys", "ItemId", itemId)
-
-            if (tableExists("ItemTags")) {
-                softDeleteByForeignKey("ItemTags", "ItemId", itemId)
-            }
-            if (tableExists("FieldHistories")) {
-                softDeleteByForeignKey("FieldHistories", "ItemId", itemId)
-            }
-
-            // Convert item to tombstone
-            executeUpdate(ItemQueries.TOMBSTONE_ITEM, arrayOf(now, itemId))
-        }
-    }
-
-    /**
-     * Create a new item with its fields.
-     *
-     * @param item The item to create.
-     * @return The ID of the created item.
-     */
-    @Suppress("UNUSED_PARAMETER") // Method under construction, will be implemented
-    fun create(item: Item): String {
-        error("Create operations should use VaultMutate - repository pattern under construction")
-    }
-
-    /**
-     * Update an existing item with its fields.
-     *
-     * @param item The item to update.
-     * @return Number of rows affected.
-     */
-    @Suppress("UNUSED_PARAMETER") // Method under construction, will be implemented
-    fun update(item: Item): Int {
-        error("Update operations should use VaultMutate - repository pattern under construction")
     }
 
     // MARK: - Helper Methods

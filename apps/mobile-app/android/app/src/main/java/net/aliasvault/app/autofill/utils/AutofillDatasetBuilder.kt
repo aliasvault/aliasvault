@@ -81,6 +81,7 @@ object AutofillDatasetBuilder {
         val fieldTypeOrdinals = IntArray(fields.size) { i -> fields[i].second.ordinal }
         val authIntent = Intent(context, AutofillFillActivity::class.java).apply {
             putExtra(AutofillFillActivity.EXTRA_ITEM_ID, item.id.toString().lowercase())
+            putExtra(AutofillFillActivity.EXTRA_MANIFEST_ID, item.manifestId)
             putExtra(AutofillFillActivity.EXTRA_AUTOFILL_IDS, autofillIds)
             putExtra(AutofillFillActivity.EXTRA_FIELD_TYPES, fieldTypeOrdinals)
             putExtra(AutofillFillActivity.EXTRA_COPY_TOTP, copyTotpOnSelect)

@@ -276,9 +276,10 @@ class PasskeyFormFragment : Fragment() {
             }
 
             // Try to extract favicon from the website URL if possible
+            val url = loginUrl()
             var logo: ByteArray? = null
             try {
-                logo = webApiService.extractFavicon("https://${viewModel.rpId}")
+                logo = webApiService.extractFavicon(url)
             } catch (e: Exception) {
                 Log.w(TAG, "Favicon extraction failed", e)
                 // Continue without logo
@@ -323,6 +324,7 @@ class PasskeyFormFragment : Fragment() {
             val passkey = Passkey(
                 id = passkeyId,
                 parentItemId = UUID.randomUUID(), // Will be set by createItemWithPasskey
+                manifestId = null, // Stamped from the item on insert
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -341,7 +343,7 @@ class PasskeyFormFragment : Fragment() {
             }
 
             vaultStore.createItemWithPasskey(
-                rpId = viewModel.rpId,
+                url = url,
                 userName = viewModel.userName,
                 displayName = displayName,
                 passkeyObj = passkey,
@@ -481,9 +483,10 @@ class PasskeyFormFragment : Fragment() {
             }
 
             // Extract favicon (optional)
+            val url = loginUrl()
             var logo: ByteArray? = null
             try {
-                logo = webApiService.extractFavicon("https://${viewModel.rpId}")
+                logo = webApiService.extractFavicon(url)
             } catch (e: Exception) {
                 Log.w(TAG, "Favicon extraction failed", e)
                 // Continue without logo
@@ -526,6 +529,7 @@ class PasskeyFormFragment : Fragment() {
             val newPasskey = Passkey(
                 id = newPasskeyId,
                 parentItemId = passkeyToReplace.passkey.parentItemId,
+                manifestId = passkeyToReplace.passkey.manifestId,
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -547,6 +551,7 @@ class PasskeyFormFragment : Fragment() {
                 oldPasskeyId = passkeyToReplace.passkey.id,
                 newPasskey = newPasskey,
                 displayName = displayName,
+                url = url,
                 logo = logo,
             )
 
@@ -690,9 +695,10 @@ class PasskeyFormFragment : Fragment() {
             }
 
             // Extract favicon (optional)
+            val url = loginUrl()
             var logo: ByteArray? = null
             try {
-                logo = webApiService.extractFavicon("https://${viewModel.rpId}")
+                logo = webApiService.extractFavicon(url)
             } catch (e: Exception) {
                 Log.w(TAG, "Favicon extraction failed", e)
                 // Continue without logo
@@ -735,6 +741,7 @@ class PasskeyFormFragment : Fragment() {
             val passkey = Passkey(
                 id = passkeyId,
                 parentItemId = item.itemId, // Link to existing Item
+                manifestId = item.manifestId,
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -754,7 +761,9 @@ class PasskeyFormFragment : Fragment() {
 
             vaultStore.addPasskeyToExistingItem(
                 itemId = item.itemId,
+                manifestId = item.manifestId,
                 passkeyObj = passkey,
+                url = url,
                 logo = logo,
             )
 
@@ -863,6 +872,15 @@ class PasskeyFormFragment : Fragment() {
     }
 
     /**
+     * The login URL written on the item, which is also what the favicon is fetched for: the request origin
+     * when the caller is a browser (what the extension writes), else https:// plus the rpId.
+     */
+    private fun loginUrl(): String {
+        val origin = viewModel.origin
+        return if (origin != null && (origin.startsWith("https://") || origin.startsWith("http://"))) origin else "https://${viewModel.rpId}"
+    }
+
+    /**
      * Pick the credential algorithm from the RP's pubKeyCredParams.
      * Honors the RP's preference order; defaults to ES256 when absent.
      */
@@ -957,7 +975,9 @@ class PasskeyFormFragment : Fragment() {
                     message = getString(R.string.version_not_supported_message)
                 }
 
-                is net.aliasvault.app.vaultstore.AppError.ServerVersionNotSupported -> {
+                is net.aliasvault.app.vaultstore.AppError.ServerVersionNotSupported,
+                is net.aliasvault.app.vaultstore.AppError.ServerUpdateRequired,
+                -> {
                     title = getString(R.string.server_version_not_supported_title)
                     message = getString(R.string.server_version_not_supported_message)
                 }

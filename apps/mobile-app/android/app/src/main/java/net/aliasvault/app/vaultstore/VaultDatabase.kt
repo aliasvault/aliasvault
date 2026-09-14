@@ -1,7 +1,5 @@
 package net.aliasvault.app.vaultstore
 
-import android.database.Cursor
-import android.database.MatrixCursor
 import android.util.Base64
 import android.util.Log
 import net.aliasvault.app.rustcore.JnaInitializer
@@ -15,6 +13,7 @@ import uniffi.aliasvault_core.SqliteMemoryDatabase
 class VaultDatabase(
     private val storageProvider: StorageProvider,
     private val crypto: VaultCrypto,
+    private val metadata: VaultMetadataManager,
 ) {
     companion object {
         private const val TAG = "VaultDatabase"
@@ -127,18 +126,6 @@ class VaultDatabase(
     }
 
     /**
-     * Run a SELECT and return its rows as a cursor, for positional column access.
-     */
-    fun queryCursor(sql: String, params: List<Any?> = emptyList()): Cursor {
-        val result = connection().queryValues(sql, params.map(::toSqlValue))
-        return MatrixCursor(result.columns.toTypedArray(), result.rows.size).also { cursor ->
-            for (row in result.rows) {
-                cursor.addRow(row.map(::fromSqlValue).toTypedArray())
-            }
-        }
-    }
-
-    /**
      * Run one INSERT, UPDATE or DELETE and return the number of rows it changed.
      */
     fun execute(sql: String, params: List<Any?> = emptyList()): Int {
@@ -181,11 +168,12 @@ class VaultDatabase(
     }
 
     /**
-     * Commit a SQL transaction and persist the encrypted vault.
+     * Commit a SQL transaction, persist the encrypted vault and mark it as changed locally.
      */
     fun commitTransaction() {
         connection().executeBatch("COMMIT")
         persistDatabaseToEncryptedStorage()
+        markMutated()
     }
 
     /**
@@ -193,6 +181,15 @@ class VaultDatabase(
      */
     fun rollbackTransaction() {
         connection().executeBatch("ROLLBACK")
+    }
+
+    /**
+     * Persist the in-memory database and mark it as changed locally, without committing a SQL transaction.
+     * Used after migrations, whose scripts manage their own transactions.
+     */
+    fun persistAndMarkDirty() {
+        persistDatabaseToEncryptedStorage()
+        markMutated()
     }
 
     /**
@@ -209,6 +206,15 @@ class VaultDatabase(
             Log.e(TAG, "Error exporting and encrypting database", e)
             throw e
         }
+    }
+
+    /**
+     * Mark the vault dirty and bump the mutation sequence, atomically from the sync engine's point of view,
+     * so the next sync pushes the local change instead of reporting the vault in sync.
+     */
+    private fun markMutated() {
+        metadata.setIsDirty(true)
+        metadata.incrementMutationSequence()
     }
 
     /**

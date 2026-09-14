@@ -14,6 +14,7 @@ import net.aliasvault.app.autofill.models.FieldType
 import net.aliasvault.app.autofill.utils.AutofillFieldMapper
 import net.aliasvault.app.utils.TotpClipboard
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.repositories.ItemUsageAction
 
 /**
  * Transparent activity launched by the OS when the user picks an autofill
@@ -30,6 +31,9 @@ class AutofillFillActivity : Activity() {
         /** Intent extra for the vault item ID whose credentials should be filled. */
         const val EXTRA_ITEM_ID = "net.aliasvault.app.autofill.EXTRA_ITEM_ID"
 
+        /** Intent extra for the manifest the item belongs to; only (manifest, id) names one item. */
+        const val EXTRA_MANIFEST_ID = "net.aliasvault.app.autofill.EXTRA_MANIFEST_ID"
+
         /** Intent extra holding the parceled `AutofillId`s for the target form fields. */
         const val EXTRA_AUTOFILL_IDS = "net.aliasvault.app.autofill.EXTRA_AUTOFILL_IDS"
 
@@ -45,11 +49,12 @@ class AutofillFillActivity : Activity() {
 
         try {
             val itemId = intent.getStringExtra(EXTRA_ITEM_ID)
+            val manifestId = intent.getStringExtra(EXTRA_MANIFEST_ID)
             val autofillIds = parseAutofillIds(intent)
             val fieldTypeOrdinals = intent.getIntArrayExtra(EXTRA_FIELD_TYPES)
             val copyTotp = intent.getBooleanExtra(EXTRA_COPY_TOTP, false)
 
-            if (itemId == null || autofillIds == null || fieldTypeOrdinals == null ||
+            if (itemId == null || manifestId == null || autofillIds == null || fieldTypeOrdinals == null ||
                 autofillIds.size != fieldTypeOrdinals.size
             ) {
                 Log.w(TAG, "AutofillFillActivity: missing or mismatched extras, finishing")
@@ -66,7 +71,9 @@ class AutofillFillActivity : Activity() {
                 return
             }
 
-            val item = store.getAllItems().firstOrNull { it.id.toString().equals(itemId, ignoreCase = true) }
+            val item = store.getAllItems().firstOrNull {
+                it.id.toString().equals(itemId, ignoreCase = true) && it.manifestId.equals(manifestId, ignoreCase = true)
+            }
             if (item == null) {
                 Log.w(TAG, "AutofillFillActivity: item not found, finishing")
                 setResult(RESULT_CANCELED)
@@ -74,14 +81,21 @@ class AutofillFillActivity : Activity() {
                 return
             }
 
+            // Count the fill in the item's usage statistics
+            try {
+                store.recordItemUsage(itemId, item.manifestId, ItemUsageAction.AUTOFILL)
+            } catch (e: Exception) {
+                Log.w(TAG, "AutofillFillActivity: failed to record item usage", e)
+            }
+
             if (copyTotp) {
-                TotpClipboard.copyCodeForItem(this, store, itemId)
+                TotpClipboard.copyCodeForItem(this, store, itemId, item.manifestId)
             }
 
             val fields = pairFields(autofillIds, fieldTypeOrdinals)
             // Presentation passed to the inner Dataset.Builder is never displayed
-            // — the OS already showed the outer dataset's presentation in the
-            // picker — but the legacy constructor requires a valid RemoteViews.
+            // (the OS already showed the outer dataset's presentation in the
+            // picker) but the legacy constructor requires a valid RemoteViews.
             val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_icon)
             val builder = Dataset.Builder(presentation)
             AutofillFieldMapper.applyItem(builder, item, fields)

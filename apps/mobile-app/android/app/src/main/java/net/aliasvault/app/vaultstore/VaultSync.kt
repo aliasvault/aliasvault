@@ -8,7 +8,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Vault sync runs through the Rust sync engine which handles the decision making and is cross-platform.
+ * The vault sync wrapper: one method per engine operation, adoption of what the engine reported, and the mapping of
+ * its failures into the native error. The driver below it is VaultSyncEngine, which turns the Rust engine's
+ * commands into host actions.
+ *
+ * When updating this logic, make sure to update the same logic on the other platforms:
+ * - core/client/src/sync/VaultSync.ts (shared core client for web apps)
+ * - apps/mobile-app/ios/VaultStoreKit/Services/VaultSync.swift
+ * - apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultSync.kt (this file)
  */
 class VaultSync(
     private val vaultStore: VaultStore,
@@ -19,9 +26,8 @@ class VaultSync(
     }
 
     /**
-     * Full vault sync: status check, then pull (and merge) or push as the server and local revisions decide.
+     * Full vault sync: status check, then pull (and merge) or push as the server and local revisions decide. Never throws.
      */
-    @Suppress("TooGenericExceptionCaught")
     suspend fun syncVaultWithServer(webApiService: WebApiService): VaultSyncResult {
         val startNanos = System.nanoTime()
         val metadata = vaultStore.metadata
@@ -29,12 +35,10 @@ class VaultSync(
         try {
             val wasDirty = metadata.getIsDirty()
             val result = try {
-                VaultSyncEngine(vaultStore, storageProvider, webApiService).run("fullSync")
-            } catch (e: Exception) {
-                return failedSync(driverError(e), metadata.getOfflineMode())
+                run("fullSync", webApiService)
+            } catch (e: AppError) {
+                return failedSync(e, metadata.getOfflineMode())
             }
-
-            adoptSyncSideEffects(result)
 
             val wasOffline = result.optBoolean("wasOffline", false)
             if (!result.optBoolean("success", false)) {
@@ -45,6 +49,10 @@ class VaultSync(
                 return VaultSyncResult(false, SyncAction.ERROR, metadata.getVaultRevisionNumber(), true, code)
             }
 
+            /*
+             * A vault that still has to be upgraded is reported, never migrated here: the app routes it to the upgrade
+             * page, which asks first when the migration signs out every other pre-format client (see migrateVaultManifest).
+             */
             val hasNewVault = result.optBoolean("hasNewVault", false)
             val action = when {
                 hasNewVault && wasDirty -> SyncAction.MERGED
@@ -67,60 +75,10 @@ class VaultSync(
     }
 
     /**
-     * A failed sync return.
+     * One status call: whether the server holds newer state than this device.
      */
-    private fun failedSync(error: AppError, wasOffline: Boolean): VaultSyncResult {
-        Log.e(TAG, "Sync failed (${error.code}): ${error.message}", error.cause)
-        return VaultSyncResult(false, SyncAction.ERROR, vaultStore.metadata.getVaultRevisionNumber(), wasOffline, error.code, error.message)
-    }
-
-    /**
-     * An error the driver itself threw (a request it could not build, a command it could not decode).
-     */
-    private fun driverError(e: Exception): AppError = e as? AppError ?: AppError.SyncEngineFailed(e.toString(), e)
-
-    /**
-     * Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the VEK
-     * is stored as the session key; a legacy account keeps the derived key. Every sync assumes the key this stored. Returns the stored key (base64).
-     */
-    @Suppress("TooGenericExceptionCaught")
-    suspend fun resolveVaultKey(webApiService: WebApiService, derivedKeyBase64: String): String {
-        val result = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("resolveVaultKey", encryptionKey = derivedKeyBase64)
-        } catch (e: Exception) {
-            throw driverError(e)
-        }
-        if (!result.optBoolean("success", false)) {
-            throw syncError(result)
-        }
-        val key = result.optString("encryptionKey").takeIf { it.isNotEmpty() } ?: derivedKeyBase64
-        vaultStore.adoptEncryptionKey(key)
-        result.optJSONObject("sessionUpdates")?.optString("accountPrivateKey")?.takeIf { it.isNotEmpty() }?.let { vaultStore.accountPrivateKey = it }
-        return key
-    }
-
-    /**
-     * Push any pending local changes.
-     */
-    suspend fun mutateVault(webApiService: WebApiService): Boolean {
-        val result = syncVaultWithServer(webApiService)
-        if (!result.success && !result.wasOffline) {
-            throw AppError.VaultUploadFailed(result.errorMessage ?: result.error ?: "Vault sync failed")
-        }
-        return result.success
-    }
-
-    /**
-     * Issue a status call.
-     */
-    @Suppress("TooGenericExceptionCaught")
     suspend fun checkVaultVersion(webApiService: WebApiService): VaultVersionCheckResult {
-        val result = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("statusCheck")
-        } catch (e: Exception) {
-            throw driverError(e)
-        }
-        result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
+        val result = run("statusCheck", webApiService)
         if (result.optBoolean("isOffline", false)) {
             vaultStore.metadata.setOfflineMode(true)
             throw AppError.ServerUnavailable(0)
@@ -133,9 +91,77 @@ class VaultSync(
     }
 
     /**
-     * Persist sync results.
+     * Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the VEK
+     * is stored as the session key; a legacy account keeps the derived key. Every sync assumes the key this stored. Returns the stored key (base64).
      */
-    private fun adoptSyncSideEffects(result: JSONObject) {
+    suspend fun resolveVaultKey(webApiService: WebApiService, derivedKeyBase64: String): String {
+        val result = run("resolveVaultKey", webApiService, encryptionKey = derivedKeyBase64)
+        if (!result.optBoolean("success", false)) {
+            throw syncError(result)
+        }
+        val key = result.optString("encryptionKey").takeIf { it.isNotEmpty() } ?: derivedKeyBase64
+        vaultStore.adoptEncryptionKey(key)
+        return key
+    }
+
+    /**
+     * Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
+     * `storage-format-upgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
+     */
+    suspend fun getVaultMigrationStatus(webApiService: WebApiService): String {
+        val status = run("migrationStatus", webApiService)
+        return status.optString("kind").takeIf { it.isNotEmpty() } ?: "storage-format-upgrade"
+    }
+
+    /**
+     * Bring the local vault onto the current storage model (a schema rebuild after an app update, or the one-time
+     * account-key upgrade of a legacy vault) and push it. Driven by the app's upgrade page only: a sync never runs
+     * it on its own, because the storage format move signs out every other client that predates the format. Never throws.
+     */
+    suspend fun migrateVaultManifest(webApiService: WebApiService): VaultMigrationResult {
+        val result = try {
+            run("migrateManifest", webApiService)
+        } catch (e: AppError) {
+            return failedMigration(e)
+        }
+        if (!result.optBoolean("success", false)) {
+            return failedMigration(syncError(result))
+        }
+        val pushed = result.optBoolean("pushed", false)
+        Log.i(TAG, "Manifest migration complete: pushed=$pushed")
+        return VaultMigrationResult(true, pushed)
+    }
+
+    /**
+     * Push the pending local changes (after a native mutation such as an autofill link or a passkey creation).
+     */
+    suspend fun mutateVault(webApiService: WebApiService): Boolean {
+        val result = syncVaultWithServer(webApiService)
+        if (!result.success && !result.wasOffline) {
+            throw AppError.VaultUploadFailed(result.errorMessage ?: result.error ?: "Vault sync failed")
+        }
+        return result.success
+    }
+
+    /**
+     * Run one engine operation and adopt what it reported. A driver failure surfaces as the native error.
+     */
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null): JSONObject {
+        val result = try {
+            VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey)
+        } catch (e: Exception) {
+            throw driverError(e)
+        }
+        adoptSyncResult(result)
+        return result
+    }
+
+    /**
+     * Persist what the engine reported: server version, offline mode, session values it changed, and the email
+     * routing a pulled vault came with. Capabilities are not stored: the mobile app has no capability gate yet.
+     */
+    private fun adoptSyncResult(result: JSONObject) {
         result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
         if (result.has("isOfflineMode")) {
             vaultStore.metadata.setOfflineMode(result.optBoolean("isOfflineMode", false))
@@ -163,38 +189,11 @@ class VaultSync(
     }
 
     /**
-     * Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
-     * `storage-format-upgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
+     * A failed sync return.
      */
-    @Suppress("TooGenericExceptionCaught")
-    suspend fun getVaultMigrationStatus(webApiService: WebApiService): String {
-        val status = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrationStatus")
-        } catch (e: Exception) {
-            throw driverError(e)
-        }
-        return status.optString("kind").takeIf { it.isNotEmpty() } ?: "storage-format-upgrade"
-    }
-
-    /**
-     * Bring the local vault onto the current storage model (a schema rebuild after an app update, or the one-time
-     * account-key upgrade of a legacy vault) and push it. Driven by the app's upgrade page only: a sync never runs
-     * it on its own, because the storage format move signs out every other client that predates the format.
-     */
-    @Suppress("TooGenericExceptionCaught")
-    suspend fun migrateVaultManifest(webApiService: WebApiService): VaultMigrationResult {
-        val result = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run("migrateManifest")
-        } catch (e: Exception) {
-            return failedMigration(driverError(e))
-        }
-        adoptSyncSideEffects(result)
-        if (!result.optBoolean("success", false)) {
-            return failedMigration(syncError(result))
-        }
-        val pushed = result.optBoolean("pushed", false)
-        Log.i(TAG, "Manifest migration complete: pushed=$pushed")
-        return VaultMigrationResult(true, pushed)
+    private fun failedSync(error: AppError, wasOffline: Boolean): VaultSyncResult {
+        Log.e(TAG, "Sync failed (${error.code}): ${error.message}", error.cause)
+        return VaultSyncResult(false, SyncAction.ERROR, vaultStore.metadata.getVaultRevisionNumber(), wasOffline, error.code, error.message)
     }
 
     /**
@@ -206,7 +205,12 @@ class VaultSync(
     }
 
     /**
-     * Convert JSON result to AppError.
+     * An error the driver itself threw (a request it could not build, a command it could not decode).
+     */
+    private fun driverError(e: Exception): AppError = e as? AppError ?: AppError.SyncEngineFailed(e.toString(), e)
+
+    /**
+     * The engine's failure as the native error: a forced logout by its reason, else by its error code.
      */
     private fun syncError(result: JSONObject): AppError {
         when (result.optString("errorKey")) {
@@ -221,7 +225,7 @@ class VaultSync(
         return when (result.optString("errorCode")) {
             "E-805" -> AppError.Timeout()
             "E-804" -> AppError.VaultTooLarge()
-            "E-903" -> AppError.ServerVersionNotSupported()
+            "E-903" -> AppError.ServerUpdateRequired()
             "E-901" -> AppError.MigrationCheckFailed(message)
             "E-505" -> AppError.ServerUnavailable(0)
             "E-506" -> AppError.ServerError(message)

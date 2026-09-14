@@ -1,6 +1,5 @@
 package net.aliasvault.app.vaultstore.repositories
 
-import android.database.Cursor
 import android.util.Log
 import net.aliasvault.app.autofill.utils.RustItemMatcher
 import net.aliasvault.app.utils.DateHelpers
@@ -11,6 +10,7 @@ import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
 import net.aliasvault.app.vaultstore.queries.LogoQueries
 import net.aliasvault.app.vaultstore.queries.PasskeyQueries
+import uniffi.aliasvault_core.faviconSourceKey
 import uniffi.aliasvault_core.vaultCodecLogoIdFor
 import java.util.Calendar
 import java.util.Date
@@ -19,11 +19,19 @@ import java.util.UUID
 
 /**
  * Repository for Passkey operations on Items.
- * Handles fetching, creating, updating, and deleting passkeys with their parent items.
  */
 class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     companion object {
         private const val TAG = "PasskeyRepository"
+        private const val LOGO_KIND_FAVICON = "favicon"
+        private const val FAVICON_MIME_TYPE = "image/x-icon"
+
+        /*
+         * FieldValues.Weight of the two system fields a passkey item gets: the DefaultDisplayOrder of
+         * login.url and login.username in core/models/src/vault/SystemFieldRegistry.ts.
+         */
+        private const val LOGIN_URL_WEIGHT = 5
+        private const val LOGIN_USERNAME_WEIGHT = 15
 
         private val MIN_DATE: Date = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
             set(Calendar.YEAR, 1)
@@ -35,6 +43,11 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             set(Calendar.MILLISECOND, 0)
         }.time
     }
+
+    /**
+     * The identity of a logo row: its kind and the natural key within that kind.
+     */
+    private data class LogoRef(val kind: String, val source: String)
 
     // MARK: - Read Operations
 
@@ -51,30 +64,25 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             return null
         }
 
-        val results = executeQuery(
-            PasskeyQueries.GET_BY_CREDENTIAL_ID,
-            arrayOf(credentialIdString.lowercase()),
-        )
-
+        val results = executeQuery(PasskeyQueries.GET_BY_ID, arrayOf(credentialIdString.lowercase()))
         return results.firstOrNull()?.let { parsePasskeyRow(it) }
     }
 
     /**
-     * Get all passkeys for an item.
+     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
      * @param itemId The UUID of the parent item
+     * @param manifestId The manifest the item belongs to, when known
      * @return List of Passkey objects
      */
-    fun getForItem(itemId: UUID): List<Passkey> {
-        val results = executeQuery(
-            PasskeyQueries.GET_BY_ITEM_ID,
-            arrayOf(itemId.toString().lowercase()),
-        )
-
+    fun getForItem(itemId: UUID, manifestId: String? = null): List<Passkey> {
+        val id = itemId.toString().lowercase()
+        val scope = manifestId ?: resolveRowManifestId("Items", id) ?: return emptyList()
+        val results = executeQuery(PasskeyQueries.GET_BY_ITEM_ID, arrayOf(id, scope))
         return results.mapNotNull { parsePasskeyRow(it) }
     }
 
     /**
-     * Get all passkeys for a specific relying party identifier (RP ID).
+     * Get all passkeys for a specific relying party identifier (RP ID) whose item is live.
      * @param rpId The relying party identifier
      * @return List of Passkey objects
      */
@@ -84,7 +92,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Get a passkey by its ID.
+     * Get a passkey by its ID, only while its item is live.
      * @param passkeyId The UUID of the passkey
      * @return Passkey object or null if not found
      */
@@ -96,133 +104,82 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     // MARK: - Write Operations
 
     /**
-     * Insert a new passkey into the database.
+     * Insert a new passkey, stamped with the manifest of its item.
      * @param passkey The passkey to insert
      */
-    fun insert(passkey: Passkey) {
-        val publicKeyString = String(passkey.publicKey, Charsets.UTF_8)
-        val privateKeyString = String(passkey.privateKey, Charsets.UTF_8)
-
-        database.execute(
+    private fun insert(passkey: Passkey) {
+        val itemId = passkey.parentItemId.toString().lowercase()
+        executeUpdate(
             PasskeyQueries.INSERT,
-            listOf(
+            arrayOf(
                 passkey.id.toString().lowercase(),
-                passkey.parentItemId.toString().lowercase(), // Note: still called parentItemId but references ItemId
+                itemId,
+                itemId,
+                activeManifestId(),
                 passkey.rpId,
                 passkey.userHandle,
-                publicKeyString,
-                privateKeyString,
+                String(passkey.publicKey, Charsets.UTF_8),
+                String(passkey.privateKey, Charsets.UTF_8),
                 passkey.prfKey,
                 passkey.displayName,
+                passkey.additionalData,
                 DateHelpers.toStandardFormat(passkey.createdAt),
                 DateHelpers.toStandardFormat(passkey.updatedAt),
                 if (passkey.isDeleted) 1L else 0L,
-                passkey.parentItemId.toString().lowercase(),
-                activeManifestId(),
             ),
         )
     }
 
     /**
-     * Create a new item with an associated passkey.
-     * @param rpId The relying party identifier
+     * Create a new item with an associated passkey, in the personal manifest.
+     * @param url The item's login URL, which the favicon was fetched for
      * @param userName The username (optional)
      * @param displayName The display name
      * @param passkey The passkey to associate
-     * @param logo The logo bytes (optional)
+     * @param logo The favicon bytes fetched for the url (optional)
      * @return The created Item
      */
     fun createItemWithPasskey(
-        rpId: String,
+        url: String,
         userName: String?,
         displayName: String,
         passkey: Passkey,
         logo: ByteArray? = null,
     ): Item {
         return withTransaction {
-            val itemId = passkey.parentItemId
+            val manifestId = activeManifestId()
+            val itemId = passkey.parentItemId.toString().lowercase()
             val now = Date()
             val timestamp = DateHelpers.toStandardFormat(now)
 
-            // Create or reuse logo if provided
-            val logoId = if (logo != null) {
-                val source = rpId.lowercase().replace("www.", "")
-                getOrCreateLogo(source, logo, timestamp)
-            } else {
-                null
-            }
+            val logoId = resolveLogoId(manifestId, null, url, logo, timestamp)
 
             // Create the Item
             executeUpdate(
                 PasskeyQueries.CREATE_ITEM,
-                arrayOf(
-                    itemId.toString().lowercase(),
-                    displayName,
-                    "Login", // Passkey items are Login type
-                    logoId,
-                    null, // FolderId
-                    timestamp,
-                    timestamp,
-                    0,
-                    null,
-                    null, // FolderId again, for the manifest lookup
-                    activeManifestId(),
-                ),
+                arrayOf(itemId, displayName, "Login", logoId, null, timestamp, timestamp, 0, null, null, manifestId),
             )
 
-            // Insert URL field value
-            if (rpId.isNotEmpty()) {
-                executeUpdate(
-                    PasskeyQueries.INSERT_FIELD_VALUE,
-                    arrayOf(
-                        generateId(),
-                        itemId.toString().lowercase(),
-                        null, // FieldDefinitionId for system fields
-                        FieldKey.LOGIN_URL,
-                        "https://$rpId",
-                        0,
-                        timestamp,
-                        timestamp,
-                        0,
-                        itemId.toString().lowercase(),
-                        activeManifestId(),
-                    ),
-                )
+            // Insert URL and username field values
+            if (url.isNotEmpty()) {
+                insertFieldValue(itemId, manifestId, FieldKey.LOGIN_URL, url, LOGIN_URL_WEIGHT, timestamp)
             }
-
-            // Insert username field value if provided
             if (userName != null) {
-                executeUpdate(
-                    PasskeyQueries.INSERT_FIELD_VALUE,
-                    arrayOf(
-                        generateId(),
-                        itemId.toString().lowercase(),
-                        null,
-                        FieldKey.LOGIN_USERNAME,
-                        userName,
-                        100,
-                        timestamp,
-                        timestamp,
-                        0,
-                        itemId.toString().lowercase(),
-                        activeManifestId(),
-                    ),
-                )
+                insertFieldValue(itemId, manifestId, FieldKey.LOGIN_USERNAME, userName, LOGIN_USERNAME_WEIGHT, timestamp)
             }
 
-            // Insert the passkey
-            insert(passkey)
+            insert(passkey.copy(manifestId = manifestId))
 
-            // Return a minimal Item object
-            // Full item will be loaded via getAllItems() or getItemById()
+            // Return a minimal Item object; the full item is loaded via getAllItems()
             Item(
-                id = itemId,
+                id = passkey.parentItemId,
+                manifestId = manifestId,
                 name = displayName,
                 itemType = "Login",
                 logo = logo,
                 folderId = null,
                 folderPath = null,
-                fields = emptyList(), // Will be populated when loaded from DB
+                fields = emptyList(),
                 hasPasskey = true,
                 hasAttachment = false,
                 hasTotp = false,
@@ -233,58 +190,47 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Replace an existing passkey with a new one.
+     * Replace an existing passkey with a new one on the same item.
      *
      * @param oldPasskeyId The UUID of the passkey to replace.
      * @param newPasskey The new passkey.
      * @param displayName The updated display name.
-     * @param logo The updated logo bytes (optional).
+     * @param url The login URL the favicon was fetched for.
+     * @param logo The favicon bytes fetched for the url (optional).
      */
     fun replace(
         oldPasskeyId: UUID,
         newPasskey: Passkey,
         displayName: String,
+        url: String,
         logo: ByteArray? = null,
     ) {
         withTransaction {
             val now = Date()
             val timestamp = DateHelpers.toStandardFormat(now)
 
-            // Get the old passkey to find its item
-            val oldPasskey = getById(oldPasskeyId)
-                ?: error("Passkey not found: $oldPasskeyId")
+            // Get the old passkey to find its item and manifest
+            val oldPasskey = getById(oldPasskeyId) ?: error("Passkey not found: $oldPasskeyId")
+            val manifestId = oldPasskey.manifestId ?: error("Passkey has no manifest: $oldPasskeyId")
+            val itemId = oldPasskey.parentItemId.toString().lowercase()
 
-            val itemId = oldPasskey.parentItemId
-
-            // Update the item's timestamp
-            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().lowercase()))
-
-            if (logo != null) {
-                val source = newPasskey.rpId.lowercase().replace("www.", "")
-                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().lowercase()))
-                val existingLogoId = itemResults.firstOrNull()?.get("LogoId") as? String
-
-                if (existingLogoId != null) {
-                    executeUpdate(LogoQueries.UPDATE_FILE_DATA, arrayOf(logo, timestamp, existingLogoId))
-                } else {
-                    val newLogoId = getOrCreateLogo(source, logo, timestamp)
-                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().lowercase()))
-                }
-            }
+            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId, manifestId))
+            updateItemLogo(itemId, manifestId, url, logo, timestamp)
 
             // Soft delete the old passkey
-            softDelete("Passkeys", oldPasskeyId.toString().lowercase())
+            executeUpdate(PasskeyQueries.SOFT_DELETE, arrayOf(timestamp, oldPasskeyId.toString().lowercase(), manifestId))
 
             // Create the new passkey with the same item ID
-            val updatedPasskey = newPasskey.copy(
-                parentItemId = itemId,
-                displayName = displayName,
-                createdAt = now,
-                updatedAt = now,
-                isDeleted = false,
+            insert(
+                newPasskey.copy(
+                    parentItemId = oldPasskey.parentItemId,
+                    manifestId = manifestId,
+                    displayName = displayName,
+                    createdAt = now,
+                    updatedAt = now,
+                    isDeleted = false,
+                ),
             )
-
-            insert(updatedPasskey)
         }
     }
 
@@ -292,50 +238,35 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * Add a passkey to an existing Item (merge passkey into existing credential).
      *
      * @param itemId The UUID of the existing Item to add the passkey to.
+     * @param manifestId The manifest the item belongs to.
      * @param passkey The passkey to add (will have its parentItemId updated).
-     * @param logo Optional logo to update/add to the item.
+     * @param url The login URL the favicon was fetched for.
+     * @param logo The favicon bytes fetched for the url (optional).
      */
     fun addPasskeyToExistingItem(
         itemId: UUID,
+        manifestId: String,
         passkey: Passkey,
+        url: String,
         logo: ByteArray? = null,
     ) {
         withTransaction {
             val now = Date()
             val timestamp = DateHelpers.toStandardFormat(now)
+            val id = itemId.toString().lowercase()
 
-            // Optionally update/add logo
-            if (logo != null) {
-                val rpId = passkey.rpId
-                val source = rpId.lowercase().replace("www.", "")
+            updateItemLogo(id, manifestId, url, logo, timestamp)
+            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, id, manifestId))
 
-                // Check if item already has a logo
-                val itemResults = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId.toString().lowercase()))
-                val existingLogoId = itemResults.firstOrNull()?.get("LogoId") as? String
-
-                if (existingLogoId != null) {
-                    // Update existing logo
-                    executeUpdate(LogoQueries.UPDATE_FILE_DATA, arrayOf(logo, timestamp, existingLogoId))
-                } else {
-                    // Create or reuse logo with unique source check
-                    val newLogoId = getOrCreateLogo(source, logo, timestamp)
-                    // Link logo to item
-                    executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(newLogoId, timestamp, itemId.toString().lowercase()))
-                }
-            }
-
-            // Update item's UpdatedAt timestamp
-            executeUpdate(PasskeyQueries.UPDATE_ITEM_TIMESTAMP, arrayOf(timestamp, itemId.toString().lowercase()))
-
-            // Create the passkey with the existing item ID
-            val passkeyToInsert = passkey.copy(
-                parentItemId = itemId,
-                createdAt = now,
-                updatedAt = now,
-                isDeleted = false,
+            insert(
+                passkey.copy(
+                    parentItemId = itemId,
+                    manifestId = manifestId,
+                    createdAt = now,
+                    updatedAt = now,
+                    isDeleted = false,
+                ),
             )
-
-            insert(passkeyToInsert)
         }
     }
 
@@ -357,46 +288,26 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     ): List<PasskeyWithCredentialInfo> {
         if (!database.isOpen()) return emptyList()
 
-        val results = mutableListOf<PasskeyWithCredentialInfo>()
-        val cursor = database.queryCursor(
-            PasskeyQueries.GET_WITH_CREDENTIAL_INFO,
-            listOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, rpId),
-        )
+        return executeQuery(PasskeyQueries.GET_BY_RP_ID, arrayOf(rpId)).mapNotNull { row ->
+            val passkey = parsePasskeyRow(row) ?: return@mapNotNull null
+            val itemUsername = row["Username"] as? String
 
-        cursor.use {
-            while (it.moveToNext()) {
-                val passkey = parsePasskeyFromCursor(it) ?: continue
-                val itemName = if (!it.isNull(11)) it.getString(11) else null
-                val itemUsername = if (!it.isNull(12)) it.getString(12) else null
-                val itemEmail = if (!it.isNull(13)) it.getString(13) else null
+            // Filter by username or userId if provided
+            val usernameMatches = userName == null || itemUsername == userName
+            val userIdMatches = userId == null || passkey.userHandle == null || userId.contentEquals(passkey.userHandle)
+            if (!usernameMatches || !userIdMatches) return@mapNotNull null
 
-                // Filter by username or userId if provided
-                var matches = true
-                if (userName != null && itemUsername != userName) {
-                    matches = false
-                }
-                if (userId != null && passkey.userHandle != null && !userId.contentEquals(passkey.userHandle)) {
-                    matches = false
-                }
-
-                if (matches) {
-                    results.add(
-                        PasskeyWithCredentialInfo(
-                            passkey = passkey,
-                            serviceName = itemName,
-                            username = itemUsername,
-                            email = itemEmail,
-                        ),
-                    )
-                }
-            }
+            PasskeyWithCredentialInfo(
+                passkey = passkey,
+                serviceName = row["ServiceName"] as? String,
+                username = itemUsername,
+                email = row["Email"] as? String,
+            )
         }
-
-        return results
     }
 
     /**
-     * Get ALL Login items that don't have a passkey yet (no URL filtering).
+     * Get ALL active Login items that don't have a passkey yet (no URL filtering).
      * Used with RustCredentialMatcher for intelligent, cross-platform consistent filtering.
      *
      * @return List of ItemWithCredentialInfo objects with all URLs.
@@ -405,43 +316,36 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         if (!database.isOpen()) return emptyList()
 
         val results = mutableListOf<ItemWithCredentialInfo>()
-        val cursor = database.queryCursor(
+        val rows = executeQuery(
             PasskeyQueries.GET_ALL_ITEMS_WITHOUT_PASSKEY,
-            listOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, FieldKey.LOGIN_PASSWORD),
+            arrayOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, FieldKey.LOGIN_PASSWORD),
         )
 
-        cursor.use {
-            while (it.moveToNext()) {
-                val itemIdString = it.getString(0)
-                val itemName = if (!it.isNull(1)) it.getString(1) else null
-                val itemCreatedAt = if (!it.isNull(2)) it.getString(2) else null
-                val itemUpdatedAt = if (!it.isNull(3)) it.getString(3) else null
-                val urlsString = if (!it.isNull(4)) it.getString(4) else null
-                val itemUsername = if (!it.isNull(5)) it.getString(5) else null
-                val itemEmail = if (!it.isNull(6)) it.getString(6) else null
-                val hasPassword = !it.isNull(7) && it.getString(7).isNotEmpty()
+        for (row in rows) {
+            try {
+                val itemIdString = row["Id"] as? String
+                val manifestId = row["ManifestId"] as? String
+                if (itemIdString == null || manifestId == null) continue
+                val itemId = UUID.fromString(itemIdString)
+                val createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?: "") ?: MIN_DATE
+                val updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?: "") ?: MIN_DATE
+                val urls = (row["Urls"] as? String)?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
 
-                try {
-                    val itemId = UUID.fromString(itemIdString)
-                    val createdAt = DateHelpers.parseDateString(itemCreatedAt ?: "") ?: MIN_DATE
-                    val updatedAt = DateHelpers.parseDateString(itemUpdatedAt ?: "") ?: MIN_DATE
-                    val urls = urlsString?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
-
-                    results.add(
-                        ItemWithCredentialInfo(
-                            itemId = itemId,
-                            serviceName = itemName,
-                            urls = urls,
-                            username = itemUsername,
-                            email = itemEmail,
-                            hasPassword = hasPassword,
-                            createdAt = createdAt,
-                            updatedAt = updatedAt,
-                        ),
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing item row", e)
-                }
+                results.add(
+                    ItemWithCredentialInfo(
+                        itemId = itemId,
+                        manifestId = manifestId,
+                        serviceName = row["Name"] as? String,
+                        urls = urls,
+                        username = row["Username"] as? String,
+                        email = row["Email"] as? String,
+                        hasPassword = !(row["Password"] as? String).isNullOrEmpty(),
+                        createdAt = createdAt,
+                        updatedAt = updatedAt,
+                    ),
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing item row", e)
             }
         }
 
@@ -486,46 +390,34 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         if (!database.isOpen()) return emptyList()
 
         val results = mutableListOf<PasskeyWithItem>()
-        val cursor = database.queryCursor(PasskeyQueries.GET_ALL_WITH_ITEMS, listOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL))
+        for (row in executeQuery(PasskeyQueries.GET_ALL_WITH_ITEMS, emptyArray())) {
+            try {
+                val passkey = parsePasskeyRow(row)
+                val manifestId = passkey?.manifestId
+                if (passkey == null || manifestId == null) continue
+                val itemCreatedAt = DateHelpers.parseDateString(row["ItemCreatedAt"] as? String) ?: MIN_DATE
+                val itemUpdatedAt = DateHelpers.parseDateString(row["ItemUpdatedAt"] as? String) ?: MIN_DATE
 
-        cursor.use {
-            while (it.moveToNext()) {
-                try {
-                    // Parse passkey (columns 0-10)
-                    val passkey = parsePasskeyFromJoinCursor(it) ?: continue
+                // Create a minimal Item object with the data we have
+                val item = Item(
+                    id = passkey.parentItemId,
+                    manifestId = manifestId,
+                    name = row["ServiceName"] as? String,
+                    itemType = "Login",
+                    logo = null,
+                    folderId = null,
+                    folderPath = null,
+                    fields = emptyList(), // Not loading all fields for performance
+                    hasPasskey = true,
+                    hasAttachment = false,
+                    hasTotp = false,
+                    createdAt = itemCreatedAt,
+                    updatedAt = itemUpdatedAt,
+                )
 
-                    // Parse item info (columns 11-14)
-                    val itemId = UUID.fromString(it.getString(11))
-                    val itemName = if (!it.isNull(12)) it.getString(12) else null
-                    val itemCreatedAt = DateHelpers.parseDateString(it.getString(13)) ?: MIN_DATE
-                    val itemUpdatedAt = DateHelpers.parseDateString(it.getString(14)) ?: MIN_DATE
-
-                    @Suppress("UNUSED_VARIABLE") // Username field loaded for potential future use
-                    val username = if (!it.isNull(15)) it.getString(15) else null
-
-                    @Suppress("UNUSED_VARIABLE") // Email field loaded for potential future use
-                    val email = if (!it.isNull(16)) it.getString(16) else null
-
-                    // Create a minimal Item object with the data we have
-                    val item = Item(
-                        id = itemId,
-                        name = itemName,
-                        itemType = "Login",
-                        logo = null,
-                        folderId = null,
-                        folderPath = null,
-                        fields = emptyList(), // Not loading all fields for performance
-                        hasPasskey = true,
-                        hasAttachment = false,
-                        hasTotp = false,
-                        createdAt = itemCreatedAt,
-                        updatedAt = itemUpdatedAt,
-                    )
-
-                    results.add(PasskeyWithItem(passkey, item))
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing passkey with item row", e)
-                }
+                results.add(PasskeyWithItem(passkey, item))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing passkey with item row", e)
             }
         }
 
@@ -535,40 +427,98 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     // MARK: - Helper Methods
 
     /**
-     * Get an existing logo ID for a source, or create a new logo if none exists.
-     * This prevents UNIQUE constraint violations on Logos.Source.
-     *
-     * @param source The normalized source domain (e.g., 'github.com')
-     * @param logoData The logo image data as ByteArray
-     * @param timestamp The current timestamp for CreatedAt/UpdatedAt
-     * @return The logo ID (existing or newly created)
+     * Insert one system field value on an item.
      */
-    private fun getOrCreateLogo(source: String, logoData: ByteArray, timestamp: String): String {
-        // Check if a logo for this source already exists
-        val existingLogos = executeQuery(LogoQueries.GET_BY_SOURCE, arrayOf(source))
+    @Suppress("LongParameterList") // One argument per column written
+    private fun insertFieldValue(itemId: String, manifestId: String, fieldKey: String, value: String, weight: Int, timestamp: String) {
+        executeUpdate(
+            PasskeyQueries.INSERT_FIELD_VALUE,
+            arrayOf(generateId(), itemId, null, fieldKey, value, weight, timestamp, timestamp, 0, itemId, manifestId),
+        )
+    }
 
-        val existingLogo = existingLogos.firstOrNull()
-        if (existingLogo != null) {
-            val existingLogoId = existingLogo["Id"] as String
-            val isDeleted = (existingLogo["IsDeleted"] as? Long) == 1L
+    /**
+     * Point the item at the logo the item-logo rules pick for its url and the fetched bytes, when that differs
+     * from the logo it has. A null pick keeps the current logo, like the COALESCE in the TS item update.
+     */
+    private fun updateItemLogo(itemId: String, manifestId: String, url: String, logo: ByteArray?, timestamp: String) {
+        val existingLogoId = executeQuery(PasskeyQueries.GET_LOGO_ID_FROM_ITEM, arrayOf(itemId, manifestId)).firstOrNull()?.get("LogoId") as? String
+        val logoId = resolveLogoId(manifestId, existingLogoId, url, logo, timestamp) ?: return
+        if (logoId != existingLogoId) {
+            executeUpdate(LogoQueries.UPDATE_ITEM_LOGO_ID, arrayOf(logoId, timestamp, itemId, manifestId))
+        }
+    }
 
-            // Sanity check: restore if soft-deleted
-            if (isDeleted) {
-                executeUpdate(LogoQueries.RESTORE, arrayOf(timestamp, existingLogoId))
-                executeUpdate(LogoQueries.UPDATE_FILE_DATA, arrayOf(logoData, timestamp, existingLogoId))
-            }
-            return existingLogoId
+    /**
+     * The logo an item should point at, following ItemRepository.ts resolveLogoId without an explicit selection:
+     * a logo the user chose earlier (built-in or uploaded) is kept; a favicon the item already has for this
+     * domain is kept; fresh bytes create or refresh this domain's favicon row in the item's manifest; otherwise
+     * the favicon this domain already has anywhere in the vault is adopted, or none at all.
+     *
+     * @return The logo id, or null when the item should keep what it has (update) or get none (create)
+     */
+    private fun resolveLogoId(scope: String, existingLogoId: String?, url: String, logo: ByteArray?, timestamp: String): String? {
+        val existing = existingLogoId?.let { getLogoById(it, scope) }
+        if (existing != null && existing.kind != LOGO_KIND_FAVICON) {
+            return adoptIntoScope(scope, existing.kind, existing.source, timestamp)
         }
 
-        // Create new logo entry. The id is derived from (manifest, kind, source) by the Rust core, like every other
-        // client does, so the same favicon never produces two rows across devices.
-        val manifestId = activeManifestId()
-        val logoId = vaultCodecLogoIdFor(manifestId, "favicon", source)
-        executeUpdate(
-            LogoQueries.INSERT,
-            arrayOf(logoId, source, manifestId, logoData, "image/png", null, timestamp, timestamp, 0),
-        )
+        // Without a domain there is no natural key to store a favicon under.
+        val source = faviconSourceKey(url)
+        if (source.isEmpty()) {
+            return null
+        }
 
+        if (existing != null && existing.source == source) {
+            return adoptIntoScope(scope, LOGO_KIND_FAVICON, source, timestamp)
+        }
+
+        if (logo != null && logo.isNotEmpty()) {
+            return upsertLogo(scope, LOGO_KIND_FAVICON, source, logo, FAVICON_MIME_TYPE, null, timestamp)
+        }
+
+        return adoptIntoScope(scope, LOGO_KIND_FAVICON, source, timestamp)
+    }
+
+    /**
+     * The kind and key of a logo row inside one manifest, or null when it no longer exists.
+     */
+    private fun getLogoById(logoId: String, manifestId: String): LogoRef? {
+        val row = executeQuery(LogoQueries.GET_BY_ID, arrayOf(logoId, manifestId)).firstOrNull() ?: return null
+        val source = row["Source"] as? String ?: return null
+        return LogoRef(row["Kind"] as? String ?: LOGO_KIND_FAVICON, source)
+    }
+
+    /**
+     * The id this logo has inside the manifest, copying it in from another manifest when it is not there yet.
+     * Null when the vault holds no such logo at all.
+     */
+    private fun adoptIntoScope(manifestId: String, kind: String, source: String, timestamp: String): String? {
+        val inScope = executeQuery(LogoQueries.GET_ID_FOR_KEY, arrayOf(manifestId, kind, source)).firstOrNull()?.get("Id") as? String
+        if (inScope != null) {
+            return inScope
+        }
+
+        val origin = executeQuery(LogoQueries.GET_BEST_FOR_KEY, arrayOf(kind, source)).firstOrNull() ?: return null
+        return upsertLogo(manifestId, kind, source, origin["FileData"] as? ByteArray, origin["MimeType"] as? String, origin["Name"] as? String, timestamp)
+    }
+
+    /**
+     * Insert or refresh the logo for a kind and key inside one manifest. The id is derived from (manifest, kind,
+     * source) by the Rust core, like every other client does, so the same logo never produces two rows.
+     */
+    @Suppress("LongParameterList") // One argument per column written
+    private fun upsertLogo(
+        manifestId: String,
+        kind: String,
+        source: String,
+        fileData: ByteArray?,
+        mimeType: String?,
+        name: String?,
+        timestamp: String,
+    ): String {
+        val logoId = vaultCodecLogoIdFor(manifestId, kind, source)
+        executeUpdate(LogoQueries.UPSERT, arrayOf(logoId, kind, source, manifestId, fileData, mimeType, name, timestamp, timestamp))
         return logoId
     }
 
@@ -580,134 +530,36 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         return try {
             val idString = row["Id"] as? String ?: return null
             val itemIdString = row["ItemId"] as? String ?: return null
+            val manifestId = row["ManifestId"] as? String ?: return null
             val rpId = row["RpId"] as? String ?: return null
             val userHandle = row["UserHandle"] as? ByteArray
             val publicKeyString = row["PublicKey"] as? String ?: return null
             val privateKeyString = row["PrivateKey"] as? String ?: return null
             val prfKey = row["PrfKey"] as? ByteArray
             val displayName = row["DisplayName"] as? String ?: return null
+            val additionalData = row["AdditionalData"] as? ByteArray
             val createdAtString = row["CreatedAt"] as? String ?: return null
             val updatedAtString = row["UpdatedAt"] as? String ?: return null
             val isDeleted = (row["IsDeleted"] as? Long) == 1L
 
-            val id = UUID.fromString(idString)
-            val itemId = UUID.fromString(itemIdString)
-            val createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE
-            val updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE
-
-            val publicKeyData = publicKeyString.toByteArray(Charsets.UTF_8)
-            val privateKeyData = privateKeyString.toByteArray(Charsets.UTF_8)
-
             Passkey(
-                id = id,
-                parentItemId = itemId, // Note: field name still parentItemId but now refers to ItemId
+                id = UUID.fromString(idString),
+                parentItemId = UUID.fromString(itemIdString),
+                manifestId = manifestId,
                 rpId = rpId,
                 userHandle = userHandle,
                 userName = null,
-                publicKey = publicKeyData,
-                privateKey = privateKeyData,
+                publicKey = publicKeyString.toByteArray(Charsets.UTF_8),
+                privateKey = privateKeyString.toByteArray(Charsets.UTF_8),
                 prfKey = prfKey,
                 displayName = displayName,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
+                additionalData = additionalData,
+                createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE,
+                updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE,
                 isDeleted = isDeleted,
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing passkey row", e)
-            null
-        }
-    }
-
-    /**
-     * Parse a passkey from a cursor (for direct database queries).
-     * Expects columns 0-10 to be passkey fields.
-     */
-    private fun parsePasskeyFromCursor(cursor: Cursor): Passkey? {
-        return try {
-            val idString = cursor.getString(0)
-            val itemIdString = cursor.getString(1)
-            val rpId = cursor.getString(2)
-            val userHandle = if (!cursor.isNull(3)) cursor.getBlob(3) else null
-            val publicKeyString = cursor.getString(4)
-            val privateKeyString = cursor.getString(5)
-            val prfKey = if (!cursor.isNull(6)) cursor.getBlob(6) else null
-            val displayName = cursor.getString(7)
-            val createdAtString = cursor.getString(8)
-            val updatedAtString = cursor.getString(9)
-            val isDeleted = cursor.getInt(10) == 1
-
-            val id = UUID.fromString(idString)
-            val itemId = UUID.fromString(itemIdString)
-
-            val createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE
-            val updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE
-
-            val publicKeyData = publicKeyString.toByteArray(Charsets.UTF_8)
-            val privateKeyData = privateKeyString.toByteArray(Charsets.UTF_8)
-
-            Passkey(
-                id = id,
-                parentItemId = itemId,
-                rpId = rpId,
-                userHandle = userHandle,
-                userName = null,
-                publicKey = publicKeyData,
-                privateKey = privateKeyData,
-                prfKey = prfKey,
-                displayName = displayName,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
-                isDeleted = isDeleted,
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing passkey from cursor", e)
-            null
-        }
-    }
-
-    /**
-     * Parse a passkey from a JOIN query cursor.
-     * Expects columns 0-10 to be passkey fields.
-     */
-    private fun parsePasskeyFromJoinCursor(cursor: Cursor): Passkey? {
-        return try {
-            val idString = cursor.getString(0)
-            val itemIdString = cursor.getString(1)
-            val rpId = cursor.getString(2)
-            val userHandle = if (!cursor.isNull(3)) cursor.getBlob(3) else null
-            val publicKeyString = cursor.getString(4)
-            val privateKeyString = cursor.getString(5)
-            val prfKey = if (!cursor.isNull(6)) cursor.getBlob(6) else null
-            val displayName = cursor.getString(7)
-            val createdAtString = cursor.getString(8)
-            val updatedAtString = cursor.getString(9)
-            val isDeleted = cursor.getInt(10) == 1
-
-            val id = UUID.fromString(idString)
-            val itemId = UUID.fromString(itemIdString)
-
-            val createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE
-            val updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE
-
-            val publicKeyData = publicKeyString.toByteArray(Charsets.UTF_8)
-            val privateKeyData = privateKeyString.toByteArray(Charsets.UTF_8)
-
-            Passkey(
-                id = id,
-                parentItemId = itemId,
-                rpId = rpId,
-                userHandle = userHandle,
-                userName = null,
-                publicKey = publicKeyData,
-                privateKey = privateKeyData,
-                prfKey = prfKey,
-                displayName = displayName,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
-                isDeleted = isDeleted,
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing passkey from JOIN cursor", e)
             null
         }
     }
@@ -750,6 +602,7 @@ data class PasskeyWithItem(
  * Used for showing existing credentials that can have a passkey added.
  *
  * @property itemId The UUID of the item.
+ * @property manifestId The manifest the item belongs to.
  * @property serviceName The service name (Item.Name).
  * @property urls All login URLs associated with this item.
  * @property username The username from field values.
@@ -760,6 +613,7 @@ data class PasskeyWithItem(
  */
 data class ItemWithCredentialInfo(
     val itemId: UUID,
+    val manifestId: String,
     val serviceName: String?,
     val urls: List<String>,
     val username: String?,

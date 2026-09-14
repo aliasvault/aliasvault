@@ -30,10 +30,10 @@ class VaultPasskey(
     }
 
     /**
-     * Get all passkeys for an item.
+     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
      */
-    fun getPasskeysForItem(itemId: UUID): List<Passkey> {
-        return passkeyRepository.getForItem(itemId)
+    fun getPasskeysForItem(itemId: UUID, manifestId: String? = null): List<Passkey> {
+        return passkeyRepository.getForItem(itemId, manifestId)
     }
 
     /**
@@ -94,49 +94,51 @@ class VaultPasskey(
 
     /**
      * Create a new item with an associated passkey.
+     *
+     * @param url The item's login URL, which the favicon was fetched for.
      */
     fun createItemWithPasskey(
-        rpId: String,
+        url: String,
         userName: String?,
         displayName: String,
         passkey: Passkey,
         logo: ByteArray? = null,
     ): Item {
-        return passkeyRepository.createItemWithPasskey(rpId, userName, displayName, passkey, logo)
-    }
-
-    /**
-     * Insert a new passkey into the database.
-     */
-    fun insertPasskey(passkey: Passkey) {
-        passkeyRepository.insert(passkey)
+        return passkeyRepository.createItemWithPasskey(url, userName, displayName, passkey, logo)
     }
 
     /**
      * Replace an existing passkey with a new one.
+     *
+     * @param url The login URL the favicon was fetched for.
      */
     fun replacePasskey(
         oldPasskeyId: UUID,
         newPasskey: Passkey,
         displayName: String,
+        url: String,
         logo: ByteArray? = null,
     ) {
-        passkeyRepository.replace(oldPasskeyId, newPasskey, displayName, logo)
+        passkeyRepository.replace(oldPasskeyId, newPasskey, displayName, url, logo)
     }
 
     /**
      * Add a passkey to an existing Item (merge passkey into existing credential).
      *
      * @param itemId The UUID of the existing Item to add the passkey to.
+     * @param manifestId The manifest the item belongs to.
      * @param passkey The passkey to add.
+     * @param url The login URL the favicon was fetched for.
      * @param logo Optional logo to update/add.
      */
     fun addPasskeyToExistingItem(
         itemId: UUID,
+        manifestId: String,
         passkey: Passkey,
+        url: String,
         logo: ByteArray? = null,
     ) {
-        passkeyRepository.addPasskeyToExistingItem(itemId, passkey, logo)
+        passkeyRepository.addPasskeyToExistingItem(itemId, manifestId, passkey, url, logo)
     }
 
     // endregion

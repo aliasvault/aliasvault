@@ -113,9 +113,10 @@ class VaultStore(
     // region Composed Components
 
     private val crypto = VaultCrypto(keystoreProvider, storageProvider)
-    internal val database = VaultDatabase(storageProvider, crypto)
-    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(database)
     internal val metadata = VaultMetadataManager(storageProvider)
+    internal val database = VaultDatabase(storageProvider, crypto, metadata)
+    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(database)
+    private val itemStatsRepository = net.aliasvault.app.vaultstore.repositories.ItemStatsRepository(database)
     private val auth = VaultAuth(
         storageProvider,
         onClearCache = {
@@ -399,17 +400,10 @@ class VaultStore(
     }
 
     /**
-     * Commit a SQL transaction on the vault.
-     * This also atomically marks the vault as dirty and increments the mutation sequence
-     * for proper sync tracking.
+     * Commit a SQL transaction on the vault. The commit persists the vault and marks it dirty for the sync.
      */
     fun commitTransaction() {
         database.commitTransaction()
-
-        // Atomically mark vault as dirty and increment mutation sequence
-        // This ensures sync can properly detect local changes
-        metadata.setIsDirty(true)
-        metadata.incrementMutationSequence()
     }
 
     /**
@@ -420,17 +414,11 @@ class VaultStore(
     }
 
     /**
-     * Persist the in-memory database to encrypted storage and mark as dirty.
-     * Used after migrations where SQL handles its own transactions but we need to persist and sync.
-     * This does NOT commit any SQL transaction - it just persists the current state of the database.
+     * Persist the in-memory database to encrypted storage and mark as dirty, without committing a SQL
+     * transaction. Used after migrations whose scripts manage their own transactions.
      */
     fun persistAndMarkDirty() {
-        database.persistDatabaseToEncryptedStorage()
-
-        // Atomically mark vault as dirty and increment mutation sequence
-        // This ensures sync can properly detect local changes
-        metadata.setIsDirty(true)
-        metadata.incrementMutationSequence()
+        database.persistAndMarkDirty()
     }
 
     /**
@@ -442,34 +430,28 @@ class VaultStore(
     }
 
     /**
-     * Get all archived items from the vault.
-     */
-    fun getArchivedItems(): List<Item> {
-        return itemRepository.getArchived()
-    }
-
-    /**
-     * Get the number of archived items in the vault.
-     */
-    fun getArchivedCount(): Int {
-        return itemRepository.getArchivedCount()
-    }
-
-    /**
      * Get the first non-deleted TOTP code for an item, or null when none exists.
      * Used by the autofill service to copy a credential's current TOTP code to
      * the clipboard at fill time.
      */
-    fun getTotpForItem(itemId: String): TotpCode? {
+    fun getTotpForItem(itemId: String, manifestId: String): TotpCode? {
         if (!database.isVaultUnlocked()) {
             return null
         }
         return try {
-            itemRepository.getTotpForItem(itemId)
+            itemRepository.getTotpForItem(itemId, manifestId)
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error getting TOTP code for item", e)
             null
         }
+    }
+
+    /**
+     * Record one use of an item (autofill, copy or passkey assertion) in its usage statistics.
+     * Persists the vault and marks it dirty, so the next sync pushes it.
+     */
+    fun recordItemUsage(itemId: String, manifestId: String, action: net.aliasvault.app.vaultstore.repositories.ItemUsageAction) {
+        itemStatsRepository.recordUsage(itemId, manifestId, action)
     }
 
     /**
@@ -780,10 +762,10 @@ class VaultStore(
     }
 
     /**
-     * Get all passkeys for an item.
+     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
      */
-    fun getPasskeysForItem(itemId: java.util.UUID): List<net.aliasvault.app.vaultstore.models.Passkey> {
-        return passkey.getPasskeysForItem(itemId)
+    fun getPasskeysForItem(itemId: java.util.UUID, manifestId: String? = null): List<net.aliasvault.app.vaultstore.models.Passkey> {
+        return passkey.getPasskeysForItem(itemId, manifestId)
     }
 
     /**
@@ -821,35 +803,29 @@ class VaultStore(
     }
 
     /**
-     * Insert a new passkey into the database.
-     */
-    fun insertPasskey(passkeyObj: net.aliasvault.app.vaultstore.models.Passkey) {
-        passkey.insertPasskey(passkeyObj)
-    }
-
-    /**
-     * Create an item with a passkey.
+     * Create an item with a passkey. The url is written as the item's login URL and names the favicon's domain.
      */
     fun createItemWithPasskey(
-        rpId: String,
+        url: String,
         userName: String?,
         displayName: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         logo: ByteArray? = null,
     ): net.aliasvault.app.vaultstore.models.Item {
-        return passkey.createItemWithPasskey(rpId, userName, displayName, passkeyObj, logo)
+        return passkey.createItemWithPasskey(url, userName, displayName, passkeyObj, logo)
     }
 
     /**
-     * Replace an existing passkey with a new one.
+     * Replace an existing passkey with a new one. The url names the domain the favicon was fetched for.
      */
     fun replacePasskey(
         oldPasskeyId: java.util.UUID,
         newPasskey: net.aliasvault.app.vaultstore.models.Passkey,
         displayName: String,
+        url: String,
         logo: ByteArray? = null,
     ) {
-        passkey.replacePasskey(oldPasskeyId, newPasskey, displayName, logo)
+        passkey.replacePasskey(oldPasskeyId, newPasskey, displayName, url, logo)
     }
 
     /**
@@ -865,14 +841,17 @@ class VaultStore(
     }
 
     /**
-     * Add a passkey to an existing Item (merge passkey into existing credential).
+     * Add a passkey to an existing Item (merge passkey into existing credential). The url names the domain
+     * the favicon was fetched for.
      */
     fun addPasskeyToExistingItem(
         itemId: java.util.UUID,
+        manifestId: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
+        url: String,
         logo: ByteArray? = null,
     ) {
-        passkey.addPasskeyToExistingItem(itemId, passkeyObj, logo)
+        passkey.addPasskeyToExistingItem(itemId, manifestId, passkeyObj, url, logo)
     }
 
     // endregion

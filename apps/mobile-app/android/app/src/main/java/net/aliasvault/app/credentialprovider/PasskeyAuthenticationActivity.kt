@@ -21,6 +21,7 @@ import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
+import net.aliasvault.app.vaultstore.repositories.ItemUsageAction
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import org.json.JSONObject
 import java.security.MessageDigest
@@ -260,13 +261,24 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     clientDataJson = clientDataJson,
                 )
 
+                // Count the assertion in the item's usage statistics.
+                val manifestId = passkey.manifestId
+                if (manifestId != null) {
+                    try {
+                        vaultStore.recordItemUsage(passkey.parentItemId.toString(), manifestId, ItemUsageAction.PASSKEY)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to record passkey usage", e)
+                    }
+                }
+
                 // If the item behind this passkey also has a TOTP code and the user has the
                 // copy-on-fill setting enabled (default), write the current code to the clipboard.
-                if (TotpClipboard.isCopyOnFillEnabled(this@PasskeyAuthenticationActivity)) {
+                if (manifestId != null && TotpClipboard.isCopyOnFillEnabled(this@PasskeyAuthenticationActivity)) {
                     TotpClipboard.copyCodeForItem(
                         context = this@PasskeyAuthenticationActivity,
                         store = vaultStore,
                         itemId = passkey.parentItemId.toString(),
+                        manifestId = manifestId,
                     )
                 }
 

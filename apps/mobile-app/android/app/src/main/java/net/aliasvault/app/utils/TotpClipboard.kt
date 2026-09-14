@@ -37,9 +37,10 @@ object TotpClipboard {
      * @param context The context used for the clipboard service.
      * @param store The unlocked vault store to read the TOTP secret from.
      * @param itemId The ID of the item being filled.
+     * @param manifestId The manifest the item belongs to.
      */
-    fun copyCodeForItem(context: Context, store: VaultStore, itemId: String) {
-        val totp = store.getTotpForItem(itemId) ?: return
+    fun copyCodeForItem(context: Context, store: VaultStore, itemId: String, manifestId: String) {
+        val totp = store.getTotpForItem(itemId, manifestId) ?: return
         val code = TotpGenerator.generateCode(
             secret = totp.secretKey,
             period = totp.period,
