@@ -27,12 +27,6 @@ class TestStorageProvider : StorageProvider {
         tempFile.writeText(encryptedData)
     }
 
-    override fun getRandomTempFilePath(): String {
-        val tempFile = File.createTempFile("temp_db", ".sqlite")
-        tempFile.deleteOnExit()
-        return tempFile.absolutePath
-    }
-
     override fun setMetadata(metadata: String) {
         tempMetadata = metadata
     }
@@ -147,10 +141,6 @@ class TestStorageProvider : StorageProvider {
     }
 
     // endregion
-
-    override fun getCacheDir(): File {
-        return File(System.getProperty("java.io.tmpdir") ?: "/tmp")
-    }
 
     // region Sync engine state
 

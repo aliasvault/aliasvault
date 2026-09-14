@@ -14,16 +14,6 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         return File(context.filesDir, "encrypted_database.db")
     }
 
-    /**
-     * Get a random temporary file path.
-     * @return The random temporary file path as a string
-     */
-    override fun getRandomTempFilePath(): String {
-        val tempFile = File(context.cacheDir, "temp_db_${System.nanoTime()}_${java.util.UUID.randomUUID()}.sqlite")
-        tempFile.deleteOnExit()
-        return tempFile.absolutePath
-    }
-
     override fun setEncryptedDatabaseFile(encryptedData: String) {
         val file = File(context.filesDir, "encrypted_database.db")
         file.writeText(encryptedData)
@@ -215,10 +205,6 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     }
 
     // endregion
-
-    override fun getCacheDir(): File {
-        return context.cacheDir
-    }
 
     // region Sync engine state
 

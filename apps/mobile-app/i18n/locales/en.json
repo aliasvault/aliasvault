@@ -713,7 +713,6 @@
     "noDescriptionAvailable": "No description available for this version.",
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
       "applyingDatabaseMigrations": "Applying database migrations...",
       "applyingMigration": "Applying migration {{current}} of {{total}}...",
       "committingChanges": "Committing changes..."

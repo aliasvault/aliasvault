@@ -177,7 +177,7 @@ build_browser() {
     fi
 
     echo ""
-    echo -e "${BLUE}Building WASM for browser extension...${NC}"
+    echo -e "${BLUE}Building WASM for $BROWSER_TARGET (${profile_args[*]})...${NC}"
 
     local start_time=$(date +%s)
 

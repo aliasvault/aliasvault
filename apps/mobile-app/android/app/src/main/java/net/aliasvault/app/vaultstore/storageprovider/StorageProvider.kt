@@ -14,12 +14,6 @@ interface StorageProvider {
     fun getEncryptedDatabaseFile(): File
 
     /**
-     * Get a random temporary file path.
-     * @return The random temporary file path as a string
-     */
-    fun getRandomTempFilePath(): String
-
-    /**
      * Set the encrypted database file.
      * @param encryptedData The encrypted database data as a base64 encoded string
      */
@@ -180,12 +174,6 @@ interface StorageProvider {
     fun clearSyncState()
 
     // endregion
-
-    /**
-     * Get the cache directory for temporary files.
-     * @return The cache directory
-     */
-    fun getCacheDir(): File
 
     // region Sync engine state
 
