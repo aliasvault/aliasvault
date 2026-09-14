@@ -193,6 +193,12 @@ build_browser() {
         rustup target add wasm32-unknown-unknown
     fi
 
+    # SQLite is compiled for wasm32 with clang (sqlite-wasm-rs) and needs to work on MacOS too.
+    if [ "$(uname -s)" = "Darwin" ] && [ -z "${CC_wasm32_unknown_unknown:-}" ]; then
+        for llvm_prefix in /opt/homebrew/opt/llvm /usr/local/opt/llvm; do
+            if [ -x "$llvm_prefix/bin/clang" ]; then
+                export CC_wasm32_unknown_unknown="$llvm_prefix/bin/clang"
+                export AR_wasm32_unknown_unknown="$llvm_prefix/bin/llvm-ar"
                 break
             fi
         done
