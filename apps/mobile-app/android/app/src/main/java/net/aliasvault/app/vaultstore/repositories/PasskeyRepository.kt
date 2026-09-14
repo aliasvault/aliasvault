@@ -100,36 +100,27 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param passkey The passkey to insert
      */
     fun insert(passkey: Passkey) {
-        val db = database.dbConnection ?: error("Vault not unlocked")
-
         val publicKeyString = String(passkey.publicKey, Charsets.UTF_8)
         val privateKeyString = String(passkey.privateKey, Charsets.UTF_8)
 
-        val statement = db.compileStatement(PasskeyQueries.INSERT)
-        statement.use {
-            it.bindString(1, passkey.id.toString().lowercase())
-            it.bindString(2, passkey.parentItemId.toString().lowercase()) // Note: still called parentItemId but references ItemId
-            it.bindString(3, passkey.rpId)
-            if (passkey.userHandle != null) {
-                it.bindBlob(4, passkey.userHandle)
-            } else {
-                it.bindNull(4)
-            }
-            it.bindString(5, publicKeyString)
-            it.bindString(6, privateKeyString)
-            if (passkey.prfKey != null) {
-                it.bindBlob(7, passkey.prfKey)
-            } else {
-                it.bindNull(7)
-            }
-            it.bindString(8, passkey.displayName)
-            it.bindString(9, DateHelpers.toStandardFormat(passkey.createdAt))
-            it.bindString(10, DateHelpers.toStandardFormat(passkey.updatedAt))
-            it.bindLong(11, if (passkey.isDeleted) 1 else 0)
-            it.bindString(12, passkey.parentItemId.toString().lowercase())
-            it.bindString(13, activeManifestId())
-            it.executeInsert()
-        }
+        database.execute(
+            PasskeyQueries.INSERT,
+            listOf(
+                passkey.id.toString().lowercase(),
+                passkey.parentItemId.toString().lowercase(), // Note: still called parentItemId but references ItemId
+                passkey.rpId,
+                passkey.userHandle,
+                publicKeyString,
+                privateKeyString,
+                passkey.prfKey,
+                passkey.displayName,
+                DateHelpers.toStandardFormat(passkey.createdAt),
+                DateHelpers.toStandardFormat(passkey.updatedAt),
+                if (passkey.isDeleted) 1L else 0L,
+                passkey.parentItemId.toString().lowercase(),
+                activeManifestId(),
+            ),
+        )
     }
 
     /**
@@ -364,12 +355,12 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         userName: String? = null,
         userId: ByteArray? = null,
     ): List<PasskeyWithCredentialInfo> {
-        val db = database.dbConnection ?: return emptyList()
+        if (!database.isOpen()) return emptyList()
 
         val results = mutableListOf<PasskeyWithCredentialInfo>()
-        val cursor = db.query(
+        val cursor = database.queryCursor(
             PasskeyQueries.GET_WITH_CREDENTIAL_INFO,
-            arrayOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, rpId),
+            listOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, rpId),
         )
 
         cursor.use {
@@ -411,12 +402,12 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return List of ItemWithCredentialInfo objects with all URLs.
      */
     fun getAllItemsWithoutPasskey(): List<ItemWithCredentialInfo> {
-        val db = database.dbConnection ?: return emptyList()
+        if (!database.isOpen()) return emptyList()
 
         val results = mutableListOf<ItemWithCredentialInfo>()
-        val cursor = db.query(
+        val cursor = database.queryCursor(
             PasskeyQueries.GET_ALL_ITEMS_WITHOUT_PASSKEY,
-            arrayOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, FieldKey.LOGIN_PASSWORD),
+            listOf(FieldKey.LOGIN_URL, FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL, FieldKey.LOGIN_PASSWORD),
         )
 
         cursor.use {
@@ -492,10 +483,10 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return List of PasskeyWithItem objects.
      */
     fun getAllWithItems(): List<PasskeyWithItem> {
-        val db = database.dbConnection ?: return emptyList()
+        if (!database.isOpen()) return emptyList()
 
         val results = mutableListOf<PasskeyWithItem>()
-        val cursor = db.query(PasskeyQueries.GET_ALL_WITH_ITEMS, arrayOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL))
+        val cursor = database.queryCursor(PasskeyQueries.GET_ALL_WITH_ITEMS, listOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL))
 
         cursor.use {
             while (it.moveToNext()) {

@@ -161,16 +161,14 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
 
                 val passkeyId = UUID.fromString(passkeyIdString)
 
-                // Get database connection from vault
-                val db = vaultStore.database.dbConnection
-                if (db == null) {
+                if (!vaultStore.database.isOpen()) {
                     Log.e(TAG, "Database not available - vault may not be unlocked")
                     setResult(RESULT_CANCELED)
                     finish()
                     return@launch
                 }
 
-                val passkey = vaultStore.getPasskeyById(passkeyId, db)
+                val passkey = vaultStore.getPasskeyById(passkeyId)
                 if (passkey == null) {
                     Log.e(TAG, "Passkey not found: $passkeyId")
                     setResult(RESULT_CANCELED)

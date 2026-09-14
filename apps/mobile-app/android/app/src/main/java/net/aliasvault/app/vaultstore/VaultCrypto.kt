@@ -329,9 +329,16 @@ class VaultCrypto(
     }
 
     /**
-     * Encrypt data.
+     * Encrypt text.
      */
     fun encryptData(data: String): String {
+        return encryptBytes(data.toByteArray(Charsets.UTF_8))
+    }
+
+    /**
+     * Encrypt raw bytes.
+     */
+    fun encryptBytes(data: ByteArray): String {
         try {
             val iv = ByteArray(12)
             SecureRandom().nextBytes(iv)
@@ -342,7 +349,7 @@ class VaultCrypto(
 
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec)
 
-            val encrypted = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+            val encrypted = cipher.doFinal(data)
 
             val result = ByteArray(iv.size + encrypted.size)
             System.arraycopy(iv, 0, result, 0, iv.size)

@@ -1,5 +1,6 @@
 import Foundation
-import SQLite
+import RustCoreFramework
+import UIKit
 import LocalAuthentication
 import CryptoKit
 import CommonCrypto
@@ -28,7 +29,8 @@ public class VaultStore {
     internal var autoLockTimeout: Int = VaultConstants.defaultAutoLockTimeout
 
     /// The database connection for the decrypted in-memory vault.
-    internal var dbConnection: Connection?
+    /// The live vault, held in the Rust core's memory. Nil while vault is locked.
+    internal var dbConnection: SqliteMemoryDatabase?
 
     /// The encryption key for the vault.
     internal var encryptionKey: Data?

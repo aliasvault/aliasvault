@@ -2367,9 +2367,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - SQLite.swift (0.14.1):
-    - SQLite.swift/standard (= 0.14.1)
-  - SQLite.swift/standard (0.14.1)
   - SwiftLint (0.62.2)
   - SWXMLHash (7.0.2)
   - Yoga (0.0.0)
@@ -2491,7 +2488,6 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
-  - SQLite.swift (~> 0.14.0)
   - SwiftLint
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2499,7 +2495,6 @@ SPEC REPOS:
   trunk:
     - Macaw
     - OpenSSL-Universal
-    - SQLite.swift
     - SwiftLint
     - SWXMLHash
 
@@ -2765,7 +2760,7 @@ SPEC CHECKSUMS:
   ExpoUI: b8da9e23eb4cef30e4797bc6de102a9178e6cd2b
   ExpoWebBrowser: 6e3d90e3fe1952d21a8494872b1e1a485cd50e2f
   FBLazyVector: 24e62c765683b8d89006a88a2c8f5cf019f0074d
-  hermes-engine: a384bd37273f335daf0965c0fd0aa46f197e0175
+  hermes-engine: f684a01742a30bb5d7332da47aa184074d8ae9b4
   Macaw: 7af8ea57aa2cab35b4a52a45e6f85eea753ea9ae
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCTDeprecation: a4c521821fab57cbb125b36effe84d897d0dfa12
@@ -2776,7 +2771,7 @@ SPEC CHECKSUMS:
   React: e2dc35338068bbd299c66f043ae0d7f25de8499e
   React-callinvoker: 28b25d21b124c26cebaea713ba7d801b9351dc48
   React-Core: 02ed7d2ffb70437bdf2aba074a13078a7b0b9ff0
-  React-Core-prebuilt: b87f4cdecb2229f7d0943644cef9a084d433983d
+  React-Core-prebuilt: 43e26cf5ff020a09ab026c6f6277ad013fa0044f
   React-CoreModules: b3a5a42dadcde3b5d47b325bd912eb2ced89e146
   React-cxxreact: fe8f88dda044e5905e99a00f41b7a874c3908716
   React-debug: 92944dc4d89f56d640e75498266cbde557a48189
@@ -2846,18 +2841,17 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 25c9c516839be2c5e3d3344f95dc7da5f7e63fc2
   ReactCodegen: 8538eb1bd61031ede1dadd7d725ee1d42dbdceaa
   ReactCommon: 7dfc3250793bf36cf221096ff59e1179e13eef7f
-  ReactNativeDependencies: b8c3edb93459c2b4531665273e0e904ab3c12ba2
+  ReactNativeDependencies: 2c0483134df7ac059c1f1c484b4fbf6a40451fb5
   RNCAsyncStorage: 2ad919e88b8bc2cd80e8697ce66d04d006743283
   RNGestureHandler: 2ff61eac036eaf89f6818bf4ed9c39771a17d134
   RNReanimated: f735b1747a7a93bda7ca102c6d37a3cf54b6d5e8
   RNScreens: 991cc417cd396602a6cf59a42139e5a9d91462a9
   RNSVG: 04044c3abcf177fd674a1a3d13097efa1adebcbe
   RNWorklets: 4931990f73bc8f347586918b2e13f11dfadf3b75
-  SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
   SwiftLint: f84fc7d844e9cde0dc4f5013af608a269e317aba
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: 77dfa8673de2874e1855002ae59c68b8be9b007b
 
-PODFILE CHECKSUM: c259fdf017060f6f592731838af8fe1d2eab07d0
+PODFILE CHECKSUM: 026181d634d15e69d0bc88472aa6fd4c4a545632
 
 COCOAPODS: 1.16.2

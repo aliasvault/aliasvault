@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 import LocalAuthentication
 import VaultStoreKit
 import VaultModels
@@ -166,7 +165,7 @@ public class VaultManager: NSObject {
                       rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
             // Parse all params to the correct type
-            let bindingParams: [(any SQLite.Binding)?] = params.map { param in
+            let bindingParams: [SqliteBindValue] = params.map { param in
                 if param is NSNull {
                     return nil
                 } else if let value = param as? String {
@@ -197,7 +196,7 @@ public class VaultManager: NSObject {
                        rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
             // Parse all params to the correct type
-            let bindingParams: [(any SQLite.Binding)?] = params.map { param in
+            let bindingParams: [SqliteBindValue] = params.map { param in
                 if param is NSNull {
                     return nil
                 } else if let value = param as? String {

@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 import VaultModels
 import VaultUtils
 

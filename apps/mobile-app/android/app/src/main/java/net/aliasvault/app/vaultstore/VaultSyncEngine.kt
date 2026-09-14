@@ -1,9 +1,7 @@
 package net.aliasvault.app.vaultstore
 
-import android.database.Cursor
 import android.util.Base64
 import android.util.Log
-import io.requery.android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.rustcore.JnaInitializer
@@ -13,8 +11,8 @@ import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONArray
 import org.json.JSONObject
+import uniffi.aliasvault_core.SqliteMemoryDatabase
 import uniffi.aliasvault_core.VaultSyncSession
-import java.io.File
 import java.net.SocketTimeoutException
 
 /**
@@ -40,8 +38,8 @@ class VaultSyncEngine(
         private const val DERIVATION_PARAMS_STATE_KEY = "encryptionKeyDerivationParams"
     }
 
-    private var staging: SQLiteDatabase? = null
-    private var stagingFile: File? = null
+    /** The engine staging database used for internal sync and merge operations. */
+    private var staging: SqliteMemoryDatabase? = null
     private var runLog = VaultSyncRunLog("")
 
     /**
@@ -123,14 +121,21 @@ class VaultSyncEngine(
                     JSONObject()
                 }
                 "dbQuery" -> {
-                    val rows = query(database(command.optString("db")), command.optString("sql"), command.optJSONArray("params") ?: JSONArray())
-                    JSONObject().put("rows", rows)
+                    val params = (command.optJSONArray("params") ?: JSONArray()).toString()
+                    JSONObject().put("rows", JSONArray(database(command.optString("db")).query(command.optString("sql"), params)))
                 }
                 "dbExec" -> {
-                    exec(database(command.optString("db")), command.optJSONArray("statements") ?: JSONArray())
+                    database(command.optString("db")).exec((command.optJSONArray("statements") ?: JSONArray()).toString())
                     JSONObject()
                 }
-                "dbExport" -> JSONObject().put("bytes", Base64.encodeToString(export(database(command.optString("db"))), Base64.NO_WRAP))
+                "dbExport" -> {
+                    val bytes = when (val db = command.optString("db")) {
+                        "local" -> vaultStore.database.export()
+                        "staging" -> stagingDatabase().export()
+                        else -> error("Unknown database $db")
+                    }
+                    JSONObject().put("bytes", Base64.encodeToString(bytes, Base64.NO_WRAP))
+                }
                 "vaultStore" -> storeVault(command)
                 "vaultLoad" -> JSONObject().put("encryptedBlob", if (vaultStore.hasEncryptedDatabase()) vaultStore.getEncryptedDatabase() else JSONObject.NULL)
                 "markClean" -> {
@@ -247,126 +252,32 @@ class VaultSyncEngine(
 
     // region SQLite
 
-    private fun database(name: String): SQLiteDatabase = when (name) {
-        "local" -> vaultStore.database.dbConnection ?: error("The vault is not unlocked")
-        "staging" -> staging ?: error("The staging database is not open")
+    private fun database(name: String): SqliteMemoryDatabase = when (name) {
+        "local" -> vaultStore.database.connection()
+        "staging" -> stagingDatabase()
         else -> error("Unknown database $name")
     }
 
+    private fun stagingDatabase(): SqliteMemoryDatabase = staging ?: error("The staging database is not open")
+
     /**
-     * Open the staging database: from SQLite bytes (as a temporary file), or fresh in memory with the current schema.
+     * Open the staging database in memory.
      */
     private fun openStaging(bytesBase64: String?) {
         closeStaging()
-        if (bytesBase64 != null) {
-            val file = File(storageProvider.getRandomTempFilePath())
-            file.writeBytes(Base64.decode(bytesBase64, Base64.NO_WRAP))
-            stagingFile = file
-            staging = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE).also {
-                it.rawQuery("PRAGMA foreign_keys = OFF", null)?.close()
-            }
+        staging = if (bytesBase64 != null) {
+            SqliteMemoryDatabase.fromBytes(Base64.decode(bytesBase64, Base64.NO_WRAP))
         } else {
-            staging = SQLiteDatabase.create(null).also {
-                executeScript(it, VaultSql.completeSchema)
-                // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
-                it.rawQuery("PRAGMA foreign_keys = OFF", null)?.close()
-            }
+            SqliteMemoryDatabase.withSchema(VaultSql.completeSchema)
+        }.also {
+            // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
+            it.executeBatch("PRAGMA foreign_keys = OFF")
         }
     }
 
     private fun closeStaging() {
-        staging?.close()
+        staging?.destroy()
         staging = null
-        stagingFile?.delete()
-        stagingFile = null
-    }
-
-    /**
-     * Run a multi-statement SQL script. Statements split on semicolons, except inside a trigger body.
-     */
-    private fun executeScript(db: SQLiteDatabase, script: String) {
-        for (statement in SqlScript.splitStatements(script)) {
-            val upper = statement.uppercase()
-            when {
-                upper.startsWith("PRAGMA") -> db.rawQuery(statement, null)?.close()
-                upper.startsWith("BEGIN") || upper.startsWith("COMMIT") || upper.startsWith("ROLLBACK") -> db.execSQL(statement)
-                else -> db.compileStatement(statement).use { it.execute() }
-            }
-        }
-    }
-
-    private fun export(db: SQLiteDatabase): ByteArray {
-        val file = File(storageProvider.getRandomTempFilePath())
-        file.delete()
-        try {
-            val quoted = file.absolutePath.replace("'", "''")
-            db.compileStatement("VACUUM INTO '$quoted'").use { it.execute() }
-            return file.readBytes()
-        } finally {
-            file.delete()
-        }
-    }
-
-    private fun bindValue(value: Any?): Any? = when (value) {
-        null, JSONObject.NULL -> null
-        is Boolean -> if (value) 1L else 0L
-        is Int -> value.toLong()
-        is Long -> value
-        is Double -> value
-        is Float -> value.toDouble()
-        is String -> value
-        is JSONObject -> if (value.has("__b64")) Base64.decode(value.getString("__b64"), Base64.NO_WRAP) else value.toString()
-        else -> value.toString()
-    }
-
-    private fun query(db: SQLiteDatabase, sql: String, params: JSONArray): JSONArray {
-        val args = Array<Any?>(params.length()) { bindValue(params.opt(it)) }
-        val rows = JSONArray()
-        db.rawQuery(sql, args).use { cursor ->
-            while (cursor.moveToNext()) {
-                val row = JSONObject()
-                for (index in 0 until cursor.columnCount) {
-                    val name = cursor.getColumnName(index)
-                    when (cursor.getType(index)) {
-                        Cursor.FIELD_TYPE_INTEGER -> row.put(name, cursor.getLong(index))
-                        Cursor.FIELD_TYPE_FLOAT -> row.put(name, cursor.getDouble(index))
-                        Cursor.FIELD_TYPE_STRING -> row.put(name, cursor.getString(index))
-                        Cursor.FIELD_TYPE_BLOB -> row.put(name, JSONObject().put("__b64", Base64.encodeToString(cursor.getBlob(index), Base64.NO_WRAP)))
-                        else -> row.put(name, JSONObject.NULL)
-                    }
-                }
-                rows.put(row)
-            }
-        }
-        return rows
-    }
-
-    private fun exec(db: SQLiteDatabase, statements: JSONArray) {
-        db.beginTransaction()
-        try {
-            for (index in 0 until statements.length()) {
-                val entry = statements.getJSONObject(index)
-                db.compileStatement(entry.getString("sql")).use { statement ->
-                    bindParams(statement, entry.optJSONArray("params") ?: JSONArray())
-                    statement.execute()
-                }
-            }
-            db.setTransactionSuccessful()
-        } finally {
-            db.endTransaction()
-        }
-    }
-
-    private fun bindParams(statement: io.requery.android.database.sqlite.SQLiteStatement, params: JSONArray) {
-        for (position in 0 until params.length()) {
-            when (val value = bindValue(params.opt(position))) {
-                null -> statement.bindNull(position + 1)
-                is Long -> statement.bindLong(position + 1, value)
-                is Double -> statement.bindDouble(position + 1, value)
-                is ByteArray -> statement.bindBlob(position + 1, value)
-                else -> statement.bindString(position + 1, value.toString())
-            }
-        }
     }
 
     // endregion

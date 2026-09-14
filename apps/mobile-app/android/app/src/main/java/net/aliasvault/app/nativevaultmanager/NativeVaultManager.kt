@@ -25,7 +25,6 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.VaultSyncRunLog
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider

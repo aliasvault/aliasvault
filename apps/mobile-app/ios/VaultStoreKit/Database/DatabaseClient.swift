@@ -1,8 +1,7 @@
 import Foundation
-import SQLite
 
-/// Type alias for SQLite bind values.
-public typealias SqliteBindValue = Binding?
+/// A query parameter: nil, String, Int, Int64, Double, Bool, Data, or a base64 string behind `av-base64-to-blob:`.
+public typealias SqliteBindValue = Any?
 
 /// Protocol for core database operations needed by repositories.
 /// Abstracts the SQLite database connection to allow for testing and flexibility.

@@ -147,69 +147,13 @@ open class BaseRepository(
      * Execute a SELECT query on the database.
      */
     protected fun executeQuery(query: String, params: Array<Any?>): List<Map<String, Any?>> {
-        val db = database.dbConnection ?: error("Database not initialized")
-        val cursor = db.query(query, params.map { it?.toString() }.toTypedArray())
-
-        val results = mutableListOf<Map<String, Any?>>()
-        cursor.use {
-            val columnNames = it.columnNames
-            while (it.moveToNext()) {
-                val row = mutableMapOf<String, Any?>()
-                for (columnName in columnNames) {
-                    when (it.getType(it.getColumnIndexOrThrow(columnName))) {
-                        android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
-                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                    }
-                }
-                results.add(row)
-            }
-        }
-
-        return results
+        return database.query(query, params.toList())
     }
 
     /**
      * Execute an UPDATE, INSERT, or DELETE query on the database.
      */
     protected fun executeUpdate(query: String, params: Array<Any?>): Int {
-        val db = database.dbConnection ?: error("Database not initialized")
-
-        val statement = db.compileStatement(query)
-        try {
-            // Bind parameters
-            params.forEachIndexed { index, param ->
-                when (param) {
-                    null -> statement.bindNull(index + 1)
-                    is ByteArray -> statement.bindBlob(index + 1, param)
-                    is Long -> statement.bindLong(index + 1, param)
-                    is Double -> statement.bindDouble(index + 1, param)
-                    else -> statement.bindString(index + 1, param.toString())
-                }
-            }
-            statement.execute()
-        } finally {
-            statement.close()
-        }
-
-        // Get the number of affected rows
-        val cursor = db.rawQuery("SELECT changes()", null)
-        cursor.use {
-            if (it.moveToFirst()) {
-                return it.getInt(0)
-            }
-        }
-
-        return 0
+        return database.execute(query, params.toList())
     }
 }

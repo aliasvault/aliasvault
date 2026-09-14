@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 import VaultModels
 import VaultUtils
 
@@ -32,11 +31,9 @@ public struct ItemRow {
         self.itemType = itemType
         self.folderId = row["FolderId"] as? String
 
-        // Handle logo data - can be base64 string or Blob
+        // BLOB columns arrive as base64 text
         if let logoBase64 = row["Logo"] as? String {
             self.logo = Data(base64Encoded: logoBase64)
-        } else if let logoBlob = row["Logo"] as? SQLite.Blob {
-            self.logo = Data(logoBlob.bytes)
         } else {
             self.logo = nil
         }

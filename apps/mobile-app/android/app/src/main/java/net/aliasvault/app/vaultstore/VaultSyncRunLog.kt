@@ -11,6 +11,7 @@ import java.util.Locale
  */
 class VaultSyncRunLog(private val operation: String) {
     companion object {
+        /** Logcat tag for the sync log lines. */
         const val TAG = "VaultSync"
         private const val ENGINE_TAG = "VaultSyncEngine"
         private const val SLOW_COMMAND_MS = 50L

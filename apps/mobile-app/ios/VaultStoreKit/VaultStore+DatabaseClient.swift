@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 
 /// Extension to make VaultStore conform to DatabaseClient protocol.
 /// This allows VaultStore to be used with the repository pattern.

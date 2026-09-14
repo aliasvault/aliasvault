@@ -210,7 +210,6 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.4.2")
 
     // Add modern SQLite library with VACUUM INTO and backup API support
-    implementation("com.github.requery:sqlite-android:3.49.0")
 
     // Add ZXing library for QR code scanning (F-Droid compatible)
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")

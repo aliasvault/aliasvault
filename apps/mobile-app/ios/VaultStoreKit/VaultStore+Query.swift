@@ -1,5 +1,5 @@
 import Foundation
-import SQLite
+import RustCoreFramework
 import VaultModels
 import VaultUtils
 
@@ -7,188 +7,61 @@ import VaultUtils
 extension VaultStore {
     // MARK: - Core Database Operations (DatabaseClient Protocol)
 
+    /// Prefix repositories put in front of base64 text to bind it as a BLOB.
+    private static let blobParamPrefix = "av-base64-to-blob:"
+
     /// Execute a SELECT query on the database
-    public func executeQuery(_ query: String, params: [Binding?]) throws -> [[String: Any]] {
+    public func executeQuery(_ query: String, params: [SqliteBindValue]) throws -> [[String: Any]] {
         return try executeQuery(query, params: params, blobPrefix: "")
     }
 
     /// Execute a SELECT query on the database, returning BLOB columns as base64 behind `blobPrefix`.
-    public func executeQuery(_ query: String, params: [Binding?], blobPrefix: String) throws -> [[String: Any]] {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-
-        var params = params
-        for (index, param) in params.enumerated() {
-            if let base64String = param as? String {
-                if base64String.hasPrefix("av-base64-to-blob:") {
-                    let base64 = String(base64String.dropFirst("av-base64-to-blob:".count))
-                    if let data = Data(base64Encoded: base64) {
-                        params[index] = Blob(bytes: [UInt8](data))
-                    }
-                }
-            }
-        }
-
-        let statement = try dbConnection.prepare(query)
-        var results: [[String: Any]] = []
-
-        for row in try statement.run(params) {
+    public func executeQuery(_ query: String, params: [SqliteBindValue], blobPrefix: String) throws -> [[String: Any]] {
+        let result = try requireDatabase().queryValues(sql: query, params: params.map(Self.toSqlValue))
+        return result.rows.map { row in
             var rowDict: [String: Any] = [:]
-            for (index, column) in statement.columnNames.enumerated() {
-                let value = row[index]
-                switch value {
-                case let data as SQLite.Blob:
-                    let binaryData = Data(data.bytes)
-                    rowDict[column] = blobPrefix + binaryData.base64EncodedString()
-                case let number as Int64:
-                    rowDict[column] = number
-                case let number as Double:
-                    rowDict[column] = number
-                case let text as String:
-                    rowDict[column] = text
-                case .none:
-                    rowDict[column] = NSNull()
-                default:
-                    rowDict[column] = value
-                }
+            for (index, column) in result.columns.enumerated() {
+                rowDict[column] = Self.fromSqlValue(row[index], blobPrefix: blobPrefix)
             }
-            results.append(rowDict)
+            return rowDict
         }
-
-        return results
     }
 
     /// Execute an UPDATE, INSERT, or DELETE query on the database (which will modify the database).
-    public func executeUpdate(_ query: String, params: [Binding?]) throws -> Int {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-
-        var params = params
-        for (index, param) in params.enumerated() {
-            if let base64String = param as? String {
-                if base64String.hasPrefix("av-base64-to-blob:") {
-                    let base64 = String(base64String.dropFirst("av-base64-to-blob:".count))
-                    if let data = Data(base64Encoded: base64) {
-                        params[index] = Blob(bytes: [UInt8](data))
-                    }
-                }
-            }
-        }
-
-        let statement = try dbConnection.prepare(query)
-        try statement.run(params)
-        return dbConnection.changes
+    public func executeUpdate(_ query: String, params: [SqliteBindValue]) throws -> Int {
+        return Int(try requireDatabase().execute(sql: query, params: params.map(Self.toSqlValue)))
     }
 
-    /// Execute a raw SQL command on the database without parameters (for DDL operations like CREATE TABLE).
-    ///
-    /// Note: Migration SQL scripts handle their own transactions and PRAGMA statements.
-    /// PRAGMA foreign_keys statements MUST be executed outside of transactions to take effect.
+    /// Execute a raw SQL script (one or more statements) without parameters.
+    /// Migration SQL scripts handle their own transactions and PRAGMA statements.
     public func executeRaw(_ query: String) throws {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-
-        // Split the query by semicolons to handle multiple statements
-        let statements = query.components(separatedBy: ";")
-
-        for statement in statements {
-            let trimmedStatement = statement.smartTrim()
-
-            // Skip empty statements and SQL comments
-            if trimmedStatement.isEmpty || trimmedStatement.hasPrefix("--") {
-                continue
-            }
-
-            // Execute all statements including PRAGMA and transaction control
-            // This allows migration SQL to properly control its own transactions and PRAGMA settings
-            try dbConnection.execute(trimmedStatement)
-        }
+        try requireDatabase().executeBatch(sql: query)
     }
 
     /// Begin a transaction on the database. This is required for all database operations that modify the database.
     public func beginTransaction() throws {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-        try dbConnection.execute("BEGIN TRANSACTION")
+        try requireDatabase().executeBatch(sql: "BEGIN TRANSACTION")
     }
 
-    /// Persist the in-memory database to encrypted local storage using VACUUM INTO.
-    /// Produces a fully faithful, compact copy (schema + data), unlike CTAS copies.
+    /// Persist the in-memory database to encrypted local storage.
     public func persistDatabaseToEncryptedStorage() throws {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
+        let database = try requireDatabase()
+        // End any open transactions.
+        _ = try? database.executeBatch(sql: "END")
+        let encrypted = try encrypt(data: try exportDatabase())
+        try storeEncryptedDatabase(encrypted.base64EncodedString())
+    }
 
-        // Make sure we are not inside an explicit transaction; VACUUM INTO must run outside.
-        // If you have your own transaction management, ensure it's committed before calling this.
-        // Optional: give SQLite time to resolve locks
-        try? dbConnection.execute("PRAGMA busy_timeout=5000")
-
-        // End any lingering transaction (no-op if none).
-       _ = try? dbConnection.execute("END")
-
-        // Prepare a fresh temp file path for VACUUM INTO; it must NOT already exist.
-        let tempDbURL = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
-        if FileManager.default.fileExists(atPath: tempDbURL.path) {
-            try FileManager.default.removeItem(at: tempDbURL)
-        }
-
-        // Quote the target path safely for SQL (VACUUM INTO does not accept parameters in some builds).
-        // Escape single quotes per SQL rules.
-        let quotedPath = "'" + tempDbURL.path.replacingOccurrences(of: "'", with: "''") + "'"
-
-        // Run VACUUM INTO to create a compact, faithful copy of the current DB.
-        // Must be executed with no active transaction and no attached target needed.
-        // This preserves schema, indexes, triggers, views, pragmas like page_size, auto_vacuum, encoding, user_version, etc.
-        // Retry VACUUM INTO a few times if we hit "statements in progress"
-        var lastError: Error?
-        for attempt in 1...5 {
-            do {
-                try dbConnection.execute("VACUUM INTO \(quotedPath)")
-                lastError = nil
-                break
-            } catch {
-                lastError = error
-                let msg = String(describing: error).lowercased()
-                if msg.contains("statements in progress") || msg.contains("locked") {
-                    Thread.sleep(forTimeInterval: 0.15 * Double(attempt)) // backoff
-                    continue
-                } else {
-                    break
-                }
-            }
-        }
-        if let err = lastError {
-            print("❌ VACUUM INTO failed after retries:", err)
-            throw NSError(domain: "VaultStore", code: 6,
-                          userInfo: [NSLocalizedDescriptionKey:
-                            "VACUUM INTO failed: \(err.localizedDescription)"])
-        }
-
-        // Read -> encrypt -> store the compact copy
-        let rawData = try Data(contentsOf: tempDbURL)
-        let base64String = rawData.base64EncodedString()
-        let encryptedBase64Data = try encrypt(data: Data(base64String.utf8))
-        let encryptedBase64String = encryptedBase64Data.base64EncodedString()
-        try storeEncryptedDatabase(encryptedBase64String)
-
-        // Clean up temp file
-        try? FileManager.default.removeItem(at: tempDbURL)
+    /// The database as SQLite file bytes, compacted first when no transaction is open.
+    public func exportDatabase() throws -> Data {
+        let database = try requireDatabase()
+        _ = try? database.executeBatch(sql: "VACUUM")
+        return try database.export()
     }
 
     /// Commit a transaction on the database. This is required for all database operations that modify the database.
-    /// Committing a transaction will also trigger a persist from the in-memory database to the encrypted database file.
-    /// It also atomically marks the vault as dirty and increments the mutation sequence for proper sync tracking.
     public func commitTransaction() throws {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-
-        try dbConnection.execute("COMMIT")
+        try requireDatabase().executeBatch(sql: "COMMIT")
         try persistDatabaseToEncryptedStorage()
 
         // Atomically mark vault as dirty and increment mutation sequence
@@ -199,15 +72,10 @@ extension VaultStore {
 
     /// Rollback a transaction on the database on error.
     public func rollbackTransaction() throws {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
-        try dbConnection.execute("ROLLBACK")
+        try requireDatabase().executeBatch(sql: "ROLLBACK")
     }
 
     /// Persist the in-memory database to encrypted storage and mark as dirty.
-    /// Used after migrations where SQL handles its own transactions but we need to persist and sync.
-    /// This does NOT commit any SQL transaction - it just persists the current state of the database.
     public func persistAndMarkDirty() throws {
         try persistDatabaseToEncryptedStorage()
 
@@ -215,6 +83,55 @@ extension VaultStore {
         // This ensures sync can properly detect local changes
         setIsDirty(true)
         _ = incrementMutationSequence()
+    }
+
+    /// The open database, or the error every query path reports while the vault is locked.
+    internal func requireDatabase() throws -> SqliteMemoryDatabase {
+        guard let dbConnection = self.dbConnection else {
+            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
+        }
+        return dbConnection
+    }
+
+    private static func toSqlValue(_ param: SqliteBindValue) -> SqlValue {
+        switch param {
+        case nil:
+            return .null
+        case let value as SqlValue:
+            return value
+        case let value as Data:
+            return .blob(value)
+        case let value as String:
+            if value.hasPrefix(blobParamPrefix), let bytes = Data(base64Encoded: String(value.dropFirst(blobParamPrefix.count))) {
+                return .blob(bytes)
+            }
+            return .text(value)
+        case let value as Bool:
+            return .integer(value ? 1 : 0)
+        case let value as Int:
+            return .integer(Int64(value))
+        case let value as Int64:
+            return .integer(value)
+        case let value as Double:
+            return .real(value)
+        default:
+            return .text(String(describing: param!))
+        }
+    }
+
+    private static func fromSqlValue(_ value: SqlValue, blobPrefix: String) -> Any {
+        switch value {
+        case .null:
+            return NSNull()
+        case .integer(let number):
+            return number
+        case .real(let number):
+            return number
+        case .text(let text):
+            return text
+        case .blob(let bytes):
+            return blobPrefix + bytes.base64EncodedString()
+        }
     }
 
     // MARK: - Items (Using Repository Pattern)

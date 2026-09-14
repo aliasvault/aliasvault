@@ -2,7 +2,6 @@ package net.aliasvault.app.vaultstore
 
 import android.os.SystemClock
 import android.util.Log
-import io.requery.android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
@@ -348,8 +347,6 @@ class VaultStore(
      * Execute a read-only SQL query (SELECT) on the vault.
      */
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
-        val db = database.dbConnection ?: error("Database not initialized")
-
         // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val convertedParams = params.map { param ->
             when {
@@ -361,39 +358,15 @@ class VaultStore(
                 param is ByteArray -> param
                 else -> param.toString()
             }
-        }.toTypedArray()
-
-        val cursor = db.query(queryString, convertedParams)
-        val results = mutableListOf<Map<String, Any?>>()
-
-        cursor.use {
-            val columnNames = it.columnNames
-            while (it.moveToNext()) {
-                val row = mutableMapOf<String, Any?>()
-                for (columnName in columnNames) {
-                    val colIndex = it.getColumnIndexOrThrow(columnName)
-                    val colType = it.getType(colIndex)
-                    when (colType) {
-                        android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
-                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(colIndex)
-                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(colIndex)
-                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(colIndex)
-                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(colIndex)
-                    }
-                }
-                results.add(row)
-            }
         }
 
-        return results
+        return database.query(queryString, convertedParams)
     }
 
     /**
      * Execute an SQL update on the vault that mutates it.
      */
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
-        val db = database.dbConnection ?: error("Database not initialized")
-
         // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val processedParams = params.map { param ->
             when {
@@ -407,63 +380,15 @@ class VaultStore(
             }
         }
 
-        val stmt = db.compileStatement(queryString)
-        try {
-            processedParams.forEachIndexed { index, value ->
-                when (value) {
-                    null -> stmt.bindNull(index + 1)
-                    is ByteArray -> stmt.bindBlob(index + 1, value)
-                    else -> stmt.bindString(index + 1, value.toString())
-                }
-            }
-            stmt.execute()
-        } finally {
-            stmt.close()
-        }
-
-        // Get the number of affected rows
-        val affectedCursor = db.rawQuery("SELECT changes()", null)
-        affectedCursor.use {
-            if (it.moveToFirst()) {
-                return it.getInt(0)
-            }
-        }
-        return 0
+        return database.execute(queryString, processedParams)
     }
 
     /**
-     * Execute a raw SQL command on the vault without parameters.
-     * Splits the query by semicolons to handle multiple statements (see SqlScript).
-     *
-     * Note: Migration SQL scripts handle their own transactions and PRAGMA statements.
-     * PRAGMA foreign_keys statements MUST be executed outside of transactions to take effect,
-     * which is why we execute them using rawQuery instead of compileStatement.
+     * Execute a raw SQL script (one or more statements) on the vault without parameters.
+     * Migration scripts handle their own transactions and PRAGMA statements.
      */
     fun executeRaw(queryString: String) {
-        val db = database.dbConnection ?: error("Database not initialized")
-
-        SqlScript.splitStatements(queryString)
-            .forEach { trimmed ->
-                val upperTrimmed = trimmed.uppercase()
-                when {
-                    // Handle PRAGMA statements using rawQuery (required for PRAGMA to work properly)
-                    upperTrimmed.startsWith("PRAGMA") -> db.rawQuery(trimmed, null)?.close()
-                    // Handle transaction control statements using execSQL
-                    isTransactionControlStatement(upperTrimmed) -> db.execSQL(trimmed)
-                    // Use compileStatement for all other SQL (DDL and DML)
-                    else -> db.compileStatement(trimmed).execute()
-                }
-            }
-    }
-
-    /**
-     * Check if a SQL statement is a transaction control statement.
-     */
-    private fun isTransactionControlStatement(upperStatement: String): Boolean {
-        return upperStatement.startsWith("BEGIN TRANSACTION") ||
-            upperStatement.startsWith("BEGIN") ||
-            upperStatement.startsWith("COMMIT") ||
-            upperStatement.startsWith("ROLLBACK")
+        database.executeScript(queryString)
     }
 
     /**
@@ -857,11 +782,7 @@ class VaultStore(
     /**
      * Get all passkeys for an item.
      */
-    @Suppress("UnusedParameter")
-    fun getPasskeysForItem(
-        itemId: java.util.UUID,
-        db: io.requery.android.database.sqlite.SQLiteDatabase,
-    ): List<net.aliasvault.app.vaultstore.models.Passkey> {
+    fun getPasskeysForItem(itemId: java.util.UUID): List<net.aliasvault.app.vaultstore.models.Passkey> {
         return passkey.getPasskeysForItem(itemId)
     }
 
@@ -895,19 +816,14 @@ class VaultStore(
     /**
      * Get a passkey by its ID.
      */
-    @Suppress("UnusedParameter")
-    fun getPasskeyById(
-        passkeyId: java.util.UUID,
-        db: io.requery.android.database.sqlite.SQLiteDatabase,
-    ): net.aliasvault.app.vaultstore.models.Passkey? {
+    fun getPasskeyById(passkeyId: java.util.UUID): net.aliasvault.app.vaultstore.models.Passkey? {
         return passkey.getPasskeyById(passkeyId)
     }
 
     /**
      * Insert a new passkey into the database.
      */
-    @Suppress("UnusedParameter")
-    fun insertPasskey(passkeyObj: net.aliasvault.app.vaultstore.models.Passkey, db: io.requery.android.database.sqlite.SQLiteDatabase) {
+    fun insertPasskey(passkeyObj: net.aliasvault.app.vaultstore.models.Passkey) {
         passkey.insertPasskey(passkeyObj)
     }
 

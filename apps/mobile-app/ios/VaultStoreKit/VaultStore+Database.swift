@@ -1,5 +1,5 @@
 import Foundation
-import SQLite
+import RustCoreFramework
 import VaultUtils
 
 /// Extension for the VaultStore class to handle database management
@@ -74,55 +74,22 @@ extension VaultStore {
             decryptedDbData = decoded
         }
 
-        // Step 2: Clean up any existing connection
+        // Step 2: Open the bytes in the Rust core's memory directly without persisting to the filesystem.
         self.dbConnection = nil
-
-        // Step 3: Write decrypted data to temp file
-        let tempDbPath = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
+        let opened: SqliteMemoryDatabase
         do {
-            try decryptedDbData.write(to: tempDbPath)
+            opened = try SqliteMemoryDatabase.fromBytes(bytes: decryptedDbData)
+            _ = try opened.queryValues(sql: "SELECT count(*) FROM sqlite_master", params: [])
         } catch {
-            throw AppError.databaseTempWriteFailed
-        }
-
-        // Step 4: Open source database from temp file
-        let sourceConnection: Connection
-        do {
-            sourceConnection = try Connection(tempDbPath.path)
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
             throw AppError.databaseOpenFailed
         }
 
-        // Step 5: Create in-memory database connection
+        // Step 3: Set pragmas
         do {
-            self.dbConnection = try Connection(":memory:")
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw AppError.databaseMemoryFailed
-        }
-
-        // Step 6: Use SQLite backup API to copy entire database with full schema preservation
-        // This preserves foreign keys, indexes, triggers, views, and all other schema objects
-        do {
-            let backup = try sourceConnection.backup(usingConnection: self.dbConnection!)
-            try backup.step()
-            backup.finish()
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw AppError.databaseBackupFailed
-        }
-
-        // Clean up temp file
-        try? FileManager.default.removeItem(at: tempDbPath)
-
-        // Step 7: Set pragmas
-        do {
-            try self.dbConnection?.execute("PRAGMA journal_mode = WAL")
-            try self.dbConnection?.execute("PRAGMA synchronous = NORMAL")
-            try self.dbConnection?.execute("PRAGMA foreign_keys = ON")
+            try opened.executeBatch(sql: "PRAGMA foreign_keys = ON")
         } catch {
             throw AppError.databasePragmaFailed
         }
+        self.dbConnection = opened
     }
 }

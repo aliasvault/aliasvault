@@ -95,7 +95,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
         // Build folder paths
         val folderPaths = buildFolderPaths()
 
-        val itemResults = executeQueryWithBlobs(ItemQueries.GET_ALL_ACTIVE, emptyArray())
+        val itemResults = executeQuery(ItemQueries.GET_ALL_ACTIVE, emptyArray())
         for (row in itemResults) {
             try {
                 val idString = row["Id"] as? String ?: continue
@@ -205,7 +205,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return Item object or null if not found.
      */
     fun getById(itemId: String): Item? {
-        val itemResults = executeQueryWithBlobs(ItemQueries.GET_BY_ID, arrayOf(itemId.lowercase()))
+        val itemResults = executeQuery(ItemQueries.GET_BY_ID, arrayOf(itemId.lowercase()))
         val row = itemResults.firstOrNull() ?: return null
 
         // Build folder paths
@@ -324,7 +324,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     @Suppress("LoopWithTooManyJumpStatements")
     private fun getItemsWithoutFields(query: String, label: String): List<Item> {
         val items = mutableListOf<Item>()
-        val results = executeQueryWithBlobs(query, emptyArray())
+        val results = executeQuery(query, emptyArray())
 
         // Build folder paths
         val folderPaths = buildFolderPaths()
@@ -611,42 +611,5 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
             FieldKey.NOTES_CONTENT -> FieldMetadata("Notes", FieldType.TEXT_AREA, false, false)
             else -> FieldMetadata(fieldKey, FieldType.TEXT, false, false)
         }
-    }
-
-    /**
-     * Execute a SELECT query that may return BLOB columns.
-     * Unlike executeQuery which converts all params to strings, this preserves ByteArray types.
-     */
-    private fun executeQueryWithBlobs(query: String, params: Array<Any?>): List<Map<String, Any?>> {
-        val db = database.dbConnection ?: error("Database not initialized")
-        val cursor = db.query(query, params.map { it?.toString() }.toTypedArray())
-
-        val results = mutableListOf<Map<String, Any?>>()
-        cursor.use {
-            val columnNames = it.columnNames
-            while (it.moveToNext()) {
-                val row = mutableMapOf<String, Any?>()
-                for (columnName in columnNames) {
-                    when (it.getType(it.getColumnIndexOrThrow(columnName))) {
-                        android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
-                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                    }
-                }
-                results.add(row)
-            }
-        }
-
-        return results
     }
 }
