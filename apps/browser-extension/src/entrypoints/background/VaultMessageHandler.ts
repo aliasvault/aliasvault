@@ -17,7 +17,8 @@ import { recordManifestRevisions } from '@aliasvault/client/sync/ManifestRevisio
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { runFullVaultSync, runVaultManifestMigration, runVaultMigrationStatus, type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
+import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
@@ -26,7 +27,6 @@ import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { syncResult, toFullVaultSyncResult, toSyncErrorDetail } from '@/entrypoints/background/VaultSyncResultMapper';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog, devWarn } from '@/utils/devLogger/DevLogger';
@@ -35,17 +35,14 @@ import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessagi
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { getStorageItem } from '@/utils/StorageUtility';
-import { hasSyncError } from '@/utils/SyncError';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
-import type { FullVaultSyncResult } from '@/utils/types/messaging/FullVaultSyncResult';
 import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import type { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
-import type { VaultManifestMigrationResult } from '@/utils/types/messaging/VaultManifestMigrationResult';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
@@ -141,6 +138,11 @@ const syncEngineHost: IVaultSyncEngineHost = {
     });
   },
 };
+
+/**
+ * The sync operations on the background's vault.
+ */
+const vaultSync = new VaultSync(syncEngineHost, createVaultSqliteClient);
 
 /**
  * Cleanup the cached decrypted vault database and drop the cache.
@@ -796,43 +798,15 @@ export async function handleStoreEncryptedVault(request: {
 /**
  * Classify the pending migration status.
  */
-export async function handleGetVaultMigrationStatus(): Promise<VaultMigrationKind> {
-  try {
-    const result = await runVaultMigrationStatus(syncEngineHost);
-    return result.kind as VaultMigrationKind;
-  } catch (error) {
-    console.warn('[ManifestMigration] Could not classify the pending migration, assuming it crosses the storage format:', error);
-    return VaultMigrationKind.StorageFormatUpgrade;
-  }
+export function handleGetVaultMigrationStatus(): Promise<VaultMigrationKind> {
+  return vaultSync.getVaultMigrationStatus();
 }
 
 /**
  * Upgrade local manifest-v1 storage model to the current schema (if needed) and push it.
  */
-export async function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
-  try {
-    const encryptionKey = await handleGetEncryptionKey();
-    if (!encryptionKey) {
-      return { success: false, pushed: false, errorCode: AppErrorCode.VAULT_LOCKED };
-    }
-
-    const sqliteClient = await createVaultSqliteClient();
-    if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
-      // The sqlite-blob upgrade chain has to bring the vault to 2.0.0 first; the codec cannot canonicalize what came before.
-      return { success: false, pushed: false, error: await t('content.vaultUpgradeRequired') };
-    }
-
-    const result = await runVaultManifestMigration(syncEngineHost);
-    if (result.success) {
-      devLog(result.pushed ? '[ManifestMigration] Migration pushed to the server.' : '[ManifestMigration] Migration stored locally; the vault stays dirty for the next sync.');
-    } else {
-      console.error('[ManifestMigration] Manifest migration failed:', result);
-    }
-    return { success: result.success, pushed: result.pushed, ...toSyncErrorDetail(result) };
-  } catch (error) {
-    console.error('[ManifestMigration] Manifest migration threw:', error);
-    return { success: false, pushed: false, error: error instanceof Error ? error.message : undefined };
-  }
+export function handleMigrateVaultManifest(): Promise<VaultManifestMigrationResult> {
+  return vaultSync.migrateVaultManifest();
 }
 
 /**
@@ -935,18 +909,7 @@ async function handleFullVaultSyncInternal(options?: VaultSyncOptions): Promise<
   hasPendingSync = false;
 
   try {
-    const [username, accessToken, encryptionKey] = await Promise.all([storage.getItem(StorageKeys.USERNAME), storage.getItem(StorageKeys.ACCESS_TOKEN), handleGetEncryptionKey()]);
-    if (username === null || accessToken === null) {
-      return syncResult({ success: false });
-    }
-    if (!encryptionKey) {
-      return syncResult({ success: false, errorCode: AppErrorCode.VAULT_LOCKED });
-    }
-    return toFullVaultSyncResult(await runFullVaultSync(syncEngineHost, options));
-  } catch (err) {
-    console.error('Vault sync error:', err);
-    const message = err instanceof Error ? err.message : 'Unknown error during vault sync';
-    return syncResult({ success: false, error: /E-\d{3}/.test(message) ? message : formatErrorWithCode(message, AppErrorCode.UNKNOWN_ERROR) });
+    return await vaultSync.syncVaultWithServer(options);
   } finally {
     // Reset sync in progress flag
     isSyncInProgress = false;

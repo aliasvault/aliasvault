@@ -47,6 +47,7 @@ const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
   [TranslatableMessage.UnnamedSharedVault]: 'sharing.family.unnamedVault',
   [TranslatableMessage.ClientOutdated]: 'common.errors.browserExtensionOutdated',
   [TranslatableMessage.SharedFolderDeleteRefused]: 'items.deleteSharedFolderHint',
+  [TranslatableMessage.VaultUpgradeRequired]: 'content.vaultUpgradeRequired',
 };
 
 /**

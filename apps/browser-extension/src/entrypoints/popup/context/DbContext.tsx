@@ -10,11 +10,11 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
-import type { SyncErrorDetail } from '@/utils/types/messaging/SyncErrorDetail';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
 
+import type { SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
 import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { storage } from '#imports';

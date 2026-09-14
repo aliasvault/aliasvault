@@ -1,16 +1,7 @@
 import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-
-import type { SyncErrorDetail } from '@/utils/types/messaging/SyncErrorDetail';
+import { hasSyncError, type SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
 
 import type { TFunction } from 'i18next';
-
-/**
- * Whether a sync outcome carries a failure the user should be told about.
- * @param detail - the sync outcome
- */
-export function hasSyncError(detail: SyncErrorDetail): boolean {
-  return detail.errorKey !== undefined || detail.errorCode !== undefined || detail.error !== undefined;
-}
 
 /**
  * The stored sync error, tolerating the plain string an older build left behind.
