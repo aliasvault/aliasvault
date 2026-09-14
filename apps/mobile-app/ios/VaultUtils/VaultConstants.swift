@@ -13,16 +13,16 @@ public struct VaultConstants {
     public static let authMethodsKey = "aliasvault_auth_methods"
     public static let autoLockTimeoutKey = "aliasvault_auto_lock_timeout"
     public static let encryptionKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
+    public static let accountKeyChainKey = "aliasvault_account_key_chain"
     public static let usernameKey = "aliasvault_username"
     public static let offlineModeKey = "aliasvault_offline_mode"
     public static let pinEnabledKey = "aliasvault_pin_enabled"
     public static let serverVersionKey = "aliasvault_server_version"
     public static let autofillCopyTotpOnFillKey = "aliasvault_autofill_copy_totp_on_fill"
-
-    // Sync state keys (for offline sync and race detection)
     public static let isDirtyKey = "aliasvault_is_dirty"
     public static let mutationSequenceKey = "aliasvault_mutation_sequence"
     public static let isSyncingKey = "aliasvault_is_syncing"
+    public static let syncLogsKey = "aliasvault_sync_logs"
 
     public static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds
 

@@ -11,7 +11,6 @@ export interface Spec extends TurboModule {
   getAccessToken(): Promise<string | null>;
   clearAuthTokens(): Promise<void>;
   revokeTokens(): Promise<void>;
-  // Custom proxy headers added to every outgoing API request
   setCustomProxyHeaders(headersJson: string): Promise<void>;
   getCustomProxyHeaders(): Promise<string>;
 
@@ -46,6 +45,9 @@ export interface Spec extends TurboModule {
   // Quick check if sync is needed
   checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;
 
+  // Logs of the recent sync engine runs, for the developer tools.
+  getVaultSyncLogs(): Promise<string>;
+
   // Sync state management
   getSyncState(): Promise<{isDirty: boolean; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
@@ -58,7 +60,6 @@ export interface Spec extends TurboModule {
   beginTransaction(): Promise<void>;
   commitTransaction(): Promise<void>;
   rollbackTransaction(): Promise<void>;
-  // Persist the in-memory database to encrypted storage and mark as dirty
   persistAndMarkDirty(): Promise<void>;
 
   // Cryptography operations
@@ -92,13 +93,10 @@ export interface Spec extends TurboModule {
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 
-  // TOTP code generation (RFC 6238). Delegates to the platform-native TOTP generator so iOS,
-  // Android and the autofill extensions all share one implementation. The algorithm ("SHA1",
-  // "SHA256" or "SHA512"), digit count and period come from the stored TOTP code; an unrecognized
-  // algorithm falls back to SHA1. Returns null when the secret is invalid.
+  // TOTP code generation via native layer.
   generateTotpCode(secret: string, algorithm: string, digits: number, period: number): Promise<string | null>;
 
-  // Battery optimization management
+  // Battery optimization management (Android only)
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;
 

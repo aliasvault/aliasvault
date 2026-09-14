@@ -122,6 +122,44 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func storeAccountKeyChain(_ chainJson: String?,
+                              resolver resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        vaultStore.storeAccountKeyChain(chainJson)
+        resolve(nil)
+    }
+
+    @objc
+    func getAccountKeyChain(_ resolve: @escaping RCTPromiseResolveBlock,
+                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getAccountKeyChain())
+    }
+
+    /// The id of the user's personal manifest as the last sync recorded it, or nil before the first pull.
+    @objc
+    func getPersonalManifestId(_ resolve: @escaping RCTPromiseResolveBlock,
+                               rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getPersonalManifestId())
+    }
+
+    /// Resolve and store the vault key right after login from the password-derived key (see VaultStore.resolveVaultKey).
+    @objc
+    func resolveVaultKey(_ base64DerivedKey: String,
+                         resolver resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let key = try await vaultStore.resolveVaultKey(using: webApiService, derivedKeyBase64: base64DerivedKey)
+                await MainActor.run { resolve(key) }
+            } catch let vaultError as AppError {
+                await MainActor.run { reject(vaultError.code, vaultError.message, vaultError) }
+            } catch {
+                await MainActor.run { reject("E-001", "Failed to resolve the vault key: \(error.localizedDescription)", error) }
+            }
+        }
+    }
+
+    @objc
     func executeQuery(_ query: String,
                       params: [Any],
                       resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -144,8 +182,8 @@ public class VaultManager: NSObject {
                 }
             }
 
-            // Execute the query through the vault store
-            let results = try vaultStore.executeQuery(query, params: bindingParams)
+            // Execute the query through the vault store; BLOB columns come back tagged so the JS client can decode them to bytes
+            let results = try vaultStore.executeQuery(query, params: bindingParams, blobPrefix: "av-blob-base64:")
             resolve(results)
         } catch {
             reject("QUERY_ERROR", "Failed to execute query: \(error.localizedDescription)", error)
@@ -762,7 +800,9 @@ public class VaultManager: NSObject {
     @objc
     func syncVaultWithServer(_ resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        let receivedAt = Date()
         Task {
+            let taskStartedAfterMs = Int(Date().timeIntervalSince(receivedAt) * 1000)
             let result = await vaultStore.syncVaultWithServer(using: webApiService)
             await MainActor.run {
                 let response: [String: Any] = [
@@ -770,7 +810,51 @@ public class VaultManager: NSObject {
                     "action": result.action.rawValue,
                     "newRevision": result.newRevision,
                     "wasOffline": result.wasOffline,
-                    "error": result.error as Any
+                    "error": result.error as Any,
+                    "errorMessage": result.errorMessage as Any,
+                    "sqliteBlobUpgradeRequired": result.sqliteBlobUpgradeRequired,
+                    "manifestMigrationRequired": result.manifestMigrationRequired
+                ]
+                resolve(response)
+            }
+        }
+    }
+
+    /// The logs of the recent sync engine runs as JSON text, newest first (developer tools).
+    @objc
+    func getVaultSyncLogs(_ resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getVaultSyncLogs())
+    }
+
+    /// Classify the pending manifest migration (see VaultStore.getVaultMigrationStatus). Rejects with the native error code.
+    @objc
+    func getVaultMigrationStatus(_ resolve: @escaping RCTPromiseResolveBlock,
+                                 rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let kind = try await vaultStore.getVaultMigrationStatus(using: webApiService)
+                await MainActor.run { resolve(kind) }
+            } catch let error as AppError {
+                await MainActor.run { reject(error.code, error.message, error) }
+            } catch {
+                await MainActor.run { reject("VAULT_MIGRATION_STATUS_ERROR", "Failed to classify the pending vault migration: \(error.localizedDescription)", error) }
+            }
+        }
+    }
+
+    /// Run the pending manifest migration and push it (see VaultStore.migrateVaultManifest). Failures resolve with the error code.
+    @objc
+    func migrateVaultManifest(_ resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            let result = await vaultStore.migrateVaultManifest(using: webApiService)
+            await MainActor.run {
+                let response: [String: Any] = [
+                    "success": result.success,
+                    "pushed": result.pushed,
+                    "error": result.error as Any,
+                    "errorMessage": result.errorMessage as Any
                 ]
                 resolve(response)
             }
@@ -1349,203 +1433,9 @@ public class VaultManager: NSObject {
         // Reset sync state - set isDirty=false and revision=0 so sync sees server as newer
         vaultStore.setIsDirty(false)
         vaultStore.setCurrentVaultRevisionNumber(0)
+        vaultStore.clearSyncEngineState()
 
         resolve(nil)
-    }
-
-    // MARK: - Favicon
-
-    /// Pick which of an item's URLs a favicon should be fetched from, and the Logos.Source
-    /// key it is stored under. Resolves to a JSON string, or nil when no URL qualifies.
-    @objc
-    func selectFaviconTarget(_ urls: [String],
-                             resolver resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        guard let target = RustCoreFramework.selectFaviconTarget(urls: urls) else {
-            resolve(nil)
-            return
-        }
-
-        do {
-            let payload = ["url": target.url, "source": target.source]
-            let data = try JSONSerialization.data(withJSONObject: payload)
-            resolve(String(data: data, encoding: .utf8))
-        } catch {
-            reject("FAVICON_TARGET_ERROR", "Failed to serialize favicon target: \(error.localizedDescription)", error)
-        }
-    }
-
-    // MARK: - Password Generator
-
-    /// Generate a password or passphrase from a JSON-serialized PasswordSettings object.
-    /// The "Type" field selects the generator ("basic" or "diceware").
-    @objc
-    func generatePassword(_ settingsJson: String,
-                          resolver resolve: @escaping RCTPromiseResolveBlock,
-                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let password = try RustCoreFramework.generatePassword(settingsJson: settingsJson)
-            resolve(password)
-        } catch {
-            reject("PASSWORD_GENERATOR_ERROR", "Failed to generate password: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// List the bundled Diceware wordlist language codes (first is the default, English).
-    @objc
-    func getDicewareLanguages(_ resolve: @escaping RCTPromiseResolveBlock,
-                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let languages = RustCoreFramework.getDicewareLanguages()
-        resolve(languages)
-    }
-
-    // MARK: - Identity Generator
-
-    /// Generate a random identity from a JSON-serialized request.
-    /// Returns the generated identity as a JSON string with camelCase fields.
-    @objc
-    func generateIdentity(_ requestJson: String,
-                          resolver resolve: @escaping RCTPromiseResolveBlock,
-                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let identityJson = try RustCoreFramework.generateIdentity(requestJson: requestJson)
-            resolve(identityJson)
-        } catch {
-            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate identity: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Generate a username from a JSON-serialized name input (firstName, lastName, birthDate).
-    @objc
-    func generateIdentityUsername(_ inputJson: String,
-                                  resolver resolve: @escaping RCTPromiseResolveBlock,
-                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let username = try RustCoreFramework.generateIdentityUsername(inputJson: inputJson)
-            resolve(username)
-        } catch {
-            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate username: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Generate an email prefix from a JSON-serialized name input (firstName, lastName, birthDate).
-    @objc
-    func generateIdentityEmailPrefix(_ inputJson: String,
-                                     resolver resolve: @escaping RCTPromiseResolveBlock,
-                                     rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let emailPrefix = try RustCoreFramework.generateIdentityEmailPrefix(inputJson: inputJson)
-            resolve(emailPrefix)
-        } catch {
-            reject("IDENTITY_GENERATOR_ERROR", "Failed to generate email prefix: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Generate a random alphanumeric email prefix that is not based on any identity.
-    @objc
-    func generateRandomEmailPrefix(_ length: Double,
-                                   resolver resolve: @escaping RCTPromiseResolveBlock,
-                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let prefix = RustCoreFramework.generateRandomEmailPrefix(length: UInt32(length))
-        resolve(prefix)
-    }
-
-    /// List the bundled identity dictionary language codes.
-    @objc
-    func getIdentityLanguages(_ resolve: @escaping RCTPromiseResolveBlock,
-                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let languages = RustCoreFramework.getIdentityLanguages()
-        resolve(languages)
-    }
-
-    /// List the identity age range option values ("random" plus 5-year ranges).
-    @objc
-    func getIdentityAgeRanges(_ resolve: @escaping RCTPromiseResolveBlock,
-                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let ageRanges = RustCoreFramework.getIdentityAgeRanges()
-        resolve(ageRanges)
-    }
-
-    // MARK: - SRP (Secure Remote Password) Operations
-
-    /// Generate a cryptographic salt for SRP.
-    /// Returns a 32-byte random salt as an uppercase hex string.
-    @objc
-    func srpGenerateSalt(_ resolve: @escaping RCTPromiseResolveBlock,
-                         rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let salt = RustCoreFramework.srpGenerateSalt()
-        resolve(salt)
-    }
-
-    /// Derive the SRP private key (x) from credentials.
-    /// Formula: x = H(salt | H(identity | ":" | password_hash))
-    @objc
-    func srpDerivePrivateKey(_ salt: String,
-                             identity: String,
-                             passwordHash: String,
-                             resolver resolve: @escaping RCTPromiseResolveBlock,
-                             rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let privateKey = try RustCoreFramework.srpDerivePrivateKey(salt: salt, identity: identity, passwordHash: passwordHash)
-            resolve(privateKey)
-        } catch {
-            reject("SRP_ERROR", "Failed to derive SRP private key: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Derive the SRP verifier (v) from a private key.
-    /// Formula: v = g^x mod N
-    @objc
-    func srpDeriveVerifier(_ privateKey: String,
-                           resolver resolve: @escaping RCTPromiseResolveBlock,
-                           rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let verifier = try RustCoreFramework.srpDeriveVerifier(privateKey: privateKey)
-            resolve(verifier)
-        } catch {
-            reject("SRP_ERROR", "Failed to derive SRP verifier: \(error.localizedDescription)", error)
-        }
-    }
-
-    /// Generate a client ephemeral key pair.
-    /// Returns a JSON object with public (A) and secret (a) values as uppercase hex strings.
-    @objc
-    func srpGenerateEphemeral(_ resolve: @escaping RCTPromiseResolveBlock,
-                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let ephemeral = RustCoreFramework.srpGenerateEphemeral()
-        let result: [String: String] = [
-            "public": ephemeral.public,
-            "secret": ephemeral.secret
-        ]
-        resolve(result)
-    }
-
-    /// Derive the client session from server response.
-    /// Returns a JSON object with proof (M1) and key (K) as uppercase hex strings.
-    @objc
-    func srpDeriveSession(_ clientSecret: String,
-                          serverPublic: String,
-                          salt: String,
-                          identity: String,
-                          privateKey: String,
-                          resolver resolve: @escaping RCTPromiseResolveBlock,
-                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let session = try RustCoreFramework.srpDeriveSession(
-                clientSecret: clientSecret,
-                serverPublic: serverPublic,
-                salt: salt,
-                identity: identity,
-                privateKey: privateKey
-            )
-            let result: [String: String] = [
-                "proof": session.proof,
-                "key": session.key
-            ]
-            resolve(result)
-        } catch {
-            reject("SRP_ERROR", "Failed to derive SRP session: \(error.localizedDescription)", error)
-        }
     }
 
     @objc
@@ -1556,5 +1446,183 @@ public class VaultManager: NSObject {
     @objc
     static func moduleName() -> String! {
         return "VaultManager"
+    }
+
+    // MARK: - Client core bridge
+
+    /// Call one Rust core function by name with JSON-encoded positional arguments. The client core's Rust
+    /// binding (platform/NativeRustCore.ts) routes every call through here; see RustCoreDispatcher below.
+    @objc
+    func rustCall(_ name: String,
+                  argsJson: String,
+                  resolver resolve: @escaping RCTPromiseResolveBlock,
+                  rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                resolve(try RustCoreDispatcher.call(name: name, argsJson: argsJson))
+            } catch {
+                reject("RUST_CORE_ERROR", "Rust core call '\(name)' failed: \(error.localizedDescription)", error)
+            }
+        }
+    }
+
+    /// Store the encrypted vault blob the app produced, so the native store and the autofill extension read it.
+    @objc
+    func storeEncryptedDatabase(_ base64EncryptedDb: String,
+                                resolver resolve: @escaping RCTPromiseResolveBlock,
+                                rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.storeEncryptedDatabase(base64EncryptedDb)
+            resolve(nil)
+        } catch {
+            reject("DB_ERROR", "Failed to store encrypted database: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// The vault encryption key as base64, for the app to open the vault after a biometric or PIN unlock.
+    @objc
+    func getEncryptionKey(_ resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            resolve(try vaultStore.getEncryptionKeyBase64())
+        } catch let vaultError as AppError {
+            reject(vaultError.code, vaultError.message, vaultError)
+        } catch let error as NSError {
+            reject("E-001", "Failed to get encryption key: \(error.localizedDescription)", error)
+        }
+    }
+}
+
+/// Routes `rustCall` invocations onto the Rust core Uniffi bindings.
+private enum RustCoreDispatcher {
+    enum DispatchError: LocalizedError {
+        case unknownFunction(String)
+        case badArgument(Int)
+        case encoding
+
+        var errorDescription: String? {
+            switch self {
+            case .unknownFunction(let name): return "Unknown Rust core function '\(name)'"
+            case .badArgument(let index): return "Bad argument at index \(index)"
+            case .encoding: return "Could not encode the result"
+            }
+        }
+    }
+
+    /// The positional arguments of one call.
+    private struct Args {
+        let values: [Any]
+
+        func string(_ index: Int) throws -> String {
+            guard index < values.count, let value = values[index] as? String else { throw DispatchError.badArgument(index) }
+            return value
+        }
+
+        func optionalString(_ index: Int) -> String? {
+            return index < values.count ? values[index] as? String : nil
+        }
+
+        func uint32(_ index: Int) throws -> UInt32 {
+            guard index < values.count, let value = values[index] as? NSNumber else { throw DispatchError.badArgument(index) }
+            return value.uint32Value
+        }
+
+        func strings(_ index: Int) throws -> [String] {
+            guard index < values.count, let value = values[index] as? [String] else { throw DispatchError.badArgument(index) }
+            return value
+        }
+
+        func data(_ index: Int) throws -> Data {
+            guard let value = Data(base64Encoded: try string(index)) else { throw DispatchError.badArgument(index) }
+            return value
+        }
+
+        func optionalData(_ index: Int) throws -> Data? {
+            guard let encoded = optionalString(index) else { return nil }
+            guard let value = Data(base64Encoded: encoded) else { throw DispatchError.badArgument(index) }
+            return value
+        }
+    }
+
+    static func call(name: String, argsJson: String) throws -> String {
+        let parsed = try JSONSerialization.jsonObject(with: Data(argsJson.utf8), options: [.fragmentsAllowed])
+        let args = Args(values: parsed as? [Any] ?? [])
+
+        switch name {
+        case "extractDomain": return try json(RustCoreFramework.extractDomain(url: try args.string(0)))
+        case "extractRootDomain": return try json(RustCoreFramework.extractRootDomain(domain: try args.string(0)))
+        case "selectFaviconTarget":
+            guard let target = RustCoreFramework.selectFaviconTarget(urls: try args.strings(0)) else { return "null" }
+            return try json(["url": target.url, "source": target.source])
+        case "filterCredentialsJson": return try RustCoreFramework.filterCredentialsJson(inputJson: try args.string(0))
+
+        case "generatePassword": return try json(try RustCoreFramework.generatePassword(settingsJson: try args.string(0)))
+        case "getDicewareLanguages": return try json(RustCoreFramework.getDicewareLanguages())
+        case "generateIdentity": return try json(try RustCoreFramework.generateIdentity(requestJson: try args.string(0)))
+        case "generateIdentityUsername": return try json(try RustCoreFramework.generateIdentityUsername(inputJson: try args.string(0)))
+        case "generateIdentityEmailPrefix": return try json(try RustCoreFramework.generateIdentityEmailPrefix(inputJson: try args.string(0)))
+        case "generateRandomEmailPrefix": return try json(RustCoreFramework.generateRandomEmailPrefix(length: try args.uint32(0)))
+        case "getIdentityLanguages": return try json(RustCoreFramework.getIdentityLanguages())
+        case "getIdentityAgeRanges": return try json(RustCoreFramework.getIdentityAgeRanges())
+
+        case "parseEmailSource": return try RustCoreFramework.parseEmailSource(source: try args.data(0))
+        case "decodeEmailSource": return try json(bytes: try RustCoreFramework.decodeEmailSource(source: try args.data(0)))
+        case "extractEmailAttachment":
+            return try json(bytes: try RustCoreFramework.extractEmailAttachment(source: try args.data(0), index: try args.uint32(1), detachedBody: try args.optionalData(2)))
+
+        case "argon2DeriveKey":
+            return try json(bytes: try RustCoreFramework.argon2DeriveKey(password: try args.string(0), salt: try args.string(1), encryptionSettings: try args.string(2)))
+
+        case "srpGenerateSalt": return try json(RustCoreFramework.srpGenerateSalt())
+        case "srpDerivePrivateKey":
+            return try json(try RustCoreFramework.srpDerivePrivateKey(salt: try args.string(0), identity: try args.string(1), passwordHash: try args.string(2)))
+        case "srpDeriveVerifier": return try json(try RustCoreFramework.srpDeriveVerifier(privateKey: try args.string(0)))
+        case "srpGenerateEphemeral":
+            let ephemeral = RustCoreFramework.srpGenerateEphemeral()
+            return try json(["public": ephemeral.public, "secret": ephemeral.secret])
+        case "srpDeriveSession":
+            let session = try RustCoreFramework.srpDeriveSession(clientSecret: try args.string(0), serverPublic: try args.string(1), salt: try args.string(2), identity: try args.string(3), privateKey: try args.string(4))
+            return try json(["proof": session.proof, "key": session.key])
+
+        case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
+        case "mergeCanonicalJson": return try RustCoreFramework.mergeCanonicalJson(inputJson: try args.string(0))
+        case "pruneVaultJson": return try RustCoreFramework.pruneVaultJson(inputJson: try args.string(0))
+        case "getPruneTableQueries": return try json(RustCoreFramework.getPruneTableQueries().map { ["name": $0.name, "query": $0.query] })
+
+        case "vaultCodecCanonicalizeFromSqlite": return try RustCoreFramework.vaultCodecCanonicalizeFromSqlite(inputJson: try args.string(0))
+        case "vaultCodecMaterializeAsSqlite": return try RustCoreFramework.vaultCodecMaterializeAsSqlite(inputJson: try args.string(0))
+        case "vaultCodecExtractBuckets": return try RustCoreFramework.vaultCodecExtractBuckets(inputJson: try args.string(0))
+        case "vaultCodecBucketLayout": return try RustCoreFramework.vaultCodecBucketLayout()
+        case "vaultCodecOverflowTable": return try json(RustCoreFramework.vaultCodecOverflowTable())
+        case "vaultCodecGenerateManifestSalt": return try json(RustCoreFramework.vaultCodecGenerateManifestSalt())
+        case "vaultCodecLogoIdForSource": return try json(RustCoreFramework.vaultCodecLogoIdForSource(manifestId: try args.string(0), source: try args.string(1)))
+        case "vaultCodecLogoIdFor": return try json(RustCoreFramework.vaultCodecLogoIdFor(manifestId: try args.string(0), kind: try args.string(1), source: try args.string(2)))
+        case "vaultCodecLogoContentHash": return try json(RustCoreFramework.vaultCodecLogoContentHash(bytes: try args.data(0)))
+        case "vaultCodecPackPayload": return try json(bytes: try RustCoreFramework.vaultCodecPackPayload(payloadJson: try args.string(0)))
+        case "vaultCodecUnpackPayload": return try json(try RustCoreFramework.vaultCodecUnpackPayload(plainBytes: try args.data(0)))
+        case "vaultCodecValidateManifest": return try RustCoreFramework.vaultCodecValidateManifest(manifestJson: try args.string(0))
+        case "vaultCodecValidateDataBucket": return try RustCoreFramework.vaultCodecValidateDataBucket(dataBucketJson: try args.string(0))
+        case "vaultCodecComputeCiphertextHash": return try json(RustCoreFramework.vaultCodecComputeCiphertextHash(base64Ciphertext: try args.string(0)))
+        case "vaultCodecComputeContentFingerprint": return try json(RustCoreFramework.vaultCodecComputeContentFingerprint(payloadJson: try args.string(0)))
+        case "vaultCodecExtractEncryptionKeyForPublicKey":
+            return try RustCoreFramework.vaultCodecExtractEncryptionKeyForPublicKey(manifestJson: try args.string(0), publicKey: try args.string(1))
+
+        case "vaultSharingResolveManifestWriteSet": return try RustCoreFramework.vaultSharingResolveManifestWriteSet(inputJson: try args.string(0))
+        case "vaultSharingPartitionManifestAccess": return try RustCoreFramework.vaultSharingPartitionManifestAccess(inputJson: try args.string(0))
+
+        default: throw DispatchError.unknownFunction(name)
+        }
+    }
+
+    /// JSON-encode a plain value (string, array or dictionary).
+    private static func json(_ value: Any) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed])
+        guard let text = String(data: data, encoding: .utf8) else { throw DispatchError.encoding }
+        return text
+    }
+
+    /// JSON-encode raw bytes as a base64 string.
+    private static func json(bytes: Data) throws -> String {
+        return try json(bytes.base64EncodedString())
     }
 }

@@ -56,6 +56,11 @@ extension VaultStore {
         }
     }
 
+    /// The id of the user's personal manifest as the last sync recorded it, or nil before the first pull.
+    public func getPersonalManifestId() -> String? {
+        return VaultSyncEngine.persistedState(forKey: VaultSyncEngine.personalManifestIdStateKey, in: userDefaults) as? String
+    }
+
     // MARK: - Username Storage
 
     /// Store the username

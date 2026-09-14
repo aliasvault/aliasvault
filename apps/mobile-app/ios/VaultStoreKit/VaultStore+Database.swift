@@ -23,7 +23,7 @@ extension VaultStore {
         }
     }
 
-    /// Unlock the vault - decrypt the database and setup the database with the decrypted data
+    /// Unlock the vault - decrypt the database and setup the database connection.
     public func unlockVault() throws {
         guard let encryptedDbBase64 = getEncryptedDatabase() else {
             throw AppError.encryptionKeyNotFound
@@ -34,8 +34,8 @@ extension VaultStore {
         }
 
         do {
-            let decryptedDbBase64 = try decrypt(data: encryptedDbData)
-            try setupDatabaseWithDecryptedData(decryptedDbBase64)
+            let decrypted = try decrypt(data: encryptedDbData)
+            try setupDatabaseWithDecryptedData(decrypted)
         } catch let vaultError as AppError {
             // Pass through AppError types
             throw vaultError
@@ -58,11 +58,20 @@ extension VaultStore {
         return containerURL.appendingPathComponent(VaultConstants.encryptedDbFileName)
     }
 
-    /// Setup the database with the decrypted data
-    private func setupDatabaseWithDecryptedData(_ decryptedDbBase64: Data) throws {
-        // Step 1: Decode base64
-        guard let decryptedDbData = Data(base64Encoded: decryptedDbBase64) else {
-            throw AppError.base64DecodeFailed
+    /// The bytes every SQLite database file begins with.
+    private static let sqliteHeader = Data("SQLite format 3\0".utf8)
+
+    /// Setup the database connection with the decrypted data.
+    private func setupDatabaseWithDecryptedData(_ decrypted: Data) throws {
+        // Step 1: Take the SQLite bytes as-is, or decode the legacy base64 text.
+        let decryptedDbData: Data
+        if decrypted.starts(with: Self.sqliteHeader) {
+            decryptedDbData = decrypted
+        } else {
+            guard let decoded = Data(base64Encoded: decrypted) else {
+                throw AppError.base64DecodeFailed
+            }
+            decryptedDbData = decoded
         }
 
         // Step 2: Clean up any existing connection

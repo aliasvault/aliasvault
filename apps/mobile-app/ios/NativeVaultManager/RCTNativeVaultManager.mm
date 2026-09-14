@@ -117,6 +117,22 @@
     [vaultManager getEncryptionKeyDerivationParams:resolve rejecter:reject];
 }
 
+- (void)storeAccountKeyChain:(NSString *)chainJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeAccountKeyChain:chainJson resolver:resolve rejecter:reject];
+}
+
+- (void)getAccountKeyChain:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getAccountKeyChain:resolve rejecter:reject];
+}
+
+- (void)resolveVaultKey:(NSString *)base64DerivedKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager resolveVaultKey:base64DerivedKey resolver:resolve rejecter:reject];
+}
+
+- (void)getPersonalManifestId:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getPersonalManifestId:resolve rejecter:reject];
+}
+
 - (void)unlockVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager unlockVault:resolve rejecter:reject];
 }
@@ -273,6 +289,18 @@
     [vaultManager syncVaultWithServer:resolve rejecter:reject];
 }
 
+- (void)getVaultMigrationStatus:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getVaultMigrationStatus:resolve rejecter:reject];
+}
+
+- (void)migrateVaultManifest:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager migrateVaultManifest:resolve rejecter:reject];
+}
+
+- (void)getVaultSyncLogs:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getVaultSyncLogs:resolve rejecter:reject];
+}
+
 // MARK: - Sync State Management
 
 - (void)getSyncState:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -353,68 +381,18 @@
     [vaultManager getAppInstallDate:resolve rejecter:reject];
 }
 
-// MARK: - Favicon
+// MARK: - Client core bridge
 
-- (void)selectFaviconTarget:(NSArray<NSString *> *)urls resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager selectFaviconTarget:urls resolver:resolve rejecter:reject];
+- (void)rustCall:(NSString *)name argsJson:(NSString *)argsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager rustCall:name argsJson:argsJson resolver:resolve rejecter:reject];
 }
 
-// MARK: - Password Generator
-
-- (void)generatePassword:(NSString *)settingsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generatePassword:settingsJson resolver:resolve rejecter:reject];
+- (void)storeEncryptedDatabase:(NSString *)base64EncryptedDb resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeEncryptedDatabase:base64EncryptedDb resolver:resolve rejecter:reject];
 }
 
-- (void)getDicewareLanguages:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getDicewareLanguages:resolve rejecter:reject];
-}
-
-// MARK: - Identity Generator
-
-- (void)generateIdentity:(NSString *)requestJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generateIdentity:requestJson resolver:resolve rejecter:reject];
-}
-
-- (void)generateIdentityUsername:(NSString *)inputJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generateIdentityUsername:inputJson resolver:resolve rejecter:reject];
-}
-
-- (void)generateIdentityEmailPrefix:(NSString *)inputJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generateIdentityEmailPrefix:inputJson resolver:resolve rejecter:reject];
-}
-
-- (void)generateRandomEmailPrefix:(double)length resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager generateRandomEmailPrefix:length resolver:resolve rejecter:reject];
-}
-
-- (void)getIdentityLanguages:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getIdentityLanguages:resolve rejecter:reject];
-}
-
-- (void)getIdentityAgeRanges:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getIdentityAgeRanges:resolve rejecter:reject];
-}
-
-// MARK: - SRP (Secure Remote Password) Operations
-
-- (void)srpGenerateSalt:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager srpGenerateSalt:resolve rejecter:reject];
-}
-
-- (void)srpDerivePrivateKey:(NSString *)salt identity:(NSString *)identity passwordHash:(NSString *)passwordHash resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager srpDerivePrivateKey:salt identity:identity passwordHash:passwordHash resolver:resolve rejecter:reject];
-}
-
-- (void)srpDeriveVerifier:(NSString *)privateKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager srpDeriveVerifier:privateKey resolver:resolve rejecter:reject];
-}
-
-- (void)srpGenerateEphemeral:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager srpGenerateEphemeral:resolve rejecter:reject];
-}
-
-- (void)srpDeriveSession:(NSString *)clientSecret serverPublic:(NSString *)serverPublic salt:(NSString *)salt identity:(NSString *)identity privateKey:(NSString *)privateKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager srpDeriveSession:clientSecret serverPublic:serverPublic salt:salt identity:identity privateKey:privateKey resolver:resolve rejecter:reject];
+- (void)getEncryptionKey:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getEncryptionKey:resolve rejecter:reject];
 }
 
 @end

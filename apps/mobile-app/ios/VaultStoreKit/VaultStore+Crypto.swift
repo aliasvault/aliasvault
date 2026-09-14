@@ -80,8 +80,57 @@ extension VaultStore {
         return self.keyDerivationParams
     }
 
-    /// Verify password and return encryption key if correct
-    /// Returns nil if password is incorrect
+    /// Store the account-key chain the native password unlock unwraps.
+    public func storeAccountKeyChain(_ chainJson: String?) {
+        if let chainJson = chainJson, !chainJson.isEmpty {
+            self.userDefaults.set(chainJson, forKey: VaultConstants.accountKeyChainKey)
+        } else {
+            self.userDefaults.removeObject(forKey: VaultConstants.accountKeyChainKey)
+        }
+        self.userDefaults.synchronize()
+    }
+
+    /// The stored account-key chain JSON, or nil for a legacy account.
+    public func getAccountKeyChain() -> String? {
+        return self.userDefaults.string(forKey: VaultConstants.accountKeyChainKey)
+    }
+
+    /// The vault key an unlock method (PIN) stored, as base64.
+    public func resolveStoredUnlockKey(base64Key: String) -> String {
+        guard let key = Data(base64Encoded: base64Key), let vaultKey = try? resolveVaultEncryptionKey(derivedKey: key) else {
+            return base64Key
+        }
+        return vaultKey.base64EncodedString()
+    }
+
+    /// Turn a password-derived key (KEK) into the vault encryption key.
+    internal func resolveVaultEncryptionKey(derivedKey: Data) throws -> Data {
+        guard let chainJson = getAccountKeyChain(),
+              let chainData = chainJson.data(using: .utf8),
+              let chain = try? JSONSerialization.jsonObject(with: chainData) as? [String: Any],
+              let encryptedAccountKey = chain["encryptedAccountKey"] as? String, !encryptedAccountKey.isEmpty else {
+            return derivedKey
+        }
+
+        guard let encryptedVek = chain["encryptedVek"] as? String, !encryptedVek.isEmpty else {
+            throw NSError(domain: "VaultStore", code: 41, userInfo: [NSLocalizedDescriptionKey: "Account key chain is missing the encrypted VEK"])
+        }
+
+        let accountKey = try unwrapKey(encryptedAccountKey, with: derivedKey)
+        return try unwrapKey(encryptedVek, with: accountKey)
+    }
+
+    /// Decrypt a wrapped key with the given key.
+    private func unwrapKey(_ base64Blob: String, with key: Data) throws -> Data {
+        guard let blob = Data(base64Encoded: base64Blob) else {
+            throw NSError(domain: "VaultStore", code: 42, userInfo: [NSLocalizedDescriptionKey: "Invalid wrapped key"])
+        }
+
+        let sealedBox = try AES.GCM.SealedBox(combined: blob)
+        return try AES.GCM.open(sealedBox, using: SymmetricKey(data: key))
+    }
+
+    /// Verify the password and return the vault encryption key if correct.
     public func verifyPassword(_ password: String) -> String? {
         do {
             // Get encryption key derivation parameters
@@ -94,8 +143,9 @@ extension VaultStore {
                 return nil
             }
 
-            // Derive key from password
+            // Derive the KEK from the password and unwrap the chain; a wrong password fails the unwrap.
             let derivedKey = try deriveKeyFromPassword(password, salt: salt, encryptionType: encryptionType, encryptionSettings: encryptionSettings)
+            let vaultKey = try resolveVaultEncryptionKey(derivedKey: derivedKey)
 
             // Try to decrypt the vault to verify the password is correct
             guard let encryptedDbBase64 = getEncryptedDatabase(),
@@ -104,12 +154,12 @@ extension VaultStore {
             }
 
             // Test decryption
-            let key = SymmetricKey(data: derivedKey)
+            let key = SymmetricKey(data: vaultKey)
             let sealedBox = try AES.GCM.SealedBox(combined: encryptedDbData)
             _ = try AES.GCM.open(sealedBox, using: key)
 
-            // If decryption succeeded, return the key as base64
-            return derivedKey.base64EncodedString()
+            // If decryption succeeded, return the vault key as base64
+            return vaultKey.base64EncodedString()
         } catch {
             // Password incorrect or decryption failed
             return nil
@@ -185,9 +235,12 @@ extension VaultStore {
         #endif
     }
 
+    /// The vault encryption key as base64, for the React Native layer to open the vault after a biometric or PIN unlock.
+    public func getEncryptionKeyBase64() throws -> String {
+        return try getEncryptionKey().base64EncodedString()
+    }
+
     /// Get the encryption key - the key used to encrypt and decrypt the vault.
-    /// This method is meant to only be used internally by the VaultStore class and not
-    /// be exposed to the public API or React Native for security reasons.
     internal func getEncryptionKey() throws -> Data {
         // If key is already in memory, return it immediately
         // This is the common case during normal operation

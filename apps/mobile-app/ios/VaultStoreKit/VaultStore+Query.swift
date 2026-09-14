@@ -9,6 +9,11 @@ extension VaultStore {
 
     /// Execute a SELECT query on the database
     public func executeQuery(_ query: String, params: [Binding?]) throws -> [[String: Any]] {
+        return try executeQuery(query, params: params, blobPrefix: "")
+    }
+
+    /// Execute a SELECT query on the database, returning BLOB columns as base64 behind `blobPrefix`.
+    public func executeQuery(_ query: String, params: [Binding?], blobPrefix: String) throws -> [[String: Any]] {
         guard let dbConnection = self.dbConnection else {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
         }
@@ -35,7 +40,7 @@ extension VaultStore {
                 switch value {
                 case let data as SQLite.Blob:
                     let binaryData = Data(data.bytes)
-                    rowDict[column] = binaryData.base64EncodedString()
+                    rowDict[column] = blobPrefix + binaryData.base64EncodedString()
                 case let number as Int64:
                     rowDict[column] = number
                 case let number as Double:
