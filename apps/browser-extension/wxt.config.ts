@@ -90,7 +90,6 @@ export default defineConfig({
       web_accessible_resources: [{
         resources: [
           "webauthn.js",
-          "src/sql-wasm-browser.wasm",
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
@@ -122,10 +121,6 @@ export default defineConfig({
       asciiOnlyJsPlugin(),
       viteStaticCopy({
         targets: [
-          {
-            src: path.resolve(CORE_DIR, 'client/node_modules/sql.js/dist/sql-wasm-browser.wasm'),
-            dest: 'src'
-          },
           {
             src: path.resolve(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm'),
             dest: 'src'

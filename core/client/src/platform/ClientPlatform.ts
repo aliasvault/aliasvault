@@ -22,7 +22,7 @@ export interface IClientPlatform {
   /** The Rust core: WebAssembly on the web hosts (see WasmRustCore), the native uniffi bindings on mobile. */
   rustCore: IRustCore;
 
-  /** The SQLite engine the vault is opened with: sql.js on the web hosts (see SqlJsEngine), unavailable on mobile. */
+  /** The SQLite engine the vault is opened with. */
   sqlite: ISqliteEngine;
 
   /**

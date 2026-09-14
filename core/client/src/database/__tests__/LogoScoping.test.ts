@@ -1,10 +1,10 @@
-import initSqlJs from 'sql.js';
 import { describe, expect, it } from 'vitest';
 
+import { getPlatform } from '../../platform/ClientPlatform';
 import { BaseQueries } from '../queries/BaseQueries';
 import { LogoQueries } from '../queries/LogoQueries';
 
-import type { Database } from 'sql.js';
+import type { ISqliteDatabase, SqliteValue } from '../../platform/SqliteEngine';
 
 const PERSONAL = 'PERSONAL-MANIFEST';
 const SHARED = 'SHARED-MANIFEST';
@@ -14,10 +14,9 @@ const SHARED = 'SHARED-MANIFEST';
  * (composite (ManifestId, Id) keys, NOT NULL stamps).
  * @returns The prepared database
  */
-async function makeDb(): Promise<Database> {
-  const SQL = await initSqlJs();
-  const db = new SQL.Database();
-  db.run(`
+async function makeDb(): Promise<ISqliteDatabase> {
+  const db = await getPlatform().sqlite.open();
+  db.exec(`
     CREATE TABLE Settings (ManifestId TEXT NOT NULL, "Key" TEXT NOT NULL, Value TEXT NULL, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (ManifestId, "Key"));
     CREATE TABLE Folders (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Name TEXT, ParentFolderId TEXT, PRIMARY KEY (ManifestId, Id));
     CREATE TABLE Logos (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Kind TEXT NOT NULL DEFAULT 'favicon', Source TEXT NOT NULL, FileData BLOB, MimeType TEXT, Name TEXT, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL, PRIMARY KEY (ManifestId, Id));
@@ -36,15 +35,8 @@ async function makeDb(): Promise<Database> {
  * @param params - Bound parameters
  * @returns The rows
  */
-function rows(db: Database, sql: string, params: unknown[] = []): Record<string, unknown>[] {
-  const stmt = db.prepare(sql);
-  stmt.bind(params as never);
-  const out: Record<string, unknown>[] = [];
-  while (stmt.step()) {
-    out.push(stmt.getAsObject());
-  }
-  stmt.free();
-  return out;
+function rows(db: ISqliteDatabase, sql: string, params: SqliteValue[] = []): Record<string, unknown>[] {
+  return db.query<Record<string, unknown>>(sql, params);
 }
 
 describe('logo manifest scoping', () => {

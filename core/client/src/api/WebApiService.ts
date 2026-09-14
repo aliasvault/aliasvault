@@ -84,11 +84,22 @@ export type EngineHttpResponse = {
  */
 export class WebApiService {
   /**
+   * The server API version this client speaks.
+   */
+  public static readonly API_VERSION = 2;
+
+  /**
+   * Build the versioned base URL for an API root URL, e.g. 'https://app.aliasvault.com/api' to 'https://app.aliasvault.com/api/v2/'.
+   */
+  public static versionedBaseUrl(apiUrl: string): string {
+    return apiUrl.replace(/\/$/, '') + `/v${WebApiService.API_VERSION}/`;
+  }
+
+  /**
    * Get the base URL for the API from settings.
    */
   private async getBaseUrl(): Promise<string> {
-    const apiUrl = await this.getApiUrl();
-    return apiUrl.replace(/\/$/, '') + '/v2/';
+    return WebApiService.versionedBaseUrl(await this.getApiUrl());
   }
 
   /**

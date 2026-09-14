@@ -680,3 +680,121 @@ impl VaultSyncSessionJs {
         self.inner.resume(response_json).map_err(|e| JsValue::from_str(&e.to_string()))
     }
 }
+
+// ============================================================================
+// SQLite host WASM Bindings
+// ============================================================================
+
+#[cfg(feature = "sqlite")]
+mod sqlite_js {
+    use js_sys::{Array, Object, Reflect, Uint8Array};
+    use wasm_bindgen::prelude::*;
+
+    use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
+
+    /// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
+    #[wasm_bindgen(js_name = SqliteMemoryDatabase)]
+    pub struct SqliteMemoryDatabaseJs {
+        inner: Option<MemoryDatabase>,
+    }
+
+    #[wasm_bindgen(js_class = SqliteMemoryDatabase)]
+    impl SqliteMemoryDatabaseJs {
+        /// Open a database from its SQLite file bytes.
+        #[wasm_bindgen(js_name = fromBytes)]
+        pub fn from_bytes(bytes: &[u8]) -> Result<SqliteMemoryDatabaseJs, JsValue> {
+            Ok(Self { inner: Some(MemoryDatabase::from_bytes(bytes).map_err(error)?) })
+        }
+
+        /// Open an empty database.
+        pub fn empty() -> Result<SqliteMemoryDatabaseJs, JsValue> {
+            Ok(Self { inner: Some(MemoryDatabase::empty().map_err(error)?) })
+        }
+
+        /// Open an empty database and run a schema script on it.
+        #[wasm_bindgen(js_name = withSchema)]
+        pub fn with_schema(schema_sql: &str) -> Result<SqliteMemoryDatabaseJs, JsValue> {
+            Ok(Self { inner: Some(MemoryDatabase::with_schema(schema_sql).map_err(error)?) })
+        }
+
+        /// Run a statement that returns no rows and report how many rows it changed.
+        pub fn run(&self, sql: &str, params: JsValue) -> Result<f64, JsValue> {
+            Ok(self.db()?.execute(sql, &params_from_js(params)?).map_err(error)? as f64)
+        }
+
+        /// Run a statement and return its rows.
+        pub fn query(&self, sql: &str, params: JsValue) -> Result<JsValue, JsValue> {
+            Ok(rows_to_js(&self.db()?.query_values(sql, &params_from_js(params)?).map_err(error)?))
+        }
+
+        /// Run one or more statements separated by semicolons, without parameters.
+        pub fn exec(&self, sql: &str) -> Result<(), JsValue> {
+            self.db()?.execute_batch(sql).map_err(error)
+        }
+
+        /// The database as SQLite file bytes.
+        pub fn export(&self) -> Result<Vec<u8>, JsValue> {
+            self.db()?.export().map_err(error)
+        }
+
+        /// Close the database and free its memory.
+        pub fn close(&mut self) {
+            self.inner = None;
+        }
+
+        fn db(&self) -> Result<&MemoryDatabase, JsValue> {
+            self.inner.as_ref().ok_or_else(|| JsValue::from_str("The database is closed"))
+        }
+    }
+
+    fn error(error: crate::VaultError) -> JsValue {
+        JsValue::from_str(&error.to_string())
+    }
+
+    fn params_from_js(params: JsValue) -> Result<Vec<SqlValue>, JsValue> {
+        if params.is_undefined() || params.is_null() {
+            return Ok(Vec::new());
+        }
+        Array::from(&params).iter().map(|value| value_from_js(&value)).collect()
+    }
+
+    fn value_from_js(value: &JsValue) -> Result<SqlValue, JsValue> {
+        if value.is_null() || value.is_undefined() {
+            Ok(SqlValue::Null)
+        } else if let Some(text) = value.as_string() {
+            Ok(SqlValue::Text(text))
+        } else if let Some(flag) = value.as_bool() {
+            Ok(SqlValue::Integer(flag as i64))
+        } else if let Some(number) = value.as_f64() {
+            // Whole numbers within the safe integer range bind as INTEGER.
+            if number.fract() == 0.0 && number.abs() <= 9_007_199_254_740_992.0 { Ok(SqlValue::Integer(number as i64)) } else { Ok(SqlValue::Real(number)) }
+        } else if value.is_instance_of::<Uint8Array>() {
+            Ok(SqlValue::Blob(Uint8Array::new(value).to_vec()))
+        } else {
+            Err(JsValue::from_str("Unsupported SQLite parameter: expected string, number, boolean, null or Uint8Array"))
+        }
+    }
+
+    fn value_to_js(value: &SqlValue) -> JsValue {
+        match value {
+            SqlValue::Null => JsValue::NULL,
+            SqlValue::Integer(number) => JsValue::from_f64(*number as f64),
+            SqlValue::Real(number) => JsValue::from_f64(*number),
+            SqlValue::Text(text) => JsValue::from_str(text),
+            SqlValue::Blob(bytes) => Uint8Array::from(bytes.as_slice()).into(),
+        }
+    }
+
+    fn rows_to_js(result: &SqlResult) -> JsValue {
+        let columns: Vec<JsValue> = result.columns.iter().map(|column| JsValue::from_str(column)).collect();
+        let rows = Array::new();
+        for row in &result.rows {
+            let object = Object::new();
+            for (index, column) in columns.iter().enumerate() {
+                let _ = Reflect::set(&object, column, &value_to_js(&row[index]));
+            }
+            rows.push(&object);
+        }
+        rows.into()
+    }
+}

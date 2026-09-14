@@ -682,7 +682,7 @@ async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionK
 
   /*
    * The stored blob is exactly this client's content, so re-adopt the pair as the cache (the store just cleared
-   * it): the sync that follows can then read the vault without another decrypt + sql.js load.
+   * it): the sync that follows can then read the vault without another decrypt + database load.
    */
   cachedSqliteClient = sqliteClient;
   cachedVaultBlob = encryptedVault;

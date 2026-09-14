@@ -195,9 +195,9 @@ build_browser() {
     # Build with wasm-pack
     echo -e "  Running wasm-pack build..."
     if $FAST_MODE; then
-        wasm-pack build --dev --target web --out-dir "$WASM_DIR" --features wasm
+        wasm-pack build --dev --target web --out-dir "$WASM_DIR" --features wasm,sqlite
     else
-        wasm-pack build --release --target web --out-dir "$WASM_DIR" --features wasm
+        wasm-pack build --release --target web --out-dir "$WASM_DIR" --features wasm,sqlite
     fi
 
     local end_time=$(date +%s)
@@ -602,21 +602,21 @@ build_android() {
     CC="$toolchain/bin/aarch64-linux-android${api_level}-clang" \
     CXX="$toolchain/bin/aarch64-linux-android${api_level}-clang++" \
     CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$toolchain/bin/aarch64-linux-android${api_level}-clang" \
-    cargo build $cargo_flags --target aarch64-linux-android --features uniffi
+    cargo build $cargo_flags --target aarch64-linux-android --features uniffi,sqlite
 
     echo -e "  Building for armeabi-v7a..."
     AR="$toolchain/bin/llvm-ar" \
     CC="$toolchain/bin/armv7a-linux-androideabi${api_level}-clang" \
     CXX="$toolchain/bin/armv7a-linux-androideabi${api_level}-clang++" \
     CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$toolchain/bin/armv7a-linux-androideabi${api_level}-clang" \
-    cargo build $cargo_flags --target armv7-linux-androideabi --features uniffi
+    cargo build $cargo_flags --target armv7-linux-androideabi --features uniffi,sqlite
 
     echo -e "  Building for x86_64..."
     AR="$toolchain/bin/llvm-ar" \
     CC="$toolchain/bin/x86_64-linux-android${api_level}-clang" \
     CXX="$toolchain/bin/x86_64-linux-android${api_level}-clang++" \
     CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="$toolchain/bin/x86_64-linux-android${api_level}-clang" \
-    cargo build $cargo_flags --target x86_64-linux-android --features uniffi
+    cargo build $cargo_flags --target x86_64-linux-android --features uniffi,sqlite
 
     # Copy libraries
     cp "target/aarch64-linux-android/$cargo_profile/libaliasvault_core.so" "$ANDROID_DIR/arm64-v8a/"
@@ -659,7 +659,7 @@ build_android() {
     esac
 
     echo -e "    Building native library for bindgen..."
-    cargo build --features uniffi --lib
+    cargo build --features uniffi,sqlite --lib
 
     # Generate bindings from native library
     cargo run --features uniffi-cli --bin uniffi-bindgen -- generate \

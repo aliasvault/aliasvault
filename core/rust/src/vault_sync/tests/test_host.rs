@@ -4,11 +4,11 @@ use std::collections::HashMap;
 
 use base64::engine::general_purpose::STANDARD as BASE64;
 use base64::Engine;
-use rusqlite::types::{Value as SqlValue, ValueRef};
-use rusqlite::{params_from_iter, Connection, DatabaseName};
+use rusqlite::{Connection, MAIN_DB};
 use serde_json::{json, Map, Value};
 
 use crate::crypto;
+use crate::sqlite_host;
 use crate::vault_sync::types::{Command, Db, SqlStatement};
 use crate::vault_sync::session::SyncSession;
 
@@ -48,20 +48,10 @@ pub fn complete_schema_sql() -> String {
     source[start..end].replace('\u{feff}', "")
 }
 
-/// Open a database from its file bytes (through a scratch file, since rusqlite's deserialize wants sqlite-owned memory).
+/// Open a database from its file bytes, in memory.
 pub fn open_from_bytes(bytes: &[u8]) -> Connection {
-    static COUNTER: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-    let unique = COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    let path = std::env::temp_dir().join(format!("aliasvault-sync-test-{}-{}.sqlite", std::process::id(), unique));
-    std::fs::write(&path, bytes).unwrap();
-    let file = Connection::open(&path).unwrap();
     let mut conn = Connection::open_in_memory().unwrap();
-    {
-        let backup = rusqlite::backup::Backup::new(&file, &mut conn).unwrap();
-        backup.run_to_completion(5, std::time::Duration::from_millis(1), None).unwrap();
-    }
-    drop(file);
-    let _ = std::fs::remove_file(&path);
+    sqlite_host::deserialize_into(&mut conn, bytes).unwrap();
     conn
 }
 
@@ -105,7 +95,7 @@ impl TestHost {
 
     /// Encrypt the local database as the at-rest blob, the way the app stores it.
     pub fn store_local_as_blob(&mut self) {
-        let bytes = self.local.serialize(DatabaseName::Main).unwrap().to_vec();
+        let bytes = self.local.serialize(MAIN_DB).unwrap().to_vec();
         self.vault_blob = Some(crypto::symmetric_encrypt_bytes(&bytes, &self.vault_key).unwrap());
     }
 
@@ -156,7 +146,7 @@ impl TestHost {
                     Ok(()) => json!({}),
                     Err(error) => json!({ "error": error }),
                 },
-                Command::DbExport { db } => json!({ "bytes": BASE64.encode(self.db(db).serialize(DatabaseName::Main).unwrap().to_vec()) }),
+                Command::DbExport { db } => json!({ "bytes": BASE64.encode(self.db(db).serialize(MAIN_DB).unwrap().to_vec()) }),
                 Command::VaultStore { encrypted_blob, mark_dirty, encryption_key, expected_mutation_seq, revision } => {
                     self.store_calls.push(Command::VaultStore { encrypted_blob: String::new(), mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
                     if let Some(key) = encryption_key {
@@ -215,51 +205,10 @@ impl TestHost {
     }
 }
 
-fn to_sql(value: &Value) -> SqlValue {
-    match value {
-        Value::Null => SqlValue::Null,
-        Value::Bool(b) => SqlValue::Integer(*b as i64),
-        Value::Number(n) => n.as_i64().map(SqlValue::Integer).unwrap_or_else(|| SqlValue::Real(n.as_f64().unwrap_or(0.0))),
-        Value::String(s) => SqlValue::Text(s.clone()),
-        Value::Object(o) if o.contains_key("__b64") => SqlValue::Blob(BASE64.decode(o["__b64"].as_str().unwrap_or("")).unwrap_or_default()),
-        other => SqlValue::Text(other.to_string()),
-    }
-}
-
-fn from_sql(value: ValueRef<'_>) -> Value {
-    match value {
-        ValueRef::Null => Value::Null,
-        ValueRef::Integer(i) => json!(i),
-        ValueRef::Real(f) => json!(f),
-        ValueRef::Text(t) => Value::String(String::from_utf8_lossy(t).to_string()),
-        ValueRef::Blob(b) => json!({ "__b64": BASE64.encode(b) }),
-    }
-}
-
 pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> Result<Vec<Map<String, Value>>, String> {
-    let mut statement = conn.prepare(sql).map_err(|e| e.to_string())?;
-    let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
-    let values: Vec<SqlValue> = params.iter().map(to_sql).collect();
-    let mut rows = statement.query(params_from_iter(values.iter())).map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        let mut object = Map::new();
-        for (index, column) in columns.iter().enumerate() {
-            object.insert(column.clone(), from_sql(row.get_ref(index).map_err(|e| e.to_string())?));
-        }
-        out.push(object);
-    }
-    Ok(out)
+    sqlite_host::query(conn, sql, params).map_err(|e| e.to_string())
 }
 
 pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> Result<(), String> {
-    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
-    for statement in statements {
-        let values: Vec<SqlValue> = statement.params.iter().map(to_sql).collect();
-        if let Err(error) = conn.execute(&statement.sql, params_from_iter(values.iter())) {
-            let _ = conn.execute_batch("ROLLBACK");
-            return Err(format!("{} ({})", error, statement.sql));
-        }
-    }
-    conn.execute_batch("COMMIT").map_err(|e| e.to_string())
+    sqlite_host::exec(conn, statements).map_err(|e| e.to_string())
 }

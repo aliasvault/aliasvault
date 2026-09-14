@@ -14,7 +14,7 @@ const SQLITE_HEADER = new TextEncoder().encode('SQLite format 3\u0000');
 
 /**
  * Encrypt a plaintext SQLite database for local storage.
- * @param sqliteBytes - the database as exported by sql.js
+ * @param sqliteBytes - the database as exported by the SQLite engine
  * @param key - the symmetric key the vault is stored under
  * @returns Base64 of (IV | ciphertext | tag).
  */

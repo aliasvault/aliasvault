@@ -1,3 +1,4 @@
+import { WebApiService } from '../api/WebApiService';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { rustCore } from '../rust/RustCore';
@@ -340,8 +341,7 @@ export class SrpAuthService {
       // Prepare registration data
       const prepared = await SrpAuthService.prepareRegistration(username, password);
 
-      // Normalize the API URL
-      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
+      const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
 
       // Send registration request to API
       const response = await fetch(`${baseUrl}Auth/register`, {
@@ -404,7 +404,7 @@ export class SrpAuthService {
     error?: string;
   }> {
     try {
-      const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v2/';
+      const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
       const normalizedUsername = SrpAuthService.normalizeUsername(username);
 
       // Step 1: Initiate login

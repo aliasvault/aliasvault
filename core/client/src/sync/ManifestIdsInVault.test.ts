@@ -1,10 +1,11 @@
-import initSqlJs from 'sql.js';
 import { describe, expect, it } from 'vitest';
+
+import { getPlatform } from '../platform/ClientPlatform';
 
 import { VaultCodec } from './VaultCodec';
 
 import type SqliteClient from '../database/SqliteClient';
-import type { Database } from 'sql.js';
+import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 const PERSONAL = 'PERSONAL-MANIFEST';
 const SHARED = 'SHARED-MANIFEST';
@@ -14,7 +15,7 @@ const SHARED = 'SHARED-MANIFEST';
  * @param db - the database to read
  * @returns A client that can answer `executeQuery`
  */
-function asClient(db: Database): SqliteClient {
+function asClient(db: ISqliteDatabase): SqliteClient {
   return {
     /**
      * Run a statement and return its rows as plain objects.
@@ -22,16 +23,7 @@ function asClient(db: Database): SqliteClient {
      * @param params - bound parameters
      * @returns The rows
      */
-    executeQuery: <T>(query: string, params: unknown[] = []): T[] => {
-      const stmt = db.prepare(query);
-      stmt.bind(params as never);
-      const out: T[] = [];
-      while (stmt.step()) {
-        out.push(stmt.getAsObject() as T);
-      }
-      stmt.free();
-      return out;
-    },
+    executeQuery: <T>(query: string, params: unknown[] = []): T[] => db.query<T>(query, params as SqliteValue[]),
   } as unknown as SqliteClient;
 }
 
@@ -39,10 +31,9 @@ function asClient(db: Database): SqliteClient {
  * Build a vault holding a stamped table, an unstamped one, and a table this check must discover on its own.
  * @returns The prepared database
  */
-async function makeDb(): Promise<Database> {
-  const SQL = await initSqlJs();
-  const db = new SQL.Database();
-  db.run(`
+async function makeDb(): Promise<ISqliteDatabase> {
+  const db = await getPlatform().sqlite.open();
+  db.exec(`
     CREATE TABLE Folders (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Name TEXT, PRIMARY KEY (ManifestId, Id));
     CREATE TABLE Items (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, PRIMARY KEY (ManifestId, Id));
     CREATE TABLE __EFMigrationsHistory (MigrationId TEXT NOT NULL PRIMARY KEY, ProductVersion TEXT NOT NULL);
@@ -61,13 +52,13 @@ describe('VaultCodec.manifestIdsInVault', () => {
 
   it('finds a table nothing lists, because it reads the stamp column off the schema', async () => {
     const db = await makeDb();
-    db.run(`CREATE TABLE SomethingNewer (ManifestId TEXT NOT NULL, Id TEXT NOT NULL); INSERT INTO SomethingNewer VALUES ('THIRD-MANIFEST', 'X');`);
+    db.exec(`CREATE TABLE SomethingNewer (ManifestId TEXT NOT NULL, Id TEXT NOT NULL); INSERT INTO SomethingNewer VALUES ('THIRD-MANIFEST', 'X');`);
     expect(VaultCodec.manifestIdsInVault(asClient(db)).has('THIRD-MANIFEST')).toBe(true);
   });
 
   it('keeps the stamp exactly as written, since that is how the codec routes it', async () => {
     const db = await makeDb();
-    db.run(`INSERT INTO Items VALUES ('${SHARED.toLowerCase()}', 'ITEM-OTHERCASE');`);
+    db.exec(`INSERT INTO Items VALUES ('${SHARED.toLowerCase()}', 'ITEM-OTHERCASE');`);
     const ids = VaultCodec.manifestIdsInVault(asClient(db));
     expect(ids.has(SHARED)).toBe(true);
     expect(ids.has(SHARED.toLowerCase())).toBe(true);
@@ -75,15 +66,14 @@ describe('VaultCodec.manifestIdsInVault', () => {
 
   it('ignores unstamped rows and unstamped tables', async () => {
     const db = await makeDb();
-    db.run(`CREATE TABLE Unstamped (Id TEXT NOT NULL); INSERT INTO Unstamped VALUES ('X');`);
-    db.run(`CREATE TABLE Loose (ManifestId TEXT, Id TEXT NOT NULL); INSERT INTO Loose VALUES (NULL, 'A'), ('', 'B');`);
+    db.exec(`CREATE TABLE Unstamped (Id TEXT NOT NULL); INSERT INTO Unstamped VALUES ('X');`);
+    db.exec(`CREATE TABLE Loose (ManifestId TEXT, Id TEXT NOT NULL); INSERT INTO Loose VALUES (NULL, 'A'), ('', 'B');`);
     expect([...VaultCodec.manifestIdsInVault(asClient(db))].sort()).toEqual([PERSONAL, SHARED]);
   });
 
   it('is empty for a vault predating the stamps, so a legacy vault never looks unwritable', async () => {
-    const SQL = await initSqlJs();
-    const db = new SQL.Database();
-    db.run(`CREATE TABLE Folders (Id TEXT NOT NULL PRIMARY KEY, Name TEXT); INSERT INTO Folders VALUES ('FOLDER-LEGACY', 'Mine');`);
+    const db = await getPlatform().sqlite.open();
+    db.exec(`CREATE TABLE Folders (Id TEXT NOT NULL PRIMARY KEY, Name TEXT); INSERT INTO Folders VALUES ('FOLDER-LEGACY', 'Mine');`);
     expect(VaultCodec.manifestIdsInVault(asClient(db)).size).toBe(0);
   });
 });

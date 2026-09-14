@@ -1,7 +1,7 @@
 import type { IDatabaseClient, ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
 
 /*
- * Repository methods are written once and can run on two kinds of host: synchronous (sql.js) and 
+ * Repository methods are written once and can run on two kinds of host: synchronous and 
  * asynchronous (mobile native vault store).
  */
 
@@ -22,7 +22,7 @@ export type DbEffect =
   | { kind: 'manifestScope' };
 
 /**
- * A database operation that runs synchronously on sql.js and asynchronously over a native bridge.
+ * A database operation that can run both synchronously and asynchronously.
  */
 export type DbOp<T> = Generator<DbEffect, T, unknown>;
 

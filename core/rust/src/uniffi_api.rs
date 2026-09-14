@@ -633,3 +633,58 @@ impl VaultSyncSession {
         self.inner.resume(&response_json)
     }
 }
+
+/// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
+#[cfg(feature = "sqlite")]
+#[derive(uniffi::Object)]
+pub struct SqliteMemoryDatabase {
+    inner: crate::sqlite_host::MemoryDatabase,
+}
+
+#[cfg(feature = "sqlite")]
+#[uniffi::export]
+impl SqliteMemoryDatabase {
+    /// Open a database from its SQLite file bytes.
+    #[uniffi::constructor]
+    pub fn from_bytes(bytes: Vec<u8>) -> Result<std::sync::Arc<Self>, VaultError> {
+        Ok(std::sync::Arc::new(Self { inner: crate::sqlite_host::MemoryDatabase::from_bytes(&bytes)? }))
+    }
+
+    /// Open an empty database and run a schema script on it.
+    #[uniffi::constructor]
+    pub fn with_schema(schema_sql: String) -> Result<std::sync::Arc<Self>, VaultError> {
+        Ok(std::sync::Arc::new(Self { inner: crate::sqlite_host::MemoryDatabase::with_schema(&schema_sql)? }))
+    }
+
+    /// Run a SQL script without parameters.
+    pub fn execute_batch(&self, sql: String) -> Result<(), VaultError> {
+        self.inner.execute_batch(&sql)
+    }
+
+    /// Run one query; `params_json` is a JSON array, the result a JSON array of row objects.
+    pub fn query(&self, sql: String, params_json: String) -> Result<String, VaultError> {
+        let params: Vec<serde_json::Value> = serde_json::from_str(&params_json)?;
+        Ok(serde_json::to_string(&self.inner.query(&sql, &params)?)?)
+    }
+
+    /// Run statements (a JSON array of `{"sql", "params"}`) in one transaction.
+    pub fn exec(&self, statements_json: String) -> Result<(), VaultError> {
+        let statements: Vec<crate::vault_sync::types::SqlStatement> = serde_json::from_str(&statements_json)?;
+        self.inner.exec(&statements)
+    }
+
+    /// Run one query with typed parameters; rows come back positionally under `columns`.
+    pub fn query_values(&self, sql: String, params: Vec<crate::sqlite_host::SqlValue>) -> Result<crate::sqlite_host::SqlResult, VaultError> {
+        self.inner.query_values(&sql, &params)
+    }
+
+    /// Run one statement with typed parameters and return the number of rows it changed.
+    pub fn execute(&self, sql: String, params: Vec<crate::sqlite_host::SqlValue>) -> Result<u64, VaultError> {
+        self.inner.execute(&sql, &params)
+    }
+
+    /// The database as SQLite file bytes.
+    pub fn export(&self) -> Result<Vec<u8>, VaultError> {
+        self.inner.export()
+    }
+}

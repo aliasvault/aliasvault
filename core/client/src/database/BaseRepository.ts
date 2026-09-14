@@ -9,7 +9,7 @@ import type { ISqliteDatabase } from '../platform/SqliteEngine';
 export type SqliteBindValue = string | number | null | Uint8Array;
 
 /**
- * The database operations repositories need from their host, answered synchronously (sql.js) or asynchronously
+ * The database operations repositories need from their host, answered synchronously or asynchronously
  * (the mobile native bridge).
  */
 export interface IDatabaseClient {
@@ -26,7 +26,7 @@ export interface IDatabaseClient {
 }
 
 /**
- * A database client that answers every call synchronously, like sql.js.
+ * A database client that answers every call synchronously.
  */
 export interface ISyncDatabaseClient extends IDatabaseClient {
   getDb(): ISqliteDatabase | null;

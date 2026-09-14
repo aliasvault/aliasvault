@@ -56,8 +56,7 @@ export interface ISqliteDatabase {
 }
 
 /**
- * The in-JS SQLite engine a host provides: sql.js on the browser and web hosts (see SqlJsEngine). Databases are opened
- * in memory only. The mobile host provides none, since its vault database is owned by the native vault store.
+ * The SQLite engine a host provides. The database is designed to be opened in memory only.
  */
 export interface ISqliteEngine {
   /**

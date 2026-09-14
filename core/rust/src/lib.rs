@@ -7,6 +7,7 @@
 //! - **vault_sharing**: Sharing write logic for multi-manifest vaults
 //! - **vault_pruner**: Prunes expired items from trash (30-day retention)
 //! - **vault_sync**: the vault sync engine that every client uses for syncing with the server
+//! - **sqlite_host**: an in-memory SQLite database for hosts that cannot open one from bytes (`sqlite` feature)
 //! - **credential_matcher**: Cross-platform credential filtering for autofill
 //! - **email_parser**: RFC 822 email parsing into bodies and attachment metadata
 //! - **favicon**: Favicon handling and source selection
@@ -36,6 +37,8 @@ pub mod password_generator;
 pub mod identity_generator;
 pub mod crypto;
 pub mod vault_sync;
+#[cfg(any(feature = "sqlite", test))]
+pub mod sqlite_host;
 
 pub use error::VaultError;
 pub use vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, CanonicalMergeOutput, MergeStats, SqlStatement};

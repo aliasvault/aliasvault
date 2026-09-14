@@ -386,7 +386,7 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
 
 /// A legacy sqlite-blob snapshot of the given database, as the server serves an account that has not migrated.
 fn legacy_snapshot_of(conn: &rusqlite::Connection, kek: &str, revision: i64) -> Value {
-    let bytes = conn.serialize(rusqlite::DatabaseName::Main).unwrap().to_vec();
+    let bytes = conn.serialize(rusqlite::MAIN_DB).unwrap().to_vec();
     json!({
         "status": 0,
         "storageFormat": 0,
