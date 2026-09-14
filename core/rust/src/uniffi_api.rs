@@ -3,14 +3,11 @@
 //! This module exposes the core vault operations via UniFFI for mobile platforms.
 //! All functions use JSON strings for input/output to simplify cross-language marshalling.
 
+use crate::crypto::argon2::Argon2Error;
+use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
 use crate::error::{json_call, VaultError};
+use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
-
-/// Get the version of the aliasvault-core library.
-#[uniffi::export]
-pub fn get_core_version() -> String {
-    crate::get_core_version().to_string()
-}
 
 /// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
@@ -25,26 +22,8 @@ pub fn merge_canonical_json(input_json: String) -> Result<String, VaultError> {
     json_call(&input_json, crate::vault_merge::merge_canonical)
 }
 
-/// Prune expired items from trash (items with DeletedAt older than retention_days).
-///
-/// # Arguments
-/// * `input_json` - JSON string with format:
-///   ```json
-///   {
-///     "tables": [{"name": "Items", "records": [...]}],
-///     "retention_days": 30
-///   }
-///   ```
-///
-/// # Returns
-/// JSON string with format:
-///   ```json
-///   {
-///     "success": true,
-///     "statements": [{"sql": "UPDATE ...", "params": [...]}],
-///     "stats": {"items_pruned": 0, ...}
-///   }
-///   ```
+/// Prune expired items from trash (items with DeletedAt older than retention_days, default 30).
+/// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
 #[uniffi::export]
 pub fn prune_vault_json(input_json: String) -> Result<String, VaultError> {
     json_call(&input_json, crate::vault_pruner::prune_vault)
@@ -58,27 +37,8 @@ pub fn get_prune_table_queries() -> Vec<crate::vault_pruner::PruneTableQuery> {
     crate::vault_pruner::get_prune_table_queries()
 }
 
-/// Filter credentials for autofill based on current URL/app and page title.
-///
-/// # Arguments
-/// * `input_json` - JSON string with format:
-///   ```json
-///   {
-///     "credentials": [{"Id": "...", "ItemName": "...", "ItemUrls": ["url1", "url2"]}],
-///     "current_url": "https://github.com",
-///     "page_title": "GitHub",
-///     "matching_mode": "default"
-///   }
-///   ```
-///
-/// # Returns
-/// JSON string with format:
-///   ```json
-///   {
-///     "matched_ids": ["id1", "id2"],
-///     "matched_priority": 2
-///   }
-///   ```
+/// Filter credentials for autofill by the current URL/app and page title.
+/// Input: `CredentialMatcherInput` JSON. Output: `CredentialMatcherOutput` JSON.
 #[uniffi::export]
 pub fn filter_credentials_json(input_json: String) -> Result<String, VaultError> {
     crate::credential_matcher::filter_credentials_json(&input_json)
@@ -123,17 +83,8 @@ pub fn favicon_source_key(url: String) -> String {
 // Password Generator Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a password or passphrase from a JSON-serialized `PasswordSettings` object.
-///
-/// The `Type` field selects the generator ("basic" or "diceware"). An optional `Seed`
-/// field (64-character hex string) makes generation deterministic for UI previews.
-///
-/// # Arguments
-/// * `settings_json` - JSON string containing the password settings.
-///
-/// # Returns
-/// The generated password/passphrase string, or a [`VaultError`] if the settings JSON
-/// is invalid.
+/// Generate a password or passphrase from `PasswordSettings` JSON; `Type` selects "basic" or "diceware" and an
+/// optional 64-character hex `Seed` makes the output deterministic for UI previews.
 #[uniffi::export]
 pub fn generate_password(settings_json: String) -> Result<String, VaultError> {
     crate::password_generator::generate_password(&settings_json)
@@ -149,17 +100,8 @@ pub fn get_diceware_languages() -> Vec<String> {
 // Identity Generator Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a random identity from a JSON-serialized request.
-///
-/// The request accepts `language`, `gender` ("male"/"female"/"random"), `ageRange`
-/// (e.g. "21-25" or "random") and/or explicit `birthdateOptions`.
-///
-/// # Arguments
-/// * `request_json` - JSON string, e.g. `{"language":"en","gender":"random","ageRange":"21-25"}`
-///
-/// # Returns
-/// The generated identity as a JSON string with camelCase fields:
-/// `{"firstName":"...","lastName":"...","gender":"Male","birthDate":"1990-05-15","emailPrefix":"...","nickName":"..."}`
+/// Generate a random identity from `IdentityRequest` JSON (`language`, `gender`, `ageRange`, `birthdateOptions`);
+/// returns `Identity` JSON with camelCase fields.
 #[uniffi::export]
 pub fn generate_identity(request_json: String) -> Result<String, VaultError> {
     crate::identity_generator::generate_identity(&request_json)
@@ -268,7 +210,7 @@ pub fn vault_codec_bucket_layout() -> Result<String, VaultError> {
 /// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
 #[uniffi::export]
 pub fn vault_codec_overflow_table() -> String {
-    crate::vault_codec::OVERFLOW_TABLE.to_string()
+    crate::vault_model::OVERFLOW_TABLE.to_string()
 }
 
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
@@ -277,7 +219,7 @@ pub fn vault_codec_generate_manifest_salt() -> String {
     crate::vault_codec::generate_manifest_salt()
 }
 
-/// The `Logos.Id` to use for `source` inside the manifest with id `manifest_id`. 
+/// The `Logos.Id` to use for `source` inside the manifest with id `manifest_id`.
 /// Every platform derives logo ids via this method to prevent duplicates.
 #[uniffi::export]
 pub fn vault_codec_logo_id_for_source(manifest_id: String, source: String) -> String {
@@ -346,32 +288,14 @@ pub fn vault_codec_extract_encryption_key_for_public_key(manifest_json: String, 
 // Argon2id Key Derivation Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub use crate::crypto::argon2::Argon2Error;
-
-/// Derive a key from a password using Argon2id.
-///
-/// # Arguments
-/// * `password` - The password, hashed as its UTF-8 bytes
-/// * `salt` - The salt, hashed as its UTF-8 bytes, at least 8 bytes long
-/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
-///
-/// # Returns
-/// The derived key as 32 bytes
+/// Derive a 32-byte key from a password and salt (UTF-8 bytes) with Argon2id under the `EncryptionSettings`
+/// JSON, or the defaults for an empty string.
 #[uniffi::export]
 pub fn argon2_derive_key(password: String, salt: String, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
     crate::crypto::argon2::argon2_derive_key_from_settings(&password, &salt, &encryption_settings)
 }
 
-/// Derive a key from a password using Argon2id, taking the password and salt as raw bytes (the mobile
-/// PIN unlock's Keychain/Keystore salt is random bytes, not UTF-8).
-///
-/// # Arguments
-/// * `password` - The password bytes
-/// * `salt` - The salt bytes, at least 8 bytes long
-/// * `encryption_settings` - The `EncryptionSettings` JSON, or an empty string for the defaults
-///
-/// # Returns
-/// The derived key as 32 bytes
+/// `argon2_derive_key` over raw bytes: the mobile PIN unlock's Keychain/Keystore salt is random bytes, not UTF-8.
 #[uniffi::export]
 pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
     crate::crypto::argon2::argon2_derive_key_bytes_from_settings(&password, &salt, &encryption_settings)
@@ -381,173 +305,46 @@ pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_sett
 // SRP (Secure Remote Password) Functions
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub use crate::crypto::srp::{SrpEphemeral, SrpSession, SrpError};
-
-/// Generate a cryptographic salt for SRP.
-/// Returns a 32-byte random salt as an uppercase hex string.
+/// A random 32-byte SRP salt as an uppercase hex string.
 #[uniffi::export]
 pub fn srp_generate_salt() -> String {
     crate::crypto::srp::srp_generate_salt()
 }
 
-/// Derive the SRP private key (x) from credentials.
-///
-/// # Arguments
-/// * `salt` - Salt as uppercase hex string
-/// * `identity` - User identity (username or SRP identity GUID)
-/// * `password_hash` - Pre-hashed password as uppercase hex string (from Argon2id)
-///
-/// # Returns
-/// Private key as uppercase hex string
+/// The SRP private key (x) as uppercase hex from the hex salt, the identity and the hex password hash.
 #[uniffi::export]
-pub fn srp_derive_private_key(
-    salt: String,
-    identity: String,
-    password_hash: String,
-) -> Result<String, SrpError> {
+pub fn srp_derive_private_key(salt: String, identity: String, password_hash: String) -> Result<String, SrpError> {
     crate::crypto::srp::srp_derive_private_key(&salt, &identity, &password_hash)
 }
 
-/// Derive the SRP verifier (v) from a private key.
-///
-/// # Arguments
-/// * `private_key` - Private key as uppercase hex string
-///
-/// # Returns
-/// Verifier as uppercase hex string (for registration)
+/// The SRP verifier (v) as uppercase hex from the hex private key, for registration.
 #[uniffi::export]
 pub fn srp_derive_verifier(private_key: String) -> Result<String, SrpError> {
     crate::crypto::srp::srp_derive_verifier(&private_key)
 }
 
-/// Generate a client ephemeral key pair.
-/// Returns a pair of public (A) and secret (a) values as uppercase hex strings.
+/// A client ephemeral pair: public (A) and secret (a) as uppercase hex.
 #[uniffi::export]
 pub fn srp_generate_ephemeral() -> SrpEphemeral {
     crate::crypto::srp::srp_generate_ephemeral()
 }
 
-/// Derive the client session from server response.
-///
-/// # Arguments
-/// * `client_secret` - Client secret ephemeral (a) as hex string
-/// * `server_public` - Server public ephemeral (B) as hex string
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (username or SRP identity GUID)
-/// * `private_key` - Private key (x) as hex string
-///
-/// # Returns
-/// Session containing proof and key as uppercase hex strings
+/// The client session (proof M1 and key K, uppercase hex) from the server's public ephemeral; hex inputs.
 #[uniffi::export]
-pub fn srp_derive_session(
-    client_secret: String,
-    server_public: String,
-    salt: String,
-    identity: String,
-    private_key: String,
-) -> Result<SrpSession, SrpError> {
+pub fn srp_derive_session(client_secret: String, server_public: String, salt: String, identity: String, private_key: String) -> Result<SrpSession, SrpError> {
     crate::crypto::srp::srp_derive_session(&client_secret, &server_public, &salt, &identity, &private_key)
 }
 
-/// Generate a server ephemeral key pair.
-///
-/// # Arguments
-/// * `verifier` - Password verifier (v) as hex string
-///
-/// # Returns
-/// Ephemeral containing public (B) and secret (b) as uppercase hex strings
+/// A server ephemeral pair: public (B) and secret (b) as uppercase hex, from the hex verifier.
 #[uniffi::export]
 pub fn srp_generate_ephemeral_server(verifier: String) -> Result<SrpEphemeral, SrpError> {
     crate::crypto::srp::srp_generate_ephemeral_server(&verifier)
 }
 
-/// Derive and verify the server session from client response.
-///
-/// # Arguments
-/// * `server_secret` - Server secret ephemeral (b) as hex string
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `salt` - Salt as hex string (not used in calculation, for API compatibility)
-/// * `identity` - User identity (not used in calculation, for API compatibility)
-/// * `verifier` - Password verifier (v) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-///
-/// # Returns
-/// Session with server proof and key if client proof is valid, None otherwise
+/// The server session (proof M2 and key K) once the client's proof verifies, `None` when it does not; hex inputs.
 #[uniffi::export]
-pub fn srp_derive_session_server(
-    server_secret: String,
-    client_public: String,
-    salt: String,
-    identity: String,
-    verifier: String,
-    client_proof: String,
-) -> Result<Option<SrpSession>, SrpError> {
-    crate::crypto::srp::srp_derive_session_server(
-        &server_secret,
-        &client_public,
-        &salt,
-        &identity,
-        &verifier,
-        &client_proof,
-    )
-}
-
-/// Verify the server's session proof (M2) on the client side: true when the server derived the same session key.
-///
-/// # Arguments
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-/// * `session_key` - Session key (K) as hex string
-/// * `server_proof` - Server proof (M2) as hex string to verify
-#[uniffi::export]
-pub fn srp_verify_session(client_public: String, client_proof: String, session_key: String, server_proof: String) -> Result<bool, SrpError> {
-    crate::crypto::srp::srp_verify_session(&client_public, &client_proof, &session_key, &server_proof)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_syncable_table_names() {
-        let names = get_syncable_table_names();
-        assert!(names.contains(&"Items".to_string()));
-        assert!(names.contains(&"FieldValues".to_string()));
-        assert!(names.contains(&"Settings".to_string()));
-        assert!(names.contains(&"ItemStats".to_string()));
-        assert!(names.contains(&"EncryptionKeys".to_string()));
-        assert!(!names.contains(&crate::vault_codec::OVERFLOW_TABLE.to_string()), "the overflow carrier is not synced as a table of its own; it rides inside the manifest");
-        assert_eq!(names.len(), 14);
-    }
-
-    #[test]
-    fn test_prune_vault_json() {
-        let input = r#"{
-            "tables": [{"name": "Items", "records": []}],
-            "retention_days": 30,
-            "current_time": "2024-01-15T10:30:00.000Z"
-        }"#;
-
-        let result = prune_vault_json(input.to_string());
-        assert!(result.is_ok());
-
-        let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
-        assert_eq!(output["success"], true);
-    }
-
-    #[test]
-    fn test_extract_domain() {
-        // extract_domain strips www. prefix from domains
-        assert_eq!(extract_domain("https://www.example.com/path".to_string()), "example.com");
-        assert_eq!(extract_domain("http://github.com".to_string()), "github.com");
-        assert_eq!(extract_domain("https://subdomain.example.com".to_string()), "subdomain.example.com");
-    }
-
-    #[test]
-    fn test_extract_root_domain() {
-        assert_eq!(extract_root_domain("www.example.com".to_string()), "example.com");
-        assert_eq!(extract_root_domain("github.com".to_string()), "github.com");
-    }
+pub fn srp_derive_session_server(server_secret: String, client_public: String, salt: String, identity: String, verifier: String, client_proof: String) -> Result<Option<SrpSession>, SrpError> {
+    crate::crypto::srp::srp_derive_session_server(&server_secret, &client_public, &salt, &identity, &verifier, &client_proof)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -598,12 +395,6 @@ pub fn rsa_decrypt(base64_ciphertext: String, private_key_jwk: String) -> Result
     crate::crypto::decrypt_with_private_key(&base64_ciphertext, &private_key_jwk)
 }
 
-/// Create a new account key hierarchy under a base64 KEK. Output: `AccountKeyHierarchy` JSON.
-#[uniffi::export]
-pub fn create_account_key_hierarchy_json(kek_base64: String) -> Result<String, VaultError> {
-    Ok(serde_json::to_string(&crate::crypto::create_account_key_hierarchy(&kek_base64)?)?)
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // Vault sync engine
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -637,7 +428,7 @@ impl VaultSyncSession {
 /// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
 #[derive(uniffi::Object)]
 pub struct SqliteMemoryDatabase {
-    inner: crate::sqlite_host::MemoryDatabase,
+    inner: MemoryDatabase,
 }
 
 #[uniffi::export]
@@ -645,13 +436,13 @@ impl SqliteMemoryDatabase {
     /// Open a database from its SQLite file bytes.
     #[uniffi::constructor]
     pub fn from_bytes(bytes: Vec<u8>) -> Result<std::sync::Arc<Self>, VaultError> {
-        Ok(std::sync::Arc::new(Self { inner: crate::sqlite_host::MemoryDatabase::from_bytes(&bytes)? }))
+        Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::from_bytes(&bytes)? }))
     }
 
     /// Open an empty database and run a schema script on it.
     #[uniffi::constructor]
     pub fn with_schema(schema_sql: String) -> Result<std::sync::Arc<Self>, VaultError> {
-        Ok(std::sync::Arc::new(Self { inner: crate::sqlite_host::MemoryDatabase::with_schema(&schema_sql)? }))
+        Ok(std::sync::Arc::new(Self { inner: MemoryDatabase::with_schema(&schema_sql)? }))
     }
 
     /// Run a SQL script without parameters.
@@ -667,22 +458,68 @@ impl SqliteMemoryDatabase {
 
     /// Run statements (a JSON array of `{"sql", "params"}`) in one transaction.
     pub fn exec(&self, statements_json: String) -> Result<(), VaultError> {
-        let statements: Vec<crate::vault_sync::types::SqlStatement> = serde_json::from_str(&statements_json)?;
+        let statements: Vec<crate::sqlite_host::SqlStatement> = serde_json::from_str(&statements_json)?;
         self.inner.exec(&statements)
     }
 
     /// Run one query with typed parameters; rows come back positionally under `columns`.
-    pub fn query_values(&self, sql: String, params: Vec<crate::sqlite_host::SqlValue>) -> Result<crate::sqlite_host::SqlResult, VaultError> {
+    pub fn query_values(&self, sql: String, params: Vec<SqlValue>) -> Result<SqlResult, VaultError> {
         self.inner.query_values(&sql, &params)
     }
 
     /// Run one statement with typed parameters and return the number of rows it changed.
-    pub fn execute(&self, sql: String, params: Vec<crate::sqlite_host::SqlValue>) -> Result<u64, VaultError> {
+    pub fn execute(&self, sql: String, params: Vec<SqlValue>) -> Result<u64, VaultError> {
         self.inner.execute(&sql, &params)
     }
 
     /// The database as SQLite file bytes.
     pub fn export(&self) -> Result<Vec<u8>, VaultError> {
         self.inner.export()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_syncable_table_names() {
+        let names = get_syncable_table_names();
+        assert!(names.contains(&"Items".to_string()));
+        assert!(names.contains(&"FieldValues".to_string()));
+        assert!(names.contains(&"Settings".to_string()));
+        assert!(names.contains(&"ItemStats".to_string()));
+        assert!(names.contains(&"EncryptionKeys".to_string()));
+        assert!(!names.contains(&crate::vault_model::OVERFLOW_TABLE.to_string()), "the overflow carrier is not synced as a table of its own; it rides inside the manifest");
+        assert_eq!(names.len(), 14);
+    }
+
+    #[test]
+    fn test_prune_vault_json() {
+        let input = r#"{
+            "tables": [{"name": "Items", "records": []}],
+            "retention_days": 30,
+            "current_time": "2024-01-15T10:30:00.000Z"
+        }"#;
+
+        let result = prune_vault_json(input.to_string());
+        assert!(result.is_ok());
+
+        let output: serde_json::Value = serde_json::from_str(&result.unwrap()).unwrap();
+        assert_eq!(output["success"], true);
+    }
+
+    #[test]
+    fn test_extract_domain() {
+        // extract_domain strips www. prefix from domains
+        assert_eq!(extract_domain("https://www.example.com/path".to_string()), "example.com");
+        assert_eq!(extract_domain("http://github.com".to_string()), "github.com");
+        assert_eq!(extract_domain("https://subdomain.example.com".to_string()), "subdomain.example.com");
+    }
+
+    #[test]
+    fn test_extract_root_domain() {
+        assert_eq!(extract_root_domain("www.example.com".to_string()), "example.com");
+        assert_eq!(extract_root_domain("github.com".to_string()), "github.com");
     }
 }

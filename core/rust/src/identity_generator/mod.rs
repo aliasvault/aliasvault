@@ -10,7 +10,7 @@
 //! for languages with decade-based dictionaries (de, it, ro) the first name is matched
 //! to names that were popular around the generated birth year.
 
-pub mod dictionaries;
+pub(crate) mod dictionaries;
 mod username_email;
 
 #[cfg(test)]
@@ -20,7 +20,7 @@ use chrono::{Datelike, Days, NaiveDate, Utc};
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 
-use crate::error::VaultError;
+use crate::error::{json_call, VaultError};
 use crate::rng::{make_rng, unbiased_index};
 
 /// Gender value used in generated identities.
@@ -107,13 +107,11 @@ pub struct NameInput {
 /// Returns the generated [`Identity`] as a JSON string, or a [`VaultError`] if the
 /// request JSON is invalid.
 pub fn generate_identity(request_json: &str) -> Result<String, VaultError> {
-    let request: IdentityRequest = serde_json::from_str(request_json)?;
-    let identity = generate_from_request(&request);
-    Ok(serde_json::to_string(&identity)?)
+    json_call(request_json, |request: IdentityRequest| Ok(generate_from_request(&request)))
 }
 
 /// Generate a random identity from an already-parsed request.
-pub fn generate_from_request(request: &IdentityRequest) -> Identity {
+fn generate_from_request(request: &IdentityRequest) -> Identity {
     let mut rng = make_rng(request.seed.as_deref());
     let dictionary = dictionaries::resolve(&request.language);
 
@@ -200,7 +198,7 @@ pub fn available_age_ranges() -> Vec<String> {
 /// Convert an age range string (e.g. "21-25") to birth year options relative to the
 /// current year. Returns `None` for "random", empty or malformed input, which means
 /// the default age behavior (21-65) applies.
-pub fn age_range_to_birthdate_options(age_range: &str) -> Option<BirthdateOptions> {
+fn age_range_to_birthdate_options(age_range: &str) -> Option<BirthdateOptions> {
     age_range_to_birthdate_options_at(age_range, Utc::now().year())
 }
 

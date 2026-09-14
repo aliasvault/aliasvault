@@ -4,14 +4,22 @@
 
 use std::sync::Mutex;
 
-use base64::engine::general_purpose::STANDARD as BASE64;
-use base64::Engine;
 use rusqlite::types::{ToSql, ToSqlOutput, Value as RsValue, ValueRef};
 use rusqlite::{params_from_iter, Connection, MAIN_DB};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
+use crate::encoding::base64_decode;
 use crate::error::{VaultError, VaultResult};
-use crate::vault_sync::types::SqlStatement;
+use crate::vault_codec::row::{inline_b64, inline_bytes};
+
+/// One parameterized SQL statement, as the bindings and the sync engine hand it to a host.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SqlStatement {
+    pub sql: String,
+    #[serde(default)]
+    pub params: Vec<Value>,
+}
 
 /// A SQLite value as the bindings see it, typed and without JSON encoding.
 #[derive(Debug, Clone, PartialEq)]
@@ -75,9 +83,9 @@ impl MemoryDatabase {
     /// Run one query with typed parameters and return its rows positionally.
     pub fn query_values(&self, sql: &str, params: &[SqlValue]) -> VaultResult<SqlResult> {
         let conn = self.lock();
-        let mut statement = conn.prepare_cached(sql).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
+        let mut statement = conn.prepare_cached(sql).map_err(sql_error_at(sql))?;
         let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
-        let mut rows = statement.query(params_from_iter(params.iter())).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
+        let mut rows = statement.query(params_from_iter(params.iter())).map_err(sql_error_at(sql))?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(sql_error)? {
             let mut values = Vec::with_capacity(columns.len());
@@ -92,8 +100,8 @@ impl MemoryDatabase {
     /// Run one statement with typed parameters and return the rows it changed.
     pub fn execute(&self, sql: &str, params: &[SqlValue]) -> VaultResult<u64> {
         let conn = self.lock();
-        let mut statement = conn.prepare_cached(sql).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
-        let mut rows = statement.query(params_from_iter(params.iter())).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
+        let mut statement = conn.prepare_cached(sql).map_err(sql_error_at(sql))?;
+        let mut rows = statement.query(params_from_iter(params.iter())).map_err(sql_error_at(sql))?;
         while rows.next().map_err(sql_error)?.is_some() {}
         Ok(conn.changes())
     }
@@ -118,6 +126,11 @@ pub fn deserialize_into(conn: &mut Connection, bytes: &[u8]) -> VaultResult<()> 
 
 fn sql_error(error: rusqlite::Error) -> VaultError {
     VaultError::General(error.to_string())
+}
+
+/// The error mapper for a failure inside `sql`, naming the statement.
+fn sql_error_at(sql: &str) -> impl Fn(rusqlite::Error) -> VaultError + '_ {
+    move |error| VaultError::General(format!("{} ({})", error, sql))
 }
 
 impl ToSql for SqlValue {
@@ -145,34 +158,36 @@ impl From<ValueRef<'_>> for SqlValue {
 }
 
 /// A JSON parameter as a SQLite value.
-pub fn to_sql(value: &Value) -> RsValue {
+fn to_sql(value: &Value) -> RsValue {
     match value {
         Value::Null => RsValue::Null,
         Value::Bool(b) => RsValue::Integer(*b as i64),
         Value::Number(n) => n.as_i64().map(RsValue::Integer).unwrap_or_else(|| RsValue::Real(n.as_f64().unwrap_or(0.0))),
         Value::String(s) => RsValue::Text(s.clone()),
-        Value::Object(o) if o.contains_key("__b64") => RsValue::Blob(BASE64.decode(o["__b64"].as_str().unwrap_or("")).unwrap_or_default()),
-        other => RsValue::Text(other.to_string()),
+        other => match inline_b64(other) {
+            Some(b64) => RsValue::Blob(base64_decode(b64).unwrap_or_default()),
+            None => RsValue::Text(other.to_string()),
+        },
     }
 }
 
 /// A SQLite value as JSON.
-pub fn from_sql(value: ValueRef<'_>) -> Value {
+fn from_sql(value: ValueRef<'_>) -> Value {
     match value {
         ValueRef::Null => Value::Null,
         ValueRef::Integer(i) => json!(i),
         ValueRef::Real(f) => json!(f),
         ValueRef::Text(t) => Value::String(String::from_utf8_lossy(t).to_string()),
-        ValueRef::Blob(b) => json!({ "__b64": BASE64.encode(b) }),
+        ValueRef::Blob(b) => inline_bytes(b),
     }
 }
 
 /// Run one query on a connection and return its rows as JSON objects keyed by column name.
 pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> VaultResult<Vec<Map<String, Value>>> {
-    let mut statement = conn.prepare(sql).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
+    let mut statement = conn.prepare(sql).map_err(sql_error_at(sql))?;
     let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
     let values: Vec<RsValue> = params.iter().map(to_sql).collect();
-    let mut rows = statement.query(params_from_iter(values.iter())).map_err(|e| VaultError::General(format!("{} ({})", e, sql)))?;
+    let mut rows = statement.query(params_from_iter(values.iter())).map_err(sql_error_at(sql))?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(sql_error)? {
         let mut object = Map::new();
@@ -191,7 +206,7 @@ pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> VaultResult<()> {
         let values: Vec<RsValue> = statement.params.iter().map(to_sql).collect();
         if let Err(error) = conn.execute(&statement.sql, params_from_iter(values.iter())) {
             let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
-            return Err(VaultError::General(format!("{} ({})", error, statement.sql)));
+            return Err(sql_error_at(&statement.sql)(error));
         }
     }
     conn.execute_batch("RELEASE exec_batch").map_err(sql_error)

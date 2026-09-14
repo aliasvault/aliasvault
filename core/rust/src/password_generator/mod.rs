@@ -25,7 +25,7 @@ use crate::rng::{make_rng, unbiased_index};
 /// Which generator to use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
-pub enum GeneratorType {
+pub(crate) enum GeneratorType {
     /// Character-set password generator.
     #[default]
     Basic,
@@ -89,7 +89,7 @@ pub enum Salt {
 /// older blobs (which lack the Diceware fields) deserialize cleanly.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct PasswordSettings {
+pub(crate) struct PasswordSettings {
     /// Which generator to use.
     #[serde(rename = "Type", default)]
     pub generator_type: GeneratorType,
@@ -179,7 +179,7 @@ pub fn generate_password(settings_json: &str) -> Result<String, VaultError> {
 }
 
 /// Generate a password or passphrase from already-parsed settings.
-pub fn generate_from_settings(settings: &PasswordSettings) -> String {
+fn generate_from_settings(settings: &PasswordSettings) -> String {
     let mut rng = make_rng(settings.seed.as_deref());
 
     // Limit the maximum values for the password and passphrase length.

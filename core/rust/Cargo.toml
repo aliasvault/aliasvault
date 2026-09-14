@@ -85,10 +85,6 @@ rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }
 
-# Build dependencies for UniFFI
-[build-dependencies]
-uniffi = { version = "0.28", features = ["build"] }
-
 # Binary for generating Swift/Kotlin bindings
 # This binary requires uniffi-cli feature which includes the heavy bindgen dependencies
 [[bin]]
@@ -102,7 +98,7 @@ opt-level = 0
 debug = false
 incremental = true
 
-# Release profile - optimized for size (web app WASM, fetched on page load, and .NET)
+# Release profile - optimized for size (web app WASM, fetched on page load)
 [profile.release]
 opt-level = "z"
 lto = "fat"
@@ -117,5 +113,10 @@ opt-level = 3
 
 # Mobile profile - optimized for speed as increased bundle size is less relevant as its a one time download
 [profile.mobile]
+inherits = "release"
+opt-level = 3
+
+# .NET profile - optimized for speed as the native library runs server-side where size is irrelevant
+[profile.dotnet]
 inherits = "release"
 opt-level = 3

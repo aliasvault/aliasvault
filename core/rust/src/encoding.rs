@@ -1,6 +1,6 @@
-//! Crate-wide byte encodings: hex, base64 and the UUID text form.
+//! Crate-wide byte encodings: hex, base64 (standard and URL-safe) and the UUID text form.
 
-use base64::engine::general_purpose::STANDARD as BASE64;
+use base64::engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD as BASE64_URL};
 use base64::Engine;
 
 use crate::error::{VaultError, VaultResult};
@@ -52,10 +52,27 @@ pub(crate) fn base64_decode(value: &str) -> VaultResult<Vec<u8>> {
     BASE64.decode(value).map_err(|_| VaultError::General("Invalid base64".to_string()))
 }
 
+/// URL-safe base64 without padding (the JWK spelling) of a byte slice.
+pub(crate) fn base64url_encode(bytes: &[u8]) -> String {
+    BASE64_URL.encode(bytes)
+}
+
+/// Decode a URL-safe unpadded base64 string.
+pub(crate) fn base64url_decode(value: &str) -> VaultResult<Vec<u8>> {
+    BASE64_URL.decode(value).map_err(|_| VaultError::General("Invalid base64url".to_string()))
+}
+
 /// The lowercase `8-4-4-4-12` text form of 16 bytes.
 pub(crate) fn format_uuid(bytes: &[u8; 16]) -> String {
     let hex = hex_encode_lower(bytes);
     format!("{}-{}-{}-{}-{}", &hex[0..8], &hex[8..12], &hex[12..16], &hex[16..20], &hex[20..32])
+}
+
+/// The lowercase UUID text of 16 bytes with the RFC 9562 `version` nibble and variant bits set.
+pub(crate) fn uuid_from_bytes(mut bytes: [u8; 16], version: u8) -> String {
+    bytes[6] = (bytes[6] & 0x0f) | (version << 4);
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    format_uuid(&bytes)
 }
 
 #[cfg(test)]
@@ -76,8 +93,20 @@ mod tests {
     }
 
     #[test]
+    fn base64url_round_trips_without_padding() {
+        let bytes = vec![0xfbu8, 0xff, 0xfe];
+        let text = base64url_encode(&bytes);
+        assert_eq!(text, "-__-");
+        assert_eq!(base64url_decode(&text).unwrap(), bytes);
+        assert!(base64url_decode("+//+").is_err());
+    }
+
+    #[test]
     fn uuid_text_form_is_lowercase_and_grouped() {
         let bytes = [0xABu8; 16];
         assert_eq!(format_uuid(&bytes), "abababab-abab-abab-abab-abababababab");
+        let stamped = uuid_from_bytes([0xFFu8; 16], 4);
+        assert_eq!(&stamped[14..15], "4");
+        assert!(matches!(&stamped[19..20], "8" | "9" | "a" | "b"));
     }
 }

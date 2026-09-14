@@ -45,10 +45,7 @@ pub struct ParsedEmail {
 /// gunzipping gzip-compressed input.
 pub fn parse_email_source(source: &[u8]) -> VaultResult<ParsedEmail> {
     let raw = decode_email_source(source)?;
-
-    let message = MessageParser::default()
-        .parse(raw.as_slice())
-        .ok_or_else(|| VaultError::General("Failed to parse email source as a MIME message".to_string()))?;
+    let message = parse_message(&raw)?;
 
     let has_html_part = message.html_body.iter().any(|id| message.part(*id).is_some_and(|part| part.is_text_html()));
     let has_text_part = message.text_body.iter().any(|id| message.part(*id).is_some_and(|part| part.is_text() && !part.is_text_html()));
@@ -125,8 +122,7 @@ pub fn extract_email_attachment(source: &[u8], index: usize, detached_body: Opti
 
 /// Parse a raw RFC 822 email source and return the result as a JSON string (for uniffi/ffi callers).
 pub fn parse_email_source_json(source: &[u8]) -> VaultResult<String> {
-    let parsed = parse_email_source(source)?;
-    serde_json::to_string(&parsed).map_err(VaultError::from)
+    Ok(serde_json::to_string(&parse_email_source(source)?)?)
 }
 
 /// Parse raw RFC 822 bytes into a message, turning the parser's `None` into a proper error.

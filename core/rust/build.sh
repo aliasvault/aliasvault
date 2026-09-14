@@ -65,7 +65,7 @@ compute_source_checksum() {
 }
 
 # Cargo profile the mobile builds produce: the speed-optimized `mobile` profile (see Cargo.toml), while
-# the web app WASM and .NET keep `release`.
+# only the web app WASM keeps the size-optimized `release`.
 MOBILE_CARGO_PROFILE="mobile"
 
 echo -e "${YELLOW}Checking prerequisites...${NC}"
@@ -133,7 +133,7 @@ while [[ $# -gt 0 ]]; do
             echo "Target options:"
             echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
             echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
-            echo "  --dotnet             Build native library for .NET server-side use (macOS/Linux/Windows)"
+            echo "  --dotnet             Build native library for .NET server-side use (macOS/Linux/Windows, speed-optimized)"
             echo "  --ios                Build for iOS (device + simulator arm64) with Swift bindings"
             echo "  --android            Build for Android (arm64-v8a, armeabi-v7a, x86_64) with Kotlin bindings"
             echo "  --all                Build all targets (WASM as --web)"
@@ -320,8 +320,8 @@ build_dotnet() {
 
     # Build with cargo
     echo -e "  Running cargo build..."
-    cargo build --release --features ffi
-    local cargo_target="target/release"
+    cargo build --profile dotnet --features ffi
+    local cargo_target="target/dotnet"
 
     # Copy the library
     if [ -f "$cargo_target/$lib_name" ]; then

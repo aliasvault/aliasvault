@@ -1,7 +1,5 @@
 //! RSA-OAEP (SHA-256) with keys carried as JWK JSON strings compatible with the WebCrypto API.
 
-use base64::engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL;
-use base64::Engine;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
 use rsa::{BigUint, Oaep, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
@@ -9,7 +7,7 @@ use sha2::Sha256;
 use std::fmt;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-use crate::encoding::{base64_decode, base64_encode};
+use crate::encoding::{base64_decode, base64_encode, base64url_decode, base64url_encode};
 use crate::error::{VaultError, VaultResult};
 
 const MODULUS_BITS: usize = 2048;
@@ -101,12 +99,12 @@ fn parse_jwk(jwk: &str) -> VaultResult<RsaJwk> {
 }
 
 fn field(value: &str) -> VaultResult<BigUint> {
-    let bytes = Zeroizing::new(BASE64_URL.decode(value).map_err(|_| VaultError::General("Invalid base64url in JWK".to_string()))?);
+    let bytes = Zeroizing::new(base64url_decode(value).map_err(|_| VaultError::General("Invalid base64url in JWK".to_string()))?);
     Ok(BigUint::from_bytes_be(&bytes))
 }
 
 fn encode(value: &BigUint) -> String {
-    BASE64_URL.encode(Zeroizing::new(value.to_bytes_be()))
+    base64url_encode(&Zeroizing::new(value.to_bytes_be()))
 }
 
 fn public_to_jwk(public: &RsaPublicKey) -> VaultResult<String> {

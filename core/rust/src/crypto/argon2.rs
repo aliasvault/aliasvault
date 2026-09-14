@@ -4,16 +4,16 @@ use serde::Deserialize;
 use thiserror::Error;
 
 /// Length of every derived key in bytes; the vault format assumes a 256-bit key throughout.
-pub const ARGON2_OUTPUT_LENGTH: usize = 32;
+const ARGON2_OUTPUT_LENGTH: usize = 32;
 
 /// Default memory cost in KiB, used when the settings do not state one.
-pub const ARGON2_DEFAULT_MEMORY_KIB: u32 = 19456;
+const ARGON2_DEFAULT_MEMORY_KIB: u32 = 19456;
 
 /// Default number of passes, used when the settings do not state one.
-pub const ARGON2_DEFAULT_ITERATIONS: u32 = 2;
+const ARGON2_DEFAULT_ITERATIONS: u32 = 2;
 
 /// Default number of lanes, used when the settings do not state one.
-pub const ARGON2_DEFAULT_PARALLELISM: u32 = 1;
+const ARGON2_DEFAULT_PARALLELISM: u32 = 1;
 
 /// Argon2-related errors.
 #[derive(Error, Debug, Clone)]
@@ -53,16 +53,8 @@ impl Default for Argon2Params {
 }
 
 impl Argon2Params {
-    /// Reads the `EncryptionSettings` JSON the server handed the client with its login challenge.
-    ///
-    /// A missing field falls back to the AliasVault default for that field. An empty string means 
-    /// the caller has no settings at all and wants the defaults.
-    ///
-    /// # Arguments
-    /// * `settings_json` - Settings as `{"DegreeOfParallelism":1,"MemorySize":19456,"Iterations":2}`.
-    ///
-    /// # Returns
-    /// The parsed cost parameters.
+    /// The cost parameters from the server's `EncryptionSettings` JSON
+    /// (`{"DegreeOfParallelism":1,"MemorySize":19456,"Iterations":2}`); a missing field, or an empty string, means the default.
     pub fn from_settings_json(settings_json: &str) -> Result<Self, Argon2Error> {
         let defaults = Self::default();
         if settings_json.trim().is_empty() {
@@ -92,15 +84,7 @@ struct EncryptionSettingsJson {
     degree_of_parallelism: Option<u32>,
 }
 
-/// Derives a 32-byte key from a password using Argon2id with explicit cost parameters.
-///
-/// # Arguments
-/// * `password` - The password bytes.
-/// * `salt` - The salt bytes, at least 8 bytes long.
-/// * `params` - The cost parameters.
-///
-/// # Returns
-/// The derived key, [`ARGON2_OUTPUT_LENGTH`] bytes long.
+/// Derive a 32-byte key from a password with Argon2id under explicit cost parameters; the salt is at least 8 bytes.
 pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> Result<Vec<u8>, Argon2Error> {
     use argon2::{Algorithm, Argon2, Params, Version};
 
@@ -117,31 +101,14 @@ pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> 
     Ok(output)
 }
 
-/// Derives a 32-byte key from a password using the cost parameters stated as settings JSON.
-///
-/// # Arguments
-/// * `password` - The password; hashed as its UTF-8 bytes.
-/// * `salt` - The salt; hashed as its UTF-8 bytes, at least 8 bytes long.
-/// * `settings_json` - The `EncryptionSettings` JSON, or an empty string for the defaults.
-///
-/// # Returns
-/// The derived key, [`ARGON2_OUTPUT_LENGTH`] bytes long.
+/// Derive a 32-byte key from a password and salt (hashed as their UTF-8 bytes) under the cost parameters in
+/// `settings_json`, or the defaults for an empty string.
 pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
     argon2_derive_key_bytes_from_settings(password.as_bytes(), salt.as_bytes(), settings_json)
 }
 
-/// Derives a 32-byte key from raw password and salt bytes using the cost parameters stated as settings JSON.
-///
-/// The mobile PIN unlock draws its salt from the Keychain/Keystore as random bytes, which are not
-/// valid UTF-8, so it needs this byte entry point rather than the string one.
-///
-/// # Arguments
-/// * `password` - The password bytes.
-/// * `salt` - The salt bytes, at least 8 bytes long.
-/// * `settings_json` - The `EncryptionSettings` JSON, or an empty string for the defaults.
-///
-/// # Returns
-/// The derived key, [`ARGON2_OUTPUT_LENGTH`] bytes long.
+/// [`argon2_derive_key_from_settings`] over raw bytes: the mobile PIN unlock's Keychain/Keystore salt is random
+/// bytes, not UTF-8.
 pub fn argon2_derive_key_bytes_from_settings(password: &[u8], salt: &[u8], settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
     let params = Argon2Params::from_settings_json(settings_json)?;
     argon2_derive_key(password, salt, params)

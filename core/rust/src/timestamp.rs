@@ -52,4 +52,12 @@ mod tests {
         assert_eq!(at("not a timestamp"), None);
         assert_eq!(updated_at(&HashMap::new()), None);
     }
+
+    #[test]
+    fn now_uses_the_vault_and_iso_formats() {
+        let stamp = now_vault_datetime();
+        assert_eq!(stamp.len(), 23);
+        assert_eq!(&stamp[10..11], " ");
+        assert!(now_iso_utc().ends_with('Z'));
+    }
 }

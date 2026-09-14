@@ -19,10 +19,8 @@ pub use domain::{extract_domain, extract_domain_with_port, extract_root_domain, 
 use domain::{domains_match, is_app_package_name};
 use stop_words::STOP_WORD_SET;
 
-/// Default per-priority cap on returned matches when the caller does not
-/// supply `max_results`. Chosen as a balance between dropdown usability
-/// (scrollable but not overwhelming) and inline-strip needs.
-pub const DEFAULT_MAX_RESULTS: usize = 10;
+/// Default per-priority cap on returned matches when the caller does not supply `max_results`.
+const DEFAULT_MAX_RESULTS: usize = 10;
 
 /// Matching mode for credential filtering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -64,8 +62,7 @@ pub struct CredentialMatcherInput {
     /// All domain matches will be treated equally regardless of port.
     #[serde(default)]
     pub ignore_port: bool,
-    /// Per-priority cap on returned matches. Defaults to [`DEFAULT_MAX_RESULTS`]
-    /// (10) when omitted by the caller.
+    /// Per-priority cap on returned matches, 10 when omitted by the caller.
     #[serde(default)]
     pub max_results: Option<usize>,
 }
@@ -73,8 +70,7 @@ pub struct CredentialMatcherInput {
 /// Output from credential filtering.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CredentialMatcherOutput {
-    /// IDs of matched credentials, in priority order. Capped at
-    /// `input.max_results` (defaults to [`DEFAULT_MAX_RESULTS`]).
+    /// IDs of matched credentials, in priority order, capped at `input.max_results` (10 by default).
     pub matched_ids: Vec<String>,
     /// Which priority level matched (1-4, or 0 if no match)
     pub matched_priority: u8,
@@ -89,8 +85,7 @@ impl CredentialMatcherOutput {
 
 /// Filter credentials based on current URL and page context with anti-phishing protection.
 ///
-/// Returns the credentials of the best matching priority stage, capped per `input.max_results`
-/// (defaulting to [`DEFAULT_MAX_RESULTS`]).
+/// Returns the credentials of the best matching priority stage, capped per `input.max_results` (10 by default).
 pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOutput {
     let CredentialMatcherInput { credentials, current_url, page_title, matching_mode, ignore_port, max_results } = input;
     let max_results = max_results.unwrap_or(DEFAULT_MAX_RESULTS);

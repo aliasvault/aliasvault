@@ -12,7 +12,7 @@ use crate::error::{json_call, VaultResult};
 use crate::sqlite_host::MemoryDatabase;
 use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
 use crate::vault_pruner::{prune_vault, PruneInput};
-use crate::vault_sync::types::SqlStatement;
+use crate::sqlite_host::SqlStatement;
 
 /// Prune expired items from trash.
 ///

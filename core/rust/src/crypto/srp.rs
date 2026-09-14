@@ -91,27 +91,13 @@ fn to_padded_bytes(value: &BigUint) -> Vec<u8> {
 // Client Operations
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a cryptographic salt for SRP.
-///
-/// Returns a 32-byte random salt as an uppercase hex string.
+/// A random 32-byte SRP salt as an uppercase hex string.
 pub fn srp_generate_salt() -> String {
     bytes_to_hex(&generate_random_bytes(32))
 }
 
-/// Derive the SRP private key (x) from credentials.
-///
-/// Formula: x = H(salt | H(identity | ":" | password_hash))
-///
-/// The final hash is returned as the full 32-byte digest (not via BigUint, which
-/// would strip leading zero bytes from the fixed-length hex output).
-///
-/// # Arguments
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (lowercased internally)
-/// * `password_hash` - Pre-hashed password as hex string
-///
-/// # Returns
-/// Private key as uppercase hex string (64 characters)
+/// The SRP private key `x = H(salt | H(identity | ":" | password_hash))` as uppercase hex, from hex inputs.
+/// The full 32-byte digest is returned (not via BigUint, which would strip leading zero bytes).
 pub fn srp_derive_private_key(
     salt: &str,
     identity: &str,
@@ -130,15 +116,7 @@ pub fn srp_derive_private_key(
     Ok(bytes_to_hex(&x_hasher.finalize()))
 }
 
-/// Derive the SRP verifier (v) from a private key.
-///
-/// Formula: v = g^x mod N
-///
-/// # Arguments
-/// * `private_key` - Private key as hex string
-///
-/// # Returns
-/// Verifier as uppercase hex string (256 bytes)
+/// The SRP verifier `v = g^x mod N` as uppercase hex (256 bytes), from the hex private key.
 pub fn srp_derive_verifier(private_key: &str) -> Result<String, SrpError> {
     let x = BigUint::from_bytes_be(&hex_to_bytes(private_key)?);
 
@@ -148,9 +126,7 @@ pub fn srp_derive_verifier(private_key: &str) -> Result<String, SrpError> {
     Ok(bytes_to_hex(&to_padded_bytes(&v)))
 }
 
-/// Generate a client ephemeral key pair.
-///
-/// Computes A = g^a mod N where a is a random 64-byte secret.
+/// A client ephemeral pair: `A = g^a mod N` for a random 64-byte secret `a`.
 pub fn srp_generate_ephemeral() -> SrpEphemeral {
     let client = SrpClient::<Sha256>::new(&G_2048);
 
@@ -163,19 +139,7 @@ pub fn srp_generate_ephemeral() -> SrpEphemeral {
     }
 }
 
-/// Derive the client session from server response.
-///
-/// Computes the shared session key K and client proof M1.
-///
-/// # Arguments
-/// * `client_secret` - Client secret ephemeral (a) as hex string
-/// * `server_public` - Server public ephemeral (B) as hex string
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (lowercased internally)
-/// * `private_key` - Private key (x) as hex string
-///
-/// # Returns
-/// Session with proof (M1) and key (K), or error if B is invalid
+/// The client session (key `K` and proof `M1`) from the server's public ephemeral `B`; hex in, hex out.
 pub fn srp_derive_session(
     client_secret: &str,
     server_public: &str,
@@ -217,18 +181,7 @@ pub fn srp_derive_session(
     })
 }
 
-/// Verify the server's session proof (M2) on the client side.
-///
-/// This confirms that the server successfully derived the same session key.
-///
-/// # Arguments
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-/// * `session_key` - Session key (K) as hex string
-/// * `server_proof` - Server proof (M2) as hex string to verify
-///
-/// # Returns
-/// True if verification succeeds, false otherwise
+/// Whether the server's proof `M2` matches, which confirms it derived the same session key.
 pub fn srp_verify_session(
     client_public: &str,
     client_proof: &str,
@@ -249,12 +202,7 @@ pub fn srp_verify_session(
 // Server Operations
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Generate a server ephemeral key pair.
-///
-/// Computes B = k*v + g^b mod N where b is a random 64-byte secret.
-///
-/// # Arguments
-/// * `verifier` - Password verifier (v) as hex string
+/// A server ephemeral pair: `B = k*v + g^b mod N` for a random 64-byte secret `b`, from the hex verifier.
 pub fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, SrpError> {
     let v_bytes = hex_to_bytes(verifier)?;
 
@@ -269,20 +217,7 @@ pub fn srp_generate_ephemeral_server(verifier: &str) -> Result<SrpEphemeral, Srp
     })
 }
 
-/// Derive and verify the server session from client response.
-///
-/// Verifies client proof M1 and computes server proof M2.
-///
-/// # Arguments
-/// * `server_secret` - Server secret ephemeral (b) as hex string
-/// * `client_public` - Client public ephemeral (A) as hex string
-/// * `salt` - Salt as hex string
-/// * `identity` - User identity (lowercased internally)
-/// * `verifier` - Password verifier (v) as hex string
-/// * `client_proof` - Client proof (M1) as hex string
-///
-/// # Returns
-/// Session with proof (M2) and key (K) if verification succeeds, None if M1 is invalid
+/// The server session (key `K` and proof `M2`) once the client's proof `M1` verifies; `None` when it does not.
 pub fn srp_derive_session_server(
     server_secret: &str,
     client_public: &str,
