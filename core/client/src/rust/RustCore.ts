@@ -12,12 +12,12 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
+import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
 export { AutofillMatchingMode } from './RustCoreTypes';
-export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecTableData, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
+export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecTableData, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
 
 /**
  * The host's Rust core binding.
@@ -249,14 +249,6 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
  */
 export async function vaultCodecMaterializeAsSqlite(manifests: CodecManifest[], dataBuckets: CodecDataBucket[], schemaColumns: Record<string, string[]>): Promise<CodecMaterialized> {
   return rustCore().vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns });
-}
-
-/**
- * Merge the local canonical vault onto the server canonical vault (the base), one manifest at a
- * time, rows out.
- */
-export async function vaultCodecMergeCanonical(input: CodecCanonicalMergeInput): Promise<CodecCanonicalMergeOutput> {
-  return rustCore().mergeCanonical(input);
 }
 
 /**

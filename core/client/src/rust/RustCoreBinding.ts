@@ -1,4 +1,4 @@
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, PruneVaultInput, PruneVaultOutput, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -47,8 +47,6 @@ export interface IRustCore {
   srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<SrpSession>;
 
   getSyncableTableNames(): Promise<string[]>;
-  mergeCanonical(input: CodecCanonicalMergeInput): Promise<CodecCanonicalMergeOutput>;
-  pruneVault(input: PruneVaultInput): Promise<PruneVaultOutput>;
   getPruneTableQueries(): Promise<PruneTableQuery[]>;
 
   vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized>;

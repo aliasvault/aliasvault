@@ -1,10 +1,10 @@
 /**
- * The TypeScript interface with the Rust vault sync engine.
+ * The TypeScript driver of the Rust vault sync engine: runs one operation by carrying out the engine's commands
+ * against the host. The per-operation wrappers that call this live in VaultSync.
  */
 
 import { VaultSqlGenerator } from '@aliasvault/vault';
 
-import { CapabilityService } from '../api/CapabilityService';
 import { NetworkError } from '../api/errors/NetworkError';
 import { RequestTimeoutError } from '../api/errors/RequestTimeoutError';
 import { WebApiService } from '../api/WebApiService';
@@ -56,13 +56,13 @@ export type VaultSyncEmailRouting = {
 };
 
 /** What every engine result carries. */
-type EngineResultBase = {
+export type VaultSyncEngineResultBase = {
   sessionUpdates: VaultSyncSessionUpdates;
   vaultChanged: boolean;
 };
 
 /** Outcome of a full sync (the Rust `SyncResult`). */
-export type VaultSyncEngineResult = EngineResultBase & {
+export type VaultSyncEngineResult = VaultSyncEngineResultBase & {
   success: boolean;
   hasNewVault: boolean;
   wasOffline: boolean;
@@ -80,12 +80,12 @@ export type VaultSyncEngineResult = EngineResultBase & {
 };
 
 /** Outcome of the migration classification. */
-export type VaultSyncMigrationStatusResult = EngineResultBase & {
+export type VaultSyncMigrationStatusResult = VaultSyncEngineResultBase & {
   kind: 'none' | 'schema-rebuild' | 'storage-format-upgrade';
 };
 
 /** Outcome of the manifest migration. */
-export type VaultSyncMigrateManifestResult = EngineResultBase & {
+export type VaultSyncMigrateManifestResult = VaultSyncEngineResultBase & {
   success: boolean;
   pushed: boolean;
   error?: string;
@@ -98,7 +98,7 @@ export type VaultSyncMigrateManifestResult = EngineResultBase & {
  * Outcome of the login-time key resolution: the vault key to store as the session key (the VEK behind the
  * account's key chain, or the password-derived key itself for a legacy account without a chain).
  */
-export type VaultSyncResolveVaultKeyResult = EngineResultBase & {
+export type VaultSyncResolveVaultKeyResult = VaultSyncEngineResultBase & {
   success: boolean;
   hasVaultKey: boolean;
   encryptionKey?: string;
@@ -109,7 +109,7 @@ export type VaultSyncResolveVaultKeyResult = EngineResultBase & {
 };
 
 /** Outcome of the lightweight status check. */
-export type VaultSyncStatusCheckResult = EngineResultBase & {
+export type VaultSyncStatusCheckResult = VaultSyncEngineResultBase & {
   success: boolean;
   hasNewerVault: boolean;
   hasDirtyChanges: boolean;
@@ -500,7 +500,7 @@ class EngineRun {
  * @param request - the request
  * @param webApi - the API the HTTP commands run on
  */
-export async function runVaultSyncEngine<T extends EngineResultBase>(host: IVaultSyncEngineHost, request: VaultSyncEngineRequest, webApi: WebApiService = new WebApiService()): Promise<T> {
+export async function runVaultSyncEngine<T extends VaultSyncEngineResultBase>(host: IVaultSyncEngineHost, request: VaultSyncEngineRequest, webApi: WebApiService = new WebApiService()): Promise<T> {
   const started = now();
   const session = await rustCore().createVaultSyncSession(JSON.stringify(request));
   const run = new EngineRun(host, webApi);
@@ -508,33 +508,14 @@ export async function runVaultSyncEngine<T extends EngineResultBase>(host: IVaul
     for (;;) {
       const command = JSON.parse(await session.nextCommand()) as EngineCommand;
       if (command.kind === 'done') {
-        const result = command.result as T;
-        await applySessionUpdates(result.sessionUpdates);
         devLog(run.summarize(request.operation, now() - started));
-        return result;
+        return command.result as T;
       }
       await session.resume(JSON.stringify(await run.handle(command)));
     }
   } finally {
     run.close();
     session.free();
-  }
-}
-
-/**
- * Adopt the session values the engine changed.
- * @param updates - the updates
- */
-async function applySessionUpdates(updates: VaultSyncSessionUpdates | undefined): Promise<void> {
-  if (!updates) {
-    return;
-  }
-  const storage = getPlatform().storage;
-  if (updates.encryptionKey) {
-    await storage.set(StorageKeys.ENCRYPTION_KEY, updates.encryptionKey);
-  }
-  if (updates.accountPrivateKey) {
-    await storage.set(StorageKeys.ACCOUNT_PRIVATE_KEY, updates.accountPrivateKey);
   }
 }
 
@@ -576,84 +557,4 @@ export async function buildVaultSyncRequest(operation: VaultSyncOperation, optio
     isOfflineMode: isOfflineMode ?? false,
     unnamedSharedVaultName: await getPlatform().translate(TranslatableMessage.UnnamedSharedVault),
   };
-}
-
-/**
- * Persist what a status call reported.
- * @param serverVersion - the server version, when the status call reached the server
- * @param capabilities - the resolved capabilities
- */
-async function recordServerStatus(serverVersion: string | undefined, capabilities: Record<string, string> | undefined): Promise<void> {
-  if (serverVersion && serverVersion !== '0.0.0') {
-    await getPlatform().storage.set(StorageKeys.SERVER_VERSION, serverVersion);
-  }
-  if (capabilities) {
-    await CapabilityService.storeCapabilities(capabilities);
-  }
-}
-
-/**
- * Full vault sync.
- * @param host - the host
- * @param options - what the caller asks beyond what the engine decides
- * @param webApi - the API the HTTP commands run on
- */
-export async function runFullVaultSync(host: IVaultSyncEngineHost, options: VaultSyncOptions = {}, webApi?: WebApiService): Promise<VaultSyncEngineResult> {
-  const result = await runVaultSyncEngine<VaultSyncEngineResult>(host, await buildVaultSyncRequest('fullSync', options), webApi);
-  const storage = getPlatform().storage;
-
-  await recordServerStatus(result.serverVersion, result.capabilities);
-  await storage.set(StorageKeys.IS_OFFLINE_MODE, result.isOfflineMode);
-  if (result.emailRouting) {
-    await storage.setMany([
-      { key: StorageKeys.PUBLIC_EMAIL_DOMAINS, value: result.emailRouting.publicEmailDomainList },
-      { key: StorageKeys.PRIVATE_EMAIL_DOMAINS, value: result.emailRouting.privateEmailDomainList },
-      { key: StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS, value: result.emailRouting.hiddenPrivateEmailDomainList },
-    ]);
-  }
-  return result;
-}
-
-/**
- * Run a status check.
- * @param host - the host
- * @param webApi - the API the HTTP commands run on
- */
-export async function runVaultStatusCheck(host: IVaultSyncEngineHost, webApi?: WebApiService): Promise<VaultSyncStatusCheckResult> {
-  const result = await runVaultSyncEngine<VaultSyncStatusCheckResult>(host, await buildVaultSyncRequest('statusCheck'), webApi);
-  await recordServerStatus(result.serverVersion, result.capabilities);
-  return result;
-}
-
-/**
- * Resolve the vault key right after login: open the account's key chain with the password-derived key (the cached
- * chain when the server cannot be reached) and store the VEK as the session key. A legacy account keeps the derived
- * key. The sync operations assume the key this stored.
- * @param host - the host
- * @param derivedKeyBase64 - the password-derived key (KEK)
- * @param webApi - the API the HTTP commands run on
- */
-export async function runVaultKeyResolution(host: IVaultSyncEngineHost, derivedKeyBase64: string, webApi?: WebApiService): Promise<VaultSyncResolveVaultKeyResult> {
-  const request = { ...await buildVaultSyncRequest('resolveVaultKey'), encryptionKey: derivedKeyBase64 };
-  const result = await runVaultSyncEngine<VaultSyncResolveVaultKeyResult>(host, request, webApi);
-  if (result.success && result.encryptionKey) {
-    await getPlatform().storage.set(StorageKeys.ENCRYPTION_KEY, result.encryptionKey);
-  }
-  return result;
-}
-
-/**
- * Classify the pending local migration.
- * @param host - the host
- */
-export function runVaultMigrationStatus(host: IVaultSyncEngineHost): Promise<VaultSyncMigrationStatusResult> {
-  return buildVaultSyncRequest('migrationStatus').then(request => runVaultSyncEngine<VaultSyncMigrationStatusResult>(host, request));
-}
-
-/**
- * Run the local storage-model migration (schema rebuild and/or account key hierarchy) and push it.
- * @param host - the host
- */
-export function runVaultManifestMigration(host: IVaultSyncEngineHost): Promise<VaultSyncMigrateManifestResult> {
-  return buildVaultSyncRequest('migrateManifest').then(request => runVaultSyncEngine<VaultSyncMigrateManifestResult>(host, request));
 }

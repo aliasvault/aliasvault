@@ -5,7 +5,7 @@
 import initWasm, * as core from '../../wasm/aliasvault_core.js';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecCanonicalMergeInput, CodecCanonicalMergeOutput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, PruneVaultInput, PruneVaultOutput, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';  
+import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -74,8 +74,6 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       ready(() => core.srpDeriveSession(clientSecret, serverPublic, salt, identity, privateKey) as SrpSession),
 
     getSyncableTableNames: (): Promise<string[]> => ready(() => core.getSyncableTableNames()),
-    mergeCanonical: (input: CodecCanonicalMergeInput): Promise<CodecCanonicalMergeOutput> => ready(() => core.mergeCanonical(input) as CodecCanonicalMergeOutput),
-    pruneVault: (input: PruneVaultInput): Promise<PruneVaultOutput> => ready(() => core.pruneVault(input) as PruneVaultOutput),
     getPruneTableQueries: (): Promise<PruneTableQuery[]> => ready(() => core.getPruneTableQueries() as PruneTableQuery[]),
 
     vaultCodecCanonicalizeFromSqlite: (input: CodecCanonicalizeInput): Promise<CodecCanonicalized> => ready(() => core.vaultCodecCanonicalizeFromSqlite(input) as CodecCanonicalized),

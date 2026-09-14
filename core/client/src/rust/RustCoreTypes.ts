@@ -80,18 +80,6 @@ export type SrpSession = {
   key: string;
 };
 
-/** One table's rows as the trash pruner reads them. */
-export type RustTableData = { name: string; records: Array<Record<string, unknown>> };
-
-/** One SQL statement the pruner emits, with `{ __b64 }` byte params. */
-export type RustSqlStatement = { sql: string; params: Array<string | number | null | { __b64: string }> };
-
-/** Input of the trash pruner. */
-export type PruneVaultInput = { tables: RustTableData[]; retention_days: number; current_time: string };
-
-/** Output of the trash pruner. */
-export type PruneVaultOutput = { success: boolean; statements: RustSqlStatement[] };
-
 /** One per-table SELECT the pruner reads its input with. */
 export type PruneTableQuery = { name: string; query: string };
 
@@ -185,30 +173,6 @@ export type CodecBucketLayoutEntry = { category: string; tables: string[] };
 
 /** Structural validation outcome. */
 export type CodecValidation = { ok: boolean; failedRules: string[]; message: string };
-
-/** Input of the canonical merge: server side is the base, local side the incoming changes. */
-export type CodecCanonicalMergeInput = {
-  serverManifests: CodecManifest[];
-  serverBuckets: CodecDataBucket[];
-  contentlessServerManifestIds: string[];
-  localManifests: CodecManifest[];
-  localBuckets: CodecDataBucket[];
-  schemaColumns: Record<string, string[]>;
-};
-
-/** One manifest's merged result: the server manifest with merged tables, plus its merged buckets. */
-export type CodecCanonicalManifestMerge = {
-  manifestId: string;
-  manifest: CodecManifest;
-  buckets: CodecDataBucket[];
-  stats: { tablesProcessed: number; recordsFromLocal: number; recordsFromServer: number; recordsCreatedLocally: number; conflicts: number; recordsInserted: number };
-};
-
-/** Output of the canonical merge. */
-export type CodecCanonicalMergeOutput = {
-  manifests: CodecCanonicalManifestMerge[];
-  droppedLocalManifestIds: string[];
-};
 
 /** A shared manifest's key record. */
 export type SharingManifestRecord = {
