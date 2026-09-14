@@ -12,4 +12,7 @@ export enum TranslatableMessage {
 
   /** A shared vault's anchor folder cannot be deleted from the folder list. */
   SharedFolderDeleteRefused = 'shared-folder-delete-refused',
+
+  /** The vault still has to walk the sqlite-blob upgrade chain before the manifest migration can run. */
+  VaultUpgradeRequired = 'vault-upgrade-required',
 }

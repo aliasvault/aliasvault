@@ -300,10 +300,9 @@ async function handleSyncError(
       await app.logout(messageWithCode);
       return false;
 
-    // Network errors - set offline mode, don't logout
+    // Network errors - set offline mode, don't logout.
     case AppErrorCode.SERVER_UNAVAILABLE:
     case AppErrorCode.NETWORK_ERROR:
-    case AppErrorCode.TIMEOUT:
       await dbContext.setIsOffline(true);
       onOffline?.();
       // Return true to continue with local vault

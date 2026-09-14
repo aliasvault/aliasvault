@@ -43,6 +43,7 @@ export enum AppErrorCode {
   CLIENT_VERSION_NOT_SUPPORTED = 'E-301',
   SERVER_VERSION_NOT_SUPPORTED = 'E-302',
   VAULT_VERSION_INCOMPATIBLE = 'E-303',
+  SERVER_UPDATE_REQUIRED = 'E-304',
 
   // Vault status errors (E-4xx) - from AppError.kt + VaultSync.kt
   VAULT_MERGE_REQUIRED = 'E-401',
@@ -73,6 +74,7 @@ export enum AppErrorCode {
   STORAGE_WRITE_FAILED = 'E-602', // Sync engine: a state, database or at-rest vault write failed
   DATABASE_INIT_FAILED = 'E-603', // Sync engine: the staging database could not be opened
   VAULT_STORE_FAILED = 'E-604', // AppError: failed to store vault
+  MANIFEST_NOT_RECORDED = 'E-605', // AppError: native write attempted before a personal manifest id was recorded
 
   // Merge errors (E-7xx) - from VaultSync.kt
   MERGE_FAILED = 'E-701', // AppError: vault merge failed
@@ -223,6 +225,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.CLIENT_VERSION_NOT_SUPPORTED]: 'vault.errors.versionNotSupported',
     [AppErrorCode.SERVER_VERSION_NOT_SUPPORTED]: 'vault.errors.serverVersionNotSupported',
     [AppErrorCode.VAULT_VERSION_INCOMPATIBLE]: 'vault.errors.appOutdated',
+    [AppErrorCode.SERVER_UPDATE_REQUIRED]: 'vault.errors.serverVersionNotSupported',
 
     // Vault status errors
     [AppErrorCode.VAULT_MERGE_REQUIRED]: 'common.errors.unknownErrorTryAgain',

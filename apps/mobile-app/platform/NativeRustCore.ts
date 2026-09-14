@@ -63,8 +63,6 @@ export const nativeRustCore: IRustCore = {
   srpDeriveSession: (clientSecret, serverPublic, salt, identity, privateKey) => call('srpDeriveSession', clientSecret, serverPublic, salt, identity, privateKey),
 
   getSyncableTableNames: () => call('getSyncableTableNames'),
-  mergeCanonical: (input) => call('mergeCanonicalJson', JSON.stringify(input)),
-  pruneVault: (input) => call('pruneVaultJson', JSON.stringify(input)),
   getPruneTableQueries: () => call('getPruneTableQueries'),
 
   vaultCodecCanonicalizeFromSqlite: (input) => call('vaultCodecCanonicalizeFromSqlite', JSON.stringify(input)),
