@@ -59,10 +59,10 @@ public struct ItemQueries {
         SELECT Id, ManifestId, Name, ParentFolderId FROM Folders WHERE IsDeleted = 0
         """
 
-    /// Insert a new item, stamped with the manifest of the folder it is placed in.
+    /// Insert a new item, bound as [id, name, itemType, logoId, folderId, now, now, 0, manifestId].
     public static let insertItem = """
         INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     /// Bump an item's UpdatedAt so a child-row change is picked up by sync.
@@ -73,10 +73,10 @@ public struct ItemQueries {
 
 /// SQL query constants for FieldValue operations.
 public struct FieldValueQueries {
-    /// Insert a new field value, stamped with the manifest of the item it hangs off.
+    /// Insert a new field value, bound as [id, itemId, fieldDefinitionId, fieldKey, value, weight, now, now, 0, manifestId].
     public static let insert = """
         INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     /// The Weight a system field's values are written with: the field's DefaultDisplayOrder from

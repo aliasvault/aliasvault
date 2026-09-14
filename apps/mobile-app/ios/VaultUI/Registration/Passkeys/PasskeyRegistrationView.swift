@@ -94,7 +94,7 @@ public struct PasskeyRegistrationView: View {
                         VStack(spacing: 8) {
                             ForEach(viewModel.existingItemsWithoutPasskey) { itemInfo in
                                 Button(action: {
-                                    viewModel.handleSelectMerge(itemId: itemInfo.itemId)
+                                    viewModel.handleSelectMerge(itemInfo)
                                     navigationPath.append(PasskeyNavigationDestination.mergeWithItem(itemInfo.itemId))
                                 }, label: {
                                     ExistingItemRow(item: itemInfo, rpId: viewModel.rpId)
@@ -120,7 +120,7 @@ public struct PasskeyRegistrationView: View {
                         VStack(spacing: 8) {
                             ForEach(viewModel.existingPasskeys) { passkeyInfo in
                                 Button(action: {
-                                    viewModel.handleSelectReplace(passkeyId: passkeyInfo.id)
+                                    viewModel.handleSelectReplace(passkeyInfo)
                                     navigationPath.append(PasskeyNavigationDestination.replace(passkeyInfo.id))
                                 }, label: {
                                     ExistingPasskeyRow(passkey: passkeyInfo)
@@ -314,8 +314,8 @@ public class PasskeyRegistrationViewModel: ObservableObject {
     @Published public var loadingMessage: String = ""
     @Published public var existingPasskeys: [PasskeyWithCredentialInfo] = []
     @Published public var existingItemsWithoutPasskey: [ItemWithCredentialInfo] = []
-    @Published public var selectedPasskeyToReplace: UUID?
-    @Published public var selectedItemToMerge: UUID?
+    @Published public var selectedPasskeyToReplace: PasskeyWithCredentialInfo?
+    @Published public var selectedItemToMerge: ItemWithCredentialInfo?
     @Published public var isMergeMode: Bool = false
 
     private let completionHandler: (Bool) -> Void
@@ -359,24 +359,20 @@ public class PasskeyRegistrationViewModel: ObservableObject {
         displayName = rpId
     }
 
-    public func handleSelectReplace(passkeyId: UUID) {
-        selectedPasskeyToReplace = passkeyId
+    public func handleSelectReplace(_ passkey: PasskeyWithCredentialInfo) {
+        selectedPasskeyToReplace = passkey
         selectedItemToMerge = nil
         isMergeMode = false
         // Pre-fill display name with the existing passkey's name
-        if let passkey = existingPasskeys.first(where: { $0.id == passkeyId }) {
-            displayName = passkey.displayName
-        }
+        displayName = passkey.displayName
     }
 
-    public func handleSelectMerge(itemId: UUID) {
+    public func handleSelectMerge(_ item: ItemWithCredentialInfo) {
         selectedPasskeyToReplace = nil
-        selectedItemToMerge = itemId
+        selectedItemToMerge = item
         isMergeMode = true
         // Pre-fill display name with the existing item's service name
-        if let item = existingItemsWithoutPasskey.first(where: { $0.itemId == itemId }) {
-            displayName = item.serviceName ?? rpId
-        }
+        displayName = item.serviceName ?? rpId
     }
 
     public func createPasskey() {
@@ -430,6 +426,7 @@ public class PasskeyRegistrationViewModel: ObservableObject {
             existingPasskeys: [
                 PasskeyWithCredentialInfo(
                     id: UUID(),
+                    manifestId: "preview",
                     displayName: "My Example Passkey",
                     serviceName: "Example Service",
                     username: "user@example.com",
@@ -438,6 +435,7 @@ public class PasskeyRegistrationViewModel: ObservableObject {
                 ),
                 PasskeyWithCredentialInfo(
                     id: UUID(),
+                    manifestId: "preview",
                     displayName: "Work Account",
                     serviceName: "Example Service",
                     username: "user@example.com",

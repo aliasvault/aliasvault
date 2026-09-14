@@ -30,9 +30,9 @@ class VaultPasskey(
     }
 
     /**
-     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
+     * Get all passkeys for an item.
      */
-    fun getPasskeysForItem(itemId: UUID, manifestId: String? = null): List<Passkey> {
+    fun getPasskeysForItem(itemId: UUID, manifestId: String): List<Passkey> {
         return passkeyRepository.getForItem(itemId, manifestId)
     }
 

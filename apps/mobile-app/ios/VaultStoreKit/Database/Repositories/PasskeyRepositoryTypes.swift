@@ -20,11 +20,11 @@ public struct ItemWithCredentialInfoData {
     public let createdAt: Date
     /// When the item was last updated.
     public let updatedAt: Date
-    /// The manifest the item lives in, when known.
-    public let manifestId: String?
+    /// The manifest the item lives in.
+    public let manifestId: String
 
     /// Create an entry from the mapped row values.
-    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date, manifestId: String? = nil) {
+    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date, manifestId: String) {
         self.itemId = itemId
         self.serviceName = serviceName
         self.urls = urls
@@ -43,6 +43,4 @@ public enum PasskeyRepositoryError: Error {
     case invalidKeyData
     /// No live passkey with the given id exists.
     case passkeyNotFound
-    /// No item with the given id exists.
-    case itemNotFound
 }

@@ -71,13 +71,12 @@ object PasskeyQueries {
     """
 
     /**
-     * Insert a new passkey, stamped with the manifest of the item it hangs off. Binds the item id twice:
-     * once for the column, once for the manifest lookup, followed by the fallback manifest.
+     * Insert a new passkey, stamped with the manifest of the item it hangs off (bound third, after the item id).
      */
     const val INSERT = """
         INSERT INTO Passkeys (Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey,
                               PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     /**
@@ -123,20 +122,19 @@ object PasskeyQueries {
     """.trimIndent()
 
     /**
-     * Create an Item record for passkey registration, stamped with the manifest of its folder (or the
-     * fallback manifest when it has none).
+     * Create an Item record for passkey registration. Binds (id, name, itemType, logoId, folderId, now, now, 0, null, manifestId).
      */
     const val CREATE_ITEM = """
         INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, DeletedAt, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     /**
-     * Insert a field value, stamped with the manifest of its item.
+     * Insert a field value. Binds (id, itemId, fieldDefinitionId, fieldKey, value, weight, now, now, 0, manifestId).
      */
     const val INSERT_FIELD_VALUE = """
         INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     /**

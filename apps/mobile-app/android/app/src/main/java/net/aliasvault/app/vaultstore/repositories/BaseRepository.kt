@@ -22,18 +22,6 @@ open class BaseRepository(
     }
 
     /**
-     * The manifest a manifest-scoped row belongs to, looked up from the row itself: the personal manifest when
-     * the row exists there, else the lowest manifest id holding it. Null when no such row exists.
-     */
-    protected fun resolveRowManifestId(table: String, id: String, column: String = "Id"): String? {
-        val rows = executeQuery("SELECT ManifestId FROM $table WHERE $column = ? ORDER BY ManifestId", arrayOf(id))
-        val manifestIds = rows.mapNotNull { it["ManifestId"] as? String }
-        if (manifestIds.isEmpty()) return null
-        val personal = database.getPersonalManifestId()
-        return manifestIds.firstOrNull { it == personal } ?: manifestIds.first()
-    }
-
-    /**
      * The grouping key of a manifest-scoped row, for joining rows of one query to rows of another in memory.
      */
     protected fun scopedKey(manifestId: String, id: String): String {

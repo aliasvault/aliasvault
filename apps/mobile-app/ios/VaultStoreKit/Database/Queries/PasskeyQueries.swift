@@ -40,6 +40,12 @@ public struct PasskeyQueries {
         WHERE p.Id = ? AND p.IsDeleted = 0
         """
 
+    /// Get one passkey inside one manifest, bound as [passkeyId, manifestId].
+    public static let getByIdInManifest = """
+        \(baseSelectWithItemCheck)
+        WHERE p.Id = ? AND p.ManifestId = ? AND p.IsDeleted = 0
+        """
+
     /// Get all passkeys for one item, bound as [itemId, manifestId].
     public static let getByItemId = """
         \(baseSelect)
@@ -67,11 +73,10 @@ public struct PasskeyQueries {
         ORDER BY p.CreatedAt DESC
         """
 
-    /// Insert a new passkey, stamped with the manifest of the item it hangs off. Binds the item id twice:
-    /// once for the column, once for the manifest lookup, followed by the fallback manifest.
+    /// Insert a new passkey, stamped with the manifest of the item it hangs off (bound third, after the item id).
     public static let insert = """
         INSERT INTO Passkeys (Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     /// Soft delete a passkey, bound as [now, passkeyId, manifestId].

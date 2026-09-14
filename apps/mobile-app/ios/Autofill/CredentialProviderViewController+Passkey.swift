@@ -87,8 +87,10 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
             // If the item behind this passkey also has a TOTP code and the user has the
             // copy-on-fill setting enabled (default), put the current code on the clipboard.
-            let totp = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId, manifestId: passkey.manifestId)) ?? nil
-            TotpClipboard.copyCodeIfEnabled(totp: totp)
+            if let manifestId = passkey.manifestId {
+                let totp = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId, manifestId: manifestId)) ?? nil
+                TotpClipboard.copyCodeIfEnabled(totp: totp)
+            }
 
             recordPasskeyUsage(vaultStore: vaultStore, passkey: passkey)
 
@@ -265,9 +267,13 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         var existingPasskeys: [PasskeyWithCredentialInfo] = []
         do {
             let results = try vaultStore.getPasskeysWithCredentialInfo(forRpId: rpId, userId: userId)
-            existingPasskeys = results.map { result in
-                PasskeyWithCredentialInfo(
+            existingPasskeys = results.compactMap { result in
+                guard let manifestId = result.passkey.manifestId else {
+                    return nil
+                }
+                return PasskeyWithCredentialInfo(
                     id: result.passkey.id,
+                    manifestId: manifestId,
                     displayName: result.passkey.displayName,
                     serviceName: result.serviceName,
                     username: result.username,
@@ -290,6 +296,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             existingItemsWithoutPasskey = results.map { item in
                 ItemWithCredentialInfo(
                     itemId: item.itemId,
+                    manifestId: item.manifestId,
                     serviceName: item.serviceName,
                     urls: item.urls,
                     username: item.username,
@@ -485,18 +492,20 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
                 // Step 4: Store credential with passkey in database
                 // Check if we're replacing an existing passkey
-                if let oldPasskeyId = viewModel.selectedPasskeyToReplace {
+                if let oldPasskey = viewModel.selectedPasskeyToReplace {
                     // Replace existing passkey
                     try vaultStore.replacePasskey(
-                        oldPasskeyId: oldPasskeyId,
+                        oldPasskeyId: oldPasskey.id,
+                        manifestId: oldPasskey.manifestId,
                         newPasskey: passkey,
                         displayName: viewModel.displayName,
                         logo: logo
                     )
-                } else if let existingItemId = viewModel.selectedItemToMerge {
+                } else if let existingItem = viewModel.selectedItemToMerge {
                     // Merge passkey into existing item without passkey
                     try vaultStore.addPasskeyToExistingItem(
-                        itemId: existingItemId,
+                        itemId: existingItem.itemId,
+                        manifestId: existingItem.manifestId,
                         passkey: passkey,
                         logo: logo
                     )
@@ -653,8 +662,12 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
      * Recorded before the request completes: the host may tear the extension down right after.
      */
     private func recordPasskeyUsage(vaultStore: VaultStore, passkey: Passkey) {
+        guard let manifestId = passkey.manifestId else {
+            print("[Autofill] Passkey \(passkey.id) carries no manifest, usage not recorded")
+            return
+        }
         do {
-            try vaultStore.recordItemUsage(itemId: passkey.parentItemId, manifestId: passkey.manifestId, action: .passkey)
+            try vaultStore.recordItemUsage(itemId: passkey.parentItemId, manifestId: manifestId, action: .passkey)
         } catch {
             print("[Autofill] Failed to record passkey usage: \(error)")
         }

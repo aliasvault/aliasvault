@@ -25,20 +25,20 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 self.handleCancel()
             },
             serviceUrl: serviceUrl,
-            urlLinker: { itemId, url in
+            urlLinker: { credential, url in
                 /*
-                 * Step 1 — Append the URL/app identifier to the chosen credential's
+                 * Step 1: append the URL/app identifier to the chosen credential's
                  * `login.url` multi-value field.
                  */
                 do {
-                    try vaultStore.appendUrl(toItemId: itemId, url: url)
+                    try vaultStore.appendUrl(toItemId: credential.id, manifestId: credential.manifestId, url: url)
                 } catch {
                     print("[Autofill] Failed to append URL to credential: \(error)")
                     return
                 }
 
                 /*
-                 * Step 2 — Push the change to the server (skipped if offline, client will retry later).
+                 * Step 2: push the change to the server (skipped if offline, client will retry later).
                  */
                 let webApiService = WebApiService()
                 do {
@@ -48,7 +48,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 }
 
                 /*
-                 * Step 3 — Refresh the iOS credential identity store with the
+                 * Step 3: refresh the iOS credential identity store with the
                  * new URL.
                  */
                 do {
@@ -59,9 +59,9 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                     print("[Autofill] Failed to refresh iOS credential identity cache: \(error)")
                 }
             },
-            usageRecorder: { itemId in
+            usageRecorder: { credential in
                 do {
-                    try vaultStore.recordItemUsage(itemId: itemId, action: .autofill)
+                    try vaultStore.recordItemUsage(itemId: credential.id, manifestId: credential.manifestId, action: .autofill)
                 } catch {
                     print("[Autofill] Failed to record credential usage: \(error)")
                 }

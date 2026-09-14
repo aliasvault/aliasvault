@@ -337,6 +337,7 @@ public class PasskeyProviderViewModel: ObservableObject {
     let mockCredentials: [AutofillCredential] = [
         AutofillCredential(
             id: UUID(),
+            manifestId: "preview",
             serviceName: "GitHub",
             serviceUrls: ["https://github.com"],
             logo: nil,
@@ -350,6 +351,7 @@ public class PasskeyProviderViewModel: ObservableObject {
         ),
         AutofillCredential(
             id: UUID(),
+            manifestId: "preview",
             serviceName: "Google",
             serviceUrls: ["https://google.com"],
             logo: nil,
@@ -396,6 +398,7 @@ public class PasskeyProviderViewModel: ObservableObject {
     let mockCredentials: [AutofillCredential] = [
         AutofillCredential(
             id: UUID(),
+            manifestId: "preview",
             serviceName: "GitHub",
             serviceUrls: ["https://github.com"],
             logo: nil,

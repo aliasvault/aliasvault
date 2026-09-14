@@ -69,15 +69,13 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
+     * Get all passkeys for an item.
      * @param itemId The UUID of the parent item
-     * @param manifestId The manifest the item belongs to, when known
+     * @param manifestId The manifest the item belongs to
      * @return List of Passkey objects
      */
-    fun getForItem(itemId: UUID, manifestId: String? = null): List<Passkey> {
-        val id = itemId.toString().lowercase()
-        val scope = manifestId ?: resolveRowManifestId("Items", id) ?: return emptyList()
-        val results = executeQuery(PasskeyQueries.GET_BY_ITEM_ID, arrayOf(id, scope))
+    fun getForItem(itemId: UUID, manifestId: String): List<Passkey> {
+        val results = executeQuery(PasskeyQueries.GET_BY_ITEM_ID, arrayOf(itemId.toString().lowercase(), manifestId))
         return results.mapNotNull { parsePasskeyRow(it) }
     }
 
@@ -104,18 +102,17 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     // MARK: - Write Operations
 
     /**
-     * Insert a new passkey, stamped with the manifest of its item.
+     * Insert a new passkey, stamped with the manifest of its item, which the caller has already put on it.
      * @param passkey The passkey to insert
      */
     private fun insert(passkey: Passkey) {
-        val itemId = passkey.parentItemId.toString().lowercase()
+        val manifestId = passkey.manifestId ?: error("Passkey has no manifest: ${passkey.id}")
         executeUpdate(
             PasskeyQueries.INSERT,
             arrayOf(
                 passkey.id.toString().lowercase(),
-                itemId,
-                itemId,
-                activeManifestId(),
+                passkey.parentItemId.toString().lowercase(),
+                manifestId,
                 passkey.rpId,
                 passkey.userHandle,
                 String(passkey.publicKey, Charsets.UTF_8),
@@ -157,7 +154,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             // Create the Item
             executeUpdate(
                 PasskeyQueries.CREATE_ITEM,
-                arrayOf(itemId, displayName, "Login", logoId, null, timestamp, timestamp, 0, null, null, manifestId),
+                arrayOf(itemId, displayName, "Login", logoId, null, timestamp, timestamp, 0, null, manifestId),
             )
 
             // Insert URL and username field values
@@ -433,7 +430,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     private fun insertFieldValue(itemId: String, manifestId: String, fieldKey: String, value: String, weight: Int, timestamp: String) {
         executeUpdate(
             PasskeyQueries.INSERT_FIELD_VALUE,
-            arrayOf(generateId(), itemId, null, fieldKey, value, weight, timestamp, timestamp, 0, itemId, manifestId),
+            arrayOf(generateId(), itemId, null, fieldKey, value, weight, timestamp, timestamp, 0, manifestId),
         )
     }
 

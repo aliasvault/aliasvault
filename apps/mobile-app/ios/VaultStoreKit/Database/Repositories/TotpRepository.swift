@@ -13,15 +13,10 @@ public class TotpRepository: BaseRepository {
     /// Get all TOTP codes for a specific item.
     /// - Parameters:
     ///   - itemId: The UUID of the item
-    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - manifestId: The manifest the item belongs to
     /// - Returns: Array of TotpCode objects for the item
-    public func getTotpCodesForItem(_ itemId: UUID, manifestId: String? = nil) throws -> [TotpCode] {
-        let itemIdString = itemId.uuidString.lowercased()
-        guard let scope = try manifestId ?? resolveRowManifestId(table: "Items", id: itemIdString) else {
-            return []
-        }
-
-        let results = try client.executeQuery(Self.getByItemId, params: [itemIdString, scope])
+    public func getTotpCodesForItem(_ itemId: UUID, manifestId: String) throws -> [TotpCode] {
+        let results = try client.executeQuery(Self.getByItemId, params: [itemId.uuidString.lowercased(), manifestId])
         return results.compactMap { row -> TotpCode? in
             guard let idString = row["Id"] as? String, let id = UUID(uuidString: idString), let name = row["Name"] as? String, let secretKey = row["SecretKey"] as? String else {
                 return nil
@@ -46,9 +41,9 @@ public class TotpRepository: BaseRepository {
     /// Get the first TOTP code for a specific item (convenience method).
     /// - Parameters:
     ///   - itemId: The UUID of the item
-    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - manifestId: The manifest the item belongs to
     /// - Returns: Optional TotpCode if one exists
-    public func getFirstTotpCodeForItem(_ itemId: UUID, manifestId: String? = nil) throws -> TotpCode? {
+    public func getFirstTotpCodeForItem(_ itemId: UUID, manifestId: String) throws -> TotpCode? {
         return try getTotpCodesForItem(itemId, manifestId: manifestId).first
     }
 }

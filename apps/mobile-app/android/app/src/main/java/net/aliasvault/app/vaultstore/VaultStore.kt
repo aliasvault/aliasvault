@@ -762,9 +762,9 @@ class VaultStore(
     }
 
     /**
-     * Get all passkeys for an item. Resolves the item's manifest when the caller does not hold it.
+     * Get all passkeys for an item.
      */
-    fun getPasskeysForItem(itemId: java.util.UUID, manifestId: String? = null): List<net.aliasvault.app.vaultstore.models.Passkey> {
+    fun getPasskeysForItem(itemId: java.util.UUID, manifestId: String): List<net.aliasvault.app.vaultstore.models.Passkey> {
         return passkey.getPasskeysForItem(itemId, manifestId)
     }
 

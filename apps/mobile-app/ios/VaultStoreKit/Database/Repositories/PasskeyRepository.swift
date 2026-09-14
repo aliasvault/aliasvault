@@ -20,16 +20,26 @@ public class PasskeyRepository: BaseRepository {
         return PasskeyMapper.mapRow(row)
     }
 
+    /// Get a passkey by its ID inside one manifest.
+    /// - Parameters:
+    ///   - passkeyId: The passkey ID (UUID string)
+    ///   - manifestId: The manifest the passkey belongs to
+    /// - Returns: Passkey object or nil if not found
+    public func getById(_ passkeyId: String, manifestId: String) throws -> Passkey? {
+        let results = try client.executeQuery(PasskeyQueries.getByIdInManifest, params: [passkeyId, manifestId])
+        guard let row = results.first.flatMap({ PasskeyRow(from: $0) }) else {
+            return nil
+        }
+        return PasskeyMapper.mapRow(row)
+    }
+
     /// Get all passkeys for an item.
     /// - Parameters:
     ///   - itemId: The item ID (UUID string)
-    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - manifestId: The manifest the item belongs to
     /// - Returns: Array of Passkey objects
-    public func getByItemId(_ itemId: String, manifestId: String? = nil) throws -> [Passkey] {
-        guard let scope = try manifestId ?? resolveRowManifestId(table: "Items", id: itemId) else {
-            return []
-        }
-        let results = try client.executeQuery(PasskeyQueries.getByItemId, params: [itemId, scope])
+    public func getByItemId(_ itemId: String, manifestId: String) throws -> [Passkey] {
+        let results = try client.executeQuery(PasskeyQueries.getByItemId, params: [itemId, manifestId])
         return PasskeyMapper.mapRows(results.compactMap { PasskeyRow(from: $0) })
     }
 
@@ -100,7 +110,7 @@ public class PasskeyRepository: BaseRepository {
 
     /// Map one row of the without-passkey queries.
     private func mapItemWithCredentialInfo(_ row: [String: Any], urls: [String]) -> ItemWithCredentialInfoData? {
-        guard let idString = row["Id"] as? String, let itemId = UUID(uuidString: idString) else {
+        guard let idString = row["Id"] as? String, let itemId = UUID(uuidString: idString), let manifestId = row["ManifestId"] as? String else {
             return nil
         }
 
@@ -114,76 +124,58 @@ public class PasskeyRepository: BaseRepository {
             hasPassword: !(password ?? "").isEmpty,
             createdAt: DateHelpers.parseDateString(row["CreatedAt"] as? String ?? "") ?? Date.distantPast,
             updatedAt: DateHelpers.parseDateString(row["UpdatedAt"] as? String ?? "") ?? Date.distantPast,
-            manifestId: row["ManifestId"] as? String
+            manifestId: manifestId
         )
     }
 
     // MARK: - Write Operations
 
-    /// Create a new passkey. The manifest is read from the item the passkey hangs off.
-    /// - Parameter passkey: The passkey to create
-    @discardableResult
-    public func create(_ passkey: Passkey) throws -> String {
-        return try withTransaction {
-            try insertPasskey(passkey, itemId: passkey.parentItemId.uuidString.lowercased(), displayName: passkey.displayName, now: self.now())
-        }
-    }
-
     /// Soft delete a passkey.
     /// - Parameters:
     ///   - passkeyId: The ID of the passkey to delete
-    ///   - manifestId: The manifest the passkey belongs to, when the caller knows it
+    ///   - manifestId: The manifest the passkey belongs to
     /// - Returns: Number of rows affected
     @discardableResult
-    public func delete(_ passkeyId: String, manifestId: String? = nil) throws -> Int {
+    public func delete(_ passkeyId: String, manifestId: String) throws -> Int {
         return try withTransaction {
-            guard let scope = try manifestId ?? resolveRowManifestId(table: "Passkeys", id: passkeyId) else {
-                return 0
-            }
-            return try client.executeUpdate(PasskeyQueries.softDelete, params: [self.now(), passkeyId, scope])
+            try client.executeUpdate(PasskeyQueries.softDelete, params: [self.now(), passkeyId, manifestId])
         }
     }
 
     /// Update a passkey's display name.
     /// - Parameters:
     ///   - passkeyId: The ID of the passkey to update
+    ///   - manifestId: The manifest the passkey belongs to
     ///   - displayName: The new display name
-    ///   - manifestId: The manifest the passkey belongs to, when the caller knows it
     /// - Returns: Number of rows affected
     @discardableResult
-    public func updateDisplayName(_ passkeyId: String, displayName: String, manifestId: String? = nil) throws -> Int {
+    public func updateDisplayName(_ passkeyId: String, manifestId: String, displayName: String) throws -> Int {
         return try withTransaction {
-            guard let scope = try manifestId ?? resolveRowManifestId(table: "Passkeys", id: passkeyId) else {
-                return 0
-            }
-            return try client.executeUpdate(PasskeyQueries.updateDisplayName, params: [displayName, self.now(), passkeyId, scope])
+            try client.executeUpdate(PasskeyQueries.updateDisplayName, params: [displayName, self.now(), passkeyId, manifestId])
         }
     }
 
     /// Replace an existing passkey with a new one, optionally refreshing the item's logo.
-    /// Soft deletes the old passkey and creates a new one linked to the same item, in that item's manifest.
+    /// Soft deletes the old passkey and creates a new one linked to the same item, in the same manifest.
     /// - Parameters:
     ///   - oldPasskeyId: The ID of the passkey to replace
+    ///   - manifestId: The manifest the old passkey and its item belong to
     ///   - newPasskey: The new passkey to create
     ///   - displayName: The display name for the new passkey
     ///   - logo: Optional favicon bytes fetched for the passkey's rpId
     /// - Returns: The ID of the new passkey
     @discardableResult
-    public func replace(oldPasskeyId: String, with newPasskey: Passkey, displayName: String, logo: Data? = nil) throws -> String {
+    public func replace(oldPasskeyId: String, manifestId: String, with newPasskey: Passkey, displayName: String, logo: Data? = nil) throws -> String {
         return try withTransaction {
-            guard let scope = try newPasskey.manifestId ?? resolveRowManifestId(table: "Passkeys", id: oldPasskeyId) else {
-                throw PasskeyRepositoryError.passkeyNotFound
-            }
-
             let now = self.now()
             let itemId = newPasskey.parentItemId.uuidString.lowercased()
 
             if let logo = logo {
-                try refreshItemLogo(itemId: itemId, manifestId: scope, rpId: newPasskey.rpId, logo: logo, now: now)
+                try refreshItemLogo(itemId: itemId, manifestId: manifestId, rpId: newPasskey.rpId, logo: logo, now: now)
             }
 
-            try client.executeUpdate(PasskeyQueries.softDelete, params: [now, oldPasskeyId, scope])
-            return try insertPasskey(newPasskey, itemId: itemId, displayName: displayName, now: now)
+            try client.executeUpdate(PasskeyQueries.softDelete, params: [now, oldPasskeyId, manifestId])
+            return try insertPasskey(newPasskey, itemId: itemId, manifestId: manifestId, displayName: displayName, now: now)
         }
     }
 
@@ -208,52 +200,35 @@ public class PasskeyRepository: BaseRepository {
             let scope = try writeManifestId()
             let logoId = try resolveLogoId(existingLogoId: nil, manifestId: scope, rpId: rpId, logo: logo, now: now)
 
-            try client.executeUpdate(ItemQueries.insertItem, params: [itemId, displayName as SqliteBindValue, ItemType.login, logoId as SqliteBindValue, nil, now, now, 0, nil, scope])
+            try client.executeUpdate(ItemQueries.insertItem, params: [itemId, displayName as SqliteBindValue, ItemType.login, logoId as SqliteBindValue, nil, now, now, 0, scope])
 
             try insertSystemField(itemId: itemId, fieldKey: FieldKey.loginUrl, value: "https://\(rpId)", manifestId: scope, now: now)
             if let userName = userName, !userName.isEmpty {
                 try insertSystemField(itemId: itemId, fieldKey: FieldKey.loginUsername, value: userName, manifestId: scope, now: now)
             }
 
-            _ = try insertPasskey(passkey, itemId: itemId, displayName: passkey.displayName, now: now)
+            _ = try insertPasskey(passkey, itemId: itemId, manifestId: scope, displayName: passkey.displayName, now: now)
             return itemId
-        }
-    }
-
-    /// Refresh an item's logo from a freshly fetched favicon. Only the logo is touched, never the item name.
-    /// - Parameters:
-    ///   - itemId: The item ID
-    ///   - logo: The favicon bytes
-    ///   - rpId: The relying party ID the favicon was fetched for
-    public func updateItemLogo(itemId: String, logo: Data, rpId: String) throws {
-        try withTransaction {
-            guard let scope = try resolveRowManifestId(table: "Items", id: itemId) else {
-                throw PasskeyRepositoryError.itemNotFound
-            }
-            try refreshItemLogo(itemId: itemId, manifestId: scope, rpId: rpId, logo: logo, now: self.now())
         }
     }
 
     /// Add a passkey to an existing Item (merge passkey into existing credential).
     /// - Parameters:
     ///   - itemId: The UUID of the existing Item to add the passkey to
+    ///   - manifestId: The manifest the item belongs to
     ///   - passkey: The passkey to add
     ///   - logo: Optional favicon bytes fetched for the passkey's rpId
     /// - Returns: The ID of the created passkey
     @discardableResult
-    public func addPasskeyToExistingItem(itemId: UUID, passkey: Passkey, logo: Data? = nil) throws -> String {
+    public func addPasskeyToExistingItem(itemId: UUID, manifestId: String, passkey: Passkey, logo: Data? = nil) throws -> String {
         return try withTransaction {
             let itemIdString = itemId.uuidString.lowercased()
-            guard let scope = try resolveRowManifestId(table: "Items", id: itemIdString) else {
-                throw PasskeyRepositoryError.itemNotFound
-            }
-
             let now = self.now()
             if let logo = logo {
-                try refreshItemLogo(itemId: itemIdString, manifestId: scope, rpId: passkey.rpId, logo: logo, now: now)
+                try refreshItemLogo(itemId: itemIdString, manifestId: manifestId, rpId: passkey.rpId, logo: logo, now: now)
             }
 
-            return try insertPasskey(passkey, itemId: itemIdString, displayName: passkey.displayName, now: now)
+            return try insertPasskey(passkey, itemId: itemIdString, manifestId: manifestId, displayName: passkey.displayName, now: now)
         }
     }
 
@@ -267,23 +242,21 @@ public class PasskeyRepository: BaseRepository {
     /// Insert one system field value for an item.
     private func insertSystemField(itemId: String, fieldKey: String, value: String, manifestId: String, now: String) throws {
         let weight = FieldValueQueries.defaultWeight(forFieldKey: fieldKey)
-        try client.executeUpdate(FieldValueQueries.insert, params: [generateId(), itemId, nil, fieldKey, value, weight, now, now, 0, itemId, manifestId])
+        try client.executeUpdate(FieldValueQueries.insert, params: [generateId(), itemId, nil, fieldKey, value, weight, now, now, 0, manifestId])
     }
 
     /// Insert a passkey row linked to an item, stamped with the item's manifest.
     /// - Returns: The passkey ID
-    private func insertPasskey(_ passkey: Passkey, itemId: String, displayName: String, now: String) throws -> String {
+    private func insertPasskey(_ passkey: Passkey, itemId: String, manifestId: String, displayName: String, now: String) throws -> String {
         let passkeyId = passkey.id.uuidString.lowercased()
         guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8), let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {
             throw PasskeyRepositoryError.invalidKeyData
         }
 
-        let fallbackManifestId = try writeManifestId()
         try client.executeUpdate(PasskeyQueries.insert, params: [
             passkeyId,
             itemId,
-            itemId,
-            fallbackManifestId,
+            manifestId,
             passkey.rpId,
             blobParam(passkey.userHandle),
             publicKeyString,

@@ -3,6 +3,7 @@ import Foundation
 /// Helper struct to pass passkey data with credential info
 public struct PasskeyWithCredentialInfo: Identifiable {
     public let id: UUID
+    public let manifestId: String
     public let displayName: String
     public let serviceName: String?
     public let username: String?
@@ -20,8 +21,9 @@ public struct PasskeyWithCredentialInfo: Identifiable {
         return (mail?.isEmpty == false) ? mail : nil
     }
 
-    public init(id: UUID, displayName: String, serviceName: String?, username: String?, email: String? = nil, rpId: String, userId: Data?) {
+    public init(id: UUID, manifestId: String, displayName: String, serviceName: String?, username: String?, email: String? = nil, rpId: String, userId: Data?) {
         self.id = id
+        self.manifestId = manifestId
         self.displayName = displayName
         self.serviceName = serviceName
         self.username = username

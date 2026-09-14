@@ -4,8 +4,8 @@ import Foundation
 public struct ItemWithCredentialInfo: Identifiable {
     public let id: UUID  // Alias for itemId for Identifiable conformance
     public let itemId: UUID
+    public let manifestId: String
     public let serviceName: String?
-    /// All URLs associated with this item (supports multi-value URL fields)
     public let urls: [String]
     public let username: String?
     public let email: String?
@@ -23,9 +23,10 @@ public struct ItemWithCredentialInfo: Identifiable {
         return (mail?.isEmpty == false) ? mail : nil
     }
 
-    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
+    public init(itemId: UUID, manifestId: String, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
         self.id = itemId
         self.itemId = itemId
+        self.manifestId = manifestId
         self.serviceName = serviceName
         self.urls = urls
         self.username = username

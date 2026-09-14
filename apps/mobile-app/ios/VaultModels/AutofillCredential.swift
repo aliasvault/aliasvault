@@ -5,7 +5,7 @@ import Foundation
 /// This replaces the legacy Credential model which was based on the old data structure.
 public struct AutofillCredential: Codable, Hashable, Equatable {
     public let id: UUID
-    public let manifestId: String?
+    public let manifestId: String
     public let serviceName: String?
     public let serviceUrls: [String]
     public let logo: Data?
@@ -25,7 +25,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
 
     public init(
         id: UUID,
-        manifestId: String? = nil,
+        manifestId: String,
         serviceName: String?,
         serviceUrls: [String],
         logo: Data?,

@@ -148,17 +148,18 @@ extension VaultStore {
     /// for kicking off `mutateVault(using:)` afterwards to push the change.
     /// - Parameters:
     ///   - itemId: The UUID of the credential to append to
+    ///   - manifestId: The manifest the credential belongs to
     ///   - url: The URL or app package identifier to add
-    public func appendUrl(toItemId itemId: UUID, url: String) throws {
-        try itemRepository.appendFieldValue(itemId: itemId.uuidString.lowercased(), fieldKey: FieldKey.loginUrl, value: url)
+    public func appendUrl(toItemId itemId: UUID, manifestId: String, url: String) throws {
+        try itemRepository.appendFieldValue(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, fieldKey: FieldKey.loginUrl, value: url)
     }
 
     /// Record one use of an item in its ItemStats row. Runs in a transaction, so the vault is persisted and marked dirty.
     /// - Parameters:
     ///   - itemId: The item that was used
-    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - manifestId: The manifest the item belongs to
     ///   - action: What the user did with it
-    public func recordItemUsage(itemId: UUID, manifestId: String? = nil, action: ItemUsageAction) throws {
+    public func recordItemUsage(itemId: UUID, manifestId: String, action: ItemUsageAction) throws {
         try itemStatsRepository.recordUsage(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, action: action)
     }
 
@@ -192,10 +193,10 @@ extension VaultStore {
     /// Get the first TOTP code for a specific item.
     /// - Parameters:
     ///   - itemId: The UUID of the item
-    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - manifestId: The manifest the item belongs to
     /// - Returns: Optional TotpCode if one exists
     /// - Throws: Database errors
-    public func getFirstTotpCode(forItemId itemId: UUID, manifestId: String? = nil) throws -> TotpCode? {
+    public func getFirstTotpCode(forItemId itemId: UUID, manifestId: String) throws -> TotpCode? {
         return try totpRepository.getFirstTotpCodeForItem(itemId, manifestId: manifestId)
     }
 }
