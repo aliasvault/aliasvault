@@ -86,8 +86,8 @@ public struct PasskeyQueries {
 
     /// Insert a new passkey.
     public static let insert = """
-        INSERT INTO Passkeys (Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Passkeys (Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
         """
 
     /// Soft delete a passkey.
@@ -178,8 +178,8 @@ public struct PasskeyQueries {
 public struct LogoQueries {
     /// Insert a new logo.
     public static let insert = """
-        INSERT INTO Logos (Id, Source, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, 'favicon', ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
     /// Update logo file data.

@@ -1,4 +1,5 @@
 import Foundation
+import RustCoreFramework
 import VaultModels
 import VaultUtils
 
@@ -182,7 +183,9 @@ public class PasskeyRepository: BaseRepository {
                 passkey.displayName,
                 now,
                 now,
-                0
+                0,
+                passkey.parentItemId.uuidString.lowercased(),
+                activeManifestId()
             ])
 
             return passkeyId
@@ -261,7 +264,9 @@ public class PasskeyRepository: BaseRepository {
                 displayName,
                 now,
                 now,
-                0
+                0,
+                newPasskey.parentItemId.uuidString.lowercased(),
+                activeManifestId()
             ])
 
             return newPasskeyId
@@ -307,7 +312,9 @@ public class PasskeyRepository: BaseRepository {
                 nil, // FolderId
                 now,
                 now,
-                0
+                0,
+                nil,
+                activeManifestId()
             ])
 
             // Create field values - login.url
@@ -321,7 +328,9 @@ public class PasskeyRepository: BaseRepository {
                 0, // Weight
                 now,
                 now,
-                0
+                0,
+                itemId,
+                activeManifestId()
             ])
 
             // Create field values - login.username if provided
@@ -336,7 +345,9 @@ public class PasskeyRepository: BaseRepository {
                     0, // Weight
                     now,
                     now,
-                    0
+                    0,
+                    itemId,
+                    activeManifestId()
                 ])
             }
 
@@ -360,7 +371,9 @@ public class PasskeyRepository: BaseRepository {
                 passkey.displayName,
                 now,
                 now,
-                0
+                0,
+                itemId,
+                activeManifestId()
             ])
 
             return itemId
@@ -464,7 +477,9 @@ public class PasskeyRepository: BaseRepository {
                 passkey.displayName,
                 now,
                 now,
-                0
+                0,
+                itemIdString,
+                activeManifestId()
             ])
 
             return passkeyId
@@ -497,13 +512,15 @@ public class PasskeyRepository: BaseRepository {
             return existingLogoId
         }
 
-        // Create new logo entry
-        let logoId = generateId()
+        // Create new logo entry. The id is derived from (manifest, kind, source) by the Rust core.
+        let manifestId = activeManifestId()
+        let logoId = RustCoreFramework.vaultCodecLogoIdFor(manifestId: manifestId, kind: "favicon", source: source)
         let logoDataParam = "av-base64-to-blob:\(logoData.base64EncodedString())"
 
         try client.executeUpdate(LogoQueries.insert, params: [
             logoId,
             source,
+            manifestId,
             logoDataParam,
             "image/png",
             nil,

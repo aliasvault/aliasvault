@@ -29,4 +29,7 @@ public protocol DatabaseClient: AnyObject {
 
     /// Rollback a database transaction.
     func rollbackTransaction() throws
+
+    /// The id of the user's personal manifest, or nil before the first pull recorded one.
+    func personalManifestId() -> String?
 }

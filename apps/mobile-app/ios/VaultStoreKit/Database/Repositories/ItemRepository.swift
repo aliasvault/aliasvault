@@ -254,7 +254,7 @@ public class ItemRepository: BaseRepository {
             // Soft delete attachments AND zero their blob bytes so storage is reclaimed
             // immediately while the row remains as a tombstone for LWW sync.
             try client.executeUpdate(
-                "UPDATE Attachments SET IsDeleted = 1, Blob = X'', UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0",
+                "UPDATE Attachments SET IsDeleted = 1, Blob = NULL, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0",
                 params: [now, itemId]
             )
 
@@ -290,7 +290,9 @@ public class ItemRepository: BaseRepository {
                 item.folderId?.uuidString.lowercased() as SqliteBindValue,
                 now,
                 now,
-                0
+                0,
+                item.folderId?.uuidString.lowercased() as SqliteBindValue,
+                activeManifestId()
             ])
 
             // 2. Insert FieldValues
@@ -353,7 +355,9 @@ public class ItemRepository: BaseRepository {
                 9999,
                 now,
                 now,
-                0
+                0,
+                itemId,
+                activeManifestId()
             ])
 
             // Bump the parent Item's UpdatedAt so the change is picked up by
@@ -381,7 +385,9 @@ public class ItemRepository: BaseRepository {
                 index * 100, // Weight for ordering
                 now,
                 now,
-                0
+                0,
+                itemId,
+                activeManifestId()
             ])
         }
     }
@@ -451,7 +457,9 @@ public class ItemRepository: BaseRepository {
                     index * 100,
                     now,
                     now,
-                    0
+                    0,
+                    itemId,
+                    activeManifestId()
                 ])
             }
         }

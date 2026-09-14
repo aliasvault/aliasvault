@@ -13,6 +13,12 @@ public class BaseRepository {
         self.client = client
     }
 
+    /// The manifest new rows outside any folder or item are stamped with: the personal manifest. Rows inside a
+    /// folder or item take that parent's manifest through the SQL instead.
+    public func activeManifestId() -> String {
+        return client.personalManifestId() ?? ""
+    }
+
     // MARK: - Transaction Helpers
 
     /// Execute a function within a transaction.

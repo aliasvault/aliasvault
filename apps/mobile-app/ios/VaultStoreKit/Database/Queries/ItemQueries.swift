@@ -148,8 +148,8 @@ public struct ItemQueries {
 
     /// Insert a new item.
     public static let insertItem = """
-        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?))
         """
 
     /// Update an existing item.
@@ -219,8 +219,8 @@ public struct FieldValueQueries {
 
     /// Insert a new field value.
     public static let insert = """
-        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
         """
 
     /// Update an existing field value.

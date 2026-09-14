@@ -1426,13 +1426,14 @@ public struct VaultSql {
         CREATE TABLE \"ef_temp_Attachments\" (
             \"ManifestId\" TEXT COLLATE NOCASE NOT NULL,
             \"Id\" TEXT COLLATE NOCASE NOT NULL,
-            \"Blob\" BLOB NOT NULL,
+            \"Blob\" BLOB NULL,
             \"CreatedAt\" TEXT NOT NULL,
             \"Filename\" TEXT NOT NULL,
             \"IsDeleted\" INTEGER NOT NULL,
             \"ItemId\" TEXT COLLATE NOCASE NOT NULL,
             \"UpdatedAt\" TEXT NOT NULL,
             CONSTRAINT \"PK_Attachments\" PRIMARY KEY (\"ManifestId\", \"Id\"),
+            CONSTRAINT \"CK_Attachments_Blob_Tombstone\" CHECK (\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL),
             CONSTRAINT \"FK_Attachments_Items_ManifestId_ItemId\" FOREIGN KEY (\"ManifestId\", \"ItemId\") REFERENCES \"Items\" (\"ManifestId\", \"Id\") ON DELETE CASCADE
         );
         
@@ -1778,7 +1779,7 @@ public struct VaultSql {
         COMMIT;
         
         INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
-        VALUES ('20260910094359_2.1.0-ManifestScopedStorage', '10.0.10');
+        VALUES ('20260913090000_2.1.0-ManifestScopedStorage', '10.0.10');
         
         BEGIN TRANSACTION;
         CREATE TRIGGER IF NOT EXISTS \"TR_Items_ResyncChildManifestIds\"
@@ -1799,7 +1800,7 @@ public struct VaultSql {
         PRAGMA foreign_keys = ON;
         
         INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
-        VALUES ('20260910094449_2.1.1-ItemChildManifestTrigger', '10.0.10');
+        VALUES ('20260913090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
         """
 
     /// Migration SQL scripts indexed by migration number.
