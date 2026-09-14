@@ -5,6 +5,7 @@ import VaultUtils
 /// Raw item row from database query.
 public struct ItemRow {
     public let id: String
+    public let manifestId: String
     public let name: String?
     public let itemType: String
     public let folderId: String?
@@ -20,6 +21,7 @@ public struct ItemRow {
     /// Initialize from a database row dictionary.
     public init?(from row: [String: Any]) {
         guard let id = row["Id"] as? String,
+              let manifestId = row["ManifestId"] as? String,
               let itemType = row["ItemType"] as? String,
               let createdAt = row["CreatedAt"] as? String,
               let updatedAt = row["UpdatedAt"] as? String else {
@@ -27,6 +29,7 @@ public struct ItemRow {
         }
 
         self.id = id
+        self.manifestId = manifestId
         self.name = row["Name"] as? String
         self.itemType = itemType
         self.folderId = row["FolderId"] as? String
@@ -46,46 +49,10 @@ public struct ItemRow {
         self.deletedAt = row["DeletedAt"] as? String
         self.archivedAt = row["ArchivedAt"] as? String
     }
-}
 
-/// Raw tag row from database query.
-public struct TagRow {
-    public let itemId: String
-    public let id: String
-    public let name: String
-    public let color: String?
-
-    /// Initialize from a database row dictionary.
-    public init?(from row: [String: Any]) {
-        guard let itemId = row["ItemId"] as? String,
-              let id = row["Id"] as? String,
-              let name = row["Name"] as? String else {
-            return nil
-        }
-
-        self.itemId = itemId
-        self.id = id
-        self.name = name
-        self.color = row["Color"] as? String
-    }
-}
-
-/// Tag reference for single item queries (without ItemId).
-public struct SingleItemTagRow {
-    public let id: String
-    public let name: String
-    public let color: String?
-
-    /// Initialize from a database row dictionary.
-    public init?(from row: [String: Any]) {
-        guard let id = row["Id"] as? String,
-              let name = row["Name"] as? String else {
-            return nil
-        }
-
-        self.id = id
-        self.name = name
-        self.color = row["Color"] as? String
+    /// The key this item's child rows and folder path are grouped under (see `scopedKey`).
+    internal var scopedItemKey: String {
+        return scopedKey(manifestId: manifestId, id: id)
     }
 }
 
@@ -97,18 +64,14 @@ public struct ItemMapper {
     ///   - fields: Processed fields for this item
     ///   - folderPath: Computed folder path array (optional)
     /// - Returns: Item object
-    public static func mapRow(
-        _ row: ItemRow,
-        fields: [ItemField] = [],
-        folderPath: [String]? = nil
-    ) -> Item? {
-        guard let createdAt = DateHelpers.parseDateString(row.createdAt),
-              let updatedAt = DateHelpers.parseDateString(row.updatedAt) else {
+    public static func mapRow(_ row: ItemRow, fields: [ItemField] = [], folderPath: [String]? = nil) -> Item? {
+        guard let createdAt = DateHelpers.parseDateString(row.createdAt), let updatedAt = DateHelpers.parseDateString(row.updatedAt) else {
             return nil
         }
 
         return Item(
             id: UUID(uuidString: row.id) ?? UUID(),
+            manifestId: row.manifestId,
             name: row.name,
             itemType: row.itemType,
             logo: row.logo,
@@ -126,34 +89,14 @@ public struct ItemMapper {
     /// Map multiple database rows to Item objects with their fields.
     /// - Parameters:
     ///   - rows: Raw item rows from database
-    ///   - fieldsByItem: Dictionary of ItemId to array of fields
-    ///   - folderPathsByFolderId: Dictionary of FolderId to folder path array (optional)
+    ///   - fieldsByItem: Dictionary of scoped item key to array of fields
+    ///   - folderPathsByFolderKey: Dictionary of scoped folder key to folder path array (optional)
     /// - Returns: Array of Item objects
-    public static func mapRows(
-        _ rows: [ItemRow],
-        fieldsByItem: [String: [ItemField]],
-        folderPathsByFolderId: [UUID: [String]] = [:]
-    ) -> [Item] {
+    public static func mapRows(_ rows: [ItemRow], fieldsByItem: [String: [ItemField]], folderPathsByFolderKey: [String: [String]] = [:]) -> [Item] {
         return rows.compactMap { row in
-            let fields = fieldsByItem[row.id] ?? []
-            let folderPath = row.folderId
-                .flatMap { UUID(uuidString: $0) }
-                .flatMap { folderPathsByFolderId[$0] }
+            let fields = fieldsByItem[row.scopedItemKey] ?? []
+            let folderPath = row.folderId.flatMap { folderPathsByFolderKey[scopedKey(manifestId: row.manifestId, id: $0.lowercased())] }
             return mapRow(row, fields: fields, folderPath: folderPath)
         }
-    }
-
-    /// Map a single item row for recently deleted items (includes DeletedAt).
-    /// - Parameters:
-    ///   - row: Raw item row with DeletedAt
-    ///   - fields: Processed fields for this item
-    ///   - folderPath: Computed folder path array (optional)
-    /// - Returns: Item object (deletedAt stored as extension or separate property if needed)
-    public static func mapDeletedItemRow(
-        _ row: ItemRow,
-        fields: [ItemField] = [],
-        folderPath: [String]? = nil
-    ) -> Item? {
-        return mapRow(row, fields: fields, folderPath: folderPath)
     }
 }

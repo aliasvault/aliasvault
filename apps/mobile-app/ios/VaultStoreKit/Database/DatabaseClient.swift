@@ -18,6 +18,7 @@ public protocol DatabaseClient: AnyObject {
     ///   - query: The SQL query to execute
     ///   - params: The parameters to bind to the query
     /// - Returns: Number of rows affected
+    @discardableResult
     func executeUpdate(_ query: String, params: [SqliteBindValue]) throws -> Int
 
     /// Begin a database transaction.

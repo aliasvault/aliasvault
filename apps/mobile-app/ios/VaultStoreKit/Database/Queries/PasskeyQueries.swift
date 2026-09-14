@@ -1,41 +1,37 @@
 import Foundation
 
 /// SQL query constants for Passkey operations.
-/// Centralizes all passkey-related queries to avoid duplication.
 public struct PasskeyQueries {
-    /// Base SELECT for passkeys with common fields.
-    public static let baseSelect = """
-        SELECT
+    /// The passkey columns every SELECT projects.
+    private static let columns = """
           p.Id,
           p.ItemId,
+          p.ManifestId,
           p.RpId,
           p.UserHandle,
           p.PublicKey,
           p.PrivateKey,
           p.PrfKey,
           p.DisplayName,
+          p.AdditionalData,
           p.CreatedAt,
           p.UpdatedAt,
           p.IsDeleted
+        """
+
+    /// Base SELECT for passkeys without item information.
+    public static let baseSelect = """
+        SELECT
+        \(columns)
         FROM Passkeys p
         """
 
-    /// Base SELECT for passkeys joined with Items to check parent item deletion status.
+    /// Base SELECT for passkeys joined with their item, which must be live (not deleted, not in trash).
     public static let baseSelectWithItemCheck = """
         SELECT
-          p.Id,
-          p.ItemId,
-          p.RpId,
-          p.UserHandle,
-          p.PublicKey,
-          p.PrivateKey,
-          p.PrfKey,
-          p.DisplayName,
-          p.CreatedAt,
-          p.UpdatedAt,
-          p.IsDeleted
+        \(columns)
         FROM Passkeys p
-        INNER JOIN Items i ON p.ItemId = i.Id AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         """
 
     /// Get a passkey by its ID (credential ID).
@@ -44,10 +40,10 @@ public struct PasskeyQueries {
         WHERE p.Id = ? AND p.IsDeleted = 0
         """
 
-    /// Get all passkeys for an item.
+    /// Get all passkeys for one item, bound as [itemId, manifestId].
     public static let getByItemId = """
-        \(baseSelectWithItemCheck)
-        WHERE p.ItemId = ? AND p.IsDeleted = 0
+        \(baseSelect)
+        WHERE p.ItemId = ? AND p.ManifestId = ? AND p.IsDeleted = 0
         ORDER BY p.CreatedAt DESC
         """
 
@@ -59,154 +55,154 @@ public struct PasskeyQueries {
         """
 
     /// Get passkeys with item info for a specific rpId.
-    /// Joins with Items and FieldValues to get display info.
     public static let getWithItemInfoByRpId = """
         SELECT
-          p.Id,
-          p.ItemId,
-          p.RpId,
-          p.UserHandle,
-          p.PublicKey,
-          p.PrivateKey,
-          p.PrfKey,
-          p.DisplayName,
-          p.CreatedAt,
-          p.UpdatedAt,
-          p.IsDeleted,
+        \(columns),
           i.Name as ServiceName,
-          fv.Value as Username,
-          fv_email.Value as Email
+          (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0 LIMIT 1) as Username,
+          (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = 'login.email' AND fv.IsDeleted = 0 LIMIT 1) as Email
         FROM Passkeys p
-        INNER JOIN Items i ON p.ItemId = i.Id
-        LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
-        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id AND fv_email.FieldKey = 'login.email' AND fv_email.IsDeleted = 0
+        INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
         WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         ORDER BY p.CreatedAt DESC
         """
 
-    /// Insert a new passkey.
+    /// Insert a new passkey, stamped with the manifest of the item it hangs off. Binds the item id twice:
+    /// once for the column, once for the manifest lookup, followed by the fallback manifest.
     public static let insert = """
-        INSERT INTO Passkeys (Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?))
+        INSERT INTO Passkeys (Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, ?, COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
 
-    /// Soft delete a passkey.
+    /// Soft delete a passkey, bound as [now, passkeyId, manifestId].
     public static let softDelete = """
         UPDATE Passkeys
         SET IsDeleted = 1,
             UpdatedAt = ?
-        WHERE Id = ?
+        WHERE Id = ? AND ManifestId = ?
         """
 
-    /// Update passkey display name.
+    /// Update passkey display name, bound as [displayName, now, passkeyId, manifestId].
     public static let updateDisplayName = """
         UPDATE Passkeys
         SET DisplayName = ?,
             UpdatedAt = ?
-        WHERE Id = ? AND IsDeleted = 0
+        WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
         """
 
     /// Get Items that match an rpId but don't have a passkey yet.
-    /// Used for finding existing credentials that could have a passkey added to them.
     /// Note: The public API now uses getAllItemsWithoutPasskey + Rust credential matcher for consistent cross-platform matching.
     /// This query is kept for potential fallback scenarios.
     public static let getItemsWithoutPasskeyForRpId = """
-        SELECT i.Id, i.Name, i.CreatedAt, i.UpdatedAt,
+        SELECT i.Id, i.ManifestId, i.Name, i.CreatedAt, i.UpdatedAt,
                fv_url.Value as Url,
                fv_username.Value as Username,
                fv_email.Value as Email,
                fv_password.Value as Password
         FROM Items i
-        INNER JOIN FieldValues fv_url ON fv_url.ItemId = i.Id
+        INNER JOIN FieldValues fv_url ON fv_url.ItemId = i.Id AND fv_url.ManifestId = i.ManifestId
             AND fv_url.FieldKey = 'login.url'
             AND fv_url.IsDeleted = 0
-        LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
+        LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id AND fv_username.ManifestId = i.ManifestId
             AND fv_username.FieldKey = 'login.username'
             AND fv_username.IsDeleted = 0
-        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id
+        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id AND fv_email.ManifestId = i.ManifestId
             AND fv_email.FieldKey = 'login.email'
             AND fv_email.IsDeleted = 0
-        LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id
+        LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id AND fv_password.ManifestId = i.ManifestId
             AND fv_password.FieldKey = 'login.password'
             AND fv_password.IsDeleted = 0
         WHERE i.IsDeleted = 0
             AND i.DeletedAt IS NULL
+            AND i.ArchivedAt IS NULL
             AND i.ItemType = 'Login'
             AND (LOWER(fv_url.Value) LIKE ? OR LOWER(fv_url.Value) LIKE ?)
             AND NOT EXISTS (
                 SELECT 1 FROM Passkeys p
-                WHERE p.ItemId = i.Id AND p.IsDeleted = 0
+                WHERE p.ItemId = i.Id AND p.ManifestId = i.ManifestId AND p.IsDeleted = 0
             )
         ORDER BY i.UpdatedAt DESC
         """
 
-    /// Get ALL Login items that don't have a passkey yet (no URL filtering).
+    /// Get ALL active Login items that don't have a passkey yet (no URL filtering).
     /// Used with Rust credential matcher for intelligent filtering.
     /// Returns items with their URLs aggregated using GROUP_CONCAT for multi-URL support.
     public static let getAllItemsWithoutPasskey = """
-        SELECT i.Id, i.Name, i.CreatedAt, i.UpdatedAt,
+        SELECT i.Id, i.ManifestId, i.Name, i.CreatedAt, i.UpdatedAt,
                GROUP_CONCAT(DISTINCT fv_url.Value) as Urls,
                fv_username.Value as Username,
                fv_email.Value as Email,
                fv_password.Value as Password
         FROM Items i
-        LEFT JOIN FieldValues fv_url ON fv_url.ItemId = i.Id
+        LEFT JOIN FieldValues fv_url ON fv_url.ItemId = i.Id AND fv_url.ManifestId = i.ManifestId
             AND fv_url.FieldKey = 'login.url'
             AND fv_url.IsDeleted = 0
-        LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
+        LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id AND fv_username.ManifestId = i.ManifestId
             AND fv_username.FieldKey = 'login.username'
             AND fv_username.IsDeleted = 0
-        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id
+        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id AND fv_email.ManifestId = i.ManifestId
             AND fv_email.FieldKey = 'login.email'
             AND fv_email.IsDeleted = 0
-        LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id
+        LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id AND fv_password.ManifestId = i.ManifestId
             AND fv_password.FieldKey = 'login.password'
             AND fv_password.IsDeleted = 0
         WHERE i.IsDeleted = 0
             AND i.DeletedAt IS NULL
+            AND i.ArchivedAt IS NULL
             AND i.ItemType = 'Login'
             AND NOT EXISTS (
                 SELECT 1 FROM Passkeys p
-                WHERE p.ItemId = i.Id AND p.IsDeleted = 0
+                WHERE p.ItemId = i.Id AND p.ManifestId = i.ManifestId AND p.IsDeleted = 0
             )
-        GROUP BY i.Id
+        GROUP BY i.ManifestId, i.Id
         ORDER BY i.UpdatedAt DESC
         """
 }
 
 /// SQL query constants for Logo operations used during passkey/item creation.
+/// Mirrors core/client `LogoQueries.ts`.
 public struct LogoQueries {
-    /// Insert a new logo.
-    public static let insert = """
-        INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, 'favicon', ?, ?, ?, ?, ?, ?, ?, ?)
+    /// The logo of a given kind and key within one manifest, bound as [manifestId, kind, source].
+    public static let getIdForKey = """
+        SELECT Id FROM Logos
+        WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0
+        LIMIT 1
         """
 
-    /// Update logo file data.
-    public static let updateFileData = """
-        UPDATE Logos
-        SET FileData = ?,
-            UpdatedAt = ?
-        WHERE Id = ?
+    /// The best row to copy from when a manifest needs a logo it does not have but the vault does, bound as [kind, source].
+    public static let getBestForKey = """
+        SELECT FileData, MimeType, Name FROM Logos
+        WHERE Kind = ? AND Source = ? AND IsDeleted = 0
+        ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC
+        LIMIT 1
         """
 
-    /// Get logo ID by source.
-    public static let getBySource = """
-        SELECT Id, IsDeleted FROM Logos WHERE Source = ? LIMIT 1
+    /// The kind and key of an existing logo.
+    public static let getById = """
+        SELECT Id, Kind, Source, Name FROM Logos
+        WHERE Id = ? AND IsDeleted = 0
+        LIMIT 1
         """
 
-    /// Restore a soft-deleted logo.
-    public static let restore = """
-        UPDATE Logos SET IsDeleted = 0, UpdatedAt = ? WHERE Id = ?
+    /// Insert or update a logo, bound as [id, kind, source, manifestId, fileData, mimeType, name, now, now].
+    public static let upsert = """
+        INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        ON CONFLICT(ManifestId, Id) DO UPDATE SET
+          FileData = excluded.FileData,
+          MimeType = excluded.MimeType,
+          Name = COALESCE(excluded.Name, Logos.Name),
+          UpdatedAt = excluded.UpdatedAt,
+          IsDeleted = 0
         """
 
-    /// Get logo ID from an item.
+    /// Get the logo ID of one item, bound as [itemId, manifestId].
     public static let getLogoIdFromItem = """
-        SELECT LogoId FROM Items WHERE Id = ?
+        SELECT LogoId FROM Items WHERE Id = ? AND ManifestId = ?
         """
 
-    /// Update item logo ID.
+    /// Point an item at a logo, bound as [logoId, now, itemId, manifestId].
     public static let updateItemLogoId = """
-        UPDATE Items SET LogoId = ?, UpdatedAt = ? WHERE Id = ?
+        UPDATE Items SET LogoId = ?, UpdatedAt = ? WHERE Id = ? AND ManifestId = ?
         """
 }

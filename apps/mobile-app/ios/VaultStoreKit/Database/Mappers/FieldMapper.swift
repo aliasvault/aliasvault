@@ -4,6 +4,7 @@ import VaultModels
 /// Raw field row from database query.
 public struct FieldRow {
     public let itemId: String
+    public let manifestId: String
     public let fieldKey: String?
     public let fieldDefinitionId: String?
     public let customLabel: String?
@@ -15,6 +16,7 @@ public struct FieldRow {
 
     public init(
         itemId: String,
+        manifestId: String,
         fieldKey: String?,
         fieldDefinitionId: String?,
         customLabel: String?,
@@ -25,6 +27,7 @@ public struct FieldRow {
         displayOrder: Int
     ) {
         self.itemId = itemId
+        self.manifestId = manifestId
         self.fieldKey = fieldKey
         self.fieldDefinitionId = fieldDefinitionId
         self.customLabel = customLabel
@@ -37,33 +40,10 @@ public struct FieldRow {
 
     /// Initialize from a database row dictionary.
     public init?(from row: [String: Any]) {
-        guard let itemId = row["ItemId"] as? String else { return nil }
+        guard let itemId = row["ItemId"] as? String, let manifestId = row["ManifestId"] as? String else { return nil }
 
         self.itemId = itemId
-        self.fieldKey = row["FieldKey"] as? String
-        self.fieldDefinitionId = row["FieldDefinitionId"] as? String
-        self.customLabel = row["CustomLabel"] as? String
-        self.customFieldType = row["CustomFieldType"] as? String
-        self.customIsHidden = row["CustomIsHidden"] as? Int64
-        self.customEnableHistory = row["CustomEnableHistory"] as? Int64
-        self.value = row["Value"] as? String ?? ""
-        self.displayOrder = Int(row["DisplayOrder"] as? Int64 ?? 0)
-    }
-}
-
-/// Raw field row for single item queries (without ItemId).
-public struct SingleItemFieldRow {
-    public let fieldKey: String?
-    public let fieldDefinitionId: String?
-    public let customLabel: String?
-    public let customFieldType: String?
-    public let customIsHidden: Int64?
-    public let customEnableHistory: Int64?
-    public let value: String
-    public let displayOrder: Int
-
-    /// Initialize from a database row dictionary.
-    public init?(from row: [String: Any]) {
+        self.manifestId = manifestId
         self.fieldKey = row["FieldKey"] as? String
         self.fieldDefinitionId = row["FieldDefinitionId"] as? String
         self.customLabel = row["CustomLabel"] as? String
@@ -78,6 +58,7 @@ public struct SingleItemFieldRow {
 /// Intermediate field representation before grouping.
 public struct ProcessedField {
     public let itemId: String
+    public let manifestId: String
     public let fieldKey: String
     public let label: String
     public let fieldType: String
@@ -91,23 +72,19 @@ public struct ProcessedField {
 /// Mapper class for processing database field rows into ItemField objects.
 /// Handles both system fields (with FieldKey) and custom fields (with FieldDefinitionId).
 public struct FieldMapper {
-    /// Process raw field rows from database into a map of ItemId -> [ItemField].
+    /// Process raw field rows from database into a map of scoped item key (see `scopedKey`) -> [ItemField].
     /// Handles system vs custom fields. Multi-value fields (like URLs) create separate ItemField entries
     /// with the same fieldKey but different values, allowing Item.getFieldValues() to return all values.
     /// - Parameter rows: Raw field rows from database
-    /// - Returns: Dictionary of ItemId to array of ItemField objects
+    /// - Returns: Dictionary of scoped item key to array of ItemField objects
     public static func processFieldRows(_ rows: [FieldRow]) -> [String: [ItemField]] {
         // First, convert rows to processed fields with proper metadata
         let processedFields = rows.map { processFieldRow($0) }
 
-        // Group fields by ItemId, keeping separate entries for multi-value fields
+        // Group fields by item key, keeping separate entries for multi-value fields
         var fieldsByItem: [String: [ItemField]] = [:]
 
         for field in processedFields {
-            if fieldsByItem[field.itemId] == nil {
-                fieldsByItem[field.itemId] = []
-            }
-
             // Create an ItemField for each row (including duplicates for multi-value fields)
             let itemField = ItemField(
                 fieldKey: field.fieldKey,
@@ -119,7 +96,7 @@ public struct FieldMapper {
                 isCustomField: field.isCustomField,
                 enableHistory: field.enableHistory
             )
-            fieldsByItem[field.itemId]!.append(itemField)
+            fieldsByItem[scopedKey(manifestId: field.manifestId, id: field.itemId), default: []].append(itemField)
         }
 
         return fieldsByItem
@@ -143,6 +120,7 @@ public struct FieldMapper {
             )
             return ProcessedField(
                 itemId: row.itemId,
+                manifestId: row.manifestId,
                 fieldKey: fieldKey,
                 label: metadata.label,
                 fieldType: metadata.fieldType,
@@ -157,6 +135,7 @@ public struct FieldMapper {
             let fieldKey = row.fieldDefinitionId ?? ""
             return ProcessedField(
                 itemId: row.itemId,
+                manifestId: row.manifestId,
                 fieldKey: fieldKey,
                 label: row.customLabel ?? "",
                 fieldType: row.customFieldType ?? FieldType.text,
@@ -167,53 +146,6 @@ public struct FieldMapper {
                 enableHistory: row.customEnableHistory == 1
             )
         }
-    }
-
-    /// Process field rows for a single item (without ItemId in result).
-    /// Used when fetching a single item by ID.
-    /// Multi-value fields (like URLs) create separate ItemField entries with the same fieldKey.
-    /// - Parameter rows: Raw field rows for a single item
-    /// - Returns: Array of ItemField objects
-    public static func processFieldRowsForSingleItem(_ rows: [SingleItemFieldRow]) -> [ItemField] {
-        // Create an ItemField for each row (including duplicates for multi-value fields)
-        return rows.map { row in
-            let fieldKey = row.fieldKey ?? row.fieldDefinitionId ?? ""
-            let isCustomField = row.fieldKey == nil || row.fieldKey!.isEmpty
-
-            if !isCustomField, let rowFieldKey = row.fieldKey {
-                // System field
-                let metadata = resolveFieldMetadata(
-                    fieldKey: rowFieldKey,
-                    customLabel: nil,
-                    customFieldType: nil,
-                    customIsHidden: false,
-                    customEnableHistory: false,
-                    isCustomField: false
-                )
-                return ItemField(
-                    fieldKey: rowFieldKey,
-                    label: metadata.label,
-                    fieldType: metadata.fieldType,
-                    value: row.value,
-                    isHidden: metadata.isHidden,
-                    displayOrder: row.displayOrder,
-                    isCustomField: false,
-                    enableHistory: metadata.enableHistory
-                )
-            } else {
-                // Custom field
-                return ItemField(
-                    fieldKey: fieldKey,
-                    label: row.customLabel ?? "",
-                    fieldType: row.customFieldType ?? FieldType.text,
-                    value: row.value,
-                    isHidden: row.customIsHidden == 1,
-                    displayOrder: row.displayOrder,
-                    isCustomField: true,
-                    enableHistory: row.customEnableHistory == 1
-                )
-            }
-        }.sorted { $0.displayOrder < $1.displayOrder }
     }
 
     // MARK: - Field Metadata Resolution

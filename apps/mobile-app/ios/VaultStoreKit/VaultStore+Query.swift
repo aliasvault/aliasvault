@@ -28,6 +28,7 @@ extension VaultStore {
     }
 
     /// Execute an UPDATE, INSERT, or DELETE query on the database (which will modify the database).
+    @discardableResult
     public func executeUpdate(_ query: String, params: [SqliteBindValue]) throws -> Int {
         return Int(try requireDatabase().execute(sql: query, params: params.map(Self.toSqlValue)))
     }
@@ -136,108 +137,10 @@ extension VaultStore {
 
     // MARK: - Items (Using Repository Pattern)
 
-    /// Get all items from the database using the new field-based model.
+    /// Get all active items from the database using the field-based model.
     /// Delegates to ItemRepository for the actual query logic.
     public func getAllItems() throws -> [Item] {
         return try itemRepository.getAll()
-    }
-
-    /// Get a single item by ID.
-    /// - Parameter itemId: The UUID of the item to fetch
-    /// - Returns: Item object or nil if not found
-    public func getItemById(_ itemId: UUID) throws -> Item? {
-        return try itemRepository.getById(itemId.uuidString.lowercased())
-    }
-
-    /// Get all items that have passkeys.
-    public func getAllItemsWithPasskeys() throws -> [Item] {
-        return try getAllItems().filter { $0.hasPasskey }
-    }
-
-    /// Get all unique email addresses from items.
-    /// - Returns: Array of email addresses
-    public func getAllItemEmailAddresses() throws -> [String] {
-        return try itemRepository.getAllEmailAddresses()
-    }
-
-    /// Get recently deleted items (in trash).
-    /// - Returns: Array of items
-    public func getRecentlyDeletedItems() throws -> [Item] {
-        return try itemRepository.getRecentlyDeleted()
-    }
-
-    /// Get count of items in trash.
-    /// - Returns: Number of items in trash
-    public func getRecentlyDeletedCount() throws -> Int {
-        return try itemRepository.getRecentlyDeletedCount()
-    }
-
-    /// Get archived items.
-    /// - Returns: Array of items
-    public func getArchivedItems() throws -> [Item] {
-        return try itemRepository.getArchived()
-    }
-
-    /// Get count of archived items.
-    /// - Returns: Number of archived items
-    public func getArchivedCount() throws -> Int {
-        return try itemRepository.getArchivedCount()
-    }
-
-    /// Archive an item, hiding it from the main list and from autofill.
-    /// - Parameter itemId: The UUID of the item to archive
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func archiveItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.archive(itemId.uuidString.lowercased())
-    }
-
-    /// Unarchive an item.
-    /// - Parameter itemId: The UUID of the item to unarchive
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func unarchiveItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.unarchive(itemId.uuidString.lowercased())
-    }
-
-    /// Move an item to trash.
-    /// - Parameter itemId: The UUID of the item to trash
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func trashItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.trash(itemId.uuidString.lowercased())
-    }
-
-    /// Restore an item from trash.
-    /// - Parameter itemId: The UUID of the item to restore
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func restoreItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.restore(itemId.uuidString.lowercased())
-    }
-
-    /// Permanently delete an item.
-    /// - Parameter itemId: The UUID of the item to permanently delete
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func permanentlyDeleteItem(_ itemId: UUID) throws -> Int {
-        return try itemRepository.permanentlyDelete(itemId.uuidString.lowercased())
-    }
-
-    /// Create a new item.
-    /// - Parameter item: The item to create
-    /// - Returns: The ID of the created item
-    @discardableResult
-    public func createItem(_ item: Item) throws -> String {
-        return try itemRepository.create(item)
-    }
-
-    /// Update an existing item.
-    /// - Parameter item: The item to update
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func updateItem(_ item: Item) throws -> Int {
-        return try itemRepository.update(item)
     }
 
     /// Append a URL to an existing credential's `login.url` multi-value field
@@ -247,11 +150,16 @@ extension VaultStore {
     ///   - itemId: The UUID of the credential to append to
     ///   - url: The URL or app package identifier to add
     public func appendUrl(toItemId itemId: UUID, url: String) throws {
-        try itemRepository.appendFieldValue(
-            itemId: itemId.uuidString.lowercased(),
-            fieldKey: FieldKey.loginUrl,
-            value: url
-        )
+        try itemRepository.appendFieldValue(itemId: itemId.uuidString.lowercased(), fieldKey: FieldKey.loginUrl, value: url)
+    }
+
+    /// Record one use of an item in its ItemStats row. Runs in a transaction, so the vault is persisted and marked dirty.
+    /// - Parameters:
+    ///   - itemId: The item that was used
+    ///   - manifestId: The manifest the item belongs to, when the caller knows it
+    ///   - action: What the user did with it
+    public func recordItemUsage(itemId: UUID, manifestId: String? = nil, action: ItemUsageAction) throws {
+        try itemStatsRepository.recordUsage(itemId: itemId.uuidString.lowercased(), manifestId: manifestId, action: action)
     }
 
     // MARK: - Autofill Credentials
@@ -266,34 +174,28 @@ extension VaultStore {
     /// Convert an Item to an AutofillCredential for iOS Autofill.
     private func convertItemToAutofillCredential(_ item: Item) -> AutofillCredential? {
         // Load passkey for this item (gets first non-deleted passkey)
-        let passkeys = try? getPasskeys(forItemId: item.id)
-        let passkey = passkeys?.first
+        let passkey = (try? getPasskeys(forItemId: item.id, manifestId: item.manifestId))?.first
 
         // Load the TOTP code for this item (gets first non-deleted TOTP code)
-        let totpCode = try? getFirstTotpCode(forItemId: item.id)
+        let totpCode = (try? getFirstTotpCode(forItemId: item.id, manifestId: item.manifestId)) ?? nil
 
-        return AutofillCredential(from: item, passkey: passkey, totp: totpCode ?? nil)
+        return AutofillCredential(from: item, passkey: passkey, totp: totpCode)
     }
 
     /// Get all items that have passkeys for passkey autofill.
     public func getAllAutofillCredentialsWithPasskeys() throws -> [AutofillCredential] {
-        var credentials = try getAllAutofillCredentials()
-
-        // Filter to only include credentials that actually have a passkey
-        credentials = credentials.filter { credential in
-            return credential.hasPasskey
-        }
-
-        return credentials
+        return try getAllAutofillCredentials().filter { $0.hasPasskey }
     }
 
     // MARK: - TOTP Operations
 
     /// Get the first TOTP code for a specific item.
-    /// - Parameter itemId: The UUID of the item
+    /// - Parameters:
+    ///   - itemId: The UUID of the item
+    ///   - manifestId: The manifest the item belongs to, when the caller knows it
     /// - Returns: Optional TotpCode if one exists
     /// - Throws: Database errors
-    public func getFirstTotpCode(forItemId itemId: UUID) throws -> TotpCode? {
-        return try totpRepository.getFirstTotpCodeForItem(itemId)
+    public func getFirstTotpCode(forItemId itemId: UUID, manifestId: String? = nil) throws -> TotpCode? {
+        return try totpRepository.getFirstTotpCodeForItem(itemId, manifestId: manifestId)
     }
 }

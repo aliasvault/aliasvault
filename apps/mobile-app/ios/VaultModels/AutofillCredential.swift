@@ -5,8 +5,8 @@ import Foundation
 /// This replaces the legacy Credential model which was based on the old data structure.
 public struct AutofillCredential: Codable, Hashable, Equatable {
     public let id: UUID
+    public let manifestId: String?
     public let serviceName: String?
-    /// All URLs associated with this credential (for multi-URL support)
     public let serviceUrls: [String]
     public let logo: Data?
     public let username: String?
@@ -25,6 +25,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
 
     public init(
         id: UUID,
+        manifestId: String? = nil,
         serviceName: String?,
         serviceUrls: [String],
         logo: Data?,
@@ -38,6 +39,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         updatedAt: Date
     ) {
         self.id = id
+        self.manifestId = manifestId
         self.serviceName = serviceName
         self.serviceUrls = serviceUrls
         self.logo = logo
@@ -58,6 +60,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     ///   - totp: Optional TOTP code for this item
     public init(from item: Item, passkey: Passkey? = nil, totp: TotpCode? = nil) {
         self.id = item.id
+        self.manifestId = item.manifestId
         self.serviceName = item.name
         self.serviceUrls = item.urls
         self.logo = item.logo

@@ -50,6 +50,9 @@ public class VaultStore {
     /// The key derivation parameters used to derive the encryption key from the password.
     internal var keyDerivationParams: String?
 
+    /// The sync operations on this store (the wrapper around the Rust sync engine).
+    internal lazy var sync = VaultSync(vaultStore: self)
+
     /// The timer for the auto-lock timeout.
     private var clearCacheTimer: Timer?
 

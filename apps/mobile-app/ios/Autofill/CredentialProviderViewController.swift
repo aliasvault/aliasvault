@@ -14,7 +14,7 @@ protocol CredentialProviderDelegate: AnyObject {
 
 protocol PasskeyProviderDelegate: AnyObject {
     func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController
-    func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String)
+    func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String, vaultStore: VaultStore)
 }
 
 /**
@@ -592,7 +592,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 title = NSLocalizedString("version_not_supported_title", comment: "Update Required")
                 message = NSLocalizedString("version_not_supported_message", comment: "Your app version is no longer supported. Please update to the latest version.")
 
-            case .serverVersionNotSupported:
+            case .serverVersionNotSupported, .serverUpdateRequired:
                 title = NSLocalizedString("server_version_not_supported_title", comment: "Server Update Required")
                 message = NSLocalizedString("server_version_not_supported_message", comment: "The server version is outdated. Please contact your administrator to update the server.")
 

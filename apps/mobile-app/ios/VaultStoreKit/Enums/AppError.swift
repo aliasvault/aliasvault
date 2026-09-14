@@ -18,6 +18,7 @@ public enum AppError: Error {
     case clientVersionNotSupported
     case serverVersionNotSupported
     case vaultVersionIncompatible
+    case serverUpdateRequired
 
     // Vault status errors
     case vaultMergeRequired
@@ -47,6 +48,7 @@ public enum AppError: Error {
     case storageWriteFailed(message: String)
     case databaseInitFailed(message: String)
     case vaultStoreFailed(message: String)
+    case manifestNotRecorded
 
     // Merge errors
     case vaultMergeFailed(message: String)
@@ -107,6 +109,8 @@ public enum AppError: Error {
             return "E-302"
         case .vaultVersionIncompatible:
             return "E-303"
+        case .serverUpdateRequired:
+            return "E-304"
         case .vaultMergeRequired:
             return "E-401"
         case .vaultOutdated:
@@ -153,6 +157,8 @@ public enum AppError: Error {
             return "E-603"
         case .vaultStoreFailed:
             return "E-604"
+        case .manifestNotRecorded:
+            return "E-605"
         case .vaultMergeFailed:
             return "E-701"
         case .mergeUploadFailed:
@@ -201,6 +207,8 @@ public enum AppError: Error {
             return "Server version not supported"
         case .vaultVersionIncompatible:
             return "Vault version incompatible"
+        case .serverUpdateRequired:
+            return "Server update required"
         case .vaultMergeRequired:
             return "Vault merge required"
         case .vaultOutdated:
@@ -247,6 +255,8 @@ public enum AppError: Error {
             return "Database init failed: \(message)"
         case .vaultStoreFailed(let message):
             return "Failed to store vault: \(message)"
+        case .manifestNotRecorded:
+            return "No personal manifest recorded yet; sync once before writing"
         case .vaultMergeFailed(let message):
             return "Vault merge failed: \(message)"
         case .mergeUploadFailed(let message):
@@ -292,10 +302,10 @@ public enum AppError: Error {
         }
     }
 
-    /// Check if this is a network error (offline mode).
+    /// Check if this is a network error (offline mode). A timeout is not: the sync engine reports it as a failed sync.
     public var isNetworkError: Bool {
         switch self {
-        case .serverUnavailable, .networkError, .timeout:
+        case .serverUnavailable, .networkError:
             return true
         default:
             return false

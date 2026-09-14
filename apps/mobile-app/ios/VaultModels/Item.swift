@@ -3,6 +3,7 @@ import Foundation
 /// Item type representing vault entries in the new field-based data model.
 public struct Item: Codable, Hashable, Equatable {
     public let id: UUID
+    public let manifestId: String
     public let name: String?
     public let itemType: String
     public let logo: Data?
@@ -17,6 +18,7 @@ public struct Item: Codable, Hashable, Equatable {
 
     public init(
         id: UUID,
+        manifestId: String,
         name: String?,
         itemType: String,
         logo: Data?,
@@ -30,6 +32,7 @@ public struct Item: Codable, Hashable, Equatable {
         updatedAt: Date
     ) {
         self.id = id
+        self.manifestId = manifestId
         self.name = name
         self.itemType = itemType
         self.logo = logo

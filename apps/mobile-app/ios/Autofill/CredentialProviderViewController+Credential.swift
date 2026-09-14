@@ -58,6 +58,13 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 } catch {
                     print("[Autofill] Failed to refresh iOS credential identity cache: \(error)")
                 }
+            },
+            usageRecorder: { itemId in
+                do {
+                    try vaultStore.recordItemUsage(itemId: itemId, action: .autofill)
+                } catch {
+                    print("[Autofill] Failed to record credential usage: \(error)")
+                }
             }
         )
 
@@ -129,6 +136,13 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
                 TotpClipboard.copyCodeIfEnabled(totp: matchingCredential.totp)
+
+                // Recorded before the request completes: the host may tear the extension down right after.
+                do {
+                    try vaultStore.recordItemUsage(itemId: matchingCredential.id, manifestId: matchingCredential.manifestId, action: .autofill)
+                } catch {
+                    print("[Autofill] Failed to record credential usage: \(error)")
+                }
 
                 // Use the identifier that matches the credential identity
                 let identifier = request.credentialIdentity.user

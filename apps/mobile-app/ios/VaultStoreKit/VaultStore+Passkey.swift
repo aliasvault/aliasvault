@@ -24,10 +24,10 @@ extension VaultStore {
     }
 
     /**
-     * Get all passkeys for an item (new model)
+     * Get all passkeys for an item.
      */
-    public func getPasskeys(forItemId itemId: UUID) throws -> [Passkey] {
-        return try passkeyRepository.getByItemId(itemId.uuidString.lowercased())
+    public func getPasskeys(forItemId itemId: UUID, manifestId: String? = nil) throws -> [Passkey] {
+        return try passkeyRepository.getByItemId(itemId.uuidString.lowercased(), manifestId: manifestId)
     }
 
     /**
@@ -121,7 +121,7 @@ extension VaultStore {
 
         let itemId = oldPasskey.parentItemId
 
-        // Create the new passkey with the same item ID
+        // Create the new passkey with the same item ID, in the same manifest
         let updatedPasskey = Passkey(
             id: newPasskey.id,
             parentItemId: itemId,  // Use the old item ID
@@ -134,7 +134,8 @@ extension VaultStore {
             displayName: displayName,
             createdAt: Date(),
             updatedAt: Date(),
-            isDeleted: false
+            isDeleted: false,
+            manifestId: oldPasskey.manifestId
         )
 
         // Replace the passkey (handles logo update in same transaction)

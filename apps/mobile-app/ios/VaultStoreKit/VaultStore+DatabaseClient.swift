@@ -22,4 +22,9 @@ extension VaultStore: DatabaseClient {
     public var totpRepository: TotpRepository {
         return TotpRepository(client: self)
     }
+
+    /// The ItemStatsRepository instance for this VaultStore.
+    public var itemStatsRepository: ItemStatsRepository {
+        return ItemStatsRepository(client: self)
+    }
 }

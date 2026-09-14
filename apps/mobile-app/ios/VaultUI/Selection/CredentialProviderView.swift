@@ -337,18 +337,24 @@ public class CredentialProviderViewModel: ObservableObject {
     /// directly to `selectionHandler`.
     private let urlLinker: ((UUID, String) async -> Void)?
 
+    /// Optional handler called with the item id right before a fill is handed to the host, so the
+    /// vault can record the use.
+    private let usageRecorder: ((UUID) -> Void)?
+
     public init(
         loader: @escaping () async throws -> [AutofillCredential],
         selectionHandler: @escaping (String, String) -> Void,
         cancelHandler: @escaping () -> Void,
         serviceUrl: String? = nil,
-        urlLinker: ((UUID, String) async -> Void)? = nil
+        urlLinker: ((UUID, String) async -> Void)? = nil,
+        usageRecorder: ((UUID) -> Void)? = nil
     ) {
         self.loader = loader
         self.selectionHandler = selectionHandler
         self.cancelHandler = cancelHandler
         self.serviceUrl = serviceUrl
         self.urlLinker = urlLinker
+        self.usageRecorder = usageRecorder
         if let url = serviceUrl {
             self.searchText = url
         }
@@ -403,7 +409,7 @@ public class CredentialProviderViewModel: ObservableObject {
               let serviceUrl = serviceUrl,
               !serviceUrl.isEmpty,
               urlLinker != nil else {
-            selectionHandler(username, password)
+            complete(credentialId: credential.id, username: username, password: password)
             return
         }
 
@@ -416,7 +422,7 @@ public class CredentialProviderViewModel: ObservableObject {
             AutofillUrlNormalizer.comparisonKey(existing) == serviceKey
         }
         if alreadyLinked {
-            selectionHandler(username, password)
+            complete(credentialId: credential.id, username: username, password: password)
             return
         }
 
@@ -443,7 +449,7 @@ public class CredentialProviderViewModel: ObservableObject {
         Task { @MainActor in
             await urlLinker(pending.credentialId, serviceUrl)
             isLinkingUrl = false
-            selectionHandler(pending.username, pending.password)
+            complete(credentialId: pending.credentialId, username: pending.username, password: pending.password)
         }
     }
 
@@ -454,7 +460,13 @@ public class CredentialProviderViewModel: ObservableObject {
             return
         }
         pendingLinkSelection = nil
-        selectionHandler(pending.username, pending.password)
+        complete(credentialId: pending.credentialId, username: pending.username, password: pending.password)
+    }
+
+    /// Complete a fill: record the use of the credential, then hand the values to the host.
+    private func complete(credentialId: UUID, username: String, password: String) {
+        usageRecorder?(credentialId)
+        selectionHandler(username, password)
     }
 
     func handleSelection(username: String, password: String) {
