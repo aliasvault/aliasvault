@@ -143,7 +143,7 @@ Prijs: 10€\r\n\
 
 #[test]
 fn compressed_source_is_never_repaired() {
-    // Source-only stored emails hold the message bytes verbatim: applying the legacy repair to them
+    // Source-only stored emails hold the message bytes as-is: applying the legacy repair to them
     // would map each decoded scalar back to a single byte and mangle every non-ASCII character.
     let parsed = parse_email_source(&gzip(UNICODE_EMAIL.as_bytes())).unwrap();
 

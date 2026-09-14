@@ -333,7 +333,7 @@ fn split_clones_a_tag_into_the_manifest_an_item_moved_into() {
     assert!(ids(rows(&out.first().manifest, "Tags")).contains(&"tag-both"));
     let cloned = rows(shared, "Tags").iter().find(|r| r["Id"] == json!("tag-both")).unwrap();
     assert_eq!(cloned["ManifestId"], json!("m-f-shared"), "the copy claims the manifest it moved into");
-    assert_eq!(cloned["Name"], json!("work"), "content copied verbatim, id kept");
+    assert_eq!(cloned["Name"], json!("work"), "content copied as-is, id kept");
 }
 
 #[test]

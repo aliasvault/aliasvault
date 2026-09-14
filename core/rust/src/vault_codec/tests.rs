@@ -160,7 +160,7 @@ fn canonicalize_from_sqlite_nulls_empty_blob_cells() {
 
 #[test]
 fn inline_b64_columns_survive_roundtrip() {
-    // Non-blob byte columns (e.g. a TOTP secret) keep their {__b64} marker verbatim.
+    // Non-blob byte columns (e.g. a TOTP secret) keep their {__b64} marker as-is.
     let secret = vec![1u8, 2, 3, 4, 5];
     let input = basic_input(vec![CodecTableData {
         name: "Items".to_string(),
@@ -969,7 +969,7 @@ fn materialize_derives_missing_field_value_ids() {
     let fv: HashMap<&str, &CodecRecord> = tables["FieldValues"].iter().map(|r| (r["Value"].as_str().unwrap(), r)).collect();
     let expected_username_id = super::normalize::field_value_id_for(PERSONAL_MANIFEST, "i-1", "login.username", "", 0);
     assert_eq!(fv["me"]["Id"], json!(expected_username_id), "materialize derives the id");
-    assert_eq!(fv["https://a.example"]["Id"], json!("u-1"), "an owned multi-value id is kept verbatim");
+    assert_eq!(fv["https://a.example"]["Id"], json!("u-1"), "an owned multi-value id is kept as-is");
 
     assert_eq!(tables["ItemTags"].len(), 1, "the id-less join row inserts as-is");
 

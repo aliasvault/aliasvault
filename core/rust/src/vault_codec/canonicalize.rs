@@ -8,7 +8,7 @@
 //!   - the two blob columns (`Logos.FileData`, `Attachments.Blob`) have their bytes extracted into a
 //!     content-addressed blob map (hash = `sha256(salt ‖ bytes)`) and the cell replaced with
 //!     `{ "__blobRef": hash, "__blobKind": kind }`;
-//!   - every other column (including non-blob `{ "__b64" }` inline bytes) is copied verbatim.
+//!   - every other column (including non-blob `{ "__b64" }` inline bytes) is copied as-is.
 
 use std::collections::HashMap;
 

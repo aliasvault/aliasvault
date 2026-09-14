@@ -24,7 +24,7 @@ use super::row::{has_bytes, is_deleted, logo_kind, normalize_logo_kind, str_col}
 use crate::vault_model::names::{FILE_DATA_COL, ID_COL, ITEMS_TABLE, KIND_COL, LOGOS_TABLE, LOGO_ID_COL, LOGO_KIND_CUSTOM, LOGO_KIND_FAVICON, SOURCE_COL, UPDATED_AT_COL};
 use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL};
 
-/// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept verbatim so
+/// Domain-separation prefix for favicon ids. It predates the `Kind` column and is kept as-is so
 /// every favicon row that already exists keeps its id: changing it would re-derive the logo id of
 /// every item in every vault on the next push.
 const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";

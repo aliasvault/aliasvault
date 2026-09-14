@@ -10,7 +10,7 @@ use crate::vault_model::{ids_equal, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL
 /// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
 
-/// One identity component of a row, as a string: a GUID lowercased, any other string verbatim,
+/// One identity component of a row, as a string: a GUID lowercased, any other string as-is,
 /// anything else canonical JSON.
 pub fn identity_part(value: &serde_json::Value) -> String {
     match value.as_str() {

@@ -29,7 +29,7 @@ pub fn field_value_id_for(manifest_id: &str, item_id: &str, field_key: &str, fie
 /// The `FieldHistories.Id` of the history row `(manifest, item, field, changed at)`: every row derives
 /// it, since `ChangedAt` (millisecond precision) is the natural discriminator: two devices changing the
 /// same field concurrently snapshot at different times and union. Two snapshots of one field in the very
-/// same millisecond collapse to one, which history can afford. `changed_at` is used verbatim.
+/// same millisecond collapse to one, which history can afford. `changed_at` is used as-is.
 pub fn field_history_id_for(manifest_id: &str, item_id: &str, field_key: &str, field_definition_id: &str, changed_at: &str) -> String {
     derived_field_id(FIELD_HISTORY_ID_NAMESPACE, manifest_id, item_id, field_key, field_definition_id, changed_at)
 }

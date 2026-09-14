@@ -147,7 +147,7 @@ public class TotpGeneratorTests
 
     /// <summary>
     /// Tests that out-of-range or nonsense parameters are normalized to the defaults instead of being
-    /// stored verbatim and breaking code generation later.
+    /// stored as-is and breaking code generation later.
     /// </summary>
     [Test]
     public void SanitizeSecretKey_WithInvalidParameters_NormalizesToDefaults()

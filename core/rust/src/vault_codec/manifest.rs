@@ -137,7 +137,7 @@ pub struct CodecTableData {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CodecOverflow {
-    /// Whole manifest tables the local schema doesn't know: name > rows, re-emitted verbatim.
+    /// Whole manifest tables the local schema doesn't know: name > rows, re-emitted as-is.
     #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
     /// Whole bucket tables the local schema doesn't know: category > (name > rows). Kept per

@@ -260,7 +260,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }, [htmlBody, textBody, hasSource]);
 
   /*
-   * A source the parser found no body in is shown verbatim plus a notice to update the app, in case a newer
+   * A source the parser found no body in is shown as-is plus a notice to update the app, in case a newer
    * server stores a shape this parser does not know yet.
    */
   const isSourceOnly = hasSource && !htmlBody && !textBody;

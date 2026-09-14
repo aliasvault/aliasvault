@@ -146,7 +146,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
     CredentialMatcherOutput::default()
 }
 
-/// Ids of credentials whose URLs contain the package name verbatim.
+/// Ids of credentials whose URLs contain the package name as-is.
 fn match_package_name(credentials: &[Credential], package_name: &str, max_results: usize) -> Vec<String> {
     credentials
         .iter()
