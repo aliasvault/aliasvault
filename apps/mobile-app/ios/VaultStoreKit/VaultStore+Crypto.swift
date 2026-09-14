@@ -235,7 +235,7 @@ extension VaultStore {
         #endif
     }
 
-    /// The vault encryption key as base64, for the React Native layer to open the vault after a biometric or PIN unlock.
+    /// The vault encryption key as base64, for the sync engine.
     public func getEncryptionKeyBase64() throws -> String {
         return try getEncryptionKey().base64EncodedString()
     }

@@ -25,7 +25,6 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -2063,30 +2062,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             Log.e(TAG, "Error storing encrypted database", e)
             promise.reject("ERR_STORE_DATABASE", "Failed to store encrypted database: ${e.message}", e)
         }
-    }
-
-    /**
-     * The vault encryption key as base64, for the app to open the vault after a biometric or PIN unlock.
-     * @param promise Resolves with the key, rejects with the native error code when the store holds none.
-     */
-    @ReactMethod
-    override fun getEncryptionKey(promise: Promise) {
-        vaultStore.getEncryptionKey(
-            object : CryptoOperationCallback {
-                override fun onSuccess(result: String) {
-                    promise.resolve(result)
-                }
-
-                override fun onError(e: Exception) {
-                    Log.e(TAG, "Error getting encryption key", e)
-                    if (e is AppError) {
-                        promise.reject(e.code, e.message, e)
-                    } else {
-                        promise.reject("E-001", "Failed to get encryption key: ${e.message}", e)
-                    }
-                }
-            },
-        )
     }
 
     // endregion

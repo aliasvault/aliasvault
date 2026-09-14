@@ -293,7 +293,7 @@ export default function UnlockScreen() : React.ReactNode {
     try {
       /*
        * Clear any wrong key from memory first (e.g., from failed password attempt).
-       * This forces getEncryptionKey() to fetch from keychain via biometrics.
+       * This forces the native unlock to fetch the key from the keychain via biometrics.
        */
       await NativeVaultManager.clearEncryptionKeyFromMemory();
 

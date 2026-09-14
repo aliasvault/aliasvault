@@ -1477,19 +1477,6 @@ public class VaultManager: NSObject {
             reject("DB_ERROR", "Failed to store encrypted database: \(error.localizedDescription)", error)
         }
     }
-
-    /// The vault encryption key as base64, for the app to open the vault after a biometric or PIN unlock.
-    @objc
-    func getEncryptionKey(_ resolve: @escaping RCTPromiseResolveBlock,
-                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            resolve(try vaultStore.getEncryptionKeyBase64())
-        } catch let vaultError as AppError {
-            reject(vaultError.code, vaultError.message, vaultError)
-        } catch let error as NSError {
-            reject("E-001", "Failed to get encryption key: \(error.localizedDescription)", error)
-        }
-    }
 }
 
 /// Routes `rustCall` invocations onto the Rust core Uniffi bindings.

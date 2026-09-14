@@ -29,10 +29,6 @@ export interface Spec extends TurboModule {
   // result is JSON text. Swift/Kotlin hold one case per function and no logic; see platform/NativeRustCore.ts.
   rustCall(name: string, argsJson: string): Promise<string>;
 
-  // The vault encryption key as base64, for the app to decrypt the vault after a biometric or PIN unlock. Throws
-  // when the native store holds no key (locked); may prompt for biometrics when the key lives in the keychain.
-  getEncryptionKey(): Promise<string>;
-
   // Store the encrypted vault blob for persistence and which is also accessed by the native autofill extensions.
   storeEncryptedDatabase(base64EncryptedDb: string): Promise<void>;
 

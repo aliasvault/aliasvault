@@ -391,8 +391,4 @@
     [vaultManager storeEncryptedDatabase:base64EncryptedDb resolver:resolve rejecter:reject];
 }
 
-- (void)getEncryptionKey:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getEncryptionKey:resolve rejecter:reject];
-}
-
 @end
