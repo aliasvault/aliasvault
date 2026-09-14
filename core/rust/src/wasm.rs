@@ -685,7 +685,6 @@ impl VaultSyncSessionJs {
 // SQLite host WASM Bindings
 // ============================================================================
 
-#[cfg(feature = "sqlite")]
 mod sqlite_js {
     use js_sys::{Array, Object, Reflect, Uint8Array};
     use wasm_bindgen::prelude::*;

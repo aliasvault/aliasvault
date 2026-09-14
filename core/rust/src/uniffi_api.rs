@@ -635,13 +635,11 @@ impl VaultSyncSession {
 }
 
 /// An in-memory SQLite database that can be used by host applications to be have uniform access to the database.
-#[cfg(feature = "sqlite")]
 #[derive(uniffi::Object)]
 pub struct SqliteMemoryDatabase {
     inner: crate::sqlite_host::MemoryDatabase,
 }
 
-#[cfg(feature = "sqlite")]
 #[uniffi::export]
 impl SqliteMemoryDatabase {
     /// Open a database from its SQLite file bytes.

@@ -360,11 +360,7 @@ task buildRustCore(type: Exec) {
     // Set up environment for cargo
     environment "PATH", "${System.getProperty('user.home')}/.cargo/bin:/usr/local/bin:/opt/homebrew/bin:${System.getenv('PATH')}"
 
-    // Determine build mode based on variant
-    def isRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
-    def buildArgs = isRelease ? ['./build-rust-core.sh', '--release'] : ['./build-rust-core.sh', '--debug']
-
-    commandLine buildArgs
+    commandLine './build-rust-core.sh'
 
     // Only log if there are actual changes
     ignoreExitValue = false

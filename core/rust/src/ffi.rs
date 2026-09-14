@@ -1,15 +1,18 @@
 //! C FFI exports for .NET P/Invoke.
 //!
 //! These functions provide a C-compatible interface for calling Rust functions from C#.
-//! All functions use JSON strings for input/output to simplify marshalling.
 
 use std::ffi::{c_char, CStr, CString};
 use std::ptr;
 
+use serde_json::Value;
+
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput};
-use crate::error::json_call;
+use crate::error::{json_call, VaultResult};
+use crate::sqlite_host::MemoryDatabase;
 use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
 use crate::vault_pruner::{prune_vault, PruneInput};
+use crate::vault_sync::types::SqlStatement;
 
 /// Prune expired items from trash.
 ///
@@ -145,8 +148,7 @@ fn string_to_c_char(s: String) -> *mut c_char {
 
 /// Create an error response JSON string.
 fn create_error_response(message: &str) -> *mut c_char {
-    let error_json = format!(r#"{{"success":false,"error":"{}"}}"#, message.replace('"', r#"\""#));
-    string_to_c_char(error_json)
+    string_to_c_char(serde_json::json!({ "success": false, "error": message }).to_string())
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -596,10 +598,199 @@ pub unsafe extern "C" fn srp_derive_session_server_ffi(
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// SQLite host FFI Functions (in-memory database)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SUCCESS_RESPONSE: &str = r#"{"success":true}"#;
+
+/// Box a database into a handle, or report the error through `error_out`.
+unsafe fn database_handle(result: VaultResult<MemoryDatabase>, error_out: *mut *mut c_char) -> *mut MemoryDatabase {
+    match result {
+        Ok(database) => Box::into_raw(Box::new(database)),
+        Err(e) => set_error(error_out, &format!("sqlite error: {}", e)),
+    }
+}
+
+/// Write an error response into `error_out` when it is given, and return null.
+unsafe fn set_error<T>(error_out: *mut *mut c_char, message: &str) -> *mut T {
+    if !error_out.is_null() {
+        *error_out = create_error_response(message);
+    }
+    ptr::null_mut()
+}
+
+/// A SQLite host result as a C string: the JSON on success, an error response otherwise.
+fn sqlite_response(result: VaultResult<String>) -> *mut c_char {
+    match result {
+        Ok(json) => string_to_c_char(json),
+        Err(e) => create_error_response(&format!("sqlite error: {}", e)),
+    }
+}
+
+/// Open a database from SQLite file bytes. Returns null on failure, with the error JSON in `error_out` when given.
+///
+/// # Safety
+/// `bytes` must point to `len` readable bytes and `error_out` must be null or writable; free the handle with
+/// `sqlite_database_free_ffi` and an error with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_from_bytes_ffi(bytes: *const u8, len: usize, error_out: *mut *mut c_char) -> *mut MemoryDatabase {
+    if bytes.is_null() {
+        return set_error(error_out, "Null pointer argument: bytes");
+    }
+    database_handle(MemoryDatabase::from_bytes(std::slice::from_raw_parts(bytes, len)), error_out)
+}
+
+/// Open an empty database and run a schema script on it. Returns null on failure, with the error JSON in `error_out` when given.
+///
+/// # Safety
+/// `schema_sql` must be a valid null-terminated C string and `error_out` null or writable; free the handle with
+/// `sqlite_database_free_ffi` and an error with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_with_schema_ffi(schema_sql: *const c_char, error_out: *mut *mut c_char) -> *mut MemoryDatabase {
+    if schema_sql.is_null() {
+        return set_error(error_out, "Null pointer argument: schema_sql");
+    }
+    match CStr::from_ptr(schema_sql).to_str() {
+        Ok(sql) => database_handle(MemoryDatabase::with_schema(sql), error_out),
+        Err(_) => set_error(error_out, "Invalid UTF-8 in schema_sql"),
+    }
+}
+
+/// Run a SQL script without parameters. Output: `{"success":true}` JSON.
+///
+/// # Safety
+/// `database` must be a live handle and `sql` a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_execute_batch_ffi(database: *const MemoryDatabase, sql: *const c_char) -> *mut c_char {
+    let Some(database) = database.as_ref() else { return create_error_response("Null pointer argument: database") };
+    let sql = ffi_read_str!(sql, "sql");
+    sqlite_response(database.execute_batch(sql).map(|_| SUCCESS_RESPONSE.to_string()))
+}
+
+/// Run one query. Input: a JSON array of parameters, BLOBs as `{"__b64": ...}`. Output: JSON array of row objects.
+///
+/// # Safety
+/// `database` must be a live handle, `sql` and `params_json` valid null-terminated C strings; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_query_ffi(database: *const MemoryDatabase, sql: *const c_char, params_json: *const c_char) -> *mut c_char {
+    let Some(database) = database.as_ref() else { return create_error_response("Null pointer argument: database") };
+    let sql = ffi_read_str!(sql, "sql");
+    let params_json = ffi_read_str!(params_json, "params_json");
+    sqlite_response(json_call(params_json, |params: Vec<Value>| database.query(sql, &params)))
+}
+
+/// Run statements in one transaction. Input: a JSON array of `{"sql", "params"}`. Output: `{"success":true}` JSON.
+///
+/// # Safety
+/// `database` must be a live handle and `statements_json` a valid null-terminated C string; free the result with `free_string`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_exec_ffi(database: *const MemoryDatabase, statements_json: *const c_char) -> *mut c_char {
+    let Some(database) = database.as_ref() else { return create_error_response("Null pointer argument: database") };
+    let statements_json = ffi_read_str!(statements_json, "statements_json");
+    sqlite_response(json_call(statements_json, |statements: Vec<SqlStatement>| database.exec(&statements)).map(|_| SUCCESS_RESPONSE.to_string()))
+}
+
+/// The database as SQLite file bytes, their length written to `len_out`. Returns null on failure, with the error JSON in `error_out`.
+///
+/// # Safety
+/// `database` must be a live handle, `len_out` writable and `error_out` null or writable; free the bytes with `free_bytes`.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_export_ffi(database: *const MemoryDatabase, len_out: *mut usize, error_out: *mut *mut c_char) -> *mut u8 {
+    let Some(database) = database.as_ref() else { return set_error(error_out, "Null pointer argument: database") };
+    if len_out.is_null() {
+        return set_error(error_out, "Null pointer argument: len_out");
+    }
+    match database.export() {
+        Ok(bytes) => {
+            let bytes = bytes.into_boxed_slice();
+            *len_out = bytes.len();
+            Box::into_raw(bytes) as *mut u8
+        }
+        Err(e) => set_error(error_out, &format!("sqlite error: {}", e)),
+    }
+}
+
+/// Free bytes returned by `sqlite_database_export_ffi`.
+///
+/// # Safety
+/// `bytes` and `len` must come from one `sqlite_database_export_ffi` call and be freed only once.
+#[no_mangle]
+pub unsafe extern "C" fn free_bytes(bytes: *mut u8, len: usize) {
+    if !bytes.is_null() {
+        drop(Box::from_raw(ptr::slice_from_raw_parts_mut(bytes, len)));
+    }
+}
+
+/// Close a database and free its memory.
+///
+/// # Safety
+/// `database` must be null or a handle from this module, freed only once and not used afterwards.
+#[no_mangle]
+pub unsafe extern "C" fn sqlite_database_free_ffi(database: *mut MemoryDatabase) {
+    if !database.is_null() {
+        drop(Box::from_raw(database));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::ffi::CString;
+
+    #[test]
+    fn test_sqlite_database_round_trip() {
+        unsafe {
+            let schema = CString::new("CREATE TABLE Items (Id TEXT PRIMARY KEY, Logo BLOB);").unwrap();
+            let database = sqlite_database_with_schema_ffi(schema.as_ptr(), ptr::null_mut());
+            assert!(!database.is_null());
+
+            let statements = CString::new(r#"[{"sql":"INSERT INTO Items VALUES (?, ?)","params":["a",{"__b64":"AQI="}]}]"#).unwrap();
+            let result = sqlite_database_exec_ffi(database, statements.as_ptr());
+            assert_eq!(CStr::from_ptr(result).to_str().unwrap(), SUCCESS_RESPONSE);
+            free_string(result);
+
+            let mut len = 0;
+            let bytes = sqlite_database_export_ffi(database, &mut len, ptr::null_mut());
+            assert!(!bytes.is_null() && len > 0);
+            sqlite_database_free_ffi(database);
+
+            let reopened = sqlite_database_from_bytes_ffi(bytes, len, ptr::null_mut());
+            free_bytes(bytes, len);
+            assert!(!reopened.is_null());
+
+            let sql = CString::new("SELECT Id, Logo FROM Items WHERE Id = ?").unwrap();
+            let params = CString::new(r#"["a"]"#).unwrap();
+            let result = sqlite_database_query_ffi(reopened, sql.as_ptr(), params.as_ptr());
+            let rows: Value = serde_json::from_str(CStr::from_ptr(result).to_str().unwrap()).unwrap();
+            assert_eq!(rows, serde_json::json!([{ "Id": "a", "Logo": { "__b64": "AQI=" } }]));
+            free_string(result);
+            sqlite_database_free_ffi(reopened);
+        }
+    }
+
+    #[test]
+    fn test_sqlite_database_errors_are_valid_json() {
+        unsafe {
+            let mut error = ptr::null_mut();
+            assert!(sqlite_database_from_bytes_ffi([0u8; 0].as_ptr(), 0, &mut error).is_null());
+            let response: Value = serde_json::from_str(CStr::from_ptr(error).to_str().unwrap()).unwrap();
+            assert_eq!(response["success"], false);
+            free_string(error);
+
+            // The error echoes the SQL, so its quotes and newline must survive as JSON.
+            let schema = CString::new("CREATE TABLE Items (Id TEXT);").unwrap();
+            let database = sqlite_database_with_schema_ffi(schema.as_ptr(), ptr::null_mut());
+            let sql = CString::new("SELECT \"Id\"\nFROM Missing").unwrap();
+            let params = CString::new("[]").unwrap();
+            let result = sqlite_database_query_ffi(database, sql.as_ptr(), params.as_ptr());
+            let response: Value = serde_json::from_str(CStr::from_ptr(result).to_str().unwrap()).unwrap();
+            assert_eq!(response["success"], false);
+            assert!(response["error"].as_str().unwrap().contains("Missing"));
+            free_string(result);
+            sqlite_database_free_ffi(database);
+        }
+    }
 
     #[test]
     fn test_get_syncable_table_names() {

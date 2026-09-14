@@ -10,6 +10,10 @@ authors = ["AliasVault"]
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false
 
+# Applies to every profile passed via `wasm-pack --profile`, i.e. the browser extension build
+[package.metadata.wasm-pack.profile.custom]
+wasm-opt = false
+
 [lib]
 crate-type = ["lib", "cdylib", "staticlib"]
 name = "aliasvault_core"
@@ -24,8 +28,6 @@ uniffi-cli = ["uniffi/cli"]
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook", "dep:js-sys"]
 # Feature for C FFI exports (.NET P/Invoke)
 ffi = []
-# Feature for the in-memory SQLite host
-sqlite = ["dep:rusqlite"]
 
 [dependencies]
 # Serialization - core dependency for JSON handling
@@ -77,15 +79,11 @@ console_error_panic_hook = { version = "0.1", optional = true }
 mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
 # SQLite client which can be used by all host apps for uniform access
-rusqlite = { version = "0.40", features = ["bundled", "serialize"], optional = true }
+rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
 
 # rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }
-
-[dev-dependencies]
-# The sync engine tests drive the engine against a real SQLite host.
-rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
 
 # Build dependencies for UniFFI
 [build-dependencies]
@@ -104,13 +102,18 @@ opt-level = 0
 debug = false
 incremental = true
 
-# Release profile - optimized for size (browser WASM and .NET)
+# Release profile - optimized for size (web app WASM, fetched on page load, and .NET)
 [profile.release]
 opt-level = "z"
 lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = "symbols"
+
+# Browser extension profile - optimized for speed as the WASM ships inside the one time extension download
+[profile.extension]
+inherits = "release"
+opt-level = 3
 
 # Mobile profile - optimized for speed as increased bundle size is less relevant as its a one time download
 [profile.mobile]

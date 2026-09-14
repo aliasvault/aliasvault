@@ -6,11 +6,11 @@ WORKDIR /app
 # ============================================
 # Use BUILDPLATFORM to run on native arch (amd64) instead of emulating arm64.
 # WASM output is platform-independent, so we only need to build once.
-FROM --platform=$BUILDPLATFORM rust:1-slim-bookworm AS core-builder
+FROM --platform=$BUILDPLATFORM rust:1-slim-trixie AS core-builder
 
 # Install Node.js and wasm-pack (Rust already included in base image)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
+    apt-get install -y --no-install-recommends curl ca-certificates clang llvm && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
     rustup target add wasm32-unknown-unknown && \
@@ -26,7 +26,7 @@ COPY core/ ./core/
 # Build core libraries (only browser target needed for Blazor WASM client)
 RUN cd ./core && \
     chmod +x build-and-distribute.sh && \
-    ./build-and-distribute.sh --browser
+    ./build-and-distribute.sh --web
 
 # ============================================
 # Stage: Build .NET application

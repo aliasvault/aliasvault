@@ -5,7 +5,7 @@
   "version": "0.31.0",
   "type": "module",
   "scripts": {
-    "build:rust": "cd ../../core/rust && bash ./build.sh --browser",
+    "build:rust": "cd ../../core/rust && bash ./build.sh --browser-extension",
     "dev:chrome": "wxt -b chrome",
     "dev:firefox": "wxt -b firefox",
     "dev:edge": "wxt -b edge",

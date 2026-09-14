@@ -448,7 +448,7 @@ apps/browser-extension/build-assets/safari-xcode/build
 core/rust/dist/
 core/rust/target/
 
-# Browser extension WASM (built by: cd core/rust && ./build.sh --browser)
+# Browser WASM for web app and extension (built by: cd core/rust && ./build.sh --web or --browser-extension)
 core/client/wasm
 
 # Server .NET bindings (built by: cd core/rust && ./build.sh --server)

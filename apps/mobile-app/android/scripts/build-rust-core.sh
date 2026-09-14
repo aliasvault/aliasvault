@@ -4,7 +4,7 @@
 # This is called by Gradle build phases
 #
 # Usage:
-#   ./build-rust-core.sh [--force] [--release|--debug]
+#   ./build-rust-core.sh [--force]
 #
 # The main build script lives at: /core/rust/build.sh
 
@@ -19,21 +19,12 @@ RUST_CORE_DIR="$(cd "$SCRIPT_DIR/../../../../core/rust" && pwd)"
 JNILIBS_DIR="$SCRIPT_DIR/../app/src/main/jniLibs"
 
 # Parse arguments to pass through
-EXTRA_ARGS=""
 FORCE_FLAG=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --force)
             FORCE_FLAG="--force"
-            shift
-            ;;
-        --release)
-            EXTRA_ARGS=""
-            shift
-            ;;
-        --debug)
-            EXTRA_ARGS="--fast"
             shift
             ;;
         *)
@@ -44,4 +35,4 @@ done
 
 # Call the main build script with incremental mode
 cd "$RUST_CORE_DIR"
-exec ./build.sh --android --incremental $FORCE_FLAG $EXTRA_ARGS
+exec ./build.sh --android --incremental $FORCE_FLAG
