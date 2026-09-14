@@ -988,7 +988,7 @@ class PasskeyFormFragment : Fragment() {
                 }
 
                 is net.aliasvault.app.vaultstore.AppError.NetworkError,
-                is net.aliasvault.app.vaultstore.AppError.Timeout,
+                is net.aliasvault.app.vaultstore.AppError.VaultSyncTimeout,
                 -> {
                     title = getString(R.string.network_error_title)
                     message = getString(R.string.network_error_message)

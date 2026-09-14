@@ -600,7 +600,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 title = NSLocalizedString("server_unavailable_title", comment: "Server Unavailable")
                 message = NSLocalizedString("server_unavailable_message", comment: "The server is currently unavailable. Please try again later.")
 
-            case .networkError, .timeout:
+            case .networkError, .vaultSyncTimeout:
                 title = NSLocalizedString("network_error_title", comment: "Network Error")
                 message = NSLocalizedString("network_error_message", comment: "A network error occurred. Please check your connection and try again.")
 

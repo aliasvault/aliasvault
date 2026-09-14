@@ -11,7 +11,6 @@ public enum AppError: Error {
     // Network/connectivity errors
     case serverUnavailable(statusCode: Int)
     case networkError(underlyingError: Error)
-    case timeout
     case serverError(message: String)
 
     // Version/compatibility errors
@@ -61,6 +60,9 @@ public enum AppError: Error {
     /// exceeds the configured MAX_UPLOAD_SIZE_MB limit on the server.
     case vaultTooLarge
 
+    /// A vault transfer exceeded its request timeout (large vault or slow connection).
+    case vaultSyncTimeout
+
     // Retry errors
     case maxRetriesReached
     case migrationCheckFailed(message: String)
@@ -99,8 +101,6 @@ public enum AppError: Error {
             return "E-201"
         case .networkError:
             return "E-202"
-        case .timeout:
-            return "E-203"
         case .serverError:
             return "E-204"
         case .clientVersionNotSupported:
@@ -167,6 +167,8 @@ public enum AppError: Error {
             return "E-801"
         case .vaultTooLarge:
             return "E-804"
+        case .vaultSyncTimeout:
+            return "E-805"
         case .maxRetriesReached:
             return "E-901"
         case .migrationCheckFailed:
@@ -197,8 +199,6 @@ public enum AppError: Error {
             return "Server unavailable (status: \(statusCode))"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
-        case .timeout:
-            return "Request timeout"
         case .serverError(let message):
             return "Server error: \(message)"
         case .clientVersionNotSupported:
@@ -265,6 +265,8 @@ public enum AppError: Error {
             return "Vault upload failed: \(message)"
         case .vaultTooLarge:
             return "Vault too large for server"
+        case .vaultSyncTimeout:
+            return "Vault sync timed out"
         case .maxRetriesReached:
             return "Max sync retries reached"
         case .migrationCheckFailed(let message):

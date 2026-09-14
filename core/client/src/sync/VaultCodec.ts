@@ -10,27 +10,15 @@ import type SqliteClient from '../database/SqliteClient';
 import type { ISqliteDatabase, ISqliteStatement, SqliteValue } from '../platform/SqliteEngine';
 import type {
   CodecManifest,
-  CodecDataBucket,
   CodecMaterialized,
   CodecTableData,
 } from '../rust/RustCore';
 
 /** A single table's rows, byte columns rendered as `{ __b64 }`. */
-export type TableData = CodecTableData;
+type TableData = CodecTableData;
 
 /** Manifest-v1 manifest. */
 export type VaultManifest = CodecManifest;
-
-/** A manifest-v1 data bucket. */
-export type VaultDataBucket = CodecDataBucket;
-
-/**
- * A decoded blob entry held platform-side during upload: kind + plaintext bytes.
- */
-export type BlobEntry = {
-  kind: 'favicon' | 'attachment';
-  bytes: Uint8Array;
-};
 
 /**
  * Marker for an extracted blob reference inside a materialized row.
@@ -43,7 +31,7 @@ type BlobRef = {
 /**
  * The stamp a row carries while it belongs to no manifest yet.
  */
-export const UNSTAMPED_MANIFEST_ID = '00000000-0000-0000-0000-000000000000';
+const UNSTAMPED_MANIFEST_ID = '00000000-0000-0000-0000-000000000000';
 
 /**
  * Column sets already derived from a schema, keyed by the schema SQL that produced them.
@@ -54,16 +42,8 @@ const schemaColumnsCache = new Map<string, Promise<Record<string, string[]>>>();
  * Whether a stamp names no manifest, so it must never be mistaken for one the vault holds rows for.
  * @param manifestId - the stamp as the row carries it
  */
-export function isUnstampedScope(manifestId: string | null | undefined): boolean {
+function isUnstampedScope(manifestId: string | null | undefined): boolean {
   return !manifestId || manifestId.toLowerCase() === UNSTAMPED_MANIFEST_ID;
-}
-
-/**
- * The comparison key of a manifest id, force it to lowercase to ensure cross-platform compatibility.
- * @param manifestId - the manifest id in any casing
- */
-export function manifestIdKey(manifestId: string): string {
-  return manifestId.toLowerCase();
 }
 
 /**

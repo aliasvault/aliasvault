@@ -56,14 +56,6 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError("Network error: ${underlyingError.message}", underlyingError)
 
     /**
-     * Error indicating request timeout.
-     */
-    class Timeout(
-        message: String = "Request timeout",
-        cause: Throwable? = null,
-    ) : AppError(message, cause)
-
-    /**
      * Error indicating the server answered a request with an unexpected HTTP failure.
      */
     class ServerError(
@@ -335,6 +327,14 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError(message, cause)
 
     /**
+     * Error indicating a vault transfer exceeded its request timeout (large vault or slow connection).
+     */
+    class VaultSyncTimeout(
+        message: String = "Vault sync timed out",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
      * Error indicating max sync retries reached.
      */
     class MaxRetriesReached(
@@ -414,7 +414,6 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is PasswordChanged -> "E-103"
             is ServerUnavailable -> "E-201"
             is NetworkError -> "E-202"
-            is Timeout -> "E-203"
             is ServerError -> "E-204"
             is ClientVersionNotSupported -> "E-301"
             is ServerVersionNotSupported -> "E-302"
@@ -448,6 +447,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is MergeUploadFailed -> "E-705"
             is VaultUploadFailed -> "E-801"
             is VaultTooLarge -> "E-804"
+            is VaultSyncTimeout -> "E-805"
             is MaxRetriesReached -> "E-901"
             is MigrationCheckFailed -> "E-903"
             is UnknownError -> "E-001"

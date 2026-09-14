@@ -300,8 +300,7 @@ async function handleSyncError(
       await app.logout(messageWithCode);
       return false;
 
-    // Network errors - set offline mode, don't logout.
-    case AppErrorCode.SERVER_UNAVAILABLE:
+    // Server unreachable: offline mode, don't logout.
     case AppErrorCode.NETWORK_ERROR:
       await dbContext.setIsOffline(true);
       onOffline?.();

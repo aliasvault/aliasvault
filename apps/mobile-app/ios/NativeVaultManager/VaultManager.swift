@@ -1571,7 +1571,6 @@ private enum RustCoreDispatcher {
             return try json(["proof": session.proof, "key": session.key])
 
         case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
-        case "mergeCanonicalJson": return try RustCoreFramework.mergeCanonicalJson(inputJson: try args.string(0))
         case "pruneVaultJson": return try RustCoreFramework.pruneVaultJson(inputJson: try args.string(0))
         case "getPruneTableQueries": return try json(RustCoreFramework.getPruneTableQueries().map { ["name": $0.name, "query": $0.query] })
 

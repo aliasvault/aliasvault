@@ -27,13 +27,6 @@ export function rustCore(): IRustCore {
 }
 
 /**
- * Initialize the Rust core.
- */
-export function initRustCore(): Promise<void> {
-  return rustCore().init();
-}
-
-/**
  * Extract the host (subdomain + domain) from a URL.
  * Example: `https://www.example.com/path` > `example.com`.
  * Returns empty string for inputs the Rust extractor rejects, e.g.

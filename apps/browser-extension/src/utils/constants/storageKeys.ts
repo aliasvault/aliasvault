@@ -12,7 +12,7 @@ import {
 
 import { LEGACY_VAULT_DATA_STORAGE_KEYS } from '@/utils/constants/legacyStorageKeys';
 
-export { bucketRevisionKey, dirtyScopeStorageKey, type StorageKey } from '@aliasvault/client/constants/StorageKeys';
+export { dirtyScopeStorageKey, type StorageKey } from '@aliasvault/client/constants/StorageKeys';
 
 export const StorageKeys = {
   ...CoreStorageKeys,

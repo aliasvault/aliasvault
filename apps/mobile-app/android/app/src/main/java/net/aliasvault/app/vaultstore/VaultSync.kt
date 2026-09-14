@@ -223,7 +223,7 @@ class VaultSync(
         // The engine's message is diagnostic detail; the code decides what the user sees.
         val message = result.optString("error", "Vault sync failed")
         return when (result.optString("errorCode")) {
-            "E-805" -> AppError.Timeout()
+            "E-805" -> AppError.VaultSyncTimeout()
             "E-804" -> AppError.VaultTooLarge()
             "E-903" -> AppError.ServerUpdateRequired()
             "E-901" -> AppError.MigrationCheckFailed(message)

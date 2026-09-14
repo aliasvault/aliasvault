@@ -36,7 +36,6 @@ export enum AppErrorCode {
   // Network/connectivity errors (E-2xx) - from AppError.kt
   SERVER_UNAVAILABLE = 'E-201',
   NETWORK_ERROR = 'E-202',
-  TIMEOUT = 'E-203',
   SERVER_ERROR = 'E-204', // The server answered a sync request with an unexpected HTTP failure
 
   // Version/compatibility errors (E-3xx) - from AppError.kt
@@ -83,6 +82,7 @@ export enum AppErrorCode {
   // Upload errors (E-8xx) - from VaultSync.kt
   UPLOAD_FAILED = 'E-801', // AppError: vault upload failed
   UPLOAD_TOO_LARGE = 'E-804', // Server rejected upload with HTTP 413 (vault exceeds MAX_UPLOAD_SIZE_MB)
+  UPLOAD_TIMEOUT = 'E-805', // Sync engine: a vault transfer exceeded its request timeout (large vault or slow connection)
 
   // Native module/retry errors (E-9xx)
   MAX_RETRIES_REACHED = 'E-901', // AppError: max sync retries reached
@@ -218,7 +218,6 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Network errors
     [AppErrorCode.SERVER_UNAVAILABLE]: 'auth.errors.serverError',
     [AppErrorCode.NETWORK_ERROR]: 'auth.errors.networkError',
-    [AppErrorCode.TIMEOUT]: 'auth.errors.networkError',
     [AppErrorCode.SERVER_ERROR]: 'auth.errors.serverError',
 
     // Version errors
@@ -256,6 +255,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.STORAGE_WRITE_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.DATABASE_INIT_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.MANIFEST_NOT_RECORDED]: 'common.errors.unknownErrorTryAgain',
 
     // Merge errors
     [AppErrorCode.MERGE_FAILED]: 'common.errors.unknownErrorTryAgain',
@@ -264,6 +264,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Upload errors
     [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
+    [AppErrorCode.UPLOAD_TIMEOUT]: 'common.errors.vaultSyncTimeout',
 
     // Native module/retry errors
     [AppErrorCode.MAX_RETRIES_REACHED]: 'common.errors.unknownErrorTryAgain',

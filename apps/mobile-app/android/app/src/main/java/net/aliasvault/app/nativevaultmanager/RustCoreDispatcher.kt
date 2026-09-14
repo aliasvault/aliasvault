@@ -19,7 +19,6 @@ import uniffi.aliasvault_core.getIdentityAgeRanges
 import uniffi.aliasvault_core.getIdentityLanguages
 import uniffi.aliasvault_core.getPruneTableQueries
 import uniffi.aliasvault_core.getSyncableTableNames
-import uniffi.aliasvault_core.mergeCanonicalJson
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.pruneVaultJson
 import uniffi.aliasvault_core.selectFaviconTarget
@@ -100,7 +99,6 @@ object RustCoreDispatcher {
             }
 
             "getSyncableTableNames" -> json(getSyncableTableNames())
-            "mergeCanonicalJson" -> mergeCanonicalJson(args.string(0))
             "pruneVaultJson" -> pruneVaultJson(args.string(0))
             "getPruneTableQueries" -> {
                 val queries = JSONArray()

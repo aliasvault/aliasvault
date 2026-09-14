@@ -15,13 +15,6 @@ pub fn get_syncable_table_names() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
 }
 
-/// Merge the local canonical vault onto the server canonical vault (manifest-v1 format), one
-/// manifest at a time, rows out. Input: `CanonicalMergeInput` JSON. Output: `CanonicalMergeOutput` JSON.
-#[uniffi::export]
-pub fn merge_canonical_json(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, crate::vault_merge::merge_canonical)
-}
-
 /// Prune expired items from trash (items with DeletedAt older than retention_days, default 30).
 /// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
 #[uniffi::export]

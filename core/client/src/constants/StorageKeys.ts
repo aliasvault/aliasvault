@@ -104,13 +104,6 @@ export const StorageKeys = {
  */
 export const dirtyScopeStorageKey = (scope: VaultMutationScope): `local:${string}` => `local:dirtyScope:${scope}`;
 
-/**
- * Record key of one data bucket's revision inside {@link StorageKeys.VAULT_BUCKET_REVISIONS}, addressed by the manifest that owns it and the category.
- * @param manifestId - the id of the manifest that owns the bucket
- * @param category - the data bucket category
- */
-export const bucketRevisionKey = (manifestId: string, category: string): string => `${manifestId}:${category}`;
-
 /** Keys that hold auth tokens, ephemeral error state and account-scoped server state. Cleared on any logout. */
 export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.ACCESS_TOKEN,

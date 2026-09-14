@@ -219,7 +219,7 @@ internal final class VaultSync {
         "E-702": { _ in .maxRetriesReached },
         "E-801": { .vaultUploadFailed(message: $0) },
         "E-804": { _ in .vaultTooLarge },
-        "E-805": { _ in .timeout },
+        "E-805": { _ in .vaultSyncTimeout },
         "E-901": { .migrationCheckFailed(message: $0) },
         "E-903": { _ in .serverUpdateRequired }
     ]
