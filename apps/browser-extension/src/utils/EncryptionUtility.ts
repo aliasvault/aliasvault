@@ -15,6 +15,18 @@ export class EncryptionUtility {
   private static rsaPrivateKeyCache = new Map<string, Promise<CryptoKey>>();
 
   /**
+   * Decodes base64 to bytes.
+   */
+  private static base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  /**
    * Derives a key from a password using Argon2Id
    */
   public static async deriveKeyFromPassword(
@@ -58,7 +70,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      EncryptionUtility.base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -98,7 +110,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      EncryptionUtility.base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -107,7 +119,7 @@ export class EncryptionUtility {
       ["decrypt"]
     );
 
-    const ivAndCiphertext = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+    const ivAndCiphertext = EncryptionUtility.base64ToBytes(base64Ciphertext);
     const iv = ivAndCiphertext.slice(0, 12);
     const ciphertext = ivAndCiphertext.slice(12);
 
@@ -131,7 +143,7 @@ export class EncryptionUtility {
 
     const key = await crypto.subtle.importKey(
       "raw",
-      Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
+      EncryptionUtility.base64ToBytes(base64Key),
       {
         name: "AES-GCM",
         length: 256,
@@ -160,7 +172,7 @@ export class EncryptionUtility {
       return base64Ciphertext;
     }
 
-    const encryptedBytes = Uint8Array.from(atob(base64Ciphertext), c => c.charCodeAt(0));
+    const encryptedBytes = EncryptionUtility.base64ToBytes(base64Ciphertext);
     const decryptedBytes = await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, base64Key);
 
     return await EncryptionUtility.decodeMaybeGzipped(decryptedBytes);
@@ -280,7 +292,7 @@ export class EncryptionUtility {
    * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
    */
   public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
-    const cipherBuffer = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+    const cipherBuffer = EncryptionUtility.base64ToBytes(ciphertext);
     const plaintextBuffer = await crypto.subtle.decrypt(
       {
         name: "RSA-OAEP",
