@@ -93,7 +93,6 @@ class AutofillService : AutofillService() {
                 val structure = context.structure
                 val fieldFinder = FieldFinder(structure)
                 fieldFinder.parseStructure()
-                val appInfo = fieldFinder.getAppInfo()
 
                 val responseBuilder = FillResponse.Builder()
 
@@ -101,12 +100,10 @@ class AutofillService : AutofillService() {
                 val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                 val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
                 val fallbackPool = buildInlinePool(request)
-                if (showSearchText) {
-                    responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", fallbackPool))
+                addDatasets(responseBuilder, fieldFinder, fallbackPool, showSearchText) {
+                    // Add failed to retrieve dataset
+                    responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, fallbackPool))
                 }
-
-                // Add failed to retrieve dataset
-                responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, fallbackPool))
 
                 safeCallback(responseBuilder.build())
             } catch (fallbackError: Exception) {
@@ -183,40 +180,38 @@ class AutofillService : AutofillService() {
                             val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
                             val copyTotpOnFill = TotpClipboard.isCopyOnFillEnabled(this@AutofillService)
-                            if (showSearchText) {
-                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
-                            }
-
-                            // If there are no results, return "no matches" placeholder option.
-                            if (filteredItems.isEmpty()) {
-                                Log.d(
-                                    TAG,
-                                    "No items found for this app, showing 'no matches' option",
-                                )
-                                responseBuilder.addDataset(
-                                    AutofillDatasetBuilder.createNoMatchesDataset(
-                                        this@AutofillService,
-                                        fieldFinder.autofillableFields,
-                                        appInfo,
-                                        inlinePool.next(),
-                                    ),
-                                )
-                            } else {
-                                // If there are matches, add them to the dataset
-                                for (item in filteredItems) {
-                                    val dataset = AutofillDatasetBuilder.createItemDataset(
-                                        context = this@AutofillService,
-                                        fields = fieldFinder.autofillableFields,
-                                        item = item,
-                                        copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
-                                        inlineSpec = inlinePool.next(),
+                            addDatasets(responseBuilder, fieldFinder, inlinePool, showSearchText) {
+                                // If there are no results, return "no matches" placeholder option.
+                                if (filteredItems.isEmpty()) {
+                                    Log.d(
+                                        TAG,
+                                        "No items found for this app, showing 'no matches' option",
                                     )
-                                    responseBuilder.addDataset(dataset)
-                                }
+                                    responseBuilder.addDataset(
+                                        AutofillDatasetBuilder.createNoMatchesDataset(
+                                            this@AutofillService,
+                                            fieldFinder.autofillableFields,
+                                            appInfo,
+                                            inlinePool.next(),
+                                        ),
+                                    )
+                                } else {
+                                    // If there are matches, add them to the dataset
+                                    for (item in filteredItems) {
+                                        val dataset = AutofillDatasetBuilder.createItemDataset(
+                                            context = this@AutofillService,
+                                            fields = fieldFinder.autofillableFields,
+                                            item = item,
+                                            copyTotpOnSelect = copyTotpOnFill && item.hasTotp,
+                                            inlineSpec = inlinePool.next(),
+                                        )
+                                        responseBuilder.addDataset(dataset)
+                                    }
 
-                                // Add "Open app" option at the bottom (when search text is not shown and there are matches)
-                                if (!showSearchText) {
-                                    responseBuilder.addDataset(createOpenAppDataset(fieldFinder, inlinePool))
+                                    // Add "Open app" option at the bottom (when search text is not shown and there are matches)
+                                    if (!showSearchText) {
+                                        responseBuilder.addDataset(createOpenAppDataset(fieldFinder, inlinePool))
+                                    }
                                 }
                             }
 
@@ -227,10 +222,9 @@ class AutofillService : AutofillService() {
                             val responseBuilder = FillResponse.Builder()
                             val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                             val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
-                            if (showSearchText) {
-                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
+                            addDatasets(responseBuilder, fieldFinder, inlinePool, showSearchText) {
+                                responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                             }
-                            responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                             callback(responseBuilder.build())
                         }
                     }
@@ -241,10 +235,9 @@ class AutofillService : AutofillService() {
                         val responseBuilder = FillResponse.Builder()
                         val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
                         val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
-                        if (showSearchText) {
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown", inlinePool))
+                        addDatasets(responseBuilder, fieldFinder, inlinePool, showSearchText) {
+                            responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                         }
-                        responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder, inlinePool))
                         callback(responseBuilder.build())
                     }
                 })
@@ -467,6 +460,35 @@ class AutofillService : AutofillService() {
         }
 
         return dataSetBuilder.build()
+    }
+
+    /**
+     * Adds [addEntries] plus the search text row when enabled: first when rendered as a layover dropdown,
+     * last when rendered as keyboard chips so actual matches stay visible.
+     */
+    private fun addDatasets(
+        responseBuilder: FillResponse.Builder,
+        fieldFinder: FieldFinder,
+        inlinePool: InlinePresentationHelper.SpecPool,
+        showSearchText: Boolean,
+        addEntries: () -> Unit,
+    ) {
+        if (!showSearchText) {
+            addEntries()
+            return
+        }
+
+        val addSearchDebug = {
+            val searchText = fieldFinder.getAppInfo() ?: "unknown"
+            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, searchText, inlinePool))
+        }
+        if (inlinePool.isInline) {
+            addEntries()
+            addSearchDebug()
+        } else {
+            addSearchDebug()
+            addEntries()
+        }
     }
 
     /**
