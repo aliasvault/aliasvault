@@ -35,7 +35,7 @@ class OriginVerifier {
          */
         // BEGIN_GENERATED: passkeys-allowlist
         // Source: https://www.gstatic.com/gpm-passkeys-privileged-apps/apps.json
-        // Last refreshed: 2026-09-03
+        // Last refreshed: 2026-09-15
         private val PRIVILEGED_ALLOWLIST_JSON = """
         {
           "apps": [
@@ -999,6 +999,18 @@ class OriginVerifier {
                   {
                     "build": "release",
                     "cert_fingerprint_sha256": "C5:2A:34:DE:F8:1E:DE:D5:3D:48:AD:D3:75:6C:73:24:A8:5B:42:04:D5:65:A7:22:0F:08:38:E3:07:6D:03:4B"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "android",
+              "info": {
+                "package_name": "com.netskope.browser",
+                "signatures": [
+                  {
+                    "build": "release",
+                    "cert_fingerprint_sha256": "B8:BB:F5:9C:BD:84:EB:21:7B:F4:3D:1C:50:E8:5C:53:43:E7:93:69:03:93:90:06:9D:C0:0B:A8:A8:8F:BA:DE"
                   }
                 ]
               }
