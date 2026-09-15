@@ -81,7 +81,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (56.0.12):
+  - ExpoModulesJSI (56.0.13):
     - React-Core
     - ReactCommon
   - ExpoModulesWorklets (56.0.23):
@@ -2758,7 +2758,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: cf50efc436b2ec313510131c1ee0e778366d64b0
   ExpoLogBox: cdad5c9402a186574fb5924ea91df1f08ba9a98a
   ExpoModulesCore: 06410c6ac2f13edaae5f5444689b9cacc6a9c6d7
-  ExpoModulesJSI: e62656cfaffb5aeb3fdc1dd2bc49f77e87ed2261
+  ExpoModulesJSI: abe8cd3e19c89b38c63426be235af5ef5ac9c1d1
   ExpoModulesWorklets: 40fe3862230a3d967899ff29211480efc5daf4e2
   ExpoModulesWorkletsAdapter: 036c0be70f07d6fff89023f33da6e28556a85838
   ExpoRouter: ec5c793ef2a5ade5ecbd3097831c7b9411ed43be
