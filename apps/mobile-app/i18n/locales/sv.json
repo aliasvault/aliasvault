@@ -116,7 +116,7 @@
   "totp": {
     "addCode": "Lägg till 2FA kod",
     "nameOptional": "Namn (valfritt)",
-    "addName": "Add a name (optional)",
+    "addName": "Lägg till ett namn (valfritt)",
     "defaultName": "Autentiserare",
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
@@ -195,8 +195,8 @@
       "exportDescription": "Av säkerhetsskäl, ange ditt huvudlösenord för att bekräfta denna export."
     },
     "security": "Säkerhet",
-    "appVersion": "App version",
-    "serverVersion": "Server version",
+    "appVersion": "App-version",
+    "serverVersion": "Server-version",
     "autoLockOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -450,26 +450,26 @@
     "includeSpecialChars": "Specialtecken (!@#)",
     "avoidAmbiguousChars": "Undvik tvetydiga tecken",
     "passwordTypeBasic": "Lösenord",
-    "passwordTypeDiceware": "Passphrase",
-    "passphraseLanguage": "Passphrase language",
-    "wordCount": "Words",
+    "passwordTypeDiceware": "Lösenfras",
+    "passphraseLanguage": "Lösenfrasens språk",
+    "wordCount": "Ord",
     "capitalization": "Capitalization",
-    "separator": "Separator",
+    "separator": "Avskiljare",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
-      "Lowercase": "Lowercase",
-      "TitleCase": "Title Case",
-      "Uppercase": "Uppercase"
+      "Lowercase": "Gemener",
+      "TitleCase": "Inledande Versaler",
+      "Uppercase": "Versaler"
     },
     "dicewareSeparatorOption": {
-      "Dash": "Dash",
-      "Space": "Space",
-      "Underscore": "Underscore",
-      "Dot": "Dot"
+      "Dash": "Streck",
+      "Space": "Mellanslag",
+      "Underscore": "Understreck",
+      "Dot": "Punkt"
     },
     "dicewareSaltOption": {
       "Prefix": "Prefix",
-      "Sprinkle": "Random position",
+      "Sprinkle": "Slumpmässig position",
       "Suffix": "Suffix"
     },
     "errorLoadingItems": "Fel vid laddning av objekt",
@@ -535,7 +535,7 @@
     "contextMenu": {
       "title": "Objektalternativ",
       "edit": "Redigera",
-      "duplicate": "Duplicate",
+      "duplicate": "Duplicera",
       "delete": "Radera",
       "copyUsername": "Kopiera användarnamn",
       "copyEmail": "Kopiera e-postadress",
@@ -572,8 +572,8 @@
     "recentlyDeleted": {
       "title": "Nyligen borttagna",
       "noItems": "Inga raderade objekt",
-      "noItemsDescription": "Items you delete will appear here for {{days}} days before being permanently removed.",
-      "description": "These items will be permanently deleted after {{days}} days. You can restore them or delete them immediately.",
+      "noItemsDescription": "Objekt som du tar bort kommer visas här i {{days}} dagar innan de tas bort permanent.",
+      "description": "Dessa objekt kommer att raderas permanent efter {{days}} dagar. Du kan återställa dem eller ta bort dem omedelbart.",
       "restore": "Återställ",
       "deletePermanently": "Radera permanent",
       "emptyAll": "Töm alla",
@@ -606,7 +606,7 @@
     "formatSwitchTitle": "Switch email format",
     "sizeKB": "KB",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
+    "updateClientForFormattedView": "Denna e-post kräver en nyare app-version för att visas korrekt. Vänligen uppdatera din app.",
     "emptyMessage": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "loadMore": "Läs in fler ({{count}} kvar)",
     "time": {

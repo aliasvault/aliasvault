@@ -113,6 +113,8 @@
       "mergeFailed": "A széf változtatások összevonása sikertelen. Kérem, próbálja meg újra.",
       "vaultTooLarge": "Túl nagy a széf a befogadásra. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
       "vaultSyncTimeout": "A széf szinkronizálás időtúllépés miatt leállt. Ez akkor fordulhat elő, ha az internet lassú vagy a széf túl nagy. Kérem próbálja újra.",
+      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Kérem adjon meg egy valós 6 számjegyű kódot.",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "wrongPassword": "Hibás jelszó. Próbálkozzon újra.",

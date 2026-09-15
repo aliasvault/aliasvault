@@ -113,6 +113,8 @@
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "vaultTooLarge": "Kho lưu trữ quá lớn để máy chủ chấp nhận. Hãy thử xóa bớt một số mục hoặc tệp đính kèm để giảm kích thước rồi thử lại.",
       "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "wrongPassword": "Incorrect password. Please try again.",
