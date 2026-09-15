@@ -113,6 +113,8 @@
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
       "vaultTooLarge": "Sejf jest zbyt duży, aby serwer mógł zaakceptować. Spróbuj usunąć niektóre elementy lub załączniki, aby zmniejszyć rozmiar i spróbować ponownie.",
       "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
+      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
