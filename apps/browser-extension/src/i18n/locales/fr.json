@@ -113,6 +113,8 @@
       "mergeFailed": "Impossible de fusionner les modifications du coffre-fort. Veuillez réessayer.",
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
       "vaultSyncTimeout": "La synchronisation du coffre a expiré. Cela peut se produire lorsque le coffre est grand ou que la connexion Internet est lente. Veuillez réessayer.",
+      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
