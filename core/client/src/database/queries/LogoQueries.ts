@@ -50,14 +50,6 @@ export class LogoQueries {
       IsDeleted = 0`;
 
   /**
-   * One manifest's library of uploaded logos, newest first. Favicons are excluded.
-   */
-  public static readonly LIST_CUSTOM = `
-    SELECT Id, Kind, Source, Name, FileData FROM Logos
-    WHERE ManifestId = ? AND Kind = 'custom' AND IsDeleted = 0
-    ORDER BY UpdatedAt DESC`;
-
-  /**
    * Every item whose logo lives outside the item's own manifest, with the kind and key needed to bring a
    * copy in.
    */
@@ -73,10 +65,4 @@ export class LogoQueries {
    */
   public static readonly REPOINT_ITEM_LOGO = `
     UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?`;
-
-  /**
-   * Soft-delete an uploaded logo, removing it from the library.
-   */
-  public static readonly SOFT_DELETE = `
-    UPDATE Logos SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?`;
 }

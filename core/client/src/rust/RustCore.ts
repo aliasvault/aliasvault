@@ -12,12 +12,12 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
+import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
 export { AutofillMatchingMode } from './RustCoreTypes';
-export type { CodecBlobEntry, CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecMaterialized, CodecTableData, CodecValidation, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment, SharingAccessPartition, SharingManifestRecord, SharingWriteSet } from './RustCoreTypes';
+export type { CodecBlobEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecManifest, CodecTableData, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail, ParsedEmailAttachment } from './RustCoreTypes';
 
 /**
  * The host's Rust core binding.
@@ -238,35 +238,6 @@ export async function vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeI
 }
 
 /**
- * Materialize the vault's manifests + data buckets into the table set the platform inserts.
- */
-export async function vaultCodecMaterializeAsSqlite(manifests: CodecManifest[], dataBuckets: CodecDataBucket[], schemaColumns: Record<string, string[]>): Promise<CodecMaterialized> {
-  return rustCore().vaultCodecMaterializeAsSqlite({ manifests, dataBuckets, schemaColumns });
-}
-
-/**
- * Extract the encryption-key row whose `PublicKey` matches `publicKey` from a decrypted manifest.
- */
-export async function vaultCodecExtractEncryptionKeyForPublicKey(manifest: CodecManifest, publicKey: string): Promise<Record<string, unknown> | null> {
-  return rustCore().vaultCodecExtractEncryptionKeyForPublicKey(manifest, publicKey);
-}
-
-/**
- * Build a bucket category's data buckets from its tables, one per manifest in `manifestIds` (bucket-only push
- * path).
- */
-export async function vaultCodecExtractBuckets(category: string, manifestIds: string[], tables: Record<string, Array<Record<string, unknown>>>): Promise<CodecDataBucket[]> {
-  return rustCore().vaultCodecExtractBuckets({ category, manifestIds, tables });
-}
-
-/**
- * The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
- */
-export async function vaultCodecOverflowTable(): Promise<string> {
-  return rustCore().vaultCodecOverflowTable();
-}
-
-/**
  * The vault tables that take part in sync, as declared by the shared vault table registry.
  */
 export async function getSyncableTableNames(): Promise<string[]> {
@@ -274,27 +245,12 @@ export async function getSyncableTableNames(): Promise<string[]> {
 }
 
 /**
- * The bucket layout: every category and the tables it owns.
- */
-export async function vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]> {
-  return rustCore().vaultCodecBucketLayout();
-}
-
-/**
- * The `Logos.Id` to use for a source domain inside the manifest with id `manifestId` (pass the root
- * manifest's own id for personal logos).
+ * The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
  *
  * Logo identity is derived: two devices that fetch the same favicon independently produce
  * the same row and merge by LWW. The same domain in two different manifests deliberately yields
  * two different ids, so a shared manifest's logo and the user's own logo for that domain never
  * overwrite each other.
- */
-export async function vaultCodecLogoIdForSource(manifestId: string, source: string): Promise<string> {
-  return rustCore().vaultCodecLogoIdForSource(manifestId, source);
-}
-
-/**
- * The `Logos.Id` to use for the logo `(kind, source)` inside the manifest with id `manifestId`.
  */
 export async function vaultCodecLogoIdFor(manifestId: string, kind: string, source: string): Promise<string> {
   return rustCore().vaultCodecLogoIdFor(manifestId, kind, source);
@@ -327,52 +283,6 @@ export async function vaultCodecPackPayload(payloadJson: string): Promise<Uint8A
  */
 export async function vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string> {
   return rustCore().vaultCodecUnpackPayload(plainBytes);
-}
-
-/**
- * Structurally validate a manifest before upload.
- */
-export async function vaultCodecValidateManifest(manifest: CodecManifest): Promise<CodecValidation> {
-  return rustCore().vaultCodecValidateManifest(manifest);
-}
-
-/**
- * Validate a data bucket before upload.
- */
-export async function vaultCodecValidateDataBucket(bucket: CodecDataBucket): Promise<CodecValidation> {
-  return rustCore().vaultCodecValidateDataBucket(bucket);
-}
-
-/**
- * SHA-256 (lowercase hex) of a base64 ciphertext string.
- */
-export async function vaultCodecComputeCiphertextHash(base64Ciphertext: string): Promise<string> {
-  return rustCore().vaultCodecComputeCiphertextHash(base64Ciphertext);
-}
-
-/**
- * Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase hex)
- * of the Rust codec's canonical JSON, excluding the volatile `canonicalizedAt` timestamp. Calculated in Rust so
- * every platform uses the same fingerprinting algorithm.
- */
-export async function vaultCodecComputeContentFingerprint(payloadJson: string): Promise<string> {
-  return rustCore().vaultCodecComputeContentFingerprint(payloadJson);
-}
-
-/**
- * Work out which manifests the next push writes, personal manifest first.
- * @param input - the personal manifest, what the vault holds rows for, what opened, and the held records.
- */
-export async function vaultSharingResolveManifestWriteSet(input: { personalManifestId: string; personalManifestSalt: string; stampedManifestIds: string[]; openedManifestIds: string[]; heldRecords: SharingManifestRecord[]; displayNames: Record<string, string> }): Promise<SharingWriteSet> {
-  return rustCore().vaultSharingResolveManifestWriteSet(input);
-}
-
-/**
- * Split what the local vault holds by what this account can still open.
- * @param input - what the vault holds, what this session can write, and what the last snapshot served.
- */
-export async function vaultSharingPartitionManifestAccess(input: { manifestIdsInVault: string[]; writableManifestIds: string[]; grantedManifestIds: string[] }): Promise<SharingAccessPartition> {
-  return rustCore().vaultSharingPartitionManifestAccess(input);
 }
 
 /**

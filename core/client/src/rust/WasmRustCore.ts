@@ -5,7 +5,7 @@
 import initWasm, * as core from '../../wasm/aliasvault_core.js';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -74,24 +74,13 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       ready(() => core.srpDeriveSession(clientSecret, serverPublic, salt, identity, privateKey) as SrpSession),
 
     getSyncableTableNames: (): Promise<string[]> => ready(() => core.getSyncableTableNames()),
-    getPruneTableQueries: (): Promise<PruneTableQuery[]> => ready(() => core.getPruneTableQueries() as PruneTableQuery[]),
 
     vaultCodecCanonicalizeFromSqlite: (input: CodecCanonicalizeInput): Promise<CodecCanonicalized> => ready(() => core.vaultCodecCanonicalizeFromSqlite(input) as CodecCanonicalized),
-    vaultCodecMaterializeAsSqlite: (input: CodecMaterializeInput): Promise<CodecMaterialized> => ready(() => core.vaultCodecMaterializeAsSqlite(input) as CodecMaterialized),
-    vaultCodecExtractBuckets: (input: CodecExtractBucketsInput): Promise<CodecDataBucket[]> => ready(() => core.vaultCodecExtractBuckets(input) as CodecDataBucket[]),
-    vaultCodecBucketLayout: (): Promise<CodecBucketLayoutEntry[]> => ready(() => core.vaultCodecBucketLayout() as CodecBucketLayoutEntry[]),
-    vaultCodecOverflowTable: (): Promise<string> => ready(() => core.vaultCodecOverflowTable()),
     vaultCodecGenerateManifestSalt: (): Promise<string> => ready(() => core.vaultCodecGenerateManifestSalt()),
-    vaultCodecLogoIdForSource: (manifestId, source): Promise<string> => ready(() => core.vaultCodecLogoIdForSource(manifestId, source)),
     vaultCodecLogoIdFor: (manifestId, kind, source): Promise<string> => ready(() => core.vaultCodecLogoIdFor(manifestId, kind, source)),
     vaultCodecLogoContentHash: (bytes): Promise<string> => ready(() => core.vaultCodecLogoContentHash(bytes)),
     vaultCodecPackPayload: (payloadJson): Promise<Uint8Array> => ready(() => core.vaultCodecPackPayload(payloadJson)),
     vaultCodecUnpackPayload: (plainBytes): Promise<string> => ready(() => core.vaultCodecUnpackPayload(plainBytes)),
-    vaultCodecValidateManifest: (manifest: CodecManifest): Promise<CodecValidation> => ready(() => core.vaultCodecValidateManifest(manifest) as CodecValidation),
-    vaultCodecValidateDataBucket: (bucket: CodecDataBucket): Promise<CodecValidation> => ready(() => core.vaultCodecValidateDataBucket(bucket) as CodecValidation),
-    vaultCodecComputeCiphertextHash: (base64Ciphertext): Promise<string> => ready(() => core.vaultCodecComputeCiphertextHash(base64Ciphertext)),
-    vaultCodecComputeContentFingerprint: (payloadJson): Promise<string> => ready(() => core.vaultCodecComputeContentFingerprint(payloadJson)),
-    vaultCodecExtractEncryptionKeyForPublicKey: (manifest: CodecManifest, publicKey): Promise<Record<string, unknown> | null> => ready(() => (core.vaultCodecExtractEncryptionKeyForPublicKey(manifest, publicKey) ?? null) as Record<string, unknown> | null),
 
     createVaultSyncSession: (requestJson): Promise<IVaultSyncSession> => ready((): IVaultSyncSession => {
       const session = new core.VaultSyncSession(requestJson);
@@ -101,8 +90,5 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
         free: (): void => session.free(),
       };
     }),
-
-    vaultSharingResolveManifestWriteSet: (input: SharingResolveWriteSetInput): Promise<SharingWriteSet> => ready(() => core.vaultSharingResolveManifestWriteSet(input) as SharingWriteSet),
-    vaultSharingPartitionManifestAccess: (input: SharingPartitionAccessInput): Promise<SharingAccessPartition> => ready(() => core.vaultSharingPartitionManifestAccess(input) as SharingAccessPartition),
   };
 }

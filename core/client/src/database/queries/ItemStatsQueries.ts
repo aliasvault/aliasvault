@@ -45,25 +45,4 @@ export class ItemStatsQueries {
           IsDeleted = 0
       WHERE ManifestId = ? AND Id = ?`;
   }
-
-  /**
-   * Read one item's statistics.
-   */
-  public static readonly GET_FOR_ITEM = `
-    SELECT LastUsedAt, UseCount, LastAutofilledAt, AutofillCount, LastCopiedAt, CopyCount, LastPasskeyAuthAt, PasskeyAuthCount
-    FROM ItemStats
-    WHERE ManifestId = ? AND Id = ? AND IsDeleted = 0`;
-
-  /**
-   * Read the last-used timestamp of every item that has one, newest first.
-   *
-   * Joined on both halves of the key: an item id alone is ambiguous across manifests, which is exactly
-   * what the composite key exists to prevent.
-   */
-  public static readonly GET_LAST_USED_ALL = `
-    SELECT s.ManifestId, s.Id, s.LastUsedAt, s.UseCount
-    FROM ItemStats s
-    INNER JOIN Items i ON i.Id = s.Id AND i.ManifestId = s.ManifestId
-    WHERE s.IsDeleted = 0 AND s.LastUsedAt IS NOT NULL AND i.IsDeleted = 0
-    ORDER BY s.LastUsedAt DESC`;
 }

@@ -30,18 +30,6 @@ export function now(): string {
 }
 
 /**
- * Formats a Date to the birth date format (no milliseconds, time set to 00:00:00).
- * Format: "yyyy-MM-dd 00:00:00" (19 characters).
- * @param date - The Date to format
- * @returns Formatted date string in format "yyyy-MM-dd 00:00:00"
- */
-export function toBirthDateFormat(date: Date): string {
-  const isoString = date.toISOString();
-  const datePart = isoString.substring(0, 10); // yyyy-MM-dd
-  return `${datePart} 00:00:00`;
-}
-
-/**
  * Formats a date-time returned by the API (UTC by default) for display in the user's own locale and timezone.
  * @param value - The date-time string as returned by the API
  * @returns The date-time formatted for the current locale, or the raw value when it cannot be parsed

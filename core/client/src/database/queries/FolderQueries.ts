@@ -93,14 +93,4 @@ export class FolderQueries {
     SET ParentFolderId = ?,
         UpdatedAt = ?
     WHERE ParentFolderId = ?`;
-
-  /**
-   * Move item to folder.
-   */
-  public static readonly MOVE_ITEM = `
-    UPDATE Items
-    SET FolderId = ?,
-        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
-        UpdatedAt = ?
-    WHERE Id = ?`;
 }

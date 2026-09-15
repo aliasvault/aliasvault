@@ -230,28 +230,4 @@ export class FolderRepository extends BaseRepository {
       return folders + items;
     });
   }
-
-  /**
-   * Move an item to a folder.
-   * @param itemId - The ID of the item to move
-   * @param folderId - The ID of the destination folder (null to remove from folder)
-   * @returns The number of rows updated
-   */
-  public async moveItem(itemId: string, folderId: string | null): Promise<number> {
-    return this.withTransaction(async () => {
-      const currentDateTime = this.now();
-      const manifestId = await this.run(this.writeManifestId());
-      const moved = await this.run(this.execute(FolderQueries.MOVE_ITEM, [
-        folderId,
-        // Second bind of the destination: the item adopts that folder's manifest.
-        folderId,
-        manifestId,
-        currentDateTime,
-        itemId
-      ]));
-      // The destination folder may sit in another manifest; the item's logo has to follow it there.
-      await this.logoRepository.reconcileItemLogoScopes(currentDateTime);
-      return moved;
-    });
-  }
 }

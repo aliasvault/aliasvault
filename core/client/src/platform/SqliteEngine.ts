@@ -9,18 +9,7 @@ export type SqliteValue = string | number | null | Uint8Array;
 export type SqliteRow = Record<string, SqliteValue>;
 
 /**
- * A compiled statement, for bulk inserts that bind the same SQL many times.
- */
-export interface ISqliteStatement {
-  /** Bind the parameters and run the statement to completion. */
-  run(params: SqliteValue[]): void;
-
-  /** Release the statement. */
-  finalize(): void;
-}
-
-/**
- * One open SQLite database. Every call is synchronous: the repositories and the codec drive the database
+ * One open SQLite database. Every call is synchronous: the repositories drive the database
  * step by step, which only a synchronous engine can do without turning every read into a promise.
  */
 export interface ISqliteDatabase {
@@ -38,11 +27,6 @@ export interface ISqliteDatabase {
    * Run one or more statements separated by semicolons, without parameters.
    */
   exec(sql: string): void;
-
-  /**
-   * Compile a statement for repeated execution.
-   */
-  prepare(sql: string): ISqliteStatement;
 
   /**
    * The database as SQLite file bytes.

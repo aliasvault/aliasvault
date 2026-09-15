@@ -56,27 +56,6 @@ export class ItemStatsRepository extends BaseRepository {
   }
 
   /**
-   * Get one item's statistics.
-   * @param itemId - The item to read
-   * @returns The statistics, or null when the item has never been used
-   */
-  public *getForItem(itemId: string): DbOp<ItemStats | null> {
-    const manifestId = yield* this.itemManifestId(itemId);
-    if (!manifestId) {
-      return null;
-    }
-    return (yield* this.query<ItemStats>(ItemStatsQueries.GET_FOR_ITEM, [manifestId, itemId]))[0] ?? null;
-  }
-
-  /**
-   * Get the last-used timestamp of every item that has one, newest first.
-   * @returns One entry per used item
-   */
-  public *getLastUsed(): DbOp<{ ManifestId: string; Id: string; LastUsedAt: string; UseCount: number }[]> {
-    return yield* this.query<{ ManifestId: string; Id: string; LastUsedAt: string; UseCount: number }>(ItemStatsQueries.GET_LAST_USED_ALL);
-  }
-
-  /**
    * The manifest the given item belongs to.
    * @param itemId - The item id
    * @returns The manifest id, or null when no such item exists

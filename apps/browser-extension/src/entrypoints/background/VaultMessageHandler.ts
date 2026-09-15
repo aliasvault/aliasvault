@@ -51,7 +51,7 @@ import { t } from '@/i18n/StandaloneI18n';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { DraftItem } from '@aliasvault/client/database/ItemRef';
-import type { ISqliteDatabase, ISqliteStatement, SqliteValue } from '@aliasvault/client/platform';
+import type { ISqliteDatabase, SqliteValue } from '@aliasvault/client/platform';
 import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
@@ -95,8 +95,6 @@ const syncEngineHost: IVaultSyncEngineHost = {
       query: <T,>(sql: string, params?: SqliteValue[]): T[] => db.query<T>(sql, params),
       /** Run raw SQL. */
       exec: (sql: string): void => db.exec(sql),
-      /** Compile a statement. */
-      prepare: (sql: string): ISqliteStatement => db.prepare(sql),
       /** Export through the client so it can compact the file first. */
       export: (): Uint8Array => sqliteClient.exportToBytes(),
       /** The cached client owns the database's lifetime. */

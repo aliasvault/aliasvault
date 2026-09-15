@@ -15,21 +15,6 @@ export class EncryptionKeyQueries {
     WHERE x.IsDeleted = 0`;
 
   /**
-   * Get one manifest's active keypair: the key whose public half is published for SMTP delivery. Passed
-   * the root manifest's id, this is the user's personal keypair — `IsPrimary` alone would not identify it,
-   * as every manifest has a primary row of its own.
-   */
-  public static readonly GET_ACTIVE_FOR_MANIFEST = `
-    SELECT
-      x.Id,
-      x.PublicKey,
-      x.PrivateKey,
-      x.IsPrimary
-    FROM EncryptionKeys x
-    WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0
-    LIMIT 1`;
-
-  /**
    * Get the account keypair matching the given public half.
    */
   public static readonly GET_ACCOUNT_KEY_BY_PUBLIC_KEY = `

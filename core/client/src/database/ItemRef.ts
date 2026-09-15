@@ -27,15 +27,6 @@ export function scopedKey(manifestId: string, id: string): string {
 }
 
 /**
- * The grouping key of an item reference. Shorthand for {@link scopedKey}.
- * @param ref - The item reference
- * @returns A key unique across manifests
- */
-export function itemKey(ref: ItemRef): string {
-  return scopedKey(ref.ManifestId, ref.Id);
-}
-
-/**
  * Flatten item references into the bind list a row-value `IN (VALUES (?, ?), …)` match expects:
  * manifest first, then id, for each item in order.
  * @param refs - The item references to bind

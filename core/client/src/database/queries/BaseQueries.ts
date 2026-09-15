@@ -24,18 +24,6 @@ export class BaseQueries {
   public static readonly MANIFEST_OF_ITEM = 'COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?)';
 
   /**
-   * SQL fragment joining a row to another manifest-scoped table on both halves of the key. A join on
-   * the id alone would let a row resolve against a same-id row in a manifest it has nothing to do
-   * with, which is precisely what (ManifestId, Id) exists to prevent.
-   * @param left - Alias of the referencing table
-   * @param right - Alias of the referenced table
-   * @returns The predicate, for appending to a JOIN's ON clause
-   */
-  public static sameManifest(left: string, right: string): string {
-    return `${left}.ManifestId = ${right}.ManifestId`;
-  }
-
-  /**
    * Re-stamp a folder's whole subtree with `?` (a manifest id).
    * Used when a folder is shared (its subtree joins that manifest's namespace) and when the share is
    * removed (the subtree returns to the personal manifest).

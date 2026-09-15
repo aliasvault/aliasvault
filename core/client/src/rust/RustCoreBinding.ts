@@ -1,4 +1,4 @@
-import type { CodecBucketLayoutEntry, CodecCanonicalized, CodecCanonicalizeInput, CodecDataBucket, CodecExtractBucketsInput, CodecManifest, CodecMaterialized, CodecMaterializeInput, CodecValidation, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, PruneTableQuery, SharingAccessPartition, SharingPartitionAccessInput, SharingResolveWriteSetInput, SharingWriteSet, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -47,27 +47,13 @@ export interface IRustCore {
   srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<SrpSession>;
 
   getSyncableTableNames(): Promise<string[]>;
-  getPruneTableQueries(): Promise<PruneTableQuery[]>;
 
   vaultCodecCanonicalizeFromSqlite(input: CodecCanonicalizeInput): Promise<CodecCanonicalized>;
-  vaultCodecMaterializeAsSqlite(input: CodecMaterializeInput): Promise<CodecMaterialized>;
-  vaultCodecExtractBuckets(input: CodecExtractBucketsInput): Promise<CodecDataBucket[]>;
-  vaultCodecBucketLayout(): Promise<CodecBucketLayoutEntry[]>;
-  vaultCodecOverflowTable(): Promise<string>;
   vaultCodecGenerateManifestSalt(): Promise<string>;
-  vaultCodecLogoIdForSource(manifestId: string, source: string): Promise<string>;
   vaultCodecLogoIdFor(manifestId: string, kind: string, source: string): Promise<string>;
   vaultCodecLogoContentHash(bytes: Uint8Array): Promise<string>;
   vaultCodecPackPayload(payloadJson: string): Promise<Uint8Array>;
   vaultCodecUnpackPayload(plainBytes: Uint8Array): Promise<string>;
-  vaultCodecValidateManifest(manifest: CodecManifest): Promise<CodecValidation>;
-  vaultCodecValidateDataBucket(bucket: CodecDataBucket): Promise<CodecValidation>;
-  vaultCodecComputeCiphertextHash(base64Ciphertext: string): Promise<string>;
-  vaultCodecComputeContentFingerprint(payloadJson: string): Promise<string>;
-  vaultCodecExtractEncryptionKeyForPublicKey(manifest: CodecManifest, publicKey: string): Promise<Record<string, unknown> | null>;
-
-  vaultSharingResolveManifestWriteSet(input: SharingResolveWriteSetInput): Promise<SharingWriteSet>;
-  vaultSharingPartitionManifestAccess(input: SharingPartitionAccessInput): Promise<SharingAccessPartition>;
 
   createVaultSyncSession(requestJson: string): Promise<IVaultSyncSession>;
 }

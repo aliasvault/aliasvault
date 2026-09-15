@@ -63,27 +63,13 @@ export const nativeRustCore: IRustCore = {
   srpDeriveSession: (clientSecret, serverPublic, salt, identity, privateKey) => call('srpDeriveSession', clientSecret, serverPublic, salt, identity, privateKey),
 
   getSyncableTableNames: () => call('getSyncableTableNames'),
-  getPruneTableQueries: () => call('getPruneTableQueries'),
 
   vaultCodecCanonicalizeFromSqlite: (input) => call('vaultCodecCanonicalizeFromSqlite', JSON.stringify(input)),
-  vaultCodecMaterializeAsSqlite: (input) => call('vaultCodecMaterializeAsSqlite', JSON.stringify(input)),
-  vaultCodecExtractBuckets: (input) => call('vaultCodecExtractBuckets', JSON.stringify(input)),
-  vaultCodecBucketLayout: () => call('vaultCodecBucketLayout'),
-  vaultCodecOverflowTable: () => call('vaultCodecOverflowTable'),
   vaultCodecGenerateManifestSalt: () => call('vaultCodecGenerateManifestSalt'),
-  vaultCodecLogoIdForSource: (manifestId, source) => call('vaultCodecLogoIdForSource', manifestId, source),
   vaultCodecLogoIdFor: (manifestId, kind, source) => call('vaultCodecLogoIdFor', manifestId, kind, source),
   vaultCodecLogoContentHash: (bytes) => call('vaultCodecLogoContentHash', base64(bytes)),
   vaultCodecPackPayload: (payloadJson) => callForBytes('vaultCodecPackPayload', payloadJson),
   vaultCodecUnpackPayload: (plainBytes) => call('vaultCodecUnpackPayload', base64(plainBytes)),
-  vaultCodecValidateManifest: (manifest) => call('vaultCodecValidateManifest', JSON.stringify(manifest)),
-  vaultCodecValidateDataBucket: (bucket) => call('vaultCodecValidateDataBucket', JSON.stringify(bucket)),
-  vaultCodecComputeCiphertextHash: (base64Ciphertext) => call('vaultCodecComputeCiphertextHash', base64Ciphertext),
-  vaultCodecComputeContentFingerprint: (payloadJson) => call('vaultCodecComputeContentFingerprint', payloadJson),
-  vaultCodecExtractEncryptionKeyForPublicKey: (manifest, publicKey) => call('vaultCodecExtractEncryptionKeyForPublicKey', JSON.stringify(manifest), publicKey),
-
-  vaultSharingResolveManifestWriteSet: (input) => call('vaultSharingResolveManifestWriteSet', JSON.stringify(input)),
-  vaultSharingPartitionManifestAccess: (input) => call('vaultSharingPartitionManifestAccess', JSON.stringify(input)),
 
   createVaultSyncSession: () => Promise.reject(new Error('The vault sync engine is driven natively on mobile and has no JavaScript session.')),
 };

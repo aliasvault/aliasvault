@@ -3,7 +3,7 @@
  */
 import * as core from '../../wasm/aliasvault_core.js';
 
-import type { ISqliteDatabase, ISqliteEngine, ISqliteStatement, SqliteValue } from '../platform/SqliteEngine';
+import type { ISqliteDatabase, ISqliteEngine, SqliteValue } from '../platform/SqliteEngine';
 import type { IRustCore } from '../rust/RustCoreBinding';
 
 /**
@@ -29,21 +29,6 @@ class RustSqliteDatabase implements ISqliteDatabase {
   /** @inheritdoc */
   public exec(sql: string): void {
     this.db.exec(sql);
-  }
-
-  /**
-   * The core caches prepared statements per connection, so binding the same SQL again is a lookup, not a parse.
-   * @param sql - the statement
-   */
-  public prepare(sql: string): ISqliteStatement {
-    return {
-      /** Bind and run. */
-      run: (params: SqliteValue[]): void => {
-        this.db.run(sql, params);
-      },
-      /** Nothing to release: the statement lives in the core's cache. */
-      finalize: (): void => {},
-    };
   }
 
   /** @inheritdoc */

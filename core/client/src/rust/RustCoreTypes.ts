@@ -80,9 +80,6 @@ export type SrpSession = {
   key: string;
 };
 
-/** One per-table SELECT the pruner reads its input with. */
-export type PruneTableQuery = { name: string; query: string };
-
 /*
  * Vault codec (manifest-v1 storage format).
  */
@@ -154,65 +151,3 @@ export type CodecCanonicalizeInput = {
   /** For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. TODO: delete this field once the migration is complete. */
   adoptUnstampedInto?: string | null;
 };
-
-/** Input for materialize. */
-export type CodecMaterializeInput = {
-  manifests: CodecManifest[];
-  dataBuckets: CodecDataBucket[];
-  schemaColumns: Record<string, string[]>;
-};
-
-/** Materialized tables the platform inserts into a fresh SQLite DB (`overflow` is a diagnostics copy). */
-export type CodecMaterialized = { tables: CodecTableData[]; overflow: CodecOverflow };
-
-/** Input for the bucket-only extraction. */
-export type CodecExtractBucketsInput = { category: string; manifestIds: string[]; tables: Record<string, Array<Record<string, unknown>>> };
-
-/** One entry in the bucket layout: a category and the tables it owns. */
-export type CodecBucketLayoutEntry = { category: string; tables: string[] };
-
-/** Structural validation outcome. */
-export type CodecValidation = { ok: boolean; failedRules: string[]; message: string };
-
-/** A shared manifest's key record. */
-export type SharingManifestRecord = {
-  manifestId: string;
-  salt: string;
-  name?: string | null;
-  canAdminister?: boolean;
-};
-
-/** One manifest the next push writes. */
-export type SharingWriteRecord = {
-  manifestId: string;
-  isPersonal: boolean;
-  salt: string;
-  name: string | null;
-  canAdminister: boolean;
-};
-
-/** The manifests a push writes, personal first, plus what was left out and why. */
-export type SharingWriteSet = {
-  records: SharingWriteRecord[];
-  skipped: Array<{ manifestId: string; reason: 'NO_ROWS_IN_VAULT' | 'KEY_DID_NOT_OPEN' }>;
-};
-
-/** Input of the manifest write-set resolution. */
-export type SharingResolveWriteSetInput = {
-  personalManifestId: string;
-  personalManifestSalt: string;
-  stampedManifestIds: string[];
-  openedManifestIds: string[];
-  heldRecords: SharingManifestRecord[];
-  displayNames: Record<string, string>;
-};
-
-/** Input of the manifest access partition. */
-export type SharingPartitionAccessInput = {
-  manifestIdsInVault: string[];
-  writableManifestIds: string[];
-  grantedManifestIds: string[];
-};
-
-/** What the vault holds but cannot write, and what it holds but has lost access to. */
-export type SharingAccessPartition = { unwritable: string[]; lost: string[] };

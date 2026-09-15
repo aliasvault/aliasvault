@@ -112,37 +112,4 @@ export class PasskeyRepository extends BaseRepository {
       return this.run(this.execute(PasskeyQueries.SOFT_DELETE, [this.now(), passkeyId, scope]));
     });
   }
-
-  /**
-   * Delete all passkeys for a specific item (soft delete).
-   * @param itemId - The ID of the item
-   * @param manifestId - The manifest the item belongs to, when known
-   * @returns The number of rows updated
-   */
-  public async deleteByItemId(itemId: string, manifestId?: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Items', itemId));
-      if (!scope) {
-        return 0;
-      }
-      return this.run(this.execute(PasskeyQueries.SOFT_DELETE_BY_ITEM, [this.now(), itemId, scope]));
-    });
-  }
-
-  /**
-   * Update a passkey's display name.
-   * @param passkeyId - The ID of the passkey to update
-   * @param displayName - The new display name
-   * @param manifestId - The manifest the passkey belongs to, when known
-   * @returns The number of rows updated
-   */
-  public async updateDisplayName(passkeyId: string, displayName: string, manifestId?: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Passkeys', passkeyId));
-      if (!scope) {
-        return 0;
-      }
-      return this.run(this.execute(PasskeyQueries.UPDATE_DISPLAY_NAME, [displayName, this.now(), passkeyId, scope]));
-    });
-  }
 }

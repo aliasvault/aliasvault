@@ -1,7 +1,3 @@
-import { getPlatform } from '../platform/ClientPlatform';
-import { devWarn } from '../platform/Logger';
-import { TranslatableMessage } from '../platform/TranslatableMessage';
-
 import type { Folder } from '../database/repositories/FolderRepository';
 import type { SqliteClient } from '../database/SqliteClient';
 
@@ -15,15 +11,6 @@ import type { SqliteClient } from '../database/SqliteClient';
  *   never appears in the personal folder tree. TODO: add this mode (not offered to users (yet)).
  */
 export type MultiManifestRenderingMode = 'subfolder' | 'switcher';
-
-/**
- * Rendering policy for a shared manifest.
- */
-export type RenderableManifest = {
-  manifestId: string;
-  name?: string | null;
-  canAdminister?: boolean;
-};
 
 /**
  * The presentation policy for a multi-manifest vault, as one swappable unit.
@@ -49,27 +36,12 @@ export type MultiManifestRenderer = {
   render(sqliteClient: SqliteClient, manifestId: string, name: string): Promise<void>;
 
   /**
-   * Restore that presence for every administered manifest that is missing it.
-   * @param sqliteClient - The open local vault
-   * @param manifests - The shared manifests this session holds a key for
-   * @returns Whether the vault was mutated
-   */
-  reconcile(sqliteClient: SqliteClient, manifests: RenderableManifest[]): Promise<boolean>;
-
-  /**
    * What each shared manifest is called, keyed by lower-cased manifest id. This is the authority for the name that
    * gets pushed into the manifest, so a rename in the UI follows the vault.
    * @param sqliteClient - The open local vault
    */
   displayNames(sqliteClient: SqliteClient): Record<string, string>;
 };
-
-/**
- * What a shared manifest is called when this client has no name for it yet.
- */
-async function defaultSharedVaultName(): Promise<string> {
-  return getPlatform().translate(TranslatableMessage.UnnamedSharedVault);
-}
 
 /**
  * Renders every shared manifest as a top-level folder whose id is the manifest id, which is what makes the folder
@@ -96,34 +68,6 @@ const subfolderRendering: MultiManifestRenderer = {
     const folderId = manifestId.toLowerCase();
     await sqliteClient.folders.create(name, null, folderId);
     await sqliteClient.folders.restampSubtree(folderId, manifestId);
-  },
-
-  /**
-   * Re-create the folder of any administered manifest that has none.
-   * @param sqliteClient - The open local vault
-   * @param manifests - The shared manifests this session holds a key for
-   * @returns Whether the vault was mutated
-   */
-  async reconcile(sqliteClient: SqliteClient, manifests: RenderableManifest[]): Promise<boolean> {
-    let mutated = false;
-
-    for (const manifest of manifests) {
-      if (!manifest.canAdminister) {
-        // A member waiting for the administrator's first push has nothing to render yet.
-        continue;
-      }
-
-      const rendered = sqliteClient.executeQuery<{ Id: string }>('SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL', [manifest.manifestId]);
-      if (rendered.length > 0) {
-        continue;
-      }
-
-      await this.render(sqliteClient, manifest.manifestId, manifest.name ?? await defaultSharedVaultName());
-      devWarn(`[Sharing] Shared manifest ${manifest.manifestId} had no folder; recreated it.`);
-      mutated = true;
-    }
-
-    return mutated;
   },
 
   /**

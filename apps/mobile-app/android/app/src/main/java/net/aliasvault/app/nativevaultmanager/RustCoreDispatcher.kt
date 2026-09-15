@@ -17,7 +17,6 @@ import uniffi.aliasvault_core.generateRandomEmailPrefix
 import uniffi.aliasvault_core.getDicewareLanguages
 import uniffi.aliasvault_core.getIdentityAgeRanges
 import uniffi.aliasvault_core.getIdentityLanguages
-import uniffi.aliasvault_core.getPruneTableQueries
 import uniffi.aliasvault_core.getSyncableTableNames
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.pruneVaultJson
@@ -27,24 +26,12 @@ import uniffi.aliasvault_core.srpDeriveSession
 import uniffi.aliasvault_core.srpDeriveVerifier
 import uniffi.aliasvault_core.srpGenerateEphemeral
 import uniffi.aliasvault_core.srpGenerateSalt
-import uniffi.aliasvault_core.vaultCodecBucketLayout
 import uniffi.aliasvault_core.vaultCodecCanonicalizeFromSqlite
-import uniffi.aliasvault_core.vaultCodecComputeCiphertextHash
-import uniffi.aliasvault_core.vaultCodecComputeContentFingerprint
-import uniffi.aliasvault_core.vaultCodecExtractBuckets
-import uniffi.aliasvault_core.vaultCodecExtractEncryptionKeyForPublicKey
 import uniffi.aliasvault_core.vaultCodecGenerateManifestSalt
 import uniffi.aliasvault_core.vaultCodecLogoContentHash
 import uniffi.aliasvault_core.vaultCodecLogoIdFor
-import uniffi.aliasvault_core.vaultCodecLogoIdForSource
-import uniffi.aliasvault_core.vaultCodecMaterializeAsSqlite
-import uniffi.aliasvault_core.vaultCodecOverflowTable
 import uniffi.aliasvault_core.vaultCodecPackPayload
 import uniffi.aliasvault_core.vaultCodecUnpackPayload
-import uniffi.aliasvault_core.vaultCodecValidateDataBucket
-import uniffi.aliasvault_core.vaultCodecValidateManifest
-import uniffi.aliasvault_core.vaultSharingPartitionManifestAccess
-import uniffi.aliasvault_core.vaultSharingResolveManifestWriteSet
 
 /**
  * Routes `rustCall` invocations from React Native onto the uniffi bindings: one case per exported core
@@ -100,31 +87,13 @@ object RustCoreDispatcher {
 
             "getSyncableTableNames" -> json(getSyncableTableNames())
             "pruneVaultJson" -> pruneVaultJson(args.string(0))
-            "getPruneTableQueries" -> {
-                val queries = JSONArray()
-                getPruneTableQueries().forEach { queries.put(JSONObject().put("name", it.name).put("query", it.query)) }
-                queries.toString()
-            }
 
             "vaultCodecCanonicalizeFromSqlite" -> vaultCodecCanonicalizeFromSqlite(args.string(0))
-            "vaultCodecMaterializeAsSqlite" -> vaultCodecMaterializeAsSqlite(args.string(0))
-            "vaultCodecExtractBuckets" -> vaultCodecExtractBuckets(args.string(0))
-            "vaultCodecBucketLayout" -> vaultCodecBucketLayout()
-            "vaultCodecOverflowTable" -> json(vaultCodecOverflowTable())
             "vaultCodecGenerateManifestSalt" -> json(vaultCodecGenerateManifestSalt())
-            "vaultCodecLogoIdForSource" -> json(vaultCodecLogoIdForSource(args.string(0), args.string(1)))
             "vaultCodecLogoIdFor" -> json(vaultCodecLogoIdFor(args.string(0), args.string(1), args.string(2)))
             "vaultCodecLogoContentHash" -> json(vaultCodecLogoContentHash(args.bytes(0)))
             "vaultCodecPackPayload" -> json(vaultCodecPackPayload(args.string(0)))
             "vaultCodecUnpackPayload" -> json(vaultCodecUnpackPayload(args.bytes(0)))
-            "vaultCodecValidateManifest" -> vaultCodecValidateManifest(args.string(0))
-            "vaultCodecValidateDataBucket" -> vaultCodecValidateDataBucket(args.string(0))
-            "vaultCodecComputeCiphertextHash" -> json(vaultCodecComputeCiphertextHash(args.string(0)))
-            "vaultCodecComputeContentFingerprint" -> json(vaultCodecComputeContentFingerprint(args.string(0)))
-            "vaultCodecExtractEncryptionKeyForPublicKey" -> vaultCodecExtractEncryptionKeyForPublicKey(args.string(0), args.string(1))
-
-            "vaultSharingResolveManifestWriteSet" -> vaultSharingResolveManifestWriteSet(args.string(0))
-            "vaultSharingPartitionManifestAccess" -> vaultSharingPartitionManifestAccess(args.string(0))
 
             else -> throw IllegalArgumentException("Unknown Rust core function '$name'")
         }

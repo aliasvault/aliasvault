@@ -21,17 +21,6 @@ export class EncryptionKeyRepository extends BaseRepository {
   }
 
   /**
-   * Get a manifest's active keypair, whose public half is published to the server as that manifest's delivery
-   * key. Returns null for a manifest that has no keypair in this vault.
-   * @param manifestId - The manifest id the keypair is stamped with
-   * @returns The active keypair, or null when the manifest has none
-   */
-  public *getActiveForManifest(manifestId: string): DbOp<EncryptionKey | null> {
-    const results = yield* this.query<EncryptionKey>(EncryptionKeyQueries.GET_ACTIVE_FOR_MANIFEST, [manifestId]);
-    return results.length > 0 ? results[0] : null;
-  }
-
-  /**
    * Get the account keypair matching the given public half.
    * @param publicKey - The public half the grant was encrypted for
    * @returns The keypair, or null when this vault holds no account key with that public half

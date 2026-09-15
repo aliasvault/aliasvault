@@ -301,21 +301,6 @@ export class SharingService {
   }
 
   /**
-   * Unwrap the VEK of every shared manifest this session holds a grant on, keyed by manifest id.
-   * @param sqliteClient - the open local vault.
-   */
-  public static async openSharedManifestVeks(sqliteClient: SqliteClient): Promise<Map<string, string>> {
-    const veks = new Map<string, string>();
-    for (const record of Object.values(await this.getSharedManifestRecords())) {
-      const vek = await this.openSharedManifestVek(sqliteClient, record);
-      if (vek) {
-        veks.set(record.manifestId, vek);
-      }
-    }
-    return veks;
-  }
-
-  /**
    * The private key that opens a grant made out to `publicKey`.
    * @param sqliteClient - the open local vault.
    * @param publicKey - the public half the grant was encrypted for.

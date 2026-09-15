@@ -21,10 +21,3 @@ async function getManifestRevisions(): Promise<Record<string, number>> {
 export async function recordManifestRevisions(revisions: Record<string, number>): Promise<void> {
   await getPlatform().storage.set(StorageKeys.SERVER_MANIFEST_REVISIONS, { ...await getManifestRevisions(), ...revisions });
 }
-
-/**
- * The id of this vault's own (personal) manifest, as reported by the server on the last pull.
- */
-export async function getPersonalManifestId(): Promise<string | null> {
-  return (await getPlatform().storage.get(StorageKeys.VAULT_PERSONAL_MANIFEST_ID)) as string | null;
-}

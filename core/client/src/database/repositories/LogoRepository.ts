@@ -8,13 +8,6 @@ import type { DbOp } from '../DbOp';
 import type { ItemLogo, LogoKind } from '@aliasvault/models/vault';
 
 /**
- * An uploaded logo as shown in the user's logo library.
- */
-export type CustomLogoEntry = ItemLogo & {
-  FileData: Uint8Array | null;
-};
-
-/**
  * Repository for item logo operations.
  *
  * Every logo an item can have lives in one table, keyed by (Kind, Source): a fetched favicon under its
@@ -24,14 +17,6 @@ export type CustomLogoEntry = ItemLogo & {
  * UNIQUE(ManifestId, Kind, Source).
  */
 export class LogoRepository extends BaseRepository {
-  /**
-   * The manifest the user's own logo library lives in: this client's own.
-   * @returns The manifest id, or the empty scope when it is not known yet
-   */
-  private *ownScope(): DbOp<string> {
-    return (yield* this.personalManifestId()) ?? '';
-  }
-
   /**
    * Check whether the vault already holds a favicon for this domain, in any manifest.
    * @param source The normalized source domain (e.g., 'github.com')
@@ -161,26 +146,6 @@ export class LogoRepository extends BaseRepository {
   public async storeUpload(manifestId: string, fileData: Uint8Array, currentDateTime: string, options: { mimeType?: string | null; name?: string | null } = {}): Promise<string> {
     const contentHash = await vaultCodecLogoContentHash(fileData);
     return this.getOrCreate(manifestId, LogoKinds.Custom, contentHash, fileData, currentDateTime, options);
-  }
-
-  /**
-   * The user's own library of uploaded logos, newest first.
-   * @returns The uploaded logos, with their image data
-   */
-  public *listCustom(): DbOp<CustomLogoEntry[]> {
-    const scope = yield* this.ownScope();
-    const rows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null; FileData: Uint8Array | null }>(LogoQueries.LIST_CUSTOM, [scope]);
-    return rows.map(row => ({ ...row, FileData: row.FileData ? new Uint8Array(row.FileData) : null }));
-  }
-
-  /**
-   * Remove an uploaded logo from the library (soft delete). Items still using it fall back to a placeholder.
-   * @param logoId The logo id to delete
-   * @param currentDateTime The current date/time string for timestamps
-   * @returns The number of rows modified
-   */
-  public *deleteById(logoId: string, currentDateTime: string): DbOp<number> {
-    return yield* this.execute(LogoQueries.SOFT_DELETE, [currentDateTime, logoId]);
   }
 
   /**

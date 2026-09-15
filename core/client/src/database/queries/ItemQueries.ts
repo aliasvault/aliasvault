@@ -87,32 +87,6 @@ export class ItemQueries {
     WHERE i.Id = ? AND i.ManifestId = ? AND i.IsDeleted = 0`;
 
   /**
-   * Get all recently deleted items (in trash).
-   */
-  public static readonly GET_RECENTLY_DELETED = `
-    SELECT
-      i.Id,
-      i.ManifestId,
-      i.Name,
-      i.ItemType,
-      i.FolderId,
-      l.FileData as Logo,
-      l.Id as LogoId,
-      l.Kind as LogoKind,
-      l.Source as LogoSource,
-      l.Name as LogoName,
-      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
-      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
-      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
-      i.CreatedAt,
-      i.UpdatedAt,
-      i.DeletedAt
-    FROM Items i
-    LEFT JOIN Logos l ON i.LogoId = l.Id AND l.ManifestId = i.ManifestId
-    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
-    ORDER BY i.DeletedAt DESC`;
-
-  /**
    * Count of recently deleted items.
    */
   public static readonly COUNT_RECENTLY_DELETED = `
@@ -216,19 +190,6 @@ export class ItemQueries {
   public static readonly INSERT_ITEM = `
     INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
     VALUES (?, ?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_FOLDER}, ?, ?, ?)`;
-
-  /**
-   * Update an existing item (preserves LogoId if null is passed).
-   */
-  public static readonly UPDATE_ITEM = `
-    UPDATE Items
-    SET Name = ?,
-        ItemType = ?,
-        FolderId = ?,
-        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
-        LogoId = COALESCE(?, LogoId),
-        UpdatedAt = ?
-    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Update an existing item with explicit LogoId setting (can clear LogoId to null).

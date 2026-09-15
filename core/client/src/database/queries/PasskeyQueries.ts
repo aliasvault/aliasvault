@@ -8,50 +8,6 @@ import { BaseQueries } from './BaseQueries';
  */
 export class PasskeyQueries {
   /**
-   * Base SELECT for passkeys with item information.
-   */
-  public static readonly BASE_SELECT_WITH_ITEM = `
-    SELECT
-      p.Id,
-      p.ItemId,
-      p.ManifestId,
-      p.RpId,
-      p.UserHandle,
-      p.PublicKey,
-      p.PrivateKey,
-      p.DisplayName,
-      p.PrfKey,
-      p.AdditionalData,
-      p.CreatedAt,
-      p.UpdatedAt,
-      p.IsDeleted,
-      i.Name as ServiceName,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username,
-      (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginEmail}' AND fv.IsDeleted = 0 LIMIT 1) as Email
-    FROM Passkeys p
-    INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId`;
-
-  /**
-   * Base SELECT for passkeys without item information.
-   */
-  public static readonly BASE_SELECT = `
-    SELECT
-      p.Id,
-      p.ItemId,
-      p.ManifestId,
-      p.RpId,
-      p.UserHandle,
-      p.PublicKey,
-      p.PrivateKey,
-      p.DisplayName,
-      p.PrfKey,
-      p.AdditionalData,
-      p.CreatedAt,
-      p.UpdatedAt,
-      p.IsDeleted
-    FROM Passkeys p`;
-
-  /**
    * Get passkeys by relying party ID.
    */
   public static readonly GET_BY_RP_ID = `
@@ -138,15 +94,6 @@ export class PasskeyQueries {
     VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
-   * Update passkey display name.
-   */
-  public static readonly UPDATE_DISPLAY_NAME = `
-    UPDATE Passkeys
-    SET DisplayName = ?,
-        UpdatedAt = ?
-    WHERE Id = ? AND ManifestId = ?`;
-
-  /**
    * Soft delete passkey by ID.
    */
   public static readonly SOFT_DELETE = `
@@ -154,13 +101,4 @@ export class PasskeyQueries {
     SET IsDeleted = 1,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
-
-  /**
-   * Soft delete passkeys by item ID.
-   */
-  public static readonly SOFT_DELETE_BY_ITEM = `
-    UPDATE Passkeys
-    SET IsDeleted = 1,
-        UpdatedAt = ?
-    WHERE ItemId = ? AND ManifestId = ?`;
 }

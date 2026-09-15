@@ -1572,28 +1572,13 @@ private enum RustCoreDispatcher {
 
         case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
         case "pruneVaultJson": return try RustCoreFramework.pruneVaultJson(inputJson: try args.string(0))
-        case "getPruneTableQueries": return try json(RustCoreFramework.getPruneTableQueries().map { ["name": $0.name, "query": $0.query] })
 
         case "vaultCodecCanonicalizeFromSqlite": return try RustCoreFramework.vaultCodecCanonicalizeFromSqlite(inputJson: try args.string(0))
-        case "vaultCodecMaterializeAsSqlite": return try RustCoreFramework.vaultCodecMaterializeAsSqlite(inputJson: try args.string(0))
-        case "vaultCodecExtractBuckets": return try RustCoreFramework.vaultCodecExtractBuckets(inputJson: try args.string(0))
-        case "vaultCodecBucketLayout": return try RustCoreFramework.vaultCodecBucketLayout()
-        case "vaultCodecOverflowTable": return try json(RustCoreFramework.vaultCodecOverflowTable())
         case "vaultCodecGenerateManifestSalt": return try json(RustCoreFramework.vaultCodecGenerateManifestSalt())
-        case "vaultCodecLogoIdForSource": return try json(RustCoreFramework.vaultCodecLogoIdForSource(manifestId: try args.string(0), source: try args.string(1)))
         case "vaultCodecLogoIdFor": return try json(RustCoreFramework.vaultCodecLogoIdFor(manifestId: try args.string(0), kind: try args.string(1), source: try args.string(2)))
         case "vaultCodecLogoContentHash": return try json(RustCoreFramework.vaultCodecLogoContentHash(bytes: try args.data(0)))
         case "vaultCodecPackPayload": return try json(bytes: try RustCoreFramework.vaultCodecPackPayload(payloadJson: try args.string(0)))
         case "vaultCodecUnpackPayload": return try json(try RustCoreFramework.vaultCodecUnpackPayload(plainBytes: try args.data(0)))
-        case "vaultCodecValidateManifest": return try RustCoreFramework.vaultCodecValidateManifest(manifestJson: try args.string(0))
-        case "vaultCodecValidateDataBucket": return try RustCoreFramework.vaultCodecValidateDataBucket(dataBucketJson: try args.string(0))
-        case "vaultCodecComputeCiphertextHash": return try json(RustCoreFramework.vaultCodecComputeCiphertextHash(base64Ciphertext: try args.string(0)))
-        case "vaultCodecComputeContentFingerprint": return try json(RustCoreFramework.vaultCodecComputeContentFingerprint(payloadJson: try args.string(0)))
-        case "vaultCodecExtractEncryptionKeyForPublicKey":
-            return try RustCoreFramework.vaultCodecExtractEncryptionKeyForPublicKey(manifestJson: try args.string(0), publicKey: try args.string(1))
-
-        case "vaultSharingResolveManifestWriteSet": return try RustCoreFramework.vaultSharingResolveManifestWriteSet(inputJson: try args.string(0))
-        case "vaultSharingPartitionManifestAccess": return try RustCoreFramework.vaultSharingPartitionManifestAccess(inputJson: try args.string(0))
 
         default: throw DispatchError.unknownFunction(name)
         }
