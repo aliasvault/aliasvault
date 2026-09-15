@@ -1,0 +1,2 @@
+- Probleem met inloggen verholpen wat soms kon optreden voor bepaalde gebruikers
+- Kleine bugfixes and stabiliteitsverbeteringen
