@@ -113,6 +113,8 @@
       "mergeFailed": "Fehler beim Zusammenführen der Tresor-Änderungen. Bitte versuchen Sie es erneut.",
       "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
       "vaultSyncTimeout": "Zeitüberschreitung bei der Tresor-Synchronisation. Dies kann passieren, wenn der Tresor groß ist oder die Internetverbindung langsam ist. Bitte versuche es erneut.",
+      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
