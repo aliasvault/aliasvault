@@ -24,7 +24,7 @@
         "eslint": "^9.19.0",
         "tsup": "^8.4.0",
         "typescript": "^5.3.3",
-        "vitest": "^5.0.0",
-        "@vitest/coverage-v8": "^4.1.8"
+        "vitest": "^5.0.1",
+        "@vitest/coverage-v8": "^5.0.1"
     }
 }
