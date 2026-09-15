@@ -23,6 +23,7 @@
 export enum AppErrorCode {
   // Generic errors (E-0xx)
   UNKNOWN_ERROR = 'E-001',
+  BACKGROUND_UNRESPONSIVE = 'E-002', // Background service worker did not answer a PING in time
 
   // Auth status check errors (E-1xx) - handleCheckAuthStatus
   AUTH_STATUS_CHECK_FAILED = 'E-101',
@@ -34,6 +35,7 @@ export enum AppErrorCode {
   VAULT_LOCKED = 'E-202', // No encryption key available
   VAULT_DECRYPT_FAILED = 'E-203', // Decryption failed
   VAULT_METADATA_READ_FAILED = 'E-204', // Failed to read vault metadata
+  VAULT_LOAD_TIMEOUT = 'E-205', // Background did not return the vault in time
 
   // Item/credential operations (E-3xx) - handleCreateItem, handleUpdateItem, etc.
   ITEM_CREATE_FAILED = 'E-301',
@@ -118,6 +120,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
   const codeToKeyMap: Record<AppErrorCode, string> = {
     // Generic errors (E-0xx)
     [AppErrorCode.UNKNOWN_ERROR]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.BACKGROUND_UNRESPONSIVE]: 'common.errors.backgroundUnresponsive',
 
     // Auth status check errors (E-1xx)
     [AppErrorCode.AUTH_STATUS_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
@@ -129,6 +132,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.VAULT_LOCKED]: 'common.errors.vaultIsLocked',
     [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_METADATA_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.VAULT_LOAD_TIMEOUT]: 'common.errors.vaultLoadTimeout',
 
     // Item/credential operations (E-3xx)
     [AppErrorCode.ITEM_CREATE_FAILED]: 'common.errors.unknownErrorTryAgain',

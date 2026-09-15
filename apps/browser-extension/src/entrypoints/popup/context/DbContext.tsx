@@ -6,17 +6,35 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import SqliteClient from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
-import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
 import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
+import { t } from '@/i18n/StandaloneI18n';
 
 import { storage } from '#imports';
 
 /**
- * Maximum time to wait for the background service worker to respond to GET_VAULT.
- * If exceeded, the popup falls back to the unlock screen.
+ * Maximum time to wait for the background service worker to answer a PING before treating it as unresponsive.
  */
-const GET_VAULT_TIMEOUT_MS = 3500;
+const BACKGROUND_PING_TIMEOUT_MS = 5000;
+
+/**
+ * Maximum time to wait for GET_VAULT once the background is responsive (large vaults take a while to decrypt and transfer).
+ */
+const GET_VAULT_TIMEOUT_MS = 30000;
+
+/**
+ * Wrap a promise in a timeout that returns a rejected promise with a translated error carrying the given code.
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, code: AppErrorCode, translationKey: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      void t(translationKey).then(message => reject(new Error(formatErrorWithCode(message, code))));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
 
 /**
  * Vault metadata including the server revision.
@@ -245,27 +263,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const loadStoredDatabase = useCallback(async (): Promise<SqliteClient | null> => {
     try {
-      // Use timeout to prevent the popup from spinning indefinitely.
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error(formatErrorWithCode('Background service worker timed out', AppErrorCode.UNKNOWN_ERROR)));
-        }, GET_VAULT_TIMEOUT_MS);
-      });
+      // Ping service worker with a short timeout so an unresponsive service worker fails fast instead of keeping the popup open indefinitely.
+      await withTimeout(sendMessage('PING'), BACKGROUND_PING_TIMEOUT_MS, AppErrorCode.BACKGROUND_UNRESPONSIVE, 'common.errors.backgroundUnresponsive');
 
-      let response: messageVaultResponse;
-      try {
-        response = await Promise.race([
-          sendMessage('GET_VAULT'),
-          timeoutPromise,
-        ]);
-      } finally {
-        if (timeoutId !== undefined) {
-          clearTimeout(timeoutId);
-        }
-      }
+      // Get vault from background with a 30sec timeout as decrypting and transferring a large vault can take several seconds depending on the device hardware.
+      const response = await withTimeout(sendMessage('GET_VAULT'), GET_VAULT_TIMEOUT_MS, AppErrorCode.VAULT_LOAD_TIMEOUT, 'common.errors.vaultLoadTimeout');
 
-      // Check if response contains an error - throw it so callers can handle
+      // Check if response contains an error, if so, throw.
       if (!response?.success && response?.error) {
         throw new Error(response.error);
       }

@@ -85,6 +85,7 @@ export interface IExtensionMessageProtocol {
   OPEN_POPUP_WITH_ITEM(data: any): BoolResponse;
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;
+  PING(): boolean;
   POPUP_HEARTBEAT(): void;
   RESET_AUTO_LOCK_TIMER(): void;
   SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string; faviconUrl?: string }): SaveLoginResponse;
