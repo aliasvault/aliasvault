@@ -29,13 +29,13 @@
     "attachments": "Bifogade filer",
     "or": "eller",
     "retry": "Försök igen",
-    "resizeField": "Drag to resize field",
+    "resizeField": "Drag för att justera fältets storlek.",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
       "unknownError": "Ett okänt fel har inträffat.",
       "unknownErrorTryAgain": "Ett okänt fel inträffade. Försök igen.",
-      "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultTooLarge": "Valvet är för stort för att servern ska kunna acceptera. Försök att ta bort vissa objekt eller bilagor för att minska storleken och försök igen.",
       "serverVersionTooOld": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda denna funktion. Vänligen kontakta serveradministratören om du behöver hjälp."
     }
   },
@@ -122,7 +122,7 @@
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
     "scanQrCode": "Skanna QR-kod",
-    "enterManually": "Enter secret key",
+    "enterManually": "Ange hemlig nyckel",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
       "scanFailed": "Kunde inte skanna QR-kod. Försök igen."
@@ -145,7 +145,7 @@
     },
     "androidAutofillSettings": {
       "headerText": "Du kan konfigurera AliasVault för att ange ursprungliga lösenord och passkey-autofyll funktionalitet i Android. Följ instruktionerna nedan för att aktivera det.",
-      "docsLink": "View more Android specific information here.",
+      "docsLink": "Se mer information specifikt för Android här.",
       "passkeyNotice": "Passkeys skapas via Android Credential Manager (Android 14+). För att lagra dem i AliasVault, se till att Autofyll nedan är aktiverat.",
       "howToEnable": "Så här aktiverar du Autofyll & Passkeys:",
       "step1": "1. Öppna Android-inställningar via knappen nedan, och ändra \"Autofyll föredragen tjänst\" till \"AliasVault\"",
@@ -157,8 +157,8 @@
       "showSearchTextDescription": "Inkludera texten AliasVault tar emot från Android som den använder för att söka efter en matchande inloggningsuppgift"
     },
     "advancedOptions": "Avancerade inställningar",
-    "copyTotpOnFill": "Copy TOTP code on autofill",
-    "copyTotpOnFillDescription": "When you autofill a credential with 2FA, automatically copy its TOTP code to the clipboard so you can paste it into the next field.",
+    "copyTotpOnFill": "Kopiera TOTP kod med autofyll.",
+    "copyTotpOnFillDescription": "När du autofyller en uppgift med 2FA, kopiera automatiskt dess TOTP kod till urklipp så du kan klistra in den i nästa fält.",
     "vaultUnlock": "Valvupplåsningsmetod",
     "autoLock": "Timeout för automatisk låsning",
     "clipboardClear": "Rensa urklipp",
@@ -225,7 +225,7 @@
       "biometricDisabledMessage": "{{biometric}} är inaktiverat för AliasVault. För att använda funktionen, aktivera den först i enhetens inställningar.",
       "biometricHelp": "Använd biometri för att låsa upp ditt valv, vilket är säkrat via {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} är inte tillgänglig. Tryck för att öppna inställningar och/eller gå till dina enhetsinställningar för att aktivera och konfigurera den.",
-      "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
+      "biometricUnavailableHelpAndroid": "Biometri är inte tillgängligt på din enhet. Android kräver stark (Klass 3) biometri, exempelvis fingeravtryck eller säker ansiktsigenkänning som stöds.",
       "featureRequiresPasscode": "Denna funktion kräver att en lösenkod aktiveras på din enhet.",
       "pin": "PIN-Kod",
       "pinDescription": "Använd en anpassad PIN-kod för att låsa upp ditt valv snabbare.",
@@ -360,7 +360,7 @@
     },
     "addField": "Lägg till fält",
     "addCustomField": "Lägg till anpassad fält",
-    "editCustomField": "Edit Custom Field",
+    "editCustomField": "Redigera anpassat fält",
     "customFields": "Anpassade fält",
     "fieldLabel": "Fältetikett",
     "fieldType": "Fälttyp",
@@ -453,7 +453,7 @@
     "passwordTypeDiceware": "Lösenfras",
     "passphraseLanguage": "Lösenfrasens språk",
     "wordCount": "Ord",
-    "capitalization": "Capitalization",
+    "capitalization": "Versalisering",
     "separator": "Avskiljare",
     "salt": "Salt",
     "dicewareCapitalizationOption": {
@@ -477,25 +477,25 @@
     "vaultSyncedSuccessfully": "Valvet har synkroniserats",
     "vaultUpToDate": "Valvet är uppdaterat",
     "offlineMessage": "Du är offline. Anslut till internet för att synkronisera ditt valv.",
-    "switchBackToOriginalApp": "Switch back to the original app to continue.",
+    "switchBackToOriginalApp": "Byt tillbaka till den ursprungliga appen för att fortsätta.",
     "autofillOpenApp": {
-      "title": "Autofill request",
-      "description": "Choose an action for the app or website that requested autofill.",
-      "appOrUrlLabel": "App or URL",
-      "findExistingTitle": "Link to existing credential",
-      "findExistingDescription": "Select an existing credential from your vault to link to the address above.",
-      "createNewTitle": "Create new credential",
-      "createNewDescription": "Add a new credential to your vault for this app or URL."
+      "title": "Begäran om autofyll",
+      "description": "Välj en åtgärd för appen eller webbplatsen som begärde autofyll.",
+      "appOrUrlLabel": "App eller URL",
+      "findExistingTitle": "Länka till befintlig post",
+      "findExistingDescription": "Välj en befintlig post från ditt valv för att länka till ovanstående adress.",
+      "createNewTitle": "Skapa ny post",
+      "createNewDescription": "Lägg till en ny post till ditt valv för denna app eller URL."
     },
     "autofillLinkExisting": {
-      "title": "Link to existing credential",
-      "intro": "Select an existing credential from your vault to link to \"{{target}}\".",
-      "confirmTitle": "Link to credential?",
-      "confirmMessage": "Are you sure you want to link \"{{url}}\" to this credential?"
+      "title": "Länka till befintlig post",
+      "intro": "Välj en befintlig post från ditt valv att länka till \"{{target}}\".",
+      "confirmTitle": "Länka till post?",
+      "confirmMessage": "Är du säker på att du vill länka \"{{url}}\" till denna post?"
     },
     "autofillUrlAdded": {
-      "title": "Credential linked",
-      "message": "Autofill should now offer this credential the next time you open the app."
+      "title": "Post länkad",
+      "message": "Autofyll bör nu föreslå dessa uppgifter nästa gång du öppnar appen."
     },
     "filters": {
       "all": "Objekt",
@@ -602,8 +602,8 @@
     "emailNotFound": "E-postmeddelande hittades inte",
     "formatHtml": "HTML",
     "formatPlain": "Text",
-    "formatSource": "Source",
-    "formatSwitchTitle": "Switch email format",
+    "formatSource": "Källa",
+    "formatSwitchTitle": "Byt e-postformat",
     "sizeKB": "KB",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
     "updateClientForFormattedView": "Denna e-post kräver en nyare app-version för att visas korrekt. Vänligen uppdatera din app.",
@@ -691,12 +691,12 @@
       "customApiUrl": "Anpassad API-URL",
       "customApiUrlPlaceholder": "https://min-aliasvault-instans.se/api",
       "version": "Version: {{version}}",
-      "advancedSettings": "Advanced settings",
-      "customProxyHeaders": "Custom proxy headers",
-      "customProxyHeadersDescription": "Add HTTP headers that will be sent with every request to your AliasVault server. Can be used for self-hosted setups behind a reverse proxy that checks for custom headers (e.g. Pangolin, Cloudflare Access).",
-      "headerName": "Header name",
+      "advancedSettings": "Avancerade Inställningar",
+      "customProxyHeaders": "Anpassade proxy-huvuden",
+      "customProxyHeadersDescription": "Lägg till HTTP-huvuden som skickas med varje begäran till din AliasVault-server. Kan användas för egen-hostade installationer bakom en omvänd proxy som kontrollerar anpassade headers (t.ex. Pangolin, Cloudflare Access).",
+      "headerName": "Header-namn",
       "headerNamePlaceholder": "X-Custom-Header",
-      "headerValue": "Header value"
+      "headerValue": "Header-värde"
     }
   },
   "upgrade": {

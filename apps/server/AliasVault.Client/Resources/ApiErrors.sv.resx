@@ -129,7 +129,7 @@
     <value>Registrering av nytt konto är för närvarande inaktiverat på denna server. Kontakta administratören.</value>
   </data>
   <data name="REGISTRATION_FAILED" xml:space="preserve">
-    <value>Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.</value>
+    <value>Kunde inte skapa kontot. Försök igen om några minuter. Om problemet kvarstår, vänligen kontakta support.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>Felaktigt användarnamn eller lösenord. Försök igen.</value>
