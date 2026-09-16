@@ -1,0 +1,56 @@
+{
+  "name": "aliasvault-web",
+  "description": "AliasVault web app",
+  "private": true,
+  "version": "0.31.0",
+  "type": "module",
+  "scripts": {
+    "preinstall": "node ../../core/scripts/install-linked-deps.mjs",
+    "build:rust": "cd ../../core/rust && bash ./build.sh --web",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "compile": "tsc --noEmit",
+  },
+  "dependencies": {
+    "@aliasvault/client": "file:../../core/client",
+    "@aliasvault/models": "file:../../core/models",
+    "@aliasvault/vault": "file:../../core/vault",
+    "buffer": "^6.0.3",
+    "dompurify": "^3.4.12",
+    "i18next": "^26.2.0",
+    "otpauth": "^9.3.6",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^17.0.8",
+    "react-router-dom": "^7.18.1"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/node": "^22.13.10",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.5",
+    "eslint-import-resolver-typescript": "^4.4.3",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.24",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.6.3",
+    "vite": "^8.0.0",
+    "vite-plugin-static-copy": "^3.4.0"
+  },
+  "overrides": {
+    "shell-quote": "1.8.4",
+    "esbuild": "0.28.1"
+  }
+}

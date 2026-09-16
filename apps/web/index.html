@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+╔═════════════════════════════════════════════════╗
+║     _    _ _         __     __         _ _      ║
+║    / \  | (_) __ _ __\ \   / /_ _ _   _| | |_   ║
+║   / _ \ | | |/ _` / __\ \ / / _` | | | | | __|  ║
+║  / ___ \| | | (_| \__ \\ V / (_| | |_| | | |_   ║
+║ /_/   \_\_|_|\__,_|___/ \_/ \__,_|\__,_|_|\__|  ║
+║                                                 ║
+╚═════════════════════════════════════════════════╝
+AliasVault - Privacy-first password manager
+https://github.com/aliasvault/aliasvault | AGPLv3
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>AliasVault</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" sizes="500x500" href="/img/icon-500.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="/img/icon-192.png" />
+<link rel="stylesheet" href="/src/style.css" />
+<link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
+<link rel="prefetch" href="/wasm/sql-wasm-browser.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
+<script>
+  /*
+   * Apply the saved theme before the first paint so the loading screen does not flash. Same rule and the same
+   * localStorage key ('color-theme') as the Blazor client, so an existing preference carries over.
+   */
+  (function () {
+    var theme = localStorage.getItem('color-theme');
+    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+<style>
+  html { background-color: #f3f4f6; }
+  html.dark { background-color: #111827; }
+  .index-aliasvault-inline-spinner { height: 51px; width: 112px; display: flex; justify-content: center; align-items: center; }
+  .index-cloud-shape-inline { border: 6px solid #eabf69; border-radius: 9999px; padding: 13px 26px; display: flex; gap: 10px; align-items: center; background-color: transparent; box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1); }
+  .index-dot-inline { width: 10px; height: 10px; border-radius: 9999px; background-color: #eabf69; animation: index-pulse-inverted 1.4s infinite ease-in-out; }
+  .index-delay-1 { animation-delay: 0s; }
+  .index-delay-2 { animation-delay: 0.2s; }
+  .index-delay-3 { animation-delay: 0.4s; }
+  .index-delay-4 { animation-delay: 0.6s; }
+  @keyframes index-pulse-inverted { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+</style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900" av-disable="true">
+<div id="loading-screen">
+  <div class="fixed inset-0 flex items-center justify-center px-6 pt-8 pb-8">
+    <div class="w-full max-w-md space-y-4">
+      <div class="p-6 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800">
+        <div class="text-center">
+          <div class="inner">
+            <div class="index-aliasvault-inline-spinner mx-auto">
+              <div class="index-cloud-shape-inline">
+                <div class="index-dot-inline index-delay-1"></div>
+                <div class="index-dot-inline index-delay-2"></div>
+                <div class="index-dot-inline index-delay-3"></div>
+                <div class="index-dot-inline index-delay-4"></div>
+              </div>
+            </div>
+            <h2 id="loading-title" class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">AliasVault is loading</h2>
+            <p id="loading-message" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.</p>
+            <div class="mt-4 text-center">
+              <p id="security-quote" class="text-sm text-primary-600 italic"></p>
+            </div>
+            <div id="error-message" class="hidden text-red-600 dark:text-red-400 mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div id="refresh-button" class="text-center w-full mt-4 p-6 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800 hidden">
+        <p id="refresh-text" class="text-sm text-gray-600 dark:text-gray-400 mb-2">If loading seems stuck, you can click the button below to refresh the page.</p>
+        <a href="javascript:window.location.reload(true)" class="inline-block px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-150 ease-in-out"><span id="refresh-button-text">Refresh Page</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="app"></div>
+<script>
+  var translations = {};
+  function getCurrentLanguage() { return localStorage.getItem('AppLanguage') || 'en'; }
+  async function loadTranslations() {
+    var lang = getCurrentLanguage();
+    try {
+      var response = await fetch('/locales/' + lang + '.json');
+      if (response.ok) {
+        translations = await response.json();
+      } else {
+        var fallbackResponse = await fetch('/locales/en.json');
+        translations = await fallbackResponse.json();
+      }
+    } catch (error) {
+      console.warn('Failed to load localization files, using fallback strings:', error);
+      translations = {};
+    }
+  }
+  function getTranslation(path) {
+    var keys = path.split('.');
+    var value = translations;
+    for (var i = 0; i < keys.length; i++) {
+      value = value ? value[keys[i]] : undefined;
+      if (!value) { break; }
+    }
+    return value || '';
+  }
+  function localizeContent() {
+    var localizations = [
+      { id: 'loading-title', key: 'loading.title' },
+      { id: 'loading-message', key: 'loading.message' },
+      { id: 'refresh-text', key: 'loading.refreshText' },
+      { id: 'refresh-button-text', key: 'loading.refreshButtonText' }
+    ];
+    localizations.forEach(function (entry) {
+      var element = document.getElementById(entry.id);
+      var text = getTranslation(entry.key);
+      if (element && text) { element.textContent = text; }
+    });
+    var securityQuotes = getTranslation('quotes.security');
+    if (securityQuotes && securityQuotes.length > 0) {
+      var quoteElement = document.getElementById('security-quote');
+      var randomIndex = Math.floor(Math.random() * securityQuotes.length);
+      if (quoteElement) { quoteElement.textContent = '"' + securityQuotes[randomIndex] + '"'; }
+    }
+  }
+  var loadingScreen = document.getElementById('loading-screen');
+  var errorMessageElement = document.getElementById('error-message');
+  function showError(message) {
+    if (errorMessageElement) {
+      errorMessageElement.textContent = message;
+      errorMessageElement.classList.remove('hidden');
+    }
+  }
+  function manageLoadingScreen() {
+    var startTime = new Date().getTime();
+    var minDisplayTime = 1000;
+    var checkInterval = 250;
+    var refreshButtonTimeout = 300000;
+    var appElement = document.getElementById('app');
+    var refreshButton = document.getElementById('refresh-button');
+    appElement.style.visibility = 'hidden';
+    loadingScreen.style.display = 'flex';
+    setTimeout(function () { refreshButton.classList.remove('hidden'); }, refreshButtonTimeout);
+    if (!('WebAssembly' in window)) {
+      showError(getTranslation('errors.webAssemblyError'));
+      return;
+    }
+    var intervalId = setInterval(function () {
+      var elapsedTime = new Date().getTime() - startTime;
+      var hasContent = appElement.innerHTML.trim() !== '';
+      if (elapsedTime >= minDisplayTime && hasContent) {
+        loadingScreen.style.display = 'none';
+        appElement.style.removeProperty('visibility');
+        clearInterval(intervalId);
+      }
+    }, checkInterval);
+  }
+  window.addEventListener('error', function (event) {
+    var errorMessage = (event.error && event.error.message) || event.message || '';
+    if (errorMessage.indexOf('WebAssembly') !== -1) {
+      showError(getTranslation('errors.webAssemblyError'));
+    }
+  });
+  loadTranslations().then(localizeContent);
+  window.addEventListener('load', manageLoadingScreen);
+</script>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

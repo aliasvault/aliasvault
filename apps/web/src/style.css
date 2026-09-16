@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+Ported from the Blazor WASM app.css. 
+TODO: migrate all styles to native Tailwind CSS and components where possible.
+*/
+.validation-message {
+    color: red;
+}
+
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.av-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #d68338;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.av-range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #d68338;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Shared spinner styles, ported from the Blazor loading indicator components. */
+.aliasvault-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 51px;
+    width: 112px;
+}
+
+.aliasvault-fullscreen-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.aliasvault-spinner-inline {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+    width: auto;
+}
+
+.cloud-shape-inverted {
+    border: 6px solid #eabf69;
+    border-radius: 9999px;
+    padding: 13px 26px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background-color: transparent;
+    box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1);
+}
+
+.cloud-shape-inline-enhanced {
+    background-color: #eabf69;
+    border-radius: 9999px;
+    padding: 8px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dot-inverted {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background-color: #eabf69;
+    animation: pulse-inverted 1.4s infinite ease-in-out;
+}
+
+.dot-inline {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    animation: pulse-inverted 1.4s infinite ease-in-out;
+}
+
+.delay-1 { animation-delay: 0s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.4s; }
+.delay-4 { animation-delay: 0.6s; }
+
+@keyframes pulse-inverted {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+.loading {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.dark .loading {
+    background-color: rgba(107, 114, 128, 0.9);
+}
+
+.loading-message {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+/* Skeleton loaders, ported from SkeletonBase.razor. */
+.skeleton-base {
+    background-color: rgb(229 231 235);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.dark .skeleton-base {
+    background-color: rgb(31 41 55);
+}
+
+.skeleton-shimmer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+    animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Inline notification containers, ported from GlobalNotificationDisplay.razor. */
+.messages-container > :first-child {
+    margin-top: 0 !important;
+}
+
+.messages-container > :last-child {
+    margin-bottom: 0 !important;
+}
