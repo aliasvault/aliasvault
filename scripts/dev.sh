@@ -8,7 +8,7 @@
 #
 # Usage:
 #   ./scripts/dev.sh                 # interactive menu (pick an app)
-#   ./scripts/dev.sh <app>           # start one app: api | client | admin | smtp | taskrunner | ext | mobile
+#   ./scripts/dev.sh <app>           # start one app: api | client | web | admin | smtp | taskrunner | ext | mobile
 #   ./scripts/dev.sh db-start        # start (only) the dev database
 #   ./scripts/dev.sh db-stop         # stop & remove this instance's dev database
 #   ./scripts/dev.sh ports           # print the resolved port map and exit
@@ -99,8 +99,9 @@ CLIENT_HTTP=$(( BLOCK_BASE + 1 ))
 ADMIN_HTTP=$((  BLOCK_BASE + 2 ))
 EXT_PORT=$((    BLOCK_BASE + 3 ))
 EXPO_PORT=$((   BLOCK_BASE + 4 ))
+WEB_PORT=$((    BLOCK_BASE + 5 ))
 # DB sits at the last offset so its port always ends in 9 (e.g. 5109) — easy to
-# remember. Offsets 5..8 are left free as spare slots inside the block.
+# remember. Offsets 6..8 are left free as spare slots inside the block.
 DB_PORT=$((     BLOCK_BASE + 9 ))
 
 # One dev DB container per instance, with the published port in the project
@@ -119,6 +120,7 @@ print_ports() {
     "$BOLD" "$AV_INSTANCE" "$NC" "$AV_BASE_PORT" "$AV_PORT_STRIDE" "$BLOCK_BASE" "$((BLOCK_BASE + SERVICE_COUNT - 1))"
   printf "  %-14s http://localhost:%s\n" "API"         "$API_HTTP"
   printf "  %-14s http://localhost:%s\n" "Client"      "$CLIENT_HTTP"
+  printf "  %-14s http://localhost:%s\n" "Web"         "$WEB_PORT"
   printf "  %-14s http://localhost:%s\n" "Admin"       "$ADMIN_HTTP"
   printf "  %-14s localhost:%s\n"      "Postgres DB"    "$DB_PORT"
   printf "  %-14s :%s\n"                             "Browser ext" "$EXT_PORT"
@@ -157,6 +159,23 @@ write_client_dev_settings() {
 }
 JSON
   info "Wrote client dev config → ApiUrl http://localhost:$API_HTTP (UseDebugEncryptionKey=$AV_USE_DEBUG_ENCRYPTION_KEY)"
+}
+
+# Generate the React web app's dev config. Vite serves everything in public/, and the app prefers
+# this file over the checked-in appsettings.json while running in dev mode.
+write_web_dev_settings() {
+  local target="$ROOT_DIR/apps/web/public/appsettings.Development.json"
+  cat > "$target" <<JSON
+{
+    "ApiUrl": "http://localhost:$API_HTTP",
+    "PrivateEmailDomains": ["example.tld", "example2.tld", "aliasvault.net", "disabled.tld"],
+    "HiddenPrivateEmailDomains": ["disabled.tld"],
+    "SupportEmail": "support@example.tld",
+    "PublicRegistrationEnabled": "true",
+    "DeploymentMode": "dev"
+}
+JSON
+  info "Wrote web dev config → ApiUrl http://localhost:$API_HTTP"
 }
 
 db_running() {
@@ -246,6 +265,16 @@ run_worker() {
 start_smtp()       { run_worker "Services/AliasVault.SmtpService"; }
 start_taskrunner() { run_worker "Services/AliasVault.TaskRunner"; }
 
+start_web() {
+  require npm
+  write_web_dev_settings
+  banner "Web app (Vite dev)" \
+    "Dev server  http://localhost:$WEB_PORT" \
+    "API         http://localhost:$API_HTTP"
+  cd "$ROOT_DIR/apps/web"
+  npm run dev -- --port "$WEB_PORT" --strictPort
+}
+
 start_ext() {
   require npm
   banner "Browser extension (Chrome dev)" \
@@ -278,7 +307,8 @@ menu() {
   fi
   local options=(
     "api:API"
-    "client:Client"
+    "client:Client (Blazor)"
+    "web:Web (React)"
     "admin:Admin"
     "ext:Browser extension"
     "mobile:Mobile (Expo)"
@@ -301,6 +331,7 @@ dispatch() {
   case "${1:-}" in
     api)        start_api ;;
     client)     start_client ;;
+    web)        start_web ;;
     admin)      start_admin ;;
     smtp)       start_smtp ;;
     taskrunner) start_taskrunner ;;
@@ -314,7 +345,7 @@ dispatch() {
     "")         menu ;;
     -h|--help|help) sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//' ;;
     *)          die "Unknown command '$1'.
-  start: api/client/admin/smtp/taskrunner/ext/mobile
+  start: api/client/web/admin/smtp/taskrunner/ext/mobile
   db:    db (toggle) / db-start / db-stop" ;;
   esac
 }
