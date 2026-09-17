@@ -11,6 +11,7 @@ mod merge;
 mod pull;
 mod push;
 mod session;
+mod sharing;
 pub(crate) mod state;
 pub(crate) mod types;
 

@@ -23,7 +23,15 @@ import type { StorageKey } from '../platform/KeyValueStore';
 import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
-export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey';
+export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest';
+
+/** What a sharing operation acts on (the Rust `SharingParams`). */
+export type VaultSyncSharingParams = {
+  groupId: string;
+  manifestId?: string;
+  userId?: string;
+  name?: string;
+};
 
 /** What the host hands the engine at session start (the Rust `SyncRequest`). */
 export type VaultSyncEngineRequest = {
@@ -40,6 +48,7 @@ export type VaultSyncEngineRequest = {
   minServerVersion: string;
   isOfflineMode: boolean;
   unnamedSharedVaultName: string;
+  sharing?: VaultSyncSharingParams;
 };
 
 /** Session values the engine changed and the host has to adopt. */
@@ -103,6 +112,18 @@ export type VaultSyncResolveVaultKeyResult = VaultSyncEngineResultBase & {
   success: boolean;
   hasVaultKey: boolean;
   encryptionKey?: string;
+  error?: string;
+  errorCode?: string;
+  errorKey?: string;
+  requiresLogout: boolean;
+};
+
+/** Outcome of a sharing operation (the Rust `SharingOperationResult`). */
+export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
+  success: boolean;
+  manifestId?: string;
+  apiErrorCode?: string;
+  vaultUpgradeRequired: boolean;
   error?: string;
   errorCode?: string;
   errorKey?: string;

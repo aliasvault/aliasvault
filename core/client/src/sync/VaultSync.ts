@@ -21,7 +21,7 @@ import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, VaultSyncEmailRouting, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncResolveVaultKeyResult, VaultSyncStatusCheckResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncResolveVaultKeyResult, VaultSyncSharingParams, VaultSyncSharingResult, VaultSyncStatusCheckResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 
 /**
@@ -51,6 +51,17 @@ export type FullVaultSyncResult = SyncErrorDetail & {
 export type VaultManifestMigrationResult = SyncErrorDetail & {
   success: boolean;
   pushed: boolean;
+};
+
+/**
+ * Result of a sharing operation as the UI reads it.
+ */
+export type SharingOperationResult = SyncErrorDetail & {
+  success: boolean;
+  /** The API error code the server refused with, which the sharing screen has words for. */
+  apiErrorCode?: string;
+  /** The vault (or the account's key hierarchy) has to finish upgrading before it can be shared. */
+  vaultUpgradeRequired: boolean;
 };
 
 /** What every engine result may report for the host to persist. */
@@ -148,7 +159,44 @@ export class VaultSync {
    * @param unlockKeyBase64 - the password-derived key (KEK)
    */
   public async resolveVaultKey(unlockKeyBase64: string): Promise<VaultSyncResolveVaultKeyResult> {
-    return this.run<VaultSyncResolveVaultKeyResult>('resolveVaultKey', {}, unlockKeyBase64);
+    return this.run<VaultSyncResolveVaultKeyResult>('resolveVaultKey', {}, { encryptionKey: unlockKeyBase64 });
+  }
+
+  /**
+   * Create a group's shared manifest with this account as its first member. The vault is left dirty, so the caller's
+   * next sync pushes the new manifest. Never throws.
+   * @param groupId - the group to create the shared manifest for
+   * @param name - what to call it; the name stays on the clients
+   */
+  public async createSharedManifest(groupId: string, name: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('createSharedManifest', { groupId, name });
+  }
+
+  /**
+   * Invite a member of a group to one of its shared manifests, handing them the manifest's key encrypted for their
+   * account keypair. Never throws.
+   * @param groupId - the group the shared manifest belongs to
+   * @param manifestId - the shared manifest to invite them to
+   * @param userId - the member being invited
+   */
+  public async inviteToSharedManifest(groupId: string, manifestId: string, userId: string): Promise<SharingOperationResult> {
+    return this.runSharingOperation('inviteToSharedManifest', { groupId, manifestId, userId });
+  }
+
+  /**
+   * Run one sharing operation.
+   * @param operation - the operation
+   * @param sharing - what it acts on
+   */
+  private async runSharingOperation(operation: VaultSyncOperation, sharing: VaultSyncSharingParams): Promise<SharingOperationResult> {
+    try {
+      const result = await this.run<VaultSyncSharingResult>(operation, {}, { sharing });
+      return { success: result.success, apiErrorCode: result.apiErrorCode, vaultUpgradeRequired: result.vaultUpgradeRequired, ...VaultSync.syncError(result) };
+    } catch (error) {
+      const detail = VaultSync.driverError(error);
+      devError(`[Sharing] ${operation} failed (${detail.errorCode ?? 'no code'}): ${detail.error ?? 'no detail'}`);
+      return { success: false, vaultUpgradeRequired: false, ...detail };
+    }
   }
 
   /**
@@ -194,13 +242,10 @@ export class VaultSync {
    * Run one engine operation and adopt what it reported.
    * @param operation - the operation
    * @param options - what the caller asks beyond what the engine decides
-   * @param encryptionKey - the request key of the one operation that runs on the unlock key itself (resolveVaultKey)
+   * @param overrides - what one operation sets on the request itself: the unlock key resolveVaultKey runs on, or the target of a sharing operation
    */
-  private async run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, encryptionKey?: string): Promise<T> {
-    const request = await buildVaultSyncRequest(operation, options);
-    if (encryptionKey) {
-      request.encryptionKey = encryptionKey;
-    }
+  private async run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing'>> = {}): Promise<T> {
+    const request = { ...await buildVaultSyncRequest(operation, options), ...overrides };
     const result = await runVaultSyncEngine<T>(this.host, request, this.webApi);
     await this.adoptSyncResult(result);
     return result;

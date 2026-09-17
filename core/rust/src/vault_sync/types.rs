@@ -23,6 +23,27 @@ pub enum SyncOperation {
     StatusCheck,
     /// Open the account's key chain with the password-derived key right after login; see `ResolveVaultKeyResult`.
     ResolveVaultKey,
+    /// Create a group's shared manifest with this account as its first member; see `SharingParams`.
+    CreateSharedManifest,
+    /// Invite a group member to a shared manifest, handing them its key encrypted for their account keypair.
+    InviteToSharedManifest,
+}
+
+/// What a sharing operation acts on.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SharingParams {
+    pub group_id: String,
+    /// The shared manifest to invite to (`inviteToSharedManifest`).
+    #[serde(default)]
+    pub manifest_id: Option<String>,
+    /// The group member being invited (`inviteToSharedManifest`).
+    #[serde(default)]
+    pub user_id: Option<String>,
+    /// What to call the new shared manifest (`createSharedManifest`). It stays on the clients: it rides into the
+    /// vault and the invitations, never into the create request.
+    #[serde(default)]
+    pub name: Option<String>,
 }
 
 /// Sync request.
@@ -53,6 +74,9 @@ pub struct SyncRequest {
     pub is_offline_mode: bool,
     #[serde(default)]
     pub unnamed_shared_vault_name: Option<String>,
+    /// The target of a sharing operation; absent for every other operation.
+    #[serde(default)]
+    pub sharing: Option<SharingParams>,
 }
 
 /// Session values the engine changed and the host has to adopt.
@@ -204,6 +228,32 @@ pub struct ResolveVaultKeyResult {
 }
 
 impl OperationResult for ResolveVaultKeyResult {
+    fn session_mut(&mut self) -> &mut SessionOutcome {
+        &mut self.session
+    }
+}
+
+/// Outcome of a sharing operation.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SharingOperationResult {
+    pub success: bool,
+    /// The manifest the operation created or invited to.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub manifest_id: Option<String>,
+    /// The API error code the server refused with (e.g. `GROUP_MANIFEST_LIMIT_REACHED`), which the sharing screen has
+    /// words for. `INVITE_RECIPIENT_NOT_READY` is also reported when the engine sees the recipient has no key yet.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub api_error_code: Option<String>,
+    /// The vault (or the account's key hierarchy) has to finish upgrading before it can be shared.
+    pub vault_upgrade_required: bool,
+    #[serde(flatten)]
+    pub failure: FailureFields,
+    #[serde(flatten)]
+    pub session: SessionOutcome,
+}
+
+impl OperationResult for SharingOperationResult {
     fn session_mut(&mut self) -> &mut SessionOutcome {
         &mut self.session
     }

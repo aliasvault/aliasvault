@@ -12,7 +12,7 @@ use super::push::{self, CanonicalizedSet, PushStatus};
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, ResolveVaultKeyResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
-use super::{db, http, keys, legacy};
+use super::{db, http, keys, legacy, sharing};
 use crate::crypto;
 use crate::vault_model::ids_equal;
 
@@ -47,6 +47,14 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         }
         SyncOperation::ResolveVaultKey => {
             let result = resolve_vault_key(&mut ctx).await;
+            finish(&ctx, result)
+        }
+        SyncOperation::CreateSharedManifest => {
+            let result = sharing::create_shared_manifest_operation(&mut ctx).await;
+            finish(&ctx, result)
+        }
+        SyncOperation::InviteToSharedManifest => {
+            let result = sharing::invite_to_shared_manifest_operation(&mut ctx).await;
             finish(&ctx, result)
         }
     }
@@ -108,7 +116,7 @@ async fn full_sync_operation(ctx: &mut Ctx) -> FullSyncResult {
 }
 
 /// Full vault sync, re-running itself when a mutation raced a store or the server refused a push as outdated.
-async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
+pub(crate) async fn full_sync(ctx: &mut Ctx) -> SyncResult<FullSyncResult> {
     let mut outdated_resyncs = 0u32;
     loop {
         match full_sync_once(ctx).await? {
@@ -324,7 +332,7 @@ async fn vault_predates_current_schema(ctx: &mut Ctx) -> SyncResult<bool> {
 }
 
 /// Whether the vault still has to run the manifest migration: a stale schema, or a missing account key hierarchy.
-async fn vault_requires_manifest_migration(ctx: &mut Ctx) -> SyncResult<bool> {
+pub(crate) async fn vault_requires_manifest_migration(ctx: &mut Ctx) -> SyncResult<bool> {
     Ok(schema_state(ctx).await? == SchemaState::Stale || !keys::has_local_vault_key(&ctx.host).await?)
 }
 
