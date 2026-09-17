@@ -19,7 +19,7 @@ import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type Sha
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
-import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
+import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
 import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
@@ -672,17 +672,17 @@ export async function handleClearPersistedFormValues(): Promise<void> {
  * This is tolerant to server being offline (in which case the vault state will be stored locally for next sync).
  * @param sqliteClient - the mutated vault
  * @param encryptionKey - the key the local blob is stored under
- * @param scope - what the mutation touched; bucket-scoped mutations (e.g. 'Stats') let the sync push just
- *   that data bucket instead of the whole manifest. Defaults to a full manifest push.
  */
-async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string, scope?: VaultMutationScope) : Promise<void> {
+async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionKey: string) : Promise<void> {
   const encryptedVault = await encryptVaultBlob(sqliteClient.exportToBytes(), encryptionKey);
-  await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true, scope });
-
-  /*
-   * The stored blob is exactly this client's content, so re-adopt the pair as the cache (the store just cleared
-   * it): the sync that follows can then read the vault without another decrypt + database load.
-   */
+  const scopes = sqliteClient.takeMutationScopes();
+  try {
+    await handleStoreEncryptedVault({ vaultBlob: encryptedVault, markDirty: true, scopes });
+  } catch (error) {
+    // The write is still in the local database, so put the scopes back for whichever persist carries it next.
+    scopes.forEach(scope => sqliteClient.recordMutationScope(scope));
+    throw error;
+  }
   cachedSqliteClient = sqliteClient;
   cachedVaultBlob = encryptedVault;
 
@@ -753,7 +753,7 @@ export async function handleStoreEncryptedVault(request: {
   vaultBlob: string;
   markDirty?: boolean;
   expectedMutationSeq?: number;
-  scope?: VaultMutationScope;
+  scopes?: VaultMutationScope[];
 }): Promise<{ success: boolean; mutationSequence: number }> {
   let mutationSequence = await storage.getItem(StorageKeys.MUTATION_SEQUENCE) as number | null ?? 0;
 
@@ -770,8 +770,12 @@ export async function handleStoreEncryptedVault(request: {
     mutationSequence++;
   }
 
-  // Track what changed so the next sync can choose a cheap bucket-only push (e.g. a settings toggle) over a full manifest push.
-  const dirtyScopeKey = dirtyScopeStorageKey(request.scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
+  /*
+   * Track what changed so the next sync can choose a cheap bucket-only push (e.g. a settings toggle) over a
+   * full manifest push. A store that names no scope changed something the repositories do not account for
+   * (a raw statement, a migration, a merged vault), which only a full manifest push covers.
+   */
+  const dirtyScopes = request.scopes?.length ? request.scopes : [DEFAULT_VAULT_MUTATION_SCOPE];
 
   // Build items to store.
   if (request.markDirty) {
@@ -779,7 +783,7 @@ export async function handleStoreEncryptedVault(request: {
       { key: StorageKeys.ENCRYPTED_VAULT, value: request.vaultBlob },
       { key: StorageKeys.MUTATION_SEQUENCE, value: mutationSequence },
       { key: StorageKeys.IS_DIRTY, value: true },
-      { key: dirtyScopeKey, value: true }
+      ...dirtyScopes.map(scope => ({ key: dirtyScopeStorageKey(scope), value: true }))
     ]);
   } else {
     await storage.setItem(StorageKeys.ENCRYPTED_VAULT, request.vaultBlob);
@@ -1456,7 +1460,7 @@ export async function handleRecordItemUsage(
       return { success: false };
     }
 
-    await persistLocalVaultMutation(sqliteClient, encryptionKey, VaultDataBucketCategory.Stats);
+    await persistLocalVaultMutation(sqliteClient, encryptionKey);
     return { success: true };
   } catch (error) {
     console.error('Failed to record item usage:', error);

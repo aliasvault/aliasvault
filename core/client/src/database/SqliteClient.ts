@@ -1,3 +1,4 @@
+import { VaultDataBucketCategory } from '@aliasvault/models/vault';
 import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@aliasvault/vault';
 
 import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompatibleError';
@@ -22,6 +23,7 @@ import {
 import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
 import type { SyncRepository } from './DbOp';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
+import type { VaultMutationScope } from '../sync/VaultMutationScope';
 import type { VaultVersion } from '@aliasvault/vault';
 
 /** Minimum number of free pages before a VACUUM is worth the full database rewrite on export. */
@@ -37,6 +39,12 @@ const VACUUM_FREE_PAGE_RATIO = 10;
 export class SqliteClient implements ISyncDatabaseClient {
   private db: ISqliteDatabase | null = null;
   private transactionOpen: boolean = false;
+
+  /**
+   * The mutation scopes written into since the host last drained them. Writes on this client persist nothing
+   * by themselves: the host exports the whole database afterwards, and reads this to know what changed.
+   */
+  private readonly pendingMutationScopes = new Set<VaultMutationScope>();
 
   /**
    * The manifest this client writes new rows into, when the user has switched to one explicitly.
@@ -102,7 +110,7 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public get itemStats(): SyncRepository<ItemStatsRepository> {
     if (!this._itemStats) {
-      this._itemStats = syncRepository(new ItemStatsRepository(this), this);
+      this._itemStats = syncRepository(new ItemStatsRepository(this), this, VaultDataBucketCategory.Stats);
     }
     return this._itemStats;
   }
@@ -132,7 +140,7 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public get settings(): SyncRepository<SettingsRepository> {
     if (!this._settings) {
-      this._settings = syncRepository(new SettingsRepository(this), this);
+      this._settings = syncRepository(new SettingsRepository(this), this, VaultDataBucketCategory.Settings);
     }
     return this._settings;
   }
@@ -255,6 +263,27 @@ export class SqliteClient implements ISyncDatabaseClient {
       console.error('Error committing transaction:', error);
       throw error;
     }
+  }
+
+  /**
+   * Record that a repository wrote into a mutation scope.
+   * @param scope - The scope that was written into
+   */
+  public recordMutationScope(scope: VaultMutationScope): void {
+    this.pendingMutationScopes.add(scope);
+  }
+
+  /**
+   * Take the scopes written into since the last drain, and clear them. Called by the host right after the
+   * operation it is about to persist, so the sync knows whether a bucket-only push covers the change. A host
+   * whose persist then fails puts them back through {@link recordMutationScope}: the write stays in the
+   * database either way, and an unrecorded scope can strand it behind a later bucket-only push.
+   * @returns The scopes written into, empty when nothing was written
+   */
+  public takeMutationScopes(): VaultMutationScope[] {
+    const scopes = [...this.pendingMutationScopes];
+    this.pendingMutationScopes.clear();
+    return scopes;
   }
 
   /**

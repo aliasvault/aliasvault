@@ -3,12 +3,14 @@ import Foundation
 /// The vault's local sync bookkeeping.
 public struct SyncStateResult {
     public let isDirty: Bool
+    public let dirtyScopes: [String]
     public let mutationSequence: Int
     public let serverRevision: Int
     public let isSyncing: Bool
 
-    public init(isDirty: Bool, mutationSequence: Int, serverRevision: Int, isSyncing: Bool) {
+    public init(isDirty: Bool, dirtyScopes: [String] = [], mutationSequence: Int, serverRevision: Int, isSyncing: Bool) {
         self.isDirty = isDirty
+        self.dirtyScopes = dirtyScopes
         self.mutationSequence = mutationSequence
         self.serverRevision = serverRevision
         self.isSyncing = isSyncing

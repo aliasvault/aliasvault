@@ -1,3 +1,5 @@
+import { DEFAULT_VAULT_MUTATION_SCOPE } from '../sync/VaultMutationScope';
+
 import type { IDatabaseClient, ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
 import type { VaultMutationScope } from '../sync/VaultMutationScope';
 
@@ -28,6 +30,13 @@ export type DbEffect =
 export type DbOp<T> = Generator<DbEffect, T, unknown>;
 
 /**
+ * A repository that can be told which mutation scope its writes belong to (every BaseRepository can).
+ */
+type ScopedRepository = {
+  setMutationScope?(scope: VaultMutationScope): void;
+};
+
+/**
  * A repository as a synchronous host sees it: DbOp methods return their value, everything else is unchanged.
  */
 export type SyncRepository<R> = {
@@ -42,24 +51,40 @@ export type AsyncRepository<R> = {
 };
 
 /**
- * Run an op to completion on a synchronous client.
+ * Run an op to completion on a synchronous client. An op that writes records its scope on the client; a
+ * read-only op records nothing.
  * @param op - The op to run
  * @param client - The client that performs its steps
+ * @param scope - What the op's writes touch. Defaults to a full-manifest change.
  * @returns The op's result
  */
-export function runSync<T>(op: DbOp<T>, client: ISyncDatabaseClient): T {
-  let step = op.next();
-  while (!step.done) {
-    let result: unknown;
-    try {
-      result = performSync(step.value, client);
-    } catch (error) {
-      step = op.throw(error);
-      continue;
+export function runSync<T>(op: DbOp<T>, client: ISyncDatabaseClient, scope?: VaultMutationScope): T {
+  let wrote = false;
+  try {
+    let step = op.next();
+    while (!step.done) {
+      let result: unknown;
+      try {
+        if (step.value.kind === 'execute') {
+          wrote = true;
+        }
+        result = performSync(step.value, client);
+      } catch (error) {
+        step = op.throw(error);
+        continue;
+      }
+      step = op.next(result);
     }
-    step = op.next(result);
+    return step.value;
+  } finally {
+    /*
+     * Recorded even when the op threw. The synchronous path runs no transaction of its own, so a write that
+     * already happened stays in the database and still has to reach the server.
+     */
+    if (wrote) {
+      client.recordMutationScope?.(scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
+    }
   }
-  return step.value;
 }
 
 /**
@@ -72,14 +97,18 @@ export function runSync<T>(op: DbOp<T>, client: ISyncDatabaseClient): T {
  */
 export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient, scope?: VaultMutationScope): Promise<T> {
   let ownsTransaction = false;
+  let wrote = false;
   try {
     let step = op.next();
     while (!step.done) {
       let result: unknown;
       try {
-        if (client.persistsOnCommit && step.value.kind === 'execute' && !ownsTransaction && !client.isInTransaction()) {
-          await client.beginTransaction();
-          ownsTransaction = true;
+        if (step.value.kind === 'execute') {
+          wrote = true;
+          if (client.persistsOnCommit && !ownsTransaction && !client.isInTransaction()) {
+            await client.beginTransaction();
+            ownsTransaction = true;
+          }
         }
         result = await performAsync(step.value, client);
       } catch (error) {
@@ -103,6 +132,11 @@ export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient, scope?: 
       }
     }
     throw error;
+  } finally {
+    // Only a client that persists nothing per write records here; one that persists on commit got the scope there.
+    if (wrote) {
+      client.recordMutationScope?.(scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
+    }
   }
 }
 
@@ -110,10 +144,12 @@ export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient, scope?: 
  * Wrap a repository for a synchronous client.
  * @param repository - The repository
  * @param client - The client its ops run on
+ * @param scope - What this repository's writes touch; a bucket-scoped repository lets the sync push just that
+ * data bucket instead of the full vault manifest. Defaults to a full-manifest change.
  * @returns The repository with its DbOp methods returning plain values
  */
-export function syncRepository<R extends object>(repository: R, client: ISyncDatabaseClient): SyncRepository<R> {
-  return bindRepository(repository, (op) => runSync(op, client)) as SyncRepository<R>;
+export function syncRepository<R extends object>(repository: R, client: ISyncDatabaseClient, scope?: VaultMutationScope): SyncRepository<R> {
+  return bindRepository(scopeRepository(repository, scope), (op) => runSync(op, client, scope)) as SyncRepository<R>;
 }
 
 /**
@@ -125,7 +161,21 @@ export function syncRepository<R extends object>(repository: R, client: ISyncDat
  * @returns The repository with its DbOp methods returning Promises
  */
 export function asyncRepository<R extends object>(repository: R, client: IDatabaseClient, scope?: VaultMutationScope): AsyncRepository<R> {
-  return bindRepository(repository, (op) => runAsync(op, client, scope)) as AsyncRepository<R>;
+  return bindRepository(scopeRepository(repository, scope), (op) => runAsync(op, client, scope)) as AsyncRepository<R>;
+}
+
+/**
+ * Tell a repository which scope its writes belong to, so the methods it runs itself (the async ones, which
+ * never pass through the wrapper below) report the same scope as the ops the wrapper runs.
+ * @param repository - The repository
+ * @param scope - The scope, or undefined to leave the repository on its default
+ * @returns The same repository
+ */
+function scopeRepository<R extends object>(repository: R, scope?: VaultMutationScope): R {
+  if (scope) {
+    (repository as ScopedRepository).setMutationScope?.(scope);
+  }
+  return repository;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { DEFAULT_VAULT_MUTATION_SCOPE } from '../sync/VaultMutationScope';
 import * as dateFormatter from '../utilities/DateFormatter';
 
 import { runAsync } from './DbOp';
@@ -24,6 +25,7 @@ export interface IDatabaseClient {
   isInTransaction(): boolean;
   getActiveManifestId(): string | null;
   getPersonalManifestId(): string | null | Promise<string | null>;
+  recordMutationScope?(scope: VaultMutationScope): void;
 }
 
 /**
@@ -43,10 +45,24 @@ export interface ISyncDatabaseClient extends IDatabaseClient {
  */
 export abstract class BaseRepository {
   /**
+   * What this repository's writes touch. Set by the wrapper that binds the repository to a client, and read
+   * back on every write so that async methods report the same scope the wrapper does.
+   */
+  private mutationScope: VaultMutationScope = DEFAULT_VAULT_MUTATION_SCOPE;
+
+  /**
    * Constructor for the BaseRepository class.
    * @param client - The database client to use for the repository
    */
   public constructor(protected client: IDatabaseClient) {}
+
+  /**
+   * Tell this repository which mutation scope its writes belong to.
+   * @param scope - The scope
+   */
+  public setMutationScope(scope: VaultMutationScope): void {
+    this.mutationScope = scope;
+  }
 
   /**
    * Run a SELECT and return its rows.
@@ -149,7 +165,7 @@ export abstract class BaseRepository {
    * @returns The op's result
    */
   protected run<T>(op: DbOp<T>): Promise<T> {
-    return runAsync(op, this.client);
+    return runAsync(op, this.client, this.mutationScope);
   }
 
   /**
@@ -162,7 +178,7 @@ export abstract class BaseRepository {
     await this.client.beginTransaction();
     try {
       const result = await fn();
-      await this.client.commitTransaction();
+      await this.client.commitTransaction(this.mutationScope);
       return result;
     } catch (error) {
       await this.client.rollbackTransaction();

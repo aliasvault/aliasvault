@@ -1455,6 +1455,7 @@ public class VaultManager: NSObject {
         let syncState = vaultStore.getSyncState()
         let result: [String: Any] = [
             "isDirty": syncState.isDirty,
+            "dirtyScopes": syncState.dirtyScopes,
             "mutationSequence": syncState.mutationSequence,
             "serverRevision": syncState.serverRevision,
             "isSyncing": syncState.isSyncing

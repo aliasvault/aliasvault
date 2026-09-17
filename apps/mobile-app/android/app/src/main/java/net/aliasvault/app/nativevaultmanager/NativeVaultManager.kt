@@ -2040,8 +2040,11 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     override fun getSyncState(promise: Promise) {
         try {
             val syncState = vaultStore.getSyncState()
+            val dirtyScopes = Arguments.createArray()
+            syncState.dirtyScopes.forEach { dirtyScopes.pushString(it) }
             val result = Arguments.createMap()
             result.putBoolean("isDirty", syncState.isDirty)
+            result.putArray("dirtyScopes", dirtyScopes)
             result.putInt("mutationSequence", syncState.mutationSequence)
             result.putInt("serverRevision", syncState.serverRevision)
             result.putBoolean("isSyncing", syncState.isSyncing)

@@ -194,7 +194,7 @@ export function ServerSyncIndicator(): React.ReactNode {
           ) : (
             <>
               <Ionicons name="cloud-offline" size={18} color={colors.warning} />
-              {dbContext.isDirty && (
+              {dbContext.hasUnsyncedUserChanges && (
                 <View style={styles.badge} />
               )}
             </>
@@ -233,7 +233,7 @@ export function ServerSyncIndicator(): React.ReactNode {
   }
 
   // Priority 4: Pending indicator (tappable to force sync)
-  if (dbContext.isDirty) {
+  if (dbContext.hasUnsyncedUserChanges) {
     return (
       <RobustPressable
         style={[styles.container, styles.pending]}

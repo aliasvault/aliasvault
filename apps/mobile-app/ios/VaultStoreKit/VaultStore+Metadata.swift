@@ -210,6 +210,7 @@ extension VaultStore {
     public func getSyncState() -> SyncStateResult {
         return SyncStateResult(
             isDirty: getIsDirty(),
+            dirtyScopes: getDirtyScopes(),
             mutationSequence: getMutationSequence(),
             serverRevision: getCurrentVaultRevisionNumber(),
             isSyncing: getIsSyncing()

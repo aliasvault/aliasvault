@@ -48,7 +48,7 @@ export interface Spec extends TurboModule {
   getVaultSyncLogs(): Promise<string>;
 
   // Sync state management
-  getSyncState(): Promise<{isDirty: boolean; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
+  getSyncState(): Promise<{isDirty: boolean; dirtyScopes: string[]; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
   clearEncryptedVaultForFreshDownload(): Promise<void>;
 

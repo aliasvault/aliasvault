@@ -249,6 +249,7 @@ class VaultMetadataManager(
     fun getSyncState(): SyncState {
         return SyncState(
             isDirty = getIsDirty(),
+            dirtyScopes = getDirtyScopes(),
             mutationSequence = getMutationSequence(),
             serverRevision = getVaultRevisionNumber(),
             isSyncing = getIsSyncing(),

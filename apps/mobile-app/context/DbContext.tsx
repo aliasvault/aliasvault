@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
+import { hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import SqliteClient from '@/utils/SqliteClient';
 
@@ -12,6 +13,12 @@ type DbContextType = {
   dbAvailable: boolean;
   // Sync state tracking
   isDirty: boolean;
+  /**
+   * Whether the pending changes are worth telling the user about. A vault that is only dirty from silent
+   * scopes (e.g. item usage statistics recorded while autofilling) syncs like any other but reports false
+   * here, so the UI stays quiet about writes the user never asked for.
+   */
+  hasUnsyncedUserChanges: boolean;
   isSyncing: boolean;
   isUploading: boolean;
   isOffline: boolean;
@@ -63,6 +70,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Sync state tracking - isDirty indicates local changes not yet uploaded to server.
    */
   const [isDirty, setIsDirty] = useState(false);
+
+  /**
+   * Sync state tracking - the scopes those local changes belong to, which decides what the UI shows.
+   */
+  const [dirtyScopes, setDirtyScopes] = useState<VaultMutationScope[]>([]);
 
   /**
    * Sync state tracking - isSyncing indicates a download sync operation is in progress.
@@ -202,6 +214,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const syncState = await NativeVaultManager.getSyncState();
       const offline = await NativeVaultManager.getOfflineMode();
       setIsDirty(syncState.isDirty);
+      setDirtyScopes(syncState.dirtyScopes as VaultMutationScope[]);
       setIsOfflineState(offline);
     } catch (error) {
       console.error('Failed to refresh sync state:', error);
@@ -304,6 +317,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     dbAvailable,
     // Sync state
     isDirty,
+    hasUnsyncedUserChanges: isDirty && hasUserVisibleScope(dirtyScopes),
     isSyncing,
     isUploading,
     isOffline,
@@ -323,7 +337,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     storeUnlockKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyUnlockKey, unlockVault, storeUnlockKey, storeUnlockKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, dirtyScopes, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyUnlockKey, unlockVault, storeUnlockKey, storeUnlockKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

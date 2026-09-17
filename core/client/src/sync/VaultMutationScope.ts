@@ -52,11 +52,3 @@ export const isSilentScope = (scope: VaultMutationScope): boolean => SILENT_VAUL
  */
 export const hasUserVisibleScope = (scopes: readonly VaultMutationScope[]): boolean =>
   scopes.length === 0 || scopes.some(scope => !isSilentScope(scope));
-
-/**
- * Options for executing a vault mutation.
- */
-export type VaultMutationOptions = {
-  /** What the mutation touches. Defaults to 'Main' (full manifest push) when omitted. */
-  scope?: VaultMutationScope;
-};
