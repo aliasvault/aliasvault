@@ -8,6 +8,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useColors } from '@/hooks/useColorScheme';
+import { getFileForFilename } from '@/utils/FileUtility';
 import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
@@ -59,7 +60,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
              * try to copy it to a readable location
              */
             if (file.uri.startsWith('content://')) {
-              tempFile = new File(Paths.cache, file.name);
+              tempFile = getFileForFilename(Paths.cache, file.name);
               if (tempFile.exists) {
                 tempFile.delete();
               }

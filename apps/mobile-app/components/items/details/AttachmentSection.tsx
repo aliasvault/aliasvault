@@ -1,11 +1,12 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Directory, File, Paths } from 'expo-file-system';
+import { Directory, Paths } from 'expo-file-system';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
 import type { Item, Attachment } from '@aliasvault/models/vault';
 import emitter from '@/utils/EventEmitter';
+import { getFileForFilename } from '@/utils/FileUtility';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
@@ -36,14 +37,12 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
    */
   const handleAttachment = async (attachment: Omit<Attachment, 'Blob'>): Promise<void> => {
     try {
-      // Sanitize filename
-      const sanitizedFilename = attachment.Filename.replace(/[/\\]/g, '_');
       const downloadsDir = new Directory(Paths.document, 'Downloads');
       if (!downloadsDir.exists) {
         downloadsDir.create({ intermediates: true });
       }
 
-      const file = new File(downloadsDir, sanitizedFilename);
+      const file = getFileForFilename(downloadsDir, attachment.Filename);
       if (file.exists) {
         file.delete();
       }
@@ -56,7 +55,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
         file.write((blob ?? new Uint8Array(0)) as unknown as Uint8Array);
       }
 
-      await openAttachment({ filePath: file.uri, fileName: sanitizedFilename });
+      await openAttachment({ filePath: file.uri, fileName: attachment.Filename });
     } catch (error) {
       console.error('Error handling attachment:', error);
       showAlert('Error', 'Failed to process attachment');

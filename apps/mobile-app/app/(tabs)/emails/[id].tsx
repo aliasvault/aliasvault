@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 
 import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons } from '@expo/vector-icons';
-import { File, Paths } from 'expo-file-system';
+import { Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ import ConversionUtility from '@/utils/ConversionUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
 import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
+import { getFileForFilename } from '@/utils/FileUtility';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
@@ -192,7 +193,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
 
       const decryptedBytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
 
-      const tempFile = new File(Paths.cache, attachment.filename);
+      const tempFile = getFileForFilename(Paths.cache, attachment.filename);
       if (tempFile.exists) {
         tempFile.delete();
       }
