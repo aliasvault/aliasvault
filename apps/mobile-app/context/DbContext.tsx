@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import SqliteClient from '@/utils/SqliteClient';
 
@@ -25,14 +25,14 @@ type DbContextType = {
    */
   shouldSuppressEmailErrors: () => boolean;
   refreshSyncState: () => Promise<void>;
-  storeEncryptionKey: (derivedKey: string) => Promise<void>;
-  storeEncryptionKeyDerivationParams: (keyDerivationParams: EncryptionKeyDerivationParams) => Promise<void>;
+  storeUnlockKey: (derivedKey: string) => Promise<void>;
+  storeUnlockKeyDerivationParams: (keyDerivationParams: UnlockKeyDerivationParams) => Promise<void>;
   requiresLegacySqliteBlobMigration: () => Promise<boolean>;
   hasPendingMigrations: () => Promise<boolean>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   testDatabaseConnection: (derivedKey: string, persistToKeychain?: boolean) => Promise<boolean>;
-  verifyEncryptionKey: (derivedKey: string) => Promise<boolean>;
+  verifyUnlockKey: (derivedKey: string) => Promise<boolean>;
   unlockVault: () => Promise<boolean>;
   checkStoredVault: () => Promise<void>;
   setDatabaseAvailable: () => void;
@@ -100,13 +100,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
-   * Store the encryption key in the Native module (in memory and optionally keychain).
+   * Store the unlock key (the password-derived KEK) in the Native module (in memory and optionally keychain). The
+   * native module opens the account key chain with it, which gives the vault encryption key of the session.
    *
-   * @param derivedKey The derived encryption key
-   * @param keyDerivationParams The key derivation parameters (used for deriving the encryption key from the plain text password in the unlock screen)
+   * @param derivedKey The password-derived unlock key
    */
-  const storeEncryptionKey = useCallback(async (derivedKey: string) => {
-    await sqliteClient.storeEncryptionKey(derivedKey
+  const storeUnlockKey = useCallback(async (derivedKey: string) => {
+    await sqliteClient.storeUnlockKey(derivedKey
     );
   }, [sqliteClient]);
 
@@ -115,8 +115,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    *
    * @param keyDerivationParams The key derivation parameters
    */
-  const storeEncryptionKeyDerivationParams = useCallback(async (keyDerivationParams: EncryptionKeyDerivationParams) => {
-    await sqliteClient.storeEncryptionKeyDerivationParams(keyDerivationParams);
+  const storeUnlockKeyDerivationParams = useCallback(async (keyDerivationParams: UnlockKeyDerivationParams) => {
+    await sqliteClient.storeUnlockKeyDerivationParams(keyDerivationParams);
   }, [sqliteClient]);
 
   /**
@@ -249,15 +249,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [sqliteClient]);
 
   /**
-   * Test if the database is working with the provided (to be stored) encryption key by performing a simple query.
+   * Test if the database is working with the provided (to be stored) unlock key by performing a simple query.
    * Uses two-step process: first init key in memory, verify it works, then persist to keystore.
    * This prevents overwriting a valid key with an invalid one if user enters wrong password.
-   * @param derivedKey The encryption key to test with
+   * @param derivedKey The unlock key (the password-derived KEK) to test with
    * @returns true if the database is working
    * @throws Error with error code if unlock fails - caller should handle the error
    */
   const testDatabaseConnection = useCallback(async (derivedKey: string, persistToKeychain = true): Promise<boolean> => {
-    await sqliteClient.storeEncryptionKeyInMemory(derivedKey);
+    await sqliteClient.storeUnlockKeyInMemory(derivedKey);
 
     await unlockVault();
 
@@ -271,7 +271,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
        * The old key in keychain is preserved for future biometric unlocks.
        */
       if (persistToKeychain) {
-        await sqliteClient.storeEncryptionKey(derivedKey);
+        await sqliteClient.storeUnlockKey(derivedKey);
       }
       return true;
     }
@@ -280,20 +280,20 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [sqliteClient, unlockVault]);
 
   /**
-   * Verify if the provided encryption key is valid.
-   * @param derivedKey The encryption key to verify
+   * Verify if the provided unlock key is valid.
+   * @param derivedKey The unlock key (the password-derived KEK) to verify
    * @returns true if the key is valid, false if invalid (wrong password)
    */
-  const verifyEncryptionKey = useCallback(async (derivedKey: string): Promise<boolean> => {
+  const verifyUnlockKey = useCallback(async (derivedKey: string): Promise<boolean> => {
     try {
-      await sqliteClient.storeEncryptionKeyInMemory(derivedKey);
+      await sqliteClient.storeUnlockKeyInMemory(derivedKey);
       await unlockVault();
 
       const version = await sqliteClient.getDatabaseVersion();
       return !!(version && version.version && version.version.length > 0);
     } catch (error) {
       // Unlock failed - likely wrong password/key
-      console.error('verifyEncryptionKey failed:', error);
+      console.error('verifyUnlockKey failed:', error);
       return false;
     }
   }, [sqliteClient, unlockVault]);
@@ -317,13 +317,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     clearDatabase,
     getVaultMetadata,
     testDatabaseConnection,
-    verifyEncryptionKey,
+    verifyUnlockKey,
     unlockVault,
-    storeEncryptionKey,
-    storeEncryptionKeyDerivationParams,
+    storeUnlockKey,
+    storeUnlockKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyEncryptionKey, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyUnlockKey, unlockVault, storeUnlockKey, storeUnlockKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

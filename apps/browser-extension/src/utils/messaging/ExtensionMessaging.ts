@@ -37,7 +37,7 @@ import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import type { FullVaultSyncResult, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordSettings } from '@aliasvault/models/vault';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
@@ -74,7 +74,7 @@ export interface IExtensionMessageProtocol {
   GET_DEFAULT_IDENTITY_SETTINGS(): IdentitySettingsResponse;
   GET_ENCRYPTED_VAULT(): string | null;
   GET_ENCRYPTION_KEY(): string | null;
-  GET_ENCRYPTION_KEY_DERIVATION_PARAMS(): EncryptionKeyDerivationParams | null;
+  GET_UNLOCK_KEY_DERIVATION_PARAMS(): UnlockKeyDerivationParams | null;
   GET_FILTERED_ITEMS(data: { currentUrl: string; pageTitle: string; matchingMode?: string; includeRecentlySelected?: boolean }): ItemsResponse;
   GET_ITEMS_WITH_TOTP(data: { currentUrl: string; pageTitle: string; matchingMode?: string }): ItemsResponse;
   GET_LAST_AUTOFILLED(data: { domain?: string; username?: string }): { success: boolean; credential: LastAutofilledCredential | null };
@@ -116,8 +116,8 @@ export interface IExtensionMessageProtocol {
   SET_LOGIN_SAVE_ENABLED(data: boolean): BoolResponse;
   SET_RECENTLY_SELECTED(data: { itemId: string; domain: string }): { success: boolean };
   STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; expectedMutationSeq?: number; scope?: VaultMutationScope }): { success: boolean; mutationSequence: number };
-  STORE_ENCRYPTION_KEY(data: string): BoolResponse;
-  STORE_ENCRYPTION_KEY_DERIVATION_PARAMS(data: EncryptionKeyDerivationParams): BoolResponse;
+  STORE_UNLOCK_KEY(data: string): BoolResponse;
+  STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };
   STORE_SAVE_PROMPT_STATE(data: SavePromptPersistedState): { success: boolean };
   STORE_TWO_FACTOR_STATE(data: { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }): void;

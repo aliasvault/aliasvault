@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 @Config(sdk = [28], manifest = Config.NONE)
 class VaultStoreTest {
     private lateinit var vaultStore: VaultStore
-    private val testEncryptionKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
+    private val testUnlockKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
 
     @Before
     fun setup() {
@@ -29,7 +29,7 @@ class VaultStoreTest {
         // Initialize the VaultStore instance with a mock file provider that
         // is only used for testing purposes
         vaultStore = VaultStore(TestStorageProvider(), TestKeystoreProvider())
-        vaultStore.storeEncryptionKey(testEncryptionKeyBase64)
+        vaultStore.storeUnlockKey(testUnlockKeyBase64)
         vaultStore.storeEncryptedDatabase(encryptedDb)
 
         val metadata = """
@@ -121,7 +121,7 @@ class VaultStoreTest {
             // Then, try to re-load the database and ensure the __EFMigrationsHistory table still exists.
             // This asserts that the database commit results in a properly exported and encrypted database file.
             vaultStore.clearCache()
-            vaultStore.storeEncryptionKey(testEncryptionKeyBase64)
+            vaultStore.storeUnlockKey(testUnlockKeyBase64)
             vaultStore.unlockVault()
 
             // Do a query

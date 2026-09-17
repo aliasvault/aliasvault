@@ -33,6 +33,7 @@ class VaultSyncEngine(
         /** Engine state keys mirrored into the native account-key chain, so the native password unlock can unwrap it. */
         private const val ENCRYPTED_ACCOUNT_KEY_STATE_KEY = "encryptedAccountKey"
         private const val ENCRYPTED_VEK_STATE_KEY = "encryptedVek"
+        private const val ENCRYPTED_ACCOUNT_PRIVATE_KEY_STATE_KEY = "encryptedAccountPrivateKey"
 
         /** Engine state key that lives in the native store instead (the login writes it there), routed on read and write. */
         private const val DERIVATION_PARAMS_STATE_KEY = "encryptionKeyDerivationParams"
@@ -200,7 +201,7 @@ class VaultSyncEngine(
         } else {
             storageProvider.setSyncEngineState(key, JSONObject().put("v", value).toString())
         }
-        if (key == ENCRYPTED_ACCOUNT_KEY_STATE_KEY || key == ENCRYPTED_VEK_STATE_KEY) {
+        if (key == ENCRYPTED_ACCOUNT_KEY_STATE_KEY || key == ENCRYPTED_VEK_STATE_KEY || key == ENCRYPTED_ACCOUNT_PRIVATE_KEY_STATE_KEY) {
             mirrorAccountKeyChain()
         }
     }
@@ -216,6 +217,7 @@ class VaultSyncEngine(
             return
         }
         val chain = JSONObject().put("encryptedAccountKey", encryptedAccountKey).put("encryptedVek", encryptedVek)
+        (state(ENCRYPTED_ACCOUNT_PRIVATE_KEY_STATE_KEY) as? String)?.let { chain.put("encryptedAccountPrivateKey", it) }
         vaultStore.storeAccountKeyChain(chain.toString())
     }
 
@@ -225,10 +227,6 @@ class VaultSyncEngine(
 
     private fun storeVault(command: JSONObject): JSONObject {
         val encryptedBlob = command.getString("encryptedBlob")
-        if (command.has("encryptionKey") && !command.isNull("encryptionKey")) {
-            // The blob is encrypted under a key this session did not start with (KEK to VEK migration): adopt it first.
-            vaultStore.adoptEncryptionKey(command.getString("encryptionKey"))
-        }
         val result = vaultStore.storeEncryptedVaultWithSyncState(
             encryptedVault = encryptedBlob,
             markDirty = command.optBoolean("markDirty", false),

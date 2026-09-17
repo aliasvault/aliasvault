@@ -8,11 +8,11 @@ public struct VaultConstants {
     public static let userDefaultsSuite = "group.net.aliasvault.autofill"
 
     public static let vaultMetadataKey = "aliasvault_vault_metadata"
-    public static let encryptionKeyKey = "aliasvault_encryption_key"
+    public static let unlockKeyKey = "aliasvault_encryption_key"
     public static let encryptedDbFileName = "encrypted_db.sqlite"
     public static let authMethodsKey = "aliasvault_auth_methods"
     public static let autoLockTimeoutKey = "aliasvault_auto_lock_timeout"
-    public static let encryptionKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
+    public static let unlockKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
     public static let accountKeyChainKey = "aliasvault_account_key_chain"
     public static let usernameKey = "aliasvault_username"
     public static let offlineModeKey = "aliasvault_offline_mode"

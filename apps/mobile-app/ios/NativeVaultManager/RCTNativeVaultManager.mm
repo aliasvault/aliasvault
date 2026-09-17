@@ -97,24 +97,24 @@
     [vaultManager storeMetadata:metadata resolver:resolve rejecter:reject];
 }
 
-- (void)storeEncryptionKeyInMemory:(NSString *)base64EncryptionKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeEncryptionKeyInMemory:base64EncryptionKey resolver:resolve rejecter:reject];
+- (void)storeUnlockKeyInMemory:(NSString *)base64UnlockKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeUnlockKeyInMemory:base64UnlockKey resolver:resolve rejecter:reject];
 }
 
-- (void)storeEncryptionKey:(NSString *)base64EncryptionKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeEncryptionKey:base64EncryptionKey resolver:resolve rejecter:reject];
+- (void)storeUnlockKey:(NSString *)base64UnlockKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeUnlockKey:base64UnlockKey resolver:resolve rejecter:reject];
 }
 
 - (void)clearEncryptionKeyFromMemory:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager clearEncryptionKeyFromMemory:resolve rejecter:reject];
 }
 
-- (void)storeEncryptionKeyDerivationParams:(NSString *)keyDerivationParams resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeEncryptionKeyDerivationParams:keyDerivationParams resolver:resolve rejecter:reject];
+- (void)storeUnlockKeyDerivationParams:(NSString *)keyDerivationParams resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeUnlockKeyDerivationParams:keyDerivationParams resolver:resolve rejecter:reject];
 }
 
-- (void)getEncryptionKeyDerivationParams:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getEncryptionKeyDerivationParams:resolve rejecter:reject];
+- (void)getUnlockKeyDerivationParams:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getUnlockKeyDerivationParams:resolve rejecter:reject];
 }
 
 - (void)storeAccountKeyChain:(NSString *)chainJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

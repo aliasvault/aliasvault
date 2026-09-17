@@ -147,12 +147,12 @@ export async function isPinLocked(): Promise<boolean> {
 
 /**
  * Setup PIN unlock
- * Encrypts the vault encryption key with the PIN and stores it
+ * Encrypts the unlock key with the PIN and stores it
  *
  * @param pin - The PIN to set (6-8 digits)
- * @param vaultEncryptionKey - The base64-encoded vault encryption key to protect
+ * @param unlockKey - The base64-encoded unlock key to protect
  */
-export async function setupPin(pin: string, vaultEncryptionKey: string): Promise<void> {
+export async function setupPin(pin: string, unlockKey: string): Promise<void> {
   if (!isValidPin(pin)) {
     throw new InvalidPinFormatError();
   }
@@ -166,12 +166,12 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Encrypt the vault encryption key
+    // Encrypt the unlock key
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encryptedKey = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       pinKey,
-      new TextEncoder().encode(vaultEncryptionKey)
+      new TextEncoder().encode(unlockKey)
     );
 
     // Combine IV + encrypted data
@@ -202,10 +202,10 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
 
 /**
  * Unlock with PIN
- * Returns the decrypted vault encryption key
+ * Returns the decrypted unlock key (the password-derived KEK)
  *
  * @param pin - The PIN to use for unlocking
- * @returns The decrypted vault encryption key (base64)
+ * @returns The decrypted unlock key (base64), which opens the account key chain
  */
 export async function unlockWithPin(pin: string): Promise<string> {
   if (!isValidPin(pin)) {

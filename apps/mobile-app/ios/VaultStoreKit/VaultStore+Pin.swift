@@ -53,8 +53,8 @@ extension VaultStore {
             throw AppError.biometricNotAvailable
         }
 
-        // Get vault encryption key from memory (vault must be unlocked)
-        let vaultEncryptionKey = try getEncryptionKey()
+        // Get the unlock key from memory (vault must be unlocked): the PIN protects the KEK, never the vault key
+        let unlockKey = try getUnlockKey()
 
         // Generate random salt
         var salt = Data(count: 16)
@@ -68,9 +68,9 @@ extension VaultStore {
         // Derive key from PIN + salt using Argon2id
         let pinKey = try derivePinKey(pin: pin, salt: salt)
 
-        // Encrypt the vault encryption key using AES-GCM
+        // Encrypt the unlock key using AES-GCM
         let symmetricKey = SymmetricKey(data: pinKey)
-        let sealedBox = try AES.GCM.seal(vaultEncryptionKey, using: symmetricKey)
+        let sealedBox = try AES.GCM.seal(unlockKey, using: symmetricKey)
         guard let encryptedData = sealedBox.combined else {
             throw NSError(domain: "VaultStore", code: 23, userInfo: [NSLocalizedDescriptionKey: "Failed to encrypt vault key"])
         }
@@ -92,10 +92,10 @@ extension VaultStore {
     // MARK: - PIN Unlock Methods
 
     /// Unlock with PIN
-    /// Returns the decrypted vault encryption key
+    /// Returns the decrypted unlock key (the password-derived KEK)
     ///
     /// - Parameter pin: The PIN to use for unlocking
-    /// - Returns: The decrypted vault encryption key (base64)
+    /// - Returns: The decrypted unlock key (base64), to open the session with
     /// - Throws: PinUnlockError with specific error type and metadata
     public func unlockWithPin(_ pin: String) throws -> String {
         do {
@@ -114,8 +114,8 @@ extension VaultStore {
             try storePinFailedAttemptsInKeychain(0)
             markSuccessfulAuth()
 
-            // Return the decrypted vault encryption key as base64.
-            return resolveStoredUnlockKey(base64Key: decryptedKey.base64EncodedString())
+            // Return the decrypted unlock key as base64.
+            return decryptedKey.base64EncodedString()
         } catch {
             // Increment failed attempts
             let currentAttempts = getPinFailedAttempts()

@@ -33,7 +33,6 @@ import {
   IncorrectPinError,
   InvalidPinFormatError,
   resetFailedAttempts,
-  setupPin,
   unlockWithPin
 } from '@/utils/PinUnlockService';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
@@ -272,7 +271,7 @@ const Unlock: React.FC = () => {
     }
 
     try {
-      let passwordHashBase64: string;
+      let unlockKey: string;
 
       if (statusResult.online) {
         // Online mode: get encryption params from server for key derivation
@@ -281,21 +280,21 @@ const Unlock: React.FC = () => {
         // Derive key from password using user's encryption settings
         const credentials = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
         // Store encryption params for future offline unlock
-        await dbContext.storeEncryptionKeyDerivationParams({
+        await dbContext.storeUnlockKeyDerivationParams({
           salt: loginResponse.salt,
           encryptionType: loginResponse.encryptionType,
           encryptionSettings: loginResponse.encryptionSettings,
         });
 
         /*
-         * KEK/VEK: for migrated accounts the derived key is only the KEK; decrypt the VEK which is the actual
-         * vault encryption key. Throws a decrypt-failed (E-203) error on a wrong password. Legacy accounts keep
-         * using the derived key directly.
+         * Fetch the account key chain, check the unlock key opens it and cache it as-is. Throws a decrypt-failed
+         * (E-203) error on a wrong password.
          */
-        passwordHashBase64 = await VaultKeyService.resolveEncryptionKey(credentials.passwordHashBase64, webApi);
+        unlockKey = credentials.passwordHashBase64;
+        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
       } else {
         // Offline mode: use stored encryption params to derive key
-        const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS');
+        const storedParams = await sendMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS');
 
         if (!storedParams) {
           // No stored params - can't unlock offline without having logged in before
@@ -308,17 +307,18 @@ const Unlock: React.FC = () => {
         const credentials = await SrpAuthService.prepareCredentials(password, storedParams.salt, storedParams.encryptionSettings);
 
         /*
-         * KEK/VEK offline: decrypt the locally cached encrypted VEK with the derived key. Throws a decrypt-failed
-         * (E-203) error on a wrong password. Legacy accounts (no cached encrypted VEK) use the derived key directly.
+         * Offline: check the unlock key opens the locally cached account key chain. Throws a decrypt-failed
+         * (E-203) error on a wrong password.
          */
-        passwordHashBase64 = await VaultKeyService.resolveEncryptionKeyOffline(credentials.passwordHashBase64);
+        unlockKey = credentials.passwordHashBase64;
+        await VaultKeyService.verifyUnlockKey(unlockKey);
 
         // Set offline mode
         await dbContext.setIsOffline(true);
       }
 
-      // Store the encryption key in session storage.
-      await dbContext.storeEncryptionKey(passwordHashBase64);
+      // Store the unlock key in session storage.
+      await dbContext.storeUnlockKey(unlockKey);
 
       /*
        * Load the stored vault from background (decrypts using stored encryption key).
@@ -422,15 +422,8 @@ const Unlock: React.FC = () => {
     showLoading();
 
     try {
-      // Unlock with PIN - this derives the encryption key from the PIN
-      let passwordHashBase64 = await unlockWithPin(pinToUse);
-
-      /*
-       * KEK/VEK: when the PIN was set up before the vault key migration, the PIN-protected key is the old
-       * password-derived key (now the KEK). Upgrade to the VEK and re-encrypt the PIN store so future PIN unlocks
-       * return the VEK directly.
-       */
-      passwordHashBase64 = await VaultKeyService.resolveStoredUnlockKey(passwordHashBase64, key => setupPin(pinToUse, key));
+      const unlockKey = await unlockWithPin(pinToUse);
+      await VaultKeyService.verifyUnlockKey(unlockKey);
 
       // Check if we're online or offline (for offline mode flag)
       const statusResult = await checkStatus();
@@ -438,8 +431,8 @@ const Unlock: React.FC = () => {
         await dbContext.setIsOffline(true);
       }
 
-      // Store the encryption key in session storage
-      await dbContext.storeEncryptionKey(passwordHashBase64);
+      // Store the unlock key in session storage
+      await dbContext.storeUnlockKey(unlockKey);
 
       /*
        * Always unlock from local vault first.
@@ -579,16 +572,13 @@ const Unlock: React.FC = () => {
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
       /*
-       * The mobile device sends the vault encryption key (the VEK for migrated accounts, or the derived key when
-       * the mobile app predates the KEK/VEK model). Refresh the local encrypted-VEK cache so offline password unlock
-       * keeps working, then upgrade the received key to the VEK when it turns out to be the KEK.
+       * The mobile device sends the password-derived key (the KEK).
        */
-      await VaultKeyService.cacheEncryptedVekFromServer(webApi);
-      const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);
+      await VaultKeyService.refreshKeyChain(result.decryptionKey, webApi);
 
-      // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(mobileKey);
-      await dbContext.storeEncryptionKeyDerivationParams({
+      // Store the unlock key and derivation params
+      await dbContext.storeUnlockKey(result.decryptionKey);
+      await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,
         encryptionSettings: result.encryptionSettings,

@@ -15,7 +15,7 @@ export const LegacyStorageKeys = {
   SESSION_PUBLIC_EMAIL_DOMAINS: 'session:publicEmailDomains',
   SESSION_PRIVATE_EMAIL_DOMAINS: 'session:privateEmailDomains',
   SESSION_HIDDEN_PRIVATE_EMAIL_DOMAINS: 'session:hiddenPrivateEmailDomains',
-  SESSION_ENCRYPTION_KEY_DERIVATION_PARAMS: 'session:encryptionKeyDerivationParams',
+  SESSION_UNLOCK_KEY_DERIVATION_PARAMS: 'session:encryptionKeyDerivationParams',
 
   /** Pre-v0.31 single server revision, superseded by the per-manifest `StorageKeys.SERVER_MANIFEST_REVISIONS`. */
   SERVER_REVISION: 'local:serverRevision',

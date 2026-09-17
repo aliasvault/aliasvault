@@ -36,7 +36,7 @@ type AuthContextType = {
   setAutoLockTimeout: (timeout: number) => Promise<void>;
   setOfflineMode: (isOffline: boolean) => void;
   verifyPassword: (password: string) => Promise<string | null>;
-  getEncryptionKeyDerivationParams: () => Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null>;
+  getUnlockKeyDerivationParams: () => Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null>;
   // Autofill methods
   shouldShowAutofillReminder: boolean;
   markAutofillConfigured: () => Promise<void>;
@@ -234,17 +234,17 @@ export const AuthProvider: React.FC<{
    * Get the encryption key derivation parameters from native storage.
    * Returns parsed parameters or null if not available.
    */
-  const getEncryptionKeyDerivationParams = useCallback(async (): Promise<{
+  const getUnlockKeyDerivationParams = useCallback(async (): Promise<{
     salt: string;
     encryptionType: string;
     encryptionSettings: string;
   } | null> => {
     try {
-      const encryptionKeyDerivationParams = await NativeVaultManager.getEncryptionKeyDerivationParams();
-      if (!encryptionKeyDerivationParams) {
+      const unlockKeyDerivationParams = await NativeVaultManager.getUnlockKeyDerivationParams();
+      if (!unlockKeyDerivationParams) {
         return null;
       }
-      return JSON.parse(encryptionKeyDerivationParams);
+      return JSON.parse(unlockKeyDerivationParams);
     } catch (error) {
       console.error('Failed to get encryption key derivation params:', error);
       return null;
@@ -256,7 +256,7 @@ export const AuthProvider: React.FC<{
    */
   const verifyPassword = useCallback(async (password: string): Promise<string | null> => {
     // Get the key derivation parameters
-    const params = await getEncryptionKeyDerivationParams();
+    const params = await getUnlockKeyDerivationParams();
     if (!params) {
       throw new Error('Failed to verify current password. Please try again.');
     }
@@ -272,13 +272,13 @@ export const AuthProvider: React.FC<{
     const currentPasswordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
     // Check if the current password is correct
-    const isValid = await dbContext.verifyEncryptionKey(currentPasswordHashBase64);
+    const isValid = await dbContext.verifyUnlockKey(currentPasswordHashBase64);
     if (!isValid) {
       return null;
     }
 
     return currentPasswordHashBase64;
-  }, [dbContext, getEncryptionKeyDerivationParams]);
+  }, [dbContext, getUnlockKeyDerivationParams]);
 
   /**
    * Load autofill state from storage
@@ -325,7 +325,7 @@ export const AuthProvider: React.FC<{
     setAutoLockTimeout,
     markAutofillConfigured,
     verifyPassword,
-    getEncryptionKeyDerivationParams,
+    getUnlockKeyDerivationParams,
     setOfflineMode,
   }), [
     isLoggedIn,
@@ -343,7 +343,7 @@ export const AuthProvider: React.FC<{
     setAutoLockTimeout,
     markAutofillConfigured,
     verifyPassword,
-    getEncryptionKeyDerivationParams,
+    getUnlockKeyDerivationParams,
     setOfflineMode,
   ]);
 

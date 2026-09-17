@@ -42,7 +42,7 @@ export const StorageKeys = {
   /** Private email domains that are hidden from the domain picker. */
   HIDDEN_PRIVATE_EMAIL_DOMAINS: 'local:hiddenPrivateEmailDomains',
   /** Argon2 parameters used to derive the KEK from the master password. */
-  ENCRYPTION_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
+  UNLOCK_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
   /** The VEK encrypted with the Account Key, as returned by the server. */
   ENCRYPTED_VEK: 'local:encryptedVek',
   /** The Account Key encrypted with the password-derived KEK, as returned by the server. */
@@ -90,10 +90,11 @@ export const StorageKeys = {
    * -- Session state (cleared when the vault locks) --
    */
 
-  /** The decrypted vault encryption key. Session-only: it must never persist to disk. */
-  ENCRYPTION_KEY: 'session:encryptionKey',
-  /** The decrypted account private key (JWK). Session-only: it must never persist to disk. */
-  ACCOUNT_PRIVATE_KEY: 'session:accountPrivateKey',
+  /**
+   * The unlock key of the session: the account private key and vault encryption key are derived from it and the cached key chain on demand (see VaultKeyService).
+   * Session-only: it must never persist to disk. An additional unlock method (PIN) protects this same key.
+   */
+  UNLOCK_KEY: 'session:unlockKey',
   /** The sync hold record (reason + when it was taken) while an operation no sync may race runs; see VaultSyncHold. */
   VAULT_SYNC_HOLD: 'session:vaultSyncHold',
 } as const satisfies Record<string, StorageKey>;
@@ -112,10 +113,9 @@ export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.CAPABILITIES,
 ];
 
-/** Keys that must not survive a vault lock: the decrypted keys. Hosts add anything they derive from decrypted data. */
+/** Keys that must not survive a vault lock: the unlock key. Hosts add anything they derive from decrypted data. */
 export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
-  StorageKeys.ENCRYPTION_KEY,
-  StorageKeys.ACCOUNT_PRIVATE_KEY,
+  StorageKeys.UNLOCK_KEY,
 ];
 
 /**
@@ -138,7 +138,7 @@ export const vaultDataStorageKeys = (): StorageKey[] => [
   StorageKeys.IS_DIRTY,
   StorageKeys.MUTATION_SEQUENCE,
   StorageKeys.IS_OFFLINE_MODE,
-  StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS,
+  StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS,
   StorageKeys.ENCRYPTED_VEK,
   StorageKeys.ENCRYPTED_ACCOUNT_KEY,
   StorageKeys.ACCOUNT_PUBLIC_KEY,

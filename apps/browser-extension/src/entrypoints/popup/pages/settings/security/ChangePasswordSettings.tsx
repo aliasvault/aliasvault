@@ -13,6 +13,8 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { removeAndDisablePin } from '@/utils/PinUnlockService';
+
 type PasswordInputProps = {
   id: string;
   label: string;
@@ -123,6 +125,10 @@ const ChangePasswordSettings: React.FC = () => {
     try {
       showLoading();
       await MasterPasswordService.changePassword(webApi, currentPassword, newPassword);
+
+      // The PIN protects the key derived from the old password, which no longer opens the account key chain.
+      // TODO: refactor this to automatically update the PIN instead of disabling it?
+      await removeAndDisablePin();
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

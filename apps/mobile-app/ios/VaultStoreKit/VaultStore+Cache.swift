@@ -4,11 +4,10 @@ import VaultUtils
 
 /// Extension for the VaultStore class to handle cache management
 extension VaultStore {
-    /// Clear the memory - remove the encryption key and decrypted database from memory
+    /// Clear the memory - remove the unlock key and decrypted database from memory
     public func clearCache() {
-        print("Clearing cache - removing encryption key and decrypted database from memory")
-        self.encryptionKey = nil
-        self.accountPrivateKey = nil
+        print("Clearing cache - removing unlock key and decrypted database from memory")
+        self.unlockKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
     }
@@ -21,8 +20,7 @@ extension VaultStore {
         print("Clearing session - preserving vault data for recovery")
 
         // Clear in-memory data only
-        self.encryptionKey = nil
-        self.accountPrivateKey = nil
+        self.unlockKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
 
@@ -59,7 +57,7 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.vaultMetadataKey)
         self.userDefaults.removeObject(forKey: VaultConstants.authMethodsKey)
         self.userDefaults.removeObject(forKey: VaultConstants.autoLockTimeoutKey)
-        self.userDefaults.removeObject(forKey: VaultConstants.encryptionKeyDerivationParamsKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.unlockKeyDerivationParamsKey)
         self.userDefaults.removeObject(forKey: VaultConstants.accountKeyChainKey)
         self.userDefaults.removeObject(forKey: VaultConstants.usernameKey)
         self.userDefaults.removeObject(forKey: VaultConstants.offlineModeKey)
@@ -80,8 +78,7 @@ extension VaultStore {
         print("Cleared UserDefaults")
 
         // Clear the cache to remove all in-memory data
-        self.encryptionKey = nil
-        self.accountPrivateKey = nil
+        self.unlockKey = nil
         self.dbConnection = nil
         self.enabledAuthMethods = []
         self.autoLockTimeout = VaultConstants.defaultAutoLockTimeout

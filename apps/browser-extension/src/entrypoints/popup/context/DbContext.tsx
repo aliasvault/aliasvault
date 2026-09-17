@@ -11,11 +11,11 @@ import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
 
-import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
+import { markOwnUnlockKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';
 
 import type { SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { storage } from '#imports';
 
@@ -95,8 +95,8 @@ type DbContextType = {
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
    */
   loadStoredDatabase: () => Promise<SqliteClient | null>;
-  storeEncryptionKey: (derivedKey: string) => Promise<void>;
-  storeEncryptionKeyDerivationParams: (params: EncryptionKeyDerivationParams) => Promise<void>;
+  storeUnlockKey: (unlockKey: string) => Promise<void>;
+  storeUnlockKeyDerivationParams: (params: UnlockKeyDerivationParams) => Promise<void>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   /**
@@ -364,22 +364,23 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [dbInitialized, loadStoredDatabase]);
 
   /**
-   * Store encryption key in background worker.
+   * Store the unlock key (the password-derived KEK) in the background worker. It is the one secret the session
+   * holds; the vault encryption key is derived from it and the cached key chain.
    */
-  const storeEncryptionKey = useCallback(async (encryptionKey: string) : Promise<void> => {
+  const storeUnlockKey = useCallback(async (unlockKey: string) : Promise<void> => {
     /*
      * Mark as our own write BEFORE sending, so the cross-window watcher
      * ignores the storage event triggered by this same flow.
      */
-    markOwnEncryptionKey(encryptionKey);
-    await sendMessage('STORE_ENCRYPTION_KEY', encryptionKey);
+    markOwnUnlockKey(unlockKey);
+    await sendMessage('STORE_UNLOCK_KEY', unlockKey);
   }, []);
 
   /**
    * Store encryption key derivation params in background worker.
    */
-  const storeEncryptionKeyDerivationParams = useCallback(async (params: EncryptionKeyDerivationParams) : Promise<void> => {
-    await sendMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', params);
+  const storeUnlockKeyDerivationParams = useCallback(async (params: UnlockKeyDerivationParams) : Promise<void> => {
+    await sendMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', params);
   }, []);
 
   /**
@@ -411,8 +412,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setIsUploading,
     shouldSuppressEmailErrors,
     loadStoredDatabase,
-    storeEncryptionKey,
-    storeEncryptionKeyDerivationParams,
+    storeUnlockKey,
+    storeUnlockKeyDerivationParams,
     clearDatabase,
     getVaultMetadata,
     refreshSyncState,
@@ -420,7 +421,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeUnlockKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

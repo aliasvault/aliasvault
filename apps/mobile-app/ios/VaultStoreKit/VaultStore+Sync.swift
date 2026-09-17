@@ -34,14 +34,6 @@ extension VaultStore {
         try await sync.mutateVault(using: webApiService)
     }
 
-    /// Adopt the session key the engine reports, unless it is the key already in memory.
-    public func adoptEncryptionKey(base64Key: String) throws {
-        if let current = encryptionKey, current == Data(base64Encoded: base64Key) {
-            return
-        }
-        try storeEncryptionKey(base64Key: base64Key)
-    }
-
     /// The logs of the recent sync engine runs as JSON text, newest first, for the developer tools.
     public func getVaultSyncLogs() -> String {
         return VaultSyncRunLog.persistedLogs(in: userDefaults)

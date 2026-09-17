@@ -11,7 +11,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
@@ -238,7 +238,7 @@ export default defineBackground({
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
     onMessage('GET_ENCRYPTION_KEY', ({ sender }) => isTrustedExtensionSender(sender) ? handleGetEncryptionKey() : null);
-    onMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', () => handleGetEncryptionKeyDerivationParams());
+    onMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
     onMessage('GET_VAULT', () => handleGetVault());
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
@@ -248,14 +248,14 @@ export default defineBackground({
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
     onMessage('GENERATE_PASSWORD', ({ data }) => handleGeneratePassword(data.settings));
 
-    onMessage('STORE_ENCRYPTION_KEY', async ({ data, sender }) => {
+    onMessage('STORE_UNLOCK_KEY', async ({ data, sender }) => {
       if (!isTrustedExtensionSender(sender)) {
         return { success: false };
       }
 
-      const result = await handleStoreEncryptionKey(data);
+      const result = await handleStoreUnlockKey(data);
       /*
-       * Storing the encryption key means the vault just became unlocked; let content scripts
+       * Storing the unlock key means the vault just became unlocked; let content scripts
        * re-query any conditional passkey requests they parked while the vault was locked.
        */
       if (result.success) {
@@ -263,7 +263,7 @@ export default defineBackground({
       }
       return result;
     });
-    onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data));
+    onMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
 
     onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
     onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));

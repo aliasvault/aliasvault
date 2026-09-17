@@ -128,19 +128,19 @@ const Login: React.FC = () => {
     await app.setAuthTokens(username, token, refreshToken);
 
     /*
-     * KEK/VEK: for migrated accounts the derived key is only the KEK; fetch the vault key and decrypt the VEK,
-     * which becomes the session encryption key. Legacy accounts keep using the derived key directly.
+     * The derived key is the unlock key (KEK). Fetch the account's key chain, check the key opens it and cache it
+     * as-is; the vault encryption key is derived from the two on demand. Legacy accounts have no chain.
      */
-    const encryptionKey = await VaultKeyService.resolveEncryptionKey(passwordHashBase64, webApi);
+    await VaultKeyService.refreshKeyChain(passwordHashBase64, webApi);
 
-    await dbContext.storeEncryptionKeyDerivationParams({
+    await dbContext.storeUnlockKeyDerivationParams({
       salt: loginResponse.salt,
       encryptionType: loginResponse.encryptionType,
       encryptionSettings: loginResponse.encryptionSettings
     });
 
-    // Store the session key, then pull and load the vault.
-    await dbContext.storeEncryptionKey(encryptionKey);
+    // Store the unlock key as the session key, then pull and load the vault.
+    await dbContext.storeUnlockKey(passwordHashBase64);
     await pullAndLoadVault();
 
     // Reset prefill flag so next logout will prefill again
@@ -386,17 +386,12 @@ const Login: React.FC = () => {
       // Store auth tokens and username first — the vault fetch below uses the stored access token.
       await app.setAuthTokens(result.username, result.token, result.refreshToken);
 
-      /*
-       * The mobile device sends the vault encryption key (the encrypted VEK for migrated accounts, or the derived key when
-       * the mobile app predates the KEK/VEK model). Refresh the local encrypted VEK cache so offline password unlock
-       * keeps working, then upgrade the received key to the encrypted VEK when it turns out to be the KEK.
-       */
-      await VaultKeyService.cacheEncryptedVekFromServer(webApi);
-      const mobileKey = await VaultKeyService.resolveStoredUnlockKey(result.decryptionKey);
+      // The mobile device sends the unlock key: fetch the account's key chain, check the key opens it and cache it.
+      await VaultKeyService.refreshKeyChain(result.decryptionKey, webApi);
 
-      // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(mobileKey);
-      await dbContext.storeEncryptionKeyDerivationParams({
+      // Store the unlock key and derivation params.
+      await dbContext.storeUnlockKey(result.decryptionKey);
+      await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,
         encryptionSettings: result.encryptionSettings,

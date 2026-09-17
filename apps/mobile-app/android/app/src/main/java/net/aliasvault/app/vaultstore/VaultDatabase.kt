@@ -68,7 +68,7 @@ class VaultDatabase(
      * Check if the vault is unlocked.
      */
     fun isVaultUnlocked(): Boolean {
-        return crypto.encryptionKey != null
+        return crypto.unlockKey != null
     }
 
     /**

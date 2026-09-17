@@ -8,6 +8,7 @@ import { VaultSqlGenerator } from '@aliasvault/vault';
 import { NetworkError } from '../api/errors/NetworkError';
 import { RequestTimeoutError } from '../api/errors/RequestTimeoutError';
 import { WebApiService } from '../api/WebApiService';
+import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
 import { AppInfo } from '../platform/AppInfo';
 import { getPlatform } from '../platform/ClientPlatform';
@@ -419,13 +420,10 @@ class EngineRun {
   }
 
   /**
-   * Adopt the key a re-encrypted blob is under, then persist the blob.
+   * Persist the blob.
    * @param command - the command
    */
   private async storeVault(command: Extract<EngineCommand, { kind: 'vaultStore' }>): Promise<JsonValue> {
-    if (command.encryptionKey) {
-      await getPlatform().storage.set(StorageKeys.ENCRYPTION_KEY, command.encryptionKey);
-    }
     const outcome = await this.host.storeVault({
       encryptedBlob: command.encryptedBlob,
       markDirty: command.markDirty,
@@ -531,11 +529,10 @@ export type VaultSyncOptions = {
  */
 export async function buildVaultSyncRequest(operation: VaultSyncOperation, options: VaultSyncOptions = {}): Promise<VaultSyncEngineRequest> {
   const storage = getPlatform().storage;
-  const [username, encryptionKey, accountPublicKey, accountPrivateKey, isDirty, mutationSequence, privateEmailDomains, isOfflineMode] = await Promise.all([
+  const [username, sessionKeys, accountPublicKey, isDirty, mutationSequence, privateEmailDomains, isOfflineMode] = await Promise.all([
     storage.get<string>(StorageKeys.USERNAME),
-    storage.get<string>(StorageKeys.ENCRYPTION_KEY),
+    VaultKeyService.getSessionKeys(),
     storage.get<string>(StorageKeys.ACCOUNT_PUBLIC_KEY),
-    storage.get<string>(StorageKeys.ACCOUNT_PRIVATE_KEY),
     storage.get<boolean>(StorageKeys.IS_DIRTY),
     storage.get<number>(StorageKeys.MUTATION_SEQUENCE),
     storage.get<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS),
@@ -545,9 +542,9 @@ export async function buildVaultSyncRequest(operation: VaultSyncOperation, optio
   return {
     operation,
     username: username ?? '',
-    encryptionKey: encryptionKey ?? undefined,
+    encryptionKey: sessionKeys?.vaultEncryptionKey,
     accountPublicKey: accountPublicKey ?? undefined,
-    accountPrivateKey: accountPrivateKey ?? undefined,
+    accountPrivateKey: sessionKeys?.accountPrivateKey ?? undefined,
     isDirty: isDirty ?? false,
     mutationSequence: mutationSequence ?? 0,
     dirtyScopes: isDirty ? await getDirtyScopes() : [],

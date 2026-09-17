@@ -293,7 +293,7 @@ fn requiring_pull(server: &HashMap<String, i64>, local: &HashMap<String, i64>) -
 }
 
 async fn assert_salt_unchanged(ctx: &Ctx, server_salt: Option<&str>) -> SyncResult<()> {
-    let stored: Option<Value> = state::get(&ctx.host, state::ENCRYPTION_KEY_DERIVATION_PARAMS).await?;
+    let stored: Option<Value> = state::get(&ctx.host, state::UNLOCK_KEY_DERIVATION_PARAMS).await?;
     let stored_salt = stored.as_ref().and_then(|params| params.get("salt")).and_then(Value::as_str).map(str::to_string);
     if let (Some(stored), Some(server)) = (stored_salt, server_salt) {
         if !server.is_empty() && server != stored {

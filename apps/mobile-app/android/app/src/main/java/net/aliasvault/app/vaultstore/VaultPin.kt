@@ -39,7 +39,7 @@ sealed class PinUnlockException(message: String) : Exception(message) {
 
 /**
  * Handles PIN unlock functionality for the vault store.
- * This component manages PIN-based unlocking by encrypting the vault encryption key
+ * This component manages PIN-based unlocking by encrypting the unlock key
  * with a key derived from the user's PIN using Argon2id.
  *
  * Security features:
@@ -130,17 +130,17 @@ class VaultPin(
 
     /**
      * Setup PIN unlock.
-     * Encrypts the vault encryption key with the PIN and stores it securely.
+     * Encrypts the unlock key with the PIN and stores it securely.
      *
      * @param pin The PIN to set (4+ digits)
-     * @param vaultEncryptionKeyBase64 The base64-encoded vault encryption key to protect
+     * @param unlockKeyBase64 The base64-encoded unlock key to protect
      * @throws IllegalArgumentException if PIN format is invalid
      * @throws Exception if encryption or storage fails
      */
     @Throws(Exception::class)
-    fun setupPin(pin: String, vaultEncryptionKeyBase64: String) {
-        // Decode the vault encryption key
-        val vaultEncryptionKey = Base64.decode(vaultEncryptionKeyBase64, Base64.NO_WRAP)
+    fun setupPin(pin: String, unlockKeyBase64: String) {
+        // Decode the unlock key
+        val unlockKey = Base64.decode(unlockKeyBase64, Base64.NO_WRAP)
 
         // Generate random salt
         val salt = ByteArray(16)
@@ -149,7 +149,7 @@ class VaultPin(
         // Derive key from PIN + salt using Argon2id
         val pinKey = derivePinKey(pin, salt)
 
-        // Encrypt the vault encryption key using AES-GCM
+        // Encrypt the unlock key using AES-GCM
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val secretKey = SecretKeySpec(pinKey, "AES")
 
@@ -158,7 +158,7 @@ class VaultPin(
         SecureRandom().nextBytes(iv)
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
-        val encryptedKey = cipher.doFinal(vaultEncryptionKey)
+        val encryptedKey = cipher.doFinal(unlockKey)
 
         // Combine IV + encrypted data
         val combined = ByteArray(iv.size + encryptedKey.size)
@@ -185,10 +185,10 @@ class VaultPin(
 
     /**
      * Unlock with PIN.
-     * Returns the decrypted vault encryption key.
+     * Returns the decrypted unlock key.
      *
      * @param pin The PIN to use for unlocking
-     * @return The decrypted vault encryption key (base64)
+     * @return The decrypted unlock key (base64)
      * @throws PinUnlockException with specific error type and metadata
      */
     @Throws(PinUnlockException::class)
@@ -205,7 +205,7 @@ class VaultPin(
             // Derive key from PIN + salt
             val pinKey = derivePinKey(pin, salt)
 
-            // Decrypt the vault encryption key
+            // Decrypt the unlock key
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             val secretKey = SecretKeySpec(pinKey, "AES")
             cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
@@ -214,7 +214,7 @@ class VaultPin(
             // Reset failed attempts on success
             storePinFailedAttemptsInKeystore(0)
 
-            // Return the decrypted vault encryption key as base64
+            // Return the decrypted unlock key as base64
             return Base64.encodeToString(decryptedKey, Base64.NO_WRAP)
         } catch (e: Exception) {
             // Increment failed attempts

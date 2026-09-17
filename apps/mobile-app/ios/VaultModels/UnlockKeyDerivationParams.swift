@@ -1,6 +1,6 @@
 import Foundation
 
-public struct EncryptionKeyDerivationParams: Codable {
+public struct UnlockKeyDerivationParams: Codable {
     public var encryptionType: String?
     public var encryptionSettings: String?
     public var salt: String?

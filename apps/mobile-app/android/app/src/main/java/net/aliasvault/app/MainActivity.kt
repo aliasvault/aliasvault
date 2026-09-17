@@ -126,7 +126,7 @@ class MainActivity : ReactActivity() {
      * Handle PIN unlock result directly without going through React context.
      * This avoids race conditions with React context initialization.
      * @param resultCode The result code from the PIN unlock activity.
-     * @param data The intent data containing the encryption key.
+     * @param data The intent data containing the unlock key.
      */
     private fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
         val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
@@ -147,12 +147,12 @@ class MainActivity : ReactActivity() {
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
                 // Clear auth context on success
                 net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
-                val encryptionKeyBase64 = data?.getStringExtra(
-                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                val unlockKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_UNLOCK_KEY,
                 )
 
-                if (encryptionKeyBase64 == null) {
-                    promise.reject("UNLOCK_ERROR", "Failed to get encryption key from PIN unlock", null)
+                if (unlockKeyBase64 == null) {
+                    promise.reject("UNLOCK_ERROR", "Failed to get unlock key from PIN unlock", null)
                     return
                 }
 
@@ -161,12 +161,12 @@ class MainActivity : ReactActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         /*
-                         * Use storeEncryptionKeyInMemory instead of storeEncryptionKey.
-                         * storeEncryptionKey would trigger biometric prompt if biometrics is enabled
+                         * Use storeUnlockKeyInMemory instead of storeUnlockKey.
+                         * storeUnlockKey would trigger biometric prompt if biometrics is enabled
                          * since it tries to store the key in the biometric-protected keystore.
                          * For PIN unlock, we just want to set the key in memory.
                          */
-                        vaultStore.storeEncryptionKeyInMemory(encryptionKeyBase64)
+                        vaultStore.storeUnlockKeyInMemory(unlockKeyBase64)
                         vaultStore.unlockVault()
                         promise.resolve(true)
                     } catch (e: Exception) {
@@ -238,7 +238,7 @@ class MainActivity : ReactActivity() {
     /**
      * Handle password unlock result.
      * @param resultCode The result code from the password unlock activity.
-     * @param data The intent data containing the encryption key.
+     * @param data The intent data containing the unlock key.
      */
     private fun handlePasswordUnlockResult(resultCode: Int, data: Intent?) {
         // Check both promise types - one for showPasswordUnlock() and one for authenticateUser()
@@ -251,11 +251,11 @@ class MainActivity : ReactActivity() {
 
         when (resultCode) {
             net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_SUCCESS -> {
-                val encryptionKeyBase64 = data?.getStringExtra(
-                    net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                val unlockKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_UNLOCK_KEY,
                 )
 
-                if (encryptionKeyBase64 == null) {
+                if (unlockKeyBase64 == null) {
                     passwordPromise?.resolve(null)
                     authPromise?.resolve(false)
                     return
@@ -269,8 +269,8 @@ class MainActivity : ReactActivity() {
                 // Run on IO thread to avoid blocking main thread
                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                     try {
-                        // Store encryption key in memory only
-                        vaultStore.storeEncryptionKeyInMemory(encryptionKeyBase64)
+                        // Store unlock key in memory only
+                        vaultStore.storeUnlockKeyInMemory(unlockKeyBase64)
 
                         // Unlock the vault with the key now in memory
                         vaultStore.unlockVault()

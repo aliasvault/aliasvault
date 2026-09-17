@@ -239,10 +239,10 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 guard let self = self else { return }
 
                 // Attempt to unlock with PIN
-                let encryptionKeyBase64 = try vaultStore.unlockWithPin(pin)
+                let unlockKeyBase64 = try vaultStore.unlockWithPin(pin)
 
-                // Store the encryption key and unlock
-                try vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+                // Open the session with the unlock key and unlock
+                try vaultStore.storeUnlockKey(base64Key: unlockKeyBase64)
                 try vaultStore.unlockVault()
 
                 // Process the credential request

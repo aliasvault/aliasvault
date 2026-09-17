@@ -119,7 +119,7 @@ pub(crate) const ENCRYPTED_VEK: &str = "encryptedVek";
 pub(crate) const ENCRYPTED_ACCOUNT_KEY: &str = "encryptedAccountKey";
 pub(crate) const ACCOUNT_PUBLIC_KEY: &str = "accountPublicKey";
 pub(crate) const ENCRYPTED_ACCOUNT_PRIVATE_KEY: &str = "encryptedAccountPrivateKey";
-pub(crate) const ENCRYPTION_KEY_DERIVATION_PARAMS: &str = "encryptionKeyDerivationParams";
+pub(crate) const UNLOCK_KEY_DERIVATION_PARAMS: &str = "encryptionKeyDerivationParams";
 
 /// Read a value, `None` when absent or null.
 pub(crate) async fn get<T: DeserializeOwned>(host: &Host, key: &str) -> SyncResult<Option<T>> {

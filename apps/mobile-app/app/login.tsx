@@ -31,7 +31,7 @@ import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
@@ -239,7 +239,7 @@ export default function LoginScreen() : React.ReactNode {
    * @param refreshToken - The refresh token to use for the vault
    * @param passwordHashBase64 - The password hash base64
    * @param initiateLoginResponse - The initiate login response
-   * @param encryptionKeyDerivationParams - The encryption key derivation parameters
+   * @param unlockKeyDerivationParams - The encryption key derivation parameters
    */
   const continueProcessVaultResponse = async (
     token: string,
@@ -247,7 +247,7 @@ export default function LoginScreen() : React.ReactNode {
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
-    const encryptionKeyDerivationParams : EncryptionKeyDerivationParams = {
+    const unlockKeyDerivationParams : UnlockKeyDerivationParams = {
       encryptionType: initiateLoginResponse.encryptionType,
       encryptionSettings: initiateLoginResponse.encryptionSettings,
       salt: initiateLoginResponse.salt,
@@ -258,12 +258,13 @@ export default function LoginScreen() : React.ReactNode {
      * the vault and store it (including metadata) through native code.
      */
     await authContext.setAuthTokens(SrpAuthService.normalizeUsername(credentials.username), token, refreshToken);
-    await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
+    await dbContext.storeUnlockKeyDerivationParams(unlockKeyDerivationParams);
 
     /*
-     * The derived key is the password KEK. The Rust core opens the account's key chain with it (fetched from the
-     * server, or the cached one when offline) and stores the VEK as the vault key; a legacy account without a
-     * chain keeps the KEK. Every sync assumes the key stored here.
+     * The derived key is the KEK/unlock key. The Rust core opens the account's key chain with it (fetched from the
+     * server, or the cached one when offline) and caches the chain as-is. The session holds the VEK and the account
+     * private key, while biometrics and PIN keep the KEK and open the chain again on every unlock; a legacy account
+     * without a chain uses the KEK as the vault key.
      */
     await NativeVaultManager.resolveVaultKey(passwordHashBase64);
 

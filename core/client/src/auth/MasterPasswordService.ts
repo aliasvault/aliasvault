@@ -8,7 +8,7 @@ import { SrpAuthService, type SrpClientProof } from './SrpAuthService';
 import { VaultKeyService } from './VaultKeyService';
 
 import type { WebApiService } from '../api/WebApiService';
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordChangeInitiateResponse, PasswordChangeRequest } from '@aliasvault/models/webapi';
 
 /**
@@ -66,8 +66,8 @@ export class MasterPasswordService {
   /**
    * The derivation parameters of the password this device holds, or null before the first online unlock.
    */
-  public static async getStoredDerivationParams(): Promise<EncryptionKeyDerivationParams | null> {
-    return getPlatform().storage.get<EncryptionKeyDerivationParams>(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS);
+  public static async getStoredDerivationParams(): Promise<UnlockKeyDerivationParams | null> {
+    return getPlatform().storage.get<UnlockKeyDerivationParams>(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS);
   }
 
   /**
@@ -88,7 +88,7 @@ export class MasterPasswordService {
 
       const prepared = await SrpAuthService.prepareCredentials(password, parameters.salt, parameters.encryptionSettings);
       try {
-        await VaultKeyService.resolveEncryptionKeyOffline(prepared.passwordHashBase64);
+        await VaultKeyService.verifyUnlockKey(prepared.passwordHashBase64);
         return PasswordVerificationResult.Success;
       } catch (error) {
         const code = error instanceof Error ? extractErrorCode(error.message) : null;
@@ -193,7 +193,7 @@ export class MasterPasswordService {
     }, false);
 
     // Persist the new Account Key and its derivation parameters.
-    await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings });
+    await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings }, next.kekBase64);
   }
 
   /**

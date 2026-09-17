@@ -201,10 +201,11 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
     let Some(vault_key) = vault_key else { return Ok(true) };
     let Some(encrypted_vek) = vault_key.encrypted_vek.clone() else { return Ok(true) };
 
+    // Hosts hold the unlock key and derive the vault key from the cached chain.
     let adopted: SyncResult<()> = async {
         let (vek, account_key) = crypto::resolve_vault_encryption_key(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
-        adopt_vek(ctx, &session_key, &vek).await?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
+        adopt_vek(ctx, &session_key, &vek).await?;
         stage_account_private_key(ctx, &account_key, vault_key.encrypted_account_private_key.as_deref()).await;
         Ok(())
     }

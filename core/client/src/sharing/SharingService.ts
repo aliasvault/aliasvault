@@ -264,7 +264,7 @@ export class SharingService {
    * The session vault encryption key, or null while the vault is locked.
    */
   private static async sessionEncryptionKey(): Promise<string | null> {
-    return (await getPlatform().storage.get(StorageKeys.ENCRYPTION_KEY)) as string | null;
+    return VaultKeyService.getSessionVaultEncryptionKey();
   }
 
   /**

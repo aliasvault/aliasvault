@@ -27,7 +27,7 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
-  const { isLoggedIn, username, getEncryptionKeyDerivationParams } = useApp();
+  const { isLoggedIn, username, getUnlockKeyDerivationParams } = useApp();
   const { logoutUserInitiated, logoutForced } = useLogout();
   const dbContext = useDb();
   const [isLoading, setIsLoading] = useState(true);
@@ -50,14 +50,14 @@ export default function UnlockScreen() : React.ReactNode {
    * If not, we can't unlock the vault so logout instead to redirect user to login screen.
    */
   const getKeyDerivationParams = useCallback(async () : Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null> => {
-    const params = await getEncryptionKeyDerivationParams();
+    const params = await getUnlockKeyDerivationParams();
     if (!params) {
       // No params means corrupted state - force logout without confirmation
       await logoutForced();
       return null;
     }
     return params;
-  }, [logoutForced, getEncryptionKeyDerivationParams]);
+  }, [logoutForced, getUnlockKeyDerivationParams]);
 
   useEffect(() => {
     let isMounted = true;

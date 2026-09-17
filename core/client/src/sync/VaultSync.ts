@@ -12,6 +12,7 @@
 import { CapabilityService } from '../api/CapabilityService';
 import { AppErrorCode, extractErrorCode, isErrorCode } from '../api/errors/AppErrorCodes';
 import { WebApiService } from '../api/WebApiService';
+import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devError, devLog, devWarn } from '../platform/Logger';
@@ -109,11 +110,11 @@ export class VaultSync {
   public async syncVaultWithServer(options: VaultSyncOptions = {}): Promise<FullVaultSyncResult> {
     try {
       const storage = getPlatform().storage;
-      const [username, accessToken, encryptionKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), storage.get<string>(StorageKeys.ENCRYPTION_KEY)]);
+      const [username, accessToken, unlockKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), VaultKeyService.getSessionUnlockKey()]);
       if (username === null || accessToken === null) {
         return syncResult({ success: false });
       }
-      if (!encryptionKey) {
+      if (!unlockKey) {
         return syncResult({ success: false, errorCode: AppErrorCode.VAULT_LOCKED });
       }
 
@@ -142,17 +143,12 @@ export class VaultSync {
   }
 
   /**
-   * Resolve the vault key right after login: open the account's key chain with the password-derived key (the cached
-   * chain when the server cannot be reached) and store the VEK as the session key. A legacy account keeps the derived
-   * key. Every sync assumes the key this stored.
-   * @param derivedKeyBase64 - the password-derived key (KEK)
+   * Resolve the vault key right after login: the engine opens the account's key chain with the unlock key (the
+   * cached chain when the server cannot be reached) and caches it as-is.
+   * @param unlockKeyBase64 - the password-derived key (KEK)
    */
-  public async resolveVaultKey(derivedKeyBase64: string): Promise<VaultSyncResolveVaultKeyResult> {
-    const result = await this.run<VaultSyncResolveVaultKeyResult>('resolveVaultKey', {}, derivedKeyBase64);
-    if (result.success && result.encryptionKey) {
-      await getPlatform().storage.set(StorageKeys.ENCRYPTION_KEY, result.encryptionKey);
-    }
-    return result;
+  public async resolveVaultKey(unlockKeyBase64: string): Promise<VaultSyncResolveVaultKeyResult> {
+    return this.run<VaultSyncResolveVaultKeyResult>('resolveVaultKey', {}, unlockKeyBase64);
   }
 
   /**
@@ -176,8 +172,7 @@ export class VaultSync {
    */
   public async migrateVaultManifest(): Promise<VaultManifestMigrationResult> {
     try {
-      const encryptionKey = await getPlatform().storage.get<string>(StorageKeys.ENCRYPTION_KEY);
-      if (!encryptionKey) {
+      if (!await VaultKeyService.getSessionUnlockKey()) {
         return { success: false, pushed: false, errorCode: AppErrorCode.VAULT_LOCKED };
       }
       if (await (await this.openVault()).requiresLegacySqliteBlobMigration()) {
@@ -199,7 +194,7 @@ export class VaultSync {
    * Run one engine operation and adopt what it reported.
    * @param operation - the operation
    * @param options - what the caller asks beyond what the engine decides
-   * @param encryptionKey - overrides the session key for the one operation that runs before it is known
+   * @param encryptionKey - the request key of the one operation that runs on the unlock key itself (resolveVaultKey)
    */
   private async run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, encryptionKey?: string): Promise<T> {
     const request = await buildVaultSyncRequest(operation, options);
@@ -226,12 +221,6 @@ export class VaultSync {
     }
     if (result.isOfflineMode !== undefined) {
       await storage.set(StorageKeys.IS_OFFLINE_MODE, result.isOfflineMode);
-    }
-    if (result.sessionUpdates?.encryptionKey) {
-      await storage.set(StorageKeys.ENCRYPTION_KEY, result.sessionUpdates.encryptionKey);
-    }
-    if (result.sessionUpdates?.accountPrivateKey) {
-      await storage.set(StorageKeys.ACCOUNT_PRIVATE_KEY, result.sessionUpdates.accountPrivateKey);
     }
     if (result.emailRouting) {
       await storage.setMany([

@@ -32,6 +32,7 @@ pub struct TestHost {
     pub is_dirty: bool,
     pub mark_clean_calls: Vec<u64>,
     pub store_calls: Vec<Command>,
+    pub rekeyed_stores_found_the_chain: Vec<bool>,
     pub requests: Vec<RecordedRequest>,
     pub responders: Vec<Responder>,
     pub logs: Vec<String>,
@@ -75,6 +76,7 @@ impl TestHost {
             is_dirty: false,
             mark_clean_calls: Vec::new(),
             store_calls: Vec::new(),
+            rekeyed_stores_found_the_chain: Vec::new(),
             requests: Vec::new(),
             responders: Vec::new(),
             logs: Vec::new(),
@@ -148,6 +150,10 @@ impl TestHost {
                 Command::VaultStore { encrypted_blob, mark_dirty, encryption_key, expected_mutation_seq, revision } => {
                     self.store_calls.push(Command::VaultStore { encrypted_blob: String::new(), mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
                     if let Some(key) = encryption_key {
+                        // The app hosts hold the unlock key and derive the vault key from the cached chain.
+                        let found_the_chain = self.state.contains_key("encryptedAccountKey") && self.state.contains_key("encryptedVek");
+                        assert!(found_the_chain, "a vault stored under a new key needs the chain that opens it cached first");
+                        self.rekeyed_stores_found_the_chain.push(found_the_chain);
                         self.vault_key = key;
                     }
                     if let Some(expected) = expected_mutation_seq {

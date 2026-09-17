@@ -73,17 +73,16 @@ internal final class VaultSync {
         return VaultVersionCheckResult(isNewVersionAvailable: result["hasNewerVault"] as? Bool ?? false, syncState: vaultStore.getSyncState())
     }
 
-    /// Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the
-    /// VEK is stored as the session key; a legacy account keeps the derived key. Every sync assumes the key this stored.
-    /// Returns the stored key (base64).
+    /// Resolve the vault key right after login: the account's key chain is opened with the password-derived key (KEK)
+    /// and cached as-is. The session then opens from that chain like every later unlock, and the keychain keeps the
+    /// KEK; a legacy account has no chain and its KEK is the vault key. Returns the vault key (base64).
     func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws -> String {
         let result = try await run("resolveVaultKey", using: webApiService, encryptionKey: derivedKeyBase64)
         guard result["success"] as? Bool == true else {
             throw Self.syncError(from: result)
         }
-        let key = result["encryptionKey"] as? String ?? derivedKeyBase64
-        try vaultStore.storeEncryptionKey(base64Key: key)
-        return key
+        try vaultStore.storeUnlockKey(base64Key: derivedKeyBase64)
+        return try vaultStore.getEncryptionKeyBase64()
     }
 
     /// Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
@@ -139,14 +138,6 @@ internal final class VaultSync {
         }
         if let offline = result["isOfflineMode"] as? Bool {
             vaultStore.setOfflineMode(offline)
-        }
-        if let updates = result["sessionUpdates"] as? [String: Any] {
-            if let newKey = updates["encryptionKey"] as? String {
-                try? vaultStore.adoptEncryptionKey(base64Key: newKey)
-            }
-            if let privateKey = updates["accountPrivateKey"] as? String {
-                vaultStore.accountPrivateKey = privateKey
-            }
         }
         if let routing = result["emailRouting"] as? [String: Any] {
             let metadata = VaultMetadata(

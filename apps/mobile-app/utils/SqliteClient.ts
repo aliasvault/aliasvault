@@ -1,4 +1,4 @@
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
 import { asyncRepository } from '@aliasvault/client/database/DbOp';
 import { EncryptionKeyRepository } from '@aliasvault/client/database/repositories/EncryptionKeyRepository';
 import { FolderRepository } from '@aliasvault/client/database/repositories/FolderRepository';
@@ -169,31 +169,31 @@ class SqliteClient {
   }
 
   /**
-   * Store the encryption key in memory only (no keychain persistence).
+   * Open a session in memory with the unlock key (the password-derived KEK), without keychain persistence.
    * Use this to test if a password-derived key is valid before persisting.
    *
-   * @param base64EncryptionKey The base64 encoded encryption key
+   * @param base64UnlockKey The base64 encoded unlock key
    */
-  public async storeEncryptionKeyInMemory(base64EncryptionKey: string): Promise<void> {
+  public async storeUnlockKeyInMemory(base64UnlockKey: string): Promise<void> {
     try {
-      await NativeVaultManager.storeEncryptionKeyInMemory(base64EncryptionKey);
+      await NativeVaultManager.storeUnlockKeyInMemory(base64UnlockKey);
     } catch (error) {
-      console.error('Error storing encryption key in memory:', error);
+      console.error('Error storing unlock key in memory:', error);
       throw error;
     }
   }
 
   /**
-   * Store the encryption key in memory AND persist to keychain (may trigger biometric prompt).
+   * Open a session with the unlock key (the password-derived KEK) AND persist it to keychain (may trigger biometric prompt).
    *
-   * @param base64EncryptionKey The base64 encoded encryption key
+   * @param base64UnlockKey The base64 encoded unlock key
    */
-  public async storeEncryptionKey(base64EncryptionKey: string): Promise<void> {
+  public async storeUnlockKey(base64UnlockKey: string): Promise<void> {
     try {
-      // Store the encryption key in the native module
-      await NativeVaultManager.storeEncryptionKey(base64EncryptionKey);
+      // Open the session with the unlock key in the native module
+      await NativeVaultManager.storeUnlockKey(base64UnlockKey);
     } catch (error) {
-      console.error('Error storing encryption key:', error);
+      console.error('Error storing unlock key:', error);
       throw error;
     }
   }
@@ -203,10 +203,10 @@ class SqliteClient {
    *
    * @param keyDerivationParams The key derivation parameters
    */
-  public async storeEncryptionKeyDerivationParams(keyDerivationParams: EncryptionKeyDerivationParams): Promise<void> {
+  public async storeUnlockKeyDerivationParams(keyDerivationParams: UnlockKeyDerivationParams): Promise<void> {
     try {
       const keyDerivationParamsJson = JSON.stringify(keyDerivationParams);
-      await NativeVaultManager.storeEncryptionKeyDerivationParams(keyDerivationParamsJson);
+      await NativeVaultManager.storeUnlockKeyDerivationParams(keyDerivationParamsJson);
     } catch (error) {
       console.error('Error storing encryption key derivation params:', error);
       throw error;

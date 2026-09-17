@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@aliasvault/models/webapi';
 import { FieldKey, getFieldValue } from '@aliasvault/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
@@ -217,14 +217,14 @@ export function useVaultMutate() : {
 
     // Store the new encryption key and derivation parameters locally
     try {
-      const newEncryptionKeyDerivationParams : EncryptionKeyDerivationParams = {
+      const newUnlockKeyDerivationParams : UnlockKeyDerivationParams = {
         encryptionType: data.encryptionType,
         encryptionSettings: data.encryptionSettings,
         salt: newSalt,
       };
 
-      await dbContext.storeEncryptionKey(Buffer.from(newPasswordHash).toString('base64'));
-      await dbContext.storeEncryptionKeyDerivationParams(newEncryptionKeyDerivationParams);
+      await dbContext.storeUnlockKey(Buffer.from(newPasswordHash).toString('base64'));
+      await dbContext.storeUnlockKeyDerivationParams(newUnlockKeyDerivationParams);
 
       /**
        * Persist the new encrypted database with the new encryption key by starting and committing a transaction.

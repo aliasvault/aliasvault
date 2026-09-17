@@ -52,7 +52,7 @@ import { t } from '@/i18n/StandaloneI18n';
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { ISqliteDatabase, SqliteValue } from '@aliasvault/client/platform';
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
  * Cache for the SqliteClient to avoid repeated decryption and initialization.
@@ -198,17 +198,18 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
 }
 
 /**
- * Store the encryption key (derived key) in browser storage.
+ * Store the unlock key (the password-derived KEK) in session storage. It is the one secret the session holds: the
+ * vault encryption key and the account private key are derived from it and the cached key chain on demand.
  */
-export async function handleStoreEncryptionKey(
-  encryptionKey: string,
+export async function handleStoreUnlockKey(
+  unlockKey: string,
 ) : Promise<messageBoolResponse> {
   try {
-    await storage.setItem(StorageKeys.ENCRYPTION_KEY, encryptionKey);
+    await storage.setItem(StorageKeys.UNLOCK_KEY, unlockKey);
     return { success: true };
   } catch (error) {
-    console.error('Failed to store encryption key:', error);
-    // E-602: Storage write failed during encryption key store
+    console.error('Failed to store unlock key:', error);
+    // E-602: Storage write failed during unlock key store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
@@ -217,11 +218,11 @@ export async function handleStoreEncryptionKey(
  * Store the encryption key derivation parameters in browser storage.
  * These are stored in local: storage to enable offline unlock after browser restart.
  */
-export async function handleStoreEncryptionKeyDerivationParams(
-  params: EncryptionKeyDerivationParams,
+export async function handleStoreUnlockKeyDerivationParams(
+  params: UnlockKeyDerivationParams,
 ) : Promise<messageBoolResponse> {
   try {
-    await storage.setItem(StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS, params);
+    await storage.setItem(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS, params);
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key derivation params:', error);
@@ -600,19 +601,20 @@ export async function handleGeneratePassword(
 }
 
 /**
- * Get the encryption key for the encrypted vault.
+ * Get the encryption key for the encrypted vault: derived from the session unlock key and the cached key chain,
+ * null while the vault is locked.
  */
 export async function handleGetEncryptionKey(
 ) : Promise<string | null> {
-  return await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | null;
+  return VaultKeyService.getSessionVaultEncryptionKey();
 }
 
 /**
  * Get the encryption key derivation parameters for password change detection and offline mode.
  * These are stored in local: storage to enable offline unlock after browser restart.
  */
-export async function handleGetEncryptionKeyDerivationParams(
-) : Promise<EncryptionKeyDerivationParams | null> {
+export async function handleGetUnlockKeyDerivationParams(
+) : Promise<UnlockKeyDerivationParams | null> {
   return MasterPasswordService.getStoredDerivationParams();
 }
 

@@ -11,7 +11,7 @@ import { StorageKeys } from '../constants/StorageKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 
-import type { EncryptionKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 /**
  * Result of fetching the vault key from the server.
@@ -22,7 +22,17 @@ export type FetchVaultKeyResult = {
 };
 
 /**
- * Static helper for fetching, decrypting, and caching the account-key unlock chain (KEK → AK → VEK + account keypair).
+ * The keys an unlock key opens.
+ */
+export type SessionKeys = {
+  /** The vault encryption key (VEK). */
+  vaultEncryptionKey: string;
+  /** The account private key (JWK). */
+  accountPrivateKey: string | null;
+};
+
+/**
+ * Static helper for fetching, caching and opening the account-key unlock chain (KEK → AK → VEK + account keypair).
  */
 export class VaultKeyService {
   /**
@@ -45,61 +55,69 @@ export class VaultKeyService {
   }
 
   /**
-   * Resolve the vault encryption key right after authentication: fetch the vault key from the server, decrypt
-   * the Account Key with the password-derived key (KEK), and with the AK decrypt the VEK and the account
-   * private key. All encrypted blobs are cached for offline unlock. For legacy users (server explicitly
-   * reports no vault key) the derived key itself is the encryption key and any stale cached chain is cleared.
+   * Right after authentication: fetch the account's key chain from the server, check that the unlock key opens it
+   * and cache it for offline unlock.
+   * @param unlockKeyBase64 - the password-derived key (the KEK)
+   * @param webApi - the API client to use
+   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain (wrong password).
    */
-  public static async resolveEncryptionKey(derivedKeyBase64: string, webApi?: WebApiService): Promise<string> {
+  public static async refreshKeyChain(unlockKeyBase64: string, webApi?: WebApiService): Promise<void> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
 
     if (!result.supported) {
-      // Older server: trust the local cache. Legacy accounts have no cached blob chain and use the derived key.
-      return VaultKeyService.resolveFromLocalCache(derivedKeyBase64);
+      // Older server: trust the local cache.
+      await VaultKeyService.verifyUnlockKey(unlockKeyBase64);
+      return;
     }
 
     if (!result.vaultKey) {
       await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY]);
-      return derivedKeyBase64;
+      return;
     }
 
-    const vek = await VaultKeyService.decryptKeyChainOrThrow(result.vaultKey, derivedKeyBase64);
+    await VaultKeyService.openChain(unlockKeyBase64, result.vaultKey.encryptedAccountKey, result.vaultKey.encryptedVek ?? null, null);
     await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
-    return vek;
   }
 
   /**
-   * Resolve the vault encryption key offline: decrypt the locally cached blob chain with the derived key. For
-   * legacy users (no cached chain) the derived key itself is returned.
-   * @param derivedKeyBase64 - the password-derived key
-   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when decryption fails (wrong password).
+   * Check offline that the unlock key opens the locally cached chain. A legacy account has no chain to check against.
+   * @param unlockKeyBase64 - the password-derived key (the KEK), typed in or restored by PIN
+   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain (wrong password).
    */
-  public static async resolveEncryptionKeyOffline(derivedKeyBase64: string): Promise<string> {
-    return VaultKeyService.resolveFromLocalCache(derivedKeyBase64);
+  public static async verifyUnlockKey(unlockKeyBase64: string): Promise<void> {
+    await VaultKeyService.openKeyChain(unlockKeyBase64);
   }
 
   /**
-   * Whether this device holds a vault key, i.e. whether the session encryption key is a VEK rather than the raw
-   * password-derived key. This is the local source of truth for "am I on the account-key model": the cache is
-   * written by {@link resolveEncryptionKey} on every login and cleared when the server reports no vault key, so
-   * it needs no server round-trip. A false answer is only ever stale in one direction (another device migrated
-   * since the last login), which the background sync resolves by adopting the remote key before any vault work happens.
+   * Whether this device holds a key chain, i.e. whether the account is on the account-key model rather than a
+   * legacy account whose unlock key encrypts the vault directly. The cache is written on every login and cleared
+   * when the server reports no vault key, so it needs no server round-trip. A false answer is only ever stale in
+   * one direction (another device migrated since the last login), which the sync resolves by adopting the remote chain.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
     return (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;
   }
 
   /**
-   * Refresh the local blob-chain cache from the server without needing the KEK.
-   * @param webApi - the API client to use
+   * The unlock key of this session (the password-derived KEK), or null when the vault is locked.
    */
-  public static async cacheEncryptedVekFromServer(webApi?: WebApiService): Promise<void> {
-    const result = await VaultKeyService.fetchVaultKey(webApi);
-    if (result.vaultKey) {
-      await VaultKeyService.cacheVaultKeyBlobs(result.vaultKey);
-    } else if (result.supported) {
-      await getPlatform().storage.removeMany([StorageKeys.ENCRYPTED_VEK, StorageKeys.ENCRYPTED_ACCOUNT_KEY, StorageKeys.ACCOUNT_PUBLIC_KEY, StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY]);
-    }
+  public static async getSessionUnlockKey(): Promise<string | null> {
+    return (await getPlatform().storage.get(StorageKeys.UNLOCK_KEY)) as string | null;
+  }
+
+  /**
+   * The keys of the unlocked session, derived from the unlock key and the cached chain, or null when the vault is locked.
+   */
+  public static async getSessionKeys(): Promise<SessionKeys | null> {
+    const unlockKey = await VaultKeyService.getSessionUnlockKey();
+    return unlockKey ? VaultKeyService.openKeyChain(unlockKey) : null;
+  }
+
+  /**
+   * The vault encryption key of the unlocked session, or null when the vault is locked.
+   */
+  public static async getSessionVaultEncryptionKey(): Promise<string | null> {
+    return (await VaultKeyService.getSessionKeys())?.vaultEncryptionKey ?? null;
   }
 
   /**
@@ -107,7 +125,7 @@ export class VaultKeyService {
    * the account has no keypair yet (legacy account, not migrated to manifest-v1 yet). Used to decrypt shared-manifest VEK grants.
    */
   public static async getSessionAccountPrivateKey(): Promise<string | null> {
-    return (await getPlatform().storage.get(StorageKeys.ACCOUNT_PRIVATE_KEY)) as string | null;
+    return (await VaultKeyService.getSessionKeys())?.accountPrivateKey ?? null;
   }
 
   /**
@@ -118,117 +136,62 @@ export class VaultKeyService {
   }
 
   /**
-   * Persist the account-key blob chain produced client-side (registration is web-client-only, so this runs on
-   * the account-key migration push) and stage the session private key.
-   * @param blobs - the encrypted Account Key and KEK derivation parameters for the given unlock method.
-   */
-  public static async adoptLocalAccountKeys(blobs: { encryptedAccountKey: string; encryptedVek: string; accountPublicKey: string; encryptedAccountPrivateKey: string; accountPrivateKey: string }): Promise<void> {
-    await getPlatform().storage.setMany([
-      { key: StorageKeys.ENCRYPTED_ACCOUNT_KEY, value: blobs.encryptedAccountKey },
-      { key: StorageKeys.ENCRYPTED_VEK, value: blobs.encryptedVek },
-      { key: StorageKeys.ACCOUNT_PUBLIC_KEY, value: blobs.accountPublicKey },
-      { key: StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY, value: blobs.encryptedAccountPrivateKey },
-      { key: StorageKeys.ACCOUNT_PRIVATE_KEY, value: blobs.accountPrivateKey },
-    ]);
-  }
-
-  /**
-   * Persist new account key after a local password change.
+   * Persist new account key after a local password change. The session moves onto the new unlock key with it.
    * @param newEncryptedAccountKey - the Account Key encrypted with the new password-derived KEK
    * @param derivationParams - the KEK derivation parameters of the new password
+   * @param newUnlockKeyBase64 - the new password-derived KEK
    */
-  public static async persistNewAccountKey(newEncryptedAccountKey: string, derivationParams: EncryptionKeyDerivationParams): Promise<void> {
+  public static async persistNewAccountKey(newEncryptedAccountKey: string, derivationParams: UnlockKeyDerivationParams, newUnlockKeyBase64: string): Promise<void> {
     await getPlatform().storage.setMany([
       { key: StorageKeys.ENCRYPTED_ACCOUNT_KEY, value: newEncryptedAccountKey },
-      { key: StorageKeys.ENCRYPTION_KEY_DERIVATION_PARAMS, value: derivationParams },
+      { key: StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS, value: derivationParams },
+      { key: StorageKeys.UNLOCK_KEY, value: newUnlockKeyBase64 },
     ]);
   }
 
   /**
-   * Resolve the key to actually use for a local additional unlock method (PIN, mobile QR), upgrading a pre-migration
-   * stored key (the old KEK) to the VEK when needed.
-   * @param storedKey - the key restored from the auxiliary unlock method
-   * @param onUpgraded - optional callback invoked with the upgraded VEK when the stored key was the old KEK
+   * Open the locally cached chain with the unlock key. Without a cached chain (legacy account) the unlock key is
+   * the vault encryption key.
+   * @param unlockKeyBase64 - the password-derived key (the KEK)
+   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain.
    */
-  public static async resolveStoredUnlockKey(storedKey: string, onUpgraded?: (vek: string) => Promise<void>): Promise<string> {
-    const { key, upgraded } = await VaultKeyService.upgradeStoredKeyIfNeeded(storedKey);
-    if (upgraded && onUpgraded) {
-      await onUpgraded(key);
-    }
-    return key;
-  }
-
-  /**
-   * Given a key restored from an auxiliary unlock method (PIN, mobile QR), return the key to actually use and
-   * whether it was upgraded: a stored key that decrypts the cached chain was the old KEK, and the chain's VEK
-   * supersedes it.
-   * @param storedKey - the key restored from the auxiliary unlock method
-   */
-  private static async upgradeStoredKeyIfNeeded(storedKey: string): Promise<{ key: string; upgraded: boolean }> {
-    try {
-      const resolvedKey = await VaultKeyService.resolveFromLocalCache(storedKey);
-      if (resolvedKey !== storedKey) {
-        return { key: resolvedKey, upgraded: true };
-      }
-      return { key: storedKey, upgraded: false };
-    } catch {
-      return { key: storedKey, upgraded: false };
-    }
-  }
-
-  /**
-   * Decrypt the locally cached blob chain with the given KEK, staging the session private key when the chain
-   * carries one. Falls back to the derived key itself when nothing is cached (legacy account).
-   * @param derivedKeyBase64 - the password-derived key (the KEK)
-   */
-  private static async resolveFromLocalCache(derivedKeyBase64: string): Promise<string> {
-    const encryptedAccountKey = (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY)) as string | null;
+  public static async openKeyChain(unlockKeyBase64: string): Promise<SessionKeys> {
+    const storage = getPlatform().storage;
+    const [encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey] = await Promise.all([
+      storage.get<string>(StorageKeys.ENCRYPTED_ACCOUNT_KEY),
+      storage.get<string>(StorageKeys.ENCRYPTED_VEK),
+      storage.get<string>(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY),
+    ]);
     if (!encryptedAccountKey) {
-      return derivedKeyBase64;
+      return { vaultEncryptionKey: unlockKeyBase64, accountPrivateKey: null };
     }
-
-    const encryptedVek = (await getPlatform().storage.get(StorageKeys.ENCRYPTED_VEK)) as string | null;
-    if (!encryptedVek) {
-      throw new Error('Cached vault key chain is missing the encrypted VEK');
-    }
-
-    const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, derivedKeyBase64);
-    const vek = await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey);
-    await VaultKeyService.stageSessionPrivateKey(accountKey, (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_PRIVATE_KEY)) as string | null);
-    return vek;
+    return VaultKeyService.openChain(unlockKeyBase64, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
   }
 
   /**
-   * Decrypt a fresh server response's chain with the KEK: AK first, then the VEK, staging the session private
-   * key when the account has a keypair.
-   * @param vaultKey - the server's vault key response
-   * @param derivedKeyBase64 - the password-derived KEK
-   */
-  private static async decryptKeyChainOrThrow(vaultKey: VaultKeyResponse, derivedKeyBase64: string): Promise<string> {
-    const accountKey = await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedAccountKey, derivedKeyBase64);
-    const vek = await VaultKeyService.decryptKeyOrThrow(vaultKey.encryptedVek!, accountKey);
-    await VaultKeyService.stageSessionPrivateKey(accountKey, vaultKey.encryptedAccountPrivateKey ?? null);
-    return vek;
-  }
-
-  /**
-   * Decrypt the account private key with the AK into session storage, so pull/grant flows can decrypt shared
-   * VEKs. A chain without a keypair clears any stale session copy instead.
-   * @param accountKeyBase64 - the encrypted Account Key
+   * Walk a chain: the unlock key decrypts the Account Key, which decrypts the VEK and the account private key.
+   * @param unlockKeyBase64 - the password-derived key (the KEK)
+   * @param encryptedAccountKey - the Account Key encrypted with the KEK
+   * @param encryptedVek - the VEK encrypted with the Account Key
    * @param encryptedAccountPrivateKey - the account private key encrypted with the Account Key, or null when the account has none yet
    */
-  private static async stageSessionPrivateKey(accountKeyBase64: string, encryptedAccountPrivateKey: string | null): Promise<void> {
-    if (!encryptedAccountPrivateKey) {
-      await getPlatform().storage.remove(StorageKeys.ACCOUNT_PRIVATE_KEY);
-      return;
+  private static async openChain(unlockKeyBase64: string, encryptedAccountKey: string, encryptedVek: string | null, encryptedAccountPrivateKey: string | null): Promise<SessionKeys> {
+    if (!encryptedVek) {
+      throw new Error('Vault key chain is missing the encrypted VEK');
     }
-    try {
-      const privateKeyJwk = await EncryptionUtility.symmetricDecrypt(encryptedAccountPrivateKey, accountKeyBase64);
-      await getPlatform().storage.set(StorageKeys.ACCOUNT_PRIVATE_KEY, privateKeyJwk);
-    } catch {
-      // A stale/corrupt private-key blob must not fail the unlock; grant decryption degrades until the next sync.
-      await getPlatform().storage.remove(StorageKeys.ACCOUNT_PRIVATE_KEY);
+
+    const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, unlockKeyBase64);
+    const vaultEncryptionKey = await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey);
+
+    let accountPrivateKey: string | null = null;
+    if (encryptedAccountPrivateKey) {
+      try {
+        accountPrivateKey = await EncryptionUtility.symmetricDecrypt(encryptedAccountPrivateKey, accountKey);
+      } catch {
+        // A stale/corrupt private-key blob must not fail the unlock; grant decryption degrades until the next login.
+      }
     }
+    return { vaultEncryptionKey, accountPrivateKey };
   }
 
   /**

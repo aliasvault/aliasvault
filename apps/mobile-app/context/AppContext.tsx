@@ -23,7 +23,7 @@ type AppContextType = {
   setAutoLockTimeout: (timeout: number) => Promise<void>;
   setOfflineMode: (isOffline: boolean) => void;
   verifyPassword: (password: string) => Promise<string | null>;
-  getEncryptionKeyDerivationParams: () => Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null>;
+  getUnlockKeyDerivationParams: () => Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null>;
   // Autofill methods
   shouldShowAutofillReminder: boolean;
   markAutofillConfigured: () => Promise<void>;
@@ -108,7 +108,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAutoLockTimeout: auth.setAutoLockTimeout,
     setOfflineMode: auth.setOfflineMode,
     verifyPassword: auth.verifyPassword,
-    getEncryptionKeyDerivationParams: auth.getEncryptionKeyDerivationParams,
+    getUnlockKeyDerivationParams: auth.getUnlockKeyDerivationParams,
     markAutofillConfigured: auth.markAutofillConfigured,
   }), [
     auth.isInitialized,
@@ -124,7 +124,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     auth.setAutoLockTimeout,
     auth.setOfflineMode,
     auth.verifyPassword,
-    auth.getEncryptionKeyDerivationParams,
+    auth.getUnlockKeyDerivationParams,
     auth.markAutofillConfigured,
     logout
   ]);

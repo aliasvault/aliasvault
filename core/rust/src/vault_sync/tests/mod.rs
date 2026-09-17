@@ -292,7 +292,7 @@ fn expired_session_requires_logout() {
 fn password_changed_elsewhere_requires_logout() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);
-    host.state.insert(state::ENCRYPTION_KEY_DERIVATION_PARAMS.to_string(), json!({ "salt": "old-salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" }));
+    host.state.insert(state::UNLOCK_KEY_DERIVATION_PARAMS.to_string(), json!({ "salt": "old-salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" }));
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "new-salt" }));
 
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
@@ -346,6 +346,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert_eq!(*vek, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
     assert!(result["sessionUpdates"]["accountPrivateKey"].is_string());
+    assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
 }
 
 /// The latest EF migration stamp of a database.
@@ -520,6 +521,7 @@ fn a_hierarchy_created_on_another_device_is_adopted_on_the_next_pull() {
     assert_eq!(item_names(&host.local), vec!["Server item"]);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);
     assert_eq!(host.state[state::ACCOUNT_PUBLIC_KEY], hierarchy.account_keys.account_public_key);
+    assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
 }
 
 /// Login: the host hands the password-derived key to `resolveVaultKey`; the server's chain opens with it, is

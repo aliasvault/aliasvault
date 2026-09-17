@@ -18,7 +18,7 @@ export type MobileLoginResult = {
   refreshToken: string;
 
   /**
-   * The vault decryption key (base64 encoded).
+   * The unlock key the mobile app sent.
    */
   decryptionKey: string;
 

@@ -62,30 +62,30 @@ public class VaultManager: NSObject {
         }
     }
 
-    /// Store encryption key in memory only (no keychain persistence).
+    /// Open a session in memory with the unlock key (the password-derived KEK), without keychain persistence.
     /// Use this to test if a password-derived key is valid before persisting.
     @objc
-    func storeEncryptionKeyInMemory(_ base64EncryptionKey: String,
+    func storeUnlockKeyInMemory(_ base64UnlockKey: String,
                                     resolver resolve: @escaping RCTPromiseResolveBlock,
                                     rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.storeEncryptionKeyInMemory(base64Key: base64EncryptionKey)
+            try vaultStore.storeUnlockKeyInMemory(base64Key: base64UnlockKey)
             resolve(nil)
         } catch {
-            reject("ERR_STORE_KEY_MEMORY", "Failed to store encryption key in memory: \(error.localizedDescription)", error)
+            reject("ERR_STORE_KEY_MEMORY", "Failed to store unlock key in memory: \(error.localizedDescription)", error)
         }
     }
 
-    /// Store encryption key in memory AND persist to keychain if Face ID is enabled.
+    /// Open a session with the unlock key (the password-derived KEK) AND persist it to keychain if Face ID is enabled.
     @objc
-    func storeEncryptionKey(_ base64EncryptionKey: String,
+    func storeUnlockKey(_ base64UnlockKey: String,
                             resolver resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.storeEncryptionKey(base64Key: base64EncryptionKey)
+            try vaultStore.storeUnlockKey(base64Key: base64UnlockKey)
             resolve(nil)
         } catch {
-            reject("KEYCHAIN_ERROR", "Failed to store encryption key: \(error.localizedDescription)", error)
+            reject("KEYCHAIN_ERROR", "Failed to store unlock key: \(error.localizedDescription)", error)
         }
     }
 
@@ -99,11 +99,11 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func storeEncryptionKeyDerivationParams(_ keyDerivationParams: String,
+    func storeUnlockKeyDerivationParams(_ keyDerivationParams: String,
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.storeEncryptionKeyDerivationParams(keyDerivationParams)
+            try vaultStore.storeUnlockKeyDerivationParams(keyDerivationParams)
             resolve(nil)
         } catch {
             reject("KEYCHAIN_ERROR", "Failed to store encryption key derivation params: \(error.localizedDescription)", error)
@@ -111,9 +111,9 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func getEncryptionKeyDerivationParams(_ resolve: @escaping RCTPromiseResolveBlock,
+    func getUnlockKeyDerivationParams(_ resolve: @escaping RCTPromiseResolveBlock,
                               rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if let params = vaultStore.getEncryptionKeyDerivationParams() {
+        if let params = vaultStore.getUnlockKeyDerivationParams() {
             resolve(params)
         } else {
             resolve(nil)
@@ -945,10 +945,10 @@ public class VaultManager: NSObject {
                     }
 
                     // Unlock vault with PIN
-                    let encryptionKeyBase64 = try self.vaultStore.unlockWithPin(pin)
+                    let unlockKeyBase64 = try self.vaultStore.unlockWithPin(pin)
 
-                    // Store the encryption key in memory
-                    try self.vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+                    // Open the session with the unlock key
+                    try self.vaultStore.storeUnlockKey(base64Key: unlockKeyBase64)
 
                     // Now unlock the vault with the key in memory
                     try self.vaultStore.unlockVault()
@@ -1010,13 +1010,13 @@ public class VaultManager: NSObject {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
                     }
 
-                    // Verify password and get encryption key
-                    guard let encryptionKeyBase64 = self.vaultStore.verifyPassword(password) else {
+                    // Verify password and get the unlock key
+                    guard let unlockKeyBase64 = self.vaultStore.verifyPassword(password) else {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
-                    // Store encryption key in memory only
-                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKeyBase64)
+                    // Open the session in memory only
+                    try self.vaultStore.storeUnlockKeyInMemory(base64Key: unlockKeyBase64)
 
                     // Unlock the vault
                     try self.vaultStore.unlockVault()
@@ -1361,12 +1361,12 @@ public class VaultManager: NSObject {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
                     }
 
-                    // Verify password and get encryption key
-                    guard let encryptionKey = try self.vaultStore.verifyPassword(password) else {
+                    // Verify password and get the unlock key
+                    guard let unlockKeyBase64 = try self.vaultStore.verifyPassword(password) else {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
-                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKey)
+                    try self.vaultStore.storeUnlockKeyInMemory(base64Key: unlockKeyBase64)
 
                     // Success - dismiss and resolve
                     await MainActor.run {

@@ -1,3 +1,4 @@
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,7 +9,6 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   isPinEnabled,
@@ -18,8 +18,6 @@ import {
   isPinLocked,
   InvalidPinFormatError
 } from '@/utils/PinUnlockService';
-
-import { storage } from '#imports';
 
 /**
  * Vault unlock method settings page component.
@@ -116,19 +114,16 @@ const VaultUnlockSettings: React.FC = () => {
 
     try {
       showLoading();
+      const unlockKey = await VaultKeyService.getSessionUnlockKey();
 
-      /* Get the encryption key from session storage */
-      const encryptionKeyResponse = await storage.getItem(StorageKeys.ENCRYPTION_KEY) as string | undefined;
-      const encryptionKey = encryptionKeyResponse as string;
-
-      if (!encryptionKey) {
+      if (!unlockKey) {
         setError(t('common.errors.unknownErrorTryAgain'));
         hideLoading();
         return;
       }
 
-      /* Setup PIN with the encryption key */
-      await setupPin(newPin, encryptionKey);
+      /* Setup PIN with the unlock key */
+      await setupPin(newPin, unlockKey);
 
       /*
        * Mark PIN as the last-used unlock method so the unlock screen defaults to

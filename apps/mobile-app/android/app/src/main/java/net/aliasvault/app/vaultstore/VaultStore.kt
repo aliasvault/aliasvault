@@ -144,11 +144,8 @@ class VaultStore(
     /**
      * Internal accessor for encryption key.
      */
-    internal var encryptionKey: ByteArray?
+    internal val encryptionKey: ByteArray?
         get() = crypto.encryptionKey
-        set(value) {
-            crypto.encryptionKey = value
-        }
 
     /**
      * Internal accessor for VaultAuth.
@@ -167,17 +164,18 @@ class VaultStore(
     // region Crypto Methods
 
     /**
-     * Store the encryption key.
+     * Open a session with the unlock key and persist that key to keystore if biometrics
+     * are enabled.
      */
-    fun storeEncryptionKey(base64EncryptionKey: String) {
-        crypto.storeEncryptionKey(base64EncryptionKey, auth.getAuthMethods())
+    fun storeUnlockKey(base64UnlockKey: String) {
+        crypto.storeUnlockKey(base64UnlockKey, auth.getAuthMethods())
     }
 
     /**
-     * Store the encryption key in memory only.
+     * Open a session in memory only with the unlock key.
      */
-    fun storeEncryptionKeyInMemory(base64EncryptionKey: String) {
-        crypto.storeEncryptionKeyInMemory(base64EncryptionKey)
+    fun storeUnlockKeyInMemory(base64UnlockKey: String) {
+        crypto.storeUnlockKeyInMemory(base64UnlockKey)
     }
 
     /**
@@ -197,6 +195,13 @@ class VaultStore(
     }
 
     /**
+     * Get the unlock key, the keystore and PIN protect.
+     */
+    fun getUnlockKey(callback: CryptoOperationCallback) {
+        crypto.getUnlockKey(callback, auth.getAuthMethods())
+    }
+
+    /**
      * Check if biometric authentication is enabled and available.
      */
     fun isBiometricAuthEnabled(): Boolean {
@@ -206,15 +211,15 @@ class VaultStore(
     /**
      * Store the encryption key derivation parameters.
      */
-    fun storeEncryptionKeyDerivationParams(keyDerivationParams: String) {
-        crypto.storeEncryptionKeyDerivationParams(keyDerivationParams)
+    fun storeUnlockKeyDerivationParams(keyDerivationParams: String) {
+        crypto.storeUnlockKeyDerivationParams(keyDerivationParams)
     }
 
     /**
      * Get the encryption key derivation parameters.
      */
-    fun getEncryptionKeyDerivationParams(): String {
-        return crypto.getEncryptionKeyDerivationParams()
+    fun getUnlockKeyDerivationParams(): String {
+        return crypto.getUnlockKeyDerivationParams()
     }
 
     /**
@@ -232,13 +237,10 @@ class VaultStore(
     }
 
     /**
-     * The account private key (JWK) of the unlocked session, or null until a sync opened it; memory only.
+     * The account private key (JWK) of the unlocked session, derived from the unlock key; null for an account without a keypair.
      */
-    internal var accountPrivateKey: String?
+    internal val accountPrivateKey: String?
         get() = crypto.accountPrivateKey
-        set(value) {
-            crypto.accountPrivateKey = value
-        }
 
     /**
      * Derive a key from a password using Argon2Id.
@@ -253,24 +255,24 @@ class VaultStore(
     }
 
     /**
-     * Encrypts the vault's encryption key using an RSA public key for mobile login.
+     * Encrypts the unlock key using an RSA public key for mobile login.
      */
     fun encryptDecryptionKeyForMobileLogin(publicKeyJWK: String): String {
         return crypto.encryptDecryptionKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
     }
 
     /**
-     * Verify the password and return the vault encryption key if correct: the VEK unwrapped through the
-     * account-key chain, or the derived key itself for a legacy account. Returns null if the password is incorrect.
+     * Verify the password and return the unlock key if correct. Returns null if the
+     * password is incorrect.
      *
      * @param password The password to verify
-     * @return The base64-encoded vault encryption key if password is correct, null otherwise
+     * @return The base64-encoded unlock key if password is correct, null otherwise
      */
     @Suppress("SwallowedException")
     fun verifyPassword(password: String): String? {
         return try {
             // Get encryption key derivation parameters
-            val params = crypto.getEncryptionKeyDerivationParams()
+            val params = crypto.getUnlockKeyDerivationParams()
             val paramsJson = org.json.JSONObject(params)
             val salt = paramsJson.getString("salt")
             val encryptionType = paramsJson.getString("encryptionType")
@@ -278,17 +280,17 @@ class VaultStore(
 
             // Derive the KEK from the password and unwrap the chain; a wrong password fails the unwrap.
             val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
-            val vaultKey = crypto.resolveVaultEncryptionKey(derivedKey)
+            val vaultEncryptionKey = crypto.openAccountKeyChain(derivedKey).vaultEncryptionKey
 
             // Try to decrypt the vault to verify the password is correct
             val encryptedDb = database.getEncryptedDatabase()
             val encryptedDbBytes = android.util.Base64.decode(encryptedDb, android.util.Base64.NO_WRAP)
 
             // Attempt decryption to verify password is correct
-            VaultCrypto.decrypt(encryptedDbBytes, vaultKey)
+            VaultCrypto.decrypt(encryptedDbBytes, vaultEncryptionKey)
 
-            // If decryption succeeded, return the vault key as base64
-            android.util.Base64.encodeToString(vaultKey, android.util.Base64.NO_WRAP)
+            // If decryption succeeded, return the unlock key as base64
+            android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
             // Password incorrect or decryption failed - intentionally return null
             // We don't log the error as this is expected when password is incorrect
@@ -325,10 +327,10 @@ class VaultStore(
      * Unlock the vault.
      */
     fun unlockVault() {
-        // A nil-to-non-nil transition means the keystore just released the key after biometric.
-        val hadKeyInMemory = encryptionKey != null
+        // A nil-to-non-nil transition means the keystore just released the unlock key after biometric.
+        val hadKeyInMemory = crypto.unlockKey != null
         database.unlockVault(auth.getAuthMethods())
-        if (!hadKeyInMemory && encryptionKey != null) {
+        if (!hadKeyInMemory && crypto.unlockKey != null) {
             markSuccessfulAuth()
         }
     }
@@ -455,11 +457,11 @@ class VaultStore(
     }
 
     /**
-     * Attempts to get all items using only the cached encryption key.
+     * Attempts to get all items using only the unlock key held in memory.
      */
     fun tryGetAllItems(callback: ItemOperationCallback): Boolean {
-        if (crypto.encryptionKey == null) {
-            android.util.Log.d(TAG, "Encryption key not in memory, authentication required")
+        if (crypto.unlockKey == null) {
+            android.util.Log.d(TAG, "Unlock key not in memory, authentication required")
             return false
         }
 
@@ -493,8 +495,8 @@ class VaultStore(
 
         if (!wasBiometricEnabled && isBiometricEnabled) {
             try {
-                crypto.storeEncryptionKey(
-                    android.util.Base64.encodeToString(crypto.encryptionKey, android.util.Base64.NO_WRAP),
+                crypto.storeUnlockKey(
+                    android.util.Base64.encodeToString(crypto.unlockKey, android.util.Base64.NO_WRAP),
                     authMethods,
                 )
             } catch (e: Exception) {
@@ -677,18 +679,6 @@ class VaultStore(
     }
 
     /**
-     * Adopt a new vault encryption key for this session (the sync engine swapped a password-derived key for the
-     * account's VEK), persisting it to the keystore when biometrics are enabled.
-     */
-    fun adoptEncryptionKey(base64EncryptionKey: String) {
-        // Skip if the key is the same as the current one to prevent unnecessary keystore writes and therefore prompts to user.
-        if (crypto.encryptionKey?.contentEquals(android.util.Base64.decode(base64EncryptionKey, android.util.Base64.NO_WRAP)) == true) {
-            return
-        }
-        crypto.storeEncryptionKey(base64EncryptionKey, auth.getAuthMethods())
-    }
-
-    /**
      * Forget what the sync engine learned about the stored vault (revisions, fingerprints, key chain), so the next
      * sync starts from the server as if this device had never pulled. Used when the vault is discarded.
      */
@@ -705,7 +695,7 @@ class VaultStore(
     }
 
     /**
-     * Resolve and store the vault key right after login from the password-derived key (see VaultSync.resolveVaultKey).
+     * Resolve and store the vault key right after login from the unlock key (see VaultSync.resolveVaultKey).
      */
     suspend fun resolveVaultKey(webApiService: net.aliasvault.app.webapi.WebApiService, derivedKeyBase64: String): String {
         return sync.resolveVaultKey(webApiService, derivedKeyBase64)
@@ -916,17 +906,16 @@ class VaultStore(
      * Setup PIN unlock.
      */
     @Throws(Exception::class)
-    fun setupPin(pinValue: String, vaultEncryptionKeyBase64: String) {
-        pin.setupPin(pinValue, vaultEncryptionKeyBase64)
+    fun setupPin(pinValue: String, unlockKeyBase64: String) {
+        pin.setupPin(pinValue, unlockKeyBase64)
     }
 
     /**
-     * Unlock with PIN.
+     * Unlock with PIN. Returns the unlock key the PIN protects, to open the session with.
      */
     @Throws(Exception::class)
     fun unlockWithPin(pinValue: String): String {
-        // A PIN set up before the account moved onto the key hierarchy still holds the password-derived key.
-        val key = crypto.resolveStoredUnlockKey(pin.unlockWithPin(pinValue))
+        val key = pin.unlockWithPin(pinValue)
         markSuccessfulAuth()
         return key
     }

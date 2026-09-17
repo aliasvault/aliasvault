@@ -91,17 +91,17 @@ class VaultSync(
     }
 
     /**
-     * Resolve the vault key right after login: the account's key chain is opened with the password-derived key and the VEK
-     * is stored as the session key; a legacy account keeps the derived key. Every sync assumes the key this stored. Returns the stored key (base64).
+     * Resolve the vault key right after login: the account's key chain is opened with the unlock key
+     * and cached as-is. The session then opens from that chain like every later unlock, and the keystore keeps the
+     * unlock key. Returns the vault key (base64).
      */
     suspend fun resolveVaultKey(webApiService: WebApiService, derivedKeyBase64: String): String {
         val result = run("resolveVaultKey", webApiService, encryptionKey = derivedKeyBase64)
         if (!result.optBoolean("success", false)) {
             throw syncError(result)
         }
-        val key = result.optString("encryptionKey").takeIf { it.isNotEmpty() } ?: derivedKeyBase64
-        vaultStore.adoptEncryptionKey(key)
-        return key
+        vaultStore.storeUnlockKey(derivedKeyBase64)
+        return vaultStore.getEncryptionKeyBase64() ?: derivedKeyBase64
     }
 
     /**
@@ -165,10 +165,6 @@ class VaultSync(
         result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
         if (result.has("isOfflineMode")) {
             vaultStore.metadata.setOfflineMode(result.optBoolean("isOfflineMode", false))
-        }
-        result.optJSONObject("sessionUpdates")?.let { updates ->
-            updates.optString("encryptionKey").takeIf { it.isNotEmpty() }?.let { vaultStore.adoptEncryptionKey(it) }
-            updates.optString("accountPrivateKey").takeIf { it.isNotEmpty() }?.let { vaultStore.accountPrivateKey = it }
         }
         result.optJSONObject("emailRouting")?.let { routing ->
             val metadata = VaultMetadata(

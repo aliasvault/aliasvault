@@ -15,6 +15,7 @@ public final class VaultSyncEngine {
     /// Engine state keys mirrored into the native account-key chain, so the native password unlock can unwrap it.
     private static let encryptedAccountKeyStateKey = "encryptedAccountKey"
     private static let encryptedVekStateKey = "encryptedVek"
+    private static let encryptedAccountPrivateKeyStateKey = "encryptedAccountPrivateKey"
 
     /// Engine state key that lives in the native store instead (the login writes it there), routed on read and write.
     private static let derivationParamsStateKey = "encryptionKeyDerivationParams"
@@ -174,7 +175,7 @@ public final class VaultSyncEngine {
 
     private func state(forKey key: String) -> Any? {
         if key == Self.derivationParamsStateKey {
-            guard let json = vaultStore.getEncryptionKeyDerivationParams(), let data = json.data(using: .utf8) else { return nil }
+            guard let json = vaultStore.getUnlockKeyDerivationParams(), let data = json.data(using: .utf8) else { return nil }
             return try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
         }
         return Self.persistedState(forKey: key, in: vaultStore.userDefaults)
@@ -191,7 +192,7 @@ public final class VaultSyncEngine {
     private func setState(_ value: Any?, forKey key: String) {
         if key == Self.derivationParamsStateKey {
             if let value = value, !(value is NSNull), let data = try? JSONSerialization.data(withJSONObject: value), let json = String(data: data, encoding: .utf8) {
-                try? vaultStore.storeEncryptionKeyDerivationParams(json)
+                try? vaultStore.storeUnlockKeyDerivationParams(json)
             }
             return
         }
@@ -200,7 +201,7 @@ public final class VaultSyncEngine {
         } else {
             vaultStore.userDefaults.removeObject(forKey: Self.statePrefix + key)
         }
-        if key == Self.encryptedAccountKeyStateKey || key == Self.encryptedVekStateKey {
+        if [Self.encryptedAccountKeyStateKey, Self.encryptedVekStateKey, Self.encryptedAccountPrivateKeyStateKey].contains(key) {
             mirrorAccountKeyChain()
         }
     }
@@ -218,7 +219,10 @@ public final class VaultSyncEngine {
             vaultStore.storeAccountKeyChain(nil)
             return
         }
-        let chain: [String: String] = ["encryptedAccountKey": encryptedAccountKey, "encryptedVek": encryptedVek]
+        var chain: [String: String] = ["encryptedAccountKey": encryptedAccountKey, "encryptedVek": encryptedVek]
+        if let encryptedAccountPrivateKey = state(forKey: Self.encryptedAccountPrivateKeyStateKey) as? String {
+            chain["encryptedAccountPrivateKey"] = encryptedAccountPrivateKey
+        }
         vaultStore.storeAccountKeyChain(try? Self.serializeJson(chain))
     }
 
@@ -227,10 +231,6 @@ public final class VaultSyncEngine {
     private func storeVault(_ command: [String: Any]) throws -> [String: Any] {
         guard let encryptedBlob = command["encryptedBlob"] as? String else {
             throw AppError.vaultStoreFailed(message: "vaultStore command without a blob")
-        }
-        if let newKey = command["encryptionKey"] as? String {
-            // The blob is encrypted under a key this session did not start with (KEK to VEK migration): adopt it first.
-            try vaultStore.adoptEncryptionKey(base64Key: newKey)
         }
         let result = try vaultStore.storeEncryptedVaultWithSyncState(
             encryptedVault: encryptedBlob,
