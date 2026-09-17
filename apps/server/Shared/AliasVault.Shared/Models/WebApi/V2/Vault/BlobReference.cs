@@ -12,7 +12,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// </summary>
 public class BlobReference
 {
-    /// <summary>Gets or sets the per-user salted SHA-256 hex of the plaintext.</summary>
+    /// <summary>Gets or sets the per-manifest salted SHA-256 hex of the plaintext.</summary>
     public required string Hash { get; set; }
 
     /// <summary>Gets or sets the blob category (e.g. "favicon" or "attachment").</summary>

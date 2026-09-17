@@ -280,7 +280,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         {
             foreach (var (hash, blob) in manifest.Blobs)
             {
-                blobEntries.TryAdd(hash, new UploadBlobEntry(blob.Kind, blob.Bytes, manifest.Record.VaultEncryptionKey, manifest.Record.IsPersonal));
+                blobEntries.TryAdd(hash, new UploadBlobEntry(manifest.Record.ManifestId, blob.Kind, blob.Bytes, manifest.Record.VaultEncryptionKey, manifest.Record.IsPersonal));
             }
 
             var label = manifest.Record.IsPersonal ? "Personal manifest" : $"Shared manifest \"{manifest.Record.Name ?? manifest.Record.ManifestId.ToString()}\"";
@@ -343,11 +343,11 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         if (migration is not null)
         {
             personalToUpload = personalHashes;
-            sharedToUpload = await MissingOnServerAsync(sharedHashes.Where(hash => !state.ServerBlobHashes.Contains(hash)));
+            sharedToUpload = await MissingOnServerAsync(blobEntries, sharedHashes.Where(hash => !state.ServerBlobHashes.Contains(hash)));
         }
         else
         {
-            var toUpload = new HashSet<string>(await MissingOnServerAsync(allBlobHashes.Where(hash => !state.ServerBlobHashes.Contains(hash))), StringComparer.Ordinal);
+            var toUpload = new HashSet<string>(await MissingOnServerAsync(blobEntries, allBlobHashes.Where(hash => !state.ServerBlobHashes.Contains(hash))), StringComparer.Ordinal);
             personalToUpload = personalHashes.Where(toUpload.Contains).ToList();
             sharedToUpload = sharedHashes.Where(toUpload.Contains).ToList();
         }
@@ -1060,12 +1060,15 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         var missingRefs = refs.Where(reference => !cache.ContainsKey(reference.Hash)).ToList();
         logger.LogInformation("[V2Pull] Blob refs: {Referenced} referenced, {Cached} cached, {Missing} to download.", refs.Count, refs.Count - missingRefs.Count, missingRefs.Count);
 
-        // Batch downloads by the bytes each blob adds to the response, not by hash count.
-        var batches = BatchByTransferCost(missingRefs, reference => Base64Chars(reference.SizeBytes));
+        // Batch downloads per owning manifest, by the bytes each blob adds to the response, not by hash count.
+        var batches = missingRefs
+            .GroupBy(reference => refOwners[reference.Hash].ManifestId)
+            .SelectMany(group => BatchByTransferCost(group.ToList(), reference => Base64Chars(reference.SizeBytes)).Select(batch => (ManifestId: group.Key, Refs: batch)))
+            .ToList();
         for (var index = 0; index < batches.Count; index++)
         {
-            var batch = batches[index];
-            using var response = await httpClient.PostAsJsonAsync(BlobsDownloadEndpoint, new BlobHashesRequest { Hashes = batch.Select(reference => reference.Hash).ToList() });
+            var (batchManifestId, batch) = batches[index];
+            using var response = await httpClient.PostAsJsonAsync(BlobsDownloadEndpoint, new BlobHashesRequest { ManifestId = batchManifestId, Hashes = batch.Select(reference => reference.Hash).ToList() });
             response.EnsureSuccessStatusCode();
             var blobs = await response.Content.ReadFromJsonAsync<List<Blob>>() ?? [];
             foreach (var blob in blobs)
@@ -1437,27 +1440,28 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     }
 
     /// <summary>
-    /// Ask the server which of the given blobs it does not hold.
+    /// Ask the server which of the given blobs it does not hold, one request per manifest that owns them.
     /// </summary>
+    /// <param name="entries">Every staged blob, by hash.</param>
     /// <param name="hashes">The candidate hashes.</param>
     /// <returns>The hashes unknown to the server.</returns>
-    private async Task<List<string>> MissingOnServerAsync(IEnumerable<string> hashes)
+    private async Task<List<string>> MissingOnServerAsync(Dictionary<string, UploadBlobEntry> entries, IEnumerable<string> hashes)
     {
-        var candidates = hashes.ToList();
-        if (candidates.Count == 0)
+        var missing = new List<string>();
+        foreach (var group in hashes.Where(entries.ContainsKey).GroupBy(hash => entries[hash].ManifestId))
         {
-            return [];
+            using var response = await httpClient.PostAsJsonAsync(BlobsMissingEndpoint, new BlobHashesRequest { ManifestId = group.Key, Hashes = group.ToList() });
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadFromJsonAsync<MissingBlobsResponse>();
+            missing.AddRange(body?.Missing ?? []);
         }
 
-        using var response = await httpClient.PostAsJsonAsync(BlobsMissingEndpoint, new BlobHashesRequest { Hashes = candidates });
-        response.EnsureSuccessStatusCode();
-        var body = await response.Content.ReadFromJsonAsync<MissingBlobsResponse>();
-        return body?.Missing ?? [];
+        return missing;
     }
 
     /// <summary>
     /// Encrypt the given blobs, each with the key of the manifest that owns it, and upload them in size-capped batches
-    /// ahead of the manifest write.
+    /// per manifest ahead of the manifest write.
     /// </summary>
     /// <param name="entries">Every staged blob, by hash.</param>
     /// <param name="hashes">The subset to upload.</param>
@@ -1466,46 +1470,46 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// <returns>Task.</returns>
     private async Task UploadBlobsAsync(Dictionary<string, UploadBlobEntry> entries, IEnumerable<string> hashes, bool overwrite, Dictionary<string, string> uploaded)
     {
-        var batch = new List<Blob>();
-        var batchChars = 0;
-        foreach (var hash in hashes)
+        foreach (var group in hashes.Where(entries.ContainsKey).GroupBy(hash => entries[hash].ManifestId))
         {
-            if (!entries.TryGetValue(hash, out var entry))
+            var batch = new List<Blob>();
+            var batchChars = 0;
+            foreach (var hash in group)
             {
-                continue;
+                var entry = entries[hash];
+                var ciphertext = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(entry.Bytes, Convert.FromBase64String(entry.VaultEncryptionKey)));
+                uploaded[hash] = ciphertext;
+
+                // Flush before adding when this blob would take the request past either bound.
+                if (batch.Count > 0 && (batchChars + ciphertext.Length > BlobTransferBatchMaxChars || batch.Count >= BlobTransferBatchMaxCount))
+                {
+                    await PostBlobBatchAsync(group.Key, batch, overwrite);
+                    batch = [];
+                    batchChars = 0;
+                }
+
+                batch.Add(new Blob { Hash = hash, Category = entry.Kind, EncryptedDataBase64 = ciphertext });
+                batchChars += ciphertext.Length;
             }
 
-            var ciphertext = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(entry.Bytes, Convert.FromBase64String(entry.VaultEncryptionKey)));
-            uploaded[hash] = ciphertext;
-
-            // Flush before adding when this blob would take the request past either bound.
-            if (batch.Count > 0 && (batchChars + ciphertext.Length > BlobTransferBatchMaxChars || batch.Count >= BlobTransferBatchMaxCount))
+            if (batch.Count > 0)
             {
-                await PostBlobBatchAsync(batch, overwrite);
-                batch = [];
-                batchChars = 0;
+                await PostBlobBatchAsync(group.Key, batch, overwrite);
             }
-
-            batch.Add(new Blob { Hash = hash, Category = entry.Kind, EncryptedDataBase64 = ciphertext });
-            batchChars += ciphertext.Length;
-        }
-
-        if (batch.Count > 0)
-        {
-            await PostBlobBatchAsync(batch, overwrite);
         }
     }
 
     /// <summary>
     /// Upload one batch of encrypted blobs.
     /// </summary>
+    /// <param name="manifestId">The manifest the blobs belong to.</param>
     /// <param name="batch">The blobs.</param>
     /// <param name="overwrite">Whether the server replaces ciphertext it already holds.</param>
     /// <returns>Task.</returns>
-    private async Task PostBlobBatchAsync(List<Blob> batch, bool overwrite)
+    private async Task PostBlobBatchAsync(Guid manifestId, List<Blob> batch, bool overwrite)
     {
         logger.LogInformation("[V2Push] Uploading blob batch: {Count} blob(s).", batch.Count);
-        using var response = await httpClient.PostAsJsonAsync(BlobsEndpoint, new BlobUploadRequest { Blobs = batch, Overwrite = overwrite });
+        using var response = await httpClient.PostAsJsonAsync(BlobsEndpoint, new BlobUploadRequest { ManifestId = manifestId, Blobs = batch, Overwrite = overwrite });
         await EnsureUploadSucceededAsync(response, "Blob upload");
     }
 
@@ -1579,9 +1583,10 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// <summary>
     /// A plaintext blob staged for upload: its bytes plus the key that encrypts it.
     /// </summary>
+    /// <param name="ManifestId">The manifest that owns it.</param>
     /// <param name="Kind">The blob kind.</param>
     /// <param name="Bytes">The plaintext bytes.</param>
     /// <param name="VaultEncryptionKey">The key of the manifest that owns it.</param>
     /// <param name="FromPersonal">Whether the personal manifest owns it.</param>
-    private sealed record UploadBlobEntry(string Kind, byte[] Bytes, string VaultEncryptionKey, bool FromPersonal);
+    private sealed record UploadBlobEntry(Guid ManifestId, string Kind, byte[] Bytes, string VaultEncryptionKey, bool FromPersonal);
 }

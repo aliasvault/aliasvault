@@ -397,7 +397,7 @@ else
             .ToListAsync();
 
         // Load the storage breakdown of the user's personal vault: manifest and bucket revisions plus blob usage.
-        StorageOverview = await VaultStorageQueries.GetPersonalVaultStorageAsync(dbContext, User.Id, User.PersonalGroupId);
+        StorageOverview = await VaultStorageQueries.GetPersonalVaultStorageAsync(dbContext, User.PersonalGroupId);
 
         // Whether the user is on the key model where the vault manifest no longer carries the login credentials.
         HasManifestAccessKeys = await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == User.Id);

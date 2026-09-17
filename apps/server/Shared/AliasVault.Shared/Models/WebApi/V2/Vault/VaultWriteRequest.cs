@@ -21,7 +21,8 @@ public class VaultWriteRequest
     /// <summary>Gets or sets the data buckets to upsert.</summary>
     public List<BucketWrite> Buckets { get; set; } = [];
 
-    /// <summary>Gets or sets the new blob objects the client is uploading for this write.</summary>
+    /// <summary>Gets or sets the new blob objects the client is uploading for this write. Each is stored under every
+    /// manifest in this write that references its hash.</summary>
     public List<Blob> NewBlobs { get; set; } = [];
 
     /// <summary>Gets or sets the email routing data to update server-side.</summary>

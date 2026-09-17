@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// The garbage collection rule for <see cref="VaultBlobObject"/> rows.
 ///
-/// A blob is reachable as long as any manifest revision, current or in history, still references it.
+/// A blob is reachable as long as any revision of its manifest, current or in history, still references it.
 /// </summary>
 public static class VaultBlobRetentionPolicy
 {
@@ -23,14 +23,14 @@ public static class VaultBlobRetentionPolicy
     public static int EffectiveGraceHours(int configuredHours) => Math.Max(configuredHours, 0);
 
     /// <summary>
-    /// Narrows a query to the blob objects that no manifest revision references anymore.
+    /// Narrows a query to the blob objects that no revision of their manifest references anymore.
     /// </summary>
     /// <param name="blobs">The query over blob objects to narrow.</param>
     /// <param name="references">The references to check against.</param>
     /// <returns>The query narrowed to unreferenced blobs.</returns>
     public static IQueryable<VaultBlobObject> Unreferenced(IQueryable<VaultBlobObject> blobs, IQueryable<VaultBlobReference> references)
     {
-        return blobs.Where(b => !references.Any(r => r.BlobHash == b.Hash));
+        return blobs.Where(b => !references.Any(r => r.ManifestId == b.ManifestId && r.BlobHash == b.Hash));
     }
 
     /// <summary>

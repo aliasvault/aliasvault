@@ -14,6 +14,9 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 /// </summary>
 public class BlobHashesRequest
 {
-    /// <summary>Gets or sets the per-user salted SHA-256 hex hashes.</summary>
+    /// <summary>Gets or sets the manifest the hashes belong to.</summary>
+    public required Guid ManifestId { get; set; }
+
+    /// <summary>Gets or sets the per-manifest salted SHA-256 hex hashes.</summary>
     public required List<string> Hashes { get; set; }
 }

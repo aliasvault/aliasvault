@@ -591,14 +591,13 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Configure VaultBlobObject - composite key (Hash, UserId).
+        // Configure VaultBlobObject - composite key (ManifestId, Hash). Cascades with the manifest.
         modelBuilder.Entity<VaultBlobObject>(builder =>
         {
-            builder.HasKey(e => new { e.Hash, e.OwnerUserId });
-            builder.HasIndex(e => new { e.OwnerUserId, e.Category });
-            builder.HasOne(e => e.User)
+            builder.HasKey(e => new { e.ManifestId, e.Hash });
+            builder.HasOne(e => e.Manifest)
                 .WithMany()
-                .HasForeignKey(e => e.OwnerUserId)
+                .HasForeignKey(e => e.ManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

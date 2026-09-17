@@ -31,23 +31,24 @@ public class VaultBlobRetentionPolicyTests
     }
 
     /// <summary>
-    /// Test that a blob stays reachable while any revision references it, whichever revision that is, and that the
-    /// owner of the stored copy plays no part: a shared manifest's members derive the same hash for the same bytes.
+    /// Test that a blob stays reachable while any revision of its own manifest references it, whichever revision
+    /// that is, and that a reference from another manifest does not keep it alive.
     /// </summary>
     [Test]
     public void UnreferencedOnlyMatchesBlobsNoRevisionHolds()
     {
-        var blobs = new[] { Blob("current"), Blob("history"), Blob("other-user"), Blob("orphan") }.AsQueryable();
+        var manifestId = Guid.NewGuid();
+        var blobs = new[] { Blob(manifestId, "current"), Blob(manifestId, "history"), Blob(manifestId, "other-manifest"), Blob(manifestId, "orphan") }.AsQueryable();
         var references = new[]
         {
-            Reference(Guid.Empty, 2, "current"),
-            Reference(Guid.Empty, 1, "history"),
-            Reference(Guid.NewGuid(), 5, "other-user"),
+            Reference(manifestId, 2, "current"),
+            Reference(manifestId, 1, "history"),
+            Reference(Guid.NewGuid(), 5, "other-manifest"),
         }.AsQueryable();
 
         var unreferenced = VaultBlobRetentionPolicy.Unreferenced(blobs, references).Select(b => b.Hash);
 
-        Assert.That(unreferenced, Is.EquivalentTo(new[] { "orphan" }));
+        Assert.That(unreferenced, Is.EquivalentTo(new[] { "other-manifest", "orphan" }));
     }
 
     /// <summary>
@@ -77,14 +78,15 @@ public class VaultBlobRetentionPolicyTests
     /// <summary>
     /// Creates a blob object for the tests.
     /// </summary>
+    /// <param name="manifestId">The manifest the blob belongs to.</param>
     /// <param name="hash">The blob hash, also identifying the row in assertions.</param>
     /// <returns>VaultBlobObject.</returns>
-    private static VaultBlobObject Blob(string hash)
+    private static VaultBlobObject Blob(Guid manifestId, string hash)
     {
         return new VaultBlobObject
         {
+            ManifestId = manifestId,
             Hash = hash,
-            OwnerUserId = "user",
             Category = "logo",
             EncryptedData = [1, 2, 3, 4],
             SizeBytes = 4,

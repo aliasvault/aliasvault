@@ -130,11 +130,11 @@ public class VaultController(
         var currentRevisionByManifest = latestManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
         var refsByManifest = (await context.VaultBlobReferences
                 .Where(r => manifestIds.Contains(r.ManifestId))
-                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category, b.SizeBytes })
+                .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { r.ManifestId, r.RevisionNumber, b.Hash, b.Category, b.SizeBytes })
                 .ToListAsync())
             .Where(x => currentRevisionByManifest.TryGetValue(x.ManifestId, out var rev) && rev == x.RevisionNumber)
             .GroupBy(x => x.ManifestId)
-            .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Hash, StringComparer.Ordinal).Select(h => new BlobReference { Hash = h.Key, Category = h.First().Category, SizeBytes = h.First().SizeBytes }).ToList());
+            .ToDictionary(g => g.Key, g => g.Select(x => new BlobReference { Hash = x.Hash, Category = x.Category, SizeBytes = x.SizeBytes }).ToList());
 
         var accessKeysByManifest = await GetAccessKeysAsync(context, user.Id, manifestIds);
         var encryptionPublicKeys = await GetEncryptionPublicKeysAsync(context, accessKeysByManifest.Values.Where(g => g.UserGrantKeyId != null).Select(g => g.UserGrantKeyId!.Value));
@@ -199,8 +199,7 @@ public class VaultController(
 
         var blobRefs = (await context.VaultBlobReferences
                 .Where(r => r.ManifestId == latest.ManifestId && r.RevisionNumber == latest.RevisionNumber)
-                .Join(context.VaultBlobObjects, r => r.BlobHash, b => b.Hash, (r, b) => new { b.Hash, b.Category, b.SizeBytes })
-                .Distinct()
+                .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { b.Hash, b.Category, b.SizeBytes })
                 .ToListAsync())
             .Select(x => new BlobReference { Hash = x.Hash, Category = x.Category, SizeBytes = x.SizeBytes })
             .ToList();
@@ -372,35 +371,38 @@ public class VaultController(
         {
             await using var tx = await context.Database.BeginTransactionAsync();
 
-            // 1) Upsert any new blob objects.
+            // 1) Upsert any new blob objects, each under the manifests in this write that reference it.
             if (model.NewBlobs.Count > 0)
             {
-                if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.NewBlobs, overwrite: accountKeys != null))
+                foreach (var (mw, row) in resolved)
                 {
-                    await tx.RollbackAsync();
-                    return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                    var referenced = mw.BlobReferences.Select(br => br.Hash).ToHashSet(StringComparer.Ordinal);
+                    var manifestBlobs = model.NewBlobs.Where(b => referenced.Contains(b.Hash)).ToList();
+                    if (!await TryUpsertBlobObjectsAsync(context, row.ManifestId, manifestBlobs, overwrite: accountKeys != null && row.OwnerGroupId == user.PersonalGroupId))
+                    {
+                        await tx.RollbackAsync();
+                        return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
+                    }
                 }
 
                 await context.SaveChangesAsync();
             }
 
-            // 2) Validate every referenced hash exists.
-            var ownScopeHashes = resolved.Where(r => r.Row.OwnerGroupId == user.PersonalGroupId).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
-            var anyScopeHashes = resolved.Where(r => r.Row.OwnerGroupId != user.PersonalGroupId).SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
+            // 2) Validate every referenced hash exists in the store of the manifest that references it.
+            var referencedHashes = resolved.SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
             var missing = new List<string>();
-            if (ownScopeHashes.Count > 0)
+            if (referencedHashes.Count > 0)
             {
-                var present = await context.VaultBlobObjects.Where(b => b.OwnerUserId == user.Id && ownScopeHashes.Contains(b.Hash)).Select(b => b.Hash).ToListAsync();
-                missing.AddRange(ownScopeHashes.Except(present));
+                var writtenManifestIds = resolved.Select(r => r.Row.ManifestId).ToList();
+                var present = (await context.VaultBlobObjects
+                        .Where(b => writtenManifestIds.Contains(b.ManifestId) && referencedHashes.Contains(b.Hash))
+                        .Select(b => new { b.ManifestId, b.Hash })
+                        .ToListAsync())
+                    .Select(b => (b.ManifestId, b.Hash))
+                    .ToHashSet();
+                missing = resolved.SelectMany(r => r.Write.BlobReferences.Where(br => !present.Contains((r.Row.ManifestId, br.Hash))).Select(br => br.Hash)).Distinct().ToList();
             }
 
-            if (anyScopeHashes.Count > 0)
-            {
-                var present = await context.VaultBlobObjects.Where(b => anyScopeHashes.Contains(b.Hash)).Select(b => b.Hash).Distinct().ToListAsync();
-                missing.AddRange(anyScopeHashes.Except(present));
-            }
-
-            missing = missing.Distinct().ToList();
             if (missing.Count > 0)
             {
                 await tx.RollbackAsync();
@@ -592,7 +594,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on (hash, user). Clients chunk
+    /// Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on (manifest, hash). Clients chunk
     /// large blob sets across multiple calls to keep individual request bodies within server limits. A blob uploaded
     /// here but never referenced by a manifest is cleaned up by the task runner after its grace period.
     /// </summary>
@@ -608,12 +610,25 @@ public class VaultController(
             return Unauthorized();
         }
 
+        var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
+        if (ownerGroupId == null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        // Replacing ciphertext is only part of the caller's own KEK/VEK migration, a shared manifest's key change is not implemented
+        // yet. TODO: when implementing shared manifest key change, update this check too.
+        if (model.Overwrite && ownerGroupId != user.PersonalGroupId)
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+        }
+
         if (model.Blobs.Count == 0)
         {
             return Ok(new BlobUploadResponse { AcceptedCount = 0 });
         }
 
-        if (!await TryUpsertBlobObjectsAsync(context, user.Id, model.Blobs, model.Overwrite))
+        if (!await TryUpsertBlobObjectsAsync(context, model.ManifestId, model.Blobs, model.Overwrite))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
@@ -623,7 +638,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Returns the subset of the supplied hashes the server is missing for this user. Lets a client upload only
+    /// Returns the subset of the supplied hashes the server is missing for this manifest. Lets a client upload only
     /// the blob bytes the server doesn't already have. POST with a body (not GET with a query string) because a
     /// vault can reference hundreds of 64-char hashes, which would exceed URL length limits.
     /// </summary>
@@ -639,6 +654,12 @@ public class VaultController(
             return Unauthorized();
         }
 
+        var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
+        if (ownerGroupId == null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
         var hashes = model.Hashes.Distinct().ToList();
         if (hashes.Count == 0)
         {
@@ -646,7 +667,7 @@ public class VaultController(
         }
 
         var present = await context.VaultBlobObjects
-            .Where(b => b.OwnerUserId == user.Id && hashes.Contains(b.Hash))
+            .Where(b => b.ManifestId == model.ManifestId && hashes.Contains(b.Hash))
             .Select(b => b.Hash)
             .ToListAsync();
 
@@ -654,7 +675,7 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Download a batch of encrypted blobs by hash. TODO: Returns base64-encoded payloads in JSON
+    /// Download a batch of one manifest's encrypted blobs by hash. TODO: Returns base64-encoded payloads in JSON
     /// because for now we kept the codec language-agnostic. Look into switching to multipart binary in the future.
     /// </summary>
     /// <param name="model">Hash list request.</param>
@@ -669,6 +690,12 @@ public class VaultController(
             return Unauthorized();
         }
 
+        var ownerGroupId = await GetBlobManifestOwnerGroupIdAsync(context, user, model.ManifestId);
+        if (ownerGroupId == null)
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
         var wanted = model.Hashes.Distinct().ToList();
         if (wanted.Count == 0)
         {
@@ -676,7 +703,7 @@ public class VaultController(
         }
 
         var rows = await context.VaultBlobObjects
-            .Where(b => b.OwnerUserId == user.Id && wanted.Contains(b.Hash))
+            .Where(b => b.ManifestId == model.ManifestId && wanted.Contains(b.Hash))
             .Select(b => new Blob
             {
                 Hash = b.Hash,
@@ -684,47 +711,6 @@ public class VaultController(
                 EncryptedDataBase64 = Convert.ToBase64String(b.EncryptedData),
             })
             .ToListAsync();
-
-        // Hashes not in the caller's own store may belong to a shared manifest: any blob referenced by the current
-        // revision of a manifest the caller can access (granted to them, or a manifest they own that another member
-        // pushed blobs for) is downloadable regardless of which member's store holds the ciphertext.
-        var missing = wanted.Except(rows.Select(r => r.Hash), StringComparer.Ordinal).ToList();
-        if (missing.Count > 0)
-        {
-            var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
-            var accessibleManifests = await AccessibleManifests(context, accessScope)
-                .Where(m => m.OwnerGroup.Type == GroupType.Shared)
-                .Select(m => new { m.ManifestId, m.RevisionNumber })
-                .ToListAsync();
-            var accessibleIds = accessibleManifests.Select(m => m.ManifestId).ToList();
-            var currentRevisionById = accessibleManifests.ToDictionary(m => m.ManifestId, m => m.RevisionNumber);
-
-            if (accessibleIds.Count > 0)
-            {
-                var referencedHashes = (await context.VaultBlobReferences
-                        .Where(r => accessibleIds.Contains(r.ManifestId) && missing.Contains(r.BlobHash))
-                        .Select(r => new { r.ManifestId, r.RevisionNumber, r.BlobHash })
-                        .ToListAsync())
-                    .Where(r => currentRevisionById.TryGetValue(r.ManifestId, out var rev) && rev == r.RevisionNumber)
-                    .Select(r => r.BlobHash)
-                    .Distinct()
-                    .ToList();
-
-                if (referencedHashes.Count > 0)
-                {
-                    var sharedRows = await context.VaultBlobObjects
-                        .Where(b => referencedHashes.Contains(b.Hash))
-                        .Select(b => new Blob
-                        {
-                            Hash = b.Hash,
-                            Category = b.Category,
-                            EncryptedDataBase64 = Convert.ToBase64String(b.EncryptedData),
-                        })
-                        .ToListAsync();
-                    rows.AddRange(sharedRows.GroupBy(b => b.Hash, StringComparer.Ordinal).Select(g => g.First()));
-                }
-            }
-        }
 
         return Ok(rows);
     }
@@ -780,6 +766,19 @@ public class VaultController(
     private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, ManifestAccessScope scope)
     {
         return ManifestAccessHelper.AccessibleManifests(context, scope).Where(m => m.StorageFormat == ManifestFormat);
+    }
+
+    /// <summary>
+    /// Gets the owner group of the manifest a blob request is scoped to, when the caller can access that manifest.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="user">The calling user.</param>
+    /// <param name="manifestId">The manifest named by the request.</param>
+    /// <returns>The owner group id, or null when the manifest does not exist or the caller cannot access it.</returns>
+    private static async Task<Guid?> GetBlobManifestOwnerGroupIdAsync(AliasServerDbContext context, AliasVaultUser user, Guid manifestId)
+    {
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+        return await ManifestAccessHelper.AccessibleManifests(context, accessScope).Where(x => x.ManifestId == manifestId).Select(x => (Guid?)x.OwnerGroupId).FirstOrDefaultAsync();
     }
 
     /// <summary>
@@ -871,21 +870,21 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Upserts a batch of encrypted blob objects for a user in one round-trip. Existing blobs (same hash) are left
+    /// Upserts a batch of encrypted blob objects for a manifest in one round-trip. Existing blobs (same hash) are left
     /// as they are, unless <paramref name="overwrite"/> is set (KEK/VEK migration) in which case their ciphertext is
     /// replaced with the re-encrypted bytes. The caller of this method should call SaveChanges after calling this method.
     /// </summary>
     /// <param name="context">DbContext to operate on.</param>
-    /// <param name="userId">Owning user id.</param>
+    /// <param name="manifestId">The manifest the blobs belong to.</param>
     /// <param name="blobs">Blobs to upsert.</param>
     /// <param name="overwrite">When true, existing blobs with the same hash get their ciphertext replaced.</param>
     /// <returns>True when every payload is structurally valid; false when any is malformed (caller should 400).</returns>
-    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, string userId, List<Blob> blobs, bool overwrite = false)
+    private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, Guid manifestId, List<Blob> blobs, bool overwrite = false)
     {
         var nowUtc = timeProvider.UtcNow;
         var hashes = blobs.Select(b => b.Hash).Distinct().ToList();
         var existing = await context.VaultBlobObjects
-            .Where(b => b.OwnerUserId == userId && hashes.Contains(b.Hash))
+            .Where(b => b.ManifestId == manifestId && hashes.Contains(b.Hash))
             .ToDictionaryAsync(b => b.Hash, StringComparer.Ordinal);
 
         foreach (var dto in blobs)
@@ -914,7 +913,7 @@ public class VaultController(
             var entity = new VaultBlobObject
             {
                 Hash = dto.Hash,
-                OwnerUserId = userId,
+                ManifestId = manifestId,
                 Category = dto.Category,
                 EncryptedData = data!,
                 SizeBytes = data!.Length,

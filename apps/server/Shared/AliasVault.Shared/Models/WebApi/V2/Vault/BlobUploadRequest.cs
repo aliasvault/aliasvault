@@ -9,10 +9,13 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// POST /v2/Vault/blobs. Batch-upload encrypted blobs ahead of a manifest upload. Idempotent per blob on
-/// (hash, user). Clients chunk large blob sets across multiple calls to keep request bodies within server limits.
+/// (manifest, hash). Clients chunk large blob sets across multiple calls to keep request bodies within server limits.
 /// </summary>
 public class BlobUploadRequest
 {
+    /// <summary>Gets or sets the manifest the blobs belong to.</summary>
+    public required Guid ManifestId { get; set; }
+
     /// <summary>Gets or sets the encrypted blobs to store.</summary>
     public required List<Blob> Blobs { get; set; }
 

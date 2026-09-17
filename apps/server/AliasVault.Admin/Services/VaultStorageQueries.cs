@@ -19,7 +19,7 @@ public static class VaultStorageQueries
 {
     /// <summary>
     /// Projects each user together with the kilobytes their personal vault occupies: every manifest and data bucket
-    /// revision owned by their personal group, plus the blob objects they own.
+    /// revision owned by their personal group, plus the blob objects of those manifests.
     /// </summary>
     /// <param name="users">The users to project.</param>
     /// <param name="context">The database context the users query belongs to.</param>
@@ -33,7 +33,7 @@ public static class VaultStorageQueries
                 + context.VaultManifestsHistory.Where(h => h.Manifest.OwnerGroupId == u.PersonalGroupId).Sum(h => (long)h.FileSize)
                 + ((context.VaultDataBuckets.Where(b => b.Manifest.OwnerGroupId == u.PersonalGroupId).Sum(b => (long)b.EncryptedData.Length)
                     + context.VaultDataBucketsHistory.Where(b => b.Bucket.Manifest.OwnerGroupId == u.PersonalGroupId).Sum(b => (long)b.EncryptedData.Length)
-                    + context.VaultBlobObjects.Where(b => b.OwnerUserId == u.Id).Sum(b => (long)b.SizeBytes)) / 1024),
+                    + context.VaultBlobObjects.Where(b => b.Manifest.OwnerGroupId == u.PersonalGroupId).Sum(b => (long)b.SizeBytes)) / 1024),
         });
     }
 
@@ -42,20 +42,15 @@ public static class VaultStorageQueries
     /// the blob objects behind them.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The user whose blob objects to account for.</param>
     /// <param name="personalGroupId">The user's personal group, which owns their manifests.</param>
     /// <returns>The storage breakdown.</returns>
-    public static async Task<VaultStorageOverview> GetPersonalVaultStorageAsync(AliasServerDbContext context, string userId, Guid personalGroupId)
+    public static async Task<VaultStorageOverview> GetPersonalVaultStorageAsync(AliasServerDbContext context, Guid personalGroupId)
     {
         // Blob usage a manifest revision references, keyed by (manifest, revision). Blobs are content-addressed and
         // shared between revisions, so this is reference usage per revision.
         var blobUsageByRevision = (await context.VaultBlobReferences
                 .Where(r => r.Manifest.OwnerGroupId == personalGroupId)
-                .Join(
-                    context.VaultBlobObjects.Where(b => b.OwnerUserId == userId),
-                    r => r.BlobHash,
-                    b => b.Hash,
-                    (r, b) => new { r.ManifestId, r.RevisionNumber, b.SizeBytes })
+                .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { r.ManifestId, r.RevisionNumber, b.SizeBytes })
                 .GroupBy(x => new { x.ManifestId, x.RevisionNumber })
                 .Select(g => new { g.Key.ManifestId, g.Key.RevisionNumber, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
                 .ToListAsync())
@@ -143,25 +138,25 @@ public static class VaultStorageQueries
         {
             ManifestRevisions = manifestRevisions,
             BucketRevisions = [.. currentBuckets, .. historyBuckets],
-            BlobCategories = await GetBlobCategoryUsageAsync(context, userId),
+            BlobCategories = await GetBlobCategoryUsageAsync(context, personalGroupId),
         };
     }
 
     /// <summary>
-    /// Aggregates a user's blob objects per category, separating out the ones no manifest revision references anymore.
+    /// Aggregates the blob objects of a personal vault per category, separating out the ones no manifest revision references anymore.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="userId">The user who owns the blob objects.</param>
+    /// <param name="personalGroupId">The personal group that owns the manifests the blob objects belong to.</param>
     /// <returns>Usage per blob category.</returns>
-    private static async Task<List<VaultBlobCategoryUsage>> GetBlobCategoryUsageAsync(AliasServerDbContext context, string userId)
+    private static async Task<List<VaultBlobCategoryUsage>> GetBlobCategoryUsageAsync(AliasServerDbContext context, Guid personalGroupId)
     {
         var totals = await context.VaultBlobObjects
-            .Where(b => b.OwnerUserId == userId)
+            .Where(b => b.Manifest.OwnerGroupId == personalGroupId)
             .GroupBy(b => b.Category)
             .Select(g => new { Category = g.Key, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
             .ToListAsync();
 
-        var unreferenced = (await VaultBlobRetentionPolicy.Unreferenced(context.VaultBlobObjects.Where(b => b.OwnerUserId == userId), context.VaultBlobReferences)
+        var unreferenced = (await VaultBlobRetentionPolicy.Unreferenced(context.VaultBlobObjects.Where(b => b.Manifest.OwnerGroupId == personalGroupId), context.VaultBlobReferences)
                 .GroupBy(b => b.Category)
                 .Select(g => new { Category = g.Key, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
                 .ToListAsync())

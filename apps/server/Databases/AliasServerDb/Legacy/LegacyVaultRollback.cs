@@ -52,7 +52,7 @@ public static class LegacyVaultRollback
             // Blob objects only exist on the manifest format; the legacy format carries its attachments inside the
             // vault blob itself. The stored bytes go with the references rather than waiting for the sweeper.
             await context.VaultBlobReferences.Where(x => x.ManifestId == manifestId).ExecuteDeleteAsync();
-            await context.VaultBlobObjects.Where(x => x.OwnerUserId == userId).ExecuteDeleteAsync();
+            await context.VaultBlobObjects.Where(x => x.ManifestId == manifestId).ExecuteDeleteAsync();
 
             // Data buckets only exist on the manifest format; their superseded revisions cascade with them. Leaving
             // them behind would also block the next migration, whose first push writes each bucket from revision 0.

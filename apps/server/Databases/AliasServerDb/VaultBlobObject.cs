@@ -15,22 +15,21 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class VaultBlobObject
 {
     /// <summary>
-    /// Gets or sets the per-user salted SHA-256 (hex) of the plaintext payload.
+    /// Gets or sets the manifest this blob belongs to. Part of the composite PK.
+    /// </summary>
+    public Guid ManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the manifest.
+    /// </summary>
+    [ForeignKey("ManifestId")]
+    public virtual VaultManifest Manifest { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the per-manifest salted SHA-256 (hex) of the plaintext payload. Part of the composite PK.
     /// </summary>
     [StringLength(64)]
     public string Hash { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the user ID.
-    /// </summary>
-    [StringLength(255)]
-    public string OwnerUserId { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the navigation property to the user.
-    /// </summary>
-    [ForeignKey("OwnerUserId")]
-    public virtual AliasVaultUser User { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the blob category.
