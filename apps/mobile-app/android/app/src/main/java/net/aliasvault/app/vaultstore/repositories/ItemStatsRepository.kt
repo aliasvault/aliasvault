@@ -1,6 +1,7 @@
 package net.aliasvault.app.vaultstore.repositories
 
 import net.aliasvault.app.vaultstore.VaultDatabase
+import net.aliasvault.app.vaultstore.models.VaultDataBucketCategory
 import net.aliasvault.app.vaultstore.queries.ItemStatsQueries
 
 /**
@@ -33,7 +34,8 @@ class ItemStatsRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param action What the user did with it
      */
     fun recordUsage(itemId: String, manifestId: String, action: ItemUsageAction) {
-        withTransaction {
+        // Usage statistics live in their own data bucket which should be pushed without a full manifest write.
+        withTransaction(VaultDataBucketCategory.STATS) {
             val now = now()
             val id = itemId.lowercase()
             executeUpdate(ItemStatsQueries.INSERT_ROW, arrayOf(manifestId, id, now, now))

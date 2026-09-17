@@ -64,11 +64,6 @@ public struct ItemQueries {
         INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-
-    /// Bump an item's UpdatedAt so a child-row change is picked up by sync.
-    public static let touchItem = """
-        UPDATE Items SET UpdatedAt = ? WHERE Id = ? AND ManifestId = ?
-        """
 }
 
 /// SQL query constants for FieldValue operations.

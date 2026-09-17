@@ -3,6 +3,7 @@ package net.aliasvault.app.vaultstore.repositories
 import net.aliasvault.app.utils.DateHelpers
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultDatabase
+import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import java.util.UUID
 
 /**
@@ -33,14 +34,15 @@ open class BaseRepository(
     /**
      * Execute a function within a transaction. The commit persists the vault and marks it dirty, so every
      * repository write reaches the next sync.
+     * @param scope What the mutation touched, so the next sync can push only that scope
      * @param operation The function to execute within the transaction
      * @return The result of the function
      */
-    fun <T> withTransaction(operation: () -> T): T {
+    fun <T> withTransaction(scope: String = VaultMutationScope.MAIN, operation: () -> T): T {
         database.beginTransaction()
         return try {
             val result = operation()
-            database.commitTransaction()
+            database.commitTransaction(scope)
             result
         } catch (e: Exception) {
             database.rollbackTransaction()

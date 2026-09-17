@@ -53,16 +53,16 @@
     [vaultManager beginTransaction:resolve rejecter:reject];
 }
 
-- (void)commitTransaction:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager commitTransaction:resolve rejecter:reject];
+- (void)commitTransaction:(NSString *)scope resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager commitTransaction:scope resolver:resolve rejecter:reject];
 }
 
 - (void)rollbackTransaction:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager rollbackTransaction:resolve rejecter:reject];
 }
 
-- (void)persistAndMarkDirty:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager persistAndMarkDirty:resolve rejecter:reject];
+- (void)persistAndMarkDirty:(NSString *)scope resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager persistAndMarkDirty:scope resolver:resolve rejecter:reject];
 }
 
 - (void)getAuthMethods:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

@@ -10,6 +10,7 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.models.TotpCode
+import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import kotlin.coroutines.resume
 
@@ -410,9 +411,10 @@ class VaultStore(
 
     /**
      * Commit a SQL transaction on the vault. The commit persists the vault and marks it dirty for the sync.
+     * @param scope What the mutation touched, so the next sync can push only that scope
      */
-    fun commitTransaction() {
-        database.commitTransaction()
+    fun commitTransaction(scope: String = VaultMutationScope.MAIN) {
+        database.commitTransaction(scope)
     }
 
     /**
@@ -425,9 +427,10 @@ class VaultStore(
     /**
      * Persist the in-memory database to encrypted storage and mark as dirty, without committing a SQL
      * transaction. Used after migrations whose scripts manage their own transactions.
+     * @param scope What the mutation touched, so the next sync can push only that scope
      */
-    fun persistAndMarkDirty() {
-        database.persistAndMarkDirty()
+    fun persistAndMarkDirty(scope: String = VaultMutationScope.MAIN) {
+        database.persistAndMarkDirty(scope)
     }
 
     /**
@@ -644,6 +647,7 @@ class VaultStore(
         markDirty: Boolean = false,
         serverRevision: Int? = null,
         expectedMutationSeq: Int? = null,
+        scope: String = VaultMutationScope.MAIN,
     ): StoreVaultResult {
         var mutationSequence = metadata.getMutationSequence()
 
@@ -661,7 +665,7 @@ class VaultStore(
 
         if (markDirty) {
             metadata.setMutationSequence(mutationSequence)
-            metadata.setIsDirty(true)
+            metadata.markDirty(scope)
         }
 
         if (serverRevision != null) {

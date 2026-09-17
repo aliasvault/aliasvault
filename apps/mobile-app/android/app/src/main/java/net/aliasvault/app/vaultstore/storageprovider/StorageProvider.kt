@@ -1,5 +1,6 @@
 package net.aliasvault.app.vaultstore.storageprovider
 
+import android.content.Context
 import java.io.File
 
 /**
@@ -7,6 +8,13 @@ import java.io.File
  * This allows for different implementations for real devices and testing.
  */
 interface StorageProvider {
+    /**
+     * The application context, for the string resources the native layer renders. Null outside an Android app
+     * (unit tests), where callers fall back to their untranslated default.
+     * @return The application context, or null when there is none
+     */
+    fun getAppContext(): Context?
+
     /**
      * Get the encrypted database file.
      * @return The encrypted database file
@@ -155,6 +163,18 @@ interface StorageProvider {
      * @return True if vault has unsynced changes
      */
     fun getIsDirty(): Boolean
+
+    /**
+     * Get the mutation scopes that have pending changes.
+     * @return The recorded scopes, empty when nothing is pending
+     */
+    fun getDirtyScopes(): List<String>
+
+    /**
+     * Set the mutation scopes that have pending changes.
+     * @param scopes The scopes to record; an empty list forgets them
+     */
+    fun setDirtyScopes(scopes: List<String>)
 
     /**
      * Get the mutation sequence number.

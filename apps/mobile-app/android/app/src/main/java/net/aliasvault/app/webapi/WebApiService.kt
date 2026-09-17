@@ -55,6 +55,11 @@ class WebApiService(private val context: Context) {
          * Read timeout. This is an inactivity timeout between successive reads.
          */
         private const val READ_TIMEOUT_MS = 15000
+
+        /**
+         * Read timeout of a request that carries vault ciphertext which can be larger and therefore can take longer to transfer.
+         */
+        private const val VAULT_TRANSFER_READ_TIMEOUT_MS = 180000
     }
 
     private val sharedPreferences = context.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
@@ -162,7 +167,7 @@ class WebApiService(private val context: Context) {
     }
 
     /**
-     * Turn an endpoint into a full URL. If the endpoint starts with "v1/" or "v2/" etc, 
+     * Turn an endpoint into a full URL. If the endpoint starts with "v1/" or "v2/" etc,
      * resolve it against the API root, otherwise resolve it against the base URL.
      */
     private fun resolveUrl(endpoint: String): String {
@@ -210,13 +215,16 @@ class WebApiService(private val context: Context) {
 
     /**
      * Execute a WebAPI request with support for authentication and token refresh.
+     * Pass largeTransfer for a request that carries vault ciphertext, which gets the longer transfer timeout.
      */
+    @Suppress("LongParameterList") // One argument per part of the request the callers vary
     suspend fun executeRequest(
         method: String,
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
         requiresAuth: Boolean,
+        largeTransfer: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val requestHeaders = headers.toMutableMap()
 
@@ -237,6 +245,7 @@ class WebApiService(private val context: Context) {
             endpoint = endpoint,
             body = body,
             headers = requestHeaders,
+            largeTransfer = largeTransfer,
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -256,6 +265,7 @@ class WebApiService(private val context: Context) {
                     endpoint = endpoint,
                     body = body,
                     headers = retryHeaders,
+                    largeTransfer = largeTransfer,
                 )
 
                 return@withContext retryResponse
@@ -277,6 +287,7 @@ class WebApiService(private val context: Context) {
         endpoint: String,
         body: String?,
         headers: Map<String, String>,
+        largeTransfer: Boolean = false,
     ): WebApiResponse = withContext(Dispatchers.IO) {
         val urlString = resolveUrl(endpoint)
 
@@ -286,7 +297,7 @@ class WebApiService(private val context: Context) {
             connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = method.uppercase()
             connection.connectTimeout = CONNECT_TIMEOUT_MS
-            connection.readTimeout = READ_TIMEOUT_MS
+            connection.readTimeout = if (largeTransfer) VAULT_TRANSFER_READ_TIMEOUT_MS else READ_TIMEOUT_MS
             connection.doInput = true
 
             // Add any custom proxy headers

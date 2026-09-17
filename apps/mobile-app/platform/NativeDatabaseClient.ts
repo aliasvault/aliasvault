@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 
 import type { IDatabaseClient, SqliteBindValue } from '@aliasvault/client/database/BaseRepository';
+import { DEFAULT_VAULT_MUTATION_SCOPE, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -53,10 +54,11 @@ export class NativeDatabaseClient implements IDatabaseClient {
   }
 
   /**
-   * Commit the transaction, which persists the vault and marks it dirty.
+   * Commit the transaction, which persists the vault and marks it dirty for the given scope.
+   * @param scope - what the mutation touched; a full-manifest change when omitted
    */
-  public async commitTransaction(): Promise<void> {
-    await NativeVaultManager.commitTransaction();
+  public async commitTransaction(scope?: VaultMutationScope): Promise<void> {
+    await NativeVaultManager.commitTransaction(scope ?? DEFAULT_VAULT_MUTATION_SCOPE);
     this.transactionOpen = false;
   }
 

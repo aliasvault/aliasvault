@@ -4,6 +4,7 @@ import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.aliasvault.app.R
 import net.aliasvault.app.rustcore.JnaInitializer
 import net.aliasvault.app.utils.AppInfo
 import net.aliasvault.app.vaultstore.models.VaultSql
@@ -41,6 +42,9 @@ class VaultSyncEngine(
 
     /** The engine staging database used for internal sync and merge operations. */
     private var staging: SqliteMemoryDatabase? = null
+
+    /** Whether the live vault was written to since the last store went through. */
+    private var localMutated = false
     private var runLog = VaultSyncRunLog("")
 
     /**
@@ -71,6 +75,7 @@ class VaultSyncEngine(
             }
         } finally {
             closeStaging()
+            discardLocalDatabaseIfNeeded()
             session.destroy()
             log.finish(success, storageProvider)
         }
@@ -86,12 +91,12 @@ class VaultSyncEngine(
             put("username", vaultStore.getUsername() ?: "")
             put("isDirty", syncState.isDirty)
             put("mutationSequence", syncState.mutationSequence)
-            put("dirtyScopes", JSONArray(if (syncState.isDirty) listOf("Main") else emptyList<String>()))
+            put("dirtyScopes", JSONArray(if (syncState.isDirty) vaultStore.metadata.getDirtyScopes() else emptyList<String>()))
             put("privateEmailDomains", JSONArray(metadata?.privateEmailDomains ?: emptyList<String>()))
             put("forcePull", forcePull)
             put("minServerVersion", AppInfo.MIN_SERVER_VERSION)
             put("isOfflineMode", vaultStore.getOfflineMode())
-            put("unnamedSharedVaultName", "Shared vault")
+            put("unnamedSharedVaultName", storageProvider.getAppContext()?.getString(R.string.unnamed_shared_vault) ?: "Shared vault")
         }
         (encryptionKey ?: vaultStore.getEncryptionKeyBase64())?.let { request.put("encryptionKey", it) }
         (state("accountPublicKey") as? String)?.let { request.put("accountPublicKey", it) }
@@ -127,7 +132,11 @@ class VaultSyncEngine(
                     JSONObject().put("rows", JSONArray(database(command.optString("db")).query(command.optString("sql"), params)))
                 }
                 "dbExec" -> {
-                    database(command.optString("db")).exec((command.optJSONArray("statements") ?: JSONArray()).toString())
+                    val name = command.optString("db")
+                    database(name).exec((command.optJSONArray("statements") ?: JSONArray()).toString())
+                    if (name == "local") {
+                        localMutated = true
+                    }
                     JSONObject()
                 }
                 "dbExport" -> {
@@ -170,6 +179,7 @@ class VaultSyncEngine(
                 body = body,
                 headers = headers,
                 requiresAuth = command.optBoolean("auth", true),
+                largeTransfer = command.optBoolean("largeTransfer", false),
             )
             JSONObject().put("status", response.statusCode).put("body", response.body)
         } catch (e: SocketTimeoutException) {
@@ -234,6 +244,10 @@ class VaultSyncEngine(
             serverRevision = optionalInt(command, "revision"),
             expectedMutationSeq = optionalInt(command, "expectedMutationSeq"),
         )
+        if (result.success) {
+            // The stored vault is now what the live database holds, so nothing is left to discard.
+            localMutated = false
+        }
         if (result.success && vaultStore.isVaultUnlocked()) {
             // The contract: after a store, the live database is the vault just stored.
             val reloadStartNanos = System.nanoTime()
@@ -277,6 +291,27 @@ class VaultSyncEngine(
     private fun closeStaging() {
         staging?.destroy()
         staging = null
+    }
+
+    /**
+     * Reload the stored vault when the run left changes in the live database that no store persisted, so the
+     * vault the app reads from is the one on disk rather than a half-finished sync.
+     */
+    @Suppress("TooGenericExceptionCaught")
+    private fun discardLocalDatabaseIfNeeded() {
+        if (!localMutated) {
+            return
+        }
+        localMutated = false
+        if (!vaultStore.isVaultUnlocked()) {
+            return
+        }
+        try {
+            vaultStore.unlockVault()
+            runLog.note("Discarded unpersisted local vault changes; reloaded the stored vault")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to reload the stored vault after discarding unpersisted changes", e)
+        }
     }
 
     // endregion

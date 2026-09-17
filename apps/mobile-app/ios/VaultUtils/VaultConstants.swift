@@ -23,6 +23,7 @@ public struct VaultConstants {
     public static let isDirtyKey = "aliasvault_is_dirty"
     public static let mutationSequenceKey = "aliasvault_mutation_sequence"
     public static let isSyncingKey = "aliasvault_is_syncing"
+    public static let dirtyScopesKey = "aliasvault_dirty_scopes"
     public static let syncLogsKey = "aliasvault_sync_logs"
 
     public static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds

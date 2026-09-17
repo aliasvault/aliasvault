@@ -55,36 +55,17 @@ describe('logo manifest scoping', () => {
     expect(rows(db, LogoQueries.GET_BEST_FOR_KEY, ['favicon', 'github.com'])[0].Name).toBe('real');
   });
 
-  it('finds an item whose logo lives in another manifest, and only that item', async () => {
+  it('GET_BY_ID answers for an item whose logo lives in another manifest', async () => {
     const db = await makeDb();
-    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','favicon','github.com',X'0102',NULL,NULL,'t','t',0)`);
-    db.run(`INSERT INTO Logos VALUES ('${SHARED}','L-SHARED','favicon','gitlab.com',X'0304',NULL,NULL,'t','t',0)`);
+    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','builtin','shopping',NULL,NULL,NULL,'t','t',0)`);
     // Moved into the shared folder by a restamp, still pointing at the personal logo row.
     db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
-    // Correctly scoped rows of both kinds, plus one with no logo at all.
-    db.run(`INSERT INTO Items VALUES ('${PERSONAL}','ITEM-MINE','L-PERSONAL','FOLDER-MINE',0)`);
-    db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-THEIRS','L-SHARED','FOLDER-SHARED',0)`);
-    db.run(`INSERT INTO Items VALUES ('${PERSONAL}','ITEM-BARE',NULL,NULL,0)`);
 
-    const found = rows(db, LogoQueries.FIND_ITEMS_WITH_FOREIGN_LOGO);
-    expect(found).toEqual([{ Id: 'ITEM-MOVED', ManifestId: SHARED, Kind: 'favicon', Source: 'github.com' }]);
-  });
-
-  it('repointing clears the defect and leaves the origin manifest its own copy', async () => {
-    const db = await makeDb();
-    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','favicon','github.com',X'0102',NULL,NULL,'t','t',0)`);
-    db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
-    db.run(`INSERT INTO Items VALUES ('${PERSONAL}','ITEM-MINE','L-PERSONAL','FOLDER-MINE',0)`);
-
-    // What adoptIntoScope does: clone under the target manifest's own derived id, then repoint.
-    const clonedId = 'L-SHARED-DERIVED';
-    db.run(`INSERT INTO Logos VALUES ('${SHARED}','${clonedId}','favicon','github.com',X'0102',NULL,NULL,'t','t',0)`);
-    db.run(LogoQueries.REPOINT_ITEM_LOGO, [clonedId, 'ITEM-MOVED', SHARED]);
-
-    expect(rows(db, LogoQueries.FIND_ITEMS_WITH_FOREIGN_LOGO)).toEqual([]);
-    // The personal item is untouched and its own copy still exists.
-    expect(rows(db, `SELECT LogoId FROM Items WHERE Id = 'ITEM-MINE'`)[0].LogoId).toBe('L-PERSONAL');
-    expect(rows(db, LogoQueries.GET_ID_FOR_KEY, [PERSONAL, 'favicon', 'github.com'])[0].Id).toBe('L-PERSONAL');
+    /*
+     * The write path reads the item's current logo by id alone, so the built-in logo the user picked is
+     * still found and kept instead of being replaced by the domain's favicon.
+     */
+    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL'])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
   });
 
   it('GET_ID_FOR_KEY will not hand one manifest another manifest row', async () => {

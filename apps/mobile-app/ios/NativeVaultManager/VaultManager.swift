@@ -343,10 +343,11 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func commitTransaction(_ resolve: @escaping RCTPromiseResolveBlock,
+    func commitTransaction(_ scope: String,
+                          resolver resolve: @escaping RCTPromiseResolveBlock,
                           rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.commitTransaction()
+            try vaultStore.commitTransaction(scope: VaultMutationScope.known(scope))
             resolve(nil)
         } catch {
             reject("TRANSACTION_ERROR", "Failed to commit transaction: \(error.localizedDescription)", error)
@@ -365,10 +366,11 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func persistAndMarkDirty(_ resolve: @escaping RCTPromiseResolveBlock,
+    func persistAndMarkDirty(_ scope: String,
+                            resolver resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            try vaultStore.persistAndMarkDirty()
+            try vaultStore.persistAndMarkDirty(scope: VaultMutationScope.known(scope))
             resolve(nil)
         } catch {
             reject("PERSIST_ERROR", "Failed to persist and mark dirty: \(error.localizedDescription)", error)

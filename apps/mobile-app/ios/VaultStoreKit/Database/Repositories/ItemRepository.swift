@@ -66,16 +66,13 @@ public class ItemRepository: BaseRepository {
     ///   - fieldKey: The system FieldKey to append under (e.g. `FieldKey.loginUrl`)
     ///   - value: The value to append
     ///   - manifestId: The manifest the item belongs to
-    /// - Returns: The number of rows affected by the parent Item's UpdatedAt bump, 0 when no such item exists
+    /// - Returns: The number of rows inserted
     @discardableResult
     public func appendFieldValue(itemId: String, manifestId: String, fieldKey: String, value: String) throws -> Int {
         return try withTransaction {
             let now = self.now()
             let weight = FieldValueQueries.defaultWeight(forFieldKey: fieldKey)
-            try client.executeUpdate(FieldValueQueries.insert, params: [generateId(), itemId, nil, fieldKey, value, weight, now, now, 0, manifestId])
-
-            // Bump the parent Item's UpdatedAt so the change is picked up by the sync layer.
-            return try client.executeUpdate(ItemQueries.touchItem, params: [now, itemId, manifestId])
+            return try client.executeUpdate(FieldValueQueries.insert, params: [generateId(), itemId, nil, fieldKey, value, weight, now, now, 0, manifestId])
         }
     }
 }

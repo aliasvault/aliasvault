@@ -57,9 +57,9 @@ export interface Spec extends TurboModule {
   executeUpdate(query: string, params:(string | number | null)[]): Promise<number>;
   executeRaw(query: string): Promise<void>;
   beginTransaction(): Promise<void>;
-  commitTransaction(): Promise<void>;
+  commitTransaction(scope: string): Promise<void>;
   rollbackTransaction(): Promise<void>;
-  persistAndMarkDirty(): Promise<void>;
+  persistAndMarkDirty(scope: string): Promise<void>;
 
   // Cryptography operations
   deriveKeyFromPassword(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<string>;

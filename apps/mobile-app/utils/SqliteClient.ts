@@ -1,4 +1,5 @@
 import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
+import { VaultDataBucketCategory } from '@aliasvault/models/vault';
 import { asyncRepository } from '@aliasvault/client/database/DbOp';
 import { EncryptionKeyRepository } from '@aliasvault/client/database/repositories/EncryptionKeyRepository';
 import { FolderRepository } from '@aliasvault/client/database/repositories/FolderRepository';
@@ -53,7 +54,7 @@ class SqliteClient {
   /**
    * Repository for the vault's user preferences.
    */
-  public readonly settings = asyncRepository(new SettingsRepository(this.database), this.database);
+  public readonly settings = asyncRepository(new SettingsRepository(this.database), this.database, VaultDataBucketCategory.Settings);
 
   /**
    * Repository for the per-manifest keypairs that receive mail.
@@ -63,7 +64,7 @@ class SqliteClient {
   /**
    * Repository for per-item usage statistics.
    */
-  public readonly itemStats = asyncRepository(new ItemStatsRepository(this.database), this.database);
+  public readonly itemStats = asyncRepository(new ItemStatsRepository(this.database), this.database, VaultDataBucketCategory.Stats);
 
   /**
    * The id of the user's personal manifest, or null when no pull has recorded one yet.

@@ -73,29 +73,6 @@ public class PasskeyRepository: BaseRepository {
         return mappedResults
     }
 
-    /// Get Items that match an rpId but don't have a passkey yet using legacy SQL LIKE matching.
-    /// Note: The public API now uses getAllItemsWithoutPasskey + Rust credential matcher for consistent cross-platform matching.
-    /// This method is kept for potential fallback scenarios.
-    /// - Parameters:
-    ///   - rpId: The relying party identifier (domain)
-    ///   - userName: Optional username to filter by
-    /// - Returns: Array of ItemWithCredentialInfoData objects
-    func getItemsWithoutPasskeyLegacy(forRpId rpId: String, userName: String? = nil) throws -> [ItemWithCredentialInfoData] {
-        let rpIdLower = rpId.lowercased()
-        let urlPattern1 = "%\(rpIdLower)%"
-        let urlPattern2 = "%\(rpIdLower.replacingOccurrences(of: "www.", with: ""))%"
-
-        let results = try client.executeQuery(PasskeyQueries.getItemsWithoutPasskeyForRpId, params: [urlPattern1, urlPattern2])
-
-        return results.compactMap { row -> ItemWithCredentialInfoData? in
-            let item = mapItemWithCredentialInfo(row, urls: (row["Url"] as? String).map { [$0] } ?? [])
-            if let userName = userName, item?.username != userName {
-                return nil
-            }
-            return item
-        }
-    }
-
     /// Get ALL Login items that don't have a passkey yet (no URL filtering).
     /// Used with RustItemMatcher for intelligent, cross-platform consistent filtering.
     /// - Returns: Array of ItemWithCredentialInfoData objects with all URLs
@@ -263,7 +240,7 @@ public class PasskeyRepository: BaseRepository {
             privateKeyString,
             blobParam(passkey.prfKey),
             displayName,
-            passkey.additionalData as SqliteBindValue,
+            blobParam(passkey.additionalData),
             now,
             now,
             0

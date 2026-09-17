@@ -9,6 +9,7 @@ import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest 
 import { FieldKey, getFieldValue } from '@aliasvault/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutationScope';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -232,7 +233,7 @@ export function useVaultMutate() : {
        * locally which can then be uploaded to the server.
        */
       await NativeVaultManager.beginTransaction();
-      await NativeVaultManager.commitTransaction();
+      await NativeVaultManager.commitTransaction(DEFAULT_VAULT_MUTATION_SCOPE);
 
       // Unlock the newly persisted database to ensure it works and the new encryption key will be persisted in the keychain.
       await NativeVaultManager.unlockVault();

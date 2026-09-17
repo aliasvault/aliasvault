@@ -1,4 +1,5 @@
 import type { IDatabaseClient, ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
+import type { VaultMutationScope } from '../sync/VaultMutationScope';
 
 /*
  * Repository methods are written once and can run on two kinds of host: synchronous and 
@@ -66,9 +67,10 @@ export function runSync<T>(op: DbOp<T>, client: ISyncDatabaseClient): T {
  * outside a transaction runs in one of its own.
  * @param op - The op to run
  * @param client - The client that performs its steps
+ * @param scope - What the op's writes touch, for a host that marks the vault dirty per scope
  * @returns The op's result
  */
-export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient): Promise<T> {
+export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient, scope?: VaultMutationScope): Promise<T> {
   let ownsTransaction = false;
   try {
     let step = op.next();
@@ -88,7 +90,7 @@ export async function runAsync<T>(op: DbOp<T>, client: IDatabaseClient): Promise
     }
 
     if (ownsTransaction) {
-      await client.commitTransaction();
+      await client.commitTransaction(scope);
       ownsTransaction = false;
     }
     return step.value;
@@ -118,10 +120,12 @@ export function syncRepository<R extends object>(repository: R, client: ISyncDat
  * Wrap a repository for an asynchronous client.
  * @param repository - The repository
  * @param client - The client its ops run on
+ * @param scope - What this repository's writes touch; a bucket-scoped repository lets the sync push just that
+ * data bucket instead of the full vault manifest. Defaults to a full-manifest change.
  * @returns The repository with its DbOp methods returning Promises
  */
-export function asyncRepository<R extends object>(repository: R, client: IDatabaseClient): AsyncRepository<R> {
-  return bindRepository(repository, (op) => runAsync(op, client)) as AsyncRepository<R>;
+export function asyncRepository<R extends object>(repository: R, client: IDatabaseClient, scope?: VaultMutationScope): AsyncRepository<R> {
+  return bindRepository(repository, (op) => runAsync(op, client, scope)) as AsyncRepository<R>;
 }
 
 /**

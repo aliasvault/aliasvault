@@ -5,6 +5,7 @@ import { BaseQueries } from './queries/BaseQueries';
 
 import type { DbOp, ManifestScope } from './DbOp';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
+import type { VaultMutationScope } from '../sync/VaultMutationScope';
 
 export type SqliteBindValue = string | number | null | Uint8Array;
 
@@ -18,7 +19,7 @@ export interface IDatabaseClient {
   executeQuery<T>(query: string, params?: SqliteBindValue[]): T[] | Promise<T[]>;
   executeUpdate(query: string, params?: SqliteBindValue[]): number | Promise<number>;
   beginTransaction(): void | Promise<void>;
-  commitTransaction(): Promise<void>;
+  commitTransaction(scope?: VaultMutationScope): Promise<void>;
   rollbackTransaction(): void | Promise<void>;
   isInTransaction(): boolean;
   getActiveManifestId(): string | null;

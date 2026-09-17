@@ -25,7 +25,8 @@ public protocol DatabaseClient: AnyObject {
     func beginTransaction() throws
 
     /// Commit a database transaction.
-    func commitTransaction() throws
+    /// - Parameter scope: What the mutation touched, so the next sync can push only that scope
+    func commitTransaction(scope: String) throws
 
     /// Rollback a database transaction.
     func rollbackTransaction() throws

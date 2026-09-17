@@ -18,7 +18,7 @@ public struct Passkey: Codable, Hashable, Equatable {
     public let updatedAt: Date
     public let isDeleted: Bool
     public let manifestId: String?
-    public let additionalData: String?
+    public let additionalData: Data?
 
     public init(
         id: UUID,
@@ -34,7 +34,7 @@ public struct Passkey: Codable, Hashable, Equatable {
         updatedAt: Date,
         isDeleted: Bool,
         manifestId: String? = nil,
-        additionalData: String? = nil
+        additionalData: Data? = nil
     ) {
         self.id = id
         self.parentItemId = parentItemId

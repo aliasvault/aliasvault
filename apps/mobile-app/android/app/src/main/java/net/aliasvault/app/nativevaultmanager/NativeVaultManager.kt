@@ -27,6 +27,7 @@ import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
+import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONArray
@@ -546,9 +547,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun commitTransaction(promise: Promise) {
+    override fun commitTransaction(scope: String, promise: Promise) {
         try {
-            vaultStore.commitTransaction()
+            vaultStore.commitTransaction(VaultMutationScope.known(scope))
             promise.resolve(null)
         } catch (e: Exception) {
             Log.e(TAG, "Error committing transaction", e)
@@ -585,9 +586,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun persistAndMarkDirty(promise: Promise) {
+    override fun persistAndMarkDirty(scope: String, promise: Promise) {
         try {
-            vaultStore.persistAndMarkDirty()
+            vaultStore.persistAndMarkDirty(VaultMutationScope.known(scope))
             promise.resolve(null)
         } catch (e: Exception) {
             Log.e(TAG, "Error persisting and marking dirty", e)

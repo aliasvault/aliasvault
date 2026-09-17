@@ -13,7 +13,7 @@ public struct PasskeyRow {
     public let privateKey: String
     public let prfKey: Data?
     public let displayName: String
-    public let additionalData: String?
+    public let additionalData: Data?
     public let createdAt: String
     public let updatedAt: String
     public let isDeleted: Int64
@@ -40,7 +40,6 @@ public struct PasskeyRow {
         self.publicKey = publicKey
         self.privateKey = privateKey
         self.displayName = displayName
-        self.additionalData = row["AdditionalData"] as? String
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isDeleted = isDeleted
@@ -56,6 +55,12 @@ public struct PasskeyRow {
             self.prfKey = Data(base64Encoded: prfKeyBase64, options: .ignoreUnknownCharacters)
         } else {
             self.prfKey = nil
+        }
+
+        if let additionalDataBase64 = row["AdditionalData"] as? String {
+            self.additionalData = Data(base64Encoded: additionalDataBase64, options: .ignoreUnknownCharacters)
+        } else {
+            self.additionalData = nil
         }
     }
 }

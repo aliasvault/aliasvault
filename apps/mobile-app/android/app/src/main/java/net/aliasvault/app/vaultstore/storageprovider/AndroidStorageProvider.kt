@@ -10,6 +10,8 @@ import java.io.File
 class AndroidStorageProvider(private val context: Context) : StorageProvider {
     private var defaultAutoLockTimeout = 3600 // 1 hour default
 
+    override fun getAppContext(): Context = context
+
     override fun getEncryptedDatabaseFile(): File {
         return File(context.filesDir, "encrypted_database.db")
     }
@@ -183,6 +185,22 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         return sharedPreferences.getBoolean("is_dirty", false)
     }
 
+    override fun getDirtyScopes(): List<String> {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet("dirty_scopes", emptySet())?.toList() ?: emptyList()
+    }
+
+    override fun setDirtyScopes(scopes: List<String>) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (scopes.isEmpty()) {
+                remove("dirty_scopes")
+            } else {
+                putStringSet("dirty_scopes", scopes.toSet())
+            }
+        }
+    }
+
     override fun getMutationSequence(): Int {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         return sharedPreferences.getInt("mutation_sequence", 0)
@@ -211,6 +229,7 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         sharedPreferences.edit {
             remove("is_dirty")
+            remove("dirty_scopes")
             remove("mutation_sequence")
             remove("is_syncing")
         }

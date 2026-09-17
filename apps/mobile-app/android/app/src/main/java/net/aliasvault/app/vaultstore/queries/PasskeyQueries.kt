@@ -140,13 +140,6 @@ object PasskeyQueries {
     """
 
     /**
-     * Update an item's UpdatedAt timestamp. Binds (now, id, manifestId).
-     */
-    const val UPDATE_ITEM_TIMESTAMP = """
-        UPDATE Items SET UpdatedAt = ? WHERE Id = ? AND ManifestId = ?
-    """
-
-    /**
      * Get the logo ID of an item. Binds (id, manifestId).
      */
     const val GET_LOGO_ID_FROM_ITEM = """
@@ -179,11 +172,11 @@ object LogoQueries {
     """
 
     /**
-     * The kind and key of an existing logo. Binds (id, manifestId).
+     * The kind and key of an existing logo. Binds (id).
      */
     const val GET_BY_ID = """
         SELECT Id, Kind, Source, Name FROM Logos
-        WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
+        WHERE Id = ? AND IsDeleted = 0
         LIMIT 1
     """
 

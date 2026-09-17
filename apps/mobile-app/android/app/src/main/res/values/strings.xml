@@ -88,4 +88,5 @@
   <string name="password_unlock_error">Failed to verify password</string>
   <string name="password_unlock_attempts_warning">Incorrect password. You will be logged out if you enter the wrong password %d more times.</string>
   <string name="password_unlock_max_attempts_reached">Too many failed unlock attempts. You have been logged out for security reasons.</string>
+  <string name="unnamed_shared_vault">Shared vault</string>
 </resources>

@@ -1,5 +1,6 @@
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutationScope';
 import { VaultSqlGenerator } from '@aliasvault/vault';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -252,7 +253,7 @@ export default function UpgradeScreen() : React.ReactNode {
       if (upgradeResult.sqlCommands.length > 0) {
         // Persist the upgraded database as a pending change; the manifest migration push that follows carries it.
         setUpgradeStatus(t('upgrade.status.committingChanges'));
-        await NativeVaultManager.persistAndMarkDirty();
+        await NativeVaultManager.persistAndMarkDirty(DEFAULT_VAULT_MUTATION_SCOPE);
         await dbContext.unlockVault();
       }
 

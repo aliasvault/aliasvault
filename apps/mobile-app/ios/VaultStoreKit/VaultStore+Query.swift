@@ -61,13 +61,14 @@ extension VaultStore {
     }
 
     /// Commit a transaction on the database. This is required for all database operations that modify the database.
-    public func commitTransaction() throws {
+    /// - Parameter scope: What the mutation touched, so the next sync can push only that scope
+    public func commitTransaction(scope: String = VaultMutationScope.main) throws {
         try requireDatabase().executeBatch(sql: "COMMIT")
         try persistDatabaseToEncryptedStorage()
 
         // Atomically mark vault as dirty and increment mutation sequence
         // This ensures sync can properly detect local changes
-        setIsDirty(true)
+        markDirty(scope: scope)
         _ = incrementMutationSequence()
     }
 
@@ -77,12 +78,13 @@ extension VaultStore {
     }
 
     /// Persist the in-memory database to encrypted storage and mark as dirty.
-    public func persistAndMarkDirty() throws {
+    /// - Parameter scope: What the mutation touched, so the next sync can push only that scope
+    public func persistAndMarkDirty(scope: String = VaultMutationScope.main) throws {
         try persistDatabaseToEncryptedStorage()
 
         // Atomically mark vault as dirty and increment mutation sequence
         // This ensures sync can properly detect local changes
-        setIsDirty(true)
+        markDirty(scope: scope)
         _ = incrementMutationSequence()
     }
 

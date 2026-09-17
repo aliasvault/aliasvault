@@ -1,5 +1,6 @@
 package net.aliasvault.app.vaultstore.storageprovider
 
+import android.content.Context
 import java.io.File
 
 /**
@@ -19,8 +20,11 @@ class TestStorageProvider : StorageProvider {
     private var serverVersion: String? = null
     private var capabilities: String? = null
     private var isDirty: Boolean = false
+    private var dirtyScopes: List<String> = emptyList()
     private var mutationSequence: Int = 0
     private var isSyncing: Boolean = false
+
+    override fun getAppContext(): Context? = null
 
     override fun getEncryptedDatabaseFile(): File = tempFile
 
@@ -127,6 +131,14 @@ class TestStorageProvider : StorageProvider {
         return isDirty
     }
 
+    override fun getDirtyScopes(): List<String> {
+        return dirtyScopes
+    }
+
+    override fun setDirtyScopes(scopes: List<String>) {
+        dirtyScopes = scopes
+    }
+
     override fun getMutationSequence(): Int {
         return mutationSequence
     }
@@ -145,6 +157,7 @@ class TestStorageProvider : StorageProvider {
 
     override fun clearSyncState() {
         isDirty = false
+        dirtyScopes = emptyList()
         mutationSequence = 0
         isSyncing = false
     }

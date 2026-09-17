@@ -3,6 +3,7 @@ package net.aliasvault.app.vaultstore
 import android.util.Base64
 import android.util.Log
 import net.aliasvault.app.rustcore.JnaInitializer
+import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import uniffi.aliasvault_core.SqlValue
 import uniffi.aliasvault_core.SqliteMemoryDatabase
@@ -169,11 +170,12 @@ class VaultDatabase(
 
     /**
      * Commit a SQL transaction, persist the encrypted vault and mark it as changed locally.
+     * @param scope What the mutation touched, so the next sync can push only that scope
      */
-    fun commitTransaction() {
+    fun commitTransaction(scope: String = VaultMutationScope.MAIN) {
         connection().executeBatch("COMMIT")
         persistDatabaseToEncryptedStorage()
-        markMutated()
+        markMutated(scope)
     }
 
     /**
@@ -186,10 +188,11 @@ class VaultDatabase(
     /**
      * Persist the in-memory database and mark it as changed locally, without committing a SQL transaction.
      * Used after migrations, whose scripts manage their own transactions.
+     * @param scope What the mutation touched, so the next sync can push only that scope
      */
-    fun persistAndMarkDirty() {
+    fun persistAndMarkDirty(scope: String = VaultMutationScope.MAIN) {
         persistDatabaseToEncryptedStorage()
-        markMutated()
+        markMutated(scope)
     }
 
     /**
@@ -212,8 +215,8 @@ class VaultDatabase(
      * Mark the vault dirty and bump the mutation sequence, atomically from the sync engine's point of view,
      * so the next sync pushes the local change instead of reporting the vault in sync.
      */
-    private fun markMutated() {
-        metadata.setIsDirty(true)
+    private fun markMutated(scope: String) {
+        metadata.markDirty(scope)
         metadata.incrementMutationSequence()
     }
 

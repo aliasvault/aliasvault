@@ -1,4 +1,5 @@
 import Foundation
+import VaultModels
 import VaultUtils
 
 /// The grouping key of a manifest-scoped row (same id can exist in several manifests by design).
@@ -31,13 +32,15 @@ public class BaseRepository {
 
     /// Execute a function within a transaction.
     /// Automatically handles begin, commit, and rollback.
-    /// - Parameter operation: The function to execute within the transaction
+    /// - Parameters:
+    ///   - scope: What the mutation touched, so the next sync can push only that scope
+    ///   - operation: The function to execute within the transaction
     /// - Returns: The result of the function
-    public func withTransaction<T>(_ operation: () throws -> T) throws -> T {
+    public func withTransaction<T>(scope: String = VaultMutationScope.main, _ operation: () throws -> T) throws -> T {
         try client.beginTransaction()
         do {
             let result = try operation()
-            try client.commitTransaction()
+            try client.commitTransaction(scope: scope)
             return result
         } catch {
             try? client.rollbackTransaction()

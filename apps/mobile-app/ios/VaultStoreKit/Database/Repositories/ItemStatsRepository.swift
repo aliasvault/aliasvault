@@ -1,4 +1,5 @@
 import Foundation
+import VaultModels
 
 /// The actions whose use of an item is recorded. Each maps to its own timestamp + counter pair alongside the
 /// aggregate `LastUsedAt` / `UseCount`.
@@ -31,7 +32,8 @@ public class ItemStatsRepository: BaseRepository {
     ///   - manifestId: The manifest the item belongs to
     ///   - action: What the user did with it
     public func recordUsage(itemId: String, manifestId: String, action: ItemUsageAction) throws {
-        try withTransaction {
+        // Usage statistics live in their own data bucket which should be pushed without a full manifest write.
+        try withTransaction(scope: VaultDataBucketCategory.stats) {
             let now = self.now()
             let columns = action.columns
             try client.executeUpdate(ItemStatsQueries.insertRow, params: [manifestId, itemId, now, now])

@@ -27,6 +27,8 @@ public final class VaultSyncEngine {
     private let webApiService: WebApiService
     /// The engine's staging database, held in the Rust core's memory.
     private var staging: SqliteMemoryDatabase?
+    /// Whether the live vault was written to since the last store went through.
+    private var localMutated = false
     private var runLog = VaultSyncRunLog(operation: "")
 
     public init(vaultStore: VaultStore, webApiService: WebApiService) {
@@ -47,6 +49,7 @@ public final class VaultSyncEngine {
         let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey, sharing: sharing))
         defer {
             closeStaging()
+            discardLocalDatabaseIfNeeded()
             log.finish(result: finalResult, userDefaults: vaultStore.userDefaults)
         }
 
@@ -77,12 +80,12 @@ public final class VaultSyncEngine {
             "username": vaultStore.getUsername() ?? "",
             "isDirty": syncState.isDirty,
             "mutationSequence": syncState.mutationSequence,
-            "dirtyScopes": syncState.isDirty ? ["Main"] : [],
+            "dirtyScopes": syncState.isDirty ? vaultStore.getDirtyScopes() : [],
             "privateEmailDomains": metadata?.privateEmailDomains ?? [],
             "forcePull": forcePull,
             "minServerVersion": AppInfo.minServerVersion,
             "isOfflineMode": vaultStore.getOfflineMode(),
-            "unnamedSharedVaultName": NSLocalizedString("unnamed_shared_vault", value: "Shared vault", comment: "Name of a shared vault without a name")
+            "unnamedSharedVaultName": NSLocalizedString("unnamed_shared_vault", bundle: .vaultStoreKit, value: "Shared vault", comment: "Name of a shared vault without a name")
         ]
         if let key = encryptionKey ?? (try? vaultStore.getEncryptionKeyBase64()) {
             request["encryptionKey"] = key
@@ -122,8 +125,11 @@ public final class VaultSyncEngine {
                 let rowsJson = try db.query(sql: command["sql"] as? String ?? "", paramsJson: try Self.serializeJson(command["params"] ?? []))
                 return ["rows": try Self.parseJsonArray(rowsJson)]
             case "dbExec":
-                let db = try database(named: command["db"] as? String ?? "")
-                try db.exec(statementsJson: try Self.serializeJson(command["statements"] ?? []))
+                let name = command["db"] as? String ?? ""
+                try database(named: name).exec(statementsJson: try Self.serializeJson(command["statements"] ?? []))
+                if name == "local" {
+                    localMutated = true
+                }
                 return [:]
             case "dbExport":
                 let bytes: Data
@@ -161,12 +167,13 @@ public final class VaultSyncEngine {
         let path = command["path"] as? String ?? ""
         let body = command["body"] as? String
         let auth = command["auth"] as? Bool ?? true
+        let largeTransfer = command["largeTransfer"] as? Bool ?? false
         var headers: [String: String] = ["Accept": "application/json"]
         if body != nil {
             headers["Content-Type"] = "application/json"
         }
         do {
-            let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth)
+            let response = try await webApiService.executeRequest(method: method, endpoint: path, body: body, headers: headers, requiresAuth: auth, largeTransfer: largeTransfer)
             return ["status": response.statusCode, "body": response.body]
         } catch {
             let timedOut = (error as? URLError)?.code == .timedOut
@@ -241,6 +248,10 @@ public final class VaultSyncEngine {
             serverRevision: command["revision"] as? Int,
             expectedMutationSeq: command["expectedMutationSeq"] as? Int
         )
+        if result.success {
+            // The stored vault is now what the live database holds, so nothing is left to discard.
+            localMutated = false
+        }
         if result.success && vaultStore.isVaultUnlocked {
             // The contract: after a store, the live database is the vault just stored.
             let reloadStartedAt = Date()
@@ -285,6 +296,20 @@ public final class VaultSyncEngine {
 
     private func closeStaging() {
         staging = nil
+    }
+
+    /// Reload the stored vault when the run left changes in the live database that no store persisted, so the
+    /// vault the app reads from is the one on disk rather than a half-finished sync.
+    private func discardLocalDatabaseIfNeeded() {
+        guard localMutated else { return }
+        localMutated = false
+        guard vaultStore.isVaultUnlocked else { return }
+        do {
+            try vaultStore.unlockVault()
+            runLog.note("Discarded unpersisted local vault changes; reloaded the stored vault")
+        } catch {
+            runLog.note("Failed to reload the stored vault after discarding unpersisted changes: \(error)")
+        }
     }
 
     // MARK: - JSON
