@@ -999,7 +999,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Log the successful account deletion.
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.AccountDeletion);
 
-        // Delete the user and their data.
+        // The 2FA tokens have no foreign key to the user, so they are deleted explicitly.
+        context.UserTokens.RemoveRange(await context.UserTokens.Where(t => t.UserId == user.Id).ToListAsync());
 
         // Delete the personal group and user.
         var personalGroup = await context.Groups.FirstAsync(g => g.Id == user.PersonalGroupId);

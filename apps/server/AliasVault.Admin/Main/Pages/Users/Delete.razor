@@ -87,6 +87,9 @@ else
 
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
 
+        // The 2FA tokens have no foreign key to the user, so they are deleted explicitly.
+        dbContext.UserTokens.RemoveRange(await dbContext.UserTokens.Where(t => t.UserId == Obj.Id).ToListAsync());
+
         // Delete user and its associated personal group.
         var personalGroup = await dbContext.Groups.FirstAsync(g => g.Id == Obj.PersonalGroupId);
         dbContext.Groups.Remove(personalGroup);
