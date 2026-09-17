@@ -1,7 +1,4 @@
-import { Buffer } from 'buffer';
-
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { canAdministerGroup, describeMemberAccess, holdsManifestKey, ownUserIdIn, roleTranslationKey, sharingErrorTranslationKey } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -13,12 +10,12 @@ import { useTranslation } from 'react-i18next';
 import { RefreshControl, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
-import { ConfirmPasswordModal } from '@/components/common/ConfirmPasswordModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -32,11 +29,6 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 
 import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestInfo } from '@aliasvault/models/webapi';
 
-/**
- * The shared folder the password confirmation is about to delete.
- */
-type PendingVaultDelete = { group: GroupInfo; manifest: SharedManifestInfo };
-
 /** A sharing operation that failed with a reason already put into words for the user. */
 class SharingOperationError extends Error {}
 
@@ -48,7 +40,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const colors = useColors();
   const webApi = useWebApi();
   const { t } = useTranslation();
-  const { username, verifyPassword } = useApp();
+  const { username } = useApp();
   const { sqliteClient } = useDb();
   const { isEnabled, isLoaded } = useCapabilityContext();
   const { showConfirm } = useDialog();
@@ -63,7 +55,6 @@ export default function FamilySharingScreen(): React.ReactNode {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
-  const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
   const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
 
   /**
@@ -219,52 +210,45 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Ask before deleting a shared folder, then move on to the master password confirmation.
+   * Delete a shared folder behind the native password prompt. The server wants proof of the master password, which
+   * the native layer answers with the unlock key of the open session.
+   * @param group - the group the shared folder belongs to.
+   * @param manifest - the shared folder to delete.
+   */
+  const deleteSharedVault = async (group: GroupInfo, manifest: SharedManifestInfo): Promise<void> => {
+    const authenticated = await VaultUnlockHelper.authenticateForAction(t('sharing.family.deleteVault'), t('settings.passwordConfirm.description'), null, t('common.delete'));
+    if (!authenticated) {
+      return;
+    }
+
+    await run(async () => {
+      try {
+        await SharingService.deleteSharedManifest(webApi, group.groupId, manifest.manifestId, challenge => NativeVaultManager.deriveSrpProof(challenge.salt, challenge.srpIdentity, challenge.serverEphemeral));
+      } catch (deleteError) {
+        // Local unlock key could mismatch what is actually stored on server (recent password change on other device), if so we show a incorrect password error.
+        if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
+          throw new SharingOperationError(t('auth.errors.incorrectPassword'));
+        }
+
+        throw deleteError;
+      }
+
+      await syncVault();
+      setNotice(t('sharing.family.vaultDeleted'));
+    }, t('sharing.family.errors.deleteVaultFailed'));
+  };
+
+  /**
+   * Ask before deleting a shared folder, then move on to the native master password prompt.
    */
   const confirmVaultDelete = (group: GroupInfo, manifest: SharedManifestInfo): void => {
     showConfirm(
       t('sharing.family.deleteVault'),
       t('sharing.family.deleteVaultConfirm', { vault: vaultLabel(manifest) }),
       t('common.delete'),
-      () => setPendingVaultDelete({ group, manifest }),
+      () => deleteSharedVault(group, manifest),
       { confirmStyle: 'destructive' }
     );
-  };
-
-  /**
-   * Delete a shared folder, proving the master password to the server the way the account deletion does.
-   * @param password - the entered master password.
-   */
-  const deleteSharedVault = async (password: string): Promise<void> => {
-    const target = pendingVaultDelete;
-    if (!target) {
-      return;
-    }
-
-    const passwordHashBase64 = await verifyPassword(password);
-    if (!passwordHashBase64) {
-      throw new Error(t('auth.errors.incorrectPassword'));
-    }
-
-    try {
-      await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, async (challenge) => {
-        const passwordHashString = Buffer.from(passwordHashBase64, 'base64').toString('hex').toUpperCase();
-        const proof = await SrpAuthService.deriveClientProof(challenge.salt, challenge.srpIdentity, passwordHashString, challenge.serverEphemeral);
-        return { clientPublicEphemeral: proof.clientPublicEphemeral, clientSessionProof: proof.clientSessionProof };
-      });
-    } catch (deleteError) {
-      if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
-        throw new Error(t('auth.errors.incorrectPassword'));
-      }
-
-      throw new Error(apiErrorMessage(deleteError, t('sharing.family.errors.deleteVaultFailed')));
-    }
-
-    setPendingVaultDelete(null);
-    await run(async () => {
-      await syncVault();
-      setNotice(t('sharing.family.vaultDeleted'));
-    }, t('sharing.family.errors.deleteVaultFailed'));
   };
 
   /**
@@ -439,15 +423,6 @@ export default function FamilySharingScreen(): React.ReactNode {
 
   return (
     <ThemedContainer>
-      <ConfirmPasswordModal
-        isOpen={pendingVaultDelete !== null}
-        onClose={() => setPendingVaultDelete(null)}
-        onConfirm={deleteSharedVault}
-        title={t('sharing.family.deleteVault')}
-        message={t('sharing.family.deleteVaultPasswordPrompt', { vault: pendingVaultDelete ? vaultLabel(pendingVaultDelete.manifest) : '' })}
-        confirmText={t('common.delete')}
-      />
-
       <ThemedScrollView refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />}>
         <View style={styles.headerRow}>
           <ThemedText style={styles.headerText}>{t('sharing.family.description')}</ThemedText>

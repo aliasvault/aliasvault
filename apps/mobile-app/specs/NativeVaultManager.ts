@@ -153,6 +153,9 @@ export interface Spec extends TurboModule {
   // recentUnlockGraceSeconds: If > 0, skip the prompt when a successful biometric or PIN unlock happened within this many seconds ago. Pass 0 to always prompt.
   authenticateUser(title: string | null, subtitle: string | null, allowedMethods: string[] | null, buttonText: string | null, recentUnlockGraceSeconds: number): Promise<boolean>;
 
+  // Answer a server's SRP challenge with the available unlock key.
+  deriveSrpProof(salt: string, srpIdentity: string, serverEphemeral: string): Promise<{ clientPublicEphemeral: string; clientSessionProof: string }>;
+
   // QR code scanner
   // Scan a QR code and return the scanned data. Returns null if cancelled or failed.
   // If prefixes is provided, only QR codes starting with one of these prefixes will be accepted.

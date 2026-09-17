@@ -7,6 +7,9 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONObject
+import uniffi.aliasvault_core.srpDerivePrivateKey
+import uniffi.aliasvault_core.srpDeriveSession
+import uniffi.aliasvault_core.srpGenerateEphemeral
 import java.math.BigInteger
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -280,6 +283,33 @@ class VaultCrypto(
      */
     fun getUnlockKey(callback: CryptoOperationCallback, authMethods: String) {
         withSession(callback, authMethods) { unlockKey }
+    }
+
+    /**
+     * Answer a server's SRP challenge with the available unlock key.
+     */
+    fun deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String, callback: CryptoOperationCallback, authMethods: String) {
+        withSession(
+            object : CryptoOperationCallback {
+                override fun onSuccess(result: String) {
+                    try {
+                        val passwordHash = Base64.decode(result, Base64.NO_WRAP).joinToString("") { "%02X".format(it) }
+                        val ephemeral = srpGenerateEphemeral()
+                        val privateKey = srpDerivePrivateKey(salt, srpIdentity, passwordHash)
+                        val session = srpDeriveSession(ephemeral.secret, serverEphemeral, salt, srpIdentity, privateKey)
+                        callback.onSuccess(JSONObject().put("clientPublicEphemeral", ephemeral.public).put("clientSessionProof", session.proof).toString())
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Could not derive the SRP proof from the unlock key", e)
+                        callback.onError(e)
+                    }
+                }
+
+                override fun onError(e: Exception) {
+                    callback.onError(e)
+                }
+            },
+            authMethods,
+        ) { unlockKey }
     }
 
     /**

@@ -179,6 +179,15 @@ extension VaultStore {
         }
     }
 
+    /// Answer a server's SRP challenge with the unlock key of the open session.
+    public func deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String) throws -> (clientPublicEphemeral: String, clientSessionProof: String) {
+        let passwordHash = try getUnlockKey().map { String(format: "%02X", $0) }.joined()
+        let ephemeral = RustCoreFramework.srpGenerateEphemeral()
+        let privateKey = try RustCoreFramework.srpDerivePrivateKey(salt: salt, identity: srpIdentity, passwordHash: passwordHash)
+        let session = try RustCoreFramework.srpDeriveSession(clientSecret: ephemeral.secret, serverPublic: serverEphemeral, salt: salt, identity: srpIdentity, privateKey: privateKey)
+        return (ephemeral.public, session.proof)
+    }
+
     /// Encrypt the data using the encryption key
     internal func encrypt(data: Data) throws -> Data {
         let encryptionKey = try getEncryptionKey()

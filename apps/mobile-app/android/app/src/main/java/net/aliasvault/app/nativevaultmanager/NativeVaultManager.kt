@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -1995,6 +1996,37 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 promise.reject("AUTH_ERROR", "Authentication failed: ${e.message}", e)
             }
         }
+    }
+
+    /**
+     * Answer a server's SRP challenge with the unlock key of the open session (see VaultStore.deriveSrpProof).
+     * @param salt The salt the initiate call returned.
+     * @param srpIdentity The SRP identity the initiate call returned.
+     * @param serverEphemeral The server public ephemeral the initiate call returned.
+     * @param promise The promise to resolve with the client public ephemeral and session proof.
+     */
+    @ReactMethod
+    override fun deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String, promise: Promise) {
+        vaultStore.deriveSrpProof(
+            salt,
+            srpIdentity,
+            serverEphemeral,
+            object : CryptoOperationCallback {
+                override fun onSuccess(result: String) {
+                    val proof = JSONObject(result)
+                    val resultMap = Arguments.createMap().apply {
+                        putString("clientPublicEphemeral", proof.getString("clientPublicEphemeral"))
+                        putString("clientSessionProof", proof.getString("clientSessionProof"))
+                    }
+                    promise.resolve(resultMap)
+                }
+
+                override fun onError(e: Exception) {
+                    Log.e(TAG, "Error deriving the SRP proof", e)
+                    promise.reject("SRP_PROOF_ERROR", "Failed to derive the SRP proof: ${e.message}", e)
+                }
+            },
+        )
     }
 
     // MARK: - Sync State Management

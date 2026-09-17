@@ -369,6 +369,10 @@
     [vaultManager authenticateUser:title subtitle:subtitle allowedMethods:allowedMethods buttonText:buttonText recentUnlockGraceSeconds:recentUnlockGraceSeconds resolver:resolve rejecter:reject];
 }
 
+- (void)deriveSrpProof:(NSString *)salt srpIdentity:(NSString *)srpIdentity serverEphemeral:(NSString *)serverEphemeral resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager deriveSrpProof:salt srpIdentity:srpIdentity serverEphemeral:serverEphemeral resolver:resolve rejecter:reject];
+}
+
 // MARK: - QR Code Scanner
 
 - (void)scanQRCode:(NSArray<NSString *> *)prefixes statusText:(NSString *)statusText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

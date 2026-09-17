@@ -1423,6 +1423,28 @@ public class VaultManager: NSObject {
         }
     }
 
+    /// Answer a server's SRP challenge with the unlock key of the open session (see VaultStore.deriveSrpProof).
+    @objc
+    func deriveSrpProof(_ salt: String,
+                        srpIdentity: String,
+                        serverEphemeral: String,
+                        resolver resolve: @escaping RCTPromiseResolveBlock,
+                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else {
+                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                return
+            }
+
+            do {
+                let proof = try self.vaultStore.deriveSrpProof(salt: salt, srpIdentity: srpIdentity, serverEphemeral: serverEphemeral)
+                resolve(["clientPublicEphemeral": proof.clientPublicEphemeral, "clientSessionProof": proof.clientSessionProof])
+            } catch {
+                reject("SRP_PROOF_ERROR", "Failed to derive the SRP proof: \(error.localizedDescription)", error)
+            }
+        }
+    }
+
     // MARK: - Sync State Management
 
     @objc
