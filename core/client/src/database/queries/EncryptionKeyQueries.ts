@@ -25,21 +25,4 @@ export class EncryptionKeyQueries {
     FROM EncryptionKeys x
     WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0
     LIMIT 1`;
-
-  /**
-   * Demote a manifest's current keypair. Rotation demotes rather than deletes, so mail received before the
-   * rotation stays decryptable by the members who still hold the folder.
-   */
-  public static readonly DEMOTE_FOR_MANIFEST = `
-    UPDATE EncryptionKeys
-    SET IsPrimary = 0, UpdatedAt = ?
-    WHERE ManifestId = ? AND IsPrimary = 1`;
-
-  /**
-   * Insert a manifest's new active keypair, stamped with the manifest's id so the codec routes it into that
-   * manifest (private half encrypted under the manifest's VEK, readable by exactly its members).
-   */
-  public static readonly INSERT_FOR_MANIFEST = `
-    INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, 1, ?, ?, 0)`;
 }

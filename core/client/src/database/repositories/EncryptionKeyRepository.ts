@@ -33,17 +33,4 @@ export class EncryptionKeyRepository extends BaseRepository {
     const results = yield* this.query<EncryptionKey>(EncryptionKeyQueries.GET_ACCOUNT_KEY_BY_PUBLIC_KEY, [personalManifestId, publicKey]);
     return results.length > 0 ? results[0] : null;
   }
-
-  /**
-   * Make the given keypair the manifest's active one, demoting (never deleting) whatever it supersedes so
-   * mail received before the rotation stays decryptable.
-   * @param manifestId - The manifest id to stamp the keypair with
-   * @param publicKey - The public half, published to the server for delivery
-   * @param privateKey - The private half, which never leaves the manifest
-   */
-  public *setActiveForManifest(manifestId: string, publicKey: string, privateKey: string): DbOp<void> {
-    const now = this.now();
-    yield* this.execute(EncryptionKeyQueries.DEMOTE_FOR_MANIFEST, [now, manifestId]);
-    yield* this.execute(EncryptionKeyQueries.INSERT_FOR_MANIFEST, [this.generateId(), manifestId, publicKey, privateKey, now, now]);
-  }
 }

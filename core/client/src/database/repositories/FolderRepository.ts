@@ -2,12 +2,9 @@ import { getPlatform } from '../../platform/ClientPlatform';
 import { TranslatableMessage } from '../../platform/TranslatableMessage';
 import { multiManifestRendering } from '../../sharing/MultiManifestRendering';
 import { BaseRepository } from '../BaseRepository';
-import { BaseQueries } from '../queries/BaseQueries';
 import { FolderQueries } from '../queries/FolderQueries';
 
-import type { IDatabaseClient } from '../BaseRepository';
 import type { DbOp } from '../DbOp';
-import type { LogoRepository } from './LogoRepository';
 
 /**
  * Folder entity type.
@@ -24,15 +21,6 @@ export type Folder = {
  * Repository for Folder CRUD operations.
  */
 export class FolderRepository extends BaseRepository {
-  /**
-   * Constructor for the FolderRepository class.
-   * @param client - The database client to use for the repository
-   * @param logoRepository - The logo repository, to follow items across manifest boundaries
-   */
-  public constructor(client: IDatabaseClient, private logoRepository: LogoRepository) {
-    super(client);
-  }
-
   /**
    * Create a new folder.
    * @param name - The name of the folder
@@ -213,21 +201,5 @@ export class FolderRepository extends BaseRepository {
     if (folder && multiManifestRendering.isManifestRoot(folder)) {
       throw new Error(await getPlatform().translate(TranslatableMessage.SharedFolderDeleteRefused));
     }
-  }
-
-  /**
-   * Re-stamp a folder's whole subtree into `manifestId`.
-   * @param folderId - The root of the subtree to re-stamp
-   * @param manifestId - The manifest the subtree now belongs to
-   * @returns The number of folder + item rows re-stamped
-   */
-  public async restampSubtree(folderId: string, manifestId: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const folders = await this.run(this.execute(BaseQueries.RESTAMP_SUBTREE_FOLDERS, [manifestId, folderId]));
-      const items = await this.run(this.execute(BaseQueries.RESTAMP_SUBTREE_ITEMS, [manifestId, folderId]));
-      // The items moved; the images they point at have to follow them into the new manifest.
-      await this.logoRepository.reconcileItemLogoScopes(this.now());
-      return folders + items;
-    });
   }
 }

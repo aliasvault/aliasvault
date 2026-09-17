@@ -122,7 +122,7 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public get folders(): SyncRepository<FolderRepository> {
     if (!this._folders) {
-      this._folders = syncRepository(new FolderRepository(this, this.logoRepository), this);
+      this._folders = syncRepository(new FolderRepository(this), this);
     }
     return this._folders;
   }
@@ -158,7 +158,7 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * The logo repository itself, which the item and folder repositories call into.
+   * The logo repository itself, which the item repository calls into.
    */
   private get logoRepository(): LogoRepository {
     if (!this._logoRepository) {

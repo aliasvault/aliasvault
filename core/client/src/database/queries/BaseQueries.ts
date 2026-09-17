@@ -22,33 +22,4 @@ export class BaseQueries {
    * own manifest.
    */
   public static readonly MANIFEST_OF_ITEM = 'COALESCE((SELECT ManifestId FROM Items WHERE Id = ?), ?)';
-
-  /**
-   * Re-stamp a folder's whole subtree with `?` (a manifest id).
-   * Used when a folder is shared (its subtree joins that manifest's namespace) and when the share is
-   * removed (the subtree returns to the personal manifest).
-   */
-  public static readonly RESTAMP_SUBTREE_FOLDERS = `
-    UPDATE Folders SET ManifestId = ?
-    WHERE Id IN (
-      WITH RECURSIVE subtree(Id) AS (
-        SELECT Id FROM Folders WHERE Id = ?
-        UNION ALL
-        SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id
-      )
-      SELECT Id FROM subtree
-    )`;
-
-  /** Companion of {@link RESTAMP_SUBTREE_FOLDERS} for the items inside that subtree. */
-  public static readonly RESTAMP_SUBTREE_ITEMS = `
-    UPDATE Items SET ManifestId = ?
-    WHERE FolderId IN (
-      WITH RECURSIVE subtree(Id) AS (
-        SELECT Id FROM Folders WHERE Id = ?
-        UNION ALL
-        SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id
-      )
-      SELECT Id FROM subtree
-    )`;
-
 }
