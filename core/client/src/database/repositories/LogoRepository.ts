@@ -86,26 +86,6 @@ export class LogoRepository extends BaseRepository {
   }
 
   /**
-   * Bring every item's logo into the item's own manifest, for items that have crossed a manifest boundary.
-   * @param currentDateTime The current date/time string for timestamps
-   * @returns The number of items repointed
-   */
-  public async reconcileItemLogoScopes(currentDateTime: string): Promise<number> {
-    const foreign = await this.run(this.query<{ Id: string; ManifestId: string; Kind: LogoKind; Source: string }>(
-      LogoQueries.FIND_ITEMS_WITH_FOREIGN_LOGO
-    ));
-
-    let repointed = 0;
-    for (const item of foreign) {
-      const logoId = await this.adoptIntoScope(item.ManifestId, item.Kind, item.Source, currentDateTime);
-      if (logoId) {
-        repointed += await this.run(this.execute(LogoQueries.REPOINT_ITEM_LOGO, [logoId, item.Id, item.ManifestId]));
-      }
-    }
-    return repointed;
-  }
-
-  /**
    * Get or create the logo for a kind and key inside one manifest, refreshing its image data.
    *
    * The row's stamp and the id derived for it come from the same `manifestId`, so a logo can never be

@@ -232,10 +232,15 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     let missing: Vec<StoredBlobRef> = refs.iter().filter(|r| !cache.contains_key(&r.hash)).cloned().collect();
     ctx.log(format!("[V2Pull] Blob refs: {} referenced, {} cached locally, {} to download.", refs.len(), refs.len() - missing.len(), missing.len())).await;
 
-    let batches = http::batch_by_transfer_cost(missing, |r| base64_chars(r.size_bytes));
+    // The server stores blobs per manifest, so each batch names the manifest that owns its hashes.
+    let mut batches: Vec<(String, Vec<StoredBlobRef>)> = Vec::new();
+    for entry in resolved {
+        let owned: Vec<StoredBlobRef> = missing.iter().filter(|r| owners.get(&r.hash).is_some_and(|o| o.manifest_id == entry.manifest_id)).cloned().collect();
+        batches.extend(http::batch_by_transfer_cost(owned, |r| base64_chars(r.size_bytes)).into_iter().map(|chunk| (entry.manifest_id.clone(), chunk)));
+    }
     let batch_count = batches.len();
-    for (index, chunk) in batches.into_iter().enumerate() {
-        let blobs: Vec<BlobDto> = http::post(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?;
+    for (index, (manifest_id, chunk)) in batches.into_iter().enumerate() {
+        let blobs: Vec<BlobDto> = http::post(&ctx.host, BLOBS_DOWNLOAD_ENDPOINT, &BlobHashesRequest { manifest_id, hashes: chunk.iter().map(|r| r.hash.clone()).collect() }, true).await?;
         ctx.log(format!("[V2Pull] Downloaded blob batch {}/{}: requested {}, received {}.", index + 1, batch_count, chunk.len(), blobs.len())).await;
         for dto in blobs {
             cache.insert(dto.hash, dto.encrypted_data_base64);

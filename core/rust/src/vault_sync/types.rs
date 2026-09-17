@@ -719,6 +719,7 @@ pub struct VaultWriteResponse {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobUploadRequest {
+    pub manifest_id: String,
     pub blobs: Vec<BlobDto>,
     pub overwrite: bool,
 }
@@ -726,6 +727,7 @@ pub struct BlobUploadRequest {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlobHashesRequest {
+    pub manifest_id: String,
     pub hashes: Vec<String>,
 }
 

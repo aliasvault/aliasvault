@@ -188,6 +188,47 @@ fn dirty_client_pushes_only_what_changed() {
 }
 
 #[test]
+fn pushed_blobs_name_the_manifest_that_owns_them() {
+    let vek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&vek);
+    let server_db = test_host::open_schema_db(&host.schema_sql);
+    insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
+    let (status, vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+    host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+
+    let now = crate::timestamp::now_vault_datetime();
+    host.local
+        .execute(
+            "INSERT INTO Logos (ManifestId, Id, Source, FileData, Kind, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, 'example.com', ?, 'favicon', ?, ?, 0)",
+            rusqlite::params![PERSONAL_MANIFEST_ID, "bbbbbbbb-0000-4000-8000-000000000001", vec![1u8, 2, 3, 4], now, now],
+        )
+        .unwrap();
+    host.local.execute("UPDATE Items SET LogoId = 'bbbbbbbb-0000-4000-8000-000000000001'", []).unwrap();
+    host.store_local_as_blob();
+    host.mutation_sequence = 1;
+    host.is_dirty = true;
+    host.respond_with(Box::new(|method, path, body| (method == "POST" && path == "Vault/blobs/missing").then(|| (200, json!({ "missing": body.map(|b| b["hashes"].clone()).unwrap_or_default() })))));
+    host.respond("POST", "Vault/blobs", json!({ "acceptedCount": 1 }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, 1)).unwrap());
+
+    assert_eq!(result["success"], true, "{}", result);
+    let missing_checks = host.requests_to("Vault/blobs/missing");
+    assert_eq!(missing_checks.len(), 1);
+    assert_eq!(missing_checks[0].body.as_ref().unwrap()["manifestId"], PERSONAL_MANIFEST_ID);
+    let uploads = host.requests_to("Vault/blobs");
+    assert_eq!(uploads.len(), 1);
+    let upload = uploads[0].body.as_ref().unwrap();
+    assert_eq!(upload["manifestId"], PERSONAL_MANIFEST_ID);
+    assert_eq!(upload["blobs"].as_array().unwrap().len(), 1);
+    assert_eq!(upload["blobs"][0]["hash"], missing_checks[0].body.as_ref().unwrap()["hashes"][0]);
+}
+
+#[test]
 fn no_op_mutation_clears_the_dirty_flag_without_a_write() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);

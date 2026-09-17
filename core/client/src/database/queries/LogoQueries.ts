@@ -29,7 +29,7 @@ export class LogoQueries {
     LIMIT 1`;
 
   /**
-   * The kind and key of an existing logo.
+   * The kind and key of an existing logo, in whichever manifest holds it.
    */
   public static readonly GET_BY_ID = `
     SELECT Id, Kind, Source, Name FROM Logos
@@ -48,21 +48,4 @@ export class LogoQueries {
       Name = COALESCE(excluded.Name, Logos.Name),
       UpdatedAt = excluded.UpdatedAt,
       IsDeleted = 0`;
-
-  /**
-   * Every item whose logo lives outside the item's own manifest, with the kind and key needed to bring a
-   * copy in.
-   */
-  public static readonly FIND_ITEMS_WITH_FOREIGN_LOGO = `
-    SELECT i.Id, i.ManifestId, origin.Kind, origin.Source
-    FROM Items i
-    INNER JOIN Logos origin ON origin.Id = i.LogoId
-    LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId
-    WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0`;
-
-  /**
-   * Point an item at the copy of its logo that lives in its own manifest.
-   */
-  public static readonly REPOINT_ITEM_LOGO = `
-    UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?`;
 }

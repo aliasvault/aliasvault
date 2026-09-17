@@ -331,6 +331,7 @@ impl Candidate<'_> {
 
 /// A plaintext blob staged for upload.
 struct UploadBlobEntry {
+    manifest_id: String,
     bytes: Vec<u8>,
     kind: String,
     vek: String,
@@ -346,6 +347,19 @@ struct UploadBlobs {
 impl UploadBlobs {
     fn hashes(&self, from_personal: bool) -> Vec<String> {
         self.order.iter().filter(|h| self.entries[*h].from_personal == from_personal).cloned().collect()
+    }
+
+    /// The given hashes grouped by the manifest that owns them, in first-seen order; the server stores blobs per manifest.
+    fn by_manifest(&self, hashes: &[String]) -> Vec<(String, Vec<String>)> {
+        let mut groups: Vec<(String, Vec<String>)> = Vec::new();
+        for hash in hashes {
+            let Some(entry) = self.entries.get(hash) else { continue };
+            match groups.iter_mut().find(|(manifest_id, _)| *manifest_id == entry.manifest_id) {
+                Some((_, group)) => group.push(hash.clone()),
+                None => groups.push((entry.manifest_id.clone(), vec![hash.clone()])),
+            }
+        }
+        groups
     }
 }
 
@@ -484,7 +498,7 @@ fn collect_candidates<'a>(canonicalized: &'a CanonicalizedVault, records: &'a [M
         .collect()
 }
 
-/// The plaintext blobs the candidates carry; a blob two manifests share is staged once, under the first owner's key.
+/// The plaintext blobs the candidates carry, each owned by the manifest whose salt its hash was computed with.
 fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
     let mut blobs = UploadBlobs { entries: HashMap::new(), order: Vec::new() };
     for candidate in candidates {
@@ -493,7 +507,7 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
                 continue;
             }
             blobs.order.push(hash.clone());
-            blobs.entries.insert(hash.clone(), UploadBlobEntry { bytes: crate::encoding::base64_decode(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
+            blobs.entries.insert(hash.clone(), UploadBlobEntry { manifest_id: candidate.record.manifest_id.clone(), bytes: crate::encoding::base64_decode(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
         }
     }
     Ok(blobs)
@@ -579,24 +593,25 @@ async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBa
     let unknown_to_server = |hashes: &[String]| -> Vec<String> { hashes.iter().filter(|h| !baselines.known_server_hashes.contains(*h)).cloned().collect() };
 
     let (personal_to_upload, shared_to_upload) = if gate.migrating {
-        (personal_hashes.clone(), missing_on_server(ctx, unknown_to_server(&shared_hashes)).await?)
+        (personal_hashes.clone(), missing_on_server(ctx, blobs, &unknown_to_server(&shared_hashes)).await?)
     } else {
-        let missing: HashSet<String> = missing_on_server(ctx, unknown_to_server(&blobs.order)).await?.into_iter().collect();
+        let missing: HashSet<String> = missing_on_server(ctx, blobs, &unknown_to_server(&blobs.order)).await?.into_iter().collect();
         (personal_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect(), shared_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect())
     };
     ctx.log(format!("[V2Push] Blob diff: {} blobs, uploading {} personal + {} shared{}.", blobs.order.len(), personal_to_upload.len(), shared_to_upload.len(), if gate.migrating { " (personal manifest re-encrypted, VEK migration)" } else { "" })).await;
 
-    let mut uploaded = upload_blobs(ctx, &blobs.entries, &personal_to_upload, gate.migrating).await?;
-    uploaded.extend(upload_blobs(ctx, &blobs.entries, &shared_to_upload, false).await?);
+    let mut uploaded = upload_blobs(ctx, blobs, &personal_to_upload, gate.migrating).await?;
+    uploaded.extend(upload_blobs(ctx, blobs, &shared_to_upload, false).await?);
     Ok(uploaded)
 }
 
-/// Ask the server which of the given hashes it lacks.
-async fn missing_on_server(ctx: &Ctx, hashes: Vec<String>) -> SyncResult<Vec<String>> {
-    if hashes.is_empty() {
-        return Ok(Vec::new());
+/// Ask the server which of the given hashes it lacks, one request per manifest that owns them.
+async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) -> SyncResult<Vec<String>> {
+    let mut missing = Vec::new();
+    for (manifest_id, hashes) in blobs.by_manifest(hashes) {
+        missing.extend(http::post::<_, MissingBlobsResponse>(&ctx.host, BLOBS_MISSING_ENDPOINT, &BlobHashesRequest { manifest_id, hashes }, false).await?.missing);
     }
-    Ok(http::post::<_, MissingBlobsResponse>(&ctx.host, BLOBS_MISSING_ENDPOINT, &BlobHashesRequest { hashes }, false).await?.missing)
+    Ok(missing)
 }
 
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
@@ -612,8 +627,8 @@ async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs
     }
     ctx.warn(format!("[V2Sync] Server reported {} missing blob(s); uploading and retrying once.", response.missing_blob_hashes.len())).await;
     let (missing_personal, missing_shared): (Vec<String>, Vec<String>) = response.missing_blob_hashes.iter().cloned().partition(|h| blobs.entries[h].from_personal);
-    uploaded.extend(upload_blobs(ctx, &blobs.entries, &missing_personal, gate.migrating).await?);
-    uploaded.extend(upload_blobs(ctx, &blobs.entries, &missing_shared, false).await?);
+    uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, gate.migrating).await?);
+    uploaded.extend(upload_blobs(ctx, blobs, &missing_shared, false).await?);
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if !response.missing_blob_hashes.is_empty() {
         return Err(SyncError::MissingBlobs(response.missing_blob_hashes));
@@ -665,21 +680,23 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
     Ok(())
 }
 
-/// Encrypt the given blobs (each under its own key) and upload them in size-capped batches. Returns hash to
-/// ciphertext for the local encrypted blob cache.
-async fn upload_blobs(ctx: &Ctx, entries: &HashMap<String, UploadBlobEntry>, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, String>> {
+/// Encrypt the given blobs (each under its own key) and upload them in size-capped batches per owning manifest.
+/// Returns hash to ciphertext for the local encrypted blob cache.
+async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, String>> {
     let mut ciphertexts = HashMap::new();
-    let mut dtos = Vec::new();
-    for hash in hashes {
-        let Some(entry) = entries.get(hash) else { continue };
-        let ciphertext = crypto::symmetric_encrypt_bytes(&entry.bytes, &entry.vek)?;
-        ciphertexts.insert(hash.clone(), ciphertext.clone());
-        dtos.push(BlobDto { hash: hash.clone(), category: entry.kind.clone(), encrypted_data_base64: ciphertext });
-    }
-    for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
-        let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
-        ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
-        http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { blobs: batch, overwrite }).await?;
+    for (manifest_id, hashes) in blobs.by_manifest(hashes) {
+        let mut dtos = Vec::new();
+        for hash in hashes {
+            let entry = &blobs.entries[&hash];
+            let ciphertext = crypto::symmetric_encrypt_bytes(&entry.bytes, &entry.vek)?;
+            ciphertexts.insert(hash.clone(), ciphertext.clone());
+            dtos.push(BlobDto { hash, category: entry.kind.clone(), encrypted_data_base64: ciphertext });
+        }
+        for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
+            let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
+            ctx.log(format!("[V2Push] Uploading blob batch: {} blobs, {}.", batch.len(), format_kb(chars))).await;
+            http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
+        }
     }
     Ok(ciphertexts)
 }
