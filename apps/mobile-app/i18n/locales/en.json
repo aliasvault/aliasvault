@@ -36,6 +36,7 @@
       "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
   },
@@ -711,6 +712,9 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
       "applyingDatabaseMigrations": "Applying database migrations...",
