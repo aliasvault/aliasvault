@@ -105,6 +105,7 @@ export interface IExtensionMessageProtocol {
   OPEN_POPUP_WITH_ITEM(data: any): BoolResponse;
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;
+  PING(): boolean;
   POPUP_HEARTBEAT(): void;
   RECORD_ITEM_USAGE(data: { itemId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;

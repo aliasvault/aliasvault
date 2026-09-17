@@ -1,0 +1,2 @@
+- Update autofill accuracy
+- Fix browser extension unlock timeout errors for larger vaults

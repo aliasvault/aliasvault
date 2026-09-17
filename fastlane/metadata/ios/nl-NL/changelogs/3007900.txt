@@ -1,0 +1,1 @@
+- Verhelpt een probleem waardoor de app kon crashen op iOS 27+

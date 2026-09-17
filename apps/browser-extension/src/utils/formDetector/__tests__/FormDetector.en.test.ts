@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { FormDetector } from '../FormDetector';
+import { DetectedFieldType } from '../types/FormFields';
 
 import { FormField, testField, createTestDom } from './TestUtils';
 
@@ -420,6 +421,40 @@ describe('FormDetector English tests', () => {
       const formDetector = new FormDetector(document, otpInput as HTMLElement);
 
       expect(formDetector.isAutofillTriggerableField()).toBe(true);
+    });
+  });
+
+  /*
+   * Password step of a multi-step sign-in flow whose password input is named
+   * "credentials.passcode" (a name also used for TOTP challenge inputs).
+   * The "passcode" term alone must not turn a type="password" field
+   * with a "Password" label into a 2FA field.
+   */
+  describe('English login form 6 detection (password input named "passcode")', () => {
+    const htmlFile = 'en-login-form6.html';
+
+    testField(FormField.Password, 'input84', htmlFile);
+
+    it('should classify the clicked field as a password field, not TOTP', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('input84');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+
+      expect(formDetector.getDetectedFieldType()).toBe(DetectedFieldType.Password);
+    });
+
+    it('should not detect a TOTP field in the form', () => {
+      const dom = createTestDom(htmlFile);
+      const document = dom.window.document;
+
+      const passwordInput = document.getElementById('input84');
+      const formDetector = new FormDetector(document, passwordInput as HTMLElement);
+      const form = formDetector.getForm();
+
+      expect(form?.passwordField?.id).toBe('input84');
+      expect(form?.totpField).toBeFalsy();
     });
   });
 

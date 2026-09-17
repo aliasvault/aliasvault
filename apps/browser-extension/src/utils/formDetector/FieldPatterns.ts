@@ -121,9 +121,11 @@ export const EnglishFieldPatterns: FieldPatterns = {
   totp: {
     include: {
       // specific: strong terms that can clearly identify a TOTP field on their own.
-      specific: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password'],
-      // generic: terms too weak to match on their own (can create false positives), but can be used for additional context matching.
-      generic: ['token', 'code']
+      specific: ['totp', 'otp', 'one-time', 'onetime', 'six-digit', 'digit-code', 'authenticator', 'authentication', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode', 'tfa', 'tfacode', 'second-factor', 'one time password'],
+      /*
+       * generic: terms too weak to match on their own (can create false positives), but can be used for additional context matching.
+       */
+      generic: ['token', 'code', 'passcode']
     },
     // exclude: whole-word terms that if found negate the TOTP match.
     exclude: ['test']

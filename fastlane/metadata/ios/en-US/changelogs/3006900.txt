@@ -1,0 +1,2 @@
+- Fix app login issues that could occur for some users
+- Minor bugfixes and stability improvements

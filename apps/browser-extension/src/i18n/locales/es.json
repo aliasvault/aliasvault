@@ -113,6 +113,8 @@
       "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo.",
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.",
       "vaultSyncTimeout": "Se ha agotado el tiempo de sincronización de la bóveda. Esto puede suceder cuando la bóveda es grande o la conexión a Internet es lenta. Por favor, inténtelo de nuevo.",
+      "backgroundUnresponsive": "El servicio de extensión en segundo plano no responde. Por favor, cierre y vuelva a abrir la extensión o reinicie su navegador si el problema persiste.",
+      "vaultLoadTimeout": "La carga de la bóveda tardó demasiado. Por favor, cierre y vuelva a abrir la extensión e inténtelo de nuevo, o reinicie su navegador si el problema persiste.",
       "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
       "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
@@ -283,8 +285,8 @@
     "creating": "Creando",
     "editing": "Editando",
     "addCustomField": "Añadir campo personalizado",
-    "editCustomField": "Edit custom field",
-    "deleteCustomField": "Delete custom field",
+    "editCustomField": "Editar campo personalizado",
+    "deleteCustomField": "Eliminar campo personalizado",
     "fieldLabel": "Etiqueta del campo",
     "enterFieldName": "Introduzca el nombre del campo",
     "fieldType": "Tipo de campo",
@@ -474,7 +476,7 @@
         "female": "Mujer"
       }
     },
-    "passwordGenerator": "Generador de contraseñas",
+    "passwordGenerator": "Generador de contraseña",
     "passwordGeneratorSettings": {
       "description": "Configurar la configuración predeterminada del generador de contraseñas para elementos recién creados, incluyendo la longitud de contraseña, conjuntos de caracteres y lenguaje de contraseñas.",
       "configureButton": "Configurar"

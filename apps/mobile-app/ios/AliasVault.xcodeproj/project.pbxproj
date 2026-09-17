@@ -40,6 +40,7 @@
 		CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */; };
 		CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */; };
 		CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */; };
+		CED3AB3E2E70CF8700F3FDED /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3AB3D2E70CF8700F3FDEC /* SceneDelegate.swift */; };
 		CEE480922DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; };
 		CEE4809C2DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; };
 		CEE4809D2DBE86DD00F4A367 /* VaultStoreKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -255,6 +256,7 @@
 		CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTNativeVaultManager.mm; sourceTree = "<group>"; };
 		CE9A5B662DBAE42B00CB0A4C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AliasVault/AppDelegate.swift; sourceTree = "<group>"; };
+		CED3AB3D2E70CF8700F3FDEC /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = AliasVault/SceneDelegate.swift; sourceTree = "<group>"; };
 		CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultStoreKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE480912DBE86DD00F4A367 /* VaultStoreKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultStoreKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -467,6 +469,7 @@
 			isa = PBXGroup;
 			children = (
 				CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */,
+				CED3AB3D2E70CF8700F3FDEC /* SceneDelegate.swift */,
 				962DE0FB93C9458BAFEEED60 /* AliasVault-Bridging-Header.h */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */,
@@ -1378,6 +1381,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */,
+				CED3AB3E2E70CF8700F3FDED /* SceneDelegate.swift in Sources */,
 				CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */,
 				CE26D68F2DA7FCD2006DC04D /* VaultManager.swift in Sources */,
 				CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */,

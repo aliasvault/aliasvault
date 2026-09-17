@@ -8,9 +8,9 @@ import VaultStoreKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
-
+  private(set) var launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   private var reactNativeDelegate: ReactNativeDelegate?
-  private var reactNativeFactory: ExpoReactNativeFactory?
+  private(set) var reactNativeFactory: ExpoReactNativeFactory?
 
   func application(
     _ application: UIApplication,
@@ -34,16 +34,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
+    self.launchOptions = launchOptions
 
-    window = UIWindow(frame: UIScreen.main.bounds)
-
-    factory.startReactNative(
-      withModuleName: "main",
-      in: window,
-      launchOptions: launchOptions
-    )
-
+    // The window is created and React Native is started in SceneDelegate (UIScene lifecycle).
     return true
+  }
+
+  // MARK: - UIScene
+
+  func application(
+    _ application: UIApplication,
+    configurationForConnecting connectingSceneSession: UISceneSession,
+    options: UIScene.ConnectionOptions
+  ) -> UISceneConfiguration {
+    let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+    configuration.delegateClass = SceneDelegate.self
+    return configuration
   }
 
   // MARK: - Test Support
@@ -109,18 +115,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     print("[UITest] Cleared additional UserDefaults (\(keysToRemove.count) keys)")
   }
   #endif
-  
-  // MARK: - Linking API
-  
-  func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    return RCTLinkingManager.application(application, open: url, options: options)
-  }
-  
-  // MARK: - Universal Links
-  
-  func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-    return RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
-  }
   
   // MARK: - Remote Notifications
   

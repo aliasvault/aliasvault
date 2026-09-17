@@ -36,7 +36,7 @@ public struct ItemRow {
 
         // BLOB columns arrive as base64 text
         if let logoBase64 = row["Logo"] as? String {
-            self.logo = Data(base64Encoded: logoBase64)
+            self.logo = Data(base64Encoded: logoBase64, options: .ignoreUnknownCharacters)
         } else {
             self.logo = nil
         }

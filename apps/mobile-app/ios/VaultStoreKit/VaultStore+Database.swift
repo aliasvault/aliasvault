@@ -29,7 +29,7 @@ extension VaultStore {
             throw AppError.encryptionKeyNotFound
         }
 
-        guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64) else {
+        guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64, options: .ignoreUnknownCharacters) else {
             throw AppError.base64DecodeFailed
         }
 
@@ -68,7 +68,7 @@ extension VaultStore {
         if decrypted.starts(with: Self.sqliteHeader) {
             decryptedDbData = decrypted
         } else {
-            guard let decoded = Data(base64Encoded: decrypted) else {
+            guard let decoded = Data(base64Encoded: decrypted, options: .ignoreUnknownCharacters) else {
                 throw AppError.base64DecodeFailed
             }
             decryptedDbData = decoded

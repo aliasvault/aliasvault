@@ -123,6 +123,9 @@ object InlinePresentationHelper {
         private val budget: Int = minOf(maxCount, MAX_INLINE_BUDGET).coerceAtLeast(0)
         private var consumed: Int = 0
 
+        /** True when the keyboard requested inline chips, which replace the autofill dropdown. */
+        val isInline: Boolean get() = specs.isNotEmpty()
+
         /**
          * Returns the next spec for an inline suggestion, or null if the
          * caller should fall back to a dropdown-only dataset.
