@@ -157,6 +157,18 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         }
     }
 
+    override fun setCapabilities(json: String) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("capabilities", json)
+        }
+    }
+
+    override fun getCapabilities(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("capabilities", null)
+    }
+
     // region Sync State
 
     override fun setIsDirty(isDirty: Boolean) {

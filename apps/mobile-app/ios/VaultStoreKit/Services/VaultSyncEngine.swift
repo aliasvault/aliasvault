@@ -38,13 +38,13 @@ public final class VaultSyncEngine {
         closeStaging()
     }
 
-    /// Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`) and
-    /// return its result. `encryptionKey` overrides the store's key for the one operation that runs before it is known.
-    public func run(operation: String, forcePull: Bool = false, encryptionKey: String? = nil) async throws -> [String: Any] {
+    /// Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`, or a
+    /// sharing operation) and return its result.
+    public func run(operation: String, forcePull: Bool = false, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
         let log = VaultSyncRunLog(operation: operation)
         runLog = log
         var finalResult: [String: Any]?
-        let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey))
+        let session = try VaultSyncSession(requestJson: try buildRequest(operation: operation, forcePull: forcePull, encryptionKey: encryptionKey, sharing: sharing))
         defer {
             closeStaging()
             log.finish(result: finalResult, userDefaults: vaultStore.userDefaults)
@@ -69,7 +69,7 @@ public final class VaultSyncEngine {
 
     // MARK: - Request
 
-    private func buildRequest(operation: String, forcePull: Bool, encryptionKey: String?) throws -> String {
+    private func buildRequest(operation: String, forcePull: Bool, encryptionKey: String?, sharing: [String: Any]?) throws -> String {
         let metadata = vaultStore.getVaultMetadataObject()
         let syncState = vaultStore.getSyncState()
         var request: [String: Any] = [
@@ -92,6 +92,9 @@ public final class VaultSyncEngine {
         }
         if let privateKey = vaultStore.accountPrivateKey {
             request["accountPrivateKey"] = privateKey
+        }
+        if let sharing = sharing {
+            request["sharing"] = sharing
         }
         return try Self.serializeJson(request)
     }

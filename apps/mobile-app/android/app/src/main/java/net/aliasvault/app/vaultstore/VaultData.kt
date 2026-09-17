@@ -61,3 +61,20 @@ data class VaultMigrationResult(
     val error: String? = null,
     val errorMessage: String? = null,
 )
+
+/**
+ * Result of a sharing operation of the sync engine (creating a shared manifest, inviting a member to one).
+ *
+ * @property success Whether the operation completed.
+ * @property apiErrorCode The API error code the server refused with, which the sharing screen has words for.
+ * @property vaultUpgradeRequired Whether the vault has to finish upgrading before it can be shared.
+ * @property error The error code, if any.
+ * @property errorMessage The error message, if any.
+ */
+data class VaultSharingResult(
+    val success: Boolean,
+    val apiErrorCode: String? = null,
+    val vaultUpgradeRequired: Boolean = false,
+    val error: String? = null,
+    val errorMessage: String? = null,
+)

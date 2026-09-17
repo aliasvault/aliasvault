@@ -76,3 +76,20 @@ public struct VaultMigrationResult {
         self.errorMessage = errorMessage
     }
 }
+
+/// Result of a sharing operation of the sync engine (creating a shared manifest, inviting a member to one).
+public struct VaultSharingResult {
+    public let success: Bool
+    public let apiErrorCode: String?
+    public let vaultUpgradeRequired: Bool
+    public let error: String?
+    public let errorMessage: String?
+
+    public init(success: Bool, apiErrorCode: String? = nil, vaultUpgradeRequired: Bool = false, error: String? = nil, errorMessage: String? = nil) {
+        self.success = success
+        self.apiErrorCode = apiErrorCode
+        self.vaultUpgradeRequired = vaultUpgradeRequired
+        self.error = error
+        self.errorMessage = errorMessage
+    }
+}

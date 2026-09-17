@@ -18,6 +18,7 @@ public struct VaultConstants {
     public static let offlineModeKey = "aliasvault_offline_mode"
     public static let pinEnabledKey = "aliasvault_pin_enabled"
     public static let serverVersionKey = "aliasvault_server_version"
+    public static let capabilitiesKey = "aliasvault_capabilities"
     public static let autofillCopyTotpOnFillKey = "aliasvault_autofill_copy_totp_on_fill"
     public static let isDirtyKey = "aliasvault_is_dirty"
     public static let mutationSequenceKey = "aliasvault_mutation_sequence"

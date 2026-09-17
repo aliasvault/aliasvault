@@ -1332,6 +1332,20 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
     }
 
+    /**
+     * Get the capabilities the server resolved for this account as a JSON object, or null if none were stored yet.
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun getCapabilities(promise: Promise) {
+        try {
+            promise.resolve(vaultStore.metadata.getCapabilities())
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting capabilities", e)
+            promise.reject("ERR_GET_CAPABILITIES", "Failed to get capabilities: ${e.message}", e)
+        }
+    }
+
     // MARK: - Offline Mode Management
 
     /**
@@ -1540,6 +1554,36 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 withContext(Dispatchers.Main) {
                     Log.e(TAG, "Error migrating the vault", e)
                     promise.reject("VAULT_MIGRATION_ERROR", "Failed to migrate the vault: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    /**
+     * Run a sharing operation of the sync engine (see VaultStore.runSharingOperation). Failures resolve with the error code.
+     * @param operation The operation: `createSharedManifest` or `inviteToSharedManifest`.
+     * @param paramsJson What the operation acts on, as a JSON object.
+     * @param promise The promise to resolve with the operation result.
+     */
+    @ReactMethod
+    override fun runSharingOperation(operation: String, paramsJson: String, promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = vaultStore.runSharingOperation(operation, JSONObject(paramsJson), webApiService)
+                val resultMap = Arguments.createMap().apply {
+                    putBoolean("success", result.success)
+                    putBoolean("vaultUpgradeRequired", result.vaultUpgradeRequired)
+                    putString("apiErrorCode", result.apiErrorCode)
+                    putString("error", result.error)
+                    putString("errorMessage", result.errorMessage)
+                }
+                withContext(Dispatchers.Main) {
+                    promise.resolve(resultMap)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error running the sharing operation", e)
+                    promise.reject("VAULT_SHARING_ERROR", "Failed to run the sharing operation: ${e.message}", e)
                 }
             }
         }

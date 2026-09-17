@@ -23,10 +23,13 @@ class VaultSync(
 ) {
     companion object {
         private const val TAG = "VaultSync"
+
+        /** The engine operations the sharing screen may ask for. */
+        private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest")
     }
 
     /**
-     * Full vault sync: status check, then pull (and merge) or push as the server and local revisions decide. Never throws.
+     * Full vault sync: status check, then pull (and merge) or push as the server and local revisions decide.
      */
     suspend fun syncVaultWithServer(webApiService: WebApiService): VaultSyncResult {
         val startNanos = System.nanoTime()
@@ -115,8 +118,7 @@ class VaultSync(
 
     /**
      * Bring the local vault onto the current storage model (a schema rebuild after an app update, or the one-time
-     * account-key upgrade of a legacy vault) and push it. Driven by the app's upgrade page only: a sync never runs
-     * it on its own, because the storage format move signs out every other client that predates the format. Never throws.
+     * account-key upgrade of a legacy vault) and push it.
      */
     suspend fun migrateVaultManifest(webApiService: WebApiService): VaultMigrationResult {
         val result = try {
@@ -130,6 +132,29 @@ class VaultSync(
         val pushed = result.optBoolean("pushed", false)
         Log.i(TAG, "Manifest migration complete: pushed=$pushed")
         return VaultMigrationResult(true, pushed)
+    }
+
+    /**
+     * Run a sharing operation of the engine: `createSharedManifest` or `inviteToSharedManifest`.
+     */
+    suspend fun runSharingOperation(operation: String, params: JSONObject, webApiService: WebApiService): VaultSharingResult {
+        if (operation !in SHARING_OPERATIONS) {
+            return failedSharing(AppError.SyncEngineFailed("Unknown sharing operation $operation"))
+        }
+        val result = try {
+            run(operation, webApiService, sharing = params)
+        } catch (e: AppError) {
+            return failedSharing(e)
+        }
+        if (result.optBoolean("success", false)) {
+            return VaultSharingResult(true)
+        }
+        val apiErrorCode = result.optString("apiErrorCode").takeIf { it.isNotEmpty() }
+        val vaultUpgradeRequired = result.optBoolean("vaultUpgradeRequired", false)
+        if (apiErrorCode != null || vaultUpgradeRequired) {
+            return VaultSharingResult(false, apiErrorCode, vaultUpgradeRequired)
+        }
+        return failedSharing(syncError(result))
     }
 
     /**
@@ -147,9 +172,9 @@ class VaultSync(
      * Run one engine operation and adopt what it reported. A driver failure surfaces as the native error.
      */
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null): JSONObject {
+    private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null, sharing: JSONObject? = null): JSONObject {
         val result = try {
-            VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey)
+            VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey, sharing = sharing)
         } catch (e: Exception) {
             throw driverError(e)
         }
@@ -158,11 +183,12 @@ class VaultSync(
     }
 
     /**
-     * Persist what the engine reported: server version, offline mode, session values it changed, and the email
-     * routing a pulled vault came with. Capabilities are not stored: the mobile app has no capability gate yet.
+     * Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
+     * and the email routing a pulled vault came with.
      */
     private fun adoptSyncResult(result: JSONObject) {
         result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
+        result.optJSONObject("capabilities")?.let { vaultStore.metadata.setCapabilities(it.toString()) }
         if (result.has("isOfflineMode")) {
             vaultStore.metadata.setOfflineMode(result.optBoolean("isOfflineMode", false))
         }
@@ -198,6 +224,14 @@ class VaultSync(
     private fun failedMigration(error: AppError): VaultMigrationResult {
         Log.e(TAG, "Manifest migration failed (${error.code}): ${error.message}", error.cause)
         return VaultMigrationResult(false, false, error.code, error.message)
+    }
+
+    /**
+     * A failed sharing operation return.
+     */
+    private fun failedSharing(error: AppError): VaultSharingResult {
+        Log.e(TAG, "Sharing operation failed (${error.code}): ${error.message}", error.cause)
+        return VaultSharingResult(false, error = error.code, errorMessage = error.message)
     }
 
     /**

@@ -130,6 +130,20 @@ class VaultMetadataManager(
     }
 
     /**
+     * Set the capabilities the server resolved for this account, as a JSON object.
+     */
+    fun setCapabilities(json: String) {
+        storageProvider.setCapabilities(json)
+    }
+
+    /**
+     * Get the capabilities the server resolved for this account, as a JSON object.
+     */
+    fun getCapabilities(): String? {
+        return storageProvider.getCapabilities()
+    }
+
+    /**
      * Check if the stored server version is greater than or equal to the specified version.
      * @param targetVersion The version to compare against (e.g., "0.25.0")
      * @return true if stored server version >= targetVersion, false if server version not available or less than target

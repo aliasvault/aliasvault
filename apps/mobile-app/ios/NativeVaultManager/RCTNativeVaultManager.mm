@@ -269,6 +269,10 @@
     [vaultManager getServerVersion:resolve rejecter:reject];
 }
 
+- (void)getCapabilities:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getCapabilities:resolve rejecter:reject];
+}
+
 // MARK: - Offline Mode Management
 
 - (void)setOfflineMode:(BOOL)isOffline resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -295,6 +299,10 @@
 
 - (void)migrateVaultManifest:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager migrateVaultManifest:resolve rejecter:reject];
+}
+
+- (void)runSharingOperation:(NSString *)operation paramsJson:(NSString *)paramsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager runSharingOperation:operation paramsJson:paramsJson resolver:resolve rejecter:reject];
 }
 
 - (void)getVaultSyncLogs:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

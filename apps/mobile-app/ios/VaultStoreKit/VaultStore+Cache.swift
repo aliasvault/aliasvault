@@ -63,6 +63,7 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.offlineModeKey)
         self.userDefaults.removeObject(forKey: VaultConstants.pinEnabledKey)
         self.userDefaults.removeObject(forKey: VaultConstants.serverVersionKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.capabilitiesKey)
 
         // Clear sync state
         self.userDefaults.removeObject(forKey: VaultConstants.isDirtyKey)

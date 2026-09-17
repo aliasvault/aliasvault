@@ -729,6 +729,17 @@ class VaultStore(
         return sync.migrateVaultManifest(webApiService)
     }
 
+    /**
+     * Run a sharing operation of the sync engine (see VaultSync.runSharingOperation).
+     */
+    suspend fun runSharingOperation(
+        operation: String,
+        params: org.json.JSONObject,
+        webApiService: net.aliasvault.app.webapi.WebApiService,
+    ): VaultSharingResult {
+        return sync.runSharingOperation(operation, params, webApiService)
+    }
+
     // endregion
 
     // region Mutate Methods

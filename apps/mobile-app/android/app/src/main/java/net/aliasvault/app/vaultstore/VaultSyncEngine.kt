@@ -44,15 +44,15 @@ class VaultSyncEngine(
     private var runLog = VaultSyncRunLog("")
 
     /**
-     * Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`) and
-     * return its result. [encryptionKey] overrides the store's key for the one operation that runs before it is known.
+     * Run one engine operation (`fullSync`, `statusCheck`, `migrationStatus`, `migrateManifest`, `resolveVaultKey`, or a
+     * sharing operation) and return its result.
      */
-    suspend fun run(operation: String, forcePull: Boolean = false, encryptionKey: String? = null): JSONObject {
+    suspend fun run(operation: String, forcePull: Boolean = false, encryptionKey: String? = null, sharing: JSONObject? = null): JSONObject {
         JnaInitializer.ensureInitialized()
         val log = VaultSyncRunLog(operation)
         runLog = log
         var success: Boolean? = null
-        val session = VaultSyncSession(buildRequest(operation, forcePull, encryptionKey))
+        val session = VaultSyncSession(buildRequest(operation, forcePull, encryptionKey, sharing))
         try {
             while (true) {
                 val commandJson = log.engine { session.nextCommand() }
@@ -78,7 +78,7 @@ class VaultSyncEngine(
 
     // region Request
 
-    private fun buildRequest(operation: String, forcePull: Boolean, encryptionKey: String?): String {
+    private fun buildRequest(operation: String, forcePull: Boolean, encryptionKey: String?, sharing: JSONObject?): String {
         val metadata = vaultStore.metadata.getVaultMetadataObject()
         val syncState = vaultStore.getSyncState()
         val request = JSONObject().apply {
@@ -96,6 +96,7 @@ class VaultSyncEngine(
         (encryptionKey ?: vaultStore.getEncryptionKeyBase64())?.let { request.put("encryptionKey", it) }
         (state("accountPublicKey") as? String)?.let { request.put("accountPublicKey", it) }
         vaultStore.accountPrivateKey?.let { request.put("accountPrivateKey", it) }
+        sharing?.let { request.put("sharing", it) }
         return request.toString()
     }
 

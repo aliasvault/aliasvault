@@ -17,6 +17,7 @@ import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
 import { AliasVaultToast } from '@/components/Toast';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { CapabilityProvider } from '@/context/CapabilityContext';
 import { ClipboardCountdownProvider } from '@/context/ClipboardCountdownContext';
 import { DbProvider } from '@/context/DbContext';
 import { DialogProvider } from '@/context/DialogContext';
@@ -146,17 +147,19 @@ export default function RootLayout() : React.ReactNode {
     <NavigationProvider>
       <DbProvider>
         <AuthProvider>
-          <WebApiProvider>
-            <AppProvider>
-              <ClipboardCountdownProvider>
-                <DialogProvider>
-                  <GestureHandlerRootView>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
-                </DialogProvider>
-              </ClipboardCountdownProvider>
-            </AppProvider>
-          </WebApiProvider>
+          <CapabilityProvider>
+            <WebApiProvider>
+              <AppProvider>
+                <ClipboardCountdownProvider>
+                  <DialogProvider>
+                    <GestureHandlerRootView>
+                      <RootLayoutNav />
+                    </GestureHandlerRootView>
+                  </DialogProvider>
+                </ClipboardCountdownProvider>
+              </AppProvider>
+            </WebApiProvider>
+          </CapabilityProvider>
         </AuthProvider>
       </DbProvider>
     </NavigationProvider>

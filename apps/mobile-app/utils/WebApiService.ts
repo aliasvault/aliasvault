@@ -5,6 +5,7 @@ import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '
 
 import i18n from '@/i18n';
 
+import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from './types/errors/LocalAuthError';
 import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
@@ -101,7 +102,9 @@ export class WebApiService {
       }
 
       if (response.statusCode >= 400 && throwOnError) {
-        throw new Error(i18n.t('auth.errors.httpError', { status: response.statusCode }));
+        const error = new ApiRequestError(response.statusCode, extractApiErrorCode(response.body));
+        error.message = i18n.t('auth.errors.httpError', { status: response.statusCode });
+        throw error;
       }
 
       // Parse response body if requested
@@ -371,4 +374,22 @@ export class WebApiService {
       return AppInfo.DEFAULT_API_URL;
     }
   }
+}
+
+/**
+ * Extract the structured API error code (e.g. "VAULT_NOT_UP_TO_DATE") from an error response body.
+ */
+function extractApiErrorCode(body: string | null | undefined): string | null {
+  try {
+    const parsed = JSON.parse(body ?? '') as { code?: unknown; title?: unknown };
+    for (const value of [parsed.code, parsed.title]) {
+      // Server error codes are uppercase enum names
+      if (typeof value === 'string' && /^[A-Z0-9_]{2,64}$/.test(value)) {
+        return value;
+      }
+    }
+  } catch {
+    // Body is empty or not JSON (e.g. proxy error page).
+  }
+  return null;
 }

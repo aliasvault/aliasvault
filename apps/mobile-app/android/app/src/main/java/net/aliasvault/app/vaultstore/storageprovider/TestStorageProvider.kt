@@ -17,6 +17,7 @@ class TestStorageProvider : StorageProvider {
     private var username: String? = null
     private var offlineMode: Boolean = false
     private var serverVersion: String? = null
+    private var capabilities: String? = null
     private var isDirty: Boolean = false
     private var mutationSequence: Int = 0
     private var isSyncing: Boolean = false
@@ -106,6 +107,14 @@ class TestStorageProvider : StorageProvider {
 
     override fun clearServerVersion() {
         serverVersion = null
+    }
+
+    override fun setCapabilities(json: String) {
+        capabilities = json
+    }
+
+    override fun getCapabilities(): String? {
+        return capabilities
     }
 
     // region Sync State

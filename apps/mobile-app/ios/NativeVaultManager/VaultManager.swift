@@ -709,6 +709,12 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func getCapabilities(_ resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getCapabilities())
+    }
+
+    @objc
     func getServerVersion(_ resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         resolve(vaultStore.getServerVersion())
@@ -852,6 +858,31 @@ public class VaultManager: NSObject {
                 let response: [String: Any] = [
                     "success": result.success,
                     "pushed": result.pushed,
+                    "error": result.error as Any,
+                    "errorMessage": result.errorMessage as Any
+                ]
+                resolve(response)
+            }
+        }
+    }
+
+    /// Run a sharing operation of the sync engine (see VaultStore.runSharingOperation). Failures resolve with the error code.
+    @objc
+    func runSharingOperation(_ operation: String,
+                             paramsJson: String,
+                             resolver resolve: @escaping RCTPromiseResolveBlock,
+                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard let data = paramsJson.data(using: .utf8), let params = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
+            reject("VAULT_SHARING_ERROR", "The sharing operation parameters are not a JSON object", nil)
+            return
+        }
+        Task {
+            let result = await vaultStore.runSharingOperation(operation, params: params, using: webApiService)
+            await MainActor.run {
+                let response: [String: Any] = [
+                    "success": result.success,
+                    "vaultUpgradeRequired": result.vaultUpgradeRequired,
+                    "apiErrorCode": result.apiErrorCode as Any,
                     "error": result.error as Any,
                     "errorMessage": result.errorMessage as Any
                 ]

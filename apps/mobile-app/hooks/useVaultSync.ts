@@ -6,6 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import emitter from '@/utils/EventEmitter';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import {
   AppErrorCode,
@@ -251,6 +252,7 @@ export const useVaultSync = (): {
     } finally {
       syncInProgressRef.current = false;
       await dbContext.refreshSyncState();
+      emitter.emit('vaultSynced');
       dbContext.setIsSyncing(false);
       dbContext.setIsUploading(false);
     }

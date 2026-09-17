@@ -29,6 +29,11 @@ extension VaultStore {
         return await sync.migrateVaultManifest(using: webApiService)
     }
 
+    /// Run a sharing operation of the sync engine (see VaultSync.runSharingOperation).
+    public func runSharingOperation(_ operation: String, params: [String: Any], using webApiService: WebApiService) async -> VaultSharingResult {
+        return await sync.runSharingOperation(operation, params: params, using: webApiService)
+    }
+
     /// Push the pending local changes (after a native mutation such as an autofill link or a passkey creation).
     public func mutateVault(using webApiService: WebApiService) async throws {
         try await sync.mutateVault(using: webApiService)

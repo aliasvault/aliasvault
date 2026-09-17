@@ -110,6 +110,28 @@ internal final class VaultSync {
         return VaultMigrationResult(success: true, pushed: pushed)
     }
 
+    /// Run a sharing operation of the engine.
+    func runSharingOperation(_ operation: String, params: [String: Any], using webApiService: WebApiService) async -> VaultSharingResult {
+        guard Self.sharingOperations.contains(operation) else {
+            return failedSharing(.syncEngineFailed(message: "Unknown sharing operation \(operation)"))
+        }
+        let result: [String: Any]
+        do {
+            result = try await run(operation, using: webApiService, sharing: params)
+        } catch {
+            return failedSharing(Self.driverError(error))
+        }
+        if result["success"] as? Bool == true {
+            return VaultSharingResult(success: true)
+        }
+        let apiErrorCode = result["apiErrorCode"] as? String
+        let vaultUpgradeRequired = result["vaultUpgradeRequired"] as? Bool ?? false
+        if apiErrorCode != nil || vaultUpgradeRequired {
+            return VaultSharingResult(success: false, apiErrorCode: apiErrorCode, vaultUpgradeRequired: vaultUpgradeRequired)
+        }
+        return failedSharing(Self.syncError(from: result))
+    }
+
     /// Push the pending local changes (after a native mutation such as an autofill link or a passkey creation).
     func mutateVault(using webApiService: WebApiService) async throws {
         let result = await syncVaultWithServer(using: webApiService)
@@ -119,10 +141,10 @@ internal final class VaultSync {
     }
 
     /// Run one engine operation and adopt what it reported. A driver failure surfaces as the native error.
-    private func run(_ operation: String, using webApiService: WebApiService, encryptionKey: String? = nil) async throws -> [String: Any] {
+    private func run(_ operation: String, using webApiService: WebApiService, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
         let result: [String: Any]
         do {
-            result = try await VaultSyncEngine(vaultStore: vaultStore, webApiService: webApiService).run(operation: operation, encryptionKey: encryptionKey)
+            result = try await VaultSyncEngine(vaultStore: vaultStore, webApiService: webApiService).run(operation: operation, encryptionKey: encryptionKey, sharing: sharing)
         } catch {
             throw Self.driverError(error)
         }
@@ -130,11 +152,14 @@ internal final class VaultSync {
         return result
     }
 
-    /// Persist what the engine reported: server version, offline mode, session values it changed, and the email
-    /// routing a pulled vault came with. Capabilities are not stored: the mobile app has no capability gate yet.
+    /// Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
+    /// and the email routing a pulled vault came with.
     private func adoptSyncResult(_ result: [String: Any]) {
         if let serverVersion = result["serverVersion"] as? String, !serverVersion.isEmpty {
             vaultStore.setServerVersion(serverVersion)
+        }
+        if let capabilities = result["capabilities"] as? [String: String], let data = try? JSONSerialization.data(withJSONObject: capabilities), let json = String(data: data, encoding: .utf8) {
+            vaultStore.setCapabilities(json)
         }
         if let offline = result["isOfflineMode"] as? Bool {
             vaultStore.setOfflineMode(offline)
@@ -164,6 +189,12 @@ internal final class VaultSync {
         return VaultMigrationResult(success: false, pushed: false, error: error.code, errorMessage: error.message)
     }
 
+    /// A failed sharing operation return.
+    private func failedSharing(_ error: AppError) -> VaultSharingResult {
+        print("[VaultSync] Sharing operation failed (\(error.code)): \(error.message)")
+        return VaultSharingResult(success: false, error: error.code, errorMessage: error.message)
+    }
+
     /// An error the driver itself threw (a request it could not build, a command it could not decode).
     private static func driverError(_ error: Error) -> AppError {
         if let appError = error as? AppError {
@@ -182,6 +213,9 @@ internal final class VaultSync {
         let code = result["errorCode"] as? String ?? ""
         return (codedErrors[code] ?? { .unknownError(message: $0) })(message)
     }
+
+    /// The engine operations the sharing screen may ask for.
+    private static let sharingOperations: Set<String> = ["createSharedManifest", "inviteToSharedManifest"]
 
     /// The forced logouts by the engine's reason.
     private static let logoutErrors: [String: AppError] = [

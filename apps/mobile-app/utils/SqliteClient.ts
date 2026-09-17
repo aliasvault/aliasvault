@@ -26,7 +26,7 @@ class SqliteClient {
   private readonly database = new NativeDatabaseClient();
 
   /**
-   * The logo repository itself, which the item and folder repositories call into.
+   * The logo repository itself, which the item repository calls into.
    */
   private readonly logoRepository = new LogoRepository(this.database);
 
@@ -38,7 +38,7 @@ class SqliteClient {
   /**
    * Repository for Folder operations.
    */
-  public readonly folders = asyncRepository(new FolderRepository(this.database, this.logoRepository), this.database);
+  public readonly folders = asyncRepository(new FolderRepository(this.database), this.database);
 
   /**
    * Repository for item logo operations.
@@ -64,6 +64,13 @@ class SqliteClient {
    * Repository for per-item usage statistics.
    */
   public readonly itemStats = asyncRepository(new ItemStatsRepository(this.database), this.database);
+
+  /**
+   * The id of the user's personal manifest, or null when no pull has recorded one yet.
+   */
+  public getPersonalManifestId(): Promise<string | null> {
+    return this.database.getPersonalManifestId();
+  }
 
   /**
    * Store the vault metadata via the native code implementation.

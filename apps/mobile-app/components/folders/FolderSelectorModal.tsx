@@ -9,15 +9,12 @@ import {
   ScrollView,
 } from 'react-native';
 
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { useColors } from '@/hooks/useColorScheme';
 import { ModalWrapper } from '@/components/common/ModalWrapper';
+import { FolderIcon } from '@/components/folders/FolderIcon';
 
-type Folder = {
-  Id: string;
-  Name: string;
-  ParentFolderId: string | null;
-  Weight: number;
-};
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 
 type FolderTreeNode = Folder & {
   children: FolderTreeNode[];
@@ -29,6 +26,7 @@ type FolderTreeNode = Folder & {
 interface IFolderSelectorModalProps {
   folders: Folder[];
   selectedFolderId: string | null | undefined;
+  personalManifestId: string | null;
   onFolderChange: (folderId: string | null) => void;
   isOpen: boolean;
   onClose: () => void;
@@ -43,6 +41,7 @@ interface IFolderSelectorModalProps {
 export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   folders,
   selectedFolderId,
+  personalManifestId,
   onFolderChange,
   isOpen,
   onClose,
@@ -277,8 +276,8 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
           </View>
 
           {/* Folder icon */}
-          <MaterialIcons
-            name="folder"
+          <FolderIcon
+            isShared={isSharedFolder(node, personalManifestId)}
             size={22}
             color={isSelected ? colors.tint : colors.textMuted}
             style={styles.folderIcon}
@@ -309,7 +308,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
         )}
       </View>
     );
-  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder, colors, styles]);
+  }, [expandedFolders, selectedFolderId, personalManifestId, handleSelectFolder, toggleFolder, colors, styles]);
 
   const modalContent = (
     <View style={styles.modalContainer}>

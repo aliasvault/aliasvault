@@ -112,6 +112,18 @@ extension VaultStore {
         userDefaults.synchronize()
     }
 
+    // MARK: - Capabilities Storage
+
+    /// Set the capabilities the server resolved for this account, as a JSON object
+    public func setCapabilities(_ json: String) {
+        userDefaults.set(json, forKey: VaultConstants.capabilitiesKey)
+    }
+
+    /// Get the capabilities the server resolved for this account, as a JSON object
+    public func getCapabilities() -> String? {
+        return userDefaults.string(forKey: VaultConstants.capabilitiesKey)
+    }
+
     /// Check if the stored server version is greater than or equal to the specified version
     /// - Parameter targetVersion: The version to compare against (e.g., "0.25.0")
     /// - Returns: true if stored server version >= targetVersion, false if server version not available or less than target

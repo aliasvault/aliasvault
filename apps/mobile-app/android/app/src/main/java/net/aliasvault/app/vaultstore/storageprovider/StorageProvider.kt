@@ -130,6 +130,18 @@ interface StorageProvider {
      */
     fun clearServerVersion()
 
+    /**
+     * Set the capabilities the server resolved for this account.
+     * @param json The capabilities as a JSON object, keyed by capability key
+     */
+    fun setCapabilities(json: String)
+
+    /**
+     * Get the capabilities the server resolved for this account.
+     * @return The capabilities as a JSON object, or null if none were stored yet
+     */
+    fun getCapabilities(): String?
+
     // region Sync State
 
     /**
