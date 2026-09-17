@@ -1,4 +1,5 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -23,6 +24,7 @@ import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
+import { useCapabilities } from '@/context/CapabilityContext';
 import { useDialog } from '@/context/DialogContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -37,6 +39,7 @@ export default function SettingsScreen() : React.ReactNode {
   const insets = useSafeAreaInsets();
   const { shouldShowAutofillReminder } = useApp();
   const { getAutoLockTimeout } = useApp();
+  const hasCapability = useCapabilities();
   const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigationDebounce();
@@ -247,6 +250,19 @@ export default function SettingsScreen() : React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    betaBadge: {
+      backgroundColor: colors.primary,
+      borderRadius: 10,
+      paddingHorizontal: 6,
+      paddingVertical: 1,
+    },
+    betaBadgeText: {
+      color: colors.primarySurfaceText,
+      fontSize: 10,
+      fontWeight: '600',
+      lineHeight: 14,
+      textTransform: 'uppercase',
+    },
     fab: {
       alignItems: 'center',
       backgroundColor: colors.primary,
@@ -317,6 +333,16 @@ export default function SettingsScreen() : React.ReactNode {
       marginRight: 12,
       width: 24,
     },
+    settingItemLabel: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      gap: 8,
+    },
+    settingItemLabelText: {
+      color: colors.text,
+      fontSize: 16,
+    },
     settingItemText: {
       color: colors.text,
       flex: 1,
@@ -379,6 +405,28 @@ export default function SettingsScreen() : React.ReactNode {
         <TitleContainer title={t('settings.title')} onLogoPress={registerTap} />
         <UsernameDisplay />
         <View style={styles.section}>
+          {hasCapability(CapabilityKeys.VaultSharing) && (
+            <>
+              <TouchableOpacity
+                style={styles.settingItem}
+                onPress={() => navigate(() => router.push('/(tabs)/settings/family-sharing'))}
+              >
+                <View style={styles.settingItemIcon}>
+                  <Ionicons name="people-outline" size={20} color={colors.text} />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <View style={styles.settingItemLabel}>
+                    <ThemedText style={styles.settingItemLabelText}>{t('sharing.family.title')}</ThemedText>
+                    <View style={styles.betaBadge}>
+                      <ThemedText style={styles.betaBadgeText}>{t('sharing.family.beta')}</ThemedText>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                </View>
+              </TouchableOpacity>
+              <View style={styles.separator} />
+            </>
+          )}
           {Platform.OS === 'ios' && (
             <>
               <TouchableOpacity

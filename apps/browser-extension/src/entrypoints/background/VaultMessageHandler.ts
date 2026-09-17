@@ -11,25 +11,22 @@ import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/Va
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@aliasvault/client/rust/RustCore';
-import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
-import { recordManifestRevisions } from '@aliasvault/client/sync/ManifestRevisions';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, VaultDataBucketCategory, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
-import { VaultKeyAlgorithm } from '@aliasvault/models/webapi';
 import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
-import { devLog, devWarn } from '@/utils/devLogger/DevLogger';
+import { devLog } from '@/utils/devLogger/DevLogger';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -1500,164 +1497,65 @@ export async function handleGetRecentlySelected(
 }
 
 /**
- * Create another shared manifest for a family, with this account as its first member.
- *
- * @param message - the family to create the vault for and the name to give it.
+ * What a sharing action reports back to the page that asked for it.
  */
-export async function handleGroupCreateVault(message: { groupId: string; name: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
-  const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptionKey) {
+type SharingActionResponse = { success: boolean; error?: string; apiErrorCode?: string };
+
+/**
+ * Put the outcome of a sharing engine operation into the words the family sharing page shows.
+ * @param result - what the sync engine reported.
+ * @param failureKey - the translation key of the message for a failure without a more specific reason.
+ */
+async function sharingActionResponse(result: SharingOperationResult, failureKey: string): Promise<SharingActionResponse> {
+  if (result.success) {
+    return { success: true };
+  }
+
+  if (result.apiErrorCode) {
+    return { success: false, apiErrorCode: result.apiErrorCode };
+  }
+
+  if (result.vaultUpgradeRequired) {
+    return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
+  }
+
+  if (result.errorCode === AppErrorCode.VAULT_LOCKED) {
     return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
   }
 
-  const name = message.name.trim();
-  if (name.length === 0) {
-    return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
-  }
-
-  try {
-    const webApi = new WebApiService();
-    const overview = await SharingService.getOverview(webApi);
-    const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
-
-    if (!group || group.role === 'Member') {
-      console.error(`Failed to create shared manifest: group ${message.groupId} is not one this account administers.`);
-      return { success: false, error: await t('sharing.family.errors.createVaultFailed') };
-    }
-
-    // The new vault's VEK is encrypted for this client's own account public key.
-    const selfPublicKey = await VaultKeyService.getAccountPublicKey();
-    if (!selfPublicKey) {
-      return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
-    }
-
-    const sqliteClient = await createVaultSqliteClient();
-    if (await vaultRequiresManifestMigration(sqliteClient)) {
-      return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
-    }
-
-    // The name stays on this device: it rides into the vault below, never into the create request.
-    const mapping = await SharingService.createSharedManifest(webApi, {
-      groupId: group.groupId,
-      selfPublicKey,
-    }, crypto.randomUUID());
-
-    await SharingService.addSharedManifestRecord({
-      manifestId: mapping.manifestId,
-      encryptedVek: mapping.encryptedVek,
-      encryptionPublicKey: mapping.encryptionPublicKey,
-      algorithm: mapping.algorithm,
-      salt: mapping.salt,
-      name,
-      canAdminister: true,
-    }, encryptionKey);
-
-    await recordManifestRevisions({ [mapping.manifestId]: mapping.revision });
-    await multiManifestRendering.render(sqliteClient, mapping.manifestId, name);
-
-    // Mail to an alias in this vault is encrypted with the vault's own keypair, which is what makes it readable by every member.
-    await SharingService.rotateManifestEncryptionKey(sqliteClient, mapping.manifestId);
-    await persistLocalVaultMutation(sqliteClient, encryptionKey);
-
-    devLog(`[Sharing] Created shared manifest ${mapping.manifestId} ("${name}") for group ${group.groupId}.`);
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to create shared manifest:', error);
-    if (error instanceof ApiRequestError && error.apiErrorCode) {
-      return { success: false, apiErrorCode: error.apiErrorCode };
-    }
-
-    /*
-     * Everything this can fail on (a vault that will not open, a key that will not import, a server that refuses
-     * without a code) collapses into the same sentence otherwise, which leaves nothing to act on. The cause is
-     * appended the way the upload path does it.
-     */
-    const detail = error instanceof Error && error.message.length > 0 ? ` [${error.message}]` : '';
-    return { success: false, error: `${await t('sharing.family.errors.createVaultFailed')}${detail}` };
-  }
+  /*
+   * Everything else this can fail on (a vault that will not open, a key that will not import, a server that refuses
+   * without a code) collapses into the same sentence otherwise, which leaves nothing to act on. The cause is
+   * appended the way the upload path does it.
+   */
+  const detail = result.error && result.error.length > 0 ? ` [${result.error}]` : '';
+  return { success: false, error: `${await t(failureKey)}${detail}` };
 }
 
 /**
- * Invite a member of a family to one of its shared manifests, handing them the manifest's key encrypted to their account keypair.
+ * Create another shared manifest for a family, with this account as its first member. The sync engine does the work,
+ * so every client creates one the same way.
  *
- * The recipient is picked off the family's own roster, so this never names an account outside the family.
+ * @param message - the family to create the vault for and the name to give it.
+ */
+export async function handleGroupCreateVault(message: { groupId: string; name: string }): Promise<SharingActionResponse> {
+  const result = await vaultSync.createSharedManifest(message.groupId, message.name);
+  if (result.success) {
+    // The engine left the new folder and keypair in a dirty vault; this pushes them.
+    void handleFullVaultSync().catch(error => console.error('Background sync after creating a shared manifest failed:', error));
+  }
+
+  return sharingActionResponse(result, 'sharing.family.errors.createVaultFailed');
+}
+
+/**
+ * Invite a member of a family to one of its shared manifests, handing them the manifest's key encrypted to their
+ * account keypair. The sync engine does the work, so every client invites the same way.
+ *
  * @param message - the family, the manifest, and the member being invited.
  */
-export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
-  const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptionKey) {
-    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-  }
-
-  /**
-   * Fail the invite with a reason.
-   * @param reason - what was missing.
-   */
-  const failed = async (reason: string): Promise<{ success: boolean; error: string }> => {
-    devWarn(`[Sharing] Could not invite ${message.userId} to vault ${message.manifestId}: ${reason}.`);
-    return { success: false, error: `${await t('sharing.family.errors.inviteFailed')} [${reason}]` };
-  };
-
-  try {
-    const webApi = new WebApiService();
-    const overview = await SharingService.getOverview(webApi);
-    const group = overview.groups.find(candidate => candidate.groupId.toLowerCase() === message.groupId.toLowerCase());
-    const manifest = group?.manifests.find(candidate => candidate.manifestId.toLowerCase() === message.manifestId.toLowerCase());
-    const member = group?.members.find(candidate => candidate.userId === message.userId);
-
-    if (!group || group.role === 'Member') {
-      return failed('not an administrator of the group');
-    }
-
-    if (!manifest) {
-      return failed('the vault does not belong to the group');
-    }
-
-    if (!member) {
-      return failed('the recipient is not a member of the group');
-    }
-
-    if (!member.publicKey) {
-      return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
-    }
-
-    // Find this account's own grant on the vault: a key that was never handed to this account cannot be passed on.
-    let record = await SharingService.getSharedManifestRecord(manifest.manifestId);
-    if (!record) {
-      // Backstop: the records persist next to the vault, so a missing one means a desync only a pull repairs.
-      devWarn(`[Sharing] No key record stored for vault ${manifest.manifestId}; pulling to re-record it before inviting.`);
-      await handleFullVaultSync({ forcePull: true });
-      record = await SharingService.getSharedManifestRecord(manifest.manifestId);
-    }
-
-    if (!record) {
-      return failed('this account holds no key for the vault');
-    }
-
-    const sqliteClient = await createVaultSqliteClient();
-    const manifestVek = await SharingService.openSharedManifestVek(sqliteClient, record);
-    if (!manifestVek) {
-      return failed('the key of the vault did not open');
-    }
-
-    const vaultName = multiManifestRendering.displayNames(sqliteClient)[manifest.manifestId.toLowerCase()] ?? record.name ?? null;
-    const grant = await SharingService.encryptVekFor(manifestVek, member, vaultName);
-    if (!grant) {
-      return { success: false, apiErrorCode: 'INVITE_RECIPIENT_NOT_READY' };
-    }
-
-    await SharingService.inviteMember(webApi, group.groupId, manifest.manifestId, member.userId, grant, VaultKeyAlgorithm.RsaOaepSha256);
-
-    devLog(`[Sharing] Invited ${member.userId} to vault ${manifest.manifestId} with its key encrypted for them.`);
-    return { success: true };
-  } catch (error) {
-    if (error instanceof ApiRequestError && error.apiErrorCode) {
-      return { success: false, apiErrorCode: error.apiErrorCode };
-    }
-
-    console.error('Failed to invite member to shared manifest:', error);
-    return { success: false, error: await t('sharing.family.errors.inviteFailed') };
-  }
+export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), 'sharing.family.errors.inviteFailed');
 }
 
 /**
@@ -1665,7 +1563,7 @@ export async function handleGroupInviteMember(message: { groupId: string; manife
  *
  * @param message - the family, the vault, and the member losing access.
  */
-export async function handleGroupRevokeAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<{ success: boolean; error?: string; apiErrorCode?: string }> {
+export async function handleGroupRevokeAccess(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
   try {
     const webApi = new WebApiService();
     await SharingService.revokeAccess(webApi, message.groupId, message.manifestId, message.userId);

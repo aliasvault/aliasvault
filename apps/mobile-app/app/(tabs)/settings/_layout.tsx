@@ -100,6 +100,14 @@ export default function SettingsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
+        name="family-sharing"
+        options={{
+          title: t('sharing.family.title'),
+          headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
         name="security/index"
         options={{
           title: t('settings.securitySettings.title'),

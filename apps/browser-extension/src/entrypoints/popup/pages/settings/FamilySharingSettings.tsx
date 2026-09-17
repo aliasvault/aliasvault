@@ -1,4 +1,6 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
+import { canAdministerGroup, describeMemberAccess, holdsManifestKey, ownUserIdIn, roleTranslationKey, sharingErrorTranslationKey } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -118,17 +120,12 @@ const FamilySharingSettings: React.FC = () => {
       ? actionError.message
       : actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
 
-    switch (code) {
-      case 'INVITE_RECIPIENT_NOT_READY': return t('sharing.family.errors.userNotReady');
-      case 'NOT_GROUP_MEMBER': return t('sharing.family.errors.notFamilyMember');
-      case 'ACCESS_ALREADY_GRANTED': return t('sharing.family.errors.alreadyHasAccess');
-      case 'INVITATION_ALREADY_EXISTS': return t('sharing.family.errors.alreadyInvited');
-      case 'INVITATION_NOT_FOUND': return t('sharing.family.errors.invitationGone');
-      case 'INVITATION_KEY_OUTDATED': return t('sharing.family.errors.invitationKeyOutdated');
-      case 'LAST_MANIFEST_GRANT_HOLDER': return t('sharing.family.errors.lastMemberWithAccess');
-      case 'GROUP_MANIFEST_LIMIT_REACHED': return t('sharing.family.errors.vaultLimitReached');
-      default: return code !== null ? `${fallback} [${code}]` : fallback;
+    const knownErrorKey = sharingErrorTranslationKey(code);
+    if (knownErrorKey) {
+      return t(knownErrorKey);
     }
+
+    return code !== null ? `${fallback} [${code}]` : fallback;
   };
 
   /**
@@ -210,7 +207,7 @@ const FamilySharingSettings: React.FC = () => {
     }
 
     try {
-      await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, password);
+      await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, async challenge => (await MasterPasswordService.answerSrpChallenge(challenge, password)).proof);
     } catch (deleteError) {
       if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
         throw new Error(t('common.errors.wrongPassword'));
@@ -244,18 +241,6 @@ const FamilySharingSettings: React.FC = () => {
    * @param manifest - the vault.
    */
   const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? t('sharing.family.unnamedVault');
-
-  /**
-   * The role of a member as shown next to their name.
-   * @param member - the member.
-   */
-  const roleLabel = (member: GroupMemberInfo): string => {
-    switch (member.role) {
-      case 'Owner': return t('sharing.owner');
-      case 'Admin': return t('sharing.family.admin');
-      default: return t('sharing.family.member');
-    }
-  };
 
   /**
    * The title and message of the confirmation dialog.
@@ -365,8 +350,8 @@ const FamilySharingSettings: React.FC = () => {
       )}
 
       {groups.map(group => {
-        const canAdminister = group.role === 'Owner' || group.role === 'Admin';
-        const myUserId = group.members.find(member => member.username === app.username)?.userId ?? '';
+        const canAdminister = canAdministerGroup(group);
+        const myUserId = ownUserIdIn(group, app.username);
 
         return (
           <section key={group.groupId} className="space-y-3">
@@ -391,7 +376,7 @@ const FamilySharingSettings: React.FC = () => {
                             <p className="text-sm text-gray-900 dark:text-white truncate">
                               {member.username}{isSelf && ` (${t('sharing.family.you')})`}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t(roleTranslationKey(member))}</p>
                           </div>
                         </li>
                       );
@@ -406,7 +391,7 @@ const FamilySharingSettings: React.FC = () => {
               <div className="space-y-2">
                 <h3 className="text-md font-semibold text-gray-900 dark:text-white">{t('sharing.family.sharedFolders')}</h3>
                 {group.manifests.map(manifest => {
-                  const iHoldKey = manifest.memberUserIds.includes(myUserId);
+                  const iHoldKey = holdsManifestKey(manifest, myUserId);
 
                   return (
                     <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
@@ -452,10 +437,8 @@ const FamilySharingSettings: React.FC = () => {
 
                       <ul className="divide-y divide-gray-100 dark:divide-gray-700">
                         {group.members.map(member => {
-                          const isSelf = member.userId === myUserId;
-                          const hasAccess = manifest.memberUserIds.includes(member.userId);
-                          const isInvited = manifest.pendingInvitations.some(invitation => invitation.inviteeUserId === member.userId);
-                          const invitation = manifest.pendingInvitations.find(candidate => candidate.inviteeUserId === member.userId);
+                          const access = describeMemberAccess(group, manifest, member, myUserId);
+                          const { isSelf, invitation } = access;
 
                           return (
                             <li key={member.userId} className="flex items-center justify-between gap-2 py-1.5 first:pt-0 last:pb-0">
@@ -464,12 +447,11 @@ const FamilySharingSettings: React.FC = () => {
                                   {member.username}{isSelf && ` (${t('sharing.family.you')})`}
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {hasAccess ? t('sharing.family.hasAccess') : isInvited ? t('sharing.family.invited') : t('sharing.family.noAccess')}
+                                  {t(access.statusKey)}
                                 </p>
                               </div>
 
-                              {/* An admin's own grant stays put: it is the only copy of the key their duties, inviting others among them, need. */}
-                              {hasAccess && isSelf && !canAdminister && (
+                              {access.canLeave && (
                                 <button
                                   disabled={busy}
                                   onClick={() => setPendingRemoval({ group, manifest, member, isSelf })}
@@ -479,7 +461,7 @@ const FamilySharingSettings: React.FC = () => {
                                 </button>
                               )}
 
-                              {hasAccess && !isSelf && canAdminister && (
+                              {access.canRevoke && (
                                 <button
                                   disabled={busy}
                                   onClick={() => setPendingRemoval({ group, manifest, member, isSelf })}
@@ -489,7 +471,7 @@ const FamilySharingSettings: React.FC = () => {
                                 </button>
                               )}
 
-                              {isInvited && !isSelf && canAdminister && invitation && (
+                              {access.canWithdraw && invitation && (
                                 <button
                                   disabled={busy}
                                   onClick={() => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone'))}
@@ -499,10 +481,10 @@ const FamilySharingSettings: React.FC = () => {
                                 </button>
                               )}
 
-                              {!hasAccess && !isInvited && !isSelf && canAdminister && iHoldKey && (
+                              {access.canInvite && (
                                 <button
-                                  disabled={busy || !member.publicKey}
-                                  title={member.publicKey ? undefined : t('sharing.family.errors.userNotReady')}
+                                  disabled={busy || !access.isReadyForInvite}
+                                  title={access.isReadyForInvite ? undefined : t('sharing.family.errors.userNotReady')}
                                   onClick={() => inviteMember(group, manifest, member)}
                                   className="shrink-0 px-2 py-1 text-xs rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
                                 >
