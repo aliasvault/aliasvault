@@ -101,12 +101,30 @@ public class WebApiService {
     }
 
     /**
+     * Get the API root URL without a trailing slash
+     */
+    private func getRootUrl() -> String {
+        let apiUrl = getApiUrl()
+        return apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
+    }
+
+    /**
      * Get the base URL with /v2/ appended
      */
     private func getBaseUrl() -> String {
-        let apiUrl = getApiUrl()
-        let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
-        return "\(trimmedUrl)/v2/"
+        return "\(getRootUrl())/v2/"
+    }
+
+    /**
+     * Turn an endpoint into a full URL. If the endpoint starts with "v1/" or "v2/" etc, 
+     * resolve it against the API root, otherwise resolve it against the base URL.
+     */
+    private func resolveUrl(_ endpoint: String) -> String {
+        let path = endpoint.drop(while: { $0 == "/" })
+        if path.range(of: "^v[0-9]+/", options: .regularExpression) != nil {
+            return "\(getRootUrl())/\(path)"
+        }
+        return "\(getBaseUrl())\(path)"
     }
 
     // MARK: - Token Management
@@ -209,7 +227,7 @@ public class WebApiService {
         body: String?,
         headers: [String: String]
     ) async throws -> WebApiResponse {
-        let urlString = "\(getBaseUrl())\(endpoint)"
+        let urlString = resolveUrl(endpoint)
 
         guard let url = URL(string: urlString) else {
             throw NSError(

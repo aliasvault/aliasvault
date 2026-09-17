@@ -32,10 +32,10 @@ const VAULT_TRANSFER_TIMEOUT_MS = 180000;
 const LARGE_TRANSFER_PATH = 'vault';
 
 /**
- * A signal that aborts after `ms`.
+ * A signal that aborts after `ms`. Falls back to a timer on hosts without `AbortSignal.timeout`.
  * @param ms - the timeout
  */
-function timeoutAbortSignal(ms: number): AbortSignal {
+export function timeoutAbortSignal(ms: number): AbortSignal {
   if (typeof AbortSignal.timeout === 'function') {
     return AbortSignal.timeout(ms);
   }
@@ -89,6 +89,11 @@ export class WebApiService {
   public static readonly API_VERSION = 2;
 
   /**
+   * Endpoints that name their own API version, e.g. 'v1/Auth/login'.
+   */
+  private static readonly VERSIONED_ENDPOINT = /^v\d+\//;
+
+  /**
    * Build the versioned base URL for an API root URL, e.g. 'https://app.aliasvault.com/api' to 'https://app.aliasvault.com/api/v2/'.
    */
   public static versionedBaseUrl(apiUrl: string): string {
@@ -100,6 +105,18 @@ export class WebApiService {
    */
   private async getBaseUrl(): Promise<string> {
     return WebApiService.versionedBaseUrl(await this.getApiUrl());
+  }
+
+  /**
+   * Turn an endpoint into a full URL. An endpoint that names its own API version (e.g. 'v1/Auth/login') resolves
+   * against the API root, every other endpoint against the version this client speaks.
+   */
+  private async resolveUrl(endpoint: string): Promise<string> {
+    const path = endpoint.replace(/^\/+/, '');
+    if (WebApiService.VERSIONED_ENDPOINT.test(path)) {
+      return (await this.getApiUrl()).replace(/\/$/, '') + '/' + path;
+    }
+    return await this.getBaseUrl() + path;
   }
 
   /**
@@ -208,7 +225,7 @@ export class WebApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<Response> {
-    const url = await this.getBaseUrl() + endpoint;
+    const url = await this.resolveUrl(endpoint);
     const headers = new Headers(options.headers ?? {});
     return this.performFetch(url, endpoint, { ...options, headers }, this.isLargeTransfer(endpoint, headers));
   }
@@ -217,7 +234,7 @@ export class WebApiService {
    * Run a request on behalf of the Rust sync engine.
    */
   public async engineRequest(method: string, path: string, body: string | undefined, requiresAuth: boolean, largeTransfer: boolean): Promise<EngineHttpResponse> {
-    const url = await this.getBaseUrl() + path.replace(/^\/+/, '');
+    const url = await this.resolveUrl(path);
     const headers = new Headers({ Accept: 'application/json' });
     if (body !== undefined) {
       headers.set('Content-Type', 'application/json');

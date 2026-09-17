@@ -42,6 +42,11 @@ class WebApiService(private val context: Context) {
         private const val SHARED_PREFS_NAME = "aliasvault"
 
         /**
+         * Endpoints that name their own API version, e.g. "v1/Auth/login".
+         */
+        private val VERSIONED_ENDPOINT = Regex("^v[0-9]+/")
+
+        /**
          * Connection-establishment timeout.
          */
         private const val CONNECT_TIMEOUT_MS = 5000
@@ -143,12 +148,26 @@ class WebApiService(private val context: Context) {
     }
 
     /**
+     * Get the API root URL without a trailing slash.
+     */
+    private fun getRootUrl(): String {
+        return getApiUrl().trimEnd('/')
+    }
+
+    /**
      * Get the base URL with /v2/ appended.
      */
     private fun getBaseUrl(): String {
-        val apiUrl = getApiUrl()
-        val trimmedUrl = apiUrl.trimEnd('/')
-        return "$trimmedUrl/v2/"
+        return "${getRootUrl()}/v2/"
+    }
+
+    /**
+     * Turn an endpoint into a full URL. If the endpoint starts with "v1/" or "v2/" etc, 
+     * resolve it against the API root, otherwise resolve it against the base URL.
+     */
+    private fun resolveUrl(endpoint: String): String {
+        val path = endpoint.trimStart('/')
+        return if (VERSIONED_ENDPOINT.containsMatchIn(path)) "${getRootUrl()}/$path" else "${getBaseUrl()}$path"
     }
 
     // MARK: - Token Management
@@ -259,7 +278,7 @@ class WebApiService(private val context: Context) {
         body: String?,
         headers: Map<String, String>,
     ): WebApiResponse = withContext(Dispatchers.IO) {
-        val urlString = "${getBaseUrl()}$endpoint"
+        val urlString = resolveUrl(endpoint)
 
         var connection: HttpURLConnection? = null
         try {

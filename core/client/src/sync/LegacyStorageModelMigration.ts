@@ -5,26 +5,35 @@
  */
 
 import { ServerUpdateRequiredError } from '../api/errors/ServerUpdateRequiredError';
+import { timeoutAbortSignal } from '../api/WebApiService';
 import { VaultKeyService } from '../auth/VaultKeyService';
+
+import type { WebApiService } from '../api/WebApiService';
 
 /*
  * -- 1. Servers predating the v2 vault API --
  */
 
-/** How long the legacy-API probe may take before we stop blaming the server version. */
+/** How long the legacy-API probe may take before we stop blaming the server version, where the host's API client honors the abort signal. */
 const V1_PROBE_TIMEOUT_MS = 3000;
 
 /**
- * Probe whether the configured server answers on the v1 API while v2 does not respond.
- * @param apiBaseUrl - the configured API base URL, without a version segment
+ * The part of an API client the legacy probe needs.
  */
-export async function serverPredatesV2Api(apiBaseUrl: string): Promise<boolean> {
+export type LegacyProbeApi = Pick<WebApiService, 'rawFetch'>;
+
+/**
+ * Probe whether the configured server answers on the v1 API while v2 does not respond.
+ *
+ * The probe is a GET on purpose: the endpoint only accepts POST, so an existing route answers 405 and a server
+ * without the v1 API answers 404, which is the whole signal.
+ * @param api - the API client the probe goes through
+ */
+export async function serverPredatesV2Api(api: LegacyProbeApi): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v1/Auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: '{}',
-      signal: AbortSignal.timeout(V1_PROBE_TIMEOUT_MS),
+    const response = await api.rawFetch('v1/Auth/login', {
+      method: 'GET',
+      signal: timeoutAbortSignal(V1_PROBE_TIMEOUT_MS),
     });
 
     return response.status !== 404;
@@ -38,14 +47,14 @@ export async function serverPredatesV2Api(apiBaseUrl: string): Promise<boolean> 
  * Translate a 404 from a v2 endpoint into {@link ServerUpdateRequiredError} when the server turns out to be an
  * outdated AliasVault install.
  * @param status - the HTTP status of the v2 response
- * @param apiBaseUrl - the configured API base URL, without a version segment
+ * @param api - the API client the probe goes through
  */
-export async function throwIfServerPredatesV2Api(status: number, apiBaseUrl: string): Promise<void> {
+export async function throwIfServerPredatesV2Api(status: number, api: LegacyProbeApi): Promise<void> {
   if (status !== 404) {
     return;
   }
 
-  if (await serverPredatesV2Api(apiBaseUrl)) {
+  if (await serverPredatesV2Api(api)) {
     throw new ServerUpdateRequiredError();
   }
 }

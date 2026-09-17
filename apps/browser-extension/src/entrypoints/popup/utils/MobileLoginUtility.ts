@@ -70,7 +70,7 @@ export class MobileLoginUtility {
        * A 404 on this initiating call means the v2 API is missing altogether. Only this call may read a 404 that
        * way: the poll below answers 404 for an expired request, which is a normal outcome.
        */
-      if (response.status === 404 && await serverPredatesV2Api(await this.webApi.getApiUrl())) {
+      if (response.status === 404 && await serverPredatesV2Api(this.webApi)) {
         throw MobileLoginErrorCode.SERVER_OUTDATED;
       }
 

@@ -9,7 +9,7 @@ import type { BadRequestResponse, LoginResponse, ValidateLoginRequest, ValidateL
 /**
  * The part of an API client the login requests need.
  */
-export type SrpLoginApi = Pick<WebApiService, 'rawFetch' | 'getApiUrl'>;
+export type SrpLoginApi = Pick<WebApiService, 'rawFetch'>;
 
 /**
  * The recovery code variant of the validate request.
@@ -91,7 +91,7 @@ export class SrpLoginService {
    * @returns The parsed body
    */
   private async parseAuthResponse<T>(response: Response): Promise<T> {
-    await throwIfServerPredatesV2Api(response.status, await this.api.getApiUrl());
+    await throwIfServerPredatesV2Api(response.status, this.api);
     if (response.status === 400) {
       const badRequestResponse = await response.json() as BadRequestResponse;
       throw new ApiAuthError(badRequestResponse.title);
