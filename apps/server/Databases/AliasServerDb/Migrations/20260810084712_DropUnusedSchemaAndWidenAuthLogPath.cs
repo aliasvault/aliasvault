@@ -6,10 +6,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     /// <summary>
-    /// Drops the ASP.NET Identity tables that AliasVault does not use, and widens the audit log request path so the
-    /// longer v2 API routes still fit.
+    /// Drops the ASP.NET Identity tables and the worker service column that AliasVault does not use, and widens the
+    /// audit log request path so the longer v2 API routes still fit.
     /// </summary>
-    public partial class DropUnusedIdentityTablesAndWidenAuthLogPath : Migration
+    public partial class DropUnusedSchemaAndWidenAuthLogPath : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,6 +28,10 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
+
+            migrationBuilder.DropColumn(
+                name: "DesiredStatus",
+                table: "WorkerServiceStatuses");
 
             migrationBuilder.AlterColumn<string>(
                 name: "RequestPath",
@@ -54,6 +58,14 @@ namespace AliasServerDb.Migrations
                 oldType: "character varying(255)",
                 oldMaxLength: 255,
                 oldNullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "DesiredStatus",
+                table: "WorkerServiceStatuses",
+                type: "character varying(50)",
+                maxLength: 50,
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.CreateTable(
                 name: "AdminRoles",

@@ -881,6 +881,11 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<DateTime?>("ClearedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1047,6 +1052,11 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("AccountKeyVersion")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1135,15 +1145,77 @@ namespace AliasServerDb.Migrations
                     b.ToTable("UserUnlockKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.UserUnlockKeysHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccountKeyVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<DateTime>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ArchivedByClient")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptedAccountKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("UnlockKeyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArchivedAt")
+                        .HasDatabaseName("IX_UserUnlockKeysHistory_ArchivedAt");
+
+                    b.HasIndex("UserId", "Type", "ArchivedAt")
+                        .HasDatabaseName("IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt");
+
+                    b.ToTable("UserUnlockKeysHistory", (string)null);
+                });
+
             modelBuilder.Entity("AliasServerDb.VaultBlobObject", b =>
                 {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Hash")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<string>("OwnerUserId")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -1160,15 +1232,10 @@ namespace AliasServerDb.Migrations
                     b.Property<int>("KeyVersion")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("LastReferencedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("SizeBytes")
                         .HasColumnType("integer");
 
-                    b.HasKey("Hash", "OwnerUserId");
-
-                    b.HasIndex("OwnerUserId", "Category");
+                    b.HasKey("ManifestId", "Hash");
 
                     b.ToTable("VaultBlobObjects");
                 });
@@ -1401,6 +1468,11 @@ namespace AliasServerDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1507,11 +1579,6 @@ namespace AliasServerDb.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CurrentStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("DesiredStatus")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -1801,15 +1868,26 @@ namespace AliasServerDb.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AliasServerDb.VaultBlobObject", b =>
+            modelBuilder.Entity("AliasServerDb.UserUnlockKeysHistory", b =>
                 {
                     b.HasOne("AliasServerDb.AliasVaultUser", "User")
                         .WithMany()
-                        .HasForeignKey("OwnerUserId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AliasServerDb.VaultBlobObject", b =>
+                {
+                    b.HasOne("AliasServerDb.VaultManifest", "Manifest")
+                        .WithMany()
+                        .HasForeignKey("ManifestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manifest");
                 });
 
             modelBuilder.Entity("AliasServerDb.VaultBlobReference", b =>

@@ -12,9 +12,10 @@ namespace AliasServerDb.Migrations
     /// - every user gains a Personal group that takes over their vault, aliases, quotas and rate limit overrides,
     /// - the append-only "Vaults" revision log becomes one "VaultManifests" head row per user plus a
     ///   "VaultManifestsHistory" tail, keyed by a newly generated manifest id,
-    /// - per-user email encryption keys become per-manifest delivery keys.
+    /// - per-user email encryption keys become per-manifest delivery keys,
+    /// - every stored public key records the algorithm it belongs to.
     ///
-    /// The tables that only the manifest-v1 write path uses (buckets, blobs, access and unlock keys) start empty. Every
+    /// The tables that only the manifest-v1 write path uses (buckets, blobs, grant, access and unlock keys) start empty. Every
     /// ciphertext they hold carries the version of the key it was written with, so a future key rotation can tell the
     /// generations apart.
     /// </summary>
@@ -27,6 +28,7 @@ namespace AliasServerDb.Migrations
             ConvertVaultsToManifests(migrationBuilder);
             ScopeEmailClaimsToManifests(migrationBuilder);
             ScopeDeliveryKeysToManifests(migrationBuilder);
+            AddAlgorithmToPublicKeys(migrationBuilder);
             ScopeRateLimitsToGroups(migrationBuilder);
             AddManifestV1Tables(migrationBuilder);
             SkipToastCompressionOnCiphertextColumns(migrationBuilder);
@@ -37,6 +39,7 @@ namespace AliasServerDb.Migrations
         {
             DropManifestV1Tables(migrationBuilder);
             RestoreRateLimitsToUsers(migrationBuilder);
+            RemoveAlgorithmFromPublicKeys(migrationBuilder);
             RestoreDeliveryKeysToUsers(migrationBuilder);
             RestoreEmailClaimsToUsers(migrationBuilder);
             RestoreManifestsToVaults(migrationBuilder);
@@ -383,6 +386,24 @@ namespace AliasServerDb.Migrations
         }
 
         /// <summary>
+        /// Records the algorithm on the public keys that predate the column. All of them are RSA-OAEP keys.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void AddAlgorithmToPublicKeys(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: true);
+            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: true);
+
+            migrationBuilder.Sql("""
+                UPDATE "VaultManifestDeliveryKeys" SET "Algorithm" = 'rsa-oaep-sha256';
+                UPDATE "MobileLoginRequests" SET "Algorithm" = 'rsa-oaep-sha256';
+                """);
+
+            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldNullable: true);
+            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldNullable: true);
+        }
+
+        /// <summary>
         /// Charges rate limit overrides to the group that owns the content instead of to the user.
         /// </summary>
         /// <param name="migrationBuilder">Migration builder.</param>
@@ -424,6 +445,7 @@ namespace AliasServerDb.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     PublicKey = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     EncryptedPrivateKey = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     AccountKeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
@@ -470,6 +492,35 @@ namespace AliasServerDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserUnlockKeysHistory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UnlockKeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Type = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    Label = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EncryptedAccountKey = table.Column<string>(type: "text", nullable: false),
+                    AccountKeyVersion = table.Column<int>(type: "integer", nullable: false),
+                    Metadata = table.Column<string>(type: "jsonb", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ArchivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ArchivedByClient = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserUnlockKeysHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserUnlockKeysHistory_AliasVaultUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AliasVaultUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "VaultManifestAccessKeys",
                 columns: table => new
                 {
@@ -508,23 +559,22 @@ namespace AliasServerDb.Migrations
                 name: "VaultBlobObjects",
                 columns: table => new
                 {
+                    ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
                     Hash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    OwnerUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Category = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
                     SizeBytes = table.Column<int>(type: "integer", nullable: false),
                     KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastReferencedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VaultBlobObjects", x => new { x.Hash, x.OwnerUserId });
+                    table.PrimaryKey("PK_VaultBlobObjects", x => new { x.ManifestId, x.Hash });
                     table.ForeignKey(
-                        name: "FK_VaultBlobObjects_AliasVaultUsers_OwnerUserId",
-                        column: x => x.OwnerUserId,
-                        principalTable: "AliasVaultUsers",
-                        principalColumn: "Id",
+                        name: "FK_VaultBlobObjects_VaultManifests_ManifestId",
+                        column: x => x.ManifestId,
+                        principalTable: "VaultManifests",
+                        principalColumn: "ManifestId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -597,10 +647,11 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.CreateIndex(name: "UX_UserGrantKeys_User_Primary", table: "UserGrantKeys", column: "UserId", unique: true, filter: "\"IsPrimary\"");
             migrationBuilder.CreateIndex(name: "UX_UserUnlockKeys_UserId_Type_Label", table: "UserUnlockKeys", columns: new[] { "UserId", "Type", "Label" }, unique: true);
+            migrationBuilder.CreateIndex(name: "IX_UserUnlockKeysHistory_ArchivedAt", table: "UserUnlockKeysHistory", column: "ArchivedAt");
+            migrationBuilder.CreateIndex(name: "IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt", table: "UserUnlockKeysHistory", columns: new[] { "UserId", "Type", "ArchivedAt" });
             migrationBuilder.CreateIndex(name: "IX_VaultManifestAccessKeys_UserGrantKeyId", table: "VaultManifestAccessKeys", column: "UserGrantKeyId");
             migrationBuilder.CreateIndex(name: "IX_VaultManifestAccessKeys_VaultManifestId", table: "VaultManifestAccessKeys", column: "VaultManifestId");
             migrationBuilder.CreateIndex(name: "UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version", table: "VaultManifestAccessKeys", columns: new[] { "UserId", "Type", "VaultManifestId", "KeyVersion" }, unique: true);
-            migrationBuilder.CreateIndex(name: "IX_VaultBlobObjects_OwnerUserId_Category", table: "VaultBlobObjects", columns: new[] { "OwnerUserId", "Category" });
         }
 
         /// <summary>
@@ -631,6 +682,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropTable(name: "VaultBlobReferences");
             migrationBuilder.DropTable(name: "VaultBlobObjects");
             migrationBuilder.DropTable(name: "VaultManifestAccessKeys");
+            migrationBuilder.DropTable(name: "UserUnlockKeysHistory");
             migrationBuilder.DropTable(name: "UserUnlockKeys");
             migrationBuilder.DropTable(name: "UserGrantKeys");
         }
@@ -665,6 +717,16 @@ namespace AliasServerDb.Migrations
                 principalTable: "AliasVaultUsers",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
+        }
+
+        /// <summary>
+        /// Drops the algorithm from the public keys that predate the column.
+        /// </summary>
+        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void RemoveAlgorithmFromPublicKeys(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(name: "Algorithm", table: "MobileLoginRequests");
+            migrationBuilder.DropColumn(name: "Algorithm", table: "VaultManifestDeliveryKeys");
         }
 
         /// <summary>

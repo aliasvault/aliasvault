@@ -60,7 +60,8 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "RateLimits" DROP CONSTRAINT "FK_RateLimits_Groups_GroupId";
                 ALTER TABLE "UserGrantKeys" DROP CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId";
                 ALTER TABLE "UserUnlockKeys" DROP CONSTRAINT "FK_UserUnlockKeys_AliasVaultUsers_UserId";
-                ALTER TABLE "VaultBlobObjects" DROP CONSTRAINT "FK_VaultBlobObjects_AliasVaultUsers_OwnerUserId";
+                ALTER TABLE "UserUnlockKeysHistory" DROP CONSTRAINT "FK_UserUnlockKeysHistory_AliasVaultUsers_UserId";
+                ALTER TABLE "VaultBlobObjects" DROP CONSTRAINT "FK_VaultBlobObjects_VaultManifests_ManifestId";
                 ALTER TABLE "VaultBlobReferences" DROP CONSTRAINT "FK_VaultBlobReferences_VaultManifests_ManifestId";
                 ALTER TABLE "VaultDataBuckets" DROP CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId";
                 ALTER TABLE "VaultManifestAccessKeys" DROP CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId";
@@ -314,8 +315,8 @@ namespace AliasServerDb.Migrations
         }
 
         /// <summary>
-        /// Moves the manifest a delivery key belongs to up to the second column instead of leaving it behind the
-        /// timestamps.
+        /// Moves the manifest a delivery key belongs to and its algorithm up next to the primary key instead of
+        /// leaving them behind the timestamps.
         /// </summary>
         /// <param name="migrationBuilder">Migration builder.</param>
         private static void RebuildVaultManifestDeliveryKeys(MigrationBuilder migrationBuilder)
@@ -324,14 +325,15 @@ namespace AliasServerDb.Migrations
                 CREATE TABLE "VaultManifestDeliveryKeys_reordered" (
                     "Id" uuid NOT NULL,
                     "VaultManifestId" uuid NOT NULL,
+                    "Algorithm" character varying(30) NOT NULL,
                     "PublicKey" character varying(2000) NOT NULL,
                     "IsPrimary" boolean NOT NULL,
                     "CreatedAt" timestamp with time zone NOT NULL,
                     "UpdatedAt" timestamp with time zone NOT NULL
                 );
 
-                INSERT INTO "VaultManifestDeliveryKeys_reordered" ("Id", "VaultManifestId", "PublicKey", "IsPrimary", "CreatedAt", "UpdatedAt")
-                SELECT "Id", "VaultManifestId", "PublicKey", "IsPrimary", "CreatedAt", "UpdatedAt"
+                INSERT INTO "VaultManifestDeliveryKeys_reordered" ("Id", "VaultManifestId", "Algorithm", "PublicKey", "IsPrimary", "CreatedAt", "UpdatedAt")
+                SELECT "Id", "VaultManifestId", "Algorithm", "PublicKey", "IsPrimary", "CreatedAt", "UpdatedAt"
                 FROM "VaultManifestDeliveryKeys";
 
                 DROP TABLE "VaultManifestDeliveryKeys";
@@ -364,7 +366,8 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "RateLimits" ADD CONSTRAINT "FK_RateLimits_Groups_GroupId" FOREIGN KEY ("GroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
                 ALTER TABLE "UserGrantKeys" ADD CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "UserUnlockKeys" ADD CONSTRAINT "FK_UserUnlockKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
-                ALTER TABLE "VaultBlobObjects" ADD CONSTRAINT "FK_VaultBlobObjects_AliasVaultUsers_OwnerUserId" FOREIGN KEY ("OwnerUserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
+                ALTER TABLE "UserUnlockKeysHistory" ADD CONSTRAINT "FK_UserUnlockKeysHistory_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
+                ALTER TABLE "VaultBlobObjects" ADD CONSTRAINT "FK_VaultBlobObjects_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultBlobReferences" ADD CONSTRAINT "FK_VaultBlobReferences_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultDataBuckets" ADD CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestAccessKeys" ADD CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;

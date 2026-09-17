@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AliasServerDb.Migrations
 {
     [DbContext(typeof(AliasServerDbContext))]
-    [Migration("20260810084712_DropUnusedIdentityTablesAndWidenAuthLogPath")]
-    partial class DropUnusedIdentityTablesAndWidenAuthLogPath
+    [Migration("20260810084712_DropUnusedSchemaAndWidenAuthLogPath")]
+    partial class DropUnusedSchemaAndWidenAuthLogPath
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -835,11 +835,6 @@ namespace AliasServerDb.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CurrentStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("DesiredStatus")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
