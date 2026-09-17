@@ -2,10 +2,10 @@ import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm,
 
 import { getFolderPath } from '../../items/FolderUtils';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
-import { BaseRepository, type IDatabaseClient } from '../BaseRepository';
+import { BaseRepository, type IDatabaseClient, type SqliteBindValue } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type DraftItem, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
-import { ItemMapper, type ItemRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
+import { ItemMapper, type ItemRow, type ItemSummary, type ItemSummaryRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
 import {
   ItemQueries,
   FieldValueQueries,
@@ -90,6 +90,39 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Fetch the active items of one folder with their dynamic fields and tags.
+   * @param folderId - The ID of the folder to read
+   * @param manifestId - The manifest the folder belongs to, when known
+   * @returns Array of Item objects (empty array if the folder does not exist)
+   */
+  public *getByFolder(folderId: string, manifestId?: string): DbOp<Item[]> {
+    const scope = manifestId ?? (yield* this.resolveRowManifestId('Folders', folderId));
+    if (!scope) {
+      return [];
+    }
+
+    const itemRows = yield* this.selectItemRows(ItemQueries.GET_BY_FOLDER, [folderId, scope]);
+    return yield* this.hydrateItems(itemRows);
+  }
+
+  /**
+   * Fetch every active item as the folder counts need it, without logos, fields or tags.
+   * @returns Array of ItemSummary objects (empty array if Items table doesn't exist yet)
+   */
+  public *getAllSummaries(): DbOp<ItemSummary[]> {
+    try {
+      const rows = yield* this.query<ItemSummaryRow>(ItemQueries.GET_ALL_SUMMARIES);
+      return ItemMapper.mapSummaryRows(rows);
+    } catch (error) {
+      // Items table may not exist in older vault versions - return empty array
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Fetch all archived items with their dynamic fields and tags.
    * @returns Array of archived Item objects with ArchivedAt (empty array if Items table doesn't exist yet)
    */
@@ -118,11 +151,12 @@ export class ItemRepository extends BaseRepository {
   /**
    * Run an item SELECT, tolerating a vault whose schema predates the Items table.
    * @param query - The item query to run
+   * @param params - The bound parameters
    * @returns The raw item rows, or an empty array if the table does not exist yet
    */
-  private *selectItemRows(query: string): DbOp<ItemRow[]> {
+  private *selectItemRows(query: string, params: SqliteBindValue[] = []): DbOp<ItemRow[]> {
     try {
-      return yield* this.query<ItemRow>(query);
+      return yield* this.query<ItemRow>(query, params);
     } catch (error) {
       // Items table may not exist in older vault versions - return empty array
       if (error instanceof Error && error.message.includes('no such table')) {

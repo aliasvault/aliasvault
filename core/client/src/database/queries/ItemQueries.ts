@@ -44,6 +44,29 @@ export class ItemQueries {
     ORDER BY i.CreatedAt DESC`;
 
   /**
+   * Get the active items of one folder, matched on the folder's whole key.
+   */
+  public static readonly GET_BY_FOLDER = `
+    ${ItemQueries.BASE_SELECT}
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL AND i.FolderId = ? AND i.ManifestId = ?
+    ORDER BY i.CreatedAt DESC`;
+
+  /**
+   * Get every active item that the folder counts need.
+   */
+  public static readonly GET_ALL_SUMMARIES = `
+    SELECT
+      i.Id,
+      i.ManifestId,
+      i.ItemType,
+      i.FolderId,
+      CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+      CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.ManifestId = i.ManifestId AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+      CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.ManifestId = i.ManifestId AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp
+    FROM Items i
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL`;
+
+  /**
    * Get all archived items. Trashed items are excluded: an item that is both archived and trashed
    * belongs in "Recently Deleted", which is the more urgent of the two states.
    */

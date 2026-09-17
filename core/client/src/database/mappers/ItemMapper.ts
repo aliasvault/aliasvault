@@ -37,6 +37,16 @@ export type ItemRow = {
 }
 
 /**
+ * An active item as the folder counts need it: its key, its folder and the flags the type filters read.
+ */
+export type ItemSummary = Pick<Item, 'Id' | 'ManifestId' | 'ItemType' | 'FolderId' | 'HasPasskey' | 'HasAttachment' | 'HasTotp'>;
+
+/**
+ * Raw summary row from database query.
+ */
+export type ItemSummaryRow = Pick<ItemRow, 'Id' | 'ManifestId' | 'ItemType' | 'FolderId' | 'HasPasskey' | 'HasAttachment' | 'HasTotp'>;
+
+/**
  * Raw tag row from database query.
  */
 export type TagRow = {
@@ -105,6 +115,23 @@ export class ItemMapper {
       tagsByItem.get(scopedKey(row.ManifestId, row.Id)) || [],
       row.FolderId && folderPathsByFolderId ? folderPathsByFolderId.get(scopedKey(row.ManifestId, row.FolderId)) : undefined
     ));
+  }
+
+  /**
+   * Map raw summary rows to ItemSummary objects.
+   * @param rows - Raw summary rows from database
+   * @returns Array of ItemSummary objects
+   */
+  public static mapSummaryRows(rows: ItemSummaryRow[]): ItemSummary[] {
+    return rows.map(row => ({
+      Id: row.Id,
+      ManifestId: row.ManifestId,
+      ItemType: row.ItemType as ItemType,
+      FolderId: row.FolderId,
+      HasPasskey: row.HasPasskey === 1,
+      HasAttachment: row.HasAttachment === 1,
+      HasTotp: row.HasTotp === 1
+    }));
   }
 
   /**

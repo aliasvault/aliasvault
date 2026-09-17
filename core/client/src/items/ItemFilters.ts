@@ -37,16 +37,21 @@ export function parseItemFilterType(value: string | null | undefined): ItemFilte
 }
 
 /**
+ * The parts of an item a type/feature filter reads, so folder counts can run over item summaries.
+ */
+export type FilterableItem = Pick<Item, 'ItemType' | 'HasPasskey' | 'HasAttachment' | 'HasTotp'>;
+
+/**
  * Apply the active type/feature filter to a list of items.
  * Used both for the visible item list and for computing folder badge counts so they
  * stay consistent when a filter is active, folder counts only include matching items.
  */
-export function applyTypeFilter(items: Item[], filterType: ItemFilterType): Item[] {
+export function applyTypeFilter<T extends FilterableItem>(items: T[], filterType: ItemFilterType): T[] {
   if (filterType === 'all') {
     return items;
   }
 
-  return items.filter((item: Item) => {
+  return items.filter((item: T) => {
     if (filterType === 'passkeys') {
       return item.HasPasskey === true;
     }

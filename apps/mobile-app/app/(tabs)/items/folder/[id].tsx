@@ -38,6 +38,7 @@ import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
 import type { FolderWithCount } from '@/components/folders/FolderPill';
+import type { ItemSummary } from '@aliasvault/client/database/mappers/ItemMapper';
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { ItemType } from '@aliasvault/models/vault';
@@ -77,12 +78,11 @@ export default function FolderViewScreen(): React.ReactNode {
   const flatListRef = useRef<FlatList<DisplayItem | null>>(null);
 
   const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
-  const [allItemsInVault, setAllItemsInVault] = useState<DisplayItem[]>([]);
+  const [itemSummaries, setItemSummaries] = useState<ItemSummary[]>([]);
   const [folder, setFolder] = useState<Folder | null>(null);
   const [canCreateSubfolder, setCanCreateSubfolder] = useState(false);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
-  // No minimum loading delay for folder view since data is already in memory
-  const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [isLoadingItems, setIsLoadingItems] = useState(true);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
 
@@ -174,8 +174,8 @@ export default function FolderViewScreen(): React.ReactNode {
       return 0;
     }
 
-    return getRecursiveItemCount(folderId, allItemsInVault, allFolders);
-  }, [folderId, allFolders, allItemsInVault]);
+    return getRecursiveItemCount(folderId, itemSummaries, allFolders);
+  }, [folderId, allFolders, itemSummaries]);
 
   /**
    * Direct subfolders of the current folder, with item counts that respect the active
@@ -186,7 +186,7 @@ export default function FolderViewScreen(): React.ReactNode {
       return [];
     }
 
-    const itemsForCount = applyTypeFilter(allItemsInVault, filterType);
+    const itemsForCount = applyTypeFilter(itemSummaries, filterType);
 
     const childFolders = allFolders.filter((f: Folder) => f.ParentFolderId === folderId);
     return childFolders.map((f) => ({
@@ -194,26 +194,26 @@ export default function FolderViewScreen(): React.ReactNode {
       name: f.Name,
       itemCount: getRecursiveItemCount(f.Id, itemsForCount, allFolders),
     }));
-  }, [folderId, allFolders, allItemsInVault, filterType]);
+  }, [folderId, allFolders, itemSummaries, filterType]);
 
   /**
    * Load items in this folder, subfolders, and folder details.
    */
   const loadItems = useCallback(async (): Promise<void> => {
     if (!folderId) {
+      setIsLoadingItems(false);
       return;
     }
 
     try {
-      const [items, folders, savedSortOrder] = await Promise.all([
-        dbContext.sqliteClient!.items.getAll(),
+      const [folderItems, summaries, folders, savedSortOrder] = await Promise.all([
+        dbContext.sqliteClient!.items.getByFolder(folderId),
+        dbContext.sqliteClient!.items.getAllSummaries(),
         dbContext.sqliteClient!.folders.getAll(),
         dbContext.sqliteClient!.settings.getCredentialsSortOrder()
       ]);
-      // Filter to only items in this folder
-      const folderItems = items.filter((item: DisplayItem) => item.FolderId === folderId);
       setItemsList(folderItems);
-      setAllItemsInVault(items);
+      setItemSummaries(summaries);
 
       // Find this folder
       const currentFolder = folders.find((f: Folder) => f.Id === folderId);
@@ -490,21 +490,10 @@ export default function FolderViewScreen(): React.ReactNode {
     setShowCreateSubfolderModal(false);
   }, [dbContext.sqliteClient, folderId, executeVaultMutation, loadItems]);
 
-  // Header styles (stable, not dependent on colors) - prefixed with _ as styles are inlined in useEffect
-  const _headerStyles = StyleSheet.create({
-    headerButton: {
-      padding: 8,
-    },
-    headerRightContainer: {
-      flexDirection: 'row',
-      gap: 4,
-    },
-  });
-
   const paddingTop = Platform.OS === 'ios' ? 56 : 16;
   const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 60 : 40;
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
     container: {
       paddingHorizontal: 0,
     },
@@ -665,7 +654,7 @@ export default function FolderViewScreen(): React.ReactNode {
       color: colors.textMuted,
       fontSize: 14,
     },
-  });
+  }), [colors, paddingTop, paddingBottom]);
 
   /**
    * Render the filter menu as an absolute overlay.
@@ -780,15 +769,16 @@ export default function FolderViewScreen(): React.ReactNode {
   };
 
   /**
-   * Render the list header with subfolders, filter, sort button, and search.
+   * The list header with subfolders, filter, sort button, and search.
    */
-  const renderListHeader = (): React.ReactNode => {
+  const listHeader = useMemo((): React.ReactElement => {
     return (
       <ThemedView>
         {/* Folder breadcrumb navigation */}
         <FolderBreadcrumb
           folderId={folderId}
           excludeCurrentFolder={true}
+          folders={allFolders}
         />
 
         {/* Subfolder pills (shown when not searching) */}
@@ -889,7 +879,7 @@ export default function FolderViewScreen(): React.ReactNode {
         </ThemedView>
       </ThemedView>
     );
-  };
+  }, [folderId, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
 
   /**
    * Render empty state.
@@ -928,7 +918,7 @@ export default function FolderViewScreen(): React.ReactNode {
         maxToRenderPerBatch={14}
         windowSize={7}
         removeClippedSubviews={false}
-        ListHeaderComponent={renderListHeader() as React.ReactElement}
+        ListHeaderComponent={listHeader}
         onScrollToIndexFailed={({ index, averageItemLength }) => {
           flatListRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: true });
         }}

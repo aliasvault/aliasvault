@@ -23,13 +23,14 @@ export type DisplayItem<T extends Item = Item> = Omit<T, 'Logo'> & {
 /**
  * The item repository reads that return items.
  */
-type ItemReads = 'getAll' | 'getById' | 'getArchived' | 'getRecentlyDeleted';
+type ItemReads = 'getAll' | 'getByFolder' | 'getById' | 'getArchived' | 'getRecentlyDeleted';
 
 /**
  * The item repository as the app uses it: every item read returns display items.
  */
 export type DisplayItemRepository = Omit<AsyncRepository<ItemRepository>, ItemReads> & {
   getAll(): Promise<DisplayItem[]>;
+  getByFolder(folderId: string, manifestId?: string): Promise<DisplayItem[]>;
   getById(itemId: string, manifestId?: string): Promise<DisplayItem | null>;
   getArchived(): Promise<DisplayItem<ItemWithArchivedAt>[]>;
   getRecentlyDeleted(): Promise<DisplayItem<ItemWithDeletedAt>[]>;
@@ -41,6 +42,7 @@ export type DisplayItemRepository = Omit<AsyncRepository<ItemRepository>, ItemRe
 export function withDisplayItems(repository: AsyncRepository<ItemRepository>): DisplayItemRepository {
   const reads: Pick<DisplayItemRepository, ItemReads> = {
     getAll: async () => toDisplayItems(await repository.getAll()),
+    getByFolder: async (folderId, manifestId) => toDisplayItems(await repository.getByFolder(folderId, manifestId)),
     getById: async (itemId, manifestId) => {
       const item = await repository.getById(itemId, manifestId);
       return item ? toDisplayItems([item])[0] : null;
