@@ -414,6 +414,7 @@ build_ios() {
     cargo run $cargo_flags --features uniffi-cli --bin uniffi-bindgen -- generate \
         --library "target/aarch64-apple-ios/$cargo_profile/libaliasvault_core.a" \
         --language swift \
+        --no-format \
         --out-dir "$IOS_DIR/swift"
 
     local end_time=$(date +%s)
@@ -657,6 +658,7 @@ build_android() {
     cargo run --features uniffi-cli --bin uniffi-bindgen -- generate \
         --library "target/debug/$native_lib_name" \
         --language kotlin \
+        --no-format \
         --out-dir "$ANDROID_DIR/kotlin"
 
     local end_time=$(date +%s)
