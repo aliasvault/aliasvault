@@ -95,40 +95,6 @@ public struct PasskeyQueries {
         WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
         """
 
-    /// Get Items that match an rpId but don't have a passkey yet.
-    /// Note: The public API now uses getAllItemsWithoutPasskey + Rust credential matcher for consistent cross-platform matching.
-    /// This query is kept for potential fallback scenarios.
-    public static let getItemsWithoutPasskeyForRpId = """
-        SELECT i.Id, i.ManifestId, i.Name, i.CreatedAt, i.UpdatedAt,
-               fv_url.Value as Url,
-               fv_username.Value as Username,
-               fv_email.Value as Email,
-               fv_password.Value as Password
-        FROM Items i
-        INNER JOIN FieldValues fv_url ON fv_url.ItemId = i.Id AND fv_url.ManifestId = i.ManifestId
-            AND fv_url.FieldKey = 'login.url'
-            AND fv_url.IsDeleted = 0
-        LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id AND fv_username.ManifestId = i.ManifestId
-            AND fv_username.FieldKey = 'login.username'
-            AND fv_username.IsDeleted = 0
-        LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id AND fv_email.ManifestId = i.ManifestId
-            AND fv_email.FieldKey = 'login.email'
-            AND fv_email.IsDeleted = 0
-        LEFT JOIN FieldValues fv_password ON fv_password.ItemId = i.Id AND fv_password.ManifestId = i.ManifestId
-            AND fv_password.FieldKey = 'login.password'
-            AND fv_password.IsDeleted = 0
-        WHERE i.IsDeleted = 0
-            AND i.DeletedAt IS NULL
-            AND i.ArchivedAt IS NULL
-            AND i.ItemType = 'Login'
-            AND (LOWER(fv_url.Value) LIKE ? OR LOWER(fv_url.Value) LIKE ?)
-            AND NOT EXISTS (
-                SELECT 1 FROM Passkeys p
-                WHERE p.ItemId = i.Id AND p.ManifestId = i.ManifestId AND p.IsDeleted = 0
-            )
-        ORDER BY i.UpdatedAt DESC
-        """
-
     /// Get ALL active Login items that don't have a passkey yet (no URL filtering).
     /// Used with Rust credential matcher for intelligent filtering.
     /// Returns items with their URLs aggregated using GROUP_CONCAT for multi-URL support.
