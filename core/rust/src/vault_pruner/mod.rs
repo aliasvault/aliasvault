@@ -14,7 +14,7 @@ use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::{has_bytes, is_deleted, logo_kind, str_col};
 use crate::vault_codec::{CodecRecord, CodecTableData};
 use crate::vault_model::names::{
-    DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_STATS_TABLE, KIND_COL, LOGOS_TABLE,
+    DELETED_AT_COL, FILE_DATA_COL, ID_COL, IS_DELETED_COL, ITEMS_TABLE, ITEM_ID_COL, KIND_COL, LOGOS_TABLE,
     LOGO_ID_COL, LOGO_KIND_FAVICON, UPDATED_AT_COL,
 };
 use crate::vault_model::{BLOB_COLUMNS, SYNCABLE_TABLES, TRASH_RETENTION_DEFAULT_DAYS};
@@ -92,7 +92,7 @@ pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
     for child in item_child_tables() {
         let query = match blob_column_for(child.name) {
             Some(blob_col) => format!("SELECT {}, {}, {}, substr({}, 1, 1) AS {} FROM {}", ID_COL, ITEM_ID_COL, IS_DELETED_COL, blob_col, blob_col, child.name),
-            None => format!("SELECT {}, {} FROM {}", item_ref_column(child.name), IS_DELETED_COL, child.name),
+            None => format!("SELECT {}, {} FROM {}", child.item_ref_column(), IS_DELETED_COL, child.name),
         };
         queries.push(PruneTableQuery { name: child.name.to_string(), query });
     }
@@ -106,12 +106,6 @@ pub fn get_prune_table_queries() -> Vec<PruneTableQuery> {
 /// The registered item-child tables (TableConfig::item_child), in registry order.
 fn item_child_tables() -> impl Iterator<Item = &'static crate::vault_model::TableConfig> {
     SYNCABLE_TABLES.iter().filter(|t| t.item_child)
-}
-
-/// The column of an item-child table that carries the owning item's id: `Id` for ItemStats
-/// (its `Id` *is* the item's id), `ItemId` everywhere else.
-fn item_ref_column(table_name: &str) -> &'static str {
-    if table_name == ITEM_STATS_TABLE { ID_COL } else { ITEM_ID_COL }
 }
 
 /// The extracted blob column of a table, if it has one (see `vault_model::BLOB_COLUMNS`).
@@ -188,7 +182,7 @@ fn expired_item_ids(items: &[CodecRecord], cutoff_date: DateTime<Utc>) -> Vec<St
 fn tombstone_item_children(tables: &[CodecTableData], item_id: &str, now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
     for child in item_child_tables() {
         let Some(records) = records_of(tables, child.name) else { continue };
-        let match_col = item_ref_column(child.name);
+        let match_col = child.item_ref_column();
         let related_count = count_related_records(records, match_col, item_id);
         if related_count == 0 {
             continue;

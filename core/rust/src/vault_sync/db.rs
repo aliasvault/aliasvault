@@ -232,7 +232,7 @@ const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0,
 const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
 const INSERT_FOLDER: &str = "INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt) VALUES (?, ?, ?, COALESCE((SELECT ManifestId FROM Folders WHERE Id = ?), ?), 0, 0, ?, ?)";
 const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
-const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ? WHERE FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
+const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ?, UpdatedAt = ? WHERE ManifestId <> ? AND FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
 const FIND_ITEMS_WITH_FOREIGN_LOGO: &str = "SELECT i.Id, i.ManifestId, origin.Kind, origin.Source FROM Items i INNER JOIN Logos origin ON origin.Id = i.LogoId LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0";
 const GET_LOGO_ID_FOR_KEY: &str = "SELECT Id FROM Logos WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0 LIMIT 1";
 const GET_BEST_LOGO_FOR_KEY: &str = "SELECT FileData, MimeType, Name FROM Logos WHERE Kind = ? AND Source = ? AND IsDeleted = 0 ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC LIMIT 1";
@@ -294,7 +294,7 @@ pub(crate) async fn render_manifest_folder(host: &Host, manifest_id: &str, name:
         vec![
             SqlStatement { sql: INSERT_FOLDER.to_string(), params: vec![json!(folder_id), json!(name), Value::Null, Value::Null, json!(active_manifest_id), json!(now), json!(now)] },
             SqlStatement { sql: RESTAMP_SUBTREE_FOLDERS.to_string(), params: vec![json!(manifest_id), json!(folder_id)] },
-            SqlStatement { sql: RESTAMP_SUBTREE_ITEMS.to_string(), params: vec![json!(manifest_id), json!(folder_id)] },
+            SqlStatement { sql: RESTAMP_SUBTREE_ITEMS.to_string(), params: vec![json!(manifest_id), json!(now), json!(manifest_id), json!(folder_id)] },
         ],
     )
     .await?;

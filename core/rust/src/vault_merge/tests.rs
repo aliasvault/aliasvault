@@ -36,10 +36,10 @@ fn items_manifest(manifest_id: &str, rows: Vec<CodecRecord>) -> Manifest {
 
 fn schema() -> HashMap<String, Vec<String>> {
     [
-        ("Items".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "Name".to_string(), "UpdatedAt".to_string()]),
+        ("Items".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "Name".to_string(), "IsDeleted".to_string(), "UpdatedAt".to_string()]),
         ("Settings".to_string(), vec!["ManifestId".to_string(), "Key".to_string(), "Value".to_string(), "UpdatedAt".to_string()]),
         ("ItemStats".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "LastUsedAt".to_string(), "UpdatedAt".to_string()]),
-        ("FieldValues".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "FieldDefinitionId".to_string(), "ValueIndex".to_string(), "Value".to_string(), "UpdatedAt".to_string()]),
+        ("FieldValues".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "ItemId".to_string(), "FieldKey".to_string(), "FieldDefinitionId".to_string(), "ValueIndex".to_string(), "Value".to_string(), "IsDeleted".to_string(), "UpdatedAt".to_string()]),
         ("ItemTags".to_string(), vec!["ManifestId".to_string(), "ItemId".to_string(), "TagId".to_string(), "UpdatedAt".to_string()]),
         ("Attachments".to_string(), vec!["ManifestId".to_string(), "Id".to_string(), "Blob".to_string(), "UpdatedAt".to_string()]),
     ]
@@ -581,4 +581,141 @@ fn keys_compare_guids_case_insensitively_and_survive_a_missing_column() {
     assert_eq!(get_key(&row(MANIFEST, ROW), &columns), get_key(&row(&MANIFEST.to_uppercase(), &ROW.to_uppercase()), &columns));
     assert_ne!(get_key(&row(MANIFEST, ROW), &columns), get_key(&row(OTHER_MANIFEST, ROW), &columns));
     assert_eq!(get_key(&HashMap::from([("Id".to_string(), json!(ROW))]), &columns), format!(":{}", ROW));
+}
+
+/// An `Items` row, live or tombstoned.
+fn item_row(manifest_id: &str, id: &str, deleted: bool, updated_at: &str) -> CodecRecord {
+    let mut row = item(manifest_id, id, "item", updated_at);
+    row.insert("IsDeleted".to_string(), json!(if deleted { 1 } else { 0 }));
+    row
+}
+
+/// A single-value `FieldValues` row of `item-1` in wire shape, live or tombstoned.
+fn field_of_item(manifest_id: &str, field_key: &str, value: &str, deleted: bool, updated_at: &str) -> CodecRecord {
+    [
+        ("ManifestId".to_string(), json!(manifest_id)),
+        ("ItemId".to_string(), json!("item-1")),
+        ("FieldKey".to_string(), json!(field_key)),
+        ("ValueIndex".to_string(), json!(0)),
+        ("Value".to_string(), json!(value)),
+        ("IsDeleted".to_string(), json!(if deleted { 1 } else { 0 })),
+        ("UpdatedAt".to_string(), json!(updated_at)),
+    ]
+    .into_iter()
+    .collect()
+}
+
+fn item_manifest(manifest_id: &str, items: Vec<CodecRecord>, field_values: Vec<CodecRecord>) -> Manifest {
+    manifest(manifest_id, [("Items".to_string(), items), ("FieldValues".to_string(), field_values)].into_iter().collect())
+}
+
+fn merge_manifests(server: Vec<Manifest>, local: Vec<Manifest>) -> Vec<CanonicalManifestMerge> {
+    merge_canonical(CanonicalMergeInput { server_manifests: server, server_buckets: vec![], contentless_server_manifest_ids: vec![], local_manifests: local, local_buckets: vec![], schema_columns: schema() }).unwrap().manifests
+}
+
+fn live_values(merged: &CanonicalManifestMerge) -> Vec<String> {
+    let mut values: Vec<String> = merged.manifest.tables["FieldValues"].iter().filter(|r| r["IsDeleted"] == json!(0)).map(|r| r["Value"].as_str().unwrap().to_string()).collect();
+    values.sort();
+    values
+}
+
+const T_OLD: &str = "2024-01-01T00:00:00Z";
+const T_DELETE: &str = "2024-01-05T05:00:00Z";
+const T_EDIT: &str = "2024-01-05T05:05:00Z";
+
+#[test]
+fn a_permanent_delete_does_not_get_its_children_back_from_the_other_side() {
+    // The deleting side removed the item's rows; the server still holds them and must not resurrect them.
+    let server = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![field_of_item(PERSONAL, "login.password", "secret", false, T_OLD)]);
+    let local = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_DELETE)], vec![]);
+    for (base, incoming) in [(server.clone(), local.clone()), (local, server)] {
+        let merged = &merge_manifests(vec![base], vec![incoming])[0];
+        assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(1), "the delete stands");
+        assert!(merged.manifest.tables["FieldValues"].is_empty(), "and the deleted item keeps no rows");
+    }
+}
+
+#[test]
+fn an_item_edited_after_the_other_side_deleted_it_survives_whole() {
+    // One side deleted the item at 05:00, tombstoning its rows as the pruner does. The other edited one
+    // field at 05:05, which never touches the item row. The edit is the last write, so the item survives,
+    // and with every field: the delete's child tombstones must not wipe the fields the edit left alone.
+    let deleting = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_DELETE)], vec![
+        field_of_item(PERSONAL, "login.username", "user", true, T_DELETE),
+        field_of_item(PERSONAL, "login.password", "old-secret", true, T_DELETE),
+    ]);
+    let editing = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![
+        field_of_item(PERSONAL, "login.username", "user", false, T_OLD),
+        field_of_item(PERSONAL, "login.password", "new-secret", false, T_EDIT),
+    ]);
+    for (base, incoming) in [(deleting.clone(), editing.clone()), (editing, deleting)] {
+        let merged = &merge_manifests(vec![base], vec![incoming])[0];
+        assert_eq!(merged.manifest.tables["Items"].len(), 1);
+        assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(0), "the later edit outlives the delete");
+        assert_eq!(live_values(merged), vec!["new-secret", "user"], "with the untouched field intact");
+    }
+}
+
+#[test]
+fn a_delete_newer_than_everything_the_other_side_did_stands() {
+    let editing = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![field_of_item(PERSONAL, "login.password", "edited", false, T_DELETE)]);
+    let deleting = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_EDIT)], vec![]);
+    for (base, incoming) in [(deleting.clone(), editing.clone()), (editing, deleting)] {
+        let merged = &merge_manifests(vec![base], vec![incoming])[0];
+        assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(1));
+        assert!(merged.manifest.tables["FieldValues"].is_empty());
+    }
+}
+
+#[test]
+fn a_delete_and_an_edit_at_the_same_instant_keep_the_server_side() {
+    let deleting = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_EDIT)], vec![]);
+    let editing = item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![field_of_item(PERSONAL, "login.password", "edited", false, T_EDIT)]);
+
+    let merged = &merge_manifests(vec![deleting.clone()], vec![editing.clone()])[0];
+    assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(1), "the server's delete keeps the tie");
+
+    let merged = &merge_manifests(vec![editing], vec![deleting])[0];
+    assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(0), "the server's edit keeps the tie");
+    assert_eq!(live_values(merged), vec!["edited"]);
+}
+
+#[test]
+fn a_usage_counter_does_not_outlive_a_delete() {
+    // ItemStats ticks on every autofill; that is not an edit and must not undo a delete.
+    let stats = |updated_at: &str| -> CodecRecord {
+        [("ManifestId".to_string(), json!(PERSONAL)), ("Id".to_string(), json!("item-1")), ("LastUsedAt".to_string(), json!(updated_at)), ("UpdatedAt".to_string(), json!(updated_at))].into_iter().collect()
+    };
+    let output = merge_canonical(CanonicalMergeInput {
+        server_manifests: vec![item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_DELETE)], vec![])],
+        server_buckets: vec![],
+        contentless_server_manifest_ids: vec![],
+        local_manifests: vec![item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![])],
+        local_buckets: vec![DataBucket::new(PERSONAL, "Stats", [("ItemStats".to_string(), vec![stats(T_EDIT)])].into_iter().collect())],
+        schema_columns: schema(),
+    })
+    .unwrap();
+    let merged = &output.manifests[0];
+    assert_eq!(merged.manifest.tables["Items"][0]["IsDeleted"], json!(1));
+    assert!(merged.buckets.iter().all(|bucket| bucket.tables.get("ItemStats").is_none_or(Vec::is_empty)), "the deleted item's stats row goes with it");
+}
+
+#[test]
+fn an_item_moved_to_another_manifest_does_not_stay_behind_in_the_one_it_left() {
+    // The move leaves a tombstone in the source manifest, so the server's copy there loses instead of
+    // surviving the union next to the moved one.
+    let server = vec![
+        item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", false, T_OLD)], vec![field_of_item(PERSONAL, "login.password", "secret", false, T_OLD)]),
+        item_manifest(SHARED, vec![], vec![]),
+    ];
+    let local = vec![
+        item_manifest(PERSONAL, vec![item_row(PERSONAL, "item-1", true, T_EDIT)], vec![]),
+        item_manifest(SHARED, vec![item_row(SHARED, "item-1", false, T_EDIT)], vec![field_of_item(SHARED, "login.password", "secret", false, T_OLD)]),
+    ];
+    let merged = merge_manifests(server, local);
+    let by_id: HashMap<&str, &CanonicalManifestMerge> = merged.iter().map(|m| (m.manifest_id.as_str(), m)).collect();
+    assert_eq!(by_id[PERSONAL].manifest.tables["Items"][0]["IsDeleted"], json!(1), "the source manifest keeps only the tombstone");
+    assert!(by_id[PERSONAL].manifest.tables["FieldValues"].is_empty());
+    assert_eq!(by_id[SHARED].manifest.tables["Items"][0]["IsDeleted"], json!(0));
+    assert_eq!(live_values(by_id[SHARED]), vec!["secret"], "and the moved item arrives whole");
 }

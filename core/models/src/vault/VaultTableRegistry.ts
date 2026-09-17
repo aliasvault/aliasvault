@@ -197,6 +197,14 @@ export const MULTI_VALUE_FIELD_KEYS: string[] = Object.values(SystemFieldRegistr
   .map((field) => field.FieldKey.toLowerCase());
 
 /**
+ * System field keys whose field holds one value. A key in neither list is a field this build does not
+ * know (a newer writer's), whose rows the codec leaves as it found them.
+ */
+export const SINGLE_VALUE_FIELD_KEYS: string[] = Object.values(SystemFieldRegistry)
+  .filter((field) => !field.IsMultiValue)
+  .map((field) => field.FieldKey.toLowerCase());
+
+/**
  * The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
  * stamped with that manifest's id.
  */

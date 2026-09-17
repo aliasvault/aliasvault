@@ -17,6 +17,7 @@ use crate::timestamp::updated_at;
 use crate::vault_model::{id_key, TableConfig, SYNCABLE_TABLES};
 use crate::vault_codec::{bucket_categories, identity_part, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
 
+mod item_deletes;
 #[cfg(test)]
 mod tests;
 
@@ -140,6 +141,9 @@ fn merge_manifest_pair(
     let mut incoming_tables = local.map(|m| m.tables).unwrap_or_default();
     incoming_tables.extend(local_bucket_tables);
 
+    // An item is deleted as a unit including any child rows.
+    item_deletes::resolve_item_deletes(&mut base_tables, &mut incoming_tables);
+
     let table_names: BTreeSet<String> = base_tables.keys().chain(incoming_tables.keys()).cloned().collect();
 
     let mut merged: HashMap<String, Vec<CodecRecord>> = HashMap::new();
@@ -165,8 +169,9 @@ fn merge_manifest_pair(
         }
     }
 
-    // A union of concurrently added multi-value rows can leave two rows at the same ValueIndex;
-    // re-normalizing the output renumbers them, so a merged manifest is normalized like any other.
+    // A union of concurrently added multi-value rows can leave two rows at the same ValueIndex, and a
+    // delete that won can leave the other side's children under a tombstoned item; re-normalizing the
+    // output renumbers the first and drops the second, so a merged manifest is normalized like any other.
     crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
 
     let mut buckets = unknown_server_buckets;

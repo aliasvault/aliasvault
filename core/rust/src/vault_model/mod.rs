@@ -66,6 +66,11 @@ impl TableConfig {
         self
     }
 
+    /// The column of an item-child table that carries the owning item's id: `Id` for ItemStats (its `Id` is the item's id), `ItemId` everywhere else.
+    pub fn item_ref_column(&self) -> &'static str {
+        if self.name == names::ITEM_STATS_TABLE { names::ID_COL } else { names::ITEM_ID_COL }
+    }
+
     /// The columns that together identify one row of this table: `(ManifestId, primary key columns)`
     /// for a manifest-scoped table, the primary key columns alone otherwise.
     pub fn identity_columns(&self) -> Vec<&'static str> {

@@ -86,6 +86,10 @@ pub static PERSONAL_TABLES: &[&str] = &[];
 /// adding two different things) and is not derived.
 pub static MULTI_VALUE_FIELD_KEYS: &[&str] = &["login.url"];
 
+/// System field keys whose field holds one value. A key in neither list is a field this build does
+/// not know (a newer writer's), whose rows the codec leaves as it found them.
+pub static SINGLE_VALUE_FIELD_KEYS: &[&str] = &["login.email", "login.username", "login.password", "alias.first_name", "alias.last_name", "alias.gender", "alias.birthdate", "card.cardholder_name", "card.number", "card.expiry_month", "card.expiry_year", "card.cvv", "card.pin", "notes.content"];
+
 /// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
 /// stamped with that manifest's id (`ManifestId`).
 pub const ENCRYPTION_KEYS_TABLE: &str = "EncryptionKeys";

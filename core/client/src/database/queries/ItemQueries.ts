@@ -144,7 +144,7 @@ export class ItemQueries {
       LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
       WHERE (fv.ManifestId, fv.ItemId) IN (VALUES ${placeholders})
         AND fv.IsDeleted = 0
-      ORDER BY fv.ItemId, fv.Weight`;
+      ORDER BY fv.ItemId, fv.Weight, fv.ValueIndex`;
   }
 
   /**
@@ -163,7 +163,7 @@ export class ItemQueries {
     FROM FieldValues fv
     LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
     WHERE fv.ItemId = ? AND fv.ManifestId = ? AND fv.IsDeleted = 0
-    ORDER BY fv.Weight`;
+    ORDER BY fv.Weight, fv.ValueIndex`;
 
   /**
    * Get tags for multiple items, matched on the whole item key (see {@link getFieldValuesForItems}).
@@ -335,27 +335,31 @@ export class ItemQueries {
  */
 export class FieldValueQueries {
   /**
-   * Get existing field values for an item.
+   * Get every field value row of an item, tombstones included, so a write can bring a removed field's row back
+   * instead of adding a second row for the same field.
    */
-  public static readonly GET_EXISTING_FOR_ITEM = `
-    SELECT Id, FieldKey, FieldDefinitionId, Value, Weight
+  public static readonly GET_ALL_FOR_ITEM = `
+    SELECT Id, FieldKey, FieldDefinitionId, Value, Weight, ValueIndex, IsDeleted
     FROM FieldValues
-    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
+    WHERE ItemId = ? AND ManifestId = ?
+    ORDER BY ValueIndex`;
 
   /**
    * Insert a new field value, stamped with the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
-    INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted)
+    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
-   * Update an existing field value.
+   * Update an existing field value, bringing it back when it was removed before.
    */
   public static readonly UPDATE = `
     UPDATE FieldValues
     SET Value = ?,
         Weight = ?,
+        ValueIndex = ?,
+        IsDeleted = 0,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
 
@@ -374,7 +378,8 @@ export class FieldValueQueries {
   public static readonly GET_FOR_HISTORY = `
     SELECT FieldKey, Value
     FROM FieldValues
-    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL`;
+    WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL
+    ORDER BY ValueIndex`;
 }
 
 /**

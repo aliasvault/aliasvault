@@ -157,6 +157,10 @@ pub static PERSONAL_TABLES: &[&str] = &[${registry.VAULT_PERSONAL_TABLES.map((t)
 /// adding two different things) and is not derived.
 pub static MULTI_VALUE_FIELD_KEYS: &[&str] = ${rustStrSlice(registry.MULTI_VALUE_FIELD_KEYS)};
 
+/// System field keys whose field holds one value. A key in neither list is a field this build does
+/// not know (a newer writer's), whose rows the codec leaves as it found them.
+pub static SINGLE_VALUE_FIELD_KEYS: &[&str] = ${rustStrSlice(registry.SINGLE_VALUE_FIELD_KEYS)};
+
 /// The per-manifest delivery-keypair table. Every manifest carries its own asymmetric keypair(s),
 /// stamped with that manifest's id (\`ManifestId\`).
 pub const ENCRYPTION_KEYS_TABLE: &str = "${registry.ENCRYPTION_KEYS_TABLE}";

@@ -1,6 +1,6 @@
 //! Engine tests: the whole sync driven through the command loop against a real SQLite host.
 
-mod sharing;
+mod item_move;
 mod test_host;
 
 use std::collections::HashMap;

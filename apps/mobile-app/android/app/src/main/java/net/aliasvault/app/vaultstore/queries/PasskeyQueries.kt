@@ -133,8 +133,10 @@ object PasskeyQueries {
      * Insert a field value. Binds (id, itemId, fieldDefinitionId, fieldKey, value, weight, now, now, 0, manifestId).
      */
     const val INSERT_FIELD_VALUE = """
-        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6,
+            (SELECT COALESCE(MAX(ValueIndex), -1) + 1 FROM FieldValues WHERE ItemId = ?2 AND ManifestId = ?10 AND FieldKey = ?4 AND IsDeleted = 0),
+            ?7, ?8, ?9, ?10)
     """
 
     /**

@@ -50,7 +50,7 @@ public struct ItemQueries {
             LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
             WHERE (fv.ManifestId, fv.ItemId) IN (VALUES \(placeholders))
               AND fv.IsDeleted = 0
-            ORDER BY fv.ItemId, fv.Weight
+            ORDER BY fv.ItemId, fv.Weight, fv.ValueIndex
             """
     }
 
@@ -75,8 +75,10 @@ public struct ItemQueries {
 public struct FieldValueQueries {
     /// Insert a new field value, bound as [id, itemId, fieldDefinitionId, fieldKey, value, weight, now, now, 0, manifestId].
     public static let insert = """
-        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted, ManifestId)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6,
+            (SELECT COALESCE(MAX(ValueIndex), -1) + 1 FROM FieldValues WHERE ItemId = ?2 AND ManifestId = ?10 AND FieldKey = ?4 AND IsDeleted = 0),
+            ?7, ?8, ?9, ?10)
         """
 
     /// The Weight a system field's values are written with: the field's DefaultDisplayOrder from

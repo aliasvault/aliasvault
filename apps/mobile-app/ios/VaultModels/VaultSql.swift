@@ -1782,6 +1782,21 @@ public struct VaultSql {
         VALUES ('20260913090000_2.1.0-ManifestScopedStorage', '10.0.10');
         
         BEGIN TRANSACTION;
+        CREATE TRIGGER IF NOT EXISTS \"TR_Items_ClearTombstoneBeforeReturn\"
+        BEFORE UPDATE OF \"ManifestId\" ON \"Items\"
+        FOR EACH ROW WHEN OLD.\"ManifestId\" <> NEW.\"ManifestId\"
+            AND EXISTS (SELECT 1 FROM \"Items\" WHERE \"ManifestId\" = NEW.\"ManifestId\" AND \"Id\" = NEW.\"Id\" AND \"IsDeleted\" = 1)
+        BEGIN
+            DELETE FROM \"FieldValues\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"FieldHistories\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"ItemTags\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"Attachments\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"Passkeys\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"TotpCodes\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"ItemStats\" WHERE \"Id\" = NEW.\"Id\" AND \"ManifestId\" = NEW.\"ManifestId\";
+            DELETE FROM \"Items\" WHERE \"ManifestId\" = NEW.\"ManifestId\" AND \"Id\" = NEW.\"Id\" AND \"IsDeleted\" = 1;
+        END;
+        
         CREATE TRIGGER IF NOT EXISTS \"TR_Items_ResyncChildManifestIds\"
         AFTER UPDATE OF \"ManifestId\" ON \"Items\"
         FOR EACH ROW WHEN OLD.\"ManifestId\" <> NEW.\"ManifestId\"
@@ -1793,6 +1808,8 @@ public struct VaultSql {
             UPDATE \"Passkeys\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
             UPDATE \"TotpCodes\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
             UPDATE \"ItemStats\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"Id\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
+            INSERT OR IGNORE INTO \"Items\" (\"ManifestId\", \"Id\", \"ItemType\", \"CreatedAt\", \"UpdatedAt\", \"IsDeleted\")
+            SELECT OLD.\"ManifestId\", OLD.\"Id\", OLD.\"ItemType\", OLD.\"CreatedAt\", NEW.\"UpdatedAt\", 1 WHERE OLD.\"IsDeleted\" = 0;
         END;
         
         COMMIT;

@@ -65,7 +65,7 @@ object ItemQueries {
             LEFT JOIN FieldDefinitions fd ON fd.ManifestId = fv.ManifestId AND fd.Id = fv.FieldDefinitionId
             WHERE (fv.ManifestId, fv.ItemId) IN (VALUES $placeholders)
               AND fv.IsDeleted = 0
-            ORDER BY fv.ItemId, fv.Weight
+            ORDER BY fv.ItemId, fv.Weight, fv.ValueIndex
         """.trimIndent()
     }
 

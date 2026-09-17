@@ -1,4 +1,4 @@
-import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
+import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, getSystemField, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
 
 import { getFolderPath } from '../../items/FolderUtils';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
@@ -19,6 +19,19 @@ import type { DbOp } from '../DbOp';
 import type { Folder } from './FolderRepository';
 import type { LogoRepository } from './LogoRepository';
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@aliasvault/models/vault';
+
+/**
+ * A stored FieldValues row as the write path reads it, tombstones included.
+ */
+type StoredFieldValue = {
+  Id: string;
+  FieldKey: string | null;
+  FieldDefinitionId: string | null;
+  Value: string;
+  Weight: number;
+  ValueIndex: number;
+  IsDeleted: number;
+};
 
 /**
  * Repository for Item CRUD operations.
@@ -920,7 +933,7 @@ export class ItemRepository extends BaseRepository {
         ? ['']
         : filteredValues;
 
-      for (const value of valuesToInsert) {
+      for (const [valueIndex, value] of valuesToInsert.entries()) {
         yield* this.execute(FieldValueQueries.INSERT, [
           this.generateId(),
           itemId,
@@ -930,6 +943,7 @@ export class ItemRepository extends BaseRepository {
           field.IsCustomField ? null : field.FieldKey,
           value,
           field.DisplayOrder ?? 0,
+          valueIndex,
           currentDateTime,
           currentDateTime,
           0
@@ -992,89 +1006,108 @@ export class ItemRepository extends BaseRepository {
    * Update field values for an existing item.
    */
   private *updateFieldValues(item: DraftItem, manifestId: string, writeManifestId: string, currentDateTime: string): DbOp<void> {
-    // Get existing FieldValues
-    const existingFieldValues = yield* this.query<{
-      Id: string;
-      FieldKey: string | null;
-      FieldDefinitionId: string | null;
-      Value: string;
-      Weight: number;
-    }>(FieldValueQueries.GET_EXISTING_FOR_ITEM, [item.Id, manifestId]);
+    const storedRows = yield* this.query<StoredFieldValue>(FieldValueQueries.GET_ALL_FOR_ITEM, [item.Id, manifestId]);
 
-    // Build a map of existing FieldValues by key:index
-    const existingByKey = new Map<string, { Id: string; Value: string; Weight: number }>();
-    const fieldValueCounts = new Map<string, number>();
-
-    for (const fv of existingFieldValues) {
-      const key = fv.FieldKey || fv.FieldDefinitionId || '';
-      const count = fieldValueCounts.get(key) || 0;
-      existingByKey.set(`${key}:${count}`, { Id: fv.Id, Value: fv.Value, Weight: fv.Weight });
-      fieldValueCounts.set(key, count + 1);
+    const rowsByField = new Map<string, StoredFieldValue[]>();
+    for (const row of storedRows) {
+      const key = (row.FieldKey || row.FieldDefinitionId || '').toLowerCase();
+      rowsByField.set(key, [...(rowsByField.get(key) ?? []), row]);
     }
 
-    const processedIds = new Set<string>();
+    const keptIds = new Set<string>();
 
-    // Update existing or insert new FieldValues
-    if (item.Fields && item.Fields.length > 0) {
-      for (const field of item.Fields) {
-        // Skip empty system fields, but always persist custom fields (even if empty)
-        const isEmpty = !field.Value || (typeof field.Value === 'string' && field.Value.trim() === '');
-        if (isEmpty && !field.IsCustomField) {
+    for (const field of item.Fields ?? []) {
+      // Skip empty system fields, but always persist custom fields (even if empty)
+      const isEmpty = !field.Value || (typeof field.Value === 'string' && field.Value.trim() === '');
+      if (isEmpty && !field.IsCustomField) {
+        continue;
+      }
+
+      let fieldDefinitionId = null;
+
+      if (field.IsCustomField) {
+        fieldDefinitionId = yield* this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, writeManifestId, currentDateTime);
+      }
+
+      const values = Array.isArray(field.Value) ? field.Value : [field.Value];
+
+      // For custom fields with no values, use empty string to preserve the field
+      const filteredValues = values.filter(v => v && (typeof v !== 'string' || v.trim() !== ''));
+      const valuesToProcess = field.IsCustomField && filteredValues.length === 0
+        ? ['']
+        : filteredValues;
+
+      const isMultiValue = !field.IsCustomField && (getSystemField(field.FieldKey)?.IsMultiValue ?? false);
+      const rows = ItemRepository.assignFieldValueRows(valuesToProcess, rowsByField.get(field.FieldKey.toLowerCase()) ?? [], isMultiValue);
+      const weight = field.DisplayOrder ?? 0;
+
+      for (const [valueIndex, value] of valuesToProcess.entries()) {
+        const row = rows[valueIndex];
+        if (!row) {
+          yield* this.execute(FieldValueQueries.INSERT, [
+            this.generateId(),
+            item.Id,
+            item.Id,
+            writeManifestId,
+            fieldDefinitionId,
+            field.IsCustomField ? null : field.FieldKey,
+            value,
+            weight,
+            valueIndex,
+            currentDateTime,
+            currentDateTime,
+            0
+          ]);
           continue;
         }
 
-        let fieldDefinitionId = null;
-
-        if (field.IsCustomField) {
-          fieldDefinitionId = yield* this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, writeManifestId, currentDateTime);
-        }
-
-        const values = Array.isArray(field.Value) ? field.Value : [field.Value];
-        const effectiveKey = field.FieldKey;
-
-        // For custom fields with no values, use empty string to preserve the field
-        const filteredValues = values.filter(v => v && (typeof v !== 'string' || v.trim() !== ''));
-        const valuesToProcess = field.IsCustomField && filteredValues.length === 0
-          ? ['']
-          : filteredValues;
-
-        for (let i = 0; i < valuesToProcess.length; i++) {
-          const value = valuesToProcess[i];
-
-          const lookupKey = `${effectiveKey}:${i}`;
-          const existing = existingByKey.get(lookupKey);
-
-          if (existing) {
-            processedIds.add(existing.Id);
-            const newWeight = field.DisplayOrder ?? 0;
-            if (existing.Value !== value || existing.Weight !== newWeight) {
-              yield* this.execute(FieldValueQueries.UPDATE, [value, newWeight, currentDateTime, existing.Id, manifestId]);
-            }
-          } else {
-            yield* this.execute(FieldValueQueries.INSERT, [
-              this.generateId(),
-              item.Id,
-              item.Id,
-              writeManifestId,
-              fieldDefinitionId,
-              field.IsCustomField ? null : field.FieldKey,
-              value,
-              field.DisplayOrder ?? 0,
-              currentDateTime,
-              currentDateTime,
-              0
-            ]);
-          }
+        keptIds.add(row.Id);
+        if (row.IsDeleted || row.Value !== value || row.Weight !== weight || row.ValueIndex !== valueIndex) {
+          yield* this.execute(FieldValueQueries.UPDATE, [value, weight, valueIndex, currentDateTime, row.Id, manifestId]);
         }
       }
     }
 
-    // Soft-delete any FieldValues that were not processed
-    for (const fv of existingFieldValues) {
-      if (!processedIds.has(fv.Id)) {
-        yield* this.execute(FieldValueQueries.SOFT_DELETE, [currentDateTime, fv.Id, manifestId]);
+    // Soft-delete every live row no value was kept on
+    for (const row of storedRows) {
+      if (!row.IsDeleted && !keptIds.has(row.Id)) {
+        yield* this.execute(FieldValueQueries.SOFT_DELETE, [currentDateTime, row.Id, manifestId]);
       }
     }
+  }
+
+  /**
+   * Decide which stored row each value of one field is written to, `undefined` meaning a new row.
+   * @param values - The field's values, in display order
+   * @param fieldRows - The field's stored rows, tombstones included
+   * @param isMultiValue - Whether the field holds several values, each owning its row
+   * @returns One entry per value
+   */
+  private static assignFieldValueRows(values: string[], fieldRows: StoredFieldValue[], isMultiValue: boolean): (StoredFieldValue | undefined)[] {
+    const assigned: (StoredFieldValue | undefined)[] = values.map(() => undefined);
+    const free = new Set(fieldRows);
+
+    /**
+     * Give every still unassigned value the first free row that qualifies for it.
+     */
+    const assign = (qualifies: (row: StoredFieldValue, value: string) => boolean): void => {
+      for (const [index, value] of values.entries()) {
+        const row = assigned[index] ? undefined : [...free].find(candidate => qualifies(candidate, value));
+        if (row) {
+          assigned[index] = row;
+          free.delete(row);
+        }
+      }
+    };
+
+    // 1. An unchanged value stays on its row.
+    assign((row, value) => !row.IsDeleted && row.Value === value);
+    // 2. An edited value keeps a row that is still live.
+    assign(row => !row.IsDeleted);
+    // 3. A removed value that returns gets its row back. A single-value field has one row, whatever it held.
+    assign((row, value) => Boolean(row.IsDeleted) && (!isMultiValue || row.Value === value));
+
+    return assigned;
   }
 
   /**
