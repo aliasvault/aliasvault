@@ -1,7 +1,7 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
+import { FolderIcon } from '@/components/folders/FolderIcon';
 import { useColors } from '@/hooks/useColorScheme';
 
 /**
@@ -11,6 +11,7 @@ export type FolderWithCount = {
   id: string;
   name: string;
   itemCount: number;
+  isShared?: boolean;
 };
 
 interface IFolderPillProps {
@@ -53,7 +54,7 @@ export const FolderPill: React.FC<IFolderPillProps> = ({ folder, onPress }) => {
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
-      <MaterialIcons name="folder" size={16} color={colors.tint} />
+      <FolderIcon isShared={folder.isShared} size={16} color={colors.tint} />
       <Text style={styles.folderName} numberOfLines={1} ellipsizeMode="tail">
         {folder.name}
       </Text>

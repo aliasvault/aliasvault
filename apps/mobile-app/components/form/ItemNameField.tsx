@@ -1,4 +1,3 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,16 +7,14 @@ import {
   View,
 } from 'react-native';
 
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { FolderIcon } from '@/components/folders/FolderIcon';
 import { FolderSelectorModal } from '@/components/folders/FolderSelectorModal';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useColors } from '@/hooks/useColorScheme';
+import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 
-type Folder = {
-  Id: string;
-  Name: string;
-  ParentFolderId: string | null;
-  Weight: number;
-};
+import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 
 export interface ItemNameFieldRef {
   focus: () => void;
@@ -47,6 +44,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
 }, ref) => {
   const { t } = useTranslation();
   const colors = useColors();
+  const personalManifestId = usePersonalManifestId();
   const inputRef = useRef<TextInput>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -125,8 +123,8 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
             style={styles.folderButton}
             onPress={() => setShowModal(true)}
           >
-            <MaterialIcons
-              name="folder"
+            <FolderIcon
+              isShared={selectedFolder !== undefined && isSharedFolder(selectedFolder, personalManifestId)}
               size={18}
               color={selectedFolderId ? colors.tint : colors.textMuted}
             />
@@ -143,6 +141,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       <FolderSelectorModal
         folders={folders}
         selectedFolderId={selectedFolderId}
+        personalManifestId={personalManifestId}
         onFolderChange={onFolderChange}
         isOpen={showModal}
         onClose={() => setShowModal(false)}

@@ -1,3 +1,4 @@
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -17,6 +18,7 @@ import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -78,6 +80,7 @@ export default function ItemsScreen(): React.ReactNode {
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
   const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const personalManifestId = usePersonalManifestId();
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
@@ -212,10 +215,11 @@ export default function ItemsScreen(): React.ReactNode {
       .map(folder => ({
         id: folder.Id,
         name: folder.Name,
-        itemCount: getRecursiveItemCount(folder.Id)
+        itemCount: getRecursiveItemCount(folder.Id),
+        isShared: isSharedFolder(folder, personalManifestId)
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [folders, itemsList, searchQuery, filterType]);
+  }, [folders, itemsList, searchQuery, filterType, personalManifestId]);
 
   /**
    * Get the title based on the active filter.

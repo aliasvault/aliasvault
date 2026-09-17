@@ -1,4 +1,4 @@
-import { canHaveSubfolders, getRecursiveItemCount } from '@aliasvault/client/items/FolderUtils';
+import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -18,6 +18,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -82,6 +83,7 @@ export default function FolderViewScreen(): React.ReactNode {
   const [folder, setFolder] = useState<Folder | null>(null);
   const [canCreateSubfolder, setCanCreateSubfolder] = useState(false);
   const [allFolders, setAllFolders] = useState<Folder[]>([]);
+  const personalManifestId = usePersonalManifestId();
   const [isLoadingItems, setIsLoadingItems] = useState(true);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
@@ -193,8 +195,9 @@ export default function FolderViewScreen(): React.ReactNode {
       id: f.Id,
       name: f.Name,
       itemCount: getRecursiveItemCount(f.Id, itemsForCount, allFolders),
+      isShared: isSharedFolder(f, personalManifestId),
     }));
-  }, [folderId, allFolders, itemSummaries, filterType]);
+  }, [folderId, allFolders, itemSummaries, filterType, personalManifestId]);
 
   /**
    * Load items in this folder, subfolders, and folder details.
