@@ -99,72 +99,111 @@ public sealed class FaviconService(HttpClient httpClient)
         var entries = urlBySource.ToList();
         int processed = 0;
 
-        for (int i = 0; i < entries.Count; i += BatchSize)
+        // First pass over all domains, then (if any came back empty) a single retry
+        // pass over just the misses. Bot-protection challenges and per-request timeouts
+        // are transient: rerunning only the failed domains closes most holes for ~2-5%
+        // extra requests instead of rerunning the whole vault.
+        var remaining = entries;
+        for (int pass = 0; pass < 2 && remaining.Count > 0; pass++)
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return new BulkExtractResult(favicons, BulkExtractStatus.Cancelled);
             }
 
-            var chunk = entries.Skip(i).Take(BatchSize).ToList();
-            var request = new FaviconExtractBatchRequest
-            {
-                Urls = chunk.Select(e => e.Value).ToList(),
-            };
+            var misses = new List<KeyValuePair<string, string>>();
 
-            HttpResponseMessage response;
-            try
+            for (int i = 0; i < remaining.Count; i += BatchSize)
             {
-                response = await httpClient.PostAsJsonAsync("v1/Favicon/ExtractBatch", request, cancellationToken);
-            }
-            catch
-            {
-                // Network or other transport error — treat the whole chunk as failed but keep going.
-                processed += chunk.Count;
-                progress?.Report(processed);
-                continue;
-            }
-
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                return new BulkExtractResult(favicons, BulkExtractStatus.RateLimited);
-            }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                processed += chunk.Count;
-                progress?.Report(processed);
-                continue;
-            }
-
-            FaviconExtractBatchResponse? body;
-            try
-            {
-                body = await response.Content.ReadFromJsonAsync<FaviconExtractBatchResponse>(cancellationToken: cancellationToken);
-            }
-            catch
-            {
-                processed += chunk.Count;
-                progress?.Report(processed);
-                continue;
-            }
-
-            if (body?.Results != null)
-            {
-                // Match results back to the sources we asked for. Server echoes the URL, but matching
-                // by index is robust against any normalization differences.
-                for (int j = 0; j < body.Results.Count && j < chunk.Count; j++)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    var image = body.Results[j].Image;
-                    if (image != null)
+                    return new BulkExtractResult(favicons, BulkExtractStatus.Cancelled);
+                }
+
+                var chunk = remaining.Skip(i).Take(BatchSize).ToList();
+                var request = new FaviconExtractBatchRequest
+                {
+                    Urls = chunk.Select(e => e.Value).ToList(),
+                };
+
+                HttpResponseMessage response;
+                try
+                {
+                    response = await httpClient.PostAsJsonAsync("v1/Favicon/ExtractBatch", request, cancellationToken);
+                }
+                catch
+                {
+                    // Network or other transport error — treat the whole chunk as failed but keep going.
+                    misses.AddRange(chunk);
+                    processed += chunk.Count;
+                    progress?.Report(processed);
+                    continue;
+                }
+
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return new BulkExtractResult(favicons, BulkExtractStatus.RateLimited);
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    misses.AddRange(chunk);
+                    processed += chunk.Count;
+                    progress?.Report(processed);
+                    continue;
+                }
+
+                FaviconExtractBatchResponse? body;
+                try
+                {
+                    body = await response.Content.ReadFromJsonAsync<FaviconExtractBatchResponse>(cancellationToken: cancellationToken);
+                }
+                catch
+                {
+                    misses.AddRange(chunk);
+                    processed += chunk.Count;
+                    progress?.Report(processed);
+                    continue;
+                }
+
+                if (body?.Results != null)
+                {
+                    // Match results back to the domains we asked for. Server echoes the URL, but matching
+                    // by index is robust against any normalization differences.
+                    for (int j = 0; j < body.Results.Count && j < chunk.Count; j++)
                     {
-                        favicons[chunk[j].Key] = image;
+                        var image = body.Results[j].Image;
+                        if (image != null)
+                        {
+                            favicons[chunk[j].Key] = image;
+                        }
+                        else
+                        {
+                            misses.Add(chunk[j]);
+                        }
                     }
                 }
+                else
+                {
+                    misses.AddRange(chunk);
+                }
+
+                processed += chunk.Count;
+
+                // Cap at the unique-domain total: the retry pass re-processes misses, and
+                // the progress contract is "unique domains processed", so it must never
+                // report more than the total the UI shows.
+                progress?.Report(Math.Min(processed, urlBySource.Count));
             }
 
-            processed += chunk.Count;
-            progress?.Report(processed);
+            // Retry pass inputs: only what came back empty. Small breather before the
+            // retry lets transient rate limiting / challenge windows on the target
+            // side expire instead of retrying into the same refusal.
+            remaining = misses;
+            if (pass == 0 && remaining.Count > 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+            }
         }
 
         return new BulkExtractResult(favicons, BulkExtractStatus.Completed);
