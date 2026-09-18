@@ -23,8 +23,7 @@ using AliasVault.Cryptography.Server;
 using AliasVault.Shared.Core;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
-using AliasVault.Shared.Models.WebApi.V1.Auth;
-using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
+using AliasVault.Shared.Models.WebApi.V2.Auth;
 using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
@@ -36,7 +35,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using SecureRemotePassword;
-using V2Auth = AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
 /// Auth controller for handling authentication.
@@ -390,7 +388,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <param name="model">Register request model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] V2Auth.RegisterRequest model)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest model)
     {
         // Check if public registration is disabled in the configuration.
         if (!config.PublicRegistrationEnabled)
@@ -580,7 +578,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("change-password")]
     [Authorize]
-    public async Task<IActionResult> ChangePassword([FromBody] V2Auth.PasswordChangeRequest model)
+    public async Task<IActionResult> ChangePassword([FromBody] PasswordChangeRequest model)
     {
         var user = await userManager.GetUserAsync(User);
         if (user == null)
@@ -747,7 +745,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/initiate")]
     [AllowAnonymous]
-    public async Task<IActionResult> InitiateMobileLogin([FromBody] V2Auth.MobileLoginInitiateRequest model)
+    public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
     {
         // Reject invalid public key structure.
         if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
@@ -792,7 +790,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         context.MobileLoginRequests.Add(loginRequest);
         await context.SaveChangesAsync();
 
-        return Ok(new V2Auth.MobileLoginInitiateResponse
+        return Ok(new MobileLoginInitiateResponse
         {
             RequestId = requestId,
             PollSecret = pollSecret,
@@ -806,7 +804,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/poll")]
     [AllowAnonymous]
-    public async Task<IActionResult> PollMobileLogin([FromBody] V2Auth.MobileLoginPollRequest model)
+    public async Task<IActionResult> PollMobileLogin([FromBody] MobileLoginPollRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -820,7 +818,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (loginRequest.DeclinedAt != null)
         {
-            return Ok(new V2Auth.MobileLoginPollResponse { Status = V2Auth.MobileLoginStatus.Declined });
+            return Ok(new MobileLoginPollResponse { Status = MobileLoginStatus.Declined });
         }
 
         if (loginRequest.FulfilledAt == null)
@@ -830,7 +828,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                 return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
             }
 
-            return Ok(new V2Auth.MobileLoginPollResponse { Status = V2Auth.MobileLoginStatus.Pending });
+            return Ok(new MobileLoginPollResponse { Status = MobileLoginStatus.Pending });
         }
 
         // One-time use: an approved request is handed out once, and only shortly after the approval.
@@ -876,7 +874,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // The client needs the key derivation parameters next to the unlock key to be able to unlock offline later.
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: true);
         var encryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
-        var payload = new V2Auth.MobileLoginPayload
+        var payload = new MobileLoginPayload
         {
             Username = user.UserName!,
             Token = tokenModel.Token,
@@ -893,9 +891,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.MobileLogin);
 
-        return Ok(new V2Auth.MobileLoginPollResponse
+        return Ok(new MobileLoginPollResponse
         {
-            Status = V2Auth.MobileLoginStatus.Approved,
+            Status = MobileLoginStatus.Approved,
             EncryptedSymmetricKey = encryptedSymmetricKey,
             EncryptedPayload = encryptedPayload,
             EncryptedUnlockKey = encryptedUnlockKey,
@@ -909,7 +907,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/details")]
     [Authorize]
-    public async Task<IActionResult> GetMobileLoginDetails([FromBody] V2Auth.MobileLoginRequestReference model)
+    public async Task<IActionResult> GetMobileLoginDetails([FromBody] MobileLoginRequestReference model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -919,7 +917,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
 
-        return Ok(new V2Auth.MobileLoginDetailsResponse
+        return Ok(new MobileLoginDetailsResponse
         {
             ClientPublicKey = loginRequest.ClientPublicKey,
             IpAddress = loginRequest.ClientIpAddress,
@@ -938,7 +936,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/submit")]
     [Authorize]
-    public async Task<IActionResult> SubmitMobileLogin([FromBody] V2Auth.MobileLoginSubmitRequest model)
+    public async Task<IActionResult> SubmitMobileLogin([FromBody] MobileLoginSubmitRequest model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
@@ -982,7 +980,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/decline")]
     [Authorize]
-    public async Task<IActionResult> DeclineMobileLogin([FromBody] V2Auth.MobileLoginRequestReference model)
+    public async Task<IActionResult> DeclineMobileLogin([FromBody] MobileLoginRequestReference model)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 

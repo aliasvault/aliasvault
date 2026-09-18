@@ -15,7 +15,7 @@ using AliasVault.Auth;
 using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
-using AliasVault.Shared.Models.WebApi.V1.Auth;
+using AliasVault.Shared.Models.WebApi.V2.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Groups;
 using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Capabilities;
