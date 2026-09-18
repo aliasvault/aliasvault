@@ -80,13 +80,6 @@ else
                 @Localizer["UnlockButton"]
             </button>
         </EditForm>
-
-        <button type="button" id="mobile-unlock-button" @onclick="() => _showMobileUnlockModal = true" class="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2 mt-4">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            @Localizer["UnlockWithMobileButton"]
-        </button>
     }
 
     <div class="text-sm text-center font-medium text-gray-500 dark:text-gray-400 mt-6">
@@ -95,11 +88,6 @@ else
 }
 
 <FooterLogin />
-
-<MobileUnlockModal IsOpen="@_showMobileUnlockModal"
-                   OnClose="() => _showMobileUnlockModal = false"
-                   OnSuccess="HandleMobileUnlockSuccess"
-                   Mode="unlock" />
 
 @code {
     /// <summary>
@@ -113,7 +101,6 @@ else
     private bool IsWebAuthnLoading { get; set; }
     private bool ShowWebAuthnButton { get; set; }
     private bool IsPasswordFocused { get; set; }
-    private bool _showMobileUnlockModal;
     private readonly UnlockModel _unlockModel = new();
     private FullScreenLoadingIndicator _loadingIndicator = new();
     private ServerValidationErrors _serverValidationErrors = new();
@@ -340,61 +327,4 @@ else
         }
     }
 
-    /// <summary>
-    /// Handle successful mobile unlock.
-    /// </summary>
-    private async Task HandleMobileUnlockSuccess(MobileLoginResult result)
-    {
-        _loadingIndicator.Show(Localizer["UnlockingVaultMessage"]);
-        _serverValidationErrors.Clear();
-
-        try
-        {
-            await StatusCheck();
-
-            // Revoke only the current specific token before setting new ones.
-            await AuthService.RevokeCurrentTokenAsync();
-
-            // Store the new tokens.
-            await AuthService.StoreAccessTokenAsync(result.Token);
-            await AuthService.StoreRefreshTokenAsync(result.RefreshToken);
-            AuthService.StoreUsername(result.Username);
-
-            // TODO: the mobile app is still v1-only, so it sends the vault encryption key of a legacy account directly.
-            // Resolve the full key chain here (KEK to AK to VEK plus the account private key) once the mobile app is
-            // migrated to the manifest-v1 structure and sends its KEK instead.
-            await AuthService.StoreSessionKeysAsync(Convert.FromBase64String(result.DecryptionKey), null);
-
-            await AuthStateProvider.GetAuthenticationStateAsync();
-
-            // Redirect to the page the user was trying to access before if set
-            var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
-            if (!string.IsNullOrEmpty(localStorageReturnUrl))
-            {
-                await LocalStorage.RemoveItemAsync(StorageKeys.ReturnUrl);
-                NavigationManager.NavigateTo(localStorageReturnUrl);
-            }
-            else
-            {
-                NavigationManager.NavigateTo("/");
-            }
-        }
-#if DEBUG
-        catch (Exception ex)
-        {
-            // If in debug mode show the actual exception.
-            _serverValidationErrors.AddError(ex.ToString());
-        }
-#else
-        catch
-        {
-            // If in release mode show a generic error.
-            _serverValidationErrors.AddError(Localizer["GenericUnlockError"]);
-        }
-#endif
-        finally
-        {
-            _loadingIndicator.Hide();
-        }
-    }
 }
