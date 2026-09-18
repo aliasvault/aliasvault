@@ -17,7 +17,7 @@ import Logo from '@/assets/images/logo.svg';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { Avatar } from '@/components/ui/Avatar';
+import { AccountChip } from '@/components/ui/AccountChip';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -389,17 +389,14 @@ export default function UnlockScreen() : React.ReactNode {
   })();
 
   const styles = StyleSheet.create({
+    accountChip: {
+      marginBottom: 16,
+    },
     appName: {
       color: colors.text,
       fontSize: 32,
       fontWeight: 'bold',
       textAlign: 'center',
-    },
-    avatarContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginBottom: 16,
     },
     button: {
       alignItems: 'center',
@@ -526,12 +523,6 @@ export default function UnlockScreen() : React.ReactNode {
       opacity: 0.7,
       textAlign: 'center',
     },
-    username: {
-      color: colors.text,
-      fontSize: 18,
-      opacity: 0.8,
-      textAlign: 'center',
-    },
   });
 
   // Render password mode or loading
@@ -563,10 +554,7 @@ export default function UnlockScreen() : React.ReactNode {
               </View>
             </View>
             <View style={styles.content}>
-              <View style={styles.avatarContainer}>
-                <Avatar />
-                <ThemedText style={styles.username}>{username}</ThemedText>
-              </View>
+              <AccountChip style={styles.accountChip} />
 
               {/* Error Message */}
               {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}

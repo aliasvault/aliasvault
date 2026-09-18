@@ -18,7 +18,7 @@ import Logo from '@/assets/images/logo.svg';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { Avatar } from '@/components/ui/Avatar';
+import { AccountChip } from '@/components/ui/AccountChip';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -82,7 +82,6 @@ const LOGOUT_ERROR_CODES: ReadonlySet<AppErrorCode> = new Set([
  */
 export default function UpgradeScreen() : React.ReactNode {
   const app = useApp();
-  const { username } = app;
   const { logoutUserInitiated, logoutForced } = useLogout();
   const webApi = useWebApi();
   const dbContext = useDb();
@@ -344,17 +343,14 @@ export default function UpgradeScreen() : React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    accountChip: {
+      marginBottom: 16,
+    },
     appName: {
       color: colors.text,
       fontSize: 32,
       fontWeight: 'bold',
       textAlign: 'center',
-    },
-    avatarContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginBottom: 16,
     },
     button: {
       alignItems: 'center',
@@ -476,12 +472,6 @@ export default function UpgradeScreen() : React.ReactNode {
       marginBottom: 12,
       textAlign: 'center',
     },
-    username: {
-      color: colors.text,
-      fontSize: 18,
-      opacity: 0.8,
-      textAlign: 'center',
-    },
     versionContainer: {
       backgroundColor: colors.background,
       borderRadius: 8,
@@ -575,10 +565,7 @@ export default function UpgradeScreen() : React.ReactNode {
                 </View>
               ) : (
                 <View style={styles.content}>
-                  <View style={styles.avatarContainer}>
-                    <Avatar />
-                    <ThemedText style={styles.username}>{username}</ThemedText>
-                  </View>
+                  <AccountChip style={styles.accountChip} />
                   <ThemedText style={styles.subtitle}>{t('upgrade.subtitle')}</ThemedText>
 
                   {error && (
