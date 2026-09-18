@@ -597,7 +597,7 @@ public class TaskRunnerTests
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "stale-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-15),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-12), // Fulfilled 12 minutes ago (exceeds 10 min timeout)
@@ -613,7 +613,7 @@ public class TaskRunnerTests
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "recent-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-6),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-5), // Fulfilled 5 minutes ago (under 10 min timeout)
@@ -629,7 +629,7 @@ public class TaskRunnerTests
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "completed-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-15),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-12),
@@ -656,7 +656,7 @@ public class TaskRunnerTests
         {
             // Stale request should have sensitive data cleared
             Assert.That(staleAfterCleanup.ClientPublicKey, Is.Empty, "Stale request ClientPublicKey should be cleared");
-            Assert.That(staleAfterCleanup.EncryptedDecryptionKey, Is.Null, "Stale request EncryptedDecryptionKey should be cleared");
+            Assert.That(staleAfterCleanup.EncryptedUnlockKey, Is.Null, "Stale request EncryptedUnlockKey should be cleared");
             Assert.That(staleAfterCleanup.ClearedAt, Is.Not.Null, "Stale request ClearedAt should be set");
 
             // Metadata should be preserved for abuse tracking
@@ -670,7 +670,7 @@ public class TaskRunnerTests
         {
             // Recent request should still have sensitive data (not old enough)
             Assert.That(recentAfterCleanup.ClientPublicKey, Is.EqualTo("recent-public-key"), "Recent request should retain sensitive data");
-            Assert.That(recentAfterCleanup.EncryptedDecryptionKey, Is.Not.Null, "Recent request should retain encrypted key");
+            Assert.That(recentAfterCleanup.EncryptedUnlockKey, Is.Not.Null, "Recent request should retain encrypted key");
             Assert.That(recentAfterCleanup.ClearedAt, Is.Null, "Recent request should not be cleared yet");
         });
 

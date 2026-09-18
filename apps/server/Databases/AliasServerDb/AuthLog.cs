@@ -74,6 +74,11 @@ public enum AuthFailureReason
     MobileLoginRateLimitExceeded = 11,
 
     /// <summary>
+    /// Indicates that the mobile login request was declined on the mobile device.
+    /// </summary>
+    MobileLoginDeclined = 12,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,

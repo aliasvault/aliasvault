@@ -5,15 +5,18 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V1.Auth;
+namespace AliasVault.Shared.Models.WebApi.V2.Auth;
+
+using System.ComponentModel.DataAnnotations;
 
 /// <summary>
-/// Request model for initiating a mobile login request.
+/// Request for POST /v2/Auth/mobile-login/initiate.
 /// </summary>
 public class MobileLoginInitiateRequest
 {
     /// <summary>
-    /// Gets or sets the public key from the client (base64 encoded).
+    /// Gets or sets the RSA public key (JWK) of the initiating client, which the mobile app encrypts the unlock key with.
     /// </summary>
+    [Required]
     public required string ClientPublicKey { get; set; }
 }

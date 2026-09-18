@@ -1,24 +1,24 @@
 //-----------------------------------------------------------------------
-// <copyright file="MobileLoginSubmitRequest.cs" company="aliasvault">
+// <copyright file="MobileLoginInitiateResponse.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace AliasVault.Shared.Models.WebApi.V1.Auth;
+namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
-/// Request model for submitting mobile login response from mobile app.
+/// Response for POST /v2/Auth/mobile-login/initiate.
 /// </summary>
-public class MobileLoginSubmitRequest
+public class MobileLoginInitiateResponse
 {
     /// <summary>
-    /// Gets or sets the unique identifier for this login request.
+    /// Gets or sets the request identifier, which goes into the QR code.
     /// </summary>
     public required string RequestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the encrypted decryption key (base64 encoded).
+    /// Gets or sets the secret the initiating client must present when polling. It never goes into the QR code.
     /// </summary>
-    public required string EncryptedDecryptionKey { get; set; }
+    public required string PollSecret { get; set; }
 }
