@@ -387,10 +387,10 @@ const Login: React.FC = () => {
       await app.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // The mobile device sends the unlock key: fetch the account's key chain, check the key opens it and cache it.
-      await VaultKeyService.refreshKeyChain(result.decryptionKey, webApi);
+      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
 
       // Store the unlock key and derivation params.
-      await dbContext.storeUnlockKey(result.decryptionKey);
+      await dbContext.storeUnlockKey(result.unlockKey);
       await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,

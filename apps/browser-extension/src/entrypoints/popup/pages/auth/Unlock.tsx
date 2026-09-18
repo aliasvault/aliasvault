@@ -562,6 +562,12 @@ const Unlock: React.FC = () => {
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading();
     try {
+      // Check if the approval belongs to the same account as the current session.
+      if (authContext.username && result.username.toLowerCase() !== authContext.username.toLowerCase()) {
+        setError(t('common.apiErrors.USERNAME_MISMATCH'));
+        return;
+      }
+
       /*
        * Revoke the old refresh token (from existing logged in session) before setting new ones
        * that we get from the mobile login request.
@@ -574,10 +580,10 @@ const Unlock: React.FC = () => {
       /*
        * The mobile device sends the password-derived key (the KEK).
        */
-      await VaultKeyService.refreshKeyChain(result.decryptionKey, webApi);
+      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
 
       // Store the unlock key and derivation params
-      await dbContext.storeUnlockKey(result.decryptionKey);
+      await dbContext.storeUnlockKey(result.unlockKey);
       await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,

@@ -14,6 +14,11 @@ export enum MobileLoginErrorCode {
   SERVER_OUTDATED = 'SERVER_OUTDATED',
 
   /**
+   * The request was declined on the mobile device.
+   */
+  DECLINED = 'DECLINED',
+
+  /**
    * A generic error occurred during mobile login.
    */
   GENERIC = 'GENERIC',

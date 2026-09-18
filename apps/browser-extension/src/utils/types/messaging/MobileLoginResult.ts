@@ -18,9 +18,9 @@ export type MobileLoginResult = {
   refreshToken: string;
 
   /**
-   * The unlock key the mobile app sent.
+   * The account unlock key the mobile app sent.
    */
-  decryptionKey: string;
+  unlockKey: string;
 
   /**
    * The user's salt for key derivation.
