@@ -15,11 +15,9 @@ using AliasVault.Client.Services.VaultSync.Models;
 using AliasVault.Client.Utilities;
 using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.V1.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
-using RegisterRequest = AliasVault.Shared.Models.WebApi.V2.Auth.RegisterRequest;
 
 /// <summary>
 /// Service responsible for handling user registration operations.

@@ -14,7 +14,6 @@ using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Services.VaultSync.Exceptions;
 using AliasVault.Client.Services.VaultSync.Models;
 using AliasVault.Shared.Models.Enums;
-using AliasVault.Shared.Models.WebApi.V1.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
 using Blazored.LocalStorage;

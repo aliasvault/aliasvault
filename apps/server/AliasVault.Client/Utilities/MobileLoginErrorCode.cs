@@ -19,6 +19,11 @@ public enum MobileLoginErrorCode
     Timeout,
 
     /// <summary>
+    /// The request was declined on the mobile device.
+    /// </summary>
+    Declined,
+
+    /// <summary>
     /// A generic error occurred during mobile login.
     /// </summary>
     Generic,
