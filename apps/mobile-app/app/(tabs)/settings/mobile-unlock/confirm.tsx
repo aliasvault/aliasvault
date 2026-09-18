@@ -308,7 +308,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
         <ThemedText style={styles.message}>
           {t('settings.qrScanner.mobileLogin.confirmMessage')}
         </ThemedText>
-        {/* TODO: Show an additional warning if the request was opened from a link (e.g. native camera app) as this could be a phishing attempt. */}
+        {/* Show an additional warning if the request was opened from a link (e.g. native camera app) as this could be a phishing attempt. */}
         {scan?.source === 'link' && (
           <View style={styles.linkWarning}>
             <Ionicons name="warning" size={20} color={colors.warning} />
