@@ -389,9 +389,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun encryptDecryptionKeyForMobileLogin(publicKeyJWK: String, promise: Promise) {
+    override fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String, promise: Promise) {
         try {
-            val encryptedKey = vaultStore.encryptDecryptionKeyForMobileLogin(publicKeyJWK)
+            val encryptedKey = vaultStore.encryptUnlockKeyForMobileLogin(publicKeyJWK)
             promise.resolve(encryptedKey)
         } catch (e: Exception) {
             Log.e(TAG, "Error encrypting key for mobile login", e)

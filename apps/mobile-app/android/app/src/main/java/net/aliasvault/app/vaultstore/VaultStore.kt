@@ -265,8 +265,8 @@ class VaultStore(
     /**
      * Encrypts the unlock key using an RSA public key for mobile login.
      */
-    fun encryptDecryptionKeyForMobileLogin(publicKeyJWK: String): String {
-        return crypto.encryptDecryptionKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
+    fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String): String {
+        return crypto.encryptUnlockKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
     }
 
     /**

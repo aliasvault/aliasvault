@@ -332,7 +332,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirm Login Request",
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "The remote device has been successfully logged in.",
         "requestExpired": "This login request has expired. Please generate a new QR code."
       }

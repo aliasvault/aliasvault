@@ -7,7 +7,7 @@ extension VaultStore {
     /// The receiving client opens the account key chain with it.
     /// - Parameter publicKeyJWK: The RSA public key in JWK format (JSON string)
     /// - Returns: The encrypted unlock key
-    public func encryptDecryptionKeyForMobileLogin(publicKeyJWK: String) throws -> Data {
+    public func encryptUnlockKeyForMobileLogin(publicKeyJWK: String) throws -> Data {
         // Get the unlock key from the vault store
         // This will only work if the vault is unlocked (unlock key is in memory)
         let unlockKey = try getUnlockKey()

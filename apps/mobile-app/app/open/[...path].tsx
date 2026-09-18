@@ -30,7 +30,7 @@ function buildHref(target: ResolvedTarget): Href {
  * URL structure: aliasvault://open/[action]/[...params]
  *
  * Supported actions:
- * - mobile-unlock/[requestId] - Mobile device unlock via QR code
+ * - mobile-unlock/[requestId]?pk=[hash] - Opens the mobile login confirmation.
  * - __debug__/set-offline/[true|false] - (DEV only) Toggle offline mode for E2E testing
  * - __debug__/set-api-url/[encoded-url] - (DEV only) Set API URL for E2E testing
  *

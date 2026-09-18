@@ -20,9 +20,14 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { success, message } = useLocalSearchParams<{ success: string; message?: string }>();
+  const { success, reason } = useLocalSearchParams<{ success: string; reason?: string }>();
 
   const isSuccess = success === 'true';
+
+  let message = isSuccess ? t('settings.qrScanner.mobileLogin.successDescription') : t('common.errors.unknownErrorTryAgain');
+  if (!isSuccess && reason === 'codeMismatch') {
+    message = t('settings.qrScanner.mobileLogin.codeMismatch');
+  }
 
   // Set dynamic header title based on success/error state
   useEffect(() => {
@@ -99,9 +104,7 @@ export default function MobileUnlockResultScreen() : React.ReactNode {
                 : t('common.error')}
             </ThemedText>
             <ThemedText style={styles.message}>
-              {message || (isSuccess
-                ? t('settings.qrScanner.mobileLogin.successDescription')
-                : t('common.errors.unknownErrorTryAgain'))}
+              {message}
             </ThemedText>
           </View>
         </View>

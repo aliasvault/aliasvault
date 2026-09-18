@@ -1140,12 +1140,12 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func encryptDecryptionKeyForMobileLogin(_ publicKeyJWK: String,
+    func encryptUnlockKeyForMobileLogin(_ publicKeyJWK: String,
                                            resolver resolve: @escaping RCTPromiseResolveBlock,
                                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
             // Get the encryption key and encrypt it with the provided public key
-            let encryptedData = try vaultStore.encryptDecryptionKeyForMobileLogin(publicKeyJWK: publicKeyJWK)
+            let encryptedData = try vaultStore.encryptUnlockKeyForMobileLogin(publicKeyJWK: publicKeyJWK)
 
             // Return the encrypted data as base64 string
             let base64Encrypted = encryptedData.base64EncodedString()

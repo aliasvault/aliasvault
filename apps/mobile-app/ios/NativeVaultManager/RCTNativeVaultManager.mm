@@ -359,8 +359,8 @@
 
 // MARK: - Mobile Login
 
-- (void)encryptDecryptionKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager encryptDecryptionKeyForMobileLogin:publicKeyJWK resolver:resolve rejecter:reject];
+- (void)encryptUnlockKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager encryptUnlockKeyForMobileLogin:publicKeyJWK resolver:resolve rejecter:reject];
 }
 
 // MARK: - Re-authentication

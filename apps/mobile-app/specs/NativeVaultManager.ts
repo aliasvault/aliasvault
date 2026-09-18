@@ -144,7 +144,7 @@ export interface Spec extends TurboModule {
   showPasswordUnlock(title: string | null, subtitle: string | null, buttonText: string | null): Promise<boolean | null>;
 
   // Mobile login methods
-  encryptDecryptionKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
+  encryptUnlockKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
 
   // Re-authentication methods
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.

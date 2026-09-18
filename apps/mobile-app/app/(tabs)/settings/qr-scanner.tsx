@@ -1,6 +1,9 @@
-import { Href, router, useLocalSearchParams } from 'expo-router';
+import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
+import { router } from 'expo-router';
 import { useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+
+import { MobileLoginScanHandoff } from '@/utils/MobileLoginScanHandoff';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -11,65 +14,11 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { useDialog } from '@/context/DialogContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
-// QR Code type prefixes
-const QR_CODE_PREFIXES = {
-  MOBILE_UNLOCK: 'aliasvault://open/mobile-unlock/',
-  /*
-   * Future actions:
-   * PASSKEY_AUTH: 'aliasvault://open/passkey-auth/',
-   * SHARE_CREDENTIAL: 'aliasvault://open/share-credential/',
-   */
-} as const;
-
-type QRCodeType = keyof typeof QR_CODE_PREFIXES;
-
-/**
- * Scanned QR code data.
+/*
+ * Prefixes the native scanner accepts. Future actions get their own prefix here, e.g.
+ * 'aliasvault://open/passkey-auth/' or 'aliasvault://open/share-credential/'.
  */
-type ScannedQRCode = {
-  type: QRCodeType | null;
-  payload: string;
-  rawData: string;
-  /** Public key hash from QR code for security verification (if present) */
-  publicKeyHash?: string;
-}
-
-/**
- * Parse QR code data and determine its type.
- * Extracts public key hash from query parameter if present for security verification.
- */
-function parseQRCode(data: string): ScannedQRCode {
-  for (const [type, prefix] of Object.entries(QR_CODE_PREFIXES)) {
-    if (data.startsWith(prefix)) {
-      const afterPrefix = data.substring(prefix.length);
-
-      /*
-       * Parse the path and query parameters
-       * Format: {requestId} or {requestId}?pk={hash}
-       */
-      const queryIndex = afterPrefix.indexOf('?');
-      let payload: string;
-      let publicKeyHash: string | undefined;
-
-      if (queryIndex !== -1) {
-        payload = afterPrefix.substring(0, queryIndex);
-        const queryString = afterPrefix.substring(queryIndex + 1);
-        const params = new URLSearchParams(queryString);
-        publicKeyHash = params.get('pk') ?? undefined;
-      } else {
-        payload = afterPrefix;
-      }
-
-      return {
-        type: type as QRCodeType,
-        payload,
-        rawData: data,
-        publicKeyHash,
-      };
-    }
-  }
-  return { type: null, payload: data, rawData: data };
-}
+const QR_CODE_PREFIXES = [MobileLoginProtocol.QR_PREFIX];
 
 /**
  * General QR code scanner screen for AliasVault.
@@ -78,41 +27,26 @@ export default function QRScannerScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showAlert } = useDialog();
-  const { url } = useLocalSearchParams<{ url?: string }>();
-  const hasProcessedUrl = useRef(false);
-  const processedUrls = useRef(new Set<string>());
   const hasLaunchedScanner = useRef(false);
 
   /*
-   * Handle barcode scanned - parse and navigate to appropriate page.
-   * Native scanner already filters by prefix, so we only get AliasVault QR codes here.
-   * Validation is handled by the destination page.
+   * Handle a scanned QR code. Only codes read by the in-app camera get here: this screen takes no URL or route
+   * params.
    */
   const handleQRCodeScanned = useCallback((data: string) : void => {
-    // Prevent processing the same URL multiple times
-    if (processedUrls.current.has(data)) {
+    const mobileLoginRequest = MobileLoginProtocol.parseQrPayload(data);
+    if (!mobileLoginRequest) {
+      showAlert(t('common.error'), t('common.errors.unknownErrorTryAgain'), () => router.back());
       return;
     }
 
-    // Mark this URL as processed
-    processedUrls.current.add(data);
-
-    // Parse the QR code to determine its type
-    const parsedData = parseQRCode(data);
-
     /*
-     * Navigate to the appropriate page based on QR code type
-     * Use push instead of replace to navigate while scanner is still dismissing
-     * This creates a smoother transition without returning to settings first
+     * Hand the request over in memory. Use push instead of replace to navigate while the scanner is still
+     * dismissing, which gives a smoother transition without returning to settings first.
      */
-    if (parsedData.type === 'MOBILE_UNLOCK') {
-      // Pass public key hash as query parameter if present for security verification
-      const route = parsedData.publicKeyHash
-        ? `/(tabs)/settings/mobile-unlock/${parsedData.payload}?pk=${parsedData.publicKeyHash}`
-        : `/(tabs)/settings/mobile-unlock/${parsedData.payload}`;
-      router.push(route as Href);
-    }
-  }, []);
+    MobileLoginScanHandoff.set(mobileLoginRequest, 'scan');
+    router.push('/(tabs)/settings/mobile-unlock/confirm');
+  }, [showAlert, t]);
 
   /**
    * Launch the native QR scanner.
@@ -126,9 +60,8 @@ export default function QRScannerScreen() : React.ReactNode {
 
     try {
       // Pass prefixes to native scanner for filtering and translated status text
-      const prefixes = Object.values(QR_CODE_PREFIXES);
       const statusText = t('settings.qrScanner.scanningMessage');
-      const scannedData = await NativeVaultManager.scanQRCode(prefixes, statusText);
+      const scannedData = await NativeVaultManager.scanQRCode(QR_CODE_PREFIXES, statusText);
 
       if (scannedData) {
         handleQRCodeScanned(scannedData);
@@ -141,23 +74,6 @@ export default function QRScannerScreen() : React.ReactNode {
       showAlert(t('common.error'), 'Failed to scan QR code', () => router.back());
     }
   }, [handleQRCodeScanned, showAlert, t]);
-
-  /**
-   * Reset hasProcessedUrl when URL changes to allow processing new URLs.
-   */
-  useEffect(() => {
-    hasProcessedUrl.current = false;
-  }, [url]);
-
-  /**
-   * Handle QR code URL passed from deep link (e.g., from native camera).
-   */
-  useEffect(() => {
-    if (url && typeof url === 'string' && !hasProcessedUrl.current) {
-      hasProcessedUrl.current = true;
-      handleQRCodeScanned(url);
-    }
-  }, [url, handleQRCodeScanned]);
 
   /**
    * Launch scanner when component mounts (Android/iOS only).

@@ -455,7 +455,7 @@ class VaultCrypto(
      * Encrypts the unlock key using an RSA public key for mobile login. The receiving
      * client opens the account key chain with it, exactly as after a password login.
      */
-    fun encryptDecryptionKeyForMobileLogin(publicKeyJWK: String, authMethods: String): String {
+    fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String, authMethods: String): String {
         var result: String? = null
         var error: Exception? = null
         val latch = java.util.concurrent.CountDownLatch(1)
