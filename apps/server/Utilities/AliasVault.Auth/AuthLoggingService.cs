@@ -48,10 +48,10 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
             IpAddress = ipAddress,
             Client = Truncate(clientHeader, AuthLog.ClientMaxLength),
             RequestPath = Truncate(httpContext?.Request.Path.Value, AuthLog.RequestPathMaxLength),
-            DeviceType = DetermineDeviceType(httpContext),
-            OperatingSystem = DetermineOperatingSystem(httpContext),
-            Browser = DetermineBrowser(httpContext),
-            Country = DetermineCountry(),
+            DeviceType = RequestClientInfo.DetermineDeviceType(httpContext),
+            OperatingSystem = RequestClientInfo.DetermineOperatingSystem(httpContext),
+            Browser = RequestClientInfo.DetermineBrowser(httpContext),
+            Country = RequestClientInfo.DetermineCountry(),
             IsSuspiciousActivity = false,
         };
 
@@ -94,10 +94,10 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
             IpAddress = ipAddress,
             Client = Truncate(clientHeader, AuthLog.ClientMaxLength),
             RequestPath = Truncate(httpContext?.Request.Path.Value, AuthLog.RequestPathMaxLength),
-            DeviceType = DetermineDeviceType(httpContext),
-            OperatingSystem = DetermineOperatingSystem(httpContext),
-            Browser = DetermineBrowser(httpContext),
-            Country = DetermineCountry(),
+            DeviceType = RequestClientInfo.DetermineDeviceType(httpContext),
+            OperatingSystem = RequestClientInfo.DetermineOperatingSystem(httpContext),
+            Browser = RequestClientInfo.DetermineBrowser(httpContext),
+            Country = RequestClientInfo.DetermineCountry(),
             IsSuspiciousActivity = false,
         };
 
@@ -112,86 +112,4 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
     /// <param name="maxLength">The column's maximum length.</param>
     /// <returns>The value, cut down to the maximum length when longer.</returns>
     private static string? Truncate(string? value, int maxLength) => value is not null && value.Length > maxLength ? value[..maxLength] : value;
-
-    /// <summary>
-    /// Determines the type of device based on the User-Agent header.
-    /// </summary>
-    /// <param name="context">The HttpContext containing the request information.</param>
-    /// <returns>A string representing the device type: "Mobile", "Tablet", "Smart TV", "Desktop", or "Unknown".</returns>
-    private static string? DetermineDeviceType(HttpContext? context)
-    {
-        if (context is null)
-        {
-            return null;
-        }
-
-        return context.Request.Headers.UserAgent.ToString().ToLower() switch
-        {
-            var ua when ua.Contains("mobile") || ua.Contains("android") || ua.Contains("iphone") => "Mobile",
-            var ua when ua.Contains("tablet") || ua.Contains("ipad") => "Tablet",
-            var ua when ua.Contains("tv") || ua.Contains("smart-tv") => "Smart TV",
-            _ => "Desktop"
-        };
-    }
-
-    /// <summary>
-    /// Determines the operating system based on the User-Agent header.
-    /// </summary>
-    /// <param name="context">The HttpContext containing the request information.</param>
-    /// <returns>A string representing the operating system: "Windows", "MacOS", "Linux", "Android", "iOS", or "Unknown".</returns>
-    private static string? DetermineOperatingSystem(HttpContext? context)
-    {
-        if (context is null)
-        {
-            return null;
-        }
-
-        return context.Request.Headers.UserAgent.ToString().ToLower() switch
-        {
-            var ua when ua.Contains("win") => "Windows",
-            var ua when ua.Contains("mac") => "MacOS",
-            var ua when ua.Contains("linux") => "Linux",
-            var ua when ua.Contains("android") => "Android",
-            var ua when ua.Contains("iphone") || ua.Contains("ipad") => "iOS",
-            _ => null,
-        };
-    }
-
-    /// <summary>
-    /// Determines the browser type based on the User-Agent header.
-    /// </summary>
-    /// <param name="context">The HttpContext containing the request information.</param>
-    /// <returns>A string representing the browser: "Firefox", "Chrome", "Safari", "Edge", "Opera", or "Unknown".</returns>
-    private static string? DetermineBrowser(HttpContext? context)
-    {
-        if (context is null)
-        {
-            return null;
-        }
-
-        return context.Request.Headers.UserAgent.ToString().ToLower() switch
-        {
-            var ua when ua.Contains("firefox") => "Firefox",
-            var ua when ua.Contains("chrome") && !ua.Contains("edg") => "Chrome",
-            var ua when ua.Contains("safari") && !ua.Contains("chrome") => "Safari",
-            var ua when ua.Contains("edg") => "Edge",
-            var ua when ua.Contains("opr") || ua.Contains("opera") => "Opera",
-            _ => null
-        };
-    }
-
-    /// <summary>
-    /// Determines the country based on the IP address of the request.
-    /// </summary>
-    /// <returns>A string representing the country or "Unknown" if the country cannot be determined.</returns>
-    /// <remarks>
-    /// This method currently returns null as the implementation is not yet complete.
-    /// </remarks>
-    private static string? DetermineCountry()
-    {
-        // Implement later by using a Geo-IP database or service.
-        return null;
-    }
-
-
 }
