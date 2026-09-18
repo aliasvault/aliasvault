@@ -47,18 +47,11 @@ using SecureRemotePassword;
 /// <param name="config">Config instance.</param>
 /// <param name="settingsService">ServerSettingsService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
-/// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("1")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService) : ControllerBase
 {
-    /// <summary>
-    /// Timeout in minutes for mobile login requests. Clients use 2 minutes for countdown, we use 3 here to give a bit of extra buffer time.
-    /// Requests older than this will be automatically expired and removed.
-    /// </summary>
-    private const int MobileLoginTimeoutMinutes = 10;
-
     /// <summary>
     /// Access token validity in minutes.
     /// </summary>
@@ -573,223 +566,49 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Initiates a mobile login request by creating a QR code challenge.
+    /// Mobile login initiate endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
     /// </summary>
-    /// <param name="model">The mobile login initiate request model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/initiate")]
     [AllowAnonymous]
-    public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
+    public IActionResult InitiateMobileLogin()
     {
-        // Reject invalid public key structure.
-        if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_INVALID_PUBLIC_KEY, 400));
-        }
-
-        // Check the IP blocklist.
-        if (await ipBlockListService.IsBlockedForLoginAsync(IpAddressUtility.GetRawIpAddressFromContext(HttpContext)))
-        {
-            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.IpBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
-        }
-
-        // Check IP-based mobile login rate limit.
-        var settings = await settingsService.GetAllSettingsAsync();
-        var ipAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
-        if (await mobileLoginRateLimitService.IsRateLimitExceededAsync(ipAddress, settings.MaxMobileLoginRequestsPerIpPerMinute))
-        {
-            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.MobileLoginRateLimitExceeded);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_RATE_LIMIT_EXCEEDED, 429));
-        }
-
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        // Generate a unique request ID
-        var requestId = Guid.NewGuid().ToString("N");
-
-        // Create the login request
-        var loginRequest = new MobileLoginRequest
-        {
-            Id = requestId,
-            ClientPublicKey = model.ClientPublicKey,
-            CreatedAt = timeProvider.UtcNow,
-            ClientIpAddress = ipAddress,
-        };
-
-        context.MobileLoginRequests.Add(loginRequest);
-        await context.SaveChangesAsync();
-
-        return Ok(new MobileLoginInitiateResponse
-        {
-            RequestId = requestId,
-        });
+        return MobileLoginGone();
     }
 
     /// <summary>
-    /// Polls the status of a mobile login request.
+    /// Mobile login poll endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
     /// </summary>
     /// <param name="requestId">The unique identifier for the login request.</param>
     /// <returns>IActionResult.</returns>
     [HttpGet("mobile-login/poll/{requestId}")]
     [AllowAnonymous]
-    public async Task<IActionResult> PollMobileLogin(string requestId)
+    public IActionResult PollMobileLogin(string requestId)
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == requestId);
-
-        // Check if request exists and hasn't expired
-        if (loginRequest == null || loginRequest.CreatedAt.AddMinutes(MobileLoginTimeoutMinutes) < timeProvider.UtcNow)
-        {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
-        }
-
-        // If not fulfilled, return pending status
-        if (loginRequest.FulfilledAt == null)
-        {
-            return Ok(new MobileLoginPollResponse
-            {
-                Fulfilled = false,
-                EncryptedSymmetricKey = null,
-                EncryptedToken = null,
-                EncryptedRefreshToken = null,
-                EncryptedDecryptionKey = null,
-                EncryptedUsername = null,
-            });
-        }
-
-        // Check if already retrieved (one-time use protection)
-        if (loginRequest.RetrievedAt != null)
-        {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
-        }
-
-        // Sanity check: check if user exists using UserId FK
-        var user = await userManager.FindByIdAsync(loginRequest.UserId!);
-        if (user == null)
-        {
-            await authLoggingService.LogAuthEventFailAsync("n/a", AuthEventType.MobileLogin, AuthFailureReason.InvalidUsername);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400));
-        }
-
-        // Sanity check: check if the account is blocked.
-        if (user.Blocked)
-        {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountBlocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400));
-        }
-
-        // Sanity check: check if the account is locked out.
-        if (await userManager.IsLockedOutAsync(user))
-        {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.MobileLogin, AuthFailureReason.AccountLocked);
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400));
-        }
-
-        // Generate token for the user
-        var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: true);
-
-        // Get encrypted decryption key from the login request and put it in memory
-        var encryptedDecryptionKey = loginRequest.EncryptedDecryptionKey!;
-
-        // Generate a single symmetric key for encrypting all fields
-        var symmetricKey = Cryptography.Server.Encryption.GenerateRandomSymmetricKey();
-
-        // Encrypt each field with the symmetric key (returns base64)
-        var encryptedToken = Cryptography.Server.Encryption.SymmetricEncrypt(tokenModel.Token, symmetricKey);
-        var encryptedRefreshToken = Cryptography.Server.Encryption.SymmetricEncrypt(tokenModel.RefreshToken, symmetricKey);
-        var encryptedUsername = Cryptography.Server.Encryption.SymmetricEncrypt(user.UserName!, symmetricKey);
-
-        // Encrypt the symmetric key with the client's RSA public key (returns base64)
-        var encryptedSymmetricKey = Cryptography.Server.Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, loginRequest.ClientPublicKey);
-
-        // Log successful mobile login authentication
-        await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.MobileLogin);
-
-        // Mark as retrieved and clear sensitive data from database
-        loginRequest.ClientPublicKey = string.Empty;
-        loginRequest.EncryptedDecryptionKey = null;
-        loginRequest.RetrievedAt = timeProvider.UtcNow;
-        await context.SaveChangesAsync();
-
-        // Return response with encrypted symmetric key and encrypted fields
-        // Client will decrypt username to call /login endpoint for salt and encryption settings
-        return Ok(new MobileLoginPollResponse
-        {
-            Fulfilled = true,
-            EncryptedSymmetricKey = encryptedSymmetricKey,
-            EncryptedToken = encryptedToken,
-            EncryptedRefreshToken = encryptedRefreshToken,
-            EncryptedDecryptionKey = encryptedDecryptionKey,
-            EncryptedUsername = encryptedUsername,
-        });
+        return MobileLoginGone();
     }
 
     /// <summary>
-    /// Gets the public key for a mobile login request (for mobile app to encrypt).
+    /// Mobile login request details endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
     /// </summary>
     /// <param name="requestId">The unique identifier for the login request.</param>
     /// <returns>IActionResult.</returns>
     [HttpGet("mobile-login/request/{requestId}")]
-    [Authorize]
-    public async Task<IActionResult> GetMobileLoginRequest(string requestId)
+    [AllowAnonymous]
+    public IActionResult GetMobileLoginRequest(string requestId)
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == requestId);
-
-        // Check if request exists and hasn't expired
-        if (loginRequest == null || loginRequest.CreatedAt.AddMinutes(MobileLoginTimeoutMinutes) < timeProvider.UtcNow)
-        {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
-        }
-
-        // Return only the public key
-        return Ok(new { clientPublicKey = loginRequest.ClientPublicKey });
+        return MobileLoginGone();
     }
 
     /// <summary>
-    /// Submits a mobile login response from the mobile app.
+    /// Mobile login submit endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
     /// </summary>
-    /// <param name="model">The mobile login submit request model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/submit")]
-    [Authorize]
-    public async Task<IActionResult> SubmitMobileLogin([FromBody] MobileLoginSubmitRequest model)
+    [AllowAnonymous]
+    public IActionResult SubmitMobileLogin()
     {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        // Get the authenticated user
-        var user = await userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
-        }
-
-        var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
-
-        // Check if request exists and hasn't expired
-        if (loginRequest == null || loginRequest.CreatedAt.AddMinutes(MobileLoginTimeoutMinutes) < timeProvider.UtcNow)
-        {
-            return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
-        }
-
-        // Check if already fulfilled
-        if (loginRequest.FulfilledAt != null)
-        {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400));
-        }
-
-        // Update the login request with the encrypted key and user ID
-        loginRequest.EncryptedDecryptionKey = model.EncryptedDecryptionKey;
-        loginRequest.UserId = user.Id;
-        loginRequest.FulfilledAt = timeProvider.UtcNow;
-        loginRequest.MobileIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
-
-        await context.SaveChangesAsync();
-
-        return Ok();
+        return MobileLoginGone();
     }
 
     /// <summary>
@@ -888,6 +707,16 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         return principal;
+    }
+
+    /// <summary>
+    /// The answer every v1 mobile login route gives now that the flow only exists in v2. The error code is one
+    /// the clients that still call these routes already understand, so they end the attempt instead of hanging.
+    /// </summary>
+    /// <returns>IActionResult.</returns>
+    private IActionResult MobileLoginGone()
+    {
+        return StatusCode(410, ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 410));
     }
 
     /// <summary>
