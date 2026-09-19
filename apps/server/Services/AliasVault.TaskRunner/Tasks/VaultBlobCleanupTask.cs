@@ -49,15 +49,16 @@ public class VaultBlobCleanupTask : IMaintenanceTask
 
         // Drop any references to revisions that no longer exist.
         var staleReferences = await VaultBlobRetentionPolicy.DeleteStaleReferencesAsync(dbContext, cancellationToken);
-        if (staleReferences > 0)
+        _logger.LogInformation("Deleted {Count} blob references pointing to vault revisions that no longer exist.", staleReferences);
+
+        var graceHours = VaultBlobRetentionPolicy.EffectiveGraceHours(settings.UnreferencedBlobGraceHours);
+        if (graceHours == 0)
         {
-            _logger.LogInformation("Deleted {Count} blob references pointing to vault revisions that no longer exist.", staleReferences);
+            _logger.LogInformation("Unreferenced vault blob cleanup is disabled, skipping.");
+            return;
         }
 
         var (deletedCount, freedBytes) = await VaultBlobRetentionPolicy.DeleteExpiredAsync(dbContext, settings.UnreferencedBlobGraceHours, DateTime.UtcNow, cancellationToken);
-        if (deletedCount > 0)
-        {
-            _logger.LogInformation("Deleted {Count} unreferenced vault blobs uploaded more than {Hours} hours ago, freeing {Kilobytes} KB.", deletedCount, VaultBlobRetentionPolicy.EffectiveGraceHours(settings.UnreferencedBlobGraceHours), freedBytes / 1024);
-        }
+        _logger.LogInformation("Deleted {Count} unreferenced vault blobs uploaded more than {Hours} hours ago, freeing {Kilobytes} KB.", deletedCount, graceHours, freedBytes / 1024);
     }
 }
