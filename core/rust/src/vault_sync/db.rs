@@ -231,8 +231,8 @@ const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PublicKey, x.PrivateKey, x
 const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
 const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
 const INSERT_FOLDER: &str = "INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt) VALUES (?, ?, ?, ?, 0, 0, ?, ?)";
-const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
-const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ?, UpdatedAt = ? WHERE ManifestId <> ? AND FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id) SELECT Id FROM subtree)";
+const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ?, UpdatedAt = ? WHERE ManifestId = ? AND FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? AND ManifestId = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id WHERE f.ManifestId = ?) SELECT Id FROM subtree)";
+const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE ManifestId = ? AND Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? AND ManifestId = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id WHERE f.ManifestId = ?) SELECT Id FROM subtree)";
 const FIND_ITEMS_WITH_FOREIGN_LOGO: &str = "SELECT i.Id, i.ManifestId, origin.Kind, origin.Source FROM Items i INNER JOIN Logos origin ON origin.Id = i.LogoId LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0";
 const GET_LOGO_ID_FOR_KEY: &str = "SELECT Id FROM Logos WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0 LIMIT 1";
 const GET_BEST_LOGO_FOR_KEY: &str = "SELECT FileData, MimeType, Name FROM Logos WHERE Kind = ? AND Source = ? AND IsDeleted = 0 ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC LIMIT 1";
@@ -284,20 +284,21 @@ pub(crate) async fn has_rendered_manifest_folder(host: &Host, manifest_id: &str)
     Ok(!query(host, Db::Local, RENDERED_MANIFEST_FOLDER, vec![json!(manifest_id)]).await?.is_empty())
 }
 
+/// The statements that create the folder a shared manifest is rendered as and pull everything under it into the manifest.
+pub(crate) fn render_manifest_folder_statements(manifest_id: &str, name: &str, active_manifest_id: &str, now: &str) -> Vec<SqlStatement> {
+    let folder_id = id_key(manifest_id);
+    vec![
+        SqlStatement { sql: INSERT_FOLDER.to_string(), params: vec![json!(folder_id), json!(name), Value::Null, json!(active_manifest_id), json!(now), json!(now)] },
+        // Items first: their walk reads the folder stamps the last statement changes.
+        SqlStatement { sql: RESTAMP_SUBTREE_ITEMS.to_string(), params: vec![json!(manifest_id), json!(now), json!(active_manifest_id), json!(folder_id), json!(active_manifest_id), json!(active_manifest_id)] },
+        SqlStatement { sql: RESTAMP_SUBTREE_FOLDERS.to_string(), params: vec![json!(manifest_id), json!(active_manifest_id), json!(folder_id), json!(active_manifest_id), json!(active_manifest_id)] },
+    ]
+}
+
 /// Create the folder a shared manifest is rendered as and pull everything under it into the manifest.
 pub(crate) async fn render_manifest_folder(host: &Host, manifest_id: &str, name: &str, active_manifest_id: &str) -> SyncResult<()> {
-    let folder_id = id_key(manifest_id);
     let now = now_vault_datetime();
-    exec(
-        host,
-        Db::Local,
-        vec![
-            SqlStatement { sql: INSERT_FOLDER.to_string(), params: vec![json!(folder_id), json!(name), Value::Null, json!(active_manifest_id), json!(now), json!(now)] },
-            SqlStatement { sql: RESTAMP_SUBTREE_FOLDERS.to_string(), params: vec![json!(manifest_id), json!(folder_id)] },
-            SqlStatement { sql: RESTAMP_SUBTREE_ITEMS.to_string(), params: vec![json!(manifest_id), json!(now), json!(manifest_id), json!(folder_id)] },
-        ],
-    )
-    .await?;
+    exec(host, Db::Local, render_manifest_folder_statements(manifest_id, name, active_manifest_id, &now)).await?;
     reconcile_item_logo_scopes(host, &now).await
 }
 

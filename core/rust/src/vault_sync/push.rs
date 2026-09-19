@@ -705,7 +705,9 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
  * The bucket-only write.
  */
 
-/// Single-data-bucket upload through the unified write, rebasing onto the server's revision and retrying once.
+/*
+ * Single-data-bucket upload through the unified write. A stale revision reports `Outdated` returns early.
+ */
 async fn push_data_bucket_only(ctx: &Ctx, bucket: &DataBucket, vek: &str) -> SyncResult<(PushStatus, i64)> {
     http::with_outdated_server_guard(push_data_bucket_only_internal(ctx, bucket, vek).await)
 }
@@ -721,32 +723,23 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
     }
     let sealed = seal(ctx, &label, &plaintext, vek).await?;
 
-    let post = |current_revision: i64| {
-        let payload = VaultWriteRequest {
-            username: ctx.request.username.clone(),
-            manifests: Vec::new(),
-            buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext.clone(), ciphertext_hash: sealed.hash.clone(), current_revision }],
-            new_blobs: Vec::new(),
-            email_routing: None,
-            account_keys: None,
-        };
-        async move { http::post::<_, VaultWriteResponse>(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await }
+    let current_revision = baselines.bucket_revision(bucket);
+    let payload = VaultWriteRequest {
+        username: ctx.request.username.clone(),
+        manifests: Vec::new(),
+        buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext, ciphertext_hash: sealed.hash, current_revision }],
+        new_blobs: Vec::new(),
+        email_routing: None,
+        account_keys: None,
     };
-    let reported = |response: &VaultWriteResponse| response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);
-
-    let mut current_revision = baselines.bucket_revision(bucket);
-    let mut response = post(current_revision).await?;
+    let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await?;
+    let reported = response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);
     if response.status != 0 {
-        let server_revision = reported(&response).unwrap_or(current_revision);
-        ctx.warn(format!("[V2Push] {} outdated (server at revision {}, we assumed {}); rebasing and retrying once.", label, server_revision, current_revision)).await;
-        current_revision = server_revision;
-        response = post(current_revision).await?;
-    }
-    if response.status != 0 {
-        return Ok((PushStatus::Outdated, reported(&response).unwrap_or(current_revision)));
+        ctx.warn(format!("[V2Push] {} outdated (server at revision {}, we assumed {}); pulling and merging before the next attempt.", label, reported.unwrap_or(current_revision), current_revision)).await;
+        return Ok((PushStatus::Outdated, reported.unwrap_or(current_revision)));
     }
 
-    let new_revision = reported(&response).unwrap_or(current_revision + 1);
+    let new_revision = reported.unwrap_or(current_revision + 1);
     let advanced = BucketRevision { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), revision: new_revision };
     commit_push_baselines(ctx, baselines, &[], &[advanced], HashMap::from([(fingerprint_key, fingerprint)])).await?;
     Ok((PushStatus::Ok, new_revision))

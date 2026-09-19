@@ -1,6 +1,7 @@
 //! Engine tests: the whole sync driven through the command loop against a real SQLite host.
 
 mod item_move;
+mod render_manifest_folder;
 mod test_host;
 
 use std::collections::HashMap;
@@ -302,6 +303,78 @@ fn outdated_push_merges_the_server_change_and_retries() {
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(merged["tables"]["Items"].as_array().unwrap().len(), 3);
+}
+
+fn insert_item_stats(conn: &rusqlite::Connection, item_id: &str, use_count: i64) {
+    let now = crate::timestamp::now_vault_datetime();
+    conn.execute(
+        "INSERT INTO ItemStats (ManifestId, Id, UseCount, AutofillCount, CopyCount, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 0, 0, 0, ?, ?, 0)",
+        rusqlite::params![PERSONAL_MANIFEST_ID, item_id, use_count, now, now],
+    )
+    .unwrap();
+}
+
+#[test]
+fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it() {
+    const ITEM_A: &str = "aaaaaaaa-0000-4000-8000-000000000001";
+    const ITEM_B: &str = "aaaaaaaa-0000-4000-8000-000000000002";
+    let vek = crypto::generate_key_base64();
+    let salt = vault_codec::generate_manifest_salt();
+    let mut host = TestHost::new(&vek);
+    let server_db = test_host::open_schema_db(&host.schema_sql);
+    insert_item(&server_db, ITEM_A, "Item A", PERSONAL_MANIFEST_ID);
+    insert_item(&server_db, ITEM_B, "Item B", PERSONAL_MANIFEST_ID);
+    let (status7, vault7) = snapshot_of(&server_db, &vek, 7, &salt);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    host.respond("GET", "Status", status7.clone());
+    host.respond("GET", "Vault", vault7);
+    host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+
+    // Another device writes the stats of item B after this client's status check, while this one used item A.
+    insert_item_stats(&server_db, ITEM_B, 5);
+    let (status8, vault8) = snapshot_of(&server_db, &vek, 8, &salt);
+    insert_item_stats(&host.local, ITEM_A, 1);
+    host.store_local_as_blob();
+    host.mutation_sequence = 1;
+    host.is_dirty = true;
+
+    let status_calls = std::rc::Rc::new(std::cell::Cell::new(0u32));
+    host.responders.clear();
+    host.respond_with(Box::new(move |method, path, _| {
+        if method != "GET" || path != "Status" {
+            return None;
+        }
+        status_calls.set(status_calls.get() + 1);
+        Some((200, if status_calls.get() == 1 { status7.clone() } else { status8.clone() }))
+    }));
+    host.respond("GET", "Vault", vault8);
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond_with(Box::new(|method, path, body| {
+        if method != "POST" || path != "Vault" {
+            return None;
+        }
+        let current = body.and_then(|b| b["buckets"][0]["currentRevision"].as_i64()).unwrap_or(-1);
+        let revision = if current == 8 { 9 } else { 8 };
+        Some((200, json!({ "status": if current == 8 { 0 } else { 2 }, "manifestRevisions": [], "bucketRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "category": "Stats", "revision": revision }], "missingBlobHashes": [] })))
+    }));
+
+    let mut bucket_request: Value = serde_json::from_str(&request("fullSync", &vek, true, 1)).unwrap();
+    bucket_request["dirtyScopes"] = json!(["Stats"]);
+    let result = host.drive(&SyncSession::new(&bucket_request.to_string()).unwrap());
+
+    assert_eq!(result["success"], true, "{}", result);
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
+    let accepted = posts.last().unwrap().body.as_ref().unwrap();
+    assert_eq!(accepted["buckets"][0]["currentRevision"], 8);
+    let bucket: Value = {
+        let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(accepted["buckets"][0]["blob"].as_str().unwrap()).unwrap(), &vek).unwrap();
+        serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
+    };
+    assert_eq!(bucket["tables"]["ItemStats"].as_array().unwrap().len(), 2, "the other device's stats must survive: {}", bucket);
+    let tail: Vec<String> = host.requests.iter().rev().take(4).rev().map(|r| format!("{} {}", r.method, r.path)).collect();
+    assert_eq!(tail, vec!["POST Vault", "GET Status", "GET Vault", "POST Vault"], "the refused write must be followed by a pull before the next attempt");
+    assert_eq!(posts.len(), 2);
+    assert_eq!(posts[0].body.as_ref().unwrap()["buckets"][0]["currentRevision"], 7);
 }
 
 #[test]
