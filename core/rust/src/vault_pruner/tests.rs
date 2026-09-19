@@ -520,8 +520,8 @@ fn test_sweeper_clears_blob_on_already_tombstoned_attachment() {
     let stmt = output.statements.iter()
         .find(|s| s.sql.starts_with("UPDATE Attachments SET Blob = NULL"))
         .expect("expected the sweeper UPDATE");
-    // params: [updated_at, attachment_id]
-    assert_eq!(stmt.params.len(), 2);
+    // params: [updated_at, attachment_id, manifest_id]
+    assert_eq!(stmt.params.len(), 3);
     assert_eq!(stmt.params[1], serde_json::json!("att-old"));
 }
 
@@ -679,4 +679,60 @@ fn test_prune_cascades_to_field_histories_and_item_tags() {
     let sql: Vec<&str> = output.statements.iter().map(|s| s.sql.as_str()).collect();
     assert!(sql.iter().any(|s| s.starts_with("UPDATE FieldHistories SET IsDeleted = 1")), "field history rows must die with their item: {:?}", sql);
     assert!(sql.iter().any(|s| s.starts_with("UPDATE ItemTags SET IsDeleted = 1")), "item tag rows must die with their item: {:?}", sql);
+}
+
+fn in_manifest(mut record: CodecRecord, manifest_id: &str) -> CodecRecord {
+    record.insert("ManifestId".to_string(), serde_json::json!(manifest_id));
+    record
+}
+
+#[test]
+fn a_prune_never_reaches_a_same_id_row_in_another_manifest() {
+    let old_date = days_ago_iso(60);
+    let input = PruneInput {
+        tables: vec![
+            CodecTableData {
+                name: "Items".to_string(),
+                records: vec![
+                    in_manifest(make_item_record("item-1", Some(&old_date), false), "m-personal"),
+                    in_manifest(make_item_record("item-1", None, false), "m-shared"),
+                ],
+            },
+            CodecTableData {
+                name: "FieldValues".to_string(),
+                records: vec![
+                    in_manifest(make_field_value_record("fv-1", "item-1", false), "m-personal"),
+                    in_manifest(make_field_value_record("fv-1", "item-1", false), "m-shared"),
+                ],
+            },
+            CodecTableData {
+                name: "Attachments".to_string(),
+                records: vec![
+                    in_manifest(make_attachment_record("att-1", "item-2", true, serde_json::json!("aGVsbG8=")), "m-personal"),
+                    in_manifest(make_attachment_record("att-1", "item-2", false, serde_json::json!("aGVsbG8=")), "m-shared"),
+                ],
+            },
+        ],
+        retention_days: 30,
+        current_time: now_iso(),
+    };
+
+    let output = prune_vault(input).unwrap();
+
+    assert_eq!(output.stats.items_pruned, 1);
+    assert_eq!(count(&output.stats.child_rows_pruned, FIELD_VALUES_TABLE), 1);
+    assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 1);
+    assert_eq!(output.statements.len(), 3);
+    for stmt in &output.statements {
+        assert!(stmt.sql.ends_with("AND ManifestId = ?") || stmt.sql.contains("AND ManifestId = ? AND"), "statement must name its manifest: {}", stmt.sql);
+        assert!(stmt.params.contains(&serde_json::json!("m-personal")), "statement must target the personal manifest: {:?}", stmt.params);
+        assert!(!stmt.params.contains(&serde_json::json!("m-shared")), "statement must not reach the shared manifest: {:?}", stmt.params);
+    }
+}
+
+#[test]
+fn every_prune_query_reads_the_manifest_id() {
+    for table_query in get_prune_table_queries() {
+        assert!(table_query.query.starts_with("SELECT ManifestId, "), "{} must be read with its manifest: {}", table_query.name, table_query.query);
+    }
 }
