@@ -404,29 +404,29 @@ export default function SettingsScreen() : React.ReactNode {
       >
         <TitleContainer title={t('settings.title')} onLogoPress={registerTap} />
         <UsernameDisplay />
-        <View style={styles.section}>
-          {hasCapability(CapabilityKeys.VaultSharing) && (
-            <>
-              <TouchableOpacity
-                style={styles.settingItem}
-                onPress={() => navigate(() => router.push('/(tabs)/settings/family-sharing'))}
-              >
-                <View style={styles.settingItemIcon}>
-                  <Ionicons name="people-outline" size={20} color={colors.text} />
-                </View>
-                <View style={styles.settingItemContent}>
-                  <View style={styles.settingItemLabel}>
-                    <ThemedText style={styles.settingItemLabelText}>{t('sharing.family.title')}</ThemedText>
-                    <View style={styles.betaBadge}>
-                      <ThemedText style={styles.betaBadgeText}>{t('sharing.family.beta')}</ThemedText>
-                    </View>
+        {hasCapability(CapabilityKeys.VaultSharing) && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => navigate(() => router.push('/(tabs)/settings/family-sharing'))}
+            >
+              <View style={styles.settingItemIcon}>
+                <Ionicons name="people-outline" size={20} color={colors.text} />
+              </View>
+              <View style={styles.settingItemContent}>
+                <View style={styles.settingItemLabel}>
+                  <ThemedText style={styles.settingItemLabelText}>{t('sharing.family.title')}</ThemedText>
+                  <View style={styles.betaBadge}>
+                    <ThemedText style={styles.betaBadgeText}>{t('sharing.family.beta')}</ThemedText>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                 </View>
-              </TouchableOpacity>
-              <View style={styles.separator} />
-            </>
-          )}
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.section}>
           {Platform.OS === 'ios' && (
             <>
               <TouchableOpacity
