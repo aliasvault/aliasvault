@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Groups;
 
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// Request for POST /v2/Groups/{groupId}/manifests: create another shared manifest for the group.
 /// </summary>
@@ -25,4 +27,8 @@ public class CreateSharedManifestRequest
 
     /// <summary>Gets or sets the asymmetric algorithm the caller's own grant was encrypted with.</summary>
     public required string Algorithm { get; set; }
+
+    /// <summary>Gets or sets the name of the manifest, encrypted with the manifest's own key (base64).</summary>
+    [StringLength(2000)]
+    public string? EncryptedName { get; set; }
 }

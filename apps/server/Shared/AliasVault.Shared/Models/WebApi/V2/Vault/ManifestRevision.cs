@@ -18,4 +18,7 @@ public class ManifestRevision
 
     /// <summary>Gets or sets the current (latest) revision number for this manifest.</summary>
     public required long Revision { get; set; }
+
+    /// <summary>Gets or sets the name of a shared manifest, encrypted with the manifest's own key (base64).</summary>
+    public string? EncryptedName { get; set; }
 }

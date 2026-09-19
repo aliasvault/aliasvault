@@ -1522,6 +1522,26 @@ namespace AliasServerDb.Migrations
                     b.ToTable("VaultManifestDeliveryKeys");
                 });
 
+            modelBuilder.Entity("AliasServerDb.VaultManifestShareDetails", b =>
+                {
+                    b.Property<Guid>("ManifestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptedName")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ManifestId");
+
+                    b.ToTable("VaultManifestShareDetails");
+                });
+
             modelBuilder.Entity("AliasServerDb.VaultManifestsHistory", b =>
                 {
                     b.Property<Guid>("ManifestId")
@@ -1977,6 +1997,17 @@ namespace AliasServerDb.Migrations
                     b.HasOne("AliasServerDb.VaultManifest", "VaultManifest")
                         .WithMany()
                         .HasForeignKey("VaultManifestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("VaultManifest");
+                });
+
+            modelBuilder.Entity("AliasServerDb.VaultManifestShareDetails", b =>
+                {
+                    b.HasOne("AliasServerDb.VaultManifest", "VaultManifest")
+                        .WithOne()
+                        .HasForeignKey("AliasServerDb.VaultManifestShareDetails", "ManifestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

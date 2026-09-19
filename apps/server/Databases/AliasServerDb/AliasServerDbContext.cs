@@ -132,6 +132,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<ClientAction> ClientActions { get; set; }
 
     /// <summary>
+    /// Gets or sets the VaultManifestShareDetails DbSet.
+    /// </summary>
+    public DbSet<VaultManifestShareDetails> VaultManifestShareDetails { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultManifestDeliveryKeys DbSet.
     /// </summary>
     public DbSet<VaultManifestDeliveryKey> VaultManifestDeliveryKeys { get; set; }
@@ -539,6 +544,15 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             // The mailbox queries filter emails by the set of keys the caller holds.
             builder.HasIndex(d => new { d.VaultManifestDeliveryKeyId, d.EmailId });
+        });
+
+        modelBuilder.Entity<VaultManifestShareDetails>(builder =>
+        {
+            // The details are removed with the shared manifest they describe.
+            builder.HasOne(d => d.VaultManifest)
+                .WithOne()
+                .HasForeignKey<VaultManifestShareDetails>(d => d.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<VaultManifestDeliveryKey>(builder =>

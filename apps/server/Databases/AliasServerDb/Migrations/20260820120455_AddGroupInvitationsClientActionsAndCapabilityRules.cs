@@ -188,11 +188,34 @@ namespace AliasServerDb.Migrations
                 name: "IX_CapabilityRules_UserId",
                 table: "CapabilityRules",
                 column: "UserId");
+
+            migrationBuilder.CreateTable(
+                name: "VaultManifestShareDetails",
+                columns: table => new
+                {
+                    ManifestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EncryptedName = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VaultManifestShareDetails", x => x.ManifestId);
+                    table.ForeignKey(
+                        name: "FK_VaultManifestShareDetails_VaultManifests_ManifestId",
+                        column: x => x.ManifestId,
+                        principalTable: "VaultManifests",
+                        principalColumn: "ManifestId",
+                        onDelete: ReferentialAction.Cascade);
+                });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "VaultManifestShareDetails");
+
             migrationBuilder.DropTable(
                 name: "CapabilityRules");
 
