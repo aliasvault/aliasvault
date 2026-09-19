@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { itemRoute } from '@/utils/ItemRoute';
+
 import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
@@ -10,6 +12,7 @@ type AttachmentUploaderProps = {
   onAttachmentsChange: (attachments: Attachment[]) => void;
   /** Item ID for edit mode - used to determine return path when opening expanded window */
   itemId?: string;
+  manifestId?: string;
 }
 
 /**
@@ -18,7 +21,8 @@ type AttachmentUploaderProps = {
 const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
   attachments,
   onAttachmentsChange,
-  itemId
+  itemId,
+  manifestId
 }) => {
   const { t } = useTranslation();
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -112,7 +116,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const returnTo = itemId ? `/items/${itemId}` : '/items';
+                  const returnTo = itemId && manifestId ? itemRoute({ Id: itemId, ManifestId: manifestId }) : '/items';
                   PopoutUtility.openInNewPopup(undefined, returnTo);
                 }}
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"

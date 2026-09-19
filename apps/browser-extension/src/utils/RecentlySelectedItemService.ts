@@ -1,5 +1,7 @@
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 import { storage } from '#imports';
 
 /**
@@ -12,6 +14,7 @@ const TTL_MS = 60 * 1000;
  */
 export interface IRecentlySelectedItem {
   itemId: string;
+  manifestId: string;
   timestamp: number;
   domain: string;
 }
@@ -27,12 +30,13 @@ export interface IRecentlySelectedItem {
 export const RecentlySelectedItemService = {
   /**
    * Store a recently selected item with the current timestamp.
-   * @param itemId - The ID of the item that was selected
+   * @param item - The item that was selected, named by its manifest and id
    * @param domain - The domain where the item was used (for scoping)
    */
-  async setRecentlySelected(itemId: string, domain: string): Promise<void> {
+  async setRecentlySelected(item: ItemRef, domain: string): Promise<void> {
     const data: IRecentlySelectedItem = {
-      itemId,
+      itemId: item.Id,
+      manifestId: item.ManifestId,
       timestamp: Date.now(),
       domain,
     };
@@ -42,9 +46,9 @@ export const RecentlySelectedItemService = {
   /**
    * Get the recently selected item if it exists and is not expired.
    * @param domain - The current domain to check against
-   * @returns The item ID if valid, or null if expired or not matching domain
+   * @returns The item if valid, or null if expired or not matching domain
    */
-  async getRecentlySelected(domain: string): Promise<string | null> {
+  async getRecentlySelected(domain: string): Promise<ItemRef | null> {
     const data = await storage.getItem(StorageKeys.RECENTLY_SELECTED_ITEM) as IRecentlySelectedItem | null;
 
     if (!data) {
@@ -63,7 +67,7 @@ export const RecentlySelectedItemService = {
       return null;
     }
 
-    return data.itemId;
+    return { Id: data.itemId, ManifestId: data.manifestId };
   },
 
   /**
@@ -72,8 +76,7 @@ export const RecentlySelectedItemService = {
    * @returns True if a valid recently selected item exists
    */
   async hasRecentlySelected(domain: string): Promise<boolean> {
-    const itemId = await this.getRecentlySelected(domain);
-    return itemId !== null;
+    return (await this.getRecentlySelected(domain)) !== null;
   },
 
   /**

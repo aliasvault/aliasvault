@@ -1,6 +1,7 @@
 /**
  * Types for login detection and credential saving functionality.
  */
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
 /**
  * Represents login credentials captured from a form submission.
@@ -47,8 +48,6 @@ export type SavePromptConfig = {
   login: CapturedLogin;
   /** Whether this appears to be a duplicate */
   isDuplicate: boolean;
-  /** If duplicate, the ID of the matching item */
-  matchingItemId?: string;
 };
 
 /**
@@ -76,7 +75,7 @@ export type AddUrlPromptOptions = {
   /** The existing credential that was autofilled */
   existingCredential: LastAutofilledCredential;
   /** Callback when user clicks "Add URL" */
-  onAddUrl: (itemId: string, url: string) => void;
+  onAddUrl: (item: ItemRef, url: string) => void;
   /** Callback when prompt is dismissed */
   onDismiss: () => void;
   /** Auto-dismiss timeout in milliseconds (default: 15000) */
@@ -139,6 +138,8 @@ export type SavePromptPersistedState = {
 export type LastAutofilledCredential = {
   /** The ID of the item that was autofilled */
   itemId: string;
+  /** The manifest of the item that was autofilled */
+  manifestId: string;
   /** The name of the item (for display in the prompt) */
   itemName: string;
   /** The username that was filled */

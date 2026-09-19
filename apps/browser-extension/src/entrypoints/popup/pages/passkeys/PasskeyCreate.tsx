@@ -1,3 +1,5 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { extractDomain, filterItems, AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@aliasvault/models/vault';
 import React, { useEffect, useRef, useState } from 'react';
@@ -15,13 +17,13 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
 
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { Item, Passkey } from '@aliasvault/models/vault';
 
 /**
@@ -40,8 +42,8 @@ const PasskeyCreate: React.FC = () => {
   const { isLocked } = useVaultLockRedirect();
   const [existingPasskeys, setExistingPasskeys] = useState<Array<Passkey & { Username?: string | null; Email?: string | null; ServiceName?: string | null }>>([]);
   const [matchingItems, setMatchingItems] = useState<Item[]>([]);
-  const [selectedPasskeyToReplace, setSelectedPasskeyToReplace] = useState<string | null>(null);
-  const [selectedItemToAttach, setSelectedItemToAttach] = useState<string | null>(null);
+  const [selectedPasskeyToReplace, setSelectedPasskeyToReplace] = useState<ItemRef | null>(null);
+  const [selectedItemToAttach, setSelectedItemToAttach] = useState<ItemRef | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
   const [showBypassDialog, setShowBypassDialog] = useState(false);
@@ -228,8 +230,8 @@ const PasskeyCreate: React.FC = () => {
   /**
    * Handle when user selects an existing passkey to replace
    */
-  const handleSelectReplace = (passkeyId: string) : void => {
-    setSelectedPasskeyToReplace(passkeyId);
+  const handleSelectReplace = (passkey: ItemRef) : void => {
+    setSelectedPasskeyToReplace({ Id: passkey.Id, ManifestId: passkey.ManifestId });
     setSelectedItemToAttach(null);
     setShowCreateForm(true);
   };
@@ -237,8 +239,8 @@ const PasskeyCreate: React.FC = () => {
   /**
    * Handle when user selects an existing item to attach the passkey to
    */
-  const handleSelectItem = (itemId: string) : void => {
-    setSelectedItemToAttach(itemId);
+  const handleSelectItem = (item: ItemRef) : void => {
+    setSelectedItemToAttach({ Id: item.Id, ManifestId: item.ManifestId });
     setSelectedPasskeyToReplace(null);
     setShowCreateForm(true);
   };
@@ -321,13 +323,14 @@ const PasskeyCreate: React.FC = () => {
       await executeVaultMutationAsync(async () => {
         if (selectedPasskeyToReplace) {
           // Replace existing passkey: update the item and passkey
-          const existingPasskey = dbContext.sqliteClient!.passkeys.getById(selectedPasskeyToReplace);
+          const existingPasskey = dbContext.sqliteClient!.passkeys.getById(selectedPasskeyToReplace.Id, selectedPasskeyToReplace.ManifestId);
           if (existingPasskey) {
             // Get existing item to preserve its data
-            const existingItem = dbContext.sqliteClient!.items.getById(existingPasskey.ItemId);
+            const existingItem = dbContext.sqliteClient!.items.getById({ Id: existingPasskey.ItemId, ManifestId: existingPasskey.ManifestId });
             if (existingItem) {
               // Update the parent item with new favicon and user-provided display name
               await dbContext.sqliteClient!.items.update(
+                existingItem,
                 {
                   ...existingItem,
                   Name: displayName,
@@ -344,7 +347,7 @@ const PasskeyCreate: React.FC = () => {
             }
 
             // Delete the old passkey
-            await dbContext.sqliteClient!.passkeys.deleteById(selectedPasskeyToReplace, existingPasskey?.ManifestId);
+            await dbContext.sqliteClient!.passkeys.deleteById(selectedPasskeyToReplace.Id, selectedPasskeyToReplace.ManifestId);
 
             /**
              * Create new passkey with same item
@@ -363,6 +366,7 @@ const PasskeyCreate: React.FC = () => {
             await dbContext.sqliteClient!.passkeys.create({
               Id: newPasskeyGuid,
               ItemId: existingPasskey.ItemId,
+              ManifestId: existingPasskey.ManifestId,
               RpId: stored.rpId,
               UserHandle: userHandleBytes,
               PublicKey: JSON.stringify(stored.publicKey),
@@ -390,7 +394,8 @@ const PasskeyCreate: React.FC = () => {
 
           await dbContext.sqliteClient!.passkeys.create({
             Id: newPasskeyGuid,
-            ItemId: selectedItemToAttach,
+            ItemId: selectedItemToAttach.Id,
+            ManifestId: selectedItemToAttach.ManifestId,
             RpId: stored.rpId,
             UserHandle: userHandleBytes,
             PublicKey: JSON.stringify(stored.publicKey),
@@ -401,8 +406,9 @@ const PasskeyCreate: React.FC = () => {
           });
         } else {
           // Create new item and passkey
-          const newItem: DraftItem = {
+          const newItem: Item = {
             Id: '',
+            ManifestId: manifestForItemIn(null, dbContext.sqliteClient!.getPersonalManifestId()),
             Name: displayName,
             ItemType: ItemTypes.Login,
             Logo: faviconLogo,
@@ -414,7 +420,7 @@ const PasskeyCreate: React.FC = () => {
             UpdatedAt: new Date().toISOString()
           };
 
-          const itemId = await dbContext.sqliteClient!.items.create(newItem, []);
+          const createdItem = await dbContext.sqliteClient!.items.create(newItem, []);
 
           /**
            * Create the Passkey linked to the item
@@ -433,7 +439,8 @@ const PasskeyCreate: React.FC = () => {
 
           await dbContext.sqliteClient!.passkeys.create({
             Id: newPasskeyGuid,
-            ItemId: itemId,
+            ItemId: createdItem.Id,
+            ManifestId: createdItem.ManifestId,
             RpId: stored.rpId,
             UserHandle: userHandleBytes,
             PublicKey: JSON.stringify(stored.publicKey),
@@ -629,8 +636,8 @@ const PasskeyCreate: React.FC = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800">
                 {existingPasskeys.map((passkey) => (
                   <button
-                    key={passkey.Id}
-                    onClick={() => handleSelectReplace(passkey.Id)}
+                    key={scopedKey(passkey.ManifestId, passkey.Id)}
+                    onClick={() => handleSelectReplace(passkey)}
                     className="w-full p-3 text-left rounded-lg border cursor-pointer transition-colors bg-white border-gray-200 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <div className="flex items-center justify-between">
@@ -699,8 +706,8 @@ const PasskeyCreate: React.FC = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800">
                 {matchingItems.map((item) => (
                   <button
-                    key={item.Id}
-                    onClick={() => handleSelectItem(item.Id)}
+                    key={scopedKey(item.ManifestId, item.Id)}
+                    onClick={() => handleSelectItem(item)}
                     className="w-full p-3 text-left rounded-lg border cursor-pointer transition-colors bg-white border-gray-200 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <div className="flex items-center justify-between">
@@ -740,7 +747,7 @@ const PasskeyCreate: React.FC = () => {
             {selectedPasskeyToReplace && (
               <Alert variant="warning">
                 {t('passkeys.create.replacingPasskey', {
-                  displayName: existingPasskeys.find(p => p.Id === selectedPasskeyToReplace)?.DisplayName || ''
+                  displayName: existingPasskeys.find(p => isSameItem(p, selectedPasskeyToReplace))?.DisplayName || ''
                 })}
               </Alert>
             )}
@@ -748,7 +755,7 @@ const PasskeyCreate: React.FC = () => {
             {selectedItemToAttach && (
               <Alert variant="info">
                 {t('passkeys.create.attachingToCredential', {
-                  serviceName: matchingItems.find(i => i.Id === selectedItemToAttach)?.Name || ''
+                  serviceName: matchingItems.find(i => isSameItem(i, selectedItemToAttach))?.Name || ''
                 })}
               </Alert>
             )}

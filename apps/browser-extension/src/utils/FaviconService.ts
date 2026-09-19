@@ -3,9 +3,9 @@ import { Buffer } from 'buffer';
 import { selectFaviconTarget, toUrlList } from '@aliasvault/client/rust/RustCore';
 
 import type { WebApiService } from '@aliasvault/client/api/WebApiService';
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import type { FaviconTarget } from '@aliasvault/client/rust/RustCore';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Result of a favicon fetch operation.
@@ -116,11 +116,11 @@ export class FaviconService {
    * @returns The updated item with Logo attached (if favicon was fetched), or cleared when nothing was fetched
    */
   public static async fetchAndAttachFavicon(
-    item: DraftItem,
+    item: Item,
     urlFieldValue: string | string[] | undefined | null,
     sqliteClient: SqliteClient,
     webApi: WebApiService
-  ): Promise<DraftItem> {
+  ): Promise<Item> {
     const target = await FaviconService.resolveTarget(urlFieldValue);
 
     // No valid URL found: clear any existing logo.

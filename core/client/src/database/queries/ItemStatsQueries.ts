@@ -6,13 +6,12 @@
  */
 export class ItemStatsQueries {
   /**
-   * The manifest an item belongs to.
+   * Whether the item exists.
    */
-  public static readonly GET_ITEM_MANIFEST = `
-    SELECT ManifestId
+  public static readonly ITEM_EXISTS = `
+    SELECT 1 AS Found
     FROM Items
-    WHERE Id = ?
-    LIMIT 1`;
+    WHERE Id = ? AND ManifestId = ?`;
 
   /**
    * Create the stats row for an item on its first recorded use.

@@ -6,7 +6,7 @@ import { StorageKeys } from '../../constants/StorageKeys';
 import { getPlatform } from '../../platform/ClientPlatform';
 import { SqliteClient } from '../SqliteClient';
 
-import type { DraftItem } from '../ItemRef';
+import type { Item } from '@aliasvault/models/vault';
 
 const PERSONAL = '11111111-1111-4111-8111-111111111111';
 
@@ -30,8 +30,8 @@ async function openClient(): Promise<SqliteClient> {
  * @param name - The item's name
  * @returns The draft
  */
-function draftItem(name: string): DraftItem {
-  return { Name: name, ItemType: ItemTypes.Note, Fields: [], CreatedAt: '', UpdatedAt: '' } as unknown as DraftItem;
+function draftItem(name: string): Item {
+  return { Name: name, ManifestId: PERSONAL, ItemType: ItemTypes.Note, Fields: [], CreatedAt: '', UpdatedAt: '' } as unknown as Item;
 }
 
 describe('mutation scopes', () => {

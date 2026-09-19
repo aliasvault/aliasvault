@@ -3,6 +3,7 @@ import { PasskeyMapper, type PasskeyRow, type PasskeyWithItemRow, type PasskeyWi
 import { PasskeyQueries } from '../queries/PasskeyQueries';
 
 import type { DbOp } from '../DbOp';
+import type { ItemRef } from '../ItemRef';
 import type { Passkey } from '@aliasvault/models/vault';
 
 /**
@@ -22,10 +23,11 @@ export class PasskeyRepository extends BaseRepository {
   /**
    * Get a passkey by its ID.
    * @param passkeyId - The passkey ID
+   * @param manifestId - The manifest the passkey belongs to, which is its item's
    * @returns The passkey object or null if not found
    */
-  public *getById(passkeyId: string): DbOp<PasskeyWithItem | null> {
-    const results = yield* this.query<PasskeyWithItemRow>(PasskeyQueries.GET_BY_ID_WITH_ITEM, [passkeyId]);
+  public *getById(passkeyId: string, manifestId: string): DbOp<PasskeyWithItem | null> {
+    const results = yield* this.query<PasskeyWithItemRow>(PasskeyQueries.GET_BY_ID_WITH_ITEM, [passkeyId, manifestId]);
 
     if (results.length === 0) {
       return null;
@@ -36,28 +38,21 @@ export class PasskeyRepository extends BaseRepository {
 
   /**
    * Get all passkeys for a specific item.
-   * @param itemId - The item ID
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param item - The item, named by its manifest and id
    * @returns Array of passkey objects
    */
-  public *getByItemId(itemId: string, manifestId?: string): DbOp<Passkey[]> {
-    const scope = manifestId ?? (yield* this.resolveRowManifestId('Items', itemId));
-    if (!scope) {
-      return [];
-    }
-
-    const results = yield* this.query<PasskeyRow>(PasskeyQueries.GET_BY_ITEM_ID, [itemId, scope]);
+  public *getByItemId(item: ItemRef): DbOp<Passkey[]> {
+    const results = yield* this.query<PasskeyRow>(PasskeyQueries.GET_BY_ITEM_ID, [item.Id, item.ManifestId]);
     return PasskeyMapper.mapRows(results);
   }
 
   /**
    * Create a new passkey linked to an item.
    *
-   * The manifest is not passed in: a passkey belongs to whichever manifest its item is in, and the
-   * INSERT reads it from there (see {@link BaseQueries.MANIFEST_OF_ITEM}).
+   * A passkey belongs to whichever manifest its item is in, so `ManifestId` names the item's manifest.
    * @param passkey - The passkey object to create
    */
-  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted' | 'ManifestId'>): Promise<void> {
+  public async create(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
 
@@ -77,12 +72,10 @@ export class PasskeyRepository extends BaseRepository {
           : new Uint8Array(passkey.UserHandle);
       }
 
-      const manifestId = await this.run(this.writeManifestId());
       await this.run(this.execute(PasskeyQueries.INSERT, [
         passkey.Id,
         passkey.ItemId,
-        passkey.ItemId,
-        manifestId,
+        passkey.ManifestId,
         passkey.RpId,
         userHandleData,
         passkey.PublicKey,
@@ -100,16 +93,10 @@ export class PasskeyRepository extends BaseRepository {
   /**
    * Delete a passkey by its ID (soft delete).
    * @param passkeyId - The ID of the passkey to delete
-   * @param manifestId - The manifest the passkey belongs to, when known
+   * @param manifestId - The manifest the passkey belongs to, which is its item's
    * @returns The number of rows updated
    */
-  public async deleteById(passkeyId: string, manifestId?: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const scope = manifestId ?? await this.run(this.resolveRowManifestId('Passkeys', passkeyId));
-      if (!scope) {
-        return 0;
-      }
-      return this.run(this.execute(PasskeyQueries.SOFT_DELETE, [this.now(), passkeyId, scope]));
-    });
+  public async deleteById(passkeyId: string, manifestId: string): Promise<number> {
+    return this.withTransaction(() => this.run(this.execute(PasskeyQueries.SOFT_DELETE, [this.now(), passkeyId, manifestId])));
   }
 }

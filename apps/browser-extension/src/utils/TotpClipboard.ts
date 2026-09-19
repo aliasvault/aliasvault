@@ -1,20 +1,22 @@
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 /**
  * Copy an item's current TOTP code to the clipboard (only when the user has the copy-on-fill
  * setting enabled, which is the default).
  *
- * @param itemId - The ID of the item being filled.
+ * @param item - The item being filled, named by its manifest and id.
  */
-export async function copyTotpToClipboardIfEnabled(itemId: string): Promise<void> {
+export async function copyTotpToClipboardIfEnabled(item: ItemRef): Promise<void> {
   try {
     if (!await LocalPreferencesService.getAutoCopyTotpOnAutofill()) {
       return;
     }
 
     // Generate TOTP code via background
-    const response = await sendMessage('GENERATE_TOTP_CODE', { itemId });
+    const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId });
 
     if (!response.success || !response.code) {
       return;

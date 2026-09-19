@@ -7,12 +7,13 @@ import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentBlockProps = {
   itemId: string;
+  manifestId: string;
 }
 
 /**
  * This component shows attachments for an item.
  */
-const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
+const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId }) => {
   const { t } = useTranslation();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.items.getAttachmentsForItem(itemId);
+        const attachmentList = dbContext.sqliteClient.items.getAttachmentsForItem({ Id: itemId, ManifestId: manifestId });
         setAttachments(attachmentList);
       } catch (error) {
         console.error('Error loading attachments:', error);
@@ -65,7 +66,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
     };
 
     loadAttachments();
-  }, [itemId, dbContext?.sqliteClient]);
+  }, [itemId, manifestId, dbContext?.sqliteClient]);
 
   if (loading) {
     return (

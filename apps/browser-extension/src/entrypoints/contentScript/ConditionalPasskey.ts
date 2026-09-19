@@ -138,9 +138,10 @@ export function clearConditionalPasskeyRequestIfMatches(requestId: string): bool
  * Signs in the background, resolves the page's pending `get()` promise, and clears state.
  *
  * @param passkeyId - The vault ID of the selected passkey.
+ * @param manifestId - The manifest that passkey belongs to.
  * @returns true when an assertion was produced and returned to the page.
  */
-export async function completeConditionalWithPasskey(passkeyId: string): Promise<boolean> {
+export async function completeConditionalWithPasskey(passkeyId: string, manifestId: string): Promise<boolean> {
   const request = pendingRequest;
   if (!request) {
     return false;
@@ -152,6 +153,7 @@ export async function completeConditionalWithPasskey(passkeyId: string): Promise
   try {
     const result = await sendMessage('WEBAUTHN_GET_ASSERTION', {
       passkeyId,
+      manifestId,
       origin: request.origin,
       publicKey: request.publicKey as unknown as WebAuthnPublicKeyGetPayload
     });
@@ -160,9 +162,9 @@ export async function completeConditionalWithPasskey(passkeyId: string): Promise
       /*
        * Copy the linked TOTP code to the clipboard (if any).
        */
-      const selected = request.passkeys.find((passkey) => passkey.id === passkeyId);
+      const selected = request.passkeys.find((passkey) => passkey.id === passkeyId && passkey.manifestId === manifestId);
       if (selected) {
-        await copyTotpToClipboardIfEnabled(selected.itemId);
+        await copyTotpToClipboardIfEnabled({ Id: selected.itemId, ManifestId: selected.manifestId });
       }
 
       request.respond({ requestId: request.requestId, credential: result.credential });

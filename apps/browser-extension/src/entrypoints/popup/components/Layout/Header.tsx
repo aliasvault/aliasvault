@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({
 
     // Check if we're on an item details page with a returnSearch param
     const returnSearch = searchParams.get('returnSearch');
-    const isItemDetailsPage = /^\/items\/[^/]+$/.test(location.pathname);
+    const isItemDetailsPage = /^\/items\/[^/]+\/[^/]+$/.test(location.pathname);
 
     if (isItemDetailsPage && returnSearch) {
       // Navigate back to items list with search query

@@ -1,5 +1,3 @@
-import { BaseQueries } from './BaseQueries';
-
 /**
  * SQL query constants for Folder operations.
  * Centralizes all folder-related queries to avoid duplication.
@@ -27,11 +25,19 @@ export class FolderQueries {
     WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new folder, stamped with its parent folder's manifest.
+   * Whether a live folder exists under this manifest-qualified key.
+   */
+  public static readonly EXISTS = `
+    SELECT 1 AS Found
+    FROM Folders
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
+
+  /**
+   * Insert a new folder into the manifest the caller names, which is its parent folder's own.
    */
   public static readonly INSERT = `
     INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt)
-    VALUES (?, ?, ?, ${BaseQueries.MANIFEST_OF_FOLDER}, 0, 0, ?, ?)`;
+    VALUES (?, ?, ?, ?, 0, 0, ?, ?)`;
 
   /**
    * Update folder name.
@@ -63,12 +69,11 @@ export class FolderQueries {
     WHERE FolderId = ? AND ManifestId = ?`;
 
   /**
-   * Move items to a different folder.
+   * Move items to a different folder of the same manifest.
    */
   public static readonly MOVE_ITEMS_TO_FOLDER = `
     UPDATE Items
     SET FolderId = ?,
-        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
         UpdatedAt = ?
     WHERE FolderId = ? AND ManifestId = ?`;
 

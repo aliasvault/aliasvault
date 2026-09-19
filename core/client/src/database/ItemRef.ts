@@ -1,5 +1,3 @@
-import type { Item } from '@aliasvault/models/vault';
-
 /**
  * A manifest-qualified reference to an item: the only thing that names one item in the vault.
  *
@@ -13,17 +11,13 @@ export type ItemRef = {
 };
 
 /**
- * The grouping key for a manifest-scoped row: its manifest and its id, in that order.
- *
- * Used wherever rows fetched by one query are joined to rows fetched by another (items to their
- * fields, items to their tags, items to their folder paths). Keying those maps by id alone would let
- * one manifest's rows land on another manifest's item.
+ * The grouping key for a manifest-scoped row: its manifest and its id, separated by a pipe symbol.
  * @param manifestId - The owning manifest's id
  * @param id - The row's id within that manifest
  * @returns A key unique across manifests
  */
 export function scopedKey(manifestId: string, id: string): string {
-  return `${manifestId}${id}`;
+  return `${manifestId}|${id}`;
 }
 
 /**
@@ -37,10 +31,15 @@ export function itemKeyBindings(refs: ItemRef[]): string[] {
 }
 
 /**
- * An item as the UI holds it, whose manifest may not be decided yet.
- *
- * A new item has no manifest until the vault writes it: which manifest it lands in follows from the
- * folder it is created in. Everything read back out of the vault is a full {@link Item} and carries
- * one, so this is only ever wider than an Item, never narrower.
+ * The manifest a new item belongs in: the one its folder is in, or the personal manifest outside any folder.
+ * @param folder - The folder the item is created in, or null for none
+ * @param personalManifestId - The user's personal manifest id
+ * @returns The manifest id to set on the item
  */
-export type DraftItem = Omit<Item, 'ManifestId'> & { ManifestId?: string };
+export function manifestForItemIn(folder: { ManifestId: string } | null | undefined, personalManifestId: string | null | undefined): string {
+  const manifestId = folder?.ManifestId ?? personalManifestId;
+  if (!manifestId) {
+    throw new Error('This client has no personal manifest recorded yet; sync once before writing.');
+  }
+  return manifestId;
+}

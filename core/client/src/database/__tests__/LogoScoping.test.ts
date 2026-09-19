@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlatform } from '../../platform/ClientPlatform';
-import { BaseQueries } from '../queries/BaseQueries';
 import { LogoQueries } from '../queries/LogoQueries';
 
 import type { ISqliteDatabase, SqliteValue } from '../../platform/SqliteEngine';
@@ -40,14 +39,6 @@ function rows(db: ISqliteDatabase, sql: string, params: SqliteValue[] = []): Rec
 }
 
 describe('logo manifest scoping', () => {
-  it('GET_MANIFEST_OF_FOLDER agrees with what an insert would stamp', async () => {
-    const db = await makeDb();
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-SHARED', PERSONAL])[0].ManifestId).toBe(SHARED);
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, ['FOLDER-MINE', PERSONAL])[0].ManifestId).toBe(PERSONAL);
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, [null, PERSONAL])[0].ManifestId).toBe(PERSONAL);
-    expect(rows(db, BaseQueries.GET_MANIFEST_OF_FOLDER, [null, SHARED])[0].ManifestId).toBe(SHARED);
-  });
-
   it('GET_BEST_FOR_KEY prefers the copy that actually carries bytes', async () => {
     const db = await makeDb();
     db.run(`INSERT INTO Logos VALUES ('${SHARED}','L-SHARED','favicon','github.com',NULL,NULL,'empty','t','2026-01-02',0)`);
@@ -62,10 +53,10 @@ describe('logo manifest scoping', () => {
     db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
 
     /*
-     * The write path reads the item's current logo by id alone, so the built-in logo the user picked is
-     * still found and kept instead of being replaced by the domain's favicon.
+     * The write path prefers the item's own manifest but still finds the logo row the item came with, so the
+     * built-in logo the user picked is kept instead of being replaced by the domain's favicon.
      */
-    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL'])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
+    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL', SHARED])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
   });
 
   it('GET_ID_FOR_KEY will not hand one manifest another manifest row', async () => {

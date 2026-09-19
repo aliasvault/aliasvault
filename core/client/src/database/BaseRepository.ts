@@ -2,7 +2,6 @@ import { DEFAULT_VAULT_MUTATION_SCOPE } from '../sync/VaultMutationScope';
 import * as dateFormatter from '../utilities/DateFormatter';
 
 import { runAsync } from './DbOp';
-import { BaseQueries } from './queries/BaseQueries';
 
 import type { DbOp, ManifestScope } from './DbOp';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
@@ -109,40 +108,6 @@ export abstract class BaseRepository {
     const manifestId = active ?? personal;
     if (!manifestId) {
       throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
-    }
-    return manifestId;
-  }
-
-  /**
-   * The manifest a manifest-scoped row belongs to, looked up from the row itself.
-   * @param table - The manifest-scoped table to look in
-   * @param id - The row id
-   * @param column - The column `id` names, when it is not the primary key
-   * @returns The manifest id, or null when no such row exists
-   */
-  protected *resolveRowManifestId(table: string, id: string, column: string = 'Id'): DbOp<string | null> {
-    const rows = yield* this.query<{ ManifestId: string }>(`SELECT ManifestId FROM ${table} WHERE ${column} = ? ORDER BY ManifestId`, [id]);
-    if (rows.length === 0) {
-      return null;
-    }
-
-    const { active, personal } = yield* this.manifestScope();
-    const preferredId = active ?? personal;
-    return (rows.find(row => row.ManifestId === preferredId) ?? rows[0]).ManifestId;
-  }
-
-  /**
-   * The manifest a row placed in the given folder belongs to: that folder's, or the write manifest when the row
-   * sits outside any folder. The same value the write path stamps (see {@link BaseQueries.MANIFEST_OF_FOLDER}).
-   * @param folderId - The folder the row is placed in, or null for none
-   * @returns The manifest id to stamp the row with
-   */
-  protected *manifestOfFolder(folderId: string | null): DbOp<string> {
-    const fallbackManifestId = yield* this.writeManifestId();
-    const rows = yield* this.query<{ ManifestId: string | null }>(BaseQueries.GET_MANIFEST_OF_FOLDER, [folderId, fallbackManifestId]);
-    const manifestId = rows[0]?.ManifestId;
-    if (!manifestId) {
-      throw new Error('BaseRepository: could not resolve the manifest for this write; refusing to write a row that names no manifest.');
     }
     return manifestId;
   }

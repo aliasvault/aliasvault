@@ -8,8 +8,7 @@ import { LogoRepository } from '../repositories/LogoRepository';
 
 import type { ISqliteDatabase, SqliteValue } from '../../platform/SqliteEngine';
 import type { ISyncDatabaseClient, SqliteBindValue } from '../BaseRepository';
-import type { DraftItem } from '../ItemRef';
-import type { ItemField } from '@aliasvault/models/vault';
+import type { Item, ItemField } from '@aliasvault/models/vault';
 
 const PERSONAL = '11111111-1111-4111-8111-111111111111';
 const ITEM = '33333333-3333-4333-8333-333333333333';
@@ -126,7 +125,7 @@ async function vaultWithItem(fields: ItemField[]): Promise<{ db: ISqliteDatabase
   /**
    * The item as the form hands it over, holding the given fields.
    */
-  const draft = (itemFields: ItemField[]): DraftItem => ({ Id: ITEM, Name: 'Note', ItemType: ItemTypes.Note, Fields: itemFields, CreatedAt: '', UpdatedAt: '' } as DraftItem);
+  const draft = (itemFields: ItemField[]): Item => ({ Id: ITEM, ManifestId: PERSONAL, Name: 'Note', ItemType: ItemTypes.Note, Fields: itemFields, CreatedAt: '', UpdatedAt: '' } as Item);
 
   await repository.create(draft(fields));
   return {
@@ -135,7 +134,7 @@ async function vaultWithItem(fields: ItemField[]): Promise<{ db: ISqliteDatabase
      * Save the item again with the given fields.
      */
     save: async (next: ItemField[]): Promise<void> => {
-      expect(await repository.update(draft(next))).toBe(1);
+      expect(await repository.update({ Id: ITEM, ManifestId: PERSONAL }, draft(next))).toEqual({ Id: ITEM, ManifestId: PERSONAL });
     },
   };
 }

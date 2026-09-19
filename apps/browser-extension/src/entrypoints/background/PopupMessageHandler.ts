@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 
+import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -26,10 +27,10 @@ export function handleOpenPopup() : Promise<BoolResponse> {
 /**
  * Handle opening the popup with an item.
  */
-export function handlePopupWithItem(message: any) : Promise<BoolResponse> {
+export function handlePopupWithItem(message: { itemId: string; manifestId: string }) : Promise<BoolResponse> {
   return (async () : Promise<BoolResponse> => {
     browser.windows.create({
-      url: browser.runtime.getURL(`/popup.html?expanded=true#/items/${message.itemId}`),
+      url: browser.runtime.getURL(`/popup.html?expanded=true#${itemRoute({ Id: message.itemId, ManifestId: message.manifestId })}`),
       type: 'popup',
       width: 400,
       height: 600,

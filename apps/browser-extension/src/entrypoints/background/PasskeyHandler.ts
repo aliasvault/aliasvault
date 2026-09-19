@@ -225,10 +225,11 @@ export async function handleGetMatchingPasskeys(
     }
 
     const options: ConditionalPasskeyOption[] = passkeys.map((pk) => {
-      const item = sqliteClient.items.getById(pk.ItemId);
+      const item = sqliteClient.items.getById({ Id: pk.ItemId, ManifestId: pk.ManifestId });
       return {
         id: pk.Id,
         itemId: pk.ItemId,
+        manifestId: pk.ManifestId,
         serviceName: pk.ServiceName ?? pk.DisplayName,
         username: pk.Username ?? '',
         logo: item?.Logo ? Array.from(item.Logo) : null
@@ -246,18 +247,18 @@ export async function handleGetMatchingPasskeys(
  * Build a WebAuthn assertion for a passkey the user picked in the inline dropdown.
  */
 export async function handleWebAuthnGetAssertion(
-  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }
+  data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }
 ): Promise<WebAuthnAssertionResponse> {
-  const { passkeyId, origin, publicKey } = data;
+  const { passkeyId, manifestId, origin, publicKey } = data;
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId);
+    const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId, manifestId);
 
     // Signing an assertion is a use of the item the passkey hangs off.
-    const itemId = sqliteClient.passkeys.getById(passkeyId)?.ItemId;
+    const itemId = sqliteClient.passkeys.getById(passkeyId, manifestId)?.ItemId;
     if (itemId) {
-      void handleRecordItemUsage({ itemId, action: 'passkey' });
+      void handleRecordItemUsage({ itemId, manifestId, action: 'passkey' });
     }
 
     return { success: true, credential };

@@ -1,7 +1,5 @@
 import { FieldKey } from '@aliasvault/models/vault';
 
-import { BaseQueries } from './BaseQueries';
-
 /**
  * SQL query constants for Passkey operations.
  * Centralizes all passkey-related queries to avoid duplication.
@@ -57,7 +55,7 @@ export class PasskeyQueries {
       (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId AND fv.FieldKey = '${FieldKey.LoginEmail}' AND fv.IsDeleted = 0 LIMIT 1) as Email
     FROM Passkeys p
     INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
-    WHERE p.Id = ? AND p.IsDeleted = 0
+    WHERE p.Id = ? AND p.ManifestId = ? AND p.IsDeleted = 0
       AND i.IsDeleted = 0 AND i.DeletedAt IS NULL`;
 
   /**
@@ -83,15 +81,14 @@ export class PasskeyQueries {
     ORDER BY p.CreatedAt DESC`;
 
   /**
-   * Insert a new passkey, stamped with the manifest of the item it hangs off. Binds the item id
-   * twice — once for the column, once for {@link BaseQueries.MANIFEST_OF_ITEM}.
+   * Insert a new passkey into the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
     INSERT INTO Passkeys (
       Id, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey,
       PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
     )
-    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Soft delete passkey by ID.

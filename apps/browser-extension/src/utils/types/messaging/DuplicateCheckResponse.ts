@@ -4,7 +4,5 @@
 export type DuplicateCheckResponse = {
   success: boolean;
   isDuplicate: boolean;
-  matchingItemId?: string;
-  matchingItemName?: string;
   error?: string;
 };

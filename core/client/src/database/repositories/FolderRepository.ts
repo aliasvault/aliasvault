@@ -14,14 +14,14 @@ export type Folder = {
   Name: string;
   ParentFolderId: string | null;
   Weight: number;
-  ManifestId?: string | null;
+  ManifestId: string;
 }
 
 /**
  * A manifest-qualified reference to a folder: folders are keyed by `(ManifestId, Id)`, so an id on its
  * own does not name one folder.
  */
-type FolderRef = {
+export type FolderRef = {
   Id: string;
   ManifestId: string;
 }
@@ -31,38 +31,38 @@ type FolderRef = {
  */
 export class FolderRepository extends BaseRepository {
   /**
-   * Create a new folder.
+   * Create a new folder inside its parent's manifest, or the personal manifest (default) when there is no parent.
    * @param name - The name of the folder
-   * @param parentFolderId - Optional parent folder ID for nested folders
-   * @param id - Optional explicit folder ID (used when the id must be known before creation, e.g. the folder a
-   *   shared manifest is rendered as); a new GUID is generated when omitted.
+   * @param parent - The parent folder for a nested folder, or null for a top-level one
+   * @param id - Optional explicit folder ID; a new GUID is generated when omitted
    * @returns The ID of the created folder
    */
-  public async create(name: string, parentFolderId?: string | null, id?: string): Promise<string> {
+  public async create(name: string, parent: FolderRef | null = null, id?: string): Promise<string> {
     return this.withTransaction(async () => {
       const folderId = id ?? crypto.randomUUID();
       const currentDateTime = this.now();
-      const manifestId = await this.run(this.writeManifestId());
 
-      await this.run(this.execute(FolderQueries.INSERT, [
-        folderId,
-        name,
-        parentFolderId || null,
-        // Second bind of the parent id, then the manifest a top-level folder joins (see INSERT).
-        parentFolderId || null,
-        manifestId,
-        currentDateTime,
-        currentDateTime
-      ]));
+      if (parent) {
+        await this.run(this.assertExists(parent));
+      }
+      const manifestId = parent?.ManifestId ?? await this.run(this.writeManifestId());
+
+      await this.run(this.execute(FolderQueries.INSERT, [folderId, name, parent?.Id ?? null, manifestId, currentDateTime, currentDateTime]));
 
       return folderId;
     });
   }
 
   /**
-   * Get all folders.
-   * @returns Array of folder objects (empty array if Folders table doesn't exist yet)
+   * Reject a folder reference that does not exist.
+   * @param ref - The folder to check
    */
+  public *assertExists(ref: FolderRef): DbOp<void> {
+    const folder = yield* this.getById(ref);
+    if (!folder) {
+      throw new Error(`FolderRepository: folder ${ref.Id} does not exist in manifest ${ref.ManifestId}; refusing the write.`);
+    }
+  }
   public *getAll(): DbOp<Folder[]> {
     try {
       return yield* this.query<Folder>(FolderQueries.GET_ALL);
@@ -76,51 +76,23 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
-   * Get a folder by ID.
-   * @param folderId - The ID of the folder
-   * @param manifestId - The manifest the folder belongs to, when known
+   * Get a folder by its manifest-qualified reference.
+   * @param ref - The folder to read
    * @returns Folder object or null if not found
    */
-  public *getById(folderId: string, manifestId?: string): DbOp<Omit<Folder, 'Weight'> | null> {
-    const ref = yield* this.resolveFolderRef(folderId, manifestId);
-    if (!ref) {
-      return null;
-    }
-
+  public *getById(ref: FolderRef): DbOp<Omit<Folder, 'Weight'> | null> {
     const results = yield* this.query<Omit<Folder, 'Weight'>>(FolderQueries.GET_BY_ID, [ref.Id, ref.ManifestId]);
     return results.length > 0 ? results[0] : null;
   }
 
   /**
-   * Resolve the manifest-qualified reference a folder id names.
-   * @param folderId - The folder id
-   * @param manifestId - The manifest the folder belongs to, when the caller already knows it
-   * @returns The reference, or null when no folder carries this id
-   */
-  private *resolveFolderRef(folderId: string, manifestId?: string): DbOp<FolderRef | null> {
-    if (manifestId) {
-      return { Id: folderId, ManifestId: manifestId };
-    }
-
-    const resolved = yield* this.resolveRowManifestId('Folders', folderId);
-    return resolved ? { Id: folderId, ManifestId: resolved } : null;
-  }
-
-  /**
    * Update a folder's name.
-   * @param folderId - The ID of the folder to update
+   * @param ref - The folder to update
    * @param name - The new name for the folder
-   * @param manifestId - The manifest the folder belongs to, when known
    * @returns The number of rows updated
    */
-  public async update(folderId: string, name: string, manifestId?: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const ref = await this.run(this.resolveFolderRef(folderId, manifestId));
-      if (!ref) {
-        return 0;
-      }
-      return this.run(this.execute(FolderQueries.UPDATE_NAME, [name, this.now(), ref.Id, ref.ManifestId]));
-    });
+  public async update(ref: FolderRef, name: string): Promise<number> {
+    return this.withTransaction(() => this.run(this.execute(FolderQueries.UPDATE_NAME, [name, this.now(), ref.Id, ref.ManifestId])));
   }
 
   /**
@@ -150,16 +122,10 @@ export class FolderRepository extends BaseRepository {
    * - Items in this folder only are moved to the parent folder (or root if no parent)
    * - Items in child folders stay in their respective folders (since child folders are moved to parent)
    * - All direct child folders are moved to the parent of the deleted folder
-   * @param folderId - The ID of the folder to delete
-   * @param manifestId - The manifest the folder belongs to, when known
+   * @param ref - The folder to delete
    * @returns The number of rows updated
    */
-  public async delete(folderId: string, manifestId?: string): Promise<number> {
-    const ref = await this.run(this.resolveFolderRef(folderId, manifestId));
-    if (!ref) {
-      return 0;
-    }
-
+  public async delete(ref: FolderRef): Promise<number> {
     await this.assertDeletable(ref);
     return this.withTransaction(() => this.run(this.deleteKeepingContents(ref)));
   }
@@ -173,22 +139,14 @@ export class FolderRepository extends BaseRepository {
     const currentDateTime = this.now();
 
     // Get the parent folder of the folder being deleted
-    const folder = yield* this.getById(ref.Id, ref.ManifestId);
+    const folder = yield* this.getById(ref);
     const targetParentId = folder?.ParentFolderId || null;
     const manifestId = yield* this.writeManifestId();
 
     // Move only items in this folder to the parent folder (or root if no parent)
     if (targetParentId) {
-      // Has parent: move items to parent folder
-      yield* this.execute(FolderQueries.MOVE_ITEMS_TO_FOLDER, [
-        targetParentId,
-        // Second bind of the destination: the items adopt that folder's manifest.
-        targetParentId,
-        manifestId,
-        currentDateTime,
-        ref.Id,
-        ref.ManifestId
-      ]);
+      // Has parent: move items to the parent folder, which a folder tree keeps in the same manifest
+      yield* this.execute(FolderQueries.MOVE_ITEMS_TO_FOLDER, [targetParentId, currentDateTime, ref.Id, ref.ManifestId]);
     } else {
       // No parent: move items to root (NULL); out of every folder means into the default manifest.
       yield* this.execute(FolderQueries.CLEAR_ITEMS_FOLDER, [manifestId, currentDateTime, ref.Id, ref.ManifestId]);
@@ -206,16 +164,10 @@ export class FolderRepository extends BaseRepository {
    * Recursively handles child folders:
    * - All items in this folder and child folders are moved to "Recently Deleted" (trash)
    * - All child folders are also deleted
-   * @param folderId - The ID of the folder to delete
-   * @param manifestId - The manifest the folder belongs to, when known
+   * @param ref - The folder to delete
    * @returns The number of items trashed
    */
-  public async deleteWithContents(folderId: string, manifestId?: string): Promise<number> {
-    const ref = await this.run(this.resolveFolderRef(folderId, manifestId));
-    if (!ref) {
-      return 0;
-    }
-
+  public async deleteWithContents(ref: FolderRef): Promise<number> {
     await this.assertDeletable(ref);
     return this.withTransaction(() => this.run(this.deleteFolderTree(ref)));
   }
@@ -249,7 +201,7 @@ export class FolderRepository extends BaseRepository {
    * @param ref - The folder about to be deleted
    */
   private async assertDeletable(ref: FolderRef): Promise<void> {
-    const folder = await this.run(this.getById(ref.Id, ref.ManifestId));
+    const folder = await this.run(this.getById(ref));
     if (folder && multiManifestRendering.isManifestRoot(folder)) {
       throw new Error(await getPlatform().translate(TranslatableMessage.SharedFolderDeleteRefused));
     }

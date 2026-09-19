@@ -3,9 +3,10 @@ import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, getSystemField, normali
 import { getFolderPath } from '../../items/FolderUtils';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
 import { BaseRepository, type IDatabaseClient, type SqliteBindValue } from '../BaseRepository';
-import { itemKeyBindings, scopedKey, type DraftItem, type ItemRef } from '../ItemRef';
+import { itemKeyBindings, scopedKey, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
 import { ItemMapper, type ItemRow, type ItemSummary, type ItemSummaryRow, type TagRow, type ItemWithArchivedAt, type ItemWithDeletedAt } from '../mappers/ItemMapper';
+import { FolderQueries } from '../queries/FolderQueries';
 import {
   ItemQueries,
   FieldValueQueries,
@@ -16,7 +17,7 @@ import {
 } from '../queries/ItemQueries';
 
 import type { DbOp } from '../DbOp';
-import type { Folder } from './FolderRepository';
+import type { Folder, FolderRef } from './FolderRepository';
 import type { LogoRepository } from './LogoRepository';
 import type { Item, ItemField, Attachment, TotpCode, FieldHistory, LogoSelection } from '@aliasvault/models/vault';
 
@@ -82,7 +83,7 @@ export class ItemRepository extends BaseRepository {
 
     for (const [manifestId, manifestFolders] of foldersByManifest) {
       for (const folder of manifestFolders) {
-        const path = getFolderPath(folder.Id, manifestFolders);
+        const path = getFolderPath(folder, manifestFolders);
         if (path.length > 0) {
           folderPathMap.set(scopedKey(manifestId, folder.Id), path);
         }
@@ -104,17 +105,11 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Fetch the active items of one folder with their dynamic fields and tags.
-   * @param folderId - The ID of the folder to read
-   * @param manifestId - The manifest the folder belongs to, when known
+   * @param folder - The folder to read
    * @returns Array of Item objects (empty array if the folder does not exist)
    */
-  public *getByFolder(folderId: string, manifestId?: string): DbOp<Item[]> {
-    const scope = manifestId ?? (yield* this.resolveRowManifestId('Folders', folderId));
-    if (!scope) {
-      return [];
-    }
-
-    const itemRows = yield* this.selectItemRows(ItemQueries.GET_BY_FOLDER, [folderId, scope]);
+  public *getByFolder(folder: FolderRef): DbOp<Item[]> {
+    const itemRows = yield* this.selectItemRows(ItemQueries.GET_BY_FOLDER, [folder.Id, folder.ManifestId]);
     return yield* this.hydrateItems(itemRows);
   }
 
@@ -211,15 +206,10 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Fetch a single item with its dynamic fields and tags.
-   * @param itemId - The ID of the item to fetch
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns Item object or null if not found
    */
-  public *getById(itemId: string, manifestId?: string): DbOp<Item | null> {
-    const ref = yield* this.resolveItemRef(itemId, manifestId);
-    if (!ref) {
-      return null;
-    }
+  public *getById(ref: ItemRef): DbOp<Item | null> {
 
     const results = yield* this.query<ItemRow>(ItemQueries.GET_BY_ID, [ref.Id, ref.ManifestId]);
     if (results.length === 0) {
@@ -245,21 +235,6 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Resolve the manifest-qualified reference an item id names.
-   * @param itemId - The item id
-   * @param manifestId - The manifest the item belongs to, when known
-   * @returns The item reference, or null when no such item exists
-   */
-  private *resolveItemRef(itemId: string, manifestId?: string): DbOp<ItemRef | null> {
-    if (manifestId) {
-      return { Id: itemId, ManifestId: manifestId };
-    }
-
-    const resolved = yield* this.resolveRowManifestId('Items', itemId);
-    return resolved ? { Id: itemId, ManifestId: resolved } : null;
-  }
-
-  /**
    * Fetch the unique email addresses the vault still routes mail to, i.e. every live login email field the user
    * has not switched off. A switched-off alias keeps its claim link and its stored mail server-side, but the
    * client stops asking for its mailbox until it is switched back on.
@@ -282,12 +257,12 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Find the item (id + name) associated with a given email address, if any.
+   * Find the item (reference + name) associated with a given email address, if any.
    * @param email - The full email address (local@domain) to look up
-   * @returns Object with Id and Name, or null when no active item uses this address
+   * @returns The item reference and name, or null when no active item uses this address
    */
-  public *findIdByEmail(email: string): DbOp<{ Id: string; Name: string | null } | null> {
-    const results = yield* this.query<{ Id: string; Name: string | null }>(ItemQueries.GET_ITEM_BY_EMAIL, [FieldKey.LoginEmail, email]);
+  public *findIdByEmail(email: string): DbOp<(ItemRef & { Name: string | null }) | null> {
+    const results = yield* this.query<ItemRef & { Name: string | null }>(ItemQueries.GET_ITEM_BY_EMAIL, [FieldKey.LoginEmail, email]);
     return results.length > 0 ? results[0] : null;
   }
 
@@ -297,40 +272,30 @@ export class ItemRepository extends BaseRepository {
    * @param attachments Optional attachments to associate with the item
    * @param totpCodes Optional TOTP codes to associate with the item
    * @param logoSelection A logo the user picked or uploaded; omit to resolve the favicon from the URL
-   * @returns The ID of the created item
+   * @returns The created item, named by its manifest and id
    */
   public async create(
-    item: DraftItem,
+    item: Item,
     attachments: Attachment[] = [],
     totpCodes: TotpCode[] = [],
     logoSelection?: LogoSelection
-  ): Promise<string> {
+  ): Promise<ItemRef> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
       const itemId = item.Id || this.generateId();
 
-      // 1. Handle the logo
-      const logoId = await this.resolveLogoId(item, currentDateTime, null, logoSelection);
+      // 1. The item names its manifest; a folder it points at has to live in that same manifest.
+      const manifestId = item.ManifestId;
+      await this.run(this.assertFolderInManifest(item));
 
-      // 2. Insert Item
-      const manifestId = await this.run(this.writeManifestId());
-      await this.run(this.execute(ItemQueries.INSERT_ITEM, [
-        itemId,
-        item.Name ?? null,
-        item.ItemType,
-        logoId,
-        item.FolderId ?? null,
-        // Second bind of the folder id, then the manifest an item outside any folder joins (see INSERT_ITEM).
-        item.FolderId ?? null,
-        manifestId,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]));
+      // 2. Handle the logo
+      const logoId = await this.resolveLogoId(item, manifestId, currentDateTime, null, logoSelection);
+
+      // 3. Insert Item
+      await this.run(this.execute(ItemQueries.INSERT_ITEM, [itemId, item.Name ?? null, item.ItemType, logoId, item.FolderId ?? null, manifestId, currentDateTime, currentDateTime, 0]));
 
       /*
-       * 3-5. Insert the child rows. Each stamps itself with the manifest of the item it hangs off
-       * (see BaseQueries.MANIFEST_OF_ITEM), which the INSERT above has just decided from the folder.
+       * 4-6. Insert the child rows into the manifest the item was just written into.
        */
       if (item.Fields && item.Fields.length > 0) {
         await this.run(this.insertFieldValues(itemId, item.Fields, item.ItemType, manifestId, currentDateTime));
@@ -339,37 +304,31 @@ export class ItemRepository extends BaseRepository {
       await this.run(this.insertTotpCodes(itemId, totpCodes, manifestId, currentDateTime));
       await this.run(this.insertAttachments(itemId, attachments, manifestId, currentDateTime));
 
-      return itemId;
+      return { Id: itemId, ManifestId: manifestId };
     });
   }
 
   /**
    * Duplicate an item including all fields. Data that is not duplicated is passkeys and field history.
-   * @param itemId - The ID of the item to duplicate
-   * @param manifestId - The manifest the item belongs to, when known
-   * @returns The ID of the newly created item
+   * @param ref - The item, named by its manifest and id
+   * @returns The newly created item, which lives in the same manifest
    */
-  public async duplicate(itemId: string, manifestId?: string): Promise<string> {
-    return this.withTransaction(() => this.run(this.copyItem(itemId, manifestId)));
+  public async duplicate(ref: ItemRef): Promise<ItemRef> {
+    return this.withTransaction(() => this.run(this.copyItem(ref)));
   }
 
   /**
    * Copy an item and its child rows under fresh ids.
-   * @param itemId - The ID of the item to duplicate
-   * @param manifestId - The manifest the item belongs to, when known
-   * @returns The ID of the newly created item
+   * @param ref - The item, named by its manifest and id
+   * @returns The newly created item
    */
-  private *copyItem(itemId: string, manifestId?: string): DbOp<string> {
+  private *copyItem(ref: ItemRef): DbOp<ItemRef> {
     const currentDateTime = this.now();
     const newItemId = this.generateId();
-    const ref = yield* this.resolveItemRef(itemId, manifestId);
-    if (!ref) {
-      throw new Error(`Item not found: ${itemId}`);
-    }
 
     const sourceRows = yield* this.query<{ Name: string | null }>('SELECT Name FROM Items WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0', [ref.Id, ref.ManifestId]);
     if (sourceRows.length === 0) {
-      throw new Error(`Item not found: ${itemId}`);
+      throw new Error(`Item not found: ${ref.Id}`);
     }
 
     const existingNames = yield* this.query<{ Name: string | null }>('SELECT Name FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL');
@@ -452,7 +411,7 @@ export class ItemRepository extends BaseRepository {
       SELECT ManifestId, ?, TagId, ?, ?, 0 FROM ItemTags WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`,
     [newItemId, currentDateTime, currentDateTime, ref.Id, ref.ManifestId]);
 
-    return newItemId;
+    return { Id: newItemId, ManifestId: ref.ManifestId };
   }
 
   /**
@@ -477,29 +436,28 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Update an existing item with field-based structure.
+   * @param ref Where the item is now; `item.ManifestId` names where it belongs, which differs when it changed folder
    * @param item The item object to update
    * @param originalAttachmentIds Original attachment IDs for tracking changes
    * @param attachments Current attachments list
    * @param originalTotpCodeIds Original TOTP code IDs for tracking changes
    * @param totpCodes Current TOTP codes list
    * @param logoSelection A logo the user picked or uploaded; omit to leave the current logo logic alone
-   * @returns The number of rows modified
+   * @returns Where the item is after the write (a folder change may move it to another manifest), or null when it does not exist
    */
   public async update(
-    item: DraftItem,
+    ref: ItemRef,
+    item: Item,
     originalAttachmentIds: string[] = [],
     attachments: Attachment[] = [],
     originalTotpCodeIds: string[] = [],
     totpCodes: TotpCode[] = [],
     logoSelection?: LogoSelection
-  ): Promise<number> {
+  ): Promise<ItemRef | null> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-
-      // Every row this write touches stays inside the item's own manifest.
-      const ref = await this.run(this.resolveItemRef(item.Id, item.ManifestId));
-      if (!ref) {
-        return 0;
+      if (item.Id !== ref.Id) {
+        throw new Error('ItemRepository: the item to update does not carry the id of the row it replaces.');
       }
 
       // 1. Read the stored item first: resolving the logo needs to know which one it already has.
@@ -509,81 +467,61 @@ export class ItemRepository extends BaseRepository {
         FolderId: string | null;
         LogoId: string | null;
       }>(ItemQueries.GET_ITEM_FIELDS, [ref.Id, ref.ManifestId])))[0];
+      if (!existing) {
+        return null;
+      }
 
-      // 2. Handle the logo
-      const logoId = await this.resolveLogoId(item, currentDateTime, existing?.LogoId ?? null, logoSelection);
-      const manifestId = await this.run(this.writeManifestId());
+      // 2. The manifest the item ends up in, then the logo inside it.
+      const manifestId = item.ManifestId;
+      await this.run(this.assertFolderInManifest(item));
+      const logoId = await this.resolveLogoId(item, manifestId, currentDateTime, existing.LogoId, logoSelection, ref.ManifestId);
 
-      if (existing) {
-        const nameChanged = (item.Name ?? null) !== existing.Name;
-        const itemTypeChanged = String(item.ItemType) !== String(existing.ItemType);
-        const folderIdChanged = (item.FolderId ?? null) !== existing.FolderId;
-        const logoIdChanged = logoId !== existing.LogoId;
+      const nameChanged = (item.Name ?? null) !== existing.Name;
+      const itemTypeChanged = String(item.ItemType) !== String(existing.ItemType);
+      const folderChanged = (item.FolderId ?? null) !== existing.FolderId || manifestId !== ref.ManifestId;
+      const logoIdChanged = logoId !== existing.LogoId;
 
-        if (nameChanged || itemTypeChanged || folderIdChanged || logoIdChanged) {
-          // Use UPDATE_ITEM_WITH_LOGO to allow explicit clearing of LogoId
-          await this.run(this.execute(ItemQueries.UPDATE_ITEM_WITH_LOGO, [
-            item.Name ?? null,
-            item.ItemType,
-            item.FolderId ?? null,
-            // Moving an item across a folder boundary moves it across a manifest boundary: re-stamp it.
-            item.FolderId ?? null,
-            manifestId,
-            logoId,
-            currentDateTime,
-            ref.Id,
-            // The row is addressed by the manifest it is in *now*; the SET above may move it.
-            ref.ManifestId
-          ]));
-        }
+      if (nameChanged || itemTypeChanged || folderChanged || logoIdChanged) {
+        // A move across manifests re-stamps the item; the schema trigger takes its child rows along.
+        await this.run(this.execute(ItemQueries.UPDATE_ITEM_WITH_LOGO, [item.Name ?? null, item.ItemType, item.FolderId ?? null, manifestId, logoId, currentDateTime, ref.Id, ref.ManifestId]));
       }
 
       // 3. Track history for fields that have EnableHistory=true before updating
-      await this.run(this.trackFieldHistory(ref.Id, ref.ManifestId, item.Fields, manifestId, currentDateTime));
+      await this.run(this.trackFieldHistory(ref.Id, manifestId, item.Fields, currentDateTime));
 
       // 4. Update field values
-      await this.run(this.updateFieldValues(item, ref.ManifestId, manifestId, currentDateTime));
+      await this.run(this.updateFieldValues(item, manifestId, currentDateTime));
 
       // 5. Handle TOTP codes
-      await this.run(this.handleTotpCodes(ref.Id, ref.ManifestId, totpCodes, originalTotpCodeIds, manifestId, currentDateTime));
+      await this.run(this.handleTotpCodes(ref.Id, manifestId, totpCodes, originalTotpCodeIds, currentDateTime));
 
       // 6. Handle attachments
-      await this.run(this.handleAttachments(ref.Id, ref.ManifestId, attachments, originalAttachmentIds, manifestId, currentDateTime));
+      await this.run(this.handleAttachments(ref.Id, manifestId, attachments, originalAttachmentIds, currentDateTime));
 
-      return 1;
+      return { Id: ref.Id, ManifestId: manifestId };
     });
   }
 
   /**
    * Move an item to "Recently Deleted" (trash).
-   * @param itemId - The ID of the item to trash
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
    */
-  public async trash(itemId: string, manifestId?: string): Promise<number> {
+  public async trash(ref: ItemRef): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const ref = await this.run(this.resolveItemRef(itemId, manifestId));
-      if (!ref) {
-        return 0;
-      }
       return this.run(this.execute(ItemQueries.TRASH_ITEM, [currentDateTime, currentDateTime, ref.Id, ref.ManifestId]));
     });
   }
 
   /**
    * Restore an item from "Recently Deleted".
-   * @param itemId - The ID of the item to restore
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
    */
-  public async restore(itemId: string, manifestId?: string): Promise<number> {
+  public async restore(ref: ItemRef): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const ref = await this.run(this.resolveItemRef(itemId, manifestId));
-      if (!ref) {
-        return 0;
-      }
       return this.run(this.execute(ItemQueries.RESTORE_ITEM, [currentDateTime, ref.Id, ref.ManifestId]));
     });
   }
@@ -591,51 +529,36 @@ export class ItemRepository extends BaseRepository {
   /**
    * Archive an item: it disappears from the main list and from autofill, but keeps all of its data
    * and its email aliases, and is never auto-pruned.
-   * @param itemId - The ID of the item to archive
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
    */
-  public async archive(itemId: string, manifestId?: string): Promise<number> {
+  public async archive(ref: ItemRef): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const ref = await this.run(this.resolveItemRef(itemId, manifestId));
-      if (!ref) {
-        return 0;
-      }
       return this.run(this.execute(ItemQueries.ARCHIVE_ITEM, [currentDateTime, currentDateTime, ref.Id, ref.ManifestId]));
     });
   }
 
   /**
    * Unarchive an item, returning it to the main list and to autofill.
-   * @param itemId - The ID of the item to unarchive
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
    */
-  public async unarchive(itemId: string, manifestId?: string): Promise<number> {
+  public async unarchive(ref: ItemRef): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const ref = await this.run(this.resolveItemRef(itemId, manifestId));
-      if (!ref) {
-        return 0;
-      }
       return this.run(this.execute(ItemQueries.UNARCHIVE_ITEM, [currentDateTime, ref.Id, ref.ManifestId]));
     });
   }
 
   /**
    * Permanently delete an item - converts to tombstone for sync.
-   * @param itemId - The ID of the item to permanently delete
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns The number of rows updated
    */
-  public async permanentlyDelete(itemId: string, manifestId?: string): Promise<number> {
+  public async permanentlyDelete(ref: ItemRef): Promise<number> {
     return this.withTransaction(async () => {
       const currentDateTime = this.now();
-      const ref = await this.run(this.resolveItemRef(itemId, manifestId));
-      if (!ref) {
-        return 0;
-      }
 
       // Hard delete all related entities within this item's manifest.
       for (const table of ['FieldValues', 'FieldHistories', 'Passkeys', 'TotpCodes', 'Attachments', 'ItemTags']) {
@@ -719,44 +642,29 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Get an item's TOTP codes.
-   * @param itemId - The ID of the item to get TOTP codes for
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns Array of TotpCode objects
    */
-  public *getTotpCodesForItem(itemId: string, manifestId?: string): DbOp<TotpCode[]> {
-    const ref = yield* this.resolveItemRef(itemId, manifestId);
-    if (!ref) {
-      return [];
-    }
+  public *getTotpCodesForItem(ref: ItemRef): DbOp<TotpCode[]> {
     return yield* this.query<TotpCode>(TotpCodeQueries.GET_BY_ITEM_ID, [ref.Id, ref.ManifestId]);
   }
 
   /**
    * Get an item's attachments.
-   * @param itemId - The ID of the item
-   * @param manifestId - The manifest the item belongs to, when known
+   * @param ref - The item, named by its manifest and id
    * @returns Array of attachments for the item
    */
-  public *getAttachmentsForItem(itemId: string, manifestId?: string): DbOp<Attachment[]> {
-    const ref = yield* this.resolveItemRef(itemId, manifestId);
-    if (!ref) {
-      return [];
-    }
+  public *getAttachmentsForItem(ref: ItemRef): DbOp<Attachment[]> {
     return yield* this.query<Attachment>(AttachmentQueries.GET_BY_ITEM_ID, [ref.Id, ref.ManifestId]);
   }
 
   /**
    * Get field history for a specific field.
-   * @param itemId - The ID of the item
+   * @param ref - The item, named by its manifest and id
    * @param fieldKey - The field key to get history for
-   * @param manifestId - The manifest the item belongs to, when known
    * @returns Array of field history records
    */
-  public *getFieldHistory(itemId: string, fieldKey: string, manifestId?: string): DbOp<FieldHistory[]> {
-    const ref = yield* this.resolveItemRef(itemId, manifestId);
-    if (!ref) {
-      return [];
-    }
+  public *getFieldHistory(ref: ItemRef, fieldKey: string): DbOp<FieldHistory[]> {
 
     const results = yield* this.query<{
       Id: string;
@@ -782,17 +690,27 @@ export class ItemRepository extends BaseRepository {
   /**
    * Delete a specific field history record.
    * @param historyId - The ID of the history record to delete
-   * @param manifestId - The manifest the record belongs to, when known
+   * @param manifestId - The manifest the record belongs to, which is its item's
    * @returns Number of rows affected
    */
-  public async deleteFieldHistory(historyId: string, manifestId?: string): Promise<number> {
-    return this.withTransaction(async () => {
-      const scope = manifestId ?? await this.run(this.resolveRowManifestId('FieldHistories', historyId));
-      if (!scope) {
-        return 0;
-      }
-      return this.run(this.execute(FieldHistoryQueries.SOFT_DELETE, [this.now(), historyId, scope]));
-    });
+  public async deleteFieldHistory(historyId: string, manifestId: string): Promise<number> {
+    return this.withTransaction(() => this.run(this.execute(FieldHistoryQueries.SOFT_DELETE, [this.now(), historyId, manifestId])));
+  }
+
+  /**
+   * Refuse a folder that is not in the item's manifest. A folder id can exist in several manifests, so the item's
+   * own `ManifestId` is what determines explicitly which folder is targeted.
+   * @param item The item being created or updated
+   */
+  private *assertFolderInManifest(item: Item): DbOp<void> {
+    if (!item.FolderId) {
+      return;
+    }
+
+    const rows = yield* this.query<{ Found: number }>(FolderQueries.EXISTS, [item.FolderId, item.ManifestId]);
+    if (rows.length === 0) {
+      throw new Error(`ItemRepository: folder ${item.FolderId} does not exist in manifest ${item.ManifestId}; refusing the write.`);
+    }
   }
 
   /**
@@ -807,24 +725,26 @@ export class ItemRepository extends BaseRepository {
    *      image the domain's row holds;
    *
    * @param item The item being created or updated
+   * @param scope The manifest the item is written into, which the logo row has to live in too
    * @param currentDateTime The current date/time string for timestamps
    * @param existingLogoId The favicon the item currently has, when updating
    * @param selection A favicon the user explicitly picked or uploaded
+   * @param storedManifestId The manifest the stored item is in, where its current logo row lives
    * @returns The favicon ID to store on the item, or null when it should have none
    */
   private async resolveLogoId(
-    item: DraftItem,
+    item: Item,
+    scope: string,
     currentDateTime: string,
     existingLogoId: string | null = null,
-    selection?: LogoSelection
+    selection?: LogoSelection,
+    storedManifestId: string = scope
   ): Promise<string | null> {
-    const scope = await this.run(this.manifestOfFolder(item.FolderId ?? null));
-
     if (selection && selection.Kind !== LogoKinds.Favicon) {
       return this.resolveSelectedLogo(selection, scope, currentDateTime);
     }
 
-    const existing = existingLogoId ? await this.run(this.logoRepository.getById(existingLogoId)) : null;
+    const existing = existingLogoId ? await this.run(this.logoRepository.getById(existingLogoId, storedManifestId)) : null;
     if (!selection && existing && existing.Kind !== LogoKinds.Favicon) {
       return this.logoRepository.adoptIntoScope(scope, existing.Kind, existing.Source, currentDateTime);
     }
@@ -907,7 +827,7 @@ export class ItemRepository extends BaseRepository {
     itemId: string,
     fields: ItemField[],
     itemType: string,
-    writeManifestId: string,
+    manifestId: string,
     currentDateTime: string
   ): DbOp<void> {
     for (const field of fields) {
@@ -921,7 +841,7 @@ export class ItemRepository extends BaseRepository {
 
       // For custom fields, create or get FieldDefinition
       if (field.IsCustomField) {
-        fieldDefinitionId = yield* this.ensureFieldDefinition(field, itemId, itemType, writeManifestId, currentDateTime);
+        fieldDefinitionId = yield* this.ensureFieldDefinition(field, itemId, itemType, manifestId, currentDateTime);
       }
 
       // Handle multi-value fields
@@ -937,8 +857,7 @@ export class ItemRepository extends BaseRepository {
         yield* this.execute(FieldValueQueries.INSERT, [
           this.generateId(),
           itemId,
-          itemId,
-          writeManifestId,
+          manifestId,
           fieldDefinitionId,
           field.IsCustomField ? null : field.FieldKey,
           value,
@@ -955,8 +874,7 @@ export class ItemRepository extends BaseRepository {
         yield* this.execute(FieldHistoryQueries.INSERT, [
           this.generateId(),
           itemId,
-          itemId,
-          writeManifestId,
+          manifestId,
           null,
           field.FieldKey,
           JSON.stringify(filteredValues),
@@ -976,16 +894,15 @@ export class ItemRepository extends BaseRepository {
     field: ItemField,
     itemId: string,
     itemType: string,
-    writeManifestId: string,
+    manifestId: string,
     currentDateTime: string
   ): DbOp<string> {
-    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS, [field.FieldKey, itemId, writeManifestId]);
+    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS, [field.FieldKey, manifestId]);
 
     if (existingDef.length === 0) {
       yield* this.execute(FieldDefinitionQueries.INSERT, [
         field.FieldKey,
-        itemId,
-        writeManifestId,
+        manifestId,
         field.FieldType,
         field.Label,
         0, // IsMultiValue
@@ -1005,7 +922,7 @@ export class ItemRepository extends BaseRepository {
   /**
    * Update field values for an existing item.
    */
-  private *updateFieldValues(item: DraftItem, manifestId: string, writeManifestId: string, currentDateTime: string): DbOp<void> {
+  private *updateFieldValues(item: Item, manifestId: string, currentDateTime: string): DbOp<void> {
     const storedRows = yield* this.query<StoredFieldValue>(FieldValueQueries.GET_ALL_FOR_ITEM, [item.Id, manifestId]);
 
     const rowsByField = new Map<string, StoredFieldValue[]>();
@@ -1026,7 +943,7 @@ export class ItemRepository extends BaseRepository {
       let fieldDefinitionId = null;
 
       if (field.IsCustomField) {
-        fieldDefinitionId = yield* this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, writeManifestId, currentDateTime);
+        fieldDefinitionId = yield* this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, manifestId, currentDateTime);
       }
 
       const values = Array.isArray(field.Value) ? field.Value : [field.Value];
@@ -1047,8 +964,7 @@ export class ItemRepository extends BaseRepository {
           yield* this.execute(FieldValueQueries.INSERT, [
             this.generateId(),
             item.Id,
-            item.Id,
-            writeManifestId,
+            manifestId,
             fieldDefinitionId,
             field.IsCustomField ? null : field.FieldKey,
             value,
@@ -1117,16 +1033,15 @@ export class ItemRepository extends BaseRepository {
     field: ItemField,
     itemId: string,
     itemType: string,
-    writeManifestId: string,
+    manifestId: string,
     currentDateTime: string
   ): DbOp<string> {
-    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS_ACTIVE, [field.FieldKey, itemId, writeManifestId]);
+    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS_ACTIVE, [field.FieldKey, manifestId]);
 
     if (existingDef.length === 0) {
       yield* this.execute(FieldDefinitionQueries.INSERT, [
         field.FieldKey,
-        itemId,
-        writeManifestId,
+        manifestId,
         field.FieldType,
         field.Label,
         0,
@@ -1146,8 +1061,7 @@ export class ItemRepository extends BaseRepository {
         field.DisplayOrder ?? 0,
         currentDateTime,
         field.FieldKey,
-        itemId,
-        writeManifestId
+        manifestId
       ]);
     }
 
@@ -1166,7 +1080,6 @@ export class ItemRepository extends BaseRepository {
     itemId: string,
     manifestId: string,
     newFields: ItemField[],
-    writeManifestId: string,
     currentDateTime: string
   ): DbOp<void> {
     const existingFields = yield* this.query<{ FieldKey: string; Value: string }>(FieldValueQueries.GET_FOR_HISTORY, [itemId, manifestId]);
@@ -1204,8 +1117,7 @@ export class ItemRepository extends BaseRepository {
         yield* this.execute(FieldHistoryQueries.INSERT, [
           this.generateId(),
           itemId,
-          itemId,
-          writeManifestId,
+          manifestId,
           null,
           newField.FieldKey,
           JSON.stringify(filteredNewValues),
@@ -1243,7 +1155,7 @@ export class ItemRepository extends BaseRepository {
   /**
    * Insert TOTP codes for a new item.
    */
-  private *insertTotpCodes(itemId: string, totpCodes: TotpCode[], writeManifestId: string, currentDateTime: string): DbOp<void> {
+  private *insertTotpCodes(itemId: string, totpCodes: TotpCode[], manifestId: string, currentDateTime: string): DbOp<void> {
     for (const totpCode of totpCodes) {
       yield* this.execute(TotpCodeQueries.INSERT, [
         totpCode.Id || this.generateId(),
@@ -1253,8 +1165,7 @@ export class ItemRepository extends BaseRepository {
         normalizeTotpDigits(totpCode.Digits),
         normalizeTotpPeriod(totpCode.Period),
         itemId,
-        itemId,
-        writeManifestId,
+        manifestId,
         currentDateTime,
         currentDateTime,
         0
@@ -1270,7 +1181,6 @@ export class ItemRepository extends BaseRepository {
     manifestId: string,
     totpCodes: TotpCode[],
     originalIds: string[],
-    writeManifestId: string,
     currentDateTime: string
   ): DbOp<void> {
     // Fetch existing TOTP codes to compare values
@@ -1306,8 +1216,7 @@ export class ItemRepository extends BaseRepository {
           normalizeTotpDigits(totpCode.Digits),
           normalizeTotpPeriod(totpCode.Period),
           itemId,
-          itemId,
-          writeManifestId,
+          manifestId,
           currentDateTime,
           currentDateTime,
           0
@@ -1319,7 +1228,7 @@ export class ItemRepository extends BaseRepository {
   /**
    * Insert attachments for a new item.
    */
-  private *insertAttachments(itemId: string, attachments: Attachment[], writeManifestId: string, currentDateTime: string): DbOp<void> {
+  private *insertAttachments(itemId: string, attachments: Attachment[], manifestId: string, currentDateTime: string): DbOp<void> {
     for (const attachment of attachments) {
       const blobData = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
 
@@ -1328,8 +1237,7 @@ export class ItemRepository extends BaseRepository {
         attachment.Filename,
         blobData,
         itemId,
-        itemId,
-        writeManifestId,
+        manifestId,
         currentDateTime,
         currentDateTime,
         0
@@ -1345,7 +1253,6 @@ export class ItemRepository extends BaseRepository {
     manifestId: string,
     attachments: Attachment[],
     originalIds: string[],
-    writeManifestId: string,
     currentDateTime: string
   ): DbOp<void> {
     // Track which original attachments are still present
@@ -1374,8 +1281,7 @@ export class ItemRepository extends BaseRepository {
           attachment.Filename,
           blobData,
           itemId,
-          itemId,
-          writeManifestId,
+          manifestId,
           currentDateTime,
           currentDateTime,
           0

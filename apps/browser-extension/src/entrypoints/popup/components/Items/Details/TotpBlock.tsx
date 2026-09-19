@@ -24,12 +24,13 @@ const formatTotpCode = (code: string | undefined): string => {
 
 type TotpBlockProps = {
   itemId: string;
+  manifestId: string;
 }
 
 /**
  * This component shows TOTP codes for an item.
  */
-const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
+const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
   const { t } = useTranslation();
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +53,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
        * Record the use against the item. The auto-copy that follows an autofill deliberately does not go
        * through here: that interaction is already counted as an autofill, and would otherwise count twice.
        */
-      sendMessage('RECORD_ITEM_USAGE', { itemId, action: 'copy' }).catch(() => {
+      sendMessage('RECORD_ITEM_USAGE', { itemId, manifestId, action: 'copy' }).catch(() => {
         // Ignore errors
       });
 
@@ -75,7 +76,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
       }
 
       try {
-        const codes = dbContext.sqliteClient.items.getTotpCodesForItem(itemId);
+        const codes = dbContext.sqliteClient.items.getTotpCodesForItem({ Id: itemId, ManifestId: manifestId });
         setTotpCodes(codes);
       } catch (error) {
         console.error('Error loading TOTP codes:', error);
@@ -85,7 +86,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
     };
 
     loadTotpCodes();
-  }, [itemId, dbContext?.sqliteClient]);
+  }, [itemId, manifestId, dbContext?.sqliteClient]);
 
   useEffect(() => {
     /**

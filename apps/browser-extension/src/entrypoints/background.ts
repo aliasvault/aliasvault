@@ -173,12 +173,12 @@ function handleValidatedGetMatchingPasskeys(
  * The trusted origin is embedded in the signed client data.
  */
 function handleValidatedWebAuthnGetAssertion(
-  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
+  data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
   sender: WebAuthnMessageSender
 ): Promise<WebAuthnAssertionResponse> | WebAuthnAssertionResponse {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => typeof data?.passkeyId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    (ctx) => typeof data?.passkeyId === 'string' && typeof data?.manifestId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
     (ctx) => handleWebAuthnGetAssertion({ ...data, origin: ctx.origin }),
     { success: false, error: 'Invalid request' }
   );

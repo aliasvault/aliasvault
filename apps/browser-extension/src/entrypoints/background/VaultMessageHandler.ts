@@ -8,6 +8,7 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
+import { manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@aliasvault/client/rust/RustCore';
@@ -27,6 +28,7 @@ import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorSta
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
+import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
@@ -47,7 +49,6 @@ import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 import { t } from '@/i18n/StandaloneI18n';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { ISqliteDatabase, SqliteValue } from '@aliasvault/client/platform';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
@@ -345,21 +346,21 @@ function filterItemsByUrl(items: Item[], currentUrl: string, pageTitle: string, 
  * @param items - The filtered items array
  * @param rootDomain - The current root domain for recently selected item validation
  * @param allItems - All items from the vault (to fetch recently selected if not in filtered)
- * @returns The items (with recently selected prioritized) and the matched id, if any
+ * @returns The items (with recently selected prioritized) and the matched item, if any
  */
 async function prioritizeRecentlySelectedItem(
   items: Item[],
   rootDomain: string,
   allItems: Item[]
-): Promise<{ items: Item[], recentlySelectedId: string | null }> {
-  const recentlySelectedId = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
+): Promise<{ items: Item[], recentlySelected: ItemRef | null }> {
+  const recentlySelected = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
 
-  if (!recentlySelectedId) {
-    return { items, recentlySelectedId: null };
+  if (!recentlySelected) {
+    return { items, recentlySelected: null };
   }
 
   // Find the recently selected item in the filtered results
-  const recentlySelectedIndex = items.findIndex(item => item.Id === recentlySelectedId);
+  const recentlySelectedIndex = items.findIndex(item => isSameItem(item, recentlySelected));
 
   if (recentlySelectedIndex !== -1) {
     // Item is already in filtered results - move it to the front
@@ -369,19 +370,19 @@ async function prioritizeRecentlySelectedItem(
       ...items.slice(0, recentlySelectedIndex),
       ...items.slice(recentlySelectedIndex + 1)
     ];
-    return { items: reorderedItems, recentlySelectedId };
+    return { items: reorderedItems, recentlySelected };
   }
 
   // Item is not in filtered results - fetch it from all items and prepend it
-  const recentlySelectedItem = allItems.find(item => item.Id === recentlySelectedId);
+  const recentlySelectedItem = allItems.find(item => isSameItem(item, recentlySelected));
 
   if (!recentlySelectedItem) {
     // Item not found in vault (might have been deleted)
-    return { items, recentlySelectedId: null };
+    return { items, recentlySelected: null };
   }
 
   // Prepend the recently selected item to the filtered results
-  return { items: [recentlySelectedItem, ...items], recentlySelectedId };
+  return { items: [recentlySelectedItem, ...items], recentlySelected };
 }
 
 /**
@@ -474,7 +475,7 @@ export async function handleGetFilteredItems(
     if (message.includeRecentlySelected) {
       const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
       const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, allItems);
-      return { success: true, items: prioritized.items, recentlySelectedId: prioritized.recentlySelectedId };
+      return { success: true, items: prioritized.items, recentlySelected: prioritized.recentlySelected };
     }
 
     return { success: true, items: filteredItems };
@@ -1015,12 +1016,7 @@ export async function handleCheckLoginDuplicate(
       const itemEmail = (typeof emailValue === 'string' ? emailValue : '').toLowerCase();
 
       if (itemUsername === normalizedUsername || itemEmail === normalizedUsername) {
-        return {
-          success: true,
-          isDuplicate: true,
-          matchingItemId: item.Id,
-          matchingItemName: item.Name ?? undefined
-        };
+        return { success: true, isDuplicate: true };
       }
     }
 
@@ -1100,8 +1096,9 @@ export async function handleSaveLoginCredential(
     }
 
     // Create the new item
-    const newItem: DraftItem = {
+    const newItem: Item = {
       Id: '', // Will be generated by SQLite
+      ManifestId: manifestForItemIn(null, sqliteClient.getPersonalManifestId()),
       Name: message.serviceName || message.domain,
       ItemType: ItemTypes.Login,
       Logo: logo,
@@ -1111,12 +1108,12 @@ export async function handleSaveLoginCredential(
     };
 
     // Add the item to the vault
-    await sqliteClient.items.create(newItem, [], []);
+    const created = await sqliteClient.items.create(newItem, [], []);
 
     // Persist locally and sync in the background (doesn't block when server is offline).
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
 
-    return { success: true, itemId: newItem.Id };
+    return { success: true, itemId: created.Id, manifestId: created.ManifestId };
   } catch (error) {
     console.error('Failed to save login credential:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
@@ -1131,7 +1128,7 @@ export async function handleSaveLoginCredential(
  * @param message - The item ID and URL to add.
  * @returns Success status.
  */
-export async function handleAddUrlToCredential(message: { itemId: string; url: string }): Promise<{ success: boolean; error?: string }> {
+export async function handleAddUrlToCredential(message: { itemId: string; manifestId: string; url: string }): Promise<{ success: boolean; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
@@ -1143,7 +1140,7 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     const url = ServiceDetectionUtility.sanitizeUrl(message.url) || message.url;
 
     // Get the existing item
-    const item = sqliteClient.items.getById(message.itemId);
+    const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
     if (!item) {
       return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
     }
@@ -1179,7 +1176,7 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
     item.UpdatedAt = new Date().toISOString();
 
     // Update the item in the vault
-    await sqliteClient.items.update(item, [], [], [], []);
+    await sqliteClient.items.update({ Id: item.Id, ManifestId: item.ManifestId }, item, [], [], [], []);
 
     // Persist locally and sync in the background (doesn't block when server is offline).
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
@@ -1194,14 +1191,14 @@ export async function handleAddUrlToCredential(message: { itemId: string; url: s
 /**
  * Check whether a URL is already linked (host-equivalent) to a credential.
  */
-export async function handleIsUrlLinkedToCredential(message: { itemId: string; url: string }): Promise<{ linked: boolean }> {
+export async function handleIsUrlLinkedToCredential(message: { itemId: string; manifestId: string; url: string }): Promise<{ linked: boolean }> {
   try {
     const encryptionKey = await handleGetEncryptionKey();
     if (!encryptionKey) {
       return { linked: false };
     }
     const sqliteClient = await createVaultSqliteClient();
-    const item = sqliteClient.items.getById(message.itemId);
+    const item = sqliteClient.items.getById({ Id: message.itemId, ManifestId: message.manifestId });
     if (!item) {
       return { linked: false };
     }
@@ -1328,7 +1325,7 @@ export async function handleGetItemsWithTotp(
     const rootDomain = await extractRootDomainFromUrl(message.currentUrl);
     const prioritized = await prioritizeRecentlySelectedItem(filteredItems, rootDomain, itemsWithTotp);
 
-    return { success: true, items: prioritized.items, recentlySelectedId: prioritized.recentlySelectedId };
+    return { success: true, items: prioritized.items, recentlySelected: prioritized.recentlySelected };
   } catch (error) {
     console.error('Error getting items with TOTP:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
@@ -1371,10 +1368,10 @@ export async function handleSearchItemsWithTotp(
  * Get TOTP secret keys for items.
  * Used by content script to generate codes locally for live preview.
  *
- * @param message - Array of item IDs to get TOTP secrets for
+ * @param message - The items to get TOTP secrets for; the result is keyed by `scopedKey(ManifestId, Id)`
  */
 export async function handleGetTotpSecrets(
-  message: { itemIds: string[] }
+  message: { items: ItemRef[] }
 ): Promise<{ success: boolean; secrets?: Record<string, TotpSecret>; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -1386,11 +1383,11 @@ export async function handleGetTotpSecrets(
     const sqliteClient = await createVaultSqliteClient();
     const secrets: Record<string, TotpSecret> = {};
 
-    for (const itemId of message.itemIds) {
-      const totpCodes = sqliteClient.items.getTotpCodesForItem(itemId);
+    for (const item of message.items) {
+      const totpCodes = sqliteClient.items.getTotpCodesForItem(item);
       if (totpCodes.length > 0) {
         const totpCode = totpCodes[0];
-        secrets[itemId] = {
+        secrets[scopedKey(item.ManifestId, item.Id)] = {
           SecretKey: totpCode.SecretKey,
           Algorithm: totpCode.Algorithm,
           Digits: totpCode.Digits,
@@ -1413,7 +1410,7 @@ export async function handleGetTotpSecrets(
  * @param message - The item ID to generate TOTP code for
  */
 export async function handleGenerateTotpCode(
-  message: { itemId: string }
+  message: { itemId: string; manifestId: string }
 ): Promise<{ success: boolean; code?: string; error?: string }> {
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -1423,7 +1420,7 @@ export async function handleGenerateTotpCode(
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const totpCodes = sqliteClient.items.getTotpCodesForItem(message.itemId);
+    const totpCodes = sqliteClient.items.getTotpCodesForItem({ Id: message.itemId, ManifestId: message.manifestId });
 
     if (totpCodes.length === 0) {
       return { success: false, error: 'No TOTP codes found for this item' };
@@ -1446,7 +1443,7 @@ export async function handleGenerateTotpCode(
  * @param message - The item that was used and what was done with it.
  */
 export async function handleRecordItemUsage(
-  message: { itemId: string; action: ItemUsageAction }
+  message: { itemId: string; manifestId: string; action: ItemUsageAction }
 ): Promise<{ success: boolean }> {
   try {
     const encryptionKey = await handleGetEncryptionKey();
@@ -1455,7 +1452,7 @@ export async function handleRecordItemUsage(
     }
 
     const sqliteClient = await createVaultSqliteClient();
-    if (!sqliteClient.itemStats.recordUsage(message.itemId, message.action)) {
+    if (!sqliteClient.itemStats.recordUsage({ Id: message.itemId, ManifestId: message.manifestId }, message.action)) {
       // No such item (deleted between use and record); nothing to attribute the use to.
       return { success: false };
     }
@@ -1472,11 +1469,11 @@ export async function handleRecordItemUsage(
  * Set recently selected item for smart autofill.
  */
 export async function handleSetRecentlySelected(
-  message: { itemId: string; domain: string }
+  message: { itemId: string; manifestId: string; domain: string }
 ): Promise<{ success: boolean }> {
   try {
     const rootDomain = await extractRootDomain(message.domain);
-    await RecentlySelectedItemService.setRecentlySelected(message.itemId, rootDomain);
+    await RecentlySelectedItemService.setRecentlySelected({ Id: message.itemId, ManifestId: message.manifestId }, rootDomain);
     return { success: true };
   } catch (error) {
     console.error('Error setting recently selected item:', error);
@@ -1489,11 +1486,11 @@ export async function handleSetRecentlySelected(
  */
 export async function handleGetRecentlySelected(
   message: { domain: string }
-): Promise<{ success: boolean; itemId?: string | null }> {
+): Promise<{ success: boolean; itemId?: string | null; manifestId?: string | null }> {
   try {
     const rootDomain = await extractRootDomain(message.domain);
-    const itemId = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
-    return { success: true, itemId };
+    const item = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
+    return { success: true, itemId: item?.Id ?? null, manifestId: item?.ManifestId ?? null };
   } catch (error) {
     console.error('Error getting recently selected item:', error);
     return { success: false, itemId: null };

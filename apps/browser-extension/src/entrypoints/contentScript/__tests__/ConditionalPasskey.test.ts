@@ -19,7 +19,7 @@ import {
 } from '../ConditionalPasskey';
 
 const OPTIONS: ConditionalPasskeyOption[] = [
-  { id: 'pk-1', itemId: 'item-1', serviceName: 'Example', username: 'user@example.com', logo: null }
+  { id: 'pk-1', itemId: 'item-1', manifestId: 'manifest-1', serviceName: 'Example', username: 'user@example.com', logo: null }
 ];
 
 /**
@@ -142,11 +142,12 @@ describe('ConditionalPasskey bridge', () => {
     const { request, respond } = buildRequest();
     registerConditionalPasskeyRequest(request);
 
-    const result = await completeConditionalWithPasskey('pk-1');
+    const result = await completeConditionalWithPasskey('pk-1', 'manifest-1');
 
     expect(result).toBe(true);
     expect(sendMessageMock).toHaveBeenCalledWith('WEBAUTHN_GET_ASSERTION', {
       passkeyId: 'pk-1',
+      manifestId: 'manifest-1',
       origin: 'https://example.com',
       publicKey: { challenge: 'Y2hhbGxlbmdl' }
     });
@@ -161,7 +162,7 @@ describe('ConditionalPasskey bridge', () => {
     const { request, respond } = buildRequest();
     registerConditionalPasskeyRequest(request);
 
-    const result = await completeConditionalWithPasskey('pk-1');
+    const result = await completeConditionalWithPasskey('pk-1', 'manifest-1');
 
     expect(result).toBe(false);
     expect(respond).toHaveBeenCalledWith({ requestId: 'req-1', error: 'boom' });
@@ -169,7 +170,7 @@ describe('ConditionalPasskey bridge', () => {
   });
 
   it('does nothing when there is no pending request', async () => {
-    const result = await completeConditionalWithPasskey('pk-1');
+    const result = await completeConditionalWithPasskey('pk-1', 'manifest-1');
 
     expect(result).toBe(false);
     expect(sendMessageMock).not.toHaveBeenCalled();

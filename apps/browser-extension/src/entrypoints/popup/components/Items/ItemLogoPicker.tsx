@@ -6,11 +6,10 @@ import LogoPickerModal from '@/entrypoints/popup/components/Items/LogoPickerModa
 
 import ItemIconComponent from './ItemIcon';
 
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
-import type { LogoSelection, ItemLogo } from '@aliasvault/models/vault';
+import type { Item, LogoSelection, ItemLogo } from '@aliasvault/models/vault';
 
 type ItemLogoPickerProps = {
-  item: DraftItem;
+  item: Item;
   pendingSelection?: LogoSelection;
   faviconSource?: string | null;
   isFetching?: boolean;

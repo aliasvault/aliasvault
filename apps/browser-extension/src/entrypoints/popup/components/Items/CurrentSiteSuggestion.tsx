@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 
+import { itemRoute } from '@/utils/ItemRoute';
+
 import ItemIcon from './ItemIcon';
 
 import type { Item } from '@aliasvault/models/vault';
@@ -54,7 +56,7 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, on
     const item: Item = matches[0];
     return (
       <button
-        onClick={() => navigate(`/items/${item.Id}`)}
+        onClick={() => navigate(itemRoute(item))}
         className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-orange-300 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 text-left"
       >
         <div className="w-8 h-8 flex-shrink-0">

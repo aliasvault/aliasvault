@@ -1,3 +1,5 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { manifestForItemIn } from '@aliasvault/client/database/ItemRef';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -34,13 +36,13 @@ import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { FaviconService } from '@/utils/FaviconService';
+import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { NavigationStateService } from '@/utils/NavigationStateService';
 
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
-import type { ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@aliasvault/models/vault';
+import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@aliasvault/models/vault';
 
 import { browser } from '#imports';
 
@@ -55,7 +57,7 @@ const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
  * This is the data portion stored via useFormPersistence hook.
  */
 type PersistedFormData = {
-  item: DraftItem | null;
+  item: Item | null;
   fieldValues: Record<string, string | string[]>;
   customFields: CustomFieldDefinition[];
   totpEditorState?: {
@@ -84,17 +86,18 @@ const isMaskedFieldType = (fieldType: FieldType): boolean =>
  */
 const ItemAddEdit: React.FC = () => {
   const { t } = useTranslation();
-  const { id } = useParams();
+  const { id, manifestId } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
   const dbContext = useDb();
-  const isEditMode = id !== undefined && id.length > 0;
+  const isEditMode = id !== undefined && id.length > 0 && manifestId !== undefined && manifestId.length > 0;
 
   // Get item type, title, and folder from URL parameters (for create mode)
   const itemTypeParam = searchParams.get('type') as ItemType | null;
   const itemTitleParam = searchParams.get('itemTitle');
-  const folderIdParam = searchParams.get('folderId');
+  const folderManifestIdParam = searchParams.get('folderManifestId');
+  const folderIdParam = folderManifestIdParam ? searchParams.get('folderId') : null;
 
   const sourceTabIdParam = searchParams.get('sourceTabId');
   const fillBackElementIdentifier = searchParams.get('elementIdentifier');
@@ -111,7 +114,7 @@ const ItemAddEdit: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   // A draft until the vault writes it: a new item's manifest follows from the folder it lands in.
-  const [item, setItem] = useState<DraftItem | null>(null);
+  const [item, setItem] = useState<Item | null>(null);
 
   // Form state for dynamic fields
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
@@ -211,7 +214,7 @@ const ItemAddEdit: React.FC = () => {
    * The hook auto-persists on state changes and clears on unmount.
    */
   const { loadPersistedValues, clearPersistedValues } = useFormPersistence<PersistedFormData>({
-    formId: id || null,
+    formId: id && manifestId ? scopedKey(manifestId, id) : null,
     isLoading: localLoading,
     formData: {
       item,
@@ -345,7 +348,7 @@ const ItemAddEdit: React.FC = () => {
    * Load item data if in edit mode, or initialize for create mode with service detection.
    */
   useEffect(() => {
-    if (!dbContext?.sqliteClient || !id || !isEditMode) {
+    if (!dbContext?.sqliteClient || !id || !manifestId || !isEditMode) {
       // Create mode - initialize with defaults
       const effectiveType: ItemType = (itemTypeParam && VALID_ITEM_TYPES.includes(itemTypeParam))
         ? itemTypeParam
@@ -359,12 +362,16 @@ const ItemAddEdit: React.FC = () => {
         const { serviceName, serviceUrl, suggestedNames: detectedSuggestedNames } = await detectService(itemTitleParam);
         setSuggestedNames(detectedSuggestedNames);
 
+        // A new item belongs in the manifest of the folder it starts in, or the personal one outside any folder.
+        const startManifestId = manifestForItemIn(folderIdParam ? { ManifestId: folderManifestIdParam! } : null, dbContext?.sqliteClient?.getPersonalManifestId());
+
         // Create the new item with detected values
-        const newItem: DraftItem = {
+        const newItem: Item = {
           Id: crypto.randomUUID(),
           Name: serviceName,
           ItemType: effectiveType,
           FolderId: folderIdParam || null,
+          ManifestId: startManifestId,
           Fields: [],
           CreatedAt: new Date().toISOString(),
           UpdatedAt: new Date().toISOString()
@@ -404,7 +411,8 @@ const ItemAddEdit: React.FC = () => {
           // Also override the FolderId with the current URL param (if any).
           setItem(prev => prev ? {
             ...prev,
-            FolderId: folderIdParam || null
+            FolderId: folderIdParam || null,
+            ManifestId: startManifestId
           } : prev);
         }
 
@@ -427,7 +435,7 @@ const ItemAddEdit: React.FC = () => {
       }
 
       try {
-        const result = sqliteClient.items.getById(id);
+        const result = sqliteClient.items.getById({ Id: id, ManifestId: manifestId });
         if (!result) {
           console.error('Item not found');
           navigate('/items');
@@ -469,7 +477,7 @@ const ItemAddEdit: React.FC = () => {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load TOTP codes for this item
-        const itemTotpCodes = sqliteClient.items.getTotpCodesForItem(id, result.ManifestId);
+        const itemTotpCodes = sqliteClient.items.getTotpCodesForItem(result);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map((tc) => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -477,7 +485,7 @@ const ItemAddEdit: React.FC = () => {
         }
 
         // Load attachments for this item
-        const itemAttachments = sqliteClient.items.getAttachmentsForItem(id, result.ManifestId);
+        const itemAttachments = sqliteClient.items.getAttachmentsForItem(result);
         setAttachments(itemAttachments);
         setOriginalAttachmentIds(itemAttachments.map((a) => a.Id));
         if (itemAttachments.length > 0) {
@@ -503,7 +511,7 @@ const ItemAddEdit: React.FC = () => {
     };
 
     void initializeEditMode();
-  }, [dbContext?.sqliteClient, id, isEditMode, itemTypeParam, itemTitleParam, folderIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
+  }, [dbContext?.sqliteClient, id, manifestId, isEditMode, itemTypeParam, itemTitleParam, folderIdParam, folderManifestIdParam, navigate, setIsInitialLoading, detectService, loadPersistedValues]);
 
   /**
    * Handle generating alias and populating fields.
@@ -695,7 +703,7 @@ const ItemAddEdit: React.FC = () => {
    * created item back into the originating tab and close this popup window. Returns true when the
    * fill-back path handled the post-save behaviour (so the caller should skip normal navigation).
    */
-  const fillBackAndCloseWindow = useCallback(async (savedItem: DraftItem): Promise<boolean> => {
+  const fillBackAndCloseWindow = useCallback(async (savedItem: Item): Promise<boolean> => {
     if (isEditMode || !sourceTabIdParam) {
       return false;
     }
@@ -802,7 +810,7 @@ const ItemAddEdit: React.FC = () => {
         });
       });
 
-      let updatedItem: DraftItem = {
+      let updatedItem: Item = {
         ...item,
         /*
          * For create mode, always generate a fresh ID to prevent UNIQUE constraint
@@ -842,25 +850,21 @@ const ItemAddEdit: React.FC = () => {
        * Use async mutation - saves locally and navigates immediately.
        * Sync happens in background, status shown via header indicator.
        */
+      let savedItem: Item = updatedItem;
       await executeVaultMutationAsync(async () => {
-        if (isEditMode) {
-          await dbContext.sqliteClient!.items.update(
-            updatedItem,
-            originalAttachmentIds,
-            attachments,
-            originalTotpCodeIds,
-            totpCodes,
-            logoSelection
-          );
+        if (isEditMode && manifestId) {
+          const saved = await dbContext.sqliteClient!.items.update({ Id: item.Id, ManifestId: manifestId }, updatedItem, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, logoSelection);
+          if (saved) {
+            savedItem = { ...updatedItem, ManifestId: saved.ManifestId };
+          }
 
-          // Delete passkeys marked for deletion
-          if (passkeyIdsMarkedForDeletion.length > 0) {
-            for (const passkeyId of passkeyIdsMarkedForDeletion) {
-              await dbContext.sqliteClient!.passkeys.deleteById(passkeyId, item.ManifestId);
-            }
+          // Delete passkeys marked for deletion, in the manifest the item is in after the save
+          for (const passkeyId of passkeyIdsMarkedForDeletion) {
+            await dbContext.sqliteClient!.passkeys.deleteById(passkeyId, saved?.ManifestId ?? manifestId);
           }
         } else {
-          await dbContext.sqliteClient!.items.create(updatedItem, attachments, totpCodes, logoSelection);
+          const created = await dbContext.sqliteClient!.items.create(updatedItem, attachments, totpCodes, logoSelection);
+          savedItem = { ...updatedItem, Id: created.Id, ManifestId: created.ManifestId };
         }
       });
 
@@ -871,38 +875,38 @@ const ItemAddEdit: React.FC = () => {
        * If this create was launched from a page's "create new item" flow, autofill the new
        * credential back into the originating tab and close this window instead of navigating.
        */
-      if (await fillBackAndCloseWindow(updatedItem)) {
+      if (await fillBackAndCloseWindow(savedItem)) {
         return;
       }
 
       /*
        * Navigate after save:
        * - Edit mode and came from details: navigate(-1) so back from details goes to list (no duplicate details).
-       * - Edit mode and did not come from details: go to details with replace so we still land on details.
+       * - Edit mode and did not come from details, or the save moved the item to another manifest: go to details with replace.
        * - Create mode: go to new item details with replace.
        */
-      if (isEditMode && (location.state as { fromDetails?: boolean } | null)?.fromDetails) {
+      if (isEditMode && savedItem.ManifestId === manifestId && (location.state as { fromDetails?: boolean } | null)?.fromDetails) {
         navigate(-1);
       } else {
-        navigate(`/items/${updatedItem.Id}`, { replace: true });
+        navigate(itemRoute(savedItem), { replace: true });
       }
     } catch (err) {
       console.error('Error saving item:', err);
       setIsSaving(false);
     }
-  }, [item, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, resolvedFaviconSource, webApi, clearPersistedValues, fillBackAndCloseWindow]);
+  }, [item, manifestId, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, resolvedFaviconSource, webApi, clearPersistedValues, fillBackAndCloseWindow]);
 
   /**
    * Handle delete action.
    */
   const handleDelete = useCallback(async () => {
-    if (!item || !isEditMode || !dbContext?.sqliteClient) {
+    if (!item || !isEditMode || !manifestId || !dbContext?.sqliteClient) {
       return;
     }
 
     try {
       await executeVaultMutationAsync(async () => {
-        await dbContext.sqliteClient!.items.trash(item.Id);
+        await dbContext.sqliteClient!.items.trash({ Id: item.Id, ManifestId: manifestId });
       });
 
       navigate('/items');
@@ -911,7 +915,7 @@ const ItemAddEdit: React.FC = () => {
     } finally {
       setShowDeleteModal(false);
     }
-  }, [item, isEditMode, dbContext, executeVaultMutationAsync, navigate]);
+  }, [item, manifestId, isEditMode, dbContext, executeVaultMutationAsync, navigate]);
 
   /**
    * Add custom field handler.
@@ -1156,7 +1160,7 @@ const ItemAddEdit: React.FC = () => {
     } else if (folderIdParam && dbContext?.sqliteClient) {
       // Create mode with folder: back button goes to folder
       const allFolders = dbContext.sqliteClient.folders.getAll();
-      const folder = allFolders.find(f => f.Id === folderIdParam);
+      const folder = allFolders.find(f => f.Id === folderIdParam && f.ManifestId === folderManifestIdParam);
       if (folder) {
         setBackButtonTitle(folder.Name);
       } else {
@@ -1168,7 +1172,7 @@ const ItemAddEdit: React.FC = () => {
     }
 
     return (): void => setBackButtonTitle(null);
-  }, [setBackButtonTitle, isEditMode, folderIdParam, dbContext?.sqliteClient, t]);
+  }, [setBackButtonTitle, isEditMode, folderIdParam, folderManifestIdParam, dbContext?.sqliteClient, t]);
 
   /**
    * Render a field input based on field type.
@@ -1418,8 +1422,8 @@ const ItemAddEdit: React.FC = () => {
           value={item.Name || ''}
           onChange={(name) => setItem({ ...item, Name: name })}
           folders={folders}
-          selectedFolderId={item.FolderId}
-          onFolderChange={(folderId) => setItem({ ...item, FolderId: folderId })}
+          selectedFolder={item.FolderId ? { Id: item.FolderId, ManifestId: item.ManifestId } : null}
+          onFolderChange={(folder) => setItem({ ...item, FolderId: folder?.Id ?? null, ManifestId: manifestForItemIn(folder, dbContext?.sqliteClient?.getPersonalManifestId()) })}
           logoSlot={
             <ItemLogoPicker
               item={item}
@@ -1450,6 +1454,7 @@ const ItemAddEdit: React.FC = () => {
       {isEditMode && item.HasPasskey && (
         <PasskeyEditor
           itemId={item.Id}
+          manifestId={manifestId!}
           passkeyIdsMarkedForDeletion={passkeyIdsMarkedForDeletion}
           onPasskeyMarkedForDeletion={setPasskeyIdsMarkedForDeletion}
         />
@@ -1592,6 +1597,7 @@ const ItemAddEdit: React.FC = () => {
           attachments={attachments}
           onAttachmentsChange={setAttachments}
           itemId={isEditMode ? id : undefined}
+          manifestId={isEditMode ? manifestId : undefined}
         />
       )}
 

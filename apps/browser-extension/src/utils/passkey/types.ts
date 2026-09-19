@@ -87,6 +87,7 @@ export type WebAuthnSettingsResponse = {
 export type ConditionalPasskeyOption = {
   id: string;
   itemId: string;
+  manifestId: string;
   serviceName: string;
   username: string;
   logo: number[] | null;

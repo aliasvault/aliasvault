@@ -1,5 +1,3 @@
-import { BaseQueries } from './BaseQueries';
-
 /**
  * SQL query constants for Item operations.
  * Centralizes all item-related queries to avoid duplication.
@@ -208,11 +206,11 @@ export class ItemQueries {
     ORDER BY t.DisplayOrder, t.Name`;
 
   /**
-   * Insert a new item, stamped with the manifest of the folder it is placed in.
+   * Insert a new item into the manifest the caller names, which is its folder's own.
    */
   public static readonly INSERT_ITEM = `
     INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_FOLDER}, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing item with explicit LogoId setting (can clear LogoId to null).
@@ -222,7 +220,7 @@ export class ItemQueries {
     SET Name = ?,
         ItemType = ?,
         FolderId = ?,
-        ManifestId = ${BaseQueries.MANIFEST_OF_FOLDER},
+        ManifestId = ?,
         LogoId = ?,
         UpdatedAt = ?
     WHERE Id = ? AND ManifestId = ?`;
@@ -308,10 +306,10 @@ export class ItemQueries {
       AND i.DeletedAt IS NULL`;
 
   /**
-   * Look up an item (id + name) by an email address stored in any of its login email fields.
+   * Look up an item (reference + name) by an email address stored in any of its login email fields.
    */
   public static readonly GET_ITEM_BY_EMAIL = `
-    SELECT i.Id as Id, i.Name as Name
+    SELECT i.Id as Id, i.ManifestId as ManifestId, i.Name as Name
     FROM FieldValues fv
     INNER JOIN Items i ON fv.ItemId = i.Id AND fv.ManifestId = i.ManifestId
     WHERE fv.FieldKey = ?
@@ -327,7 +325,7 @@ export class ItemQueries {
   public static readonly GET_ITEM_FIELDS = `
     SELECT Name, ItemType, FolderId, LogoId
     FROM Items
-    WHERE Id = ? AND ManifestId = ?`;
+    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
 }
 
 /**
@@ -345,11 +343,11 @@ export class FieldValueQueries {
     ORDER BY ValueIndex`;
 
   /**
-   * Insert a new field value, stamped with the manifest of the item it hangs off.
+   * Insert a new field value, into the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
     INSERT INTO FieldValues (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, Value, Weight, ValueIndex, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing field value, bringing it back when it was removed before.
@@ -387,23 +385,23 @@ export class FieldValueQueries {
  */
 export class FieldDefinitionQueries {
   /**
-   * Check if a field definition exists in the item's manifest. Binds [definitionId, itemId].
+   * Check if a field definition exists in the item's manifest. Binds [definitionId, manifestId].
    */
   public static readonly EXISTS = `
-    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM}`;
+    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ?`;
 
   /**
-   * Check if a field definition exists in the item's manifest and is not deleted. Binds [definitionId, itemId].
+   * Check if a field definition exists in the item's manifest and is not deleted. Binds [definitionId, manifestId].
    */
   public static readonly EXISTS_ACTIVE = `
-    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM} AND IsDeleted = 0`;
+    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new field definition into the item's manifest. Binds [definitionId, itemId, ...].
+   * Insert a new field definition into the item's manifest. Binds [definitionId, manifestId, ...].
    */
   public static readonly INSERT = `
     INSERT INTO FieldDefinitions (Id, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing field definition.
@@ -415,7 +413,7 @@ export class FieldDefinitionQueries {
         IsHidden = ?,
         Weight = ?,
         UpdatedAt = ?
-    WHERE Id = ? AND ManifestId = ${BaseQueries.MANIFEST_OF_ITEM}`;
+    WHERE Id = ? AND ManifestId = ?`;
 }
 
 /**
@@ -423,11 +421,11 @@ export class FieldDefinitionQueries {
  */
 export class FieldHistoryQueries {
   /**
-   * Insert a history record, stamped with the manifest of the item it hangs off.
+   * Insert a history record, into the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
     INSERT INTO FieldHistories (Id, ItemId, ManifestId, FieldDefinitionId, FieldKey, ValueSnapshot, ChangedAt, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Get history records for a field.
@@ -491,11 +489,11 @@ export class TotpCodeQueries {
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new TOTP code, stamped with the manifest of the item it hangs off.
+   * Insert a new TOTP code, into the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
     INSERT INTO TotpCodes (Id, Name, SecretKey, Algorithm, Digits, Period, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Update an existing TOTP code.
@@ -541,11 +539,11 @@ export class AttachmentQueries {
     WHERE ItemId = ? AND ManifestId = ? AND IsDeleted = 0`;
 
   /**
-   * Insert a new attachment, stamped with the manifest of the item it hangs off.
+   * Insert a new attachment, into the manifest of the item it hangs off.
    */
   public static readonly INSERT = `
     INSERT INTO Attachments (Id, Filename, Blob, ItemId, ManifestId, CreatedAt, UpdatedAt, IsDeleted)
-    VALUES (?, ?, ?, ?, ${BaseQueries.MANIFEST_OF_ITEM}, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
    * Soft delete an attachment. Also drops the Blob bytes so storage is reclaimed

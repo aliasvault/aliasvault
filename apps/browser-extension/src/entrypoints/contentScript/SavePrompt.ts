@@ -9,6 +9,8 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 /** Reference to the current save prompt element */
 let currentPrompt: HTMLElement | null = null;
 
@@ -400,7 +402,7 @@ export async function restoreSavePromptFromState(
 export async function restoreAddUrlPromptFromState(
   container: HTMLElement,
   state: SavePromptPersistedState,
-  onAddUrl: (itemId: string, url: string) => void,
+  onAddUrl: (item: ItemRef, url: string) => void,
   onDismiss: () => void
 ): Promise<void> {
   // Clear the persisted state now that we're restoring
@@ -932,8 +934,8 @@ async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: 
 function setupAddUrlEventListeners(
   prompt: HTMLElement,
   login: CapturedLogin,
-  existingCredential: { itemId: string; itemName: string },
-  onAddUrl: (itemId: string, url: string) => void,
+  existingCredential: { itemId: string; manifestId: string; itemName: string },
+  onAddUrl: (item: ItemRef, url: string) => void,
   onDismiss: () => void
 ): void {
   const addUrlBtn = prompt.querySelector('.av-save-prompt__btn--add-url');
@@ -942,7 +944,7 @@ function setupAddUrlEventListeners(
   addUrlBtn?.addEventListener('click', () => {
     const loginToUse = currentLogin || login;
     removeSavePrompt();
-    onAddUrl(existingCredential.itemId, loginToUse.url);
+    onAddUrl({ Id: existingCredential.itemId, ManifestId: existingCredential.manifestId }, loginToUse.url);
   });
 
   dismissBtn?.addEventListener('click', () => {

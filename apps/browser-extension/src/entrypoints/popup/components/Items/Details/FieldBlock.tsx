@@ -12,6 +12,7 @@ import type { ItemField } from '@aliasvault/models/vault';
 type FieldBlockProps = {
   field: ItemField;
   itemId?: string;
+  manifestId?: string;
   /** Whether to hide the label (useful when label is already shown as section header) */
   hideLabel?: boolean;
 }
@@ -84,7 +85,7 @@ const TextWithLinks: React.FC<{ text: string }> = ({ text }) => {
  * Dynamic field block component that renders based on field type.
  * Uses the same FormInputCopyToClipboard component as existing credential blocks.
  */
-const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = false }) => {
+const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, manifestId, hideLabel = false }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -105,9 +106,9 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
    * 2. There is exactly 1 history record but its value differs from current value
    */
   useEffect(() => {
-    if (hasHistoryEnabled && itemId && dbContext?.sqliteClient) {
+    if (hasHistoryEnabled && itemId && manifestId && dbContext?.sqliteClient) {
       try {
-        const history = dbContext.sqliteClient.items.getFieldHistory(itemId, field.FieldKey);
+        const history = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, field.FieldKey);
 
         if (history.length > 1) {
           // Multiple history records - always show icon
@@ -131,7 +132,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
         console.error('[FieldBlock] Error checking history:', error);
       }
     }
-  }, [hasHistoryEnabled, itemId, field.FieldKey, field.Value, dbContext?.sqliteClient]);
+  }, [hasHistoryEnabled, itemId, manifestId, field.FieldKey, field.Value, dbContext?.sqliteClient]);
 
   // Skip rendering if no value
   if (!field.Value || (typeof field.Value === 'string' && field.Value.trim() === '')) {
@@ -152,6 +153,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
             value={value}
             type={field.FieldType === FieldTypes.Password ? 'password' : 'text'}
             itemId={itemId}
+            manifestId={manifestId}
           />
         ))}
       </div>
@@ -175,11 +177,12 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
   ) : null;
 
   // History modal component
-  const HistoryModal = showHistoryModal && itemId ? (
+  const HistoryModal = showHistoryModal && itemId && manifestId ? (
     <FieldHistoryModal
       isOpen={showHistoryModal}
       onClose={() => setShowHistoryModal(false)}
       itemId={itemId}
+      manifestId={manifestId}
       fieldKey={field.FieldKey}
       fieldLabel={label}
       fieldType={field.FieldType}
@@ -200,6 +203,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
             type="password"
             labelSuffix={HistoryButton}
             itemId={itemId}
+            manifestId={manifestId}
           />
           {HistoryModal}
         </>
@@ -238,6 +242,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
             type="text"
             labelSuffix={HistoryButton}
             itemId={itemId}
+            manifestId={manifestId}
           />
           {HistoryModal}
         </>

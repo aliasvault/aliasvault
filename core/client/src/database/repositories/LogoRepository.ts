@@ -78,10 +78,11 @@ export class LogoRepository extends BaseRepository {
   /**
    * Get a logo's identity (kind, key, label) by id, or null when it no longer exists.
    * @param logoId The logo id to look up
+   * @param manifestId The manifest of the item pointing at it
    * @returns The logo, or null
    */
-  public *getById(logoId: string): DbOp<ItemLogo | null> {
-    const rows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null }>(LogoQueries.GET_BY_ID, [logoId]);
+  public *getById(logoId: string, manifestId: string): DbOp<ItemLogo | null> {
+    const rows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null }>(LogoQueries.GET_BY_ID, [logoId, manifestId]);
     return rows.length > 0 ? rows[0] : null;
   }
 

@@ -1,8 +1,11 @@
+import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { truncateFolderPath } from '@aliasvault/client/items/FolderUtils';
 import { FieldKey } from '@aliasvault/models/vault';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+
+import { itemRoute } from '@/utils/ItemRoute';
 
 import ItemContextMenu from './ItemContextMenu';
 import ItemIcon from './ItemIcon';
@@ -17,8 +20,8 @@ type ItemCardProps = {
   isActive?: boolean;
   optionId?: string;
   isHighlighted?: boolean;
-  onDuplicate?: (itemId: string) => void;
-  onDelete?: (itemId: string) => void;
+  onDuplicate?: (item: ItemRef) => void;
+  onDelete?: (item: ItemRef) => void;
 };
 
 /**
@@ -129,11 +132,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
   };
 
   return (
-    <li id={optionId} data-item-id={item.Id} role="option" aria-selected={isActive} className="relative group" onContextMenu={handleContextMenu}>
+    <li id={optionId} data-item-key={scopedKey(item.ManifestId, item.Id)} role="option" aria-selected={isActive} className="relative group" onContextMenu={handleContextMenu}>
       <button
         onClick={() => {
           // Build URL with search query parameter if present
-          const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
+          const url = searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item);
           navigate(url);
         }}
         className={`w-full p-2 border rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
@@ -228,9 +231,9 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searc
         <ItemContextMenu
           position={menuPosition}
           onClose={() => setMenuPosition(null)}
-          onEdit={() => navigate(`/items/${item.Id}/edit`)}
-          onDuplicate={() => onDuplicate?.(item.Id)}
-          onDelete={() => onDelete?.(item.Id)}
+          onEdit={() => navigate(itemRoute(item, true))}
+          onDuplicate={() => onDuplicate?.({ Id: item.Id, ManifestId: item.ManifestId })}
+          onDelete={() => onDelete?.({ Id: item.Id, ManifestId: item.ManifestId })}
         />
       )}
     </li>

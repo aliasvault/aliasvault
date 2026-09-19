@@ -29,11 +29,13 @@ export class LogoQueries {
     LIMIT 1`;
 
   /**
-   * The kind and key of an existing logo, in whichever manifest holds it.
+   * The kind and key of an item's logo. Binds [logoId, item manifest]: the item's own manifest wins, and another
+   * manifest only answers for an item that was moved and still points at the logo row it came with.
    */
   public static readonly GET_BY_ID = `
     SELECT Id, Kind, Source, Name FROM Logos
     WHERE Id = ? AND IsDeleted = 0
+    ORDER BY (ManifestId = ?) DESC, ManifestId
     LIMIT 1`;
 
   /**

@@ -14,11 +14,14 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { itemRoute } from '@/utils/ItemRoute';
+
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import HeaderButton from '../../components/HeaderButton';
 import { HeaderIconType } from '../../components/Icons/HeaderIcons';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { Email } from '@aliasvault/models/webapi';
 
 /**
@@ -40,7 +43,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const [viewMode, setViewMode] = useState<'html' | 'plain' | 'source'>('html');
-  const [credential, setCredential] = useState<{ id: string; name: string } | null>(null);
+  const [credential, setCredential] = useState<{ item: ItemRef; name: string } | null>(null);
   const attachmentsRef = useRef<HTMLDivElement>(null);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
@@ -117,7 +120,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
     const address = `${email.toLocal}@${email.toDomain}`;
     const match = dbContext.sqliteClient.items.findIdByEmail(address);
-    setCredential(match ? { id: match.Id, name: match.Name ?? address } : null);
+    setCredential(match ? { item: { Id: match.Id, ManifestId: match.ManifestId }, name: match.Name ?? address } : null);
   }, [email, dbContext?.sqliteClient]);
 
   // Available view modes for the cycle button.
@@ -365,7 +368,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
                 <p>
                   <span className="font-bold">{t('emails.item')}</span>{' '}
                   <Link
-                    to={`/items/${credential.id}`}
+                    to={itemRoute(credential.item)}
                     className="text-primary-600 hover:underline dark:text-primary-400"
                   >
                     {credential.name}

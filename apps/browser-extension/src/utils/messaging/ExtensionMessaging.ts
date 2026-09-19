@@ -34,6 +34,7 @@ import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
 import type { ItemUsageAction } from '@aliasvault/client/database';
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import type { FullVaultSyncResult, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
@@ -49,7 +50,7 @@ import type { LoginResponse } from '@aliasvault/models/webapi';
  * the response shape (promises are unwrapped automatically by the library).
  */
 export interface IExtensionMessageProtocol {
-  ADD_URL_TO_CREDENTIAL(data: { itemId: string; url: string }): { success: boolean; error?: string }; 
+  ADD_URL_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { success: boolean; error?: string }; 
   AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
   CANCEL_CLIPBOARD_CLEAR(): void;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresManifestMigration: boolean; error?: string };
@@ -67,7 +68,7 @@ export interface IExtensionMessageProtocol {
   CLIPBOARD_COUNTDOWN_CANCELLED(data: Record<string, never>): void;
   FULL_VAULT_SYNC(data: FullVaultSyncRequest): FullVaultSyncResult;
   GENERATE_PASSWORD(data: { settings: PasswordSettings }): { success: boolean; password?: string; error?: string };
-  GENERATE_TOTP_CODE(data: { itemId: string }): { success: boolean; code?: string; error?: string };
+  GENERATE_TOTP_CODE(data: { itemId: string; manifestId: string }): { success: boolean; code?: string; error?: string };
   GET_CLIPBOARD_CLEAR_TIMEOUT(): number;
   GET_CLIPBOARD_COUNTDOWN_STATE(): { remaining: number; total: number; id: number } | null;
   GET_DEFAULT_EMAIL_DOMAIN(): StringResponse;
@@ -82,12 +83,12 @@ export interface IExtensionMessageProtocol {
   GET_MATCHING_PASSKEYS(data: { rpId: string; allowCredentialIds?: string[] }): MatchingPasskeysResponse;
   GET_PASSWORD_SETTINGS(): PasswordSettingsResponse;
   GET_PERSISTED_FORM_VALUES(): any | null;
-  GET_RECENTLY_SELECTED(data: { domain: string }): { success: boolean; itemId?: string | null };
+  GET_RECENTLY_SELECTED(data: { domain: string }): { success: boolean; itemId?: string | null; manifestId?: string | null };
   GET_REQUEST_DATA(data: any): PendingPasskeyRequest | null;
   GET_SAVE_PROMPT_STATE(): { success: boolean; state: SavePromptPersistedState | null };
   GET_SEARCH_ITEMS(data: { searchTerm: string }): ItemsResponse;
   GET_SYNC_STATE(): VaultSyncState;
-  GET_TOTP_SECRETS(data: { itemIds: string[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
+  GET_TOTP_SECRETS(data: { items: ItemRef[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
   GET_VAULT(): VaultResponse;
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
@@ -95,26 +96,26 @@ export interface IExtensionMessageProtocol {
   GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_REVOKE_ACCESS(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
-  IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; url: string }): { linked: boolean };
+  IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };
   LOCK_VAULT(): BoolResponse;
   MARK_VAULT_CLEAN(data: { mutationSeqAtStart: number }): { cleared: boolean; currentMutationSeq: number };
   MIGRATE_VAULT_MANIFEST(): VaultManifestMigrationResult;
   OPEN_AUTOFILL_POPUP(data: { elementIdentifier: string; popupType?: string }): BoolResponse;
   OPEN_POPUP(): BoolResponse;
   OPEN_POPUP_CREATE_CREDENTIAL(data: { itemTitle?: string; currentUrl?: string; elementIdentifier?: string; left?: number; top?: number }): BoolResponse;
-  OPEN_POPUP_WITH_ITEM(data: any): BoolResponse;
+  OPEN_POPUP_WITH_ITEM(data: { itemId: string; manifestId: string }): BoolResponse;
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;
   PING(): boolean;
   POPUP_HEARTBEAT(): void;
-  RECORD_ITEM_USAGE(data: { itemId: string; action: ItemUsageAction }): { success: boolean };
+  RECORD_ITEM_USAGE(data: { itemId: string; manifestId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;
   SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string; faviconUrl?: string }): SaveLoginResponse;
   SEARCH_ITEMS_WITH_TOTP(data: { searchTerm: string }): ItemsResponse;
   SET_AUTO_LOCK_TIMEOUT(data: number): boolean;
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
   SET_LOGIN_SAVE_ENABLED(data: boolean): BoolResponse;
-  SET_RECENTLY_SELECTED(data: { itemId: string; domain: string }): { success: boolean };
+  SET_RECENTLY_SELECTED(data: { itemId: string; manifestId: string; domain: string }): { success: boolean };
   STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; expectedMutationSeq?: number; scopes?: VaultMutationScope[] }): { success: boolean; mutationSequence: number };
   STORE_UNLOCK_KEY(data: string): BoolResponse;
   STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
@@ -126,7 +127,7 @@ export interface IExtensionMessageProtocol {
   VAULT_UNLOCKED(): void;
   WEBAUTHN_CREATE(data: any): any;
   WEBAUTHN_GET(data: any): any;
-  WEBAUTHN_GET_ASSERTION(data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }): WebAuthnAssertionResponse;
+  WEBAUTHN_GET_ASSERTION(data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }): WebAuthnAssertionResponse;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

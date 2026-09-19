@@ -18,7 +18,7 @@ export {
 // Repositories
 export { ItemRepository } from './repositories/ItemRepository';
 export { PasskeyRepository } from './repositories/PasskeyRepository';
-export { FolderRepository, type Folder } from './repositories/FolderRepository';
+export { FolderRepository, type Folder, type FolderRef } from './repositories/FolderRepository';
 export { SettingsRepository } from './repositories/SettingsRepository';
 export { EncryptionKeyRepository } from './repositories/EncryptionKeyRepository';
 export { LogoRepository } from './repositories/LogoRepository';

@@ -12,6 +12,7 @@ import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { Item } from '@aliasvault/models/vault';
 
 /**
@@ -131,6 +132,7 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
 
   const lastAutofilled: LastAutofilledCredential = {
     itemId: item.Id,
+    manifestId: item.ManifestId,
     itemName: item.Name || '',
     username,
     domain: window.location.hostname,
@@ -143,17 +145,17 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   });
 
   // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, domain: window.location.hostname }).catch(() => {
+  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, manifestId: item.ManifestId, domain: window.location.hostname }).catch(() => {
     // Ignore errors
   });
 
   // Record the use in the vault's Stats bucket (last used + counts).
-  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, action: 'autofill' }).catch(() => {
+  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, manifestId: item.ManifestId, action: 'autofill' }).catch(() => {
     // Ignore errors
   });
 
   // Auto-copy TOTP to clipboard if enabled and item has TOTP after autofill.
-  await copyTotpToClipboardIfEnabled(item.Id);
+  await copyTotpToClipboardIfEnabled(item);
 }
 
 /**
@@ -412,10 +414,10 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement, fiel
  * Fill TOTP code into the input field.
  * Generates the code via background script and fills it.
  *
- * @param itemId - The item ID to generate TOTP code for.
+ * @param item - The item to generate the TOTP code for, named by its manifest and id.
  * @param input - The input element to fill the TOTP code into.
  */
-export async function fillTotpCode(itemId: string, input: HTMLInputElement): Promise<void> {
+export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Promise<void> {
   // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
   hidePopupFor(300);
 
@@ -425,7 +427,7 @@ export async function fillTotpCode(itemId: string, input: HTMLInputElement): Pro
   });
 
   // Generate TOTP code via background
-  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId });
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId });
 
   if (!response.success || !response.code) {
     console.error('Failed to generate TOTP code:', response.error);
@@ -439,12 +441,12 @@ export async function fillTotpCode(itemId: string, input: HTMLInputElement): Pro
   triggerInputEvents(input);
 
   // Store recently selected item for smart autofill prioritization
-  sendMessage('SET_RECENTLY_SELECTED', { itemId, domain: window.location.hostname }).catch(() => {
+  sendMessage('SET_RECENTLY_SELECTED', { itemId: item.Id, manifestId: item.ManifestId, domain: window.location.hostname }).catch(() => {
     // Ignore errors as background script might not be ready
   });
 
   // Record the use in the vault's Stats bucket (last used + counts).
-  sendMessage('RECORD_ITEM_USAGE', { itemId, action: 'autofill' }).catch(() => {
+  sendMessage('RECORD_ITEM_USAGE', { itemId: item.Id, manifestId: item.ManifestId, action: 'autofill' }).catch(() => {
     // Ignore errors as background script might not be ready
   });
 }

@@ -1,4 +1,6 @@
-import type { Folder } from '../database/repositories/FolderRepository';
+import { scopedKey } from '../database/ItemRef';
+
+import type { Folder, FolderRef } from '../database/repositories/FolderRepository';
 
 /**
  * Maximum allowed folder nesting depth.
@@ -15,6 +17,27 @@ export type FolderTreeNode = Folder & {
   depth: number;
   path: string[]; // Array of folder IDs from root to this folder
 };
+
+/**
+ * The folders of one manifest. A folder is keyed by (ManifestId, Id) and a folder tree never crosses a
+ * manifest, so every walk below stays inside the manifest of the folder it starts from.
+ * @param manifestId - The manifest to keep
+ * @param folders - Flat array of all folders
+ * @returns The folders stamped for that manifest
+ */
+function foldersOfManifest(manifestId: string, folders: Folder[]): Folder[] {
+  return folders.filter(f => f.ManifestId === manifestId);
+}
+
+/**
+ * Whether an item sits directly in the given folder.
+ * @param item - The item to test
+ * @param folder - The folder
+ * @returns True when the item names this folder inside the folder's own manifest
+ */
+export function isItemInFolder(item: { FolderId?: string | null; ManifestId?: string | null }, folder: FolderRef): boolean {
+  return item.FolderId === folder.Id && item.ManifestId === folder.ManifestId;
+}
 
 /**
  * Whether a folder is shared with other people rather than the user's own.
@@ -37,7 +60,7 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
 
   // Initialize all folders as tree nodes
   folders.forEach(folder => {
-    folderMap.set(folder.Id, {
+    folderMap.set(scopedKey(folder.ManifestId, folder.Id), {
       ...folder,
       children: [],
       depth: 0,
@@ -49,7 +72,7 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
   const rootFolders: FolderTreeNode[] = [];
 
   folders.forEach(folder => {
-    const node = folderMap.get(folder.Id)!;
+    const node = folderMap.get(scopedKey(folder.ManifestId, folder.Id))!;
 
     if (!folder.ParentFolderId) {
       // Root folder
@@ -58,7 +81,7 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
       rootFolders.push(node);
     } else {
       // Child folder
-      const parent = folderMap.get(folder.ParentFolderId);
+      const parent = folderMap.get(scopedKey(folder.ManifestId, folder.ParentFolderId));
       if (parent) {
         node.depth = parent.depth + 1;
         node.path = [...parent.path, folder.Id];
@@ -93,18 +116,19 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
 
 /**
  * Get folder depth in the hierarchy.
- * @param folderId - The folder ID to check
- * @param folders - Flat array of all folders
+ * @param ref - The folder to check
+ * @param allFolders - Flat array of all folders
  * @returns Depth (0 = root, 1 = one level deep, etc.) or null if folder not found
  */
-export function getFolderDepth(folderId: string, folders: Folder[]): number | null {
-  const folder = folders.find(f => f.Id === folderId);
+export function getFolderDepth(ref: FolderRef, allFolders: Folder[]): number | null {
+  const folders = foldersOfManifest(ref.ManifestId, allFolders);
+  const folder = folders.find(f => f.Id === ref.Id);
   if (!folder) {
     return null;
   }
 
   let depth = 0;
-  let currentId: string | null = folderId;
+  let currentId: string | null = ref.Id;
 
   // Traverse up to root, counting levels
   while (currentId) {
@@ -126,17 +150,19 @@ export function getFolderDepth(folderId: string, folders: Folder[]): number | nu
 
 /**
  * Get the full path of folder names from root to the specified folder.
- * @param folderId - The folder ID
- * @param folders - Flat array of all folders
+ * @param ref - The folder, or null for none
+ * @param allFolders - Flat array of all folders
  * @returns Array of folder names from root to current folder, or empty array if not found
  */
-export function getFolderPath(folderId: string | null, folders: Folder[]): string[] {
-  if (!folderId) {
+export function getFolderPath(ref: FolderRef | null, allFolders: Folder[]): string[] {
+  if (!ref) {
     return [];
   }
 
+  const folders = foldersOfManifest(ref.ManifestId, allFolders);
+
   const path: string[] = [];
-  let currentId: string | null = folderId;
+  let currentId: string | null = ref.Id;
   let iterations = 0;
 
   // Build path by traversing up to root
@@ -155,17 +181,19 @@ export function getFolderPath(folderId: string | null, folders: Folder[]): strin
 
 /**
  * Get the full path of folder IDs from root to the specified folder.
- * @param folderId - The folder ID
- * @param folders - Flat array of all folders
+ * @param ref - The folder, or null for none
+ * @param allFolders - Flat array of all folders
  * @returns Array of folder IDs from root to current folder, or empty array if not found
  */
-export function getFolderIdPath(folderId: string | null, folders: Folder[]): string[] {
-  if (!folderId) {
+export function getFolderIdPath(ref: FolderRef | null, allFolders: Folder[]): string[] {
+  if (!ref) {
     return [];
   }
 
+  const folders = foldersOfManifest(ref.ManifestId, allFolders);
+
   const path: string[] = [];
-  let currentId: string | null = folderId;
+  let currentId: string | null = ref.Id;
   let iterations = 0;
 
   // Build path by traversing up to root
@@ -217,22 +245,23 @@ export function truncateFolderPath(pathSegments: string[], maxSegments: number =
 
 /**
  * Check if a folder can have subfolders (not at max depth).
- * @param folderId - The folder ID to check
+ * @param ref - The folder to check
  * @param folders - Flat array of all folders
  * @returns True if folder can have children, false otherwise
  */
-export function canHaveSubfolders(folderId: string, folders: Folder[]): boolean {
-  const depth = getFolderDepth(folderId, folders);
+export function canHaveSubfolders(ref: FolderRef, folders: Folder[]): boolean {
+  const depth = getFolderDepth(ref, folders);
   return depth !== null && depth < MAX_FOLDER_DEPTH;
 }
 
 /**
  * Get all descendant folder IDs (children, grandchildren, etc.).
- * @param folderId - The parent folder ID
- * @param folders - Flat array of all folders
- * @returns Array of descendant folder IDs
+ * @param ref - The parent folder
+ * @param allFolders - Flat array of all folders
+ * @returns Array of descendant folder IDs, all inside the parent's own manifest
  */
-export function getDescendantFolderIds(folderId: string, folders: Folder[]): string[] {
+export function getDescendantFolderIds(ref: FolderRef, allFolders: Folder[]): string[] {
+  const folders = foldersOfManifest(ref.ManifestId, allFolders);
   const descendants: string[] = [];
 
   /**
@@ -247,26 +276,26 @@ export function getDescendantFolderIds(folderId: string, folders: Folder[]): str
       });
   };
 
-  traverse(folderId);
+  traverse(ref.Id);
   return descendants;
 }
 
 /**
  * Get total count of items in a folder and all its subfolders.
- * @param folderId - The folder ID to count items for
+ * @param ref - The folder to count items for
  * @param allItems - All items in the vault
  * @param allFolders - All folders in the vault
  * @returns Total item count including subfolders
  */
 export function getRecursiveItemCount(
-  folderId: string,
-  allItems: Array<{ FolderId?: string | null }>,
+  ref: FolderRef,
+  allItems: Array<{ FolderId?: string | null; ManifestId?: string | null }>,
   allFolders: Folder[]
 ): number {
   // Get all descendant folder IDs
-  const descendantIds = getDescendantFolderIds(folderId, allFolders);
-  const allFolderIds = [folderId, ...descendantIds];
+  const descendantIds = getDescendantFolderIds(ref, allFolders);
+  const allFolderIds = [ref.Id, ...descendantIds];
 
-  // Count items in current folder and all descendants
-  return allItems.filter(item => item.FolderId && allFolderIds.includes(item.FolderId)).length;
+  // Count items in current folder and all descendants, which share the folder's manifest
+  return allItems.filter(item => item.ManifestId === ref.ManifestId && item.FolderId && allFolderIds.includes(item.FolderId)).length;
 }

@@ -138,8 +138,8 @@ fn stamp_subtree(mut tables: Vec<CodecTableData>, folder_id: &str, manifest_id: 
     }
 
     /*
-     * Every item takes the stamp of the folder it sits in, which is what the client's INSERT/UPDATE/
-     * MOVE statements resolve via `BaseQueries.MANIFEST_OF_FOLDER`. Deriving it here rather than
+     * Every item takes the stamp of the folder it sits in, which is what the client's INSERT/UPDATE
+     * statements write from the folder reference the caller names. Deriving it here rather than
      * carrying it forward is what makes an item moved OUT of a shared folder leave that manifest.
      */
     let folder_scope: HashMap<String, String> = tables

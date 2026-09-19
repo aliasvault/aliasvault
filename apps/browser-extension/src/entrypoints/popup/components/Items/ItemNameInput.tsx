@@ -1,3 +1,4 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,21 +6,15 @@ import { useTranslation } from 'react-i18next';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-type Folder = {
-  Id: string;
-  Name: string;
-  ParentFolderId: string | null;
-  Weight: number;
-  ManifestId?: string | null;
-};
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 type ItemNameInputProps = {
   inputRef?: React.RefObject<HTMLInputElement | null>;
   value: string;
   onChange: (value: string) => void;
   folders: Folder[];
-  selectedFolderId: string | null | undefined;
-  onFolderChange: (folderId: string | null) => void;
+  selectedFolder: FolderRef | null | undefined;
+  onFolderChange: (folder: FolderRef | null) => void;
   // Optional control rendered directly left of the input (the item logo).
   logoSlot?: React.ReactNode;
   suggestions?: string[];
@@ -34,7 +29,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   value,
   onChange,
   folders,
-  selectedFolderId,
+  selectedFolder: selectedFolderRef,
   onFolderChange,
   logoSlot,
   suggestions = []
@@ -44,7 +39,9 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
-  const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+  const selectedFolderId = selectedFolderRef?.Id ?? null;
+  const selectedManifestId = selectedFolderRef?.ManifestId ?? null;
+  const selectedFolder = folders.find(f => f.Id === selectedFolderId && f.ManifestId === selectedManifestId);
   const personalManifestId = dbContext?.sqliteClient?.getPersonalManifestId() ?? null;
 
   // Build folder tree
@@ -55,27 +52,27 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
    * This ensures the selected folder is visible in the tree when the modal opens.
    */
   useEffect(() => {
-    if (selectedFolderId && folders.length > 0) {
-      const fullPath = getFolderIdPath(selectedFolderId, folders);
+    if (selectedFolderId && selectedManifestId && folders.length > 0) {
+      const fullPath = getFolderIdPath({ Id: selectedFolderId, ManifestId: selectedManifestId }, folders);
       if (fullPath.length > 0) {
         // Expand all folders in the path including the selected folder if it has children.
-        setExpandedFolders(new Set(fullPath));
+        setExpandedFolders(new Set(fullPath.map(id => scopedKey(selectedManifestId, id))));
       }
     } else {
       setExpandedFolders(new Set());
     }
-  }, [selectedFolderId, folders]);
+  }, [selectedFolderId, selectedManifestId, folders]);
 
   /**
    * Toggle folder expansion in tree view.
    */
-  const toggleFolder = useCallback((folderId: string): void => {
+  const toggleFolder = useCallback((folderKey: string): void => {
     setExpandedFolders(prev => {
       const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
+      if (next.has(folderKey)) {
+        next.delete(folderKey);
       } else {
-        next.add(folderId);
+        next.add(folderKey);
       }
       return next;
     });
@@ -84,8 +81,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   /**
    * Handle folder selection and close the modal.
    */
-  const handleSelectFolder = useCallback((folderId: string | null): void => {
-    onFolderChange(folderId);
+  const handleSelectFolder = useCallback((folder: FolderRef | null): void => {
+    onFolderChange(folder);
     setShowFolderModal(false);
   }, [onFolderChange]);
 
@@ -114,15 +111,16 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
    * Render a folder tree node recursively.
    */
   const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
-    const isExpanded = expandedFolders.has(node.Id);
+    const nodeKey = scopedKey(node.ManifestId, node.Id);
+    const isExpanded = expandedFolders.has(nodeKey);
     const hasChildren = node.children.length > 0;
-    const isSelected = selectedFolderId === node.Id;
+    const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
 
     return (
-      <div key={node.Id}>
+      <div key={nodeKey}>
         <button
           type="button"
-          onClick={() => handleSelectFolder(node.Id)}
+          onClick={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
           className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-2 transition-colors ${
             isSelected
               ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
@@ -136,7 +134,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleFolder(node.Id);
+                toggleFolder(nodeKey);
               }}
               className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
             >
@@ -177,7 +175,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
         )}
       </div>
     );
-  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder, personalManifestId]);
+  }, [expandedFolders, selectedFolderId, selectedManifestId, handleSelectFolder, toggleFolder, personalManifestId]);
 
   return (
     <>

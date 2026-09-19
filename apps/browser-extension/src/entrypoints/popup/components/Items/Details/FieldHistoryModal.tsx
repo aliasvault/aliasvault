@@ -13,6 +13,7 @@ type FieldHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
   itemId: string;
+  manifestId: string;
   fieldKey: string;
   fieldLabel: string;
   fieldType: FieldType;
@@ -29,6 +30,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
   isOpen,
   onClose,
   itemId,
+  manifestId,
   fieldKey,
   fieldLabel,
   fieldType,
@@ -54,14 +56,14 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
 
     try {
       setLoading(true);
-      const historyRecords = dbContext.sqliteClient.items.getFieldHistory(itemId, fieldKey);
+      const historyRecords = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, fieldKey);
       setHistory(historyRecords);
     } catch (error) {
       console.error('Error loading field history:', error);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId, fieldKey]);
+  }, [dbContext?.sqliteClient, itemId, manifestId, fieldKey]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -110,7 +112,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     try {
       // Use vault mutation to delete and sync in background
       await executeVaultMutationAsync(async () => {
-        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId);
+        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId, manifestId);
       });
       // Reload history after deletion
       loadHistory();

@@ -4,14 +4,14 @@ import {
   FieldKey,
   LogoKinds,
   ItemTypes,
+  type Item,
 } from '@aliasvault/models/vault';
 import React from 'react';
 
-import type { DraftItem } from '@aliasvault/client/database/ItemRef';
 import type { ItemTypeIconKey } from '@aliasvault/models/icons';
 
 type ItemIconProps = {
-  item: DraftItem;
+  item: Item;
   className?: string;
 };
 

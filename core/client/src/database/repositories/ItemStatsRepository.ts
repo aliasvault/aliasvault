@@ -2,6 +2,7 @@ import { BaseRepository } from '../BaseRepository';
 import { ItemStatsQueries } from '../queries/ItemStatsQueries';
 
 import type { DbOp } from '../DbOp';
+import type { ItemRef } from '../ItemRef';
 
 /**
  * The actions whose use of an item is recorded. Each maps to its own timestamp + counter pair alongside
@@ -37,30 +38,20 @@ export type ItemStats = {
 export class ItemStatsRepository extends BaseRepository {
   /**
    * Record one use of an item.
-   * @param itemId - The item that was used
+   * @param item - The item that was used, named by its manifest and id
    * @param action - What the user did with it
    * @returns True when a use was recorded, false when no such item exists
    */
-  public *recordUsage(itemId: string, action: ItemUsageAction): DbOp<boolean> {
-    const manifestId = yield* this.itemManifestId(itemId);
-    if (!manifestId) {
+  public *recordUsage(item: ItemRef, action: ItemUsageAction): DbOp<boolean> {
+    if ((yield* this.query<{ Found: number }>(ItemStatsQueries.ITEM_EXISTS, [item.Id, item.ManifestId])).length === 0) {
       return false;
     }
 
     const now = this.now();
     const columns = ACTION_COLUMNS[action];
 
-    yield* this.execute(ItemStatsQueries.INSERT_ROW, [manifestId, itemId, now, now]);
-    yield* this.execute(ItemStatsQueries.forAction(columns.last, columns.count), [now, now, now, manifestId, itemId]);
+    yield* this.execute(ItemStatsQueries.INSERT_ROW, [item.ManifestId, item.Id, now, now]);
+    yield* this.execute(ItemStatsQueries.forAction(columns.last, columns.count), [now, now, now, item.ManifestId, item.Id]);
     return true;
-  }
-
-  /**
-   * The manifest the given item belongs to.
-   * @param itemId - The item id
-   * @returns The manifest id, or null when no such item exists
-   */
-  private *itemManifestId(itemId: string): DbOp<string | null> {
-    return (yield* this.query<{ ManifestId: string }>(ItemStatsQueries.GET_ITEM_MANIFEST, [itemId]))[0]?.ManifestId ?? null;
   }
 }

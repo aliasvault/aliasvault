@@ -25,6 +25,7 @@ import { getDeepActiveElement, getDeepElementById, getDeepEventTarget } from '@/
 import { t } from '@/i18n/StandaloneI18n';
 import { extensionPlatform } from '@/platform/ExtensionPlatform';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { Item } from '@aliasvault/models/vault';
 
 import { defineContentScript, createShadowRootUi, storage } from '#imports';
@@ -116,13 +117,14 @@ async function handleSavePromptDismiss(): Promise<void> {
 
 /**
  * Handle adding URL to an existing credential.
- * @param itemId - The ID of the credential to add the URL to.
+ * @param item - The credential to add the URL to, named by its manifest and id.
  * @param url - The URL to add.
  */
-async function handleAddUrlToCredential(itemId: string, url: string): Promise<void> {
+async function handleAddUrlToCredential(item: ItemRef, url: string): Promise<void> {
   try {
     const response = await sendMessage('ADD_URL_TO_CREDENTIAL', {
-      itemId,
+      itemId: item.Id,
+      manifestId: item.ManifestId,
       url,
     });
 
@@ -423,6 +425,7 @@ function initializeLoginDetector(container: HTMLElement): void {
          */
         const linkCheck = await sendMessage('IS_URL_LINKED_TO_CREDENTIAL', {
           itemId: lastAutofilledResponse.credential.itemId,
+          manifestId: lastAutofilledResponse.credential.manifestId,
           url: login.url,
         });
 
