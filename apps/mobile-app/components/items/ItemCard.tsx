@@ -17,12 +17,14 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
+import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
   item: DisplayItem;
-  onItemDelete?: (itemId: string) => Promise<void>;
-  onItemDuplicate?: (itemId: string) => Promise<void>;
+  onItemDelete?: (item: ItemRef) => Promise<void>;
+  onItemDuplicate?: (item: ItemRef) => Promise<void>;
   showFolderPath?: boolean;
   isHighlighted?: boolean;
 };
@@ -95,15 +97,12 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
       case t('items.contextMenu.edit'):
         navigate(() => {
           Keyboard.dismiss();
-          router.push({
-            pathname: '/(tabs)/items/add-edit',
-            params: { id: item.Id }
-          });
+          router.push(itemEditRoute(item));
         });
         break;
       case t('items.contextMenu.duplicate'):
         if (onItemDuplicate) {
-          await onItemDuplicate(item.Id);
+          await onItemDuplicate({ Id: item.Id, ManifestId: item.ManifestId });
         }
         break;
       case t('items.contextMenu.delete'):
@@ -114,7 +113,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
           t('common.delete'),
           async () => {
             if (onItemDelete) {
-              await onItemDelete(item.Id);
+              await onItemDelete({ Id: item.Id, ManifestId: item.ManifestId });
             }
           },
           { confirmStyle: 'destructive' }
@@ -169,7 +168,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
         {
           if (dbContext?.sqliteClient) {
             try {
-              const totpCodes = await dbContext.sqliteClient.items.getTotpCodesForItem(item.Id);
+              const totpCodes = await dbContext.sqliteClient.items.getTotpCodesForItem(item);
               const activeTotp = totpCodes.find(tc => !tc.IsDeleted);
               if (activeTotp) {
                 const code = await generateTotpCode(activeTotp.SecretKey, activeTotp);
@@ -341,7 +340,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
           onPress={() => {
             navigate(() => {
               Keyboard.dismiss();
-              router.push(`/(tabs)/items/${item.Id}`);
+              router.push(itemRoute(item));
             });
           }}
           onLongPress={() => {

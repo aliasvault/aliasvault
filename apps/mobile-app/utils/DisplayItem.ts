@@ -1,7 +1,9 @@
 import { Buffer } from 'buffer';
 
 import type { AsyncRepository } from '@aliasvault/client/database/DbOp';
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { ItemWithArchivedAt, ItemWithDeletedAt } from '@aliasvault/client/database/mappers/ItemMapper';
+import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { ItemRepository } from '@aliasvault/client/database/repositories/ItemRepository';
 import type { Item } from '@aliasvault/models/vault';
 
@@ -30,8 +32,8 @@ type ItemReads = 'getAll' | 'getByFolder' | 'getById' | 'getArchived' | 'getRece
  */
 export type DisplayItemRepository = Omit<AsyncRepository<ItemRepository>, ItemReads> & {
   getAll(): Promise<DisplayItem[]>;
-  getByFolder(folderId: string, manifestId?: string): Promise<DisplayItem[]>;
-  getById(itemId: string, manifestId?: string): Promise<DisplayItem | null>;
+  getByFolder(folder: FolderRef): Promise<DisplayItem[]>;
+  getById(item: ItemRef): Promise<DisplayItem | null>;
   getArchived(): Promise<DisplayItem<ItemWithArchivedAt>[]>;
   getRecentlyDeleted(): Promise<DisplayItem<ItemWithDeletedAt>[]>;
 };
@@ -42,9 +44,9 @@ export type DisplayItemRepository = Omit<AsyncRepository<ItemRepository>, ItemRe
 export function withDisplayItems(repository: AsyncRepository<ItemRepository>): DisplayItemRepository {
   const reads: Pick<DisplayItemRepository, ItemReads> = {
     getAll: async () => toDisplayItems(await repository.getAll()),
-    getByFolder: async (folderId, manifestId) => toDisplayItems(await repository.getByFolder(folderId, manifestId)),
-    getById: async (itemId, manifestId) => {
-      const item = await repository.getById(itemId, manifestId);
+    getByFolder: async (folder) => toDisplayItems(await repository.getByFolder(folder)),
+    getById: async (ref) => {
+      const item = await repository.getById(ref);
       return item ? toDisplayItems([item])[0] : null;
     },
     getArchived: async () => toDisplayItems(await repository.getArchived()),

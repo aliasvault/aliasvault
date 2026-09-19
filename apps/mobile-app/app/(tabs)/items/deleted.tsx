@@ -1,3 +1,4 @@
+import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -51,7 +52,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
 
   const [items, setItems] = useState<DisplayItem<ItemWithDeletedAt>[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(true);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ItemRef | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showConfirmEmptyAll, setShowConfirmEmptyAll] = useState(false);
 
@@ -89,13 +90,13 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
   /**
    * Restore an item from Recently Deleted.
    */
-  const handleRestore = useCallback(async (itemId: string): Promise<void> => {
+  const handleRestore = useCallback(async (item: ItemRef): Promise<void> => {
     if (!dbContext.sqliteClient) {
       return;
     }
 
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.items.restore(itemId);
+      await dbContext.sqliteClient!.items.restore(item);
     });
 
     await loadItems();
@@ -111,24 +112,24 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
    * Permanently delete an item.
    */
   const handlePermanentDelete = useCallback(async (): Promise<void> => {
-    if (!dbContext.sqliteClient || !selectedItemId) {
+    if (!dbContext.sqliteClient || !selectedItem) {
       return;
     }
 
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.items.permanentlyDelete(selectedItemId);
+      await dbContext.sqliteClient!.items.permanentlyDelete(selectedItem);
     });
 
     await loadItems();
     emitter.emit('credentialChanged');
     setShowConfirmDelete(false);
-    setSelectedItemId(null);
+    setSelectedItem(null);
 
     Toast.show({
       type: 'success',
       text1: t('items.recentlyDeleted.itemDeleted'),
     });
-  }, [dbContext.sqliteClient, executeVaultMutation, loadItems, selectedItemId, t]);
+  }, [dbContext.sqliteClient, executeVaultMutation, loadItems, selectedItem, t]);
 
   /**
    * Empty all items from Recently Deleted (permanent delete all).
@@ -140,7 +141,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
 
     await executeVaultMutation(async () => {
       for (const item of items) {
-        await dbContext.sqliteClient!.items.permanentlyDelete(item.Id);
+        await dbContext.sqliteClient!.items.permanentlyDelete(item);
       }
     });
 
@@ -159,7 +160,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
    */
   const handleCloseDeleteModal = useCallback((): void => {
     setShowConfirmDelete(false);
-    setSelectedItemId(null);
+    setSelectedItem(null);
   }, []);
 
   const styles = StyleSheet.create({
@@ -274,7 +275,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     const daysRemaining = item.DeletedAt ? getDaysRemaining(item.DeletedAt) : TRASH_RETENTION_DAYS;
 
     return (
-      <View key={item.Id} style={styles.itemCard}>
+      <View key={scopedKey(item.ManifestId, item.Id)} style={styles.itemCard}>
         <View style={styles.itemContent}>
           {/* Item logo */}
           <ItemIcon item={item} style={styles.itemLogo} />
@@ -298,7 +299,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
           <View style={styles.itemActions}>
             <TouchableOpacity
               style={styles.restoreButton}
-              onPress={() => handleRestore(item.Id)}
+              onPress={() => handleRestore(item)}
             >
               <Text style={styles.restoreButtonText}>
                 {t('items.recentlyDeleted.restore')}
@@ -307,7 +308,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => {
-                setSelectedItemId(item.Id);
+                setSelectedItem({ Id: item.Id, ManifestId: item.ManifestId });
                 setShowConfirmDelete(true);
               }}
             >
@@ -365,7 +366,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
 
       {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
-        isOpen={showConfirmDelete && !!selectedItemId}
+        isOpen={showConfirmDelete && !!selectedItem}
         onClose={handleCloseDeleteModal}
         onConfirm={handlePermanentDelete}
         title={t('items.recentlyDeleted.confirmDeleteTitle')}

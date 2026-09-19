@@ -9,6 +9,7 @@ import { useColors } from '@/hooks/useColorScheme';
  */
 export type FolderWithCount = {
   id: string;
+  manifestId: string;
   name: string;
   itemCount: number;
   isShared?: boolean;

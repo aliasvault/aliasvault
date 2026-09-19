@@ -42,7 +42,7 @@ object InlinePresentationHelper {
 
     /**
      * Build a long-press attribution PendingIntent that opens the given
-     * deep link (e.g. `aliasvault://items/<id>`). [requestCode] should be
+     * deep link (e.g. `aliasvault://items/<manifestId>/<id>`). [requestCode] should be
      * unique per destination so PendingIntent caching does not collapse
      * separate items onto the same intent.
      */

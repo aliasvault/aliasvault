@@ -7,8 +7,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getFolderIdPath, getFolderPath } from '@aliasvault/client/items/FolderUtils';
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';
+import { folderRoute } from '@/utils/FolderRoute';
 
-import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 type Breadcrumb = {
   name: string;
@@ -17,10 +18,10 @@ type Breadcrumb = {
 
 type FolderBreadcrumbProps = {
   /**
-   * The ID of the current folder to show breadcrumbs for.
+   * The current folder to show breadcrumbs for.
    * If null/undefined, no breadcrumbs are shown.
    */
-  folderId: string | null | undefined;
+  folder: FolderRef | null | undefined;
   /**
    * Optional root label for the first breadcrumb.
    * Defaults to 'items.title' translation key.
@@ -44,7 +45,7 @@ type FolderBreadcrumbProps = {
  * Example: "Items > Work > Projects > Client A"
  */
 export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
-  folderId,
+  folder,
   rootLabel,
   excludeCurrentFolder = false,
   folders,
@@ -54,6 +55,8 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
   const dbContext = useDb();
   const colors = useColors();
   const [loadedFolders, setLoadedFolders] = useState<Folder[]>([]);
+  const folderId = folder?.Id ?? null;
+  const manifestId = folder?.ManifestId ?? null;
 
   /**
    * Load the folders this trail is built from, unless the caller already passed them in.
@@ -81,24 +84,27 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
    */
   const breadcrumbs = useMemo((): Breadcrumb[] => {
     const allFolders = folders ?? loadedFolders;
-    if (!folderId || allFolders.length === 0) {
+    if (!folderId || !manifestId || allFolders.length === 0) {
       return [];
     }
 
-    const folderNames = getFolderPath(folderId, allFolders);
-    const folderIds = getFolderIdPath(folderId, allFolders);
+    const ref = { Id: folderId, ManifestId: manifestId };
+    const folderNames = getFolderPath(ref, allFolders);
+    const folderIds = getFolderIdPath(ref, allFolders);
     const fullPath = folderNames.map((name, index) => ({ name, id: folderIds[index] }));
 
     // If requested, exclude the current folder from breadcrumbs
     return excludeCurrentFolder ? fullPath.slice(0, -1) : fullPath;
-  }, [folders, loadedFolders, folderId, excludeCurrentFolder]);
+  }, [folders, loadedFolders, folderId, manifestId, excludeCurrentFolder]);
 
   /**
-   * Handle breadcrumb navigation.
+   * Handle breadcrumb navigation. Every folder on the trail shares the current folder's manifest.
    */
-  const handleBreadcrumbClick = useCallback((folderId: string) => {
-    router.dismissTo(`/(tabs)/items/folder/${folderId}`);
-  }, [router]);
+  const handleBreadcrumbClick = useCallback((crumbId: string) => {
+    if (manifestId) {
+      router.dismissTo(folderRoute({ Id: crumbId, ManifestId: manifestId }));
+    }
+  }, [router, manifestId]);
 
   /**
    * Handle root breadcrumb click (navigate to items list).
@@ -109,7 +115,7 @@ export const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
 
   /*
    * Don't render anything if:
-   * 1. No folderId provided (item is at root level) - saves UI space
+   * 1. No folder provided (item is at root level) - saves UI space
    */
   if (!folderId) {
     return null;

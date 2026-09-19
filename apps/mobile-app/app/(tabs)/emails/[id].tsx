@@ -15,6 +15,7 @@ import type { DisplayItem } from '@/utils/DisplayItem';
 import EncryptionUtility, { type DecryptedEmail } from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 import { getFileForFilename } from '@/utils/FileUtility';
+import { itemRoute } from '@/utils/ItemRoute';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
@@ -92,8 +93,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
       // Look up associated item
       if (decryptedEmail.email.toLocal && decryptedEmail.email.toDomain) {
         const emailAddress = `${decryptedEmail.email.toLocal}@${decryptedEmail.email.toDomain}`;
-        const match = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
-        const item = match ? await dbContext.sqliteClient.items.getById(match.Id) : null;
+        const match: { Id: string; ManifestId?: string } | null = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
+        const item = match?.ManifestId ? await dbContext.sqliteClient.items.getById({ Id: match.Id, ManifestId: match.ManifestId }) : null;
         setAssociatedItem(item);
       }
 
@@ -241,7 +242,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
    */
   const handleOpenItem = () : void => {
     if (associatedItem) {
-      router.push(`/(tabs)/items/${associatedItem.Id}`);
+      router.push(itemRoute(associatedItem));
     }
   };
 

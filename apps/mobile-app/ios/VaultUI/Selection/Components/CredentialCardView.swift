@@ -128,7 +128,7 @@ public struct AutofillCredentialCard: View {
             }
 
             Button(action: {
-                if let url = URL(string: "aliasvault://items/\(credential.id.uuidString.lowercased())") {
+                if let url = URL(string: "aliasvault://items/\(credential.manifestId)/\(credential.id.uuidString.lowercased())") {
                     UIApplication.shared.open(url)
                 }
             }, label: {
@@ -136,7 +136,7 @@ public struct AutofillCredentialCard: View {
             })
 
             Button(action: {
-                if let url = URL(string: "aliasvault://items/add-edit-page?id=\(credential.id.uuidString.lowercased())") {
+                if let url = URL(string: "aliasvault://items/\(credential.manifestId)/\(credential.id.uuidString.lowercased())/edit-page") {
                     UIApplication.shared.open(url)
                 }
             }, label: {

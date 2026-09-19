@@ -102,7 +102,7 @@ export class PostUnlockNavigation {
    *
    * Supports:
    * - Action-based URLs: aliasvault://open/mobile-unlock/[id]
-   * - Direct routes: aliasvault://items/[id], aliasvault://settings/[page]
+   * - Direct routes: aliasvault://items/[manifestId]/[id], aliasvault://settings/[page]
    */
   private static normalizeDeepLinkPath(urlOrPath: string): string {
     // Remove all URL schemes first

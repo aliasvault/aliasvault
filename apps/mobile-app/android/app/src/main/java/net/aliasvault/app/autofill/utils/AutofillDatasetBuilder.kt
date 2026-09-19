@@ -56,7 +56,7 @@ object AutofillDatasetBuilder {
         val bitmap = buildLogoBitmap(context, item, presentation)
 
         if (inlineSpec != null) {
-            val itemDeepLink = "aliasvault://items/${item.id.toString().lowercase()}"
+            val itemDeepLink = "aliasvault://items/${item.manifestId}/${item.id.toString().lowercase()}"
             val attribIntent = InlinePresentationHelper.attributionPendingIntent(
                 context = context,
                 deepLinkUri = itemDeepLink,

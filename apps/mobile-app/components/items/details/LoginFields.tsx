@@ -101,7 +101,7 @@ export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactN
         <FieldBlock
           key={field.FieldKey}
           field={field}
-          itemId={item.Id}
+          item={item}
         />
       ))}
 

@@ -40,7 +40,7 @@ export const CardDetails: React.FC<CardDetailsProps> = ({ item }): React.ReactNo
         <FieldBlock
           key={field.FieldKey}
           field={field}
-          itemId={item.Id}
+          item={item}
         />
       ))}
     </ThemedView>

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
 import { FieldTypes } from '@aliasvault/models/vault';
 
@@ -24,7 +25,7 @@ import { useDialog } from '@/context/DialogContext';
 type FieldHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  itemId: string;
+  item: ItemRef;
   fieldKey: string;
   fieldLabel: string;
   fieldType: FieldType;
@@ -40,7 +41,7 @@ type FieldHistoryModalProps = {
 const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
   isOpen,
   onClose,
-  itemId,
+  item,
   fieldKey,
   fieldLabel,
   fieldType,
@@ -63,14 +64,14 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
 
     try {
       setLoading(true);
-      const historyRecords = await dbContext.sqliteClient.items.getFieldHistory(itemId, fieldKey);
+      const historyRecords = await dbContext.sqliteClient.items.getFieldHistory({ Id: item.Id, ManifestId: item.ManifestId }, fieldKey);
       setHistory(historyRecords);
     } catch (error) {
       console.error('Error loading field history:', error);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId, fieldKey]);
+  }, [dbContext?.sqliteClient, item.Id, item.ManifestId, fieldKey]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -119,7 +120,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     try {
       // Use vault mutation to delete and sync in background
       await executeVaultMutation(async () => {
-        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId);
+        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId, item.ManifestId);
       });
       // Reload history after deletion
       await loadHistory();

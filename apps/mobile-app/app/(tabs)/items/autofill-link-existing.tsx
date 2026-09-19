@@ -1,3 +1,4 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import {
   FieldKey,
   FieldTypes,
@@ -179,7 +180,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
       };
 
       await executeVaultMutation(async () => {
-        await dbContext.sqliteClient!.items.update(itemToSave);
+        await dbContext.sqliteClient!.items.update({ Id: item.Id, ManifestId: item.ManifestId }, itemToSave);
       });
 
       navigateToSuccess();
@@ -369,7 +370,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
 
       <FlatList
         data={filteredItems}
-        keyExtractor={item => item.Id}
+        keyExtractor={item => scopedKey(item.ManifestId, item.Id)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"

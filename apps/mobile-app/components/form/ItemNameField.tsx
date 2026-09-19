@@ -14,7 +14,7 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useColors } from '@/hooks/useColorScheme';
 import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 
-import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 export interface ItemNameFieldRef {
   focus: () => void;
@@ -24,8 +24,8 @@ interface IItemNameFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   folders: Folder[];
-  selectedFolderId: string | null | undefined;
-  onFolderChange: (folderId: string | null) => void;
+  selectedFolder: FolderRef | null | undefined;
+  onFolderChange: (folder: FolderRef | null) => void;
 }
 
 /**
@@ -39,7 +39,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
   value,
   onChangeText,
   folders,
-  selectedFolderId,
+  selectedFolder: selectedFolderRef,
   onFolderChange,
 }, ref) => {
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
   }));
 
   const hasFolders = folders.length > 0;
-  const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+  const selectedFolder = selectedFolderRef ? folders.find(f => f.Id === selectedFolderRef.Id && f.ManifestId === selectedFolderRef.ManifestId) : undefined;
 
   const styles = StyleSheet.create({
     container: {
@@ -126,9 +126,9 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
             <FolderIcon
               isShared={selectedFolder !== undefined && isSharedFolder(selectedFolder, personalManifestId)}
               size={18}
-              color={selectedFolderId ? colors.tint : colors.textMuted}
+              color={selectedFolderRef ? colors.tint : colors.textMuted}
             />
-            {selectedFolderId && selectedFolder && (
+            {selectedFolder && (
               <Text style={styles.folderButtonText} numberOfLines={1}>
                 {selectedFolder.Name}
               </Text>
@@ -140,7 +140,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       {/* Folder selector modal with tree view */}
       <FolderSelectorModal
         folders={folders}
-        selectedFolderId={selectedFolderId}
+        selectedFolder={selectedFolderRef}
         personalManifestId={personalManifestId}
         onFolderChange={onFolderChange}
         isOpen={showModal}

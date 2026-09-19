@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
 import type { Item, Attachment } from '@aliasvault/models/vault';
-import emitter from '@/utils/EventEmitter';
+import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
 import { getFileForFilename } from '@/utils/FileUtility';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
@@ -71,19 +71,19 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
     }
 
     try {
-      const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem(item.Id);
+      const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem({ Id: item.Id, ManifestId: item.ManifestId });
       blobsRef.current = new Map(attachmentList.map(attachment => [attachment.Id, attachment.Blob]));
       setAttachments(attachmentList.map(({ Blob: _blob, ...attachment }) => attachment));
     } catch (error) {
       console.error('Error loading attachments:', error);
     }
-  }, [item.Id, dbContext?.sqliteClient]);
+  }, [item.Id, item.ManifestId, dbContext?.sqliteClient]);
 
   useEffect((): (() => void) => {
     loadAttachments();
 
-    const itemChangedSub = emitter.addListener('credentialChanged', async (changedId: string) => {
-      if (changedId === item.Id) {
+    const itemChangedSub = emitter.addListener('credentialChanged', async (change?: ItemChangedEvent) => {
+      if (change && change.previous.Id === item.Id && change.previous.ManifestId === item.ManifestId) {
         await loadAttachments();
       }
     });
@@ -91,7 +91,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
     return () => {
       itemChangedSub.remove();
     };
-  }, [item.Id, dbContext?.sqliteClient, loadAttachments]);
+  }, [item.Id, item.ManifestId, dbContext?.sqliteClient, loadAttachments]);
 
   if (attachments.length === 0) {
     return null;

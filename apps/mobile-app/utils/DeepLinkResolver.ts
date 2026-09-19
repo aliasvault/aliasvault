@@ -71,7 +71,7 @@ export function openActionRequiresVaultUnlock(actionSegments: string[]): boolean
  * Parse a deep-link URL and resolve into a post-unlock navigation target.
  *
  * - `aliasvault://open/<action>/...` → `resolveOpenAction`
- * - any other path (e.g. `aliasvault://items/abc`) → that route directly
+ * - any other path (e.g. `aliasvault://items/<manifestId>/<id>`) → that route directly
  *
  * Used by the root layout's cold-boot interceptor. The caller is responsible
  * for routing through /initialize before navigating to the returned target.

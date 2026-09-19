@@ -26,7 +26,7 @@ export const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({ item }
         <FieldBlock
           key={field.FieldKey}
           field={field}
-          itemId={item.Id}
+          item={item}
         />
       ))}
     </ThemedView>

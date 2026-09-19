@@ -43,8 +43,8 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
       }
 
       const emailAddress = `${email.toLocal}@${email.toDomain}`;
-      const match = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
-      const item = match ? await dbContext.sqliteClient.items.getById(match.Id) : null;
+      const match: { Id: string; ManifestId?: string } | null = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
+      const item = match?.ManifestId ? await dbContext.sqliteClient.items.getById({ Id: match.Id, ManifestId: match.ManifestId }) : null;
       setAssociatedItem(item);
     };
 

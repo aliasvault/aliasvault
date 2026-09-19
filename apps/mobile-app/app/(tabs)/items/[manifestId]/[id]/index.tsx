@@ -1,3 +1,4 @@
+import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { FieldTypes, getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -9,7 +10,8 @@ import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { DisplayItem } from '@/utils/DisplayItem';
-import emitter from '@/utils/EventEmitter';
+import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
+import { itemEditRoute } from '@/utils/ItemRoute';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -40,7 +42,8 @@ import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-vi
  * Item details screen.
  */
 export default function ItemDetailsScreen() : React.ReactNode {
-  const { id } = useLocalSearchParams();
+  const { id, manifestId } = useLocalSearchParams<{ manifestId: string; id: string }>();
+  const [itemRef, setItemRef] = useState<ItemRef>({ Id: id, ManifestId: manifestId });
   const [item, setItem] = useState<DisplayItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const dbContext = useDb();
@@ -54,8 +57,8 @@ export default function ItemDetailsScreen() : React.ReactNode {
    * Handle the edit button press.
    */
   const handleEdit = useCallback(() : void => {
-    navigate(() => router.push(`/(tabs)/items/add-edit?id=${id}`));
-  }, [id, router, navigate]);
+    navigate(() => router.push(itemEditRoute(itemRef)));
+  }, [itemRef, router, navigate]);
 
   // Set header buttons
   useEffect(() => {
@@ -96,12 +99,12 @@ export default function ItemDetailsScreen() : React.ReactNode {
      * Load the item.
      */
     const loadItem = async () : Promise<void> => {
-      if (!dbContext.dbAvailable || !id) {
+      if (!dbContext.dbAvailable) {
         return;
       }
 
       try {
-        const result = await dbContext.sqliteClient!.items.getById(id as string);
+        const result = await dbContext.sqliteClient!.items.getById(itemRef);
         setItem(result);
       } catch (err) {
         console.error('Error loading item:', err);
@@ -113,17 +116,23 @@ export default function ItemDetailsScreen() : React.ReactNode {
     loadItem();
 
     // Add listener for item changes
-    const itemChangedSub = emitter.addListener('credentialChanged', async (changedId: string) => {
-      if (changedId === id) {
-        await loadItem();
+    const itemChangedSub = emitter.addListener('credentialChanged', async (change?: ItemChangedEvent) => {
+      if (!change || scopedKey(change.previous.ManifestId, change.previous.Id) !== scopedKey(itemRef.ManifestId, itemRef.Id)) {
+        return;
       }
+      if (change.current && change.current.ManifestId !== itemRef.ManifestId) {
+        // The edit moved the item to another manifest: follow it, which reloads.
+        setItemRef(change.current);
+        return;
+      }
+      await loadItem();
     });
 
     return () : void => {
       itemChangedSub.remove();
       Toast.hide();
     };
-  }, [id, dbContext.dbAvailable, dbContext.sqliteClient]);
+  }, [itemRef, dbContext.dbAvailable, dbContext.sqliteClient]);
 
   if (isLoading) {
     return (
@@ -284,7 +293,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
     <ThemedContainer>
       <ThemedScrollView>
         {/* Folder breadcrumb navigation */}
-        <FolderBreadcrumb folderId={item.FolderId} />
+        <FolderBreadcrumb folder={item.FolderId ? { Id: item.FolderId, ManifestId: item.ManifestId } : null} />
 
         <ThemedView style={styles.header}>
           <ItemIcon item={item} style={styles.logo} />
