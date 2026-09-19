@@ -116,7 +116,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
     loadItem();
 
     // Add listener for item changes
-    const itemChangedSub = emitter.addListener('credentialChanged', async (change?: ItemChangedEvent) => {
+    const itemChangedSub = emitter.addListener('itemChanged', async (change?: ItemChangedEvent) => {
       if (!change || scopedKey(change.previous.ManifestId, change.previous.Id) !== scopedKey(itemRef.ManifestId, itemRef.Id)) {
         return;
       }

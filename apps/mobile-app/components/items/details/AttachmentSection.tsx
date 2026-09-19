@@ -1,11 +1,10 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Directory, Paths } from 'expo-file-system';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
 import type { Item, Attachment } from '@aliasvault/models/vault';
-import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
 import { getFileForFilename } from '@/utils/FileUtility';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
@@ -62,36 +61,27 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
     }
   };
 
-  /**
-   * Load the attachments.
-   */
-  const loadAttachments = useCallback(async (): Promise<void> => {
-    if (!dbContext?.sqliteClient) {
-      return;
-    }
-
-    try {
-      const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem({ Id: item.Id, ManifestId: item.ManifestId });
-      blobsRef.current = new Map(attachmentList.map(attachment => [attachment.Id, attachment.Blob]));
-      setAttachments(attachmentList.map(({ Blob: _blob, ...attachment }) => attachment));
-    } catch (error) {
-      console.error('Error loading attachments:', error);
-    }
-  }, [item.Id, item.ManifestId, dbContext?.sqliteClient]);
-
-  useEffect((): (() => void) => {
-    loadAttachments();
-
-    const itemChangedSub = emitter.addListener('credentialChanged', async (change?: ItemChangedEvent) => {
-      if (change && change.previous.Id === item.Id && change.previous.ManifestId === item.ManifestId) {
-        await loadAttachments();
+  useEffect(() => {
+    /**
+     * Load the attachments.
+     */
+    const loadAttachments = async (): Promise<void> => {
+      if (!dbContext?.sqliteClient) {
+        return;
       }
-    });
 
-    return () => {
-      itemChangedSub.remove();
+      try {
+        const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem({ Id: item.Id, ManifestId: item.ManifestId });
+        blobsRef.current = new Map(attachmentList.map(attachment => [attachment.Id, attachment.Blob]));
+        setAttachments(attachmentList.map(({ Blob: _blob, ...attachment }) => attachment));
+      } catch (error) {
+        console.error('Error loading attachments:', error);
+      }
     };
-  }, [item.Id, item.ManifestId, dbContext?.sqliteClient, loadAttachments]);
+
+    // The details screen hands over a fresh item after every edit, which reloads the attachments too.
+    loadAttachments();
+  }, [item, dbContext?.sqliteClient]);
 
   if (attachments.length === 0) {
     return null;

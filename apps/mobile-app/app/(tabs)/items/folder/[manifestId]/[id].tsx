@@ -1,3 +1,4 @@
+import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
@@ -11,6 +12,7 @@ import Toast from 'react-native-toast-message';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
+import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
@@ -40,7 +42,7 @@ import { useDialog } from '@/context/DialogContext';
 
 import type { FolderWithCount } from '@/components/folders/FolderPill';
 import type { ItemSummary } from '@aliasvault/client/database/mappers/ItemMapper';
-import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { ItemType } from '@aliasvault/models/vault';
 
@@ -68,7 +70,8 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
  * Simplified view with search scoped to this folder only.
  */
 export default function FolderViewScreen(): React.ReactNode {
-  const { id: folderId, filter: filterParam } = useLocalSearchParams<{ id: string; filter?: string }>();
+  const { id: folderId, manifestId, filter: filterParam } = useLocalSearchParams<{ manifestId: string; id: string; filter?: string }>();
+  const folderRef = useMemo((): FolderRef => ({ Id: folderId, ManifestId: manifestId }), [folderId, manifestId]);
   const { syncVault } = useVaultSync();
   const colors = useColors();
   const { t } = useTranslation();
@@ -87,19 +90,11 @@ export default function FolderViewScreen(): React.ReactNode {
   const [isLoadingItems, setIsLoadingItems] = useState(true);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
   const { executeVaultMutation } = useVaultMutate();
-
-  // Initial filter comes from the route param so navigating from a filtered list into a folder keeps the filter active.
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ItemFilterType>(() => parseItemFilterType(filterParam));
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-
-  // Sort state
   const { sortOrder, setSortOrder, showSortMenu, setShowSortMenu, toggleSortMenu } = useItemSort();
-
-  // Freshly duplicated item that gets scrolled into view and briefly highlighted
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
-
-  // Folder modals
+  const [highlightedItemKey, setHighlightedItemKey] = useState<string | null>(null);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
   const [showCreateSubfolderModal, setShowCreateSubfolderModal] = useState(false);
@@ -172,45 +167,41 @@ export default function FolderViewScreen(): React.ReactNode {
    * Used for the delete folder modal to show accurate count.
    */
   const totalItemCountInFolderTree = useMemo(() => {
-    if (!folderId || allFolders.length === 0) {
+    if (allFolders.length === 0) {
       return 0;
     }
 
-    return getRecursiveItemCount(folderId, itemSummaries, allFolders);
-  }, [folderId, allFolders, itemSummaries]);
+    return getRecursiveItemCount(folderRef, itemSummaries, allFolders);
+  }, [folderRef, allFolders, itemSummaries]);
 
   /**
    * Direct subfolders of the current folder, with item counts that respect the active
    * type/feature filter so each badge matches what the user will see when opening the folder.
    */
   const subfolders = useMemo((): FolderWithCount[] => {
-    if (!folderId || allFolders.length === 0) {
+    if (allFolders.length === 0) {
       return [];
     }
 
     const itemsForCount = applyTypeFilter(itemSummaries, filterType);
 
-    const childFolders = allFolders.filter((f: Folder) => f.ParentFolderId === folderId);
+    const childFolders = allFolders.filter((f: Folder) => f.ParentFolderId === folderRef.Id && f.ManifestId === folderRef.ManifestId);
     return childFolders.map((f) => ({
       id: f.Id,
+      manifestId: f.ManifestId,
       name: f.Name,
-      itemCount: getRecursiveItemCount(f.Id, itemsForCount, allFolders),
+      itemCount: getRecursiveItemCount(f, itemsForCount, allFolders),
       isShared: isSharedFolder(f, personalManifestId),
     }));
-  }, [folderId, allFolders, itemSummaries, filterType, personalManifestId]);
+  }, [folderRef, allFolders, itemSummaries, filterType, personalManifestId]);
 
   /**
    * Load items in this folder, subfolders, and folder details.
    */
   const loadItems = useCallback(async (): Promise<void> => {
-    if (!folderId) {
-      setIsLoadingItems(false);
-      return;
-    }
-
     try {
       const [folderItems, summaries, folders, savedSortOrder] = await Promise.all([
-        dbContext.sqliteClient!.items.getByFolder(folderId),
+        dbContext.sqliteClient!.items.getByFolder(folderRef),
         dbContext.sqliteClient!.items.getAllSummaries(),
         dbContext.sqliteClient!.folders.getAll(),
         dbContext.sqliteClient!.settings.getCredentialsSortOrder()
@@ -219,13 +210,13 @@ export default function FolderViewScreen(): React.ReactNode {
       setItemSummaries(summaries);
 
       // Find this folder
-      const currentFolder = folders.find((f: Folder) => f.Id === folderId);
+      const currentFolder = folders.find((f: Folder) => f.Id === folderRef.Id && f.ManifestId === folderRef.ManifestId);
       setFolder(currentFolder || null);
 
       setAllFolders(folders);
 
       // Calculate if we can create subfolders (check depth)
-      setCanCreateSubfolder(canHaveSubfolders(folderId, folders));
+      setCanCreateSubfolder(canHaveSubfolders(folderRef, folders));
 
       setSortOrder(savedSortOrder);
       setIsLoadingItems(false);
@@ -238,11 +229,11 @@ export default function FolderViewScreen(): React.ReactNode {
       });
       setIsLoadingItems(false);
     }
-  }, [dbContext.sqliteClient, folderId, setIsLoadingItems, setSortOrder, t]);
+  }, [dbContext.sqliteClient, folderRef, setIsLoadingItems, setSortOrder, t]);
 
   useEffect(() => {
     // Add listener for item changes
-    const itemChangedSub = emitter.addListener('credentialChanged', async () => {
+    const itemChangedSub = emitter.addListener('itemChanged', async () => {
       await loadItems();
     });
 
@@ -369,9 +360,9 @@ export default function FolderViewScreen(): React.ReactNode {
    * Delete an item (move to trash).
    * Non-blocking: saves locally and syncs in background via ServerSyncIndicator.
    */
-  const onItemDelete = useCallback(async (itemId: string): Promise<void> => {
+  const onItemDelete = useCallback(async (item: ItemRef): Promise<void> => {
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.items.trash(itemId);
+      await dbContext.sqliteClient!.items.trash(item);
     });
 
     // Reload items to reflect the deletion
@@ -381,17 +372,18 @@ export default function FolderViewScreen(): React.ReactNode {
   /**
    * Duplicate an item including all fields except passkeys and field history.
    */
-  const onItemDuplicate = useCallback(async (itemId: string): Promise<void> => {
-    let newItemId: string | null = null;
+  const onItemDuplicate = useCallback(async (item: ItemRef): Promise<void> => {
+    let duplicate: ItemRef | null = null;
     await executeVaultMutation(async () => {
-      newItemId = await dbContext.sqliteClient!.items.duplicate(itemId);
+      duplicate = await dbContext.sqliteClient!.items.duplicate(item);
     });
 
     // Reload items to show the new duplicate
     await loadItems();
 
     // Scroll to and briefly highlight the new duplicate so it's clear where it landed
-    setHighlightedItemId(newItemId);
+    const created = duplicate as ItemRef | null;
+    setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
   /**
@@ -399,82 +391,70 @@ export default function FolderViewScreen(): React.ReactNode {
    * rendered, then clear the highlight after a short moment.
    */
   useEffect(() => {
-    if (!highlightedItemId) {
+    if (!highlightedItemKey) {
       return;
     }
 
-    const index = sortedItems.findIndex(itm => itm.Id === highlightedItemId);
+    const index = sortedItems.findIndex(itm => scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey);
     if (index >= 0) {
       flatListRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
     }
 
-    const timer = setTimeout(() => setHighlightedItemId(null), 2000);
+    const timer = setTimeout(() => setHighlightedItemKey(null), 2000);
     return (): void => clearTimeout(timer);
-  }, [highlightedItemId, sortedItems]);
+  }, [highlightedItemKey, sortedItems]);
 
   /**
    * Rename the folder.
    */
   const handleEditFolder = useCallback(async (newName: string) => {
-    if (!folderId) {
-      return;
-    }
-
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.folders.update(folderId, newName);
+      await dbContext.sqliteClient!.folders.update(folderRef, newName);
     });
     await loadItems();
     setShowEditFolderModal(false);
-  }, [dbContext.sqliteClient, folderId, executeVaultMutation, loadItems]);
+  }, [dbContext.sqliteClient, folderRef, executeVaultMutation, loadItems]);
 
   /**
    * Delete the folder (keep items - move them to root).
    */
   const handleDeleteFolderOnly = useCallback(async () => {
-    if (!folderId) {
-      return;
-    }
-
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.folders.delete(folderId);
+      await dbContext.sqliteClient!.folders.delete(folderRef);
     });
     // Emit event to refresh the home screen folder list
-    emitter.emit('credentialChanged');
+    emitter.emit('itemChanged');
     router.back();
-  }, [dbContext.sqliteClient, folderId, executeVaultMutation, router]);
+  }, [dbContext.sqliteClient, folderRef, executeVaultMutation, router]);
 
   /**
    * Delete the folder and all its contents.
    */
   const handleDeleteFolderAndContents = useCallback(async () => {
-    if (!folderId) {
-      return;
-    }
-
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.folders.deleteWithContents(folderId);
+      await dbContext.sqliteClient!.folders.deleteWithContents(folderRef);
     });
     // Emit event to refresh the home screen folder list
-    emitter.emit('credentialChanged');
+    emitter.emit('itemChanged');
     router.back();
-  }, [dbContext.sqliteClient, folderId, executeVaultMutation, router]);
+  }, [dbContext.sqliteClient, folderRef, executeVaultMutation, router]);
 
   /**
    * Handle item type selection from the FAB menu.
    */
   const handleAddItem = useCallback((itemType: ItemType) => {
     navigate(() => {
-      router.push(`/(tabs)/items/add-edit?folderId=${folderId}&itemType=${itemType}` as '/(tabs)/items/add-edit');
+      router.push(`/(tabs)/items/add?folderId=${folderRef.Id}&folderManifestId=${encodeURIComponent(folderRef.ManifestId)}&itemType=${itemType}` as '/(tabs)/items/add');
       HapticsUtility.impact();
     });
-  }, [folderId, router, navigate]);
+  }, [folderRef, router, navigate]);
 
   /**
    * Handle subfolder click.
    */
-  const handleSubfolderClick = useCallback((subfolderId: string) => {
+  const handleSubfolderClick = useCallback((subfolder: FolderRef) => {
     navigate(() => {
-      router.push(`/(tabs)/items/folder/${subfolderId}?filter=${encodeURIComponent(filterType)}` as '/(tabs)/items/folder/[id]');
+      router.push(folderRoute(subfolder, filterType));
     });
   }, [router, navigate, filterType]);
 
@@ -482,16 +462,12 @@ export default function FolderViewScreen(): React.ReactNode {
    * Create a new subfolder.
    */
   const handleCreateSubfolder = useCallback(async (name: string) => {
-    if (!folderId) {
-      return;
-    }
-
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.folders.create(name, folderId);
+      await dbContext.sqliteClient!.folders.create(name, folderRef);
     });
     await loadItems();
     setShowCreateSubfolderModal(false);
-  }, [dbContext.sqliteClient, folderId, executeVaultMutation, loadItems]);
+  }, [dbContext.sqliteClient, folderRef, executeVaultMutation, loadItems]);
 
   const paddingTop = Platform.OS === 'ios' ? 56 : 16;
   const paddingBottom = Platform.OS === 'ios' ? insets.bottom + 60 : 40;
@@ -779,7 +755,7 @@ export default function FolderViewScreen(): React.ReactNode {
       <ThemedView>
         {/* Folder breadcrumb navigation */}
         <FolderBreadcrumb
-          folderId={folderId}
+          folder={folderRef}
           excludeCurrentFolder={true}
           folders={allFolders}
         />
@@ -789,9 +765,9 @@ export default function FolderViewScreen(): React.ReactNode {
           <View style={styles.folderPillsContainer}>
             {subfolders.map((subfolder) => (
               <FolderPill
-                key={subfolder.id}
+                key={scopedKey(subfolder.manifestId, subfolder.id)}
                 folder={subfolder}
-                onPress={() => handleSubfolderClick(subfolder.id)}
+                onPress={() => handleSubfolderClick({ Id: subfolder.id, ManifestId: subfolder.manifestId })}
               />
             ))}
             {canCreateSubfolder && (
@@ -882,7 +858,7 @@ export default function FolderViewScreen(): React.ReactNode {
         </ThemedView>
       </ThemedView>
     );
-  }, [folderId, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
+  }, [folderRef, allFolders, searchQuery, subfolders, canCreateSubfolder, handleSubfolderClick, showFilterMenu, filteredItems.length, getFilterTitle, toggleSortMenu, styles, colors, t]);
 
   /**
    * Render empty state.
@@ -913,7 +889,7 @@ export default function FolderViewScreen(): React.ReactNode {
       <FlatList
         ref={flatListRef}
         data={isLoadingItems ? Array(4).fill(null) : sortedItems}
-        keyExtractor={(itm, index) => itm?.Id ?? `skeleton-${index}`}
+        keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
         contentContainerStyle={styles.contentContainer}
         scrollIndicatorInsets={{ bottom: 40 }}
@@ -938,7 +914,7 @@ export default function FolderViewScreen(): React.ReactNode {
           isLoadingItems ? (
             <SkeletonLoader count={1} height={60} parts={2} />
           ) : (
-            <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} isHighlighted={itm.Id === highlightedItemId} />
+            <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey} />
           )
         }
         ListEmptyComponent={renderEmptyComponent() as React.ReactElement}

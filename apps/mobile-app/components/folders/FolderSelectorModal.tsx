@@ -9,25 +9,19 @@ import {
   ScrollView,
 } from 'react-native';
 
-import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import { useColors } from '@/hooks/useColorScheme';
 import { ModalWrapper } from '@/components/common/ModalWrapper';
 import { FolderIcon } from '@/components/folders/FolderIcon';
 
-import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
-
-type FolderTreeNode = Folder & {
-  children: FolderTreeNode[];
-  depth: number;
-  path: string[];
-  indentedName: string;
-};
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 interface IFolderSelectorModalProps {
   folders: Folder[];
-  selectedFolderId: string | null | undefined;
+  selectedFolder: FolderRef | null | undefined;
   personalManifestId: string | null;
-  onFolderChange: (folderId: string | null) => void;
+  onFolderChange: (folder: FolderRef | null) => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -40,7 +34,7 @@ interface IFolderSelectorModalProps {
  */
 export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   folders,
-  selectedFolderId,
+  selectedFolder,
   personalManifestId,
   onFolderChange,
   isOpen,
@@ -50,97 +44,19 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   const colors = useColors();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
-  /**
-   * Build a hierarchical tree from flat array of folders.
-   */
-  const buildFolderTree = useCallback((folders: Folder[]): FolderTreeNode[] => {
-    const folderMap = new Map<string, FolderTreeNode>();
-
-    // Initialize all folders as tree nodes
-    folders.forEach(folder => {
-      folderMap.set(folder.Id, {
-        ...folder,
-        children: [],
-        depth: 0,
-        path: [],
-        indentedName: folder.Name,
-      });
-    });
-
-    // Build the tree structure
-    const rootFolders: FolderTreeNode[] = [];
-
-    folders.forEach(folder => {
-      const node = folderMap.get(folder.Id)!;
-
-      if (!folder.ParentFolderId) {
-        // Root folder
-        node.depth = 0;
-        node.path = [folder.Id];
-        node.indentedName = folder.Name;
-        rootFolders.push(node);
-      } else {
-        // Child folder
-        const parent = folderMap.get(folder.ParentFolderId);
-        if (parent) {
-          node.depth = parent.depth + 1;
-          node.path = [...parent.path, folder.Id];
-          node.indentedName = '  '.repeat(node.depth) + folder.Name;
-          parent.children.push(node);
-        } else {
-          // Parent not found - treat as root
-          node.depth = 0;
-          node.path = [folder.Id];
-          node.indentedName = folder.Name;
-          rootFolders.push(node);
-        }
-      }
-    });
-
-    // Sort folders by Weight and Name
-    const sortFolders = (nodes: FolderTreeNode[]): void => {
-      nodes.sort((a, b) => {
-        if (a.Weight !== b.Weight) {
-          return (a.Weight || 0) - (b.Weight || 0);
-        }
-        return a.Name.localeCompare(b.Name);
-      });
-      nodes.forEach(node => sortFolders(node.children));
-    };
-
-    sortFolders(rootFolders);
-    return rootFolders;
-  }, []);
-
-  /**
-   * Get folder ID path from root to specified folder.
-   */
-  const getFolderIdPath = useCallback((folderId: string, folders: Folder[]): string[] => {
-    const path: string[] = [];
-    let currentId: string | null = folderId;
-    let iterations = 0;
-
-    while (currentId && iterations < 5) {
-      const folder = folders.find(f => f.Id === currentId);
-      if (!folder) break;
-      path.unshift(folder.Id);
-      currentId = folder.ParentFolderId || null;
-      iterations++;
-    }
-
-    return path;
-  }, []);
+  const selectedFolderId = selectedFolder?.Id ?? null;
+  const selectedManifestId = selectedFolder?.ManifestId ?? null;
 
   /**
    * Toggle folder expand/collapse.
    */
-  const toggleFolder = useCallback((folderId: string): void => {
+  const toggleFolder = useCallback((folderKey: string): void => {
     setExpandedFolders(prev => {
       const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
+      if (next.has(folderKey)) {
+        next.delete(folderKey);
       } else {
-        next.add(folderId);
+        next.add(folderKey);
       }
       return next;
     });
@@ -150,24 +66,24 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
    * Auto-expand folders when selected folder changes.
    */
   useEffect(() => {
-    if (selectedFolderId && folders.length > 0) {
-      const fullPath = getFolderIdPath(selectedFolderId, folders);
+    if (selectedFolderId && selectedManifestId && folders.length > 0) {
+      const fullPath = getFolderIdPath({ Id: selectedFolderId, ManifestId: selectedManifestId }, folders);
       if (fullPath.length > 0) {
         // Expand all folders in the path including the selected folder
-        setExpandedFolders(new Set(fullPath));
+        setExpandedFolders(new Set(fullPath.map(id => scopedKey(selectedManifestId, id))));
       }
     } else {
       setExpandedFolders(new Set());
     }
-  }, [selectedFolderId, folders, getFolderIdPath]);
+  }, [selectedFolderId, selectedManifestId, folders]);
 
-  const folderTree = useMemo(() => buildFolderTree(folders), [folders, buildFolderTree]);
+  const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
 
   /**
    * Handle folder selection.
    */
-  const handleSelectFolder = useCallback((folderId: string | null): void => {
-    onFolderChange(folderId);
+  const handleSelectFolder = useCallback((folder: FolderRef | null): void => {
+    onFolderChange(folder);
     onClose();
   }, [onFolderChange, onClose]);
 
@@ -233,18 +149,19 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
    * Recursively render folder tree node.
    */
   const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
-    const isExpanded = expandedFolders.has(node.Id);
+    const nodeKey = scopedKey(node.ManifestId, node.Id);
+    const isExpanded = expandedFolders.has(nodeKey);
     const hasChildren = node.children.length > 0;
-    const isSelected = selectedFolderId === node.Id;
+    const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
 
     return (
-      <View key={node.Id}>
+      <View key={nodeKey}>
         <TouchableOpacity
           style={[
             styles.folderOption,
             isSelected && styles.folderOptionActive,
           ]}
-          onPress={() => handleSelectFolder(node.Id)}
+          onPress={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
           activeOpacity={0.7}
         >
           {/* Indentation */}
@@ -256,7 +173,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
               <TouchableOpacity
                 onPress={(e) => {
                   e.stopPropagation();
-                  toggleFolder(node.Id);
+                  toggleFolder(nodeKey);
                 }}
                 style={styles.chevronButton}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -308,7 +225,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
         )}
       </View>
     );
-  }, [expandedFolders, selectedFolderId, personalManifestId, handleSelectFolder, toggleFolder, colors, styles]);
+  }, [expandedFolders, selectedFolderId, selectedManifestId, personalManifestId, handleSelectFolder, toggleFolder, colors, styles]);
 
   const modalContent = (
     <View style={styles.modalContainer}>

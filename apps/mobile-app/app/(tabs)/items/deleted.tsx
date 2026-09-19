@@ -100,7 +100,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     });
 
     await loadItems();
-    emitter.emit('credentialChanged');
+    emitter.emit('itemChanged');
 
     Toast.show({
       type: 'success',
@@ -121,7 +121,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     });
 
     await loadItems();
-    emitter.emit('credentialChanged');
+    emitter.emit('itemChanged');
     setShowConfirmDelete(false);
     setSelectedItem(null);
 
@@ -146,7 +146,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
     });
 
     await loadItems();
-    emitter.emit('credentialChanged');
+    emitter.emit('itemChanged');
     setShowConfirmEmptyAll(false);
 
     Toast.show({

@@ -1,8 +1,9 @@
 import { Buffer } from 'buffer';
 
+import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { IdentityHelperUtils } from '@aliasvault/models/identity';
-import { ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
+import { ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -13,8 +14,9 @@ import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView,
 import Toast from 'react-native-toast-message';
 
 import type { DisplayItem } from '@/utils/DisplayItem';
-import emitter from '@/utils/EventEmitter';
+import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
+import { itemRoute } from '@/utils/ItemRoute';
 import { extractServiceNameFromUrl, sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -47,9 +49,6 @@ import type { Identity } from '@aliasvault/models/identity';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
 import type { FaviconExtractModel } from '@aliasvault/models/webapi';
 
-// Valid item types from the shared model
-const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
-
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
 
@@ -59,16 +58,21 @@ const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
 const isMaskedFieldType = (fieldType: FieldType): boolean =>
   fieldType === FieldTypes.Password || fieldType === FieldTypes.Hidden;
 
+type AddEditItemScreenProps = {
+  /** The item to edit, absent when creating one. */
+  editRef?: ItemRef;
+};
+
 /**
  * Add or edit an item screen.
  */
-export default function AddEditItemScreen(): React.ReactNode {
-  const { id, itemUrl, itemName, itemType: itemTypeParam, folderId: folderIdParam } = useLocalSearchParams<{
-    id: string;
+export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): React.ReactNode {
+  const { itemUrl, itemName, itemType: itemTypeParam, folderId: folderIdParam, folderManifestId: folderManifestIdParam } = useLocalSearchParams<{
     itemUrl?: string;
     itemName?: string;
     itemType?: string;
     folderId?: string;
+    folderManifestId?: string;
   }>();
   const router = useRouter();
   const colors = useColors();
@@ -85,7 +89,6 @@ export default function AddEditItemScreen(): React.ReactNode {
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
   const [attachments, setAttachments] = useState<Omit<Attachment, 'Blob'>[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
-  // The bytes of newly picked attachments by id, kept out of state until save.
   const attachmentBlobsRef = useRef(new Map<string, Uint8Array>());
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
@@ -95,35 +98,17 @@ export default function AddEditItemScreen(): React.ReactNode {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-  // Store the pending navigation action when usePreventRemove triggers
   const [pendingNavigationAction, setPendingNavigationAction] = useState<NavigationAction | null>(null);
-
-  // Item state
   const [item, setItem] = useState<DisplayItem | null>(null);
-
-  // Form state for dynamic fields - key is FieldKey, value is the field value
+  const [personalManifestId, setPersonalManifestId] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
-
-  // Custom field definitions (temporary until saved)
   const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
-
-  // UI visibility state
   const [show2FA, setShow2FA] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
-
-  // Folder state
   const [folders, setFolders] = useState<Folder[]>([]);
-
-  // Track manually added optional fields
   const [manuallyAddedFields, setManuallyAddedFields] = useState<Set<string>>(new Set());
-
-  // Track fields that had values initially (edit mode)
   const [initiallyVisibleFields, setInitiallyVisibleFields] = useState<Set<string>>(new Set());
-
-  // Track if alias was already auto-generated
   const aliasGeneratedRef = useRef(false);
-
-  // Track last generated values to avoid overwriting manual entries
   const [lastGeneratedValues, setLastGeneratedValues] = useState<{
     username: string | null;
     password: string | null;
@@ -133,10 +118,7 @@ export default function AddEditItemScreen(): React.ReactNode {
   // Password settings state (loaded immediately to prevent flicker)
   const [passwordSettings, setPasswordSettings] = useState<PasswordSettings | undefined>(undefined);
 
-  /**
-   * If we received an ID, we're in edit mode.
-   */
-  const isEditMode = id !== undefined && id.length > 0;
+  const isEditMode = editRef !== undefined;
 
   /**
    * Get all applicable system fields for the current item type.
@@ -415,7 +397,7 @@ export default function AddEditItemScreen(): React.ReactNode {
    */
   const loadExistingItem = useCallback(async (): Promise<void> => {
     try {
-      const existingItem = await dbContext.sqliteClient!.items.getById(id);
+      const existingItem = editRef ? await dbContext.sqliteClient!.items.getById(editRef) : null;
       if (existingItem) {
         setItem(existingItem);
 
@@ -454,7 +436,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         setInitiallyVisibleFields(fieldsWithValues);
 
         // Load attachments for this item
-        const itemAttachments = await dbContext.sqliteClient!.items.getAttachmentsForItem(id);
+        const itemAttachments = await dbContext.sqliteClient!.items.getAttachmentsForItem(existingItem);
         // A saved attachment is only ever kept or removed on save, so its bytes are not needed here.
         setAttachments(itemAttachments.map(({ Blob: _blob, ...attachment }) => attachment));
         setOriginalAttachmentIds(itemAttachments.map(a => a.Id));
@@ -463,7 +445,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         }
 
         // Load TOTP codes for this item
-        const itemTotpCodes = await dbContext.sqliteClient!.items.getTotpCodesForItem(id);
+        const itemTotpCodes = await dbContext.sqliteClient!.items.getTotpCodesForItem(existingItem);
         setTotpCodes(itemTotpCodes);
         setOriginalTotpCodeIds(itemTotpCodes.map(tc => tc.Id));
         if (itemTotpCodes.length > 0) {
@@ -471,7 +453,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         }
 
         // Load passkeys for this item
-        const itemPasskeys = await dbContext.sqliteClient!.passkeys.getByItemId(id);
+        const itemPasskeys = await dbContext.sqliteClient!.passkeys.getByItemId(existingItem);
         setPasskeyIds(itemPasskeys.map(pk => pk.Id));
       }
     } catch (err) {
@@ -482,7 +464,7 @@ export default function AddEditItemScreen(): React.ReactNode {
         text2: t('common.errors.unknownErrorTryAgain')
       });
     }
-  }, [id, dbContext.sqliteClient, t]);
+  }, [editRef, dbContext.sqliteClient, t]);
 
   /**
    * On mount, load an existing item if we're in edit mode, or initialize new item.
@@ -498,6 +480,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       try {
         const loadedFolders = await dbContext.sqliteClient!.folders.getAll();
         setFolders(loadedFolders);
+        setPersonalManifestId(await dbContext.sqliteClient!.getPersonalManifestId());
       } catch (err) {
         console.error('Error loading folders:', err);
       }
@@ -534,16 +517,15 @@ export default function AddEditItemScreen(): React.ReactNode {
         }
 
         // Determine effective type from URL param or default
-        const effectiveType: ItemType = (itemTypeParam && VALID_ITEM_TYPES.includes(itemTypeParam as ItemType))
-          ? itemTypeParam as ItemType
-          : DEFAULT_ITEM_TYPE;
+        const effectiveType: ItemType = isItemType(itemTypeParam) ? itemTypeParam : DEFAULT_ITEM_TYPE;
 
+        const startsInFolder = Boolean(folderIdParam && folderManifestIdParam);
         const newItem: Item = {
           Id: crypto.randomUUID(),
-          ManifestId: '',
+          ManifestId: manifestForItemIn(startsInFolder ? { ManifestId: folderManifestIdParam! } : null, await dbContext.sqliteClient!.getPersonalManifestId()),
           Name: serviceName,
           ItemType: effectiveType,
-          FolderId: folderIdParam || null,
+          FolderId: startsInFolder ? folderIdParam! : null,
           Fields: [],
           CreatedAt: new Date().toISOString(),
           UpdatedAt: new Date().toISOString()
@@ -567,7 +549,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     };
 
     initializeComponent();
-  }, [id, isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, loadExistingItem, router, t, dbContext.sqliteClient]);
+  }, [isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, folderManifestIdParam, loadExistingItem, router, t, dbContext.sqliteClient]);
 
   /**
    * Auto-generate alias when alias fields are shown by default in create mode.
@@ -829,7 +811,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     // Build the item to save
     let itemToSave: Item = {
       ...item,
-      Id: isEditMode ? id : crypto.randomUUID(),
+      Id: editRef ? editRef.Id : crypto.randomUUID(),
       Name: item.Name || t('items.untitled'),
       Fields: fields,
       UpdatedAt: new Date().toISOString()
@@ -875,23 +857,23 @@ export default function AddEditItemScreen(): React.ReactNode {
      * Navigate immediately after local save; sync happens in background via ServerSyncIndicator.
      */
     try {
+      let savedRef: ItemRef | null = null;
       await executeVaultMutation(async () => {
-        if (isEditMode) {
-          await dbContext.sqliteClient!.items.update(itemToSave, originalAttachmentIds, attachmentsToSave, originalTotpCodeIds, totpCodes);
-
-          // Delete passkeys if marked for deletion
-          if (passkeyIdsMarkedForDeletion.length > 0) {
-            for (const passkeyId of passkeyIdsMarkedForDeletion) {
-              await dbContext.sqliteClient!.passkeys.deleteById(passkeyId);
-            }
+        if (editRef) {
+          // Passkeys are deleted first, while they still sit in the manifest the item is in now.
+          for (const passkeyId of passkeyIdsMarkedForDeletion) {
+            await dbContext.sqliteClient!.passkeys.deleteById(passkeyId, editRef.ManifestId);
           }
+
+          savedRef = await dbContext.sqliteClient!.items.update(editRef, itemToSave, originalAttachmentIds, attachmentsToSave, originalTotpCodeIds, totpCodes) ?? editRef;
         } else {
-          await dbContext.sqliteClient!.items.create(itemToSave, attachmentsToSave, totpCodes);
+          savedRef = await dbContext.sqliteClient!.items.create(itemToSave, attachmentsToSave, totpCodes);
         }
       });
+      const currentRef = savedRef as ItemRef | null;
 
       // Emit event to notify list and detail views to refresh
-      emitter.emit('credentialChanged', itemToSave.Id);
+      emitter.emit('itemChanged', { previous: editRef ?? currentRef, current: currentRef ?? undefined } as ItemChangedEvent);
       setHasUnsavedChanges(false);
       setIsSaving(false);
       setIsSaveDisabled(false);
@@ -918,7 +900,9 @@ export default function AddEditItemScreen(): React.ReactNode {
               text1: t('items.toasts.itemCreated'),
               position: 'bottom'
             });
-            router.push(`/items/${itemToSave.Id}`);
+            if (currentRef) {
+              router.push(itemRoute(currentRef));
+            }
           }
         }, 100);
       }
@@ -933,13 +917,13 @@ export default function AddEditItemScreen(): React.ReactNode {
       setIsSaving(false);
       setIsSaveDisabled(false);
     }
-  }, [isEditMode, id, itemUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion]);
+  }, [isEditMode, editRef, itemUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion]);
 
   /**
    * Handle the delete button press.
    */
   const handleDelete = (): void => {
-    if (!id) {
+    if (!editRef) {
       return;
     }
 
@@ -951,15 +935,15 @@ export default function AddEditItemScreen(): React.ReactNode {
    * Confirm and execute item deletion.
    */
   const confirmDelete = useCallback(async (): Promise<void> => {
-    if (!id) {
+    if (!editRef) {
       return;
     }
 
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.items.trash(id);
+      await dbContext.sqliteClient!.items.trash(editRef);
     });
 
-    emitter.emit('credentialChanged', id);
+    emitter.emit('itemChanged', { previous: editRef } as ItemChangedEvent);
 
     // Haptic feedback for delete action (warning type for destructive action)
     HapticsUtility.notification(Haptics.NotificationFeedbackType.Warning);
@@ -975,7 +959,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     setShowDeleteConfirm(false);
     router.back();
     router.back();
-  }, [id, executeVaultMutation, dbContext.sqliteClient, t, router]);
+  }, [editRef, executeVaultMutation, dbContext.sqliteClient, t, router]);
 
   /**
    * Handle cancel button press.
@@ -1400,9 +1384,9 @@ export default function AddEditItemScreen(): React.ReactNode {
                   setHasUnsavedChanges(true);
                 }}
                 folders={folders}
-                selectedFolderId={item.FolderId}
-                onFolderChange={(folderId) => {
-                  setItem(prev => prev ? { ...prev, FolderId: folderId } : prev);
+                selectedFolder={item.FolderId ? { Id: item.FolderId, ManifestId: item.ManifestId } : null}
+                onFolderChange={(folder) => {
+                  setItem(prev => prev ? { ...prev, FolderId: folder?.Id ?? null, ManifestId: manifestForItemIn(folder, personalManifestId) } : prev);
                   setHasUnsavedChanges(true);
                 }}
               />

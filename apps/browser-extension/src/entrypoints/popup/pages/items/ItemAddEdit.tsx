@@ -1,7 +1,7 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn } from '@aliasvault/client/database/ItemRef';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
-import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
+import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -45,9 +45,6 @@ import type { Folder } from '@aliasvault/client/database/repositories/FolderRepo
 import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@aliasvault/models/vault';
 
 import { browser } from '#imports';
-
-// Valid item types from the shared model
-const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
 
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
@@ -94,7 +91,7 @@ const ItemAddEdit: React.FC = () => {
   const isEditMode = id !== undefined && id.length > 0 && manifestId !== undefined && manifestId.length > 0;
 
   // Get item type, title, and folder from URL parameters (for create mode)
-  const itemTypeParam = searchParams.get('type') as ItemType | null;
+  const itemTypeParam = searchParams.get('type');
   const itemTitleParam = searchParams.get('itemTitle');
   const folderManifestIdParam = searchParams.get('folderManifestId');
   const folderIdParam = folderManifestIdParam ? searchParams.get('folderId') : null;
@@ -350,9 +347,7 @@ const ItemAddEdit: React.FC = () => {
   useEffect(() => {
     if (!dbContext?.sqliteClient || !id || !manifestId || !isEditMode) {
       // Create mode - initialize with defaults
-      const effectiveType: ItemType = (itemTypeParam && VALID_ITEM_TYPES.includes(itemTypeParam))
-        ? itemTypeParam
-        : DEFAULT_ITEM_TYPE;
+      const effectiveType: ItemType = isItemType(itemTypeParam) ? itemTypeParam : DEFAULT_ITEM_TYPE;
 
       /**
        * Initialize create mode with service detection from URL params or active tab.

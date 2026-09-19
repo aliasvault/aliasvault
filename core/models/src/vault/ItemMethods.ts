@@ -1,5 +1,5 @@
-import type { Item, ItemField, FieldType } from './Item';
-import { FieldTypes } from './Item';
+import type { Item, ItemField, ItemType, FieldType } from './Item';
+import { FieldTypes, ItemTypes } from './Item';
 import type { Credential } from './Credential';
 import { FieldKey } from './FieldKey';
 import { FieldCategories, getSystemField } from './SystemFieldRegistry';
@@ -7,6 +7,13 @@ import { FieldCategories, getSystemField } from './SystemFieldRegistry';
 /**
  * Helper functions for working with Item model
  */
+
+/**
+ * Whether a value, such as a route param, names a known item type
+ */
+export function isItemType(value: string | null | undefined): value is ItemType {
+  return typeof value === 'string' && (Object.values(ItemTypes) as string[]).includes(value);
+}
 
 /**
  * Get a single field value by FieldKey
