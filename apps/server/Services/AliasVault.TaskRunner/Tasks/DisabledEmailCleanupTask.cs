@@ -45,7 +45,7 @@ public class DisabledEmailCleanupTask : IMaintenanceTask
         var settings = await _settingsService.GetAllSettingsAsync();
         if (settings.DisabledEmailRetentionDays <= 0)
         {
-            _logger.LogDebug("Disabled email cleanup is disabled (retention days set to 0)");
+            _logger.LogInformation("Disabled email cleanup is disabled (retention days set to 0), skipping.");
             return;
         }
 
@@ -57,9 +57,6 @@ public class DisabledEmailCleanupTask : IMaintenanceTask
             .Where(e => e.DateSystem <= cutoffDate && dbContext.EmailClaims.Any(c => c.Address == e.To && !c.Links.Any(l => l.State != EmailClaimLinkState.Removed)))
             .ExecuteDeleteAsync(cancellationToken);
 
-        if (deletedCount > 0)
-        {
-            _logger.LogInformation("Deleted {Count} emails for aliases that no vault carries anymore.", deletedCount);
-        }
+        _logger.LogInformation("Deleted {Count} emails for aliases that no vault carries anymore.", deletedCount);
     }
 }

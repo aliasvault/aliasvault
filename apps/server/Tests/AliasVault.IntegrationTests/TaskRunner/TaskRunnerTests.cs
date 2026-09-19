@@ -10,7 +10,9 @@ namespace AliasVault.IntegrationTests.TaskRunner;
 using AliasServerDb;
 using AliasVault.IntegrationTests.TaskRunner.Helpers;
 using AliasVault.Shared.Models.Enums;
+using AliasVault.TaskRunner.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 /// <summary>
@@ -49,6 +51,39 @@ public class TaskRunnerTests
         await _testHost.StopAsync();
         _testHost.Dispose();
         await _testHostBuilder.DisposeAsync();
+    }
+
+    /// <summary>
+    /// Tests that every maintenance task in the TaskRunner assembly is registered and leaves at least one entry in
+    /// the general logs after a run with default settings. A new task fails here until it is registered, logs a
+    /// summary on every run and is allowed to log to the database (see LoggingConfiguration). A task that should
+    /// stay silent on purpose can be added to the exclusion list below.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task EveryMaintenanceTaskWritesGeneralLog()
+    {
+        // Tasks that are deliberately allowed to run without leaving a general log entry.
+        // Currently none by design, hence empty list.
+        var silentTasks = new HashSet<Type>();
+
+        var taskTypes = typeof(IMaintenanceTask).Assembly.GetTypes()
+            .Where(t => typeof(IMaintenanceTask).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false })
+            .ToList();
+        Assert.That(taskTypes, Is.Not.Empty, "No maintenance tasks were discovered.");
+
+        var registeredTypes = _testHost.Services.GetServices<IMaintenanceTask>().Select(t => t.GetType()).ToList();
+        Assert.That(registeredTypes, Is.EquivalentTo(taskTypes), "Every maintenance task must be registered exactly once in MaintenanceTaskRegistration.");
+
+        // Run against an empty database so all server settings are at their defaults.
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var loggedSources = await dbContext.Logs.Select(x => x.SourceContext).Distinct().ToListAsync();
+        var tasksWithoutLog = taskTypes.Where(t => !silentTasks.Contains(t) && !loggedSources.Contains(t.FullName!)).Select(t => t.Name).ToList();
+
+        Assert.That(tasksWithoutLog, Is.Empty, "These maintenance tasks left no general log entry after a run with default settings. Sources seen: " + string.Join(", ", loggedSources));
     }
 
     /// <summary>

@@ -51,9 +51,6 @@ public class UnlockKeyHistoryCleanupTask : IMaintenanceTask
 
         var deletedCount = await UnlockKeyHistoryPolicy.DeleteExpiredAsync(dbContext.UserUnlockKeysHistory, settings.UnlockKeyHistoryRetentionDays, DateTime.UtcNow, cancellationToken);
 
-        if (deletedCount > 0)
-        {
-            _logger.LogInformation("Deleted {Count} archived unlock keys older than {Days} days", deletedCount, UnlockKeyHistoryPolicy.EffectiveRetentionDays(settings.UnlockKeyHistoryRetentionDays));
-        }
+        _logger.LogInformation("Deleted {Count} archived unlock keys older than {Days} days", deletedCount, UnlockKeyHistoryPolicy.EffectiveRetentionDays(settings.UnlockKeyHistoryRetentionDays));
     }
 }

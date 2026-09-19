@@ -46,9 +46,6 @@ public class OrphanedEmailCleanupTask : IMaintenanceTask
             .Where(x => !x.DecryptionKeys.Any())
             .ExecuteDeleteAsync(cancellationToken);
 
-        if (deletedCount > 0)
-        {
-            _logger.LogInformation("Deleted {Count} emails that no remaining key can decrypt.", deletedCount);
-        }
+        _logger.LogInformation("Deleted {Count} emails that no remaining key can decrypt.", deletedCount);
     }
 }

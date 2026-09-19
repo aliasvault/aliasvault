@@ -29,14 +29,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ServerSettingsService>();
 
 // Define the tasks that will be executed by the TaskRunner.
-builder.Services.AddTransient<IMaintenanceTask, LogCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, RefreshTokenCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, EmailCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, EmailQuotaCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, DisabledEmailCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, OrphanedEmailCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, UnlockKeyHistoryCleanupTask>();
-builder.Services.AddTransient<IMaintenanceTask, VaultBlobCleanupTask>();
+builder.Services.AddMaintenanceTasks();
 
 builder.Services.AddStatusHostedService<TaskRunnerWorker, AliasServerDbContext>(Assembly.GetExecutingAssembly().GetName().Name!);
 

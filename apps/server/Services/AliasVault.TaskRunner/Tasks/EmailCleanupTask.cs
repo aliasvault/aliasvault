@@ -103,11 +103,6 @@ public class EmailCleanupTask : IMaintenanceTask
             }
         }
 
-        if (totalEmailsDeleted > 0)
-        {
-            _logger.LogInformation(
-                "Total emails deleted by age cleanup: {TotalEmails}",
-                totalEmailsDeleted);
-        }
+        _logger.LogInformation("Total emails deleted by age cleanup: {TotalEmails}", totalEmailsDeleted);
     }
 }

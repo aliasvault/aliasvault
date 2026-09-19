@@ -129,12 +129,6 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
             }
         }
 
-        if (totalEmailsDeleted > 0)
-        {
-            _logger.LogInformation(
-                "Total emails deleted by quota cleanup: {TotalEmails} across {UserCount} users",
-                totalEmailsDeleted,
-                usersProcessed);
-        }
+        _logger.LogInformation("Total emails deleted by quota cleanup: {TotalEmails} across {UserCount} users", totalEmailsDeleted, usersProcessed);
     }
 }
