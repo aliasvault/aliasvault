@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260913090100_2.1.1-ItemChildManifestTrigger")]
+    [Migration("20260918090100_2.1.1-ItemChildManifestTrigger")]
     partial class _211ItemChildManifestTrigger
     {
         /// <inheritdoc />
@@ -543,6 +543,10 @@ namespace AliasClientDb.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1023)
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()

@@ -21,6 +21,12 @@ public class Passkey : ManifestScopedEntity
     public Guid Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the WebAuthn credential ID for passkeys created outside AliasVault. When null, the credential ID is the bytes of Id.
+    /// </summary>
+    [MaxLength(1023)]
+    public byte[]? CredentialId { get; set; }
+
+    /// <summary>
     /// Gets or sets the relying party identifier.
     /// </summary>
     [Required]

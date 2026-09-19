@@ -543,6 +543,10 @@ namespace AliasClientDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1023)
+                        .HasColumnType("BLOB");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(255)

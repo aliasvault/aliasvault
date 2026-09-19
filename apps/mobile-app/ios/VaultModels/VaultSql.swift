@@ -1340,6 +1340,8 @@ public struct VaultSql {
         
         ALTER TABLE \"Passkeys\" ADD \"ManifestId\" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
         
+        ALTER TABLE \"Passkeys\" ADD \"CredentialId\" BLOB NULL;
+        
         ALTER TABLE \"Logos\" ADD \"ManifestId\" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
         
         ALTER TABLE \"Logos\" ADD \"Kind\" TEXT NOT NULL DEFAULT 'favicon';
@@ -1542,6 +1544,7 @@ public struct VaultSql {
             \"Id\" TEXT COLLATE NOCASE NOT NULL,
             \"AdditionalData\" BLOB NULL,
             \"CreatedAt\" TEXT NOT NULL,
+            \"CredentialId\" BLOB NULL,
             \"DisplayName\" TEXT NOT NULL,
             \"IsDeleted\" INTEGER NOT NULL,
             \"ItemId\" TEXT COLLATE NOCASE NOT NULL,
@@ -1555,8 +1558,8 @@ public struct VaultSql {
             CONSTRAINT \"FK_Passkeys_Items_ManifestId_ItemId\" FOREIGN KEY (\"ManifestId\", \"ItemId\") REFERENCES \"Items\" (\"ManifestId\", \"Id\") ON DELETE CASCADE
         );
         
-        INSERT INTO \"ef_temp_Passkeys\" (\"ManifestId\", \"Id\", \"AdditionalData\", \"CreatedAt\", \"DisplayName\", \"IsDeleted\", \"ItemId\", \"PrfKey\", \"PrivateKey\", \"PublicKey\", \"RpId\", \"UpdatedAt\", \"UserHandle\")
-        SELECT \"ManifestId\", \"Id\", \"AdditionalData\", \"CreatedAt\", \"DisplayName\", \"IsDeleted\", \"ItemId\", \"PrfKey\", \"PrivateKey\", \"PublicKey\", \"RpId\", \"UpdatedAt\", \"UserHandle\"
+        INSERT INTO \"ef_temp_Passkeys\" (\"ManifestId\", \"Id\", \"AdditionalData\", \"CreatedAt\", \"CredentialId\", \"DisplayName\", \"IsDeleted\", \"ItemId\", \"PrfKey\", \"PrivateKey\", \"PublicKey\", \"RpId\", \"UpdatedAt\", \"UserHandle\")
+        SELECT \"ManifestId\", \"Id\", \"AdditionalData\", \"CreatedAt\", \"CredentialId\", \"DisplayName\", \"IsDeleted\", \"ItemId\", \"PrfKey\", \"PrivateKey\", \"PublicKey\", \"RpId\", \"UpdatedAt\", \"UserHandle\"
         FROM \"Passkeys\";
         
         CREATE TABLE \"ef_temp_TotpCodes\" (
@@ -1779,7 +1782,7 @@ public struct VaultSql {
         COMMIT;
         
         INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
-        VALUES ('20260913090000_2.1.0-ManifestScopedStorage', '10.0.10');
+        VALUES ('20260918090000_2.1.0-ManifestScopedStorage', '10.0.10');
         
         BEGIN TRANSACTION;
         CREATE TRIGGER IF NOT EXISTS \"TR_Items_ClearTombstoneBeforeReturn\"
@@ -1817,7 +1820,7 @@ public struct VaultSql {
         PRAGMA foreign_keys = ON;
         
         INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\")
-        VALUES ('20260913090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
+        VALUES ('20260918090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
         """
 
     /// Migration SQL scripts indexed by migration number.

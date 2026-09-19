@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AliasClientDb.Migrations
 {
     [DbContext(typeof(AliasClientDbContext))]
-    [Migration("20260913090000_2.1.0-ManifestScopedStorage")]
+    [Migration("20260918090000_2.1.0-ManifestScopedStorage")]
     partial class _210ManifestScopedStorage
     {
         /// <inheritdoc />
@@ -545,6 +545,10 @@ namespace AliasClientDb.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1023)
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()

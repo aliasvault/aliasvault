@@ -1335,6 +1335,8 @@ ALTER TABLE "Settings" ADD "ManifestId" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
 
 ALTER TABLE "Passkeys" ADD "ManifestId" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
 
+ALTER TABLE "Passkeys" ADD "CredentialId" BLOB NULL;
+
 ALTER TABLE "Logos" ADD "ManifestId" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
 
 ALTER TABLE "Logos" ADD "Kind" TEXT NOT NULL DEFAULT 'favicon';
@@ -1537,6 +1539,7 @@ CREATE TABLE "ef_temp_Passkeys" (
     "Id" TEXT COLLATE NOCASE NOT NULL,
     "AdditionalData" BLOB NULL,
     "CreatedAt" TEXT NOT NULL,
+    "CredentialId" BLOB NULL,
     "DisplayName" TEXT NOT NULL,
     "IsDeleted" INTEGER NOT NULL,
     "ItemId" TEXT COLLATE NOCASE NOT NULL,
@@ -1550,8 +1553,8 @@ CREATE TABLE "ef_temp_Passkeys" (
     CONSTRAINT "FK_Passkeys_Items_ManifestId_ItemId" FOREIGN KEY ("ManifestId", "ItemId") REFERENCES "Items" ("ManifestId", "Id") ON DELETE CASCADE
 );
 
-INSERT INTO "ef_temp_Passkeys" ("ManifestId", "Id", "AdditionalData", "CreatedAt", "DisplayName", "IsDeleted", "ItemId", "PrfKey", "PrivateKey", "PublicKey", "RpId", "UpdatedAt", "UserHandle")
-SELECT "ManifestId", "Id", "AdditionalData", "CreatedAt", "DisplayName", "IsDeleted", "ItemId", "PrfKey", "PrivateKey", "PublicKey", "RpId", "UpdatedAt", "UserHandle"
+INSERT INTO "ef_temp_Passkeys" ("ManifestId", "Id", "AdditionalData", "CreatedAt", "CredentialId", "DisplayName", "IsDeleted", "ItemId", "PrfKey", "PrivateKey", "PublicKey", "RpId", "UpdatedAt", "UserHandle")
+SELECT "ManifestId", "Id", "AdditionalData", "CreatedAt", "CredentialId", "DisplayName", "IsDeleted", "ItemId", "PrfKey", "PrivateKey", "PublicKey", "RpId", "UpdatedAt", "UserHandle"
 FROM "Passkeys";
 
 CREATE TABLE "ef_temp_TotpCodes" (
@@ -1774,9 +1777,24 @@ CREATE INDEX "IX_EncryptionKeys_ManifestId_IsPrimary" ON "EncryptionKeys" ("Mani
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260913090000_2.1.0-ManifestScopedStorage', '10.0.10');
+VALUES ('20260918090000_2.1.0-ManifestScopedStorage', '10.0.10');
 
 BEGIN TRANSACTION;
+CREATE TRIGGER IF NOT EXISTS "TR_Items_ClearTombstoneBeforeReturn"
+BEFORE UPDATE OF "ManifestId" ON "Items"
+FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
+    AND EXISTS (SELECT 1 FROM "Items" WHERE "ManifestId" = NEW."ManifestId" AND "Id" = NEW."Id" AND "IsDeleted" = 1)
+BEGIN
+    DELETE FROM "FieldValues" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "FieldHistories" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "ItemTags" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "Attachments" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "Passkeys" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "TotpCodes" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "ItemStats" WHERE "Id" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+    DELETE FROM "Items" WHERE "ManifestId" = NEW."ManifestId" AND "Id" = NEW."Id" AND "IsDeleted" = 1;
+END;
+
 CREATE TRIGGER IF NOT EXISTS "TR_Items_ResyncChildManifestIds"
 AFTER UPDATE OF "ManifestId" ON "Items"
 FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
@@ -1788,6 +1806,8 @@ BEGIN
     UPDATE "Passkeys" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
     UPDATE "TotpCodes" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
     UPDATE "ItemStats" SET "ManifestId" = NEW."ManifestId" WHERE "Id" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+    INSERT OR IGNORE INTO "Items" ("ManifestId", "Id", "ItemType", "CreatedAt", "UpdatedAt", "IsDeleted")
+    SELECT OLD."ManifestId", OLD."Id", OLD."ItemType", OLD."CreatedAt", NEW."UpdatedAt", 1 WHERE OLD."IsDeleted" = 0;
 END;
 
 COMMIT;
@@ -1795,7 +1815,7 @@ COMMIT;
 PRAGMA foreign_keys = ON;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260913090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
+VALUES ('20260918090100_2.1.1-ItemChildManifestTrigger', '10.0.10');
 `;
 var MIGRATION_SCRIPTS = {
   1: `\uFEFFBEGIN TRANSACTION;

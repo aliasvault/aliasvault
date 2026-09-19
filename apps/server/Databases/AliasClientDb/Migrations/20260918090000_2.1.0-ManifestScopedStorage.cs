@@ -257,6 +257,13 @@ namespace AliasClientDb.Migrations
                 defaultValue: "",
                 collation: "NOCASE");
 
+            migrationBuilder.AddColumn<byte[]>(
+                name: "CredentialId",
+                table: "Passkeys",
+                type: "BLOB",
+                maxLength: 1023,
+                nullable: true);
+
             migrationBuilder.AlterColumn<string>(
                 name: "Id",
                 table: "Logos",
@@ -1030,6 +1037,10 @@ namespace AliasClientDb.Migrations
 
             migrationBuilder.DropColumn(
                 name: "ManifestId",
+                table: "Passkeys");
+
+            migrationBuilder.DropColumn(
+                name: "CredentialId",
                 table: "Passkeys");
 
             migrationBuilder.DropColumn(
