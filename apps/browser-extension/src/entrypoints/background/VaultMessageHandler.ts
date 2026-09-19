@@ -16,7 +16,7 @@ import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
@@ -1547,6 +1547,16 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
   }
 
   return sharingActionResponse(result, 'sharing.family.errors.createVaultFailed');
+}
+
+/**
+ * Change the details of one of a family's shared manifests. The server only accepts it from an administrator of the
+ * family.
+ *
+ * @param message - the family, the manifest, and the details to change.
+ */
+export async function handleGroupUpdateVault(message: { groupId: string; manifestId: string; details: SharedManifestDetails }): Promise<SharingActionResponse> {
+  return sharingActionResponse(await vaultSync.updateSharedManifest(message.groupId, message.manifestId, message.details), 'common.errors.unknownErrorTryAgain');
 }
 
 /**

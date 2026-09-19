@@ -37,7 +37,7 @@ import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
-import type { FullVaultSyncResult, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import type { FullVaultSyncResult, SharedManifestDetails, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordSettings } from '@aliasvault/models/vault';
 import type { LoginResponse } from '@aliasvault/models/webapi';
@@ -94,6 +94,7 @@ export interface IExtensionMessageProtocol {
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };
+  GROUP_UPDATE_VAULT(data: { groupId: string; manifestId: string; details: SharedManifestDetails }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_INVITE_MEMBER(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
   GROUP_REVOKE_ACCESS(data: { groupId: string; manifestId: string; userId: string }): { success: boolean; error?: string; apiErrorCode?: string };
   IS_URL_LINKED_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { linked: boolean };

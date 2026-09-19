@@ -178,8 +178,8 @@ const ItemsList: React.FC = () => {
     return dbContext.sqliteClient.folders.getById(currentFolderRef);
   }, [currentFolderRef, dbContext?.sqliteClient, folderRefreshKey]);
 
-  // Whether it is the folder a shared manifest is rendered as: left or revoked in Family Sharing, never deleted here
-  const currentFolderIsSharedVaultRoot = currentFolder !== null && multiManifestRendering.isManifestRoot(currentFolder);
+  // A virtual folder (today: a shared manifest) is drawn by this client, so it is not editable or deletable here
+  const currentFolderIsVirtual = currentFolder !== null && multiManifestRendering.isVirtualFolder(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)
   const currentFolderPath = useMemo(() => {
@@ -827,8 +827,8 @@ const ItemsList: React.FC = () => {
             }}
             onSelectRecentlyDeleted={() => navigate('/items/deleted')}
           />
-          {/* Edit and Delete buttons when inside a folder */}
-          {currentFolderId && (
+          {/* Edit and Delete buttons, only for a folder the vault actually stores */}
+          {currentFolderId && !currentFolderIsVirtual && (
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => setShowEditFolderModal(true)}
@@ -1177,7 +1177,7 @@ const ItemsList: React.FC = () => {
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
-        sharedVault={currentFolderIsSharedVaultRoot}
+        virtualFolder={currentFolderIsVirtual}
       />
     </div>
   );

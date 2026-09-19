@@ -9,7 +9,7 @@ type DeleteFolderModalProps = {
   onDeleteFolderOnly: () => Promise<void>;
   onDeleteFolderAndContents: () => Promise<void>;
   itemCount: number;
-  sharedVault?: boolean;
+  virtualFolder?: boolean;
 };
 
 /**
@@ -21,7 +21,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
   onDeleteFolderOnly,
   onDeleteFolderAndContents,
   itemCount,
-  sharedVault = false
+  virtualFolder = false
 }) => {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,15 +84,15 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
       }
     >
       <div className="space-y-4">
-        {/* A shared manifest: no delete options, only the hint */}
-        {sharedVault && (
+        {/* A virtual folder (today: a shared manifest): no delete options, only the hint */}
+        {virtualFolder && (
           <p className="pt-2 text-sm text-gray-600 dark:text-gray-400">
             {t('items.deleteSharedFolderHint')}
           </p>
         )}
 
         {/* Option buttons */}
-        {!sharedVault && (
+        {!virtualFolder && (
           <div className="space-y-3 pt-2">
             {/* Delete folder only - move items to root */}
             <button

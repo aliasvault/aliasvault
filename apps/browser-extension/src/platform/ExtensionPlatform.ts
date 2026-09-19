@@ -44,7 +44,6 @@ function detectClientName(): 'chrome' | 'firefox' | 'edge' | 'safari' | 'browser
  * TODO: refactor this to use centralized translation system instead (on to-do list) once that is implemented.
  */
 const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
-  [TranslatableMessage.UnnamedSharedVault]: 'sharing.family.unnamedVault',
   [TranslatableMessage.ClientOutdated]: 'common.errors.browserExtensionOutdated',
   [TranslatableMessage.SharedFolderDeleteRefused]: 'items.deleteSharedFolderHint',
   [TranslatableMessage.VaultUpgradeRequired]: 'content.vaultUpgradeRequired',

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
+import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
@@ -57,6 +58,7 @@ const FamilySharingSettings: React.FC = () => {
   const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
   const [openVaultMenuId, setOpenVaultMenuId] = useState<string | null>(null);
+  const [pendingVaultRename, setPendingVaultRename] = useState<{ group: GroupInfo; manifest: SharedManifestInfo } | null>(null);
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
   const loadOverview = useCallback(async (): Promise<void> => {
@@ -64,9 +66,7 @@ const FamilySharingSettings: React.FC = () => {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
       setInvitationNames(sqliteClient ? await SharingService.openInvitationNames(sqliteClient, loaded.receivedInvitations) : {});
-      const records = await SharingService.getSharedManifestRecords();
-      const names = Object.fromEntries(Object.values(records).filter(record => record.name).map(record => [record.manifestId.toLowerCase(), record.name as string]));
-      setVaultNames({ ...names, ...(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {}) });
+      setVaultNames(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {});
       setError(null);
     } catch {
       setError(t('sharing.family.errors.loadFailed'));
@@ -155,6 +155,19 @@ const FamilySharingSettings: React.FC = () => {
       setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
       await loadStoredDatabase();
     }, t('sharing.family.errors.createVaultFailed'));
+  };
+
+  /**
+   * Rename a shared manifest, which only an administrator of the family may do.
+   * @param name - the new name.
+   */
+  const renameSharedVault = async (name: string): Promise<void> => {
+    if (!pendingVaultRename) {
+      return;
+    }
+
+    unwrap(await sendMessage('GROUP_UPDATE_VAULT', { groupId: pendingVaultRename.group.groupId, manifestId: pendingVaultRename.manifest.manifestId, details: { name } }));
+    await loadStoredDatabase();
   };
 
   /**
@@ -280,6 +293,14 @@ const FamilySharingSettings: React.FC = () => {
         message={dialog.message}
         confirmText={dialog.confirmText}
         warning={dialog.warning}
+      />
+
+      <FolderModal
+        isOpen={pendingVaultRename !== null}
+        onClose={() => setPendingVaultRename(null)}
+        onSave={renameSharedVault}
+        initialName={pendingVaultRename ? vaultLabel(pendingVaultRename.manifest) : ''}
+        mode="edit"
       />
 
       <ConfirmDeleteModal
@@ -414,6 +435,18 @@ const FamilySharingSettings: React.FC = () => {
                               <>
                                 <div className="fixed inset-0 z-10" onClick={() => setOpenVaultMenuId(null)} />
                                 <div className="absolute right-0 top-full mt-1 w-44 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-20">
+                                  {/* Renaming encrypts the name with the vault's key, so it takes a member who holds it. */}
+                                  {iHoldKey && (
+                                    <button
+                                      onClick={() => {
+                                        setOpenVaultMenuId(null);
+                                        setPendingVaultRename({ group, manifest });
+                                      }}
+                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    >
+                                      {t('items.editFolder')}
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => {
                                       setOpenVaultMenuId(null);
