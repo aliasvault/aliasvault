@@ -7,9 +7,6 @@ export enum TranslatableMessage {
   /** The local vault is newer than what this client understands; the app must be updated. */
   ClientOutdated = 'client-outdated',
 
-  /** The folder a shared vault is shown as cannot be deleted from the folder list. */
-  SharedFolderDeleteRefused = 'shared-folder-delete-refused',
-
   /** The vault still has to walk the sqlite-blob upgrade chain before the manifest migration can run. */
   VaultUpgradeRequired = 'vault-upgrade-required',
 }

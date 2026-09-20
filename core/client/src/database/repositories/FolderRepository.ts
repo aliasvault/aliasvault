@@ -1,5 +1,3 @@
-import { getPlatform } from '../../platform/ClientPlatform';
-import { TranslatableMessage } from '../../platform/TranslatableMessage';
 import { multiManifestRendering } from '../../sharing/MultiManifestRendering';
 import { BaseRepository } from '../BaseRepository';
 import { FolderQueries } from '../queries/FolderQueries';
@@ -90,7 +88,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async update(ref: FolderRef, name: string): Promise<number> {
-    await this.assertNotVirtual(ref);
+    this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.execute(FolderQueries.UPDATE_NAME, [name, this.now(), ref.Id, ref.ManifestId])));
   }
 
@@ -125,7 +123,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async delete(ref: FolderRef): Promise<number> {
-    await this.assertNotVirtual(ref);
+    this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.deleteKeepingContents(ref)));
   }
 
@@ -166,7 +164,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of items trashed
    */
   public async deleteWithContents(ref: FolderRef): Promise<number> {
-    await this.assertNotVirtual(ref);
+    this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.deleteFolderTree(ref)));
   }
 
@@ -196,12 +194,12 @@ export class FolderRepository extends BaseRepository {
 
   /**
    * Refuse to change or delete a virtual folder (see {@link multiManifestRendering}): the vault stores no row for
-   * one, setting are managed elsewhere (e.g. shared manifest settings).
+   * one, settings are managed elsewhere (e.g. shared manifest settings).
    * @param ref - The folder about to be changed
    */
-  private async assertNotVirtual(ref: FolderRef): Promise<void> {
+  private assertNotVirtual(ref: FolderRef): void {
     if (multiManifestRendering.isVirtualFolder(ref)) {
-      throw new Error(await getPlatform().translate(TranslatableMessage.SharedFolderDeleteRefused));
+      throw new Error(`FolderRepository: folder ${ref.Id} is virtual and cannot be changed or deleted; refusing the write.`);
     }
   }
 }

@@ -1177,7 +1177,6 @@ const ItemsList: React.FC = () => {
         onDeleteFolderOnly={handleDeleteFolderOnly}
         onDeleteFolderAndContents={handleDeleteFolderAndContents}
         itemCount={totalItemCountInFolderTree}
-        virtualFolder={currentFolderIsVirtual}
       />
     </div>
   );

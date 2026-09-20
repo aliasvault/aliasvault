@@ -45,7 +45,6 @@ function detectClientName(): 'chrome' | 'firefox' | 'edge' | 'safari' | 'browser
  */
 const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
   [TranslatableMessage.ClientOutdated]: 'common.errors.browserExtensionOutdated',
-  [TranslatableMessage.SharedFolderDeleteRefused]: 'items.deleteSharedFolderHint',
   [TranslatableMessage.VaultUpgradeRequired]: 'content.vaultUpgradeRequired',
 };
 

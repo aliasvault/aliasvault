@@ -236,7 +236,6 @@
     "deleteFolderKeepItemsDescription": "Items will be moved to the parent folder.",
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "deleteSharedFolderHint": "This folder is shared with your family and cannot be deleted here. Leave it, or change who has access to it, in Family Sharing.",
     "filters": {
       "folders": "Folders",
       "totp": "2FA Codes"
