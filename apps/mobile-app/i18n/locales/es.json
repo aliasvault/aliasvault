@@ -137,7 +137,7 @@
       "howToEnable": "Cómo habilitar Autorrelleno y Claves de acceso:",
       "step1": "1. Abre los ajustes de iOS a través del botón de abajo",
       "step2": "2. Ir a \"General\"",
-      "step3": "3. Pulsa en \"Autorrelleno y Contraseñas\"",
+      "step3": "3. Pulsar \"Autorrelleno y Contraseñas\"",
       "step4": "4. Activar \"AliasVault\"",
       "step5": "5. Desactivar otros proveedores de contraseñas (por ejemplo, \"contraseñas iCloud\") para evitar conflictos",
       "openIosSettings": "Abrir ajustes de iOS",
