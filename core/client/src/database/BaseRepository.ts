@@ -1,10 +1,14 @@
+import { multiManifestRendering } from '../sharing/MultiManifestRendering';
 import { DEFAULT_VAULT_MUTATION_SCOPE } from '../sync/VaultMutationScope';
 import * as dateFormatter from '../utilities/DateFormatter';
 
 import { runAsync } from './DbOp';
+import { FolderQueries } from './queries/FolderQueries';
 
 import type { DbOp, ManifestScope } from './DbOp';
+import type { Folder } from './repositories/FolderRepository';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
+import type { SharedManifest } from '../sharing/MultiManifestRendering';
 import type { VaultMutationScope } from '../sync/VaultMutationScope';
 
 export type SqliteBindValue = string | number | null | Uint8Array;
@@ -110,6 +114,41 @@ export abstract class BaseRepository {
       throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
     }
     return manifestId;
+  }
+
+  /**
+   * The folders as the client presents them (see {@link multiManifestRendering}): the stored rows plus potentially shared manifests
+   * as virtual folders.
+   * @returns The rendered folders (empty array if the vault predates the Folders table or the manifest stamp)
+   */
+  protected *renderedFolders(): DbOp<Folder[]> {
+    try {
+      const stored = yield* this.query<Folder>(FolderQueries.GET_ALL);
+      const personal = yield* this.personalManifestId();
+      const shared = personal ? yield* this.query<SharedManifest>(FolderQueries.GET_SHARED_MANIFESTS, [personal]) : [];
+      return multiManifestRendering.folders(stored, shared);
+    } catch (error) {
+      if (error instanceof Error && (error.message.includes('no such table') || error.message.includes('no such column'))) {
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Point rows at the folder they are presented in.
+   * @param rows - Rows carrying a stored `FolderId`
+   * @returns The same rows, re-pointed in place
+   */
+  protected *renderFolderIds<T extends { FolderId: string | null; ManifestId: string }>(rows: T[]): DbOp<T[]> {
+    if (rows.length === 0) {
+      return rows;
+    }
+    const personal = yield* this.personalManifestId();
+    for (const row of rows) {
+      row.FolderId = multiManifestRendering.renderedFolderId(row.FolderId, row.ManifestId, personal);
+    }
+    return rows;
   }
 
   /**

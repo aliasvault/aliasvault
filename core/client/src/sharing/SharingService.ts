@@ -45,7 +45,7 @@ export type ManifestVekGrant = {
 export type SharedManifestRecord = ManifestVekGrant & {
   manifestId: string;
   salt: string;
-  name?: string | null;
+  encryptedName?: string | null;
   canAdminister?: boolean;
 };
 

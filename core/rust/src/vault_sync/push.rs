@@ -68,7 +68,7 @@ pub(crate) struct UploadOutcome {
 pub(crate) async fn canonicalize_vault(ctx: &Ctx, adopt_unstamped_into: Option<String>) -> SyncResult<CanonicalizedSet> {
     let tables = db::read_tables(&ctx.host, Db::Local).await?;
     let manifest_records = resolve_manifest_records(ctx).await?;
-    let manifests: Vec<ManifestSpec> = manifest_records.iter().map(|r| ManifestSpec { manifest_id: r.manifest_id.clone(), manifest_salt: r.salt.clone(), name: r.name.clone() }).collect();
+    let manifests: Vec<ManifestSpec> = manifest_records.iter().map(|r| ManifestSpec { manifest_id: r.manifest_id.clone(), manifest_salt: r.salt.clone(), name: None }).collect();
     let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests, adopt_unstamped_into })?;
     Ok(CanonicalizedSet { canonicalized, manifest_records })
 }
@@ -90,8 +90,7 @@ async fn resolve_manifest_records(ctx: &Ctx) -> SyncResult<Vec<ManifestRecord>> 
         personal_manifest_salt: manifest_salt,
         stamped_manifest_ids: db::manifest_ids_in_vault(&ctx.host, Db::Local).await?,
         opened_manifest_ids: shared_veks.keys().cloned().collect(),
-        held_records: held.values().map(|r| SharedManifestRecord { manifest_id: r.manifest_id.clone(), salt: r.salt.clone(), name: r.name.clone(), can_administer: r.can_administer }).collect(),
-        display_names: db::manifest_display_names(&ctx.host).await?,
+        held_records: held.values().map(|r| SharedManifestRecord { manifest_id: r.manifest_id.clone(), salt: r.salt.clone(), can_administer: r.can_administer }).collect(),
     });
     for skipped in &write_set.skipped {
         let why = match skipped.reason {
@@ -324,7 +323,7 @@ impl Candidate<'_> {
         if self.record.is_personal {
             "Personal manifest".to_string()
         } else {
-            format!("Shared manifest \"{}\"", self.manifest.name.clone().unwrap_or_else(|| self.record.manifest_id.clone()))
+            format!("Shared manifest {}", self.record.manifest_id)
         }
     }
 }

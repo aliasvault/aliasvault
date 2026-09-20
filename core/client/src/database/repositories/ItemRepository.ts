@@ -2,6 +2,7 @@ import { FieldKey, LogoKinds, MAX_FIELD_HISTORY_RECORDS, getSystemField, normali
 
 import { getFolderPath } from '../../items/FolderUtils';
 import { selectFaviconTarget, toUrlList } from '../../rust/RustCore';
+import { multiManifestRendering } from '../../sharing/MultiManifestRendering';
 import { BaseRepository, type IDatabaseClient, type SqliteBindValue } from '../BaseRepository';
 import { itemKeyBindings, scopedKey, type ItemRef } from '../ItemRef';
 import { FieldMapper, type FieldRow } from '../mappers/FieldMapper';
@@ -62,23 +63,16 @@ export class ItemRepository extends BaseRepository {
   private *buildFolderPaths(): DbOp<Map<string, string[]>> {
     const folderPathMap = new Map<string, string[]>();
 
-    let folders: (Folder & { ManifestId: string })[];
-    try {
-      folders = yield* this.query<Folder & { ManifestId: string }>('SELECT Id, ManifestId, Name, ParentFolderId, Weight FROM Folders WHERE IsDeleted = 0');
-    } catch (error) {
-      // Folders table may not exist in older vault versions
-      if (error instanceof Error && error.message.includes('no such table')) {
-        return folderPathMap;
-      }
-      throw error;
-    }
+    // The rendered folders, so a path starts at whatever a shared manifest is presented as.
+    const folders = yield* this.renderedFolders();
 
     // Use shared utility to build paths, one manifest's tree at a time
-    const foldersByManifest = new Map<string, (Folder & { ManifestId: string })[]>();
+    const foldersByManifest = new Map<string, Folder[]>();
     for (const folder of folders) {
-      const siblings = foldersByManifest.get(folder.ManifestId) ?? [];
+      const key = folder.ManifestId.toLowerCase();
+      const siblings = foldersByManifest.get(key) ?? [];
       siblings.push(folder);
-      foldersByManifest.set(folder.ManifestId, siblings);
+      foldersByManifest.set(key, siblings);
     }
 
     for (const [manifestId, manifestFolders] of foldersByManifest) {
@@ -109,7 +103,10 @@ export class ItemRepository extends BaseRepository {
    * @returns Array of Item objects (empty array if the folder does not exist)
    */
   public *getByFolder(folder: FolderRef): DbOp<Item[]> {
-    const itemRows = yield* this.selectItemRows(ItemQueries.GET_BY_FOLDER, [folder.Id, folder.ManifestId]);
+    const storedFolderId = multiManifestRendering.storedFolderId(folder.Id, folder.ManifestId);
+    const itemRows = storedFolderId
+      ? yield* this.selectItemRows(ItemQueries.GET_BY_FOLDER, [storedFolderId, folder.ManifestId])
+      : yield* this.selectItemRows(ItemQueries.GET_AT_MANIFEST_TOP_LEVEL, [folder.ManifestId]);
     return yield* this.hydrateItems(itemRows);
   }
 
@@ -120,7 +117,7 @@ export class ItemRepository extends BaseRepository {
   public *getAllSummaries(): DbOp<ItemSummary[]> {
     try {
       const rows = yield* this.query<ItemSummaryRow>(ItemQueries.GET_ALL_SUMMARIES);
-      return ItemMapper.mapSummaryRows(rows);
+      return ItemMapper.mapSummaryRows(yield* this.renderFolderIds(rows));
     } catch (error) {
       // Items table may not exist in older vault versions - return empty array
       if (error instanceof Error && error.message.includes('no such table')) {
@@ -164,7 +161,7 @@ export class ItemRepository extends BaseRepository {
    */
   private *selectItemRows(query: string, params: SqliteBindValue[] = []): DbOp<ItemRow[]> {
     try {
-      return yield* this.query<ItemRow>(query, params);
+      return yield* this.renderFolderIds(yield* this.query<ItemRow>(query, params));
     } catch (error) {
       // Items table may not exist in older vault versions - return empty array
       if (error instanceof Error && error.message.includes('no such table')) {
@@ -211,7 +208,7 @@ export class ItemRepository extends BaseRepository {
    */
   public *getById(ref: ItemRef): DbOp<Item | null> {
 
-    const results = yield* this.query<ItemRow>(ItemQueries.GET_BY_ID, [ref.Id, ref.ManifestId]);
+    const results = yield* this.renderFolderIds(yield* this.query<ItemRow>(ItemQueries.GET_BY_ID, [ref.Id, ref.ManifestId]));
     if (results.length === 0) {
       return null;
     }
@@ -286,13 +283,14 @@ export class ItemRepository extends BaseRepository {
 
       // 1. The item names its manifest; a folder it points at has to live in that same manifest.
       const manifestId = item.ManifestId;
-      await this.run(this.assertFolderInManifest(item));
+      const folderId = multiManifestRendering.storedFolderId(item.FolderId, manifestId);
+      await this.run(this.assertFolderInManifest(folderId, manifestId));
 
       // 2. Handle the logo
       const logoId = await this.resolveLogoId(item, manifestId, currentDateTime, null, logoSelection);
 
       // 3. Insert Item
-      await this.run(this.execute(ItemQueries.INSERT_ITEM, [itemId, item.Name ?? null, item.ItemType, logoId, item.FolderId ?? null, manifestId, currentDateTime, currentDateTime, 0]));
+      await this.run(this.execute(ItemQueries.INSERT_ITEM, [itemId, item.Name ?? null, item.ItemType, logoId, folderId, manifestId, currentDateTime, currentDateTime, 0]));
 
       /*
        * 4-6. Insert the child rows into the manifest the item was just written into.
@@ -473,17 +471,18 @@ export class ItemRepository extends BaseRepository {
 
       // 2. The manifest the item ends up in, then the logo inside it.
       const manifestId = item.ManifestId;
-      await this.run(this.assertFolderInManifest(item));
+      const folderId = multiManifestRendering.storedFolderId(item.FolderId, manifestId);
+      await this.run(this.assertFolderInManifest(folderId, manifestId));
       const logoId = await this.resolveLogoId(item, manifestId, currentDateTime, existing.LogoId, logoSelection, ref.ManifestId);
 
       const nameChanged = (item.Name ?? null) !== existing.Name;
       const itemTypeChanged = String(item.ItemType) !== String(existing.ItemType);
-      const folderChanged = (item.FolderId ?? null) !== existing.FolderId || manifestId !== ref.ManifestId;
+      const folderChanged = folderId !== existing.FolderId || manifestId !== ref.ManifestId;
       const logoIdChanged = logoId !== existing.LogoId;
 
       if (nameChanged || itemTypeChanged || folderChanged || logoIdChanged) {
         // A move across manifests re-stamps the item; the schema trigger takes its child rows along.
-        await this.run(this.execute(ItemQueries.UPDATE_ITEM_WITH_LOGO, [item.Name ?? null, item.ItemType, item.FolderId ?? null, manifestId, logoId, currentDateTime, ref.Id, ref.ManifestId]));
+        await this.run(this.execute(ItemQueries.UPDATE_ITEM_WITH_LOGO, [item.Name ?? null, item.ItemType, folderId, manifestId, logoId, currentDateTime, ref.Id, ref.ManifestId]));
       }
 
       // 3. Track history for fields that have EnableHistory=true before updating
@@ -596,7 +595,7 @@ export class ItemRepository extends BaseRepository {
         WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
         ORDER BY i.DeletedAt DESC`;
 
-      itemRows = yield* this.query<ItemRow & { DeletedAt: string }>(query);
+      itemRows = yield* this.renderFolderIds(yield* this.query<ItemRow & { DeletedAt: string }>(query));
     } catch (error) {
       if (error instanceof Error && error.message.includes('no such table')) {
         return [];
@@ -699,17 +698,18 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Refuse a folder that is not in the item's manifest. A folder id can exist in several manifests, so the item's
-   * own `ManifestId` is what determines explicitly which folder is targeted.
-   * @param item The item being created or updated
+   * own manifest is what determines explicitly which folder is targeted.
+   * @param folderId The folder the item is stored in, null for the top level of its manifest
+   * @param manifestId The manifest the item is written into
    */
-  private *assertFolderInManifest(item: Item): DbOp<void> {
-    if (!item.FolderId) {
+  private *assertFolderInManifest(folderId: string | null, manifestId: string): DbOp<void> {
+    if (!folderId) {
       return;
     }
 
-    const rows = yield* this.query<{ Found: number }>(FolderQueries.EXISTS, [item.FolderId, item.ManifestId]);
+    const rows = yield* this.query<{ Found: number }>(FolderQueries.EXISTS, [folderId, manifestId]);
     if (rows.length === 0) {
-      throw new Error(`ItemRepository: folder ${item.FolderId} does not exist in manifest ${item.ManifestId}; refusing the write.`);
+      throw new Error(`ItemRepository: folder ${folderId} does not exist in manifest ${manifestId}; refusing the write.`);
     }
   }
 

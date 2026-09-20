@@ -47,7 +47,8 @@ export class FolderRepository extends BaseRepository {
       }
       const manifestId = parent?.ManifestId ?? await this.run(this.writeManifestId());
 
-      await this.run(this.execute(FolderQueries.INSERT, [folderId, name, parent?.Id ?? null, manifestId, currentDateTime, currentDateTime]));
+      const parentId = parent ? multiManifestRendering.storedFolderId(parent.Id, parent.ManifestId) : null;
+      await this.run(this.execute(FolderQueries.INSERT, [folderId, name, parentId, manifestId, currentDateTime, currentDateTime]));
 
       return folderId;
     });
@@ -63,16 +64,13 @@ export class FolderRepository extends BaseRepository {
       throw new Error(`FolderRepository: folder ${ref.Id} does not exist in manifest ${ref.ManifestId}; refusing the write.`);
     }
   }
+
+  /**
+   * Get all folders as the client presents them.
+   * @returns The rendered folders
+   */
   public *getAll(): DbOp<Folder[]> {
-    try {
-      return yield* this.query<Folder>(FolderQueries.GET_ALL);
-    } catch (error) {
-      // Table may not exist in older vault versions - return empty array
-      if (error instanceof Error && error.message.includes('no such table')) {
-        return [];
-      }
-      throw error;
-    }
+    return yield* this.renderedFolders();
   }
 
   /**
@@ -81,8 +79,8 @@ export class FolderRepository extends BaseRepository {
    * @returns Folder object or null if not found
    */
   public *getById(ref: FolderRef): DbOp<Omit<Folder, 'Weight'> | null> {
-    const results = yield* this.query<Omit<Folder, 'Weight'>>(FolderQueries.GET_BY_ID, [ref.Id, ref.ManifestId]);
-    return results.length > 0 ? results[0] : null;
+    const folders = yield* this.renderedFolders();
+    return folders.find(folder => folder.Id.toLowerCase() === ref.Id.toLowerCase() && folder.ManifestId.toLowerCase() === ref.ManifestId.toLowerCase()) ?? null;
   }
 
   /**
@@ -92,6 +90,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async update(ref: FolderRef, name: string): Promise<number> {
+    await this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.execute(FolderQueries.UPDATE_NAME, [name, this.now(), ref.Id, ref.ManifestId])));
   }
 
@@ -126,7 +125,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of rows updated
    */
   public async delete(ref: FolderRef): Promise<number> {
-    await this.assertDeletable(ref);
+    await this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.deleteKeepingContents(ref)));
   }
 
@@ -140,16 +139,15 @@ export class FolderRepository extends BaseRepository {
 
     // Get the parent folder of the folder being deleted
     const folder = yield* this.getById(ref);
-    const targetParentId = folder?.ParentFolderId || null;
-    const manifestId = yield* this.writeManifestId();
+    const targetParentId = multiManifestRendering.storedFolderId(folder?.ParentFolderId, ref.ManifestId);
 
     // Move only items in this folder to the parent folder (or root if no parent)
     if (targetParentId) {
       // Has parent: move items to the parent folder, which a folder tree keeps in the same manifest
       yield* this.execute(FolderQueries.MOVE_ITEMS_TO_FOLDER, [targetParentId, currentDateTime, ref.Id, ref.ManifestId]);
     } else {
-      // No parent: move items to root (NULL); out of every folder means into the default manifest.
-      yield* this.execute(FolderQueries.CLEAR_ITEMS_FOLDER, [manifestId, currentDateTime, ref.Id, ref.ManifestId]);
+      // No parent: move items to the top level (NULL) of the manifest the folder lives in.
+      yield* this.execute(FolderQueries.CLEAR_ITEMS_FOLDER, [currentDateTime, ref.Id, ref.ManifestId]);
     }
 
     // Move direct child folders to the parent of the deleted folder
@@ -168,7 +166,7 @@ export class FolderRepository extends BaseRepository {
    * @returns The number of items trashed
    */
   public async deleteWithContents(ref: FolderRef): Promise<number> {
-    await this.assertDeletable(ref);
+    await this.assertNotVirtual(ref);
     return this.withTransaction(() => this.run(this.deleteFolderTree(ref)));
   }
 
@@ -197,12 +195,12 @@ export class FolderRepository extends BaseRepository {
   }
 
   /**
-   * Refuse to delete a folder that a shared manifest is rendered as (see {@link multiManifestRendering}).
-   * @param ref - The folder about to be deleted
+   * Refuse to change or delete a virtual folder (see {@link multiManifestRendering}): the vault stores no row for
+   * one, setting are managed elsewhere (e.g. shared manifest settings).
+   * @param ref - The folder about to be changed
    */
-  private async assertDeletable(ref: FolderRef): Promise<void> {
-    const folder = await this.run(this.getById(ref));
-    if (folder && multiManifestRendering.isManifestRoot(folder)) {
+  private async assertNotVirtual(ref: FolderRef): Promise<void> {
+    if (multiManifestRendering.isVirtualFolder(ref)) {
       throw new Error(await getPlatform().translate(TranslatableMessage.SharedFolderDeleteRefused));
     }
   }

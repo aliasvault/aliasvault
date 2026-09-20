@@ -26,7 +26,12 @@ public static class VaultStatusHelper
     public static async Task<List<ManifestRevision>> GetManifestRevisionsAsync(AliasServerDbContext context, ManifestAccessScope scope)
     {
         return await ManifestAccessHelper.AccessibleManifests(context, scope)
-            .Select(x => new ManifestRevision { ManifestId = x.ManifestId, Revision = x.RevisionNumber })
+            .Select(x => new ManifestRevision
+            {
+                ManifestId = x.ManifestId,
+                Revision = x.RevisionNumber,
+                EncryptedName = context.VaultManifestShareDetails.Where(d => d.ManifestId == x.ManifestId).Select(d => d.EncryptedName).FirstOrDefault(),
+            })
             .ToListAsync();
     }
 }

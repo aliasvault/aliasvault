@@ -54,6 +54,14 @@ export type VaultManifestMigrationResult = SyncErrorDetail & {
 };
 
 /**
+ * The details of a shared manifest an administrator of its group can change. One that is left out stays as it is.
+ */
+export type SharedManifestDetails = {
+  /** What to call the shared manifest. */
+  name?: string;
+};
+
+/**
  * Result of a sharing operation as the UI reads it.
  */
 export type SharingOperationResult = SyncErrorDetail & {
@@ -166,7 +174,7 @@ export class VaultSync {
    * Create a group's shared manifest with this account as its first member. The vault is left dirty, so the caller's
    * next sync pushes the new manifest. Never throws.
    * @param groupId - the group to create the shared manifest for
-   * @param name - what to call it; the name stays on the clients
+   * @param name - name of the shared manifest / shared vault
    */
   public async createSharedManifest(groupId: string, name: string): Promise<SharingOperationResult> {
     return this.runSharingOperation('createSharedManifest', { groupId, name });
@@ -181,6 +189,16 @@ export class VaultSync {
    */
   public async inviteToSharedManifest(groupId: string, manifestId: string, userId: string): Promise<SharingOperationResult> {
     return this.runSharingOperation('inviteToSharedManifest', { groupId, manifestId, userId });
+  }
+
+  /**
+   * Change the details of a shared manifest (only allowed for administrators of the group).
+   * @param groupId - the group the shared manifest belongs to
+   * @param manifestId - the shared manifest to change
+   * @param details - the details to change; null values are ignored during update
+   */
+  public async updateSharedManifest(groupId: string, manifestId: string, details: SharedManifestDetails): Promise<SharingOperationResult> {
+    return this.runSharingOperation('updateSharedManifest', { groupId, manifestId, ...details });
   }
 
   /**

@@ -215,7 +215,7 @@ internal final class VaultSync {
     }
 
     /// The engine operations the sharing screen may ask for.
-    private static let sharingOperations: Set<String> = ["createSharedManifest", "inviteToSharedManifest"]
+    private static let sharingOperations: Set<String> = ["createSharedManifest", "inviteToSharedManifest", "updateSharedManifest"]
 
     /// The forced logouts by the engine's reason.
     private static let logoutErrors: [String: AppError] = [

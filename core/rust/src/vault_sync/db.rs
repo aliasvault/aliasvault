@@ -33,10 +33,6 @@ pub(crate) async fn exec(host: &Host, db: Db, statements: Vec<SqlStatement>) -> 
     Ok(())
 }
 
-pub(crate) async fn exec_one(host: &Host, db: Db, sql: &str, params: Vec<Value>) -> SyncResult<()> {
-    exec(host, db, vec![SqlStatement { sql: sql.to_string(), params }]).await
-}
-
 /// Open the staging database: fresh with the current schema, or from SQLite bytes.
 pub(crate) async fn open_staging(host: &Host, bytes: Option<&[u8]>) -> SyncResult<()> {
     host.call::<Ack>(Command::DbOpen { db: Db::Staging, bytes: bytes.map(base64_encode) }).await?;
@@ -230,16 +226,9 @@ const GET_ACTIVE_KEY_FOR_MANIFEST: &str = "SELECT x.Id, x.PublicKey, x.PrivateKe
 const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
 const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
 const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
-const INSERT_FOLDER: &str = "INSERT INTO Folders (Id, Name, ParentFolderId, ManifestId, Weight, IsDeleted, CreatedAt, UpdatedAt) VALUES (?, ?, ?, ?, 0, 0, ?, ?)";
-const RESTAMP_SUBTREE_ITEMS: &str = "UPDATE Items SET ManifestId = ?, UpdatedAt = ? WHERE ManifestId = ? AND FolderId IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? AND ManifestId = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id WHERE f.ManifestId = ?) SELECT Id FROM subtree)";
-const RESTAMP_SUBTREE_FOLDERS: &str = "UPDATE Folders SET ManifestId = ? WHERE ManifestId = ? AND Id IN (WITH RECURSIVE subtree(Id) AS (SELECT Id FROM Folders WHERE Id = ? AND ManifestId = ? UNION ALL SELECT f.Id FROM Folders f INNER JOIN subtree s ON f.ParentFolderId = s.Id WHERE f.ManifestId = ?) SELECT Id FROM subtree)";
-const FIND_ITEMS_WITH_FOREIGN_LOGO: &str = "SELECT i.Id, i.ManifestId, origin.Kind, origin.Source FROM Items i INNER JOIN Logos origin ON origin.Id = i.LogoId LEFT JOIN Logos own ON own.Id = i.LogoId AND own.ManifestId = i.ManifestId WHERE i.LogoId IS NOT NULL AND own.Id IS NULL AND i.IsDeleted = 0";
-const GET_LOGO_ID_FOR_KEY: &str = "SELECT Id FROM Logos WHERE ManifestId = ? AND Kind = ? AND Source = ? AND IsDeleted = 0 LIMIT 1";
-const GET_BEST_LOGO_FOR_KEY: &str = "SELECT FileData, MimeType, Name FROM Logos WHERE Kind = ? AND Source = ? AND IsDeleted = 0 ORDER BY (FileData IS NOT NULL AND LENGTH(FileData) > 0) DESC, UpdatedAt DESC LIMIT 1";
-const UPSERT_LOGO: &str = "INSERT INTO Logos (Id, Kind, Source, ManifestId, FileData, MimeType, Name, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0) ON CONFLICT(ManifestId, Id) DO UPDATE SET FileData = excluded.FileData, MimeType = excluded.MimeType, Name = COALESCE(excluded.Name, Logos.Name), UpdatedAt = excluded.UpdatedAt, IsDeleted = 0";
-const REPOINT_ITEM_LOGO: &str = "UPDATE Items SET LogoId = ? WHERE Id = ? AND ManifestId = ?";
-const RENDERED_MANIFEST_FOLDER: &str = "SELECT Id FROM Folders WHERE ManifestId = ? AND IsDeleted = 0 AND ParentFolderId IS NULL";
-const MANIFEST_ROOT_FOLDER_NAMES: &str = "SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)";
+const MANIFEST_NAMES: &str = "SELECT Id, Name FROM Manifests WHERE Name IS NOT NULL";
+const UPDATE_MANIFEST_NAME: &str = "UPDATE Manifests SET Name = ? WHERE Id = ?";
+const UPSERT_MANIFEST_NAME: &str = "INSERT INTO Manifests (Id, Name) VALUES (?, ?) ON CONFLICT(Id) DO UPDATE SET Name = excluded.Name";
 
 /// The active mail delivery keypair of a manifest, when it has one.
 pub(crate) async fn active_key_for_manifest(host: &Host, manifest_id: &str) -> SyncResult<Option<Row>> {
@@ -266,68 +255,35 @@ pub(crate) async fn set_active_key_for_manifest(host: &Host, manifest_id: &str, 
     .await
 }
 
-/// What each shared manifest is called: the name of the top-level folder it is rendered as, keyed by lower-cased id.
+/*
+ * What each manifest is called, keyed by lower-cased id.
+ */
 pub(crate) async fn manifest_display_names(host: &Host) -> SyncResult<HashMap<String, String>> {
-    // A vault whose schema predates the manifest stamp names none.
-    if !has_column(host, Db::Local, "Folders", "ManifestId").await? {
+    // A vault whose schema predates the table names none.
+    if !has_column(host, Db::Local, "Manifests", "Name").await? {
         return Ok(HashMap::new());
     }
-    let rows = query(host, Db::Local, MANIFEST_ROOT_FOLDER_NAMES, vec![]).await?;
+    let rows = query(host, Db::Local, MANIFEST_NAMES, vec![]).await?;
     Ok(rows
         .iter()
-        .filter_map(|row| Some((id_key(row.get("ManifestId")?.as_str()?), row.get("Name")?.as_str()?.to_string())))
+        .filter_map(|row| Some((id_key(row.get("Id")?.as_str()?), row.get("Name")?.as_str()?.to_string())))
         .collect())
 }
 
-/// Whether a shared manifest already has the top-level folder it is rendered as.
-pub(crate) async fn has_rendered_manifest_folder(host: &Host, manifest_id: &str) -> SyncResult<bool> {
-    Ok(!query(host, Db::Local, RENDERED_MANIFEST_FOLDER, vec![json!(manifest_id)]).await?.is_empty())
+/// Name a manifest in the local vault.
+pub(crate) async fn set_manifest_name(host: &Host, manifest_id: &str, name: &str) -> SyncResult<()> {
+    exec(host, Db::Local, vec![set_manifest_name_statement(manifest_id, name)]).await
 }
 
-/// The statements that create the folder a shared manifest is rendered as and pull everything under it into the manifest.
-pub(crate) fn render_manifest_folder_statements(manifest_id: &str, name: &str, active_manifest_id: &str, now: &str) -> Vec<SqlStatement> {
-    let folder_id = id_key(manifest_id);
-    vec![
-        SqlStatement { sql: INSERT_FOLDER.to_string(), params: vec![json!(folder_id), json!(name), Value::Null, json!(active_manifest_id), json!(now), json!(now)] },
-        // Items first: their walk reads the folder stamps the last statement changes.
-        SqlStatement { sql: RESTAMP_SUBTREE_ITEMS.to_string(), params: vec![json!(manifest_id), json!(now), json!(active_manifest_id), json!(folder_id), json!(active_manifest_id), json!(active_manifest_id)] },
-        SqlStatement { sql: RESTAMP_SUBTREE_FOLDERS.to_string(), params: vec![json!(manifest_id), json!(active_manifest_id), json!(folder_id), json!(active_manifest_id), json!(active_manifest_id)] },
-    ]
+/// Name the manifests a database already holds; a manifest it does not hold stays out of it.
+pub(crate) async fn apply_manifest_names(host: &Host, db: Db, names: &HashMap<String, String>) -> SyncResult<()> {
+    let statements: Vec<SqlStatement> = names.iter().map(|(manifest_id, name)| SqlStatement { sql: UPDATE_MANIFEST_NAME.to_string(), params: vec![json!(name), json!(manifest_id)] }).collect();
+    exec(host, db, statements).await
 }
 
-/// Create the folder a shared manifest is rendered as and pull everything under it into the manifest.
-pub(crate) async fn render_manifest_folder(host: &Host, manifest_id: &str, name: &str, active_manifest_id: &str) -> SyncResult<()> {
-    let now = now_vault_datetime();
-    exec(host, Db::Local, render_manifest_folder_statements(manifest_id, name, active_manifest_id, &now)).await?;
-    reconcile_item_logo_scopes(host, &now).await
-}
-
-/// Point every item at a copy of its logo inside its own manifest, copying the image in when needed.
-pub(crate) async fn reconcile_item_logo_scopes(host: &Host, now: &str) -> SyncResult<()> {
-    let foreign = query(host, Db::Local, FIND_ITEMS_WITH_FOREIGN_LOGO, vec![]).await?;
-    for item in foreign {
-        let manifest_id = cell_string(&item, "ManifestId");
-        let kind = cell_string(&item, "Kind");
-        let source = cell_string(&item, "Source");
-        let item_id = cell_string(&item, "Id");
-
-        let in_scope = query(host, Db::Local, GET_LOGO_ID_FOR_KEY, vec![json!(manifest_id), json!(kind), json!(source)]).await?;
-        let logo_id = match in_scope.first().and_then(|row| row.get("Id")).and_then(Value::as_str) {
-            Some(id) => id.to_string(),
-            None => {
-                let origin = query(host, Db::Local, GET_BEST_LOGO_FOR_KEY, vec![json!(kind), json!(source)]).await?;
-                let Some(origin) = origin.into_iter().next() else { continue };
-                let logo_id = crate::vault_codec::logo_id_for(&manifest_id, &kind, &source);
-                let file_data = origin.get("FileData").cloned().unwrap_or(Value::Null);
-                let mime = origin.get("MimeType").cloned().unwrap_or(Value::Null);
-                let name = origin.get("Name").cloned().unwrap_or(Value::Null);
-                exec_one(host, Db::Local, UPSERT_LOGO, vec![json!(logo_id), json!(kind), json!(source), json!(manifest_id), file_data, mime, name, json!(now), json!(now)]).await?;
-                logo_id
-            }
-        };
-        exec_one(host, Db::Local, REPOINT_ITEM_LOGO, vec![json!(logo_id), json!(item_id), json!(manifest_id)]).await?;
-    }
-    Ok(())
+/// The statement that names a manifest.
+pub(crate) fn set_manifest_name_statement(manifest_id: &str, name: &str) -> SqlStatement {
+    SqlStatement { sql: UPSERT_MANIFEST_NAME.to_string(), params: vec![json!(id_key(manifest_id)), json!(name)] }
 }
 
 /// Prune expired trash items in place. Returns the number of statements executed.

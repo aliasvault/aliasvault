@@ -58,13 +58,11 @@ export class FolderQueries {
     WHERE Id = ? AND ManifestId = ?`;
 
   /**
-   * Clear folder reference from items (set to NULL). The manifest bound to the SET is the one an item
-   * outside every folder joins; the one in the WHERE is the folder's own.
+   * Clear folder reference from items (set to NULL).
    */
   public static readonly CLEAR_ITEMS_FOLDER = `
     UPDATE Items
     SET FolderId = NULL,
-        ManifestId = ?,
         UpdatedAt = ?
     WHERE FolderId = ? AND ManifestId = ?`;
 
@@ -103,4 +101,14 @@ export class FolderQueries {
     SET ParentFolderId = ?,
         UpdatedAt = ?
     WHERE ParentFolderId = ? AND ManifestId = ?`;
+
+  /**
+   * The shared manifests this vault holds, with their names. This is locally created bookkeeping and is not synced to the server.
+   * Params: the personal manifest id.
+   */
+  public static readonly GET_SHARED_MANIFESTS = `
+    SELECT Id AS ManifestId, Name
+    FROM Manifests
+    WHERE Id <> ? COLLATE NOCASE
+    ORDER BY Name`;
 }

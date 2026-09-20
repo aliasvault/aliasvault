@@ -11,7 +11,6 @@ import { MobileAppIdentity } from '@/utils/AppInfo';
  * Which translation key backs each of the client core's own messages.
  */
 const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
-  [TranslatableMessage.UnnamedSharedVault]: 'sharing.family.unnamedVault',
   [TranslatableMessage.ClientOutdated]: 'vault.errors.appOutdated',
   [TranslatableMessage.SharedFolderDeleteRefused]: 'items.folders.deleteSharedFolderHint',
   [TranslatableMessage.VaultUpgradeRequired]: 'vault.errors.vaultOutdated',

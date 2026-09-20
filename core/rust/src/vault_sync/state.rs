@@ -25,6 +25,7 @@ pub(crate) struct Ctx {
     pub vault_changed: bool,
     pub schema: Option<SchemaInfo>,
     pub vault_key_probed: bool,
+    pub served_manifest_names: HashMap<String, String>,
     has_local_vault: bool,
 }
 
@@ -47,6 +48,7 @@ impl Ctx {
             vault_changed: false,
             schema: None,
             vault_key_probed: false,
+            served_manifest_names: HashMap::new(),
             has_local_vault: false,
             host,
             request,

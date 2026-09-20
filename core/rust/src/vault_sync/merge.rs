@@ -59,7 +59,7 @@ pub(crate) async fn pull_and_merge(ctx: &mut Ctx) -> SyncResult<PullAndMergeOutc
         Err(merge_error) => {
             // The merge-failure fallback, from the same snapshot: the server vault stands, local changes are dropped.
             ctx.warn(format!("[V2Merge] Canonical merge failed, falling back to the server vault: {}", merge_error)).await;
-            let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map).await?;
+            let sqlite_bytes = pull::materialize_to_sqlite(ctx, &opened.manifests(), &opened.data_buckets, &opened.blob_map, &opened.manifest_names).await?;
             Ok(PullAndMergeOutcome::ServerOnly(opened.pulled_vault(state::encrypt_vault_blob(&sqlite_bytes, &vek)?, email_routing)))
         }
     }
@@ -144,7 +144,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
     let personal_id = opened.resolved.first().map(|m| m.manifest_id.clone()).unwrap_or_default();
     let merged_blobs = resolve_merged_blob_refs(ctx, &manifests, &blob_map, &personal_id, &local_blobs).await?;
 
-    let sqlite_bytes = pull::materialize_to_sqlite(ctx, &manifests, &data_buckets, &blob_map).await?;
+    let sqlite_bytes = pull::materialize_to_sqlite(ctx, &manifests, &data_buckets, &blob_map, &opened.manifest_names).await?;
     let encrypted_vault = state::encrypt_vault_blob(&sqlite_bytes, vek)?;
     ctx.log(format!("[V2Merge] Canonical merge complete: {} conflict(s), {} offline row(s) kept, {} validation fallback(s), {} dropped local manifest(s).", stats.conflicts, stats.records_inserted, fallback_manifest_ids.len(), merge_output.dropped_local_manifest_ids.len())).await;
 

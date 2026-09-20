@@ -1,5 +1,7 @@
 //! The sharing operations that take vault keys: creating a group's shared manifest and inviting a member to one.
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use super::errors::{SyncError, SyncResult};
@@ -57,6 +59,14 @@ struct CreateSharedManifestRequest<'a> {
     self_encrypted_vek: &'a str,
     self_public_key: &'a str,
     algorithm: &'a str,
+    encrypted_name: &'a str,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateSharedManifestRequest<'a> {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    encrypted_name: Option<&'a str>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -104,6 +114,12 @@ pub(crate) async fn create_shared_manifest_operation(ctx: &mut Ctx) -> SharingOp
 pub(crate) async fn invite_to_shared_manifest_operation(ctx: &mut Ctx) -> SharingOperationResult {
     let outcome = invite_to_shared_manifest(ctx).await;
     finish(ctx, "invite to shared manifest", outcome).await
+}
+
+/// Change the details of a shared manifest this account administers.
+pub(crate) async fn update_shared_manifest_operation(ctx: &mut Ctx) -> SharingOperationResult {
+    let outcome = update_shared_manifest(ctx).await;
+    finish(ctx, "update shared manifest", outcome).await
 }
 
 /// Turn an operation's outcome into the result the host acts on.
@@ -167,18 +183,22 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     // The new manifest's VEK is encrypted only for this account's own public key upon creation, other users are invited separately.
     let Some(self_public_key) = own_public_key(ctx).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
-    let Some(personal_manifest_id) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? else { return Ok(Err(Refusal::VaultUpgradeRequired)) };
+    if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_none() {
+        return Ok(Err(Refusal::VaultUpgradeRequired));
+    }
     if !ctx.has_local_vault().await? || engine::vault_requires_manifest_migration(ctx).await? {
         return Ok(Err(Refusal::VaultUpgradeRequired));
     }
 
     let manifest_vek = crypto::generate_key_base64();
     let self_encrypted_vek = crypto::encrypt_with_public_key(manifest_vek.as_bytes(), &self_public_key)?;
+    // The server keeps the name for every member to fetch, encrypted with the manifest's own key.
+    let encrypted_name = crypto::symmetric_encrypt(&name, &manifest_vek)?;
     let requested_id = db::new_id();
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
         &format!("Groups/{}/manifests", group.group_id),
-        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256 },
+        &CreateSharedManifestRequest { manifest_id: &requested_id, self_encrypted_vek: &self_encrypted_vek, self_public_key: &self_public_key, algorithm: ALGORITHM_RSA_OAEP_SHA256, encrypted_name: &encrypted_name },
         false,
     )
     .await?;
@@ -193,23 +213,23 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
             encryption_public_key: self_public_key,
             algorithm: ALGORITHM_RSA_OAEP_SHA256.to_string(),
             salt: vault_codec::generate_manifest_salt(),
-            name: Some(name.clone()),
+            encrypted_name: Some(encrypted_name),
             can_administer: true,
         },
     );
     keys::set_shared_manifest_records(&ctx.host, &records, &key).await?;
 
-    let mut revisions: std::collections::HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
+    let mut revisions: HashMap<String, i64> = state::get(&ctx.host, state::SERVER_MANIFEST_REVISIONS).await?.unwrap_or_default();
     revisions.insert(manifest_id.clone(), response.revision_number);
     state::set(&ctx.host, state::SERVER_MANIFEST_REVISIONS, &revisions).await?;
 
-    db::render_manifest_folder(&ctx.host, &manifest_id, &name, &personal_manifest_id).await?;
+    db::set_manifest_name(&ctx.host, &manifest_id, &name).await?;
 
     // Mail to an alias in this manifest is encrypted with the manifest's own keypair.
     let delivery_keys = crypto::generate_rsa_key_pair()?;
     db::set_active_key_for_manifest(&ctx.host, &manifest_id, &delivery_keys.public_key, &delivery_keys.private_key).await?;
 
-    // The new folder and keypair ride out on the host's next sync, which the dirty flag asks for.
+    // The name and keypair ride out on the host's next sync, which the dirty flag asks for.
     let bytes = db::export(&ctx.host, Db::Local).await?;
     let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key)?, true, None, None).await?;
     ctx.is_dirty = true;
@@ -218,6 +238,38 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     ctx.log(format!("[Sharing] Created shared manifest {} for group {}.", manifest_id, group.group_id)).await;
     Ok(Ok(manifest_id))
+}
+
+/// The details an update can change (e.g. the name of a manifest / shared vault).
+async fn update_shared_manifest(ctx: &mut Ctx) -> Outcome {
+    let key = ctx.encryption_key()?;
+    let target = params(ctx)?;
+    let manifest_id = target.manifest_id.clone().ok_or_else(|| SyncError::Other("The update names no shared manifest".to_string()))?;
+    let name = target.name.as_deref().map(str::trim).filter(|name| !name.is_empty()).ok_or_else(|| SyncError::Other("The update changes nothing".to_string()))?.to_string();
+
+    let mut records = keys::shared_manifest_records(ctx).await?;
+    let record = records.values().find(|record| ids_equal(&record.manifest_id, &manifest_id)).cloned().ok_or_else(|| SyncError::Other("This account holds no key for the shared manifest".to_string()))?;
+    let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
+
+    // The server decides who may change a shared manifest; it only ever sees the name encrypted.
+    let encrypted_name = crypto::symmetric_encrypt(&name, &manifest_vek)?;
+    http::post_no_content(&ctx.host, &format!("Groups/{}/manifests/{}", target.group_id, record.manifest_id), &UpdateSharedManifestRequest { encrypted_name: Some(&encrypted_name) }).await?;
+
+    if let Some(held) = records.values_mut().find(|held| ids_equal(&held.manifest_id, &manifest_id)) {
+        held.encrypted_name = Some(encrypted_name);
+    }
+    keys::set_shared_manifest_records(&ctx.host, &records, &key).await?;
+
+    // Show the new name right away; every other member fetches it on their next sync.
+    if ctx.has_local_vault().await? {
+        db::apply_manifest_names(&ctx.host, Db::Local, &HashMap::from([(id_key(&record.manifest_id), name)])).await?;
+        let bytes = db::export(&ctx.host, Db::Local).await?;
+        ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key)?, false, None, None).await?;
+        ctx.vault_changed = true;
+    }
+
+    ctx.log(format!("[Sharing] Updated shared manifest {}.", record.manifest_id)).await;
+    Ok(Ok(record.manifest_id))
 }
 
 async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
@@ -245,7 +297,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
     // The name travels encrypted in the invitation, so the recipient sees what they are invited to.
-    let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().or(record.name.clone()).filter(|name| !name.is_empty());
+    let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty());
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
         recipient_public_key_id,

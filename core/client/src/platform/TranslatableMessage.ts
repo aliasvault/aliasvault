@@ -4,13 +4,10 @@
  * TODO: refactor this to use centralized translation system instead (on to-do list) once that is implemented.
  */
 export enum TranslatableMessage {
-  /** Display name for a shared vault whose name is not known locally. */
-  UnnamedSharedVault = 'unnamed-shared-vault',
-
   /** The local vault is newer than what this client understands; the app must be updated. */
   ClientOutdated = 'client-outdated',
 
-  /** A shared vault's anchor folder cannot be deleted from the folder list. */
+  /** The folder a shared vault is shown as cannot be deleted from the folder list. */
   SharedFolderDeleteRefused = 'shared-folder-delete-refused',
 
   /** The vault still has to walk the sqlite-blob upgrade chain before the manifest migration can run. */

@@ -84,8 +84,7 @@ public final class VaultSyncEngine {
             "privateEmailDomains": metadata?.privateEmailDomains ?? [],
             "forcePull": forcePull,
             "minServerVersion": AppInfo.minServerVersion,
-            "isOfflineMode": vaultStore.getOfflineMode(),
-            "unnamedSharedVaultName": NSLocalizedString("unnamed_shared_vault", bundle: .vaultStoreKit, value: "Shared vault", comment: "Name of a shared vault without a name")
+            "isOfflineMode": vaultStore.getOfflineMode()
         ]
         if let key = encryptionKey ?? (try? vaultStore.getEncryptionKeyBase64()) {
             request["encryptionKey"] = key

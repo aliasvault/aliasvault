@@ -50,6 +50,14 @@ export class ItemQueries {
     ORDER BY i.CreatedAt DESC`;
 
   /**
+   * Get the active items a manifest stores outside every folder.
+   */
+  public static readonly GET_AT_MANIFEST_TOP_LEVEL = `
+    ${ItemQueries.BASE_SELECT}
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL AND i.FolderId IS NULL AND i.ManifestId = ?
+    ORDER BY i.CreatedAt DESC`;
+
+  /**
    * Get every active item that the folder counts need.
    */
   public static readonly GET_ALL_SUMMARIES = `

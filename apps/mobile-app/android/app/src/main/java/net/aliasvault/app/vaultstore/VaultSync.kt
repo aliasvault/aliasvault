@@ -25,7 +25,7 @@ class VaultSync(
         private const val TAG = "VaultSync"
 
         /** The engine operations the sharing screen may ask for. */
-        private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest")
+        private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest", "updateSharedManifest")
     }
 
     /**
@@ -135,7 +135,7 @@ class VaultSync(
     }
 
     /**
-     * Run a sharing operation of the engine: `createSharedManifest` or `inviteToSharedManifest`.
+     * Run a sharing operation of the engine: `createSharedManifest`, `inviteToSharedManifest` or `updateSharedManifest`.
      */
     suspend fun runSharingOperation(operation: String, params: JSONObject, webApiService: WebApiService): VaultSharingResult {
         if (operation !in SHARING_OPERATIONS) {

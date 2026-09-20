@@ -4,6 +4,8 @@
 export type ManifestRevision = {
   manifestId: string;
   revision: number;
+  /** The name of a shared manifest, encrypted with the manifest's own key (base64). */
+  encryptedName?: string | null;
 }
 
 /**

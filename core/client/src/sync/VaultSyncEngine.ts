@@ -13,7 +13,6 @@ import { StorageKeys } from '../constants/StorageKeys';
 import { AppInfo } from '../platform/AppInfo';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devLog, devWarn } from '../platform/Logger';
-import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { rustCore } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 
@@ -23,7 +22,7 @@ import type { StorageKey } from '../platform/KeyValueStore';
 import type { ISqliteDatabase, SqliteValue } from '../platform/SqliteEngine';
 
 /** The operations the engine runs. */
-export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest';
+export type VaultSyncOperation = 'fullSync' | 'migrationStatus' | 'migrateManifest' | 'statusCheck' | 'resolveVaultKey' | 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest';
 
 /** What a sharing operation acts on (the Rust `SharingParams`). */
 export type VaultSyncSharingParams = {
@@ -47,7 +46,6 @@ export type VaultSyncEngineRequest = {
   forcePull: boolean;
   minServerVersion: string;
   isOfflineMode: boolean;
-  unnamedSharedVaultName: string;
   sharing?: VaultSyncSharingParams;
 };
 
@@ -573,6 +571,5 @@ export async function buildVaultSyncRequest(operation: VaultSyncOperation, optio
     forcePull: options.forcePull === true,
     minServerVersion: AppInfo.MIN_SERVER_VERSION,
     isOfflineMode: isOfflineMode ?? false,
-    unnamedSharedVaultName: await getPlatform().translate(TranslatableMessage.UnnamedSharedVault),
   };
 }

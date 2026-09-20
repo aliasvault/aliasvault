@@ -112,31 +112,6 @@ public static class VaultTableReader
     }
 
     /// <summary>
-    /// The display name of every shared manifest rendered as a folder (a folder whose id is the manifest id), keyed by
-    /// lowercase manifest id. This is the authority for the name the push writes into a shared manifest.
-    /// </summary>
-    /// <param name="connection">The open connection.</param>
-    /// <returns>Manifest id to name.</returns>
-    public static async Task<Dictionary<string, string>> ReadDisplayNamesAsync(SqliteConnection connection)
-    {
-        var names = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (!await HasColumnAsync(connection, "Folders", ManifestIdColumn))
-        {
-            return names;
-        }
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT ManifestId, Name FROM Folders WHERE IsDeleted = 0 AND ManifestId IS NOT NULL AND UPPER(Id) = UPPER(ManifestId)";
-        await using var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            names[reader.GetString(0).ToLowerInvariant()] = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-        }
-
-        return names;
-    }
-
-    /// <summary>
     /// The public half of a manifest's active email delivery keypair, or null when the manifest holds none.
     /// </summary>
     /// <param name="connection">The open connection.</param>

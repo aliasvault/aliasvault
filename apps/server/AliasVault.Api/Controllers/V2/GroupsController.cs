@@ -192,6 +192,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             UpdatedAt = timeProvider.UtcNow,
         };
         context.VaultManifests.Add(manifest);
+        context.VaultManifestShareDetails.Add(new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.UtcNow, UpdatedAt = timeProvider.UtcNow });
         context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, timeProvider.UtcNow));
 
         try
@@ -379,6 +380,55 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         });
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Change the details of one of the group's shared manifests. Metadata that can contain sensitive information is encrypted
+    /// like the name of the manifest / shared vault.
+    /// </summary>
+    /// <param name="groupId">The group ID.</param>
+    /// <param name="manifestId">The shared manifest to change.</param>
+    /// <param name="model">The details to change.</param>
+    /// <returns>Ok on success.</returns>
+    [HttpPost("{groupId:guid}/manifests/{manifestId:guid}")]
+    [RequireCapability(CapabilityKeys.VaultSharing)]
+    public async Task<IActionResult> UpdateManifest(Guid groupId, Guid manifestId, [FromBody] UpdateSharedManifestRequest model)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var me = await GetCurrentUserAsync();
+        if (me == null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await GroupHelper.IsSharedGroupAdminAsync(context, groupId, me.Id))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.GROUP_NOT_FOUND, 404));
+        }
+
+        if (!await context.VaultManifests.AnyAsync(m => m.ManifestId == manifestId && m.OwnerGroupId == groupId))
+        {
+            return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
+        }
+
+        // A shared manifest created before the details existed gets its row on the first change.
+        var details = await context.VaultManifestShareDetails.FirstOrDefaultAsync(d => d.ManifestId == manifestId);
+        if (details is null)
+        {
+            details = new VaultManifestShareDetails { ManifestId = manifestId, CreatedAt = timeProvider.UtcNow };
+            context.VaultManifestShareDetails.Add(details);
+        }
+
+        if (model.EncryptedName is not null)
+        {
+            details.EncryptedName = model.EncryptedName;
+        }
+
+        details.UpdatedAt = timeProvider.UtcNow;
+
+        await context.SaveChangesAsync();
 
         return Ok();
     }

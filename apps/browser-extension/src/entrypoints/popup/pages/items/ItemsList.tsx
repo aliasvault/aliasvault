@@ -178,7 +178,7 @@ const ItemsList: React.FC = () => {
     return dbContext.sqliteClient.folders.getById(currentFolderRef);
   }, [currentFolderRef, dbContext?.sqliteClient, folderRefreshKey]);
 
-  // A virtual folder (today: a shared manifest) is drawn by this client, so it is not editable or deletable here
+  // A virtual folder (e.g. shared manifest) is not editable or deletable here.
   const currentFolderIsVirtual = currentFolder !== null && multiManifestRendering.isVirtualFolder(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)

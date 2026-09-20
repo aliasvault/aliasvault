@@ -4,8 +4,6 @@ pub mod types;
 #[cfg(test)]
 mod tests;
 
-use std::collections::HashMap;
-
 pub use types::{
     ManifestAccessPartition, ManifestAccessRequest, ManifestWriteRecord, ManifestWriteSet,
     ManifestWriteSetRequest, SharedManifestRecord, SkippedManifest, WriteSkipReason,
@@ -24,7 +22,6 @@ pub fn resolve_manifest_write_set(request: ManifestWriteSetRequest) -> ManifestW
         manifest_id: request.personal_manifest_id,
         is_personal: true,
         salt: request.personal_manifest_salt,
-        name: None,
         can_administer: false,
     }];
     let mut skipped = Vec::new();
@@ -46,8 +43,6 @@ pub fn resolve_manifest_write_set(request: ManifestWriteSetRequest) -> ManifestW
             manifest_id: record.manifest_id.clone(),
             is_personal: false,
             salt: record.salt.clone(),
-            // Re-read on every push, so the name inside the manifest follows a rename.
-            name: resolve_name(&request.display_names, &record.manifest_id, record.name.as_deref()),
             can_administer: record.can_administer,
         });
     }
@@ -75,13 +70,3 @@ pub fn partition_manifest_access(request: ManifestAccessRequest) -> ManifestAcce
     ManifestAccessPartition { unwritable, lost }
 }
 
-/// The name to write into a manifest: the rendered one, else the stored one, else none.
-fn resolve_name(display_names: &HashMap<String, String>, manifest_id: &str, record_name: Option<&str>) -> Option<String> {
-    let wanted = id_key(manifest_id);
-    display_names
-        .iter()
-        .find(|(key, _)| id_key(key) == wanted)
-        .map(|(_, name)| name.clone())
-        .or_else(|| record_name.map(|name| name.to_string()))
-        .filter(|name| !name.is_empty())
-}

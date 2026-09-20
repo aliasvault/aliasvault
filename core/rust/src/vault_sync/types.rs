@@ -27,6 +27,8 @@ pub enum SyncOperation {
     CreateSharedManifest,
     /// Invite a group member to a shared manifest, handing them its key encrypted for their account keypair.
     InviteToSharedManifest,
+    /// Change the details of a shared manifest (its name); the server refuses anyone but an administrator of its group.
+    UpdateSharedManifest,
 }
 
 /// What a sharing operation acts on.
@@ -34,14 +36,10 @@ pub enum SyncOperation {
 #[serde(rename_all = "camelCase")]
 pub struct SharingParams {
     pub group_id: String,
-    /// The shared manifest to invite to (`inviteToSharedManifest`).
     #[serde(default)]
     pub manifest_id: Option<String>,
-    /// The group member being invited (`inviteToSharedManifest`).
     #[serde(default)]
     pub user_id: Option<String>,
-    /// What to call the new shared manifest (`createSharedManifest`). It stays on the clients: it rides into the
-    /// vault and the invitations, never into the create request.
     #[serde(default)]
     pub name: Option<String>,
 }
@@ -72,8 +70,6 @@ pub struct SyncRequest {
     pub min_server_version: Option<String>,
     #[serde(default)]
     pub is_offline_mode: bool,
-    #[serde(default)]
-    pub unnamed_shared_vault_name: Option<String>,
     /// The target of a sharing operation; absent for every other operation.
     #[serde(default)]
     pub sharing: Option<SharingParams>,
@@ -532,6 +528,9 @@ pub struct StatusResponse {
 pub struct ManifestRevision {
     pub manifest_id: String,
     pub revision: i64,
+    /// The name of a shared manifest, encrypted with the manifest's own key.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encrypted_name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -776,8 +775,9 @@ pub struct SharedManifestDto {
     pub encryption_public_key: String,
     pub algorithm: String,
     pub salt: String,
+    /// The manifest's name as the server last served it, encrypted with the manifest's own key.
     #[serde(default)]
-    pub name: Option<String>,
+    pub encrypted_name: Option<String>,
     #[serde(default)]
     pub can_administer: bool,
 }

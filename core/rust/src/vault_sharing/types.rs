@@ -1,5 +1,4 @@
 //! Input and output types for the sharing write logic.
-use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -11,9 +10,6 @@ pub struct SharedManifestRecord {
     pub manifest_id: String,
     /// Salt this manifest's blob hashes are derived with.
     pub salt: String,
-    /// Name as recorded on the last pull.
-    #[serde(default)]
-    pub name: Option<String>,
     /// Whether this account may publish the manifest's email delivery key.
     #[serde(default)]
     pub can_administer: bool,
@@ -36,9 +32,6 @@ pub struct ManifestWriteSetRequest {
     /// The shared-manifest key records this client holds.
     #[serde(default)]
     pub held_records: Vec<SharedManifestRecord>,
-    /// What this client renders each manifest as, keyed by manifest id.
-    #[serde(default)]
-    pub display_names: HashMap<String, String>,
 }
 
 /// Why a manifest is left out of the write.
@@ -71,8 +64,6 @@ pub struct ManifestWriteRecord {
     pub is_personal: bool,
     /// Salt this manifest's blob hashes are derived with.
     pub salt: String,
-    /// Name to write into the manifest, or none.
-    pub name: Option<String>,
     /// Whether this account may publish the manifest's email delivery key.
     pub can_administer: bool,
 }

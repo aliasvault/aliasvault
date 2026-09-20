@@ -96,7 +96,6 @@ class VaultSyncEngine(
             put("forcePull", forcePull)
             put("minServerVersion", AppInfo.MIN_SERVER_VERSION)
             put("isOfflineMode", vaultStore.getOfflineMode())
-            put("unnamedSharedVaultName", storageProvider.getAppContext()?.getString(R.string.unnamed_shared_vault) ?: "Shared vault")
         }
         (encryptionKey ?: vaultStore.getEncryptionKeyBase64())?.let { request.put("encryptionKey", it) }
         (state("accountPublicKey") as? String)?.let { request.put("accountPublicKey", it) }

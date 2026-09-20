@@ -78,6 +78,16 @@ export type CreateSharedManifestRequest = {
   selfEncryptedVek: string;
   selfPublicKey: string;
   algorithm: VaultKeyAlgorithmValue;
+  /** The name of the manifest, encrypted with the manifest's own key (base64). */
+  encryptedName?: string | null;
+}
+
+/**
+ * Change the details of one of a group's shared manifests (POST /v2/Groups/{groupId}/manifests/{manifestId}).
+ */
+export type UpdateSharedManifestRequest = {
+  /** The new name of the manifest, encrypted with the manifest's own key (base64). */
+  encryptedName?: string | null;
 }
 
 /**

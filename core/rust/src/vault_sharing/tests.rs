@@ -1,15 +1,13 @@
 //! Tests for the sharing policy.
 
-use std::collections::HashMap;
 
 use super::*;
 
 /// A held key record for a manifest.
-fn record(manifest_id: &str, name: Option<&str>) -> SharedManifestRecord {
+fn record(manifest_id: &str) -> SharedManifestRecord {
     SharedManifestRecord {
         manifest_id: manifest_id.to_string(),
         salt: "salt-1".to_string(),
-        name: name.map(|n| n.to_string()),
         can_administer: true,
     }
 }
@@ -22,7 +20,6 @@ fn write_set_request(stamped: &[&str], opened: &[&str], held: Vec<SharedManifest
         stamped_manifest_ids: stamped.iter().map(|id| id.to_string()).collect(),
         opened_manifest_ids: opened.iter().map(|id| id.to_string()).collect(),
         held_records: held,
-        display_names: HashMap::new(),
     }
 }
 
@@ -32,27 +29,25 @@ fn write_set_request(stamped: &[&str], opened: &[&str], held: Vec<SharedManifest
 
 #[test]
 fn the_write_set_leads_with_the_personal_manifest() {
-    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL", "MAN-1"], &["MAN-1"], vec![record("MAN-1", Some("Family"))]));
+    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL", "MAN-1"], &["MAN-1"], vec![record("MAN-1")]));
 
     assert_eq!(set.records.len(), 2);
     assert!(set.records[0].is_personal);
     assert_eq!(set.records[0].manifest_id, "PERSONAL");
     assert_eq!(set.records[0].salt, "personal-salt");
-    // A personal manifest is never named and is not administered through a group.
-    assert_eq!(set.records[0].name, None);
+    // A personal manifest is not administered through a group.
     assert!(!set.records[0].can_administer);
 
     assert!(!set.records[1].is_personal);
     assert_eq!(set.records[1].manifest_id, "MAN-1");
     assert_eq!(set.records[1].salt, "salt-1");
-    assert_eq!(set.records[1].name.as_deref(), Some("Family"));
     assert!(set.records[1].can_administer);
     assert!(set.skipped.is_empty());
 }
 
 #[test]
 fn a_manifest_with_no_local_rows_is_left_alone_rather_than_emptied() {
-    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL"], &["MAN-1"], vec![record("MAN-1", None)]));
+    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL"], &["MAN-1"], vec![record("MAN-1")]));
 
     assert_eq!(set.records.len(), 1);
     assert_eq!(set.skipped.len(), 1);
@@ -62,7 +57,7 @@ fn a_manifest_with_no_local_rows_is_left_alone_rather_than_emptied() {
 
 #[test]
 fn a_manifest_whose_key_did_not_open_is_not_written() {
-    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL", "MAN-1"], &[], vec![record("MAN-1", None)]));
+    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL", "MAN-1"], &[], vec![record("MAN-1")]));
 
     assert_eq!(set.records.len(), 1);
     assert_eq!(set.skipped[0].reason, WriteSkipReason::KeyDidNotOpen);
@@ -70,7 +65,7 @@ fn a_manifest_whose_key_did_not_open_is_not_written() {
 
 #[test]
 fn the_write_set_matches_ids_regardless_of_casing() {
-    let set = resolve_manifest_write_set(write_set_request(&["man-1"], &["MAN-1"], vec![record("Man-1", None)]));
+    let set = resolve_manifest_write_set(write_set_request(&["man-1"], &["MAN-1"], vec![record("Man-1")]));
 
     assert_eq!(set.records.len(), 2);
     // The record's own spelling comes back, since that is what addresses the write.
@@ -79,27 +74,8 @@ fn the_write_set_matches_ids_regardless_of_casing() {
 }
 
 #[test]
-fn the_rendered_name_overrides_the_stored_one_on_every_push() {
-    let mut request = write_set_request(&["PERSONAL", "MAN-1"], &["MAN-1"], vec![record("MAN-1", Some("Name at creation"))]);
-    request.display_names.insert("MAN-1".to_string(), "Renamed since".to_string());
-
-    let set = resolve_manifest_write_set(request);
-    assert_eq!(set.records[1].name.as_deref(), Some("Renamed since"));
-}
-
-#[test]
-fn a_manifest_with_no_name_anywhere_is_written_without_one() {
-    let mut request = write_set_request(&["PERSONAL", "MAN-1"], &["MAN-1"], vec![record("MAN-1", None)]);
-    // An empty rendered name must not shadow the absent one.
-    request.display_names.insert("MAN-1".to_string(), String::new());
-
-    let set = resolve_manifest_write_set(request);
-    assert_eq!(set.records[1].name, None);
-}
-
-#[test]
 fn several_manifests_keep_the_order_they_were_held_in() {
-    let held = vec![record("MAN-1", None), record("MAN-2", None), record("MAN-3", None)];
+    let held = vec![record("MAN-1"), record("MAN-2"), record("MAN-3")];
     let set = resolve_manifest_write_set(write_set_request(&["PERSONAL", "MAN-1", "MAN-3"], &["MAN-1", "MAN-2", "MAN-3"], held));
 
     let written: Vec<&str> = set.records.iter().map(|r| r.manifest_id.as_str()).collect();
@@ -173,20 +149,18 @@ fn the_json_boundary_round_trips() {
         "personalManifestSalt": "personal-salt",
         "stampedManifestIds": ["PERSONAL", "MAN-1"],
         "openedManifestIds": ["MAN-1"],
-        "heldRecords": [{ "manifestId": "MAN-1", "salt": "salt-1", "encryptedVek": "ignored", "canAdminister": true }],
-        "displayNames": { "man-1": "Family" }
+        "heldRecords": [{ "manifestId": "MAN-1", "salt": "salt-1", "encryptedVek": "ignored", "canAdminister": true }]
     }"#;
 
     let output: serde_json::Value = serde_json::from_str(&crate::error::json_call(input, |request| Ok(resolve_manifest_write_set(request))).unwrap()).unwrap();
     assert_eq!(output["records"][1]["manifestId"], "MAN-1");
-    assert_eq!(output["records"][1]["name"], "Family");
     assert_eq!(output["records"][1]["isPersonal"], false);
     assert_eq!(output["skipped"].as_array().unwrap().len(), 0);
 }
 
 #[test]
 fn a_skip_reason_is_a_stable_token() {
-    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL"], &[], vec![record("MAN-1", None)]));
+    let set = resolve_manifest_write_set(write_set_request(&["PERSONAL"], &[], vec![record("MAN-1")]));
     let json = serde_json::to_value(&set).unwrap();
     assert_eq!(json["skipped"][0]["reason"], "NO_ROWS_IN_VAULT");
 }

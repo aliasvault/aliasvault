@@ -1,6 +1,7 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
@@ -320,6 +321,9 @@ export default function FolderViewScreen(): React.ReactNode {
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 
+  // A virtual folder (e.g. shared manifest) is not editable or deletable here.
+  const isVirtualFolder = multiManifestRendering.isVirtualFolder(folderRef);
+
   /**
    * Set up header with folder name and edit/delete buttons.
    */
@@ -329,7 +333,7 @@ export default function FolderViewScreen(): React.ReactNode {
       /**
        * Header right buttons for edit and delete.
        */
-      headerRight: (): React.ReactNode => (
+      headerRight: (): React.ReactNode => (isVirtualFolder ? null : (
         <View style={{ flexDirection: 'row', gap: 4 }}>
           <RobustPressable
             onPress={() => setShowEditFolderModal(true)}
@@ -352,9 +356,9 @@ export default function FolderViewScreen(): React.ReactNode {
             />
           </RobustPressable>
         </View>
-      ),
+      )),
     });
-  }, [navigation, folder?.Name, colors.primary, colors.destructive, t]);
+  }, [navigation, folder?.Name, isVirtualFolder, colors.primary, colors.destructive, t]);
 
   /**
    * Delete an item (move to trash).

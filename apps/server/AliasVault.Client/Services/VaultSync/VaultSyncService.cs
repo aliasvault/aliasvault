@@ -1384,8 +1384,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             personalManifestSalt = state.PersonalManifestSalt,
             stampedManifestIds = (await VaultTableReader.ManifestIdsInVaultAsync(connection)).ToList(),
             openedManifestIds = opened.Select(record => record.ManifestId.ToString()).ToList(),
-            heldRecords = state.SharedManifests.Values.Select(record => new { manifestId = record.ManifestId.ToString(), salt = record.Salt, name = record.Name, canAdminister = record.CanAdminister }).ToList(),
-            displayNames = await VaultTableReader.ReadDisplayNamesAsync(connection),
+            heldRecords = state.SharedManifests.Values.Select(record => new { manifestId = record.ManifestId.ToString(), salt = record.Salt, canAdminister = record.CanAdminister }).ToList(),
         };
 
         var writeSetJson = await rustCoreService.VaultSharingResolveManifestWriteSetAsync(JsonSerializer.Serialize(request));

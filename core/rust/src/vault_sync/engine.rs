@@ -14,7 +14,7 @@ use super::state::{self, Ctx};
 use super::types::{Db, FailureFields, FullSyncResult, LogLevel, MigrateManifestResult, MigrationKind, MigrationStatusResult, OperationResult, ResolveVaultKeyResult, SessionOutcome, StatusCheckResult, StatusResponse, SyncOperation, SyncRequest};
 use super::{db, http, keys, legacy, sharing};
 use crate::crypto;
-use crate::vault_model::ids_equal;
+use crate::vault_model::{id_key, ids_equal};
 
 /// How many times a chain of syncs may re-sync after an outdated push before giving up.
 /// This is a auto-healing mechanism in case two clients are pushing at the same time, which could
@@ -55,6 +55,10 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
         }
         SyncOperation::InviteToSharedManifest => {
             let result = sharing::invite_to_shared_manifest_operation(&mut ctx).await;
+            finish(&ctx, result)
+        }
+        SyncOperation::UpdateSharedManifest => {
+            let result = sharing::update_shared_manifest_operation(&mut ctx).await;
             finish(&ctx, result)
         }
     }
@@ -143,7 +147,8 @@ async fn full_sync_once(ctx: &mut Ctx) -> SyncResult<Flow> {
     };
     announce_phase(ctx, needs_pull, ctx.is_dirty).await;
 
-    let grant_sync_changed_vault = apply_server_directed_changes(ctx, &status).await?;
+    let names_changed_vault = refresh_manifest_names(ctx, &status, needs_pull).await?;
+    let grant_sync_changed_vault = apply_server_directed_changes(ctx, &status).await? || names_changed_vault;
     // The rows just reconciled can turn a clean vault dirty after the preflight decided; a dirty vault was checked there.
     if !needs_pull && grant_sync_changed_vault && push::vault_holds_unwritable_manifests(ctx).await {
         needs_pull = true;
@@ -336,6 +341,40 @@ pub(crate) async fn vault_requires_manifest_migration(ctx: &mut Ctx) -> SyncResu
     Ok(schema_state(ctx).await? == SchemaState::Stale || !keys::has_local_vault_key(&ctx.host).await?)
 }
 
+/*
+ * Fetch the shared manifest names the status served and store them in the local vault.
+ */
+async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pull: bool) -> SyncResult<bool> {
+    ctx.served_manifest_names = status.manifest_revisions.iter().filter_map(|m| Some((id_key(&m.manifest_id), m.encrypted_name.clone()?))).collect();
+    if needs_pull || ctx.served_manifest_names.is_empty() || !ctx.has_local_vault().await? || vault_requires_manifest_migration(ctx).await? {
+        return Ok(false);
+    }
+
+    let mut records = keys::shared_manifest_records(ctx).await?;
+    let mut opened: HashMap<String, String> = HashMap::new();
+    for record in records.values_mut() {
+        let Some(served) = ctx.served_manifest_names.get(&id_key(&record.manifest_id)).filter(|served| record.encrypted_name.as_ref() != Some(*served)).cloned() else { continue };
+        let Some(vek) = keys::open_shared_manifest_vek(ctx, record).await? else { continue };
+        match pull::open_manifest_name(&served, &vek) {
+            Some(name) => drop(opened.insert(id_key(&record.manifest_id), name)),
+            None => ctx.warn(format!("[Sharing] The name of shared manifest {} did not open with its key.", record.manifest_id)).await,
+        }
+        record.encrypted_name = Some(served);
+    }
+    if opened.is_empty() {
+        return Ok(false);
+    }
+
+    let key = ctx.encryption_key()?;
+    db::apply_manifest_names(&ctx.host, Db::Local, &opened).await?;
+    let bytes = db::export(&ctx.host, Db::Local).await?;
+    ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key)?, false, None, None).await?;
+    keys::set_shared_manifest_records(&ctx.host, &records, &key).await?;
+    ctx.vault_changed = true;
+    ctx.log(format!("[Sharing] Refreshed the name of {} shared manifest(s).", opened.len())).await;
+    Ok(true)
+}
+
 /// Carry out the work the server has addressed to the current client (e.g. shared groups revocation/rotation actions).
 async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -> SyncResult<bool> {
     let shared = keys::shared_manifest_records(ctx).await?;
@@ -343,19 +382,6 @@ async fn apply_server_directed_changes(ctx: &mut Ctx, status: &StatusResponse) -
     let mut vault_changed = false;
 
     if can_reconcile {
-        let personal = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?;
-        for record in shared.values().filter(|r| r.can_administer) {
-            // A member waiting for the administrator's first push has nothing to render yet.
-            if db::has_rendered_manifest_folder(&ctx.host, &record.manifest_id).await? {
-                continue;
-            }
-            let Some(active) = personal.as_deref() else { break };
-            let name = record.name.clone().filter(|n| !n.is_empty()).or_else(|| ctx.request.unnamed_shared_vault_name.clone()).unwrap_or_else(|| "Shared vault".to_string());
-            db::render_manifest_folder(&ctx.host, &record.manifest_id, &name, active).await?;
-            ctx.warn(format!("[Sharing] Shared manifest {} had no folder; recreated it.", record.manifest_id)).await;
-            vault_changed = true;
-        }
-
         let mut completed = 0usize;
         for action in &status.pending_actions {
             let outcome: SyncResult<(bool, bool)> = async {
@@ -590,7 +616,7 @@ pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, adopt_unstamped_into: Op
         }
     }
     let manifests: Vec<_> = set.canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
-    let bytes = pull::materialize_to_sqlite(ctx, &manifests, &set.canonicalized.data_buckets, &blob_map).await?;
+    let bytes = pull::materialize_to_sqlite(ctx, &manifests, &set.canonicalized.data_buckets, &blob_map, &HashMap::new()).await?;
     ctx.log(format!("[ManifestMigration] Migration complete: {} blobs re-embedded, {} bytes.", blob_map.len(), bytes.len())).await;
 
     let stored = ctx.store_vault(&state::encrypt_vault_blob(&bytes, &ctx.encryption_key()?)?, true, None, None).await?;

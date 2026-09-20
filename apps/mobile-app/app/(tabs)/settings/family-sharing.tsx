@@ -16,6 +16,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+import { FolderModal } from '@/components/folders/FolderModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -56,6 +57,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
   const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
+  const [pendingVaultRename, setPendingVaultRename] = useState<{ group: GroupInfo; manifest: SharedManifestInfo } | null>(null);
 
   /**
    * Load the families, their shared folders and the open invitations, plus the names this vault has for them.
@@ -66,9 +68,9 @@ export default function FamilySharingScreen(): React.ReactNode {
       setOverview(loaded);
 
       if (sqliteClient) {
-        // A shared folder is named after the top-level folder it is rendered as.
+        // A shared vault is shown as a top-level folder.
         const folders = await sqliteClient.folders.getAll();
-        setVaultNames(Object.fromEntries(folders.filter(folder => multiManifestRendering.isManifestRoot(folder)).map(folder => [folder.Id.toLowerCase(), folder.Name])));
+        setVaultNames(Object.fromEntries(folders.filter(folder => multiManifestRendering.isVirtualFolder(folder)).map(folder => [folder.Id.toLowerCase(), folder.Name])));
         setInvitationNames(await SharingService.openInvitationNamesWith(async publicKey => (await sqliteClient.encryptionKeys.getAccountKeypair(publicKey))?.PrivateKey ?? null, loaded.receivedInvitations));
       }
 
@@ -136,7 +138,7 @@ export default function FamilySharingScreen(): React.ReactNode {
    * @param params - what it acts on.
    * @param fallback - the message for a failure without a more specific reason.
    */
-  const runSharingOperation = async (operation: 'createSharedManifest' | 'inviteToSharedManifest', params: Record<string, string>, fallback: string): Promise<void> => {
+  const runSharingOperation = async (operation: 'createSharedManifest' | 'inviteToSharedManifest' | 'updateSharedManifest', params: Record<string, string>, fallback: string): Promise<void> => {
     const result = await NativeVaultManager.runSharingOperation(operation, JSON.stringify(params));
     if (result.success) {
       return;
@@ -166,6 +168,22 @@ export default function FamilySharingScreen(): React.ReactNode {
       setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
       await syncVault();
     }, t('sharing.family.errors.createVaultFailed'));
+  };
+
+  /**
+   * Rename a shared folder, which only an administrator of the family may do. Every member fetches the name on their next sync.
+   * @param name - the new name.
+   */
+  const renameSharedVault = async (name: string): Promise<void> => {
+    const target = pendingVaultRename;
+    if (!target) {
+      return;
+    }
+
+    await run(async () => {
+      await runSharingOperation('updateSharedManifest', { groupId: target.group.groupId, manifestId: target.manifest.manifestId, name }, t('common.errors.unknownErrorTryAgain'));
+      await syncVault();
+    }, t('common.errors.unknownErrorTryAgain'));
   };
 
   /**
@@ -495,6 +513,8 @@ export default function FamilySharingScreen(): React.ReactNode {
                     <View key={manifest.manifestId} style={styles.card}>
                       <View style={styles.cardHeader}>
                         <ThemedText style={styles.cardTitle} numberOfLines={1}>{vaultLabel(manifest)}</ThemedText>
+                        {/* Renaming encrypts the name with the folder's key, so it takes a member who holds it. */}
+                        {canAdminister && holdsManifestKey(manifest, myUserId) && renderAction(t('items.folders.editFolder'), () => setPendingVaultRename({ group, manifest }))}
                         {canAdminister && renderAction(t('sharing.family.deleteVault'), () => confirmVaultDelete(group, manifest), true)}
                       </View>
 
@@ -543,6 +563,14 @@ export default function FamilySharingScreen(): React.ReactNode {
           </>
         )}
       </ThemedScrollView>
+
+      <FolderModal
+        isOpen={pendingVaultRename !== null}
+        onClose={() => setPendingVaultRename(null)}
+        onSave={renameSharedVault}
+        initialName={pendingVaultRename ? vaultLabel(pendingVaultRename.manifest) : ''}
+        mode="edit"
+      />
     </ThemedContainer>
   );
 }
