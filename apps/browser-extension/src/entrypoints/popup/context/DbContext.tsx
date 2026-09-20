@@ -7,6 +7,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useTranslation } from 'react-i18next';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getStorageItem } from '@/utils/StorageUtility';
 import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
@@ -292,7 +293,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       if (message.includes(AppErrorCode.VAULT_LOCKED)) {
         // Vault is locked which is expected when the popup is opened after auto-lock timeout or browser restart.
       } else {
-        console.error('Error retrieving vault from background:', error);
+        logFailure('Error retrieving vault from background', error);
       }
       setDbInitialized(true);
       setDbAvailable(false);
@@ -321,7 +322,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
       };
     } catch (error) {
-      console.error('Error getting vault metadata from local storage:', error);
+      logFailure('Error getting vault metadata from local storage', error);
       return null;
     }
   }, []);

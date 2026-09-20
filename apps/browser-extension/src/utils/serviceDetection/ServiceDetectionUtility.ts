@@ -1,3 +1,5 @@
+import { logExpected } from '@/utils/Diagnostics';
+
 import { FormDetector } from '../formDetector/FormDetector';
 
 /**
@@ -32,7 +34,7 @@ export class ServiceDetectionUtility {
       }
       return url.origin;
     } catch (error) {
-      console.error('Error parsing URL:', error);
+      logExpected('[ServiceDetection] The URL could not be parsed', error);
       return '';
     }
   }
@@ -100,7 +102,7 @@ export class ServiceDetectionUtility {
         domain: url.hostname.replace(/^www\./, '')
       };
     } catch (error) {
-      console.error('Error parsing tab URL:', error);
+      logExpected('[ServiceDetection] The tab URL could not be parsed, falling back to hostname detection', error);
       // Fallback to basic hostname detection
       const domain = tabUrl.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
       return {

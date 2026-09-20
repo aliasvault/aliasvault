@@ -7,6 +7,7 @@ import { extractDomain } from '@aliasvault/client/rust/RustCore';
 
 import { createVaultSqliteClient, handleGetEncryptionKey, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
@@ -238,7 +239,7 @@ export async function handleGetMatchingPasskeys(
 
     return { success: true, locked: false, passkeys: options };
   } catch (error) {
-    console.error('Error getting matching passkeys:', error);
+    logFailure('Error getting matching passkeys', error);
     return { success: false, locked: false, passkeys: [] };
   }
 }
@@ -263,7 +264,7 @@ export async function handleWebAuthnGetAssertion(
 
     return { success: true, credential };
   } catch (error) {
-    console.error('Error building passkey assertion:', error);
+    logFailure('Error building passkey assertion', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

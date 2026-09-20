@@ -1,4 +1,5 @@
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
+import { logFailure } from '@/utils/Diagnostics';
 import { extractFaviconUrlSimple } from '@/utils/favicon';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { closestAcrossShadow, collectShadowRoots, queryAllDeep } from '@/utils/ShadowDom';
@@ -499,7 +500,7 @@ export class LoginDetector {
       try {
         callback(login);
       } catch (error) {
-        console.error('[AliasVault] Error in login capture callback:', error);
+        logFailure('[AliasVault] Error in login capture callback', error);
       }
     }
   }

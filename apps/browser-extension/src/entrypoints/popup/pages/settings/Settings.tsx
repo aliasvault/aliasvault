@@ -18,6 +18,7 @@ import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser, storage } from "#imports";
@@ -148,7 +149,7 @@ const Settings: React.FC = () => {
       await webApi.revokeTokens();
       await auth.clearAuthUserInitiated();
     } catch (error) {
-      console.error('Error during logout:', error);
+      logFailure('Error during logout', error);
     }
   };
 

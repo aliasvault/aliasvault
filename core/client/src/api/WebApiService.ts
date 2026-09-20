@@ -1,11 +1,13 @@
 import { StorageKeys } from '../constants/StorageKeys';
 import { AppInfo } from "../platform/AppInfo";
 import { getPlatform } from '../platform/ClientPlatform';
+import { logDefect, logExpected } from '../utilities/Diagnostics';
 
 import { CapabilityService } from './CapabilityService';
 import { ApiAuthError } from './errors/ApiAuthError';
 import { ApiRequestError } from './errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from './errors/ClientUpgradeRequiredError';
+import { logFailure } from './errors/ExpectedFailure';
 import { NetworkError } from './errors/NetworkError';
 import { PayloadTooLargeError } from './errors/PayloadTooLargeError';
 import { RequestTimeoutError } from './errors/RequestTimeoutError';
@@ -129,6 +131,8 @@ export class WebApiService {
 
   /**
    * Fetch data from the API with authentication headers and access token refresh retry.
+   *
+   * Failures are thrown as typed errors to let the caller decide whether its own failure is expected or a defect.
    */
   public async authFetch<T>(
     endpoint: string,
@@ -149,55 +153,46 @@ export class WebApiService {
       headers,
     };
 
-    try {
-      const response = await this.rawFetch(endpoint, requestOptions);
+    const response = await this.rawFetch(endpoint, requestOptions);
 
-      if (response.status === 401) {
-        const refreshResult = await this.refreshAccessToken();
+    if (response.status === 401) {
+      const refreshResult = await this.refreshAccessToken();
 
-        if (refreshResult.token) {
-          // Token refresh succeeded - retry the request
-          headers.set('Authorization', `Bearer ${refreshResult.token}`);
-          const retryResponse = await this.rawFetch(endpoint, {
-            ...requestOptions,
-            headers,
-          });
+      if (refreshResult.token) {
+        headers.set('Authorization', `Bearer ${refreshResult.token}`);
+        const retryResponse = await this.rawFetch(endpoint, {
+          ...requestOptions,
+          headers,
+        });
 
-          if (!retryResponse.ok) {
-            // Only auth failures after a successful token refresh mean the session is invalid.
-            if (retryResponse.status === 401 || retryResponse.status === 403) {
-              throw new ApiAuthError('Request failed after token refresh');
-            }
-            if (retryResponse.status === 413) {
-              throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
-            }
-            throw new ApiRequestError(retryResponse.status, await this.extractApiErrorCode(retryResponse));
+        if (!retryResponse.ok) {
+          if (retryResponse.status === 401 || retryResponse.status === 403) {
+            throw new ApiAuthError('Request failed after token refresh');
           }
-
-          return parseJson ? retryResponse.json() : retryResponse as unknown as T;
-        } else if (refreshResult.isAuthError) {
-          // Token refresh failed due to auth error (401/403) - session is truly expired
-          logoutEventEmitter.emit('common.errors.sessionExpired');
-          throw new ApiAuthError('Session expired');
-        } else {
-          // Token refresh failed due to network/server error.
-          throw new NetworkError('Token refresh failed due to network error');
+          if (retryResponse.status === 413) {
+            throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
+          }
+          throw new ApiRequestError(retryResponse.status, await this.extractApiErrorCode(retryResponse));
         }
-      }
 
-      if (response.status === 413 && throwOnError) {
-        throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
+        return parseJson ? retryResponse.json() : retryResponse as unknown as T;
+      } else if (refreshResult.isAuthError) {
+        logoutEventEmitter.emit('common.errors.sessionExpired');
+        throw new ApiAuthError('Session expired');
+      } else {
+        throw new NetworkError('Token refresh failed due to network error');
       }
-
-      if (!response.ok && throwOnError) {
-        throw new ApiRequestError(response.status, await this.extractApiErrorCode(response));
-      }
-
-      return parseJson ? response.json() : response as unknown as T;
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
     }
+
+    if (response.status === 413 && throwOnError) {
+      throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
+    }
+
+    if (!response.ok && throwOnError) {
+      throw new ApiRequestError(response.status, await this.extractApiErrorCode(response));
+    }
+
+    return parseJson ? response.json() : response as unknown as T;
   }
 
   /**
@@ -293,14 +288,10 @@ export class WebApiService {
     try {
       response = await fetch(url, requestOptions);
     } catch (error) {
-      console.error('API request failed:', error);
-      /*
-       * The timeout signal aborts with a DOMException.
-       */
+      logExpected(`[WebApi] Request failed: ${endpoint}`, error);
       if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
         throw new RequestTimeoutError(`Request timed out: ${endpoint}`, error);
       }
-      // Convert fetch errors to NetworkError for proper error handling
       throw new NetworkError(
         error instanceof Error ? error.message : 'Network request failed',
         error instanceof Error ? error : undefined
@@ -335,21 +326,16 @@ export class WebApiService {
    * Issue GET request to the API expecting a file download and return it as raw bytes.
    */
   public async downloadBlob(endpoint: string): Promise<Uint8Array> {
-    try {
-      const response = await this.authFetch<Response>(endpoint, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/octet-stream',
-        }
-      }, false);
+    const response = await this.authFetch<Response>(endpoint, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/octet-stream',
+      }
+    }, false);
 
-      // Get the response as an ArrayBuffer
-      const arrayBuffer = await response.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
-    } catch (error) {
-      console.error('Error downloading blob:', error);
-      throw error;
-    }
+    // Get the response as an ArrayBuffer
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
   }
 
   /**
@@ -404,7 +390,7 @@ export class WebApiService {
         }, false);
       }
     } catch (err) {
-      console.error('WebApi revoke tokens error:', err);
+      logFailure('[WebApi] Revoking tokens failed', err);
     }
   }
 
@@ -422,7 +408,7 @@ export class WebApiService {
         }, false);
       }
     } catch (err) {
-      console.error('WebApi revoke current token error:', err);
+      logFailure('[WebApi] Revoking the current token failed', err);
     }
   }
 
@@ -541,7 +527,7 @@ export class WebApiService {
       }
 
       // Server errors (5xx) or other non-auth errors, treat as offline/transient
-      console.warn(`Token refresh failed with status ${response.status}, treating as offline`);
+      logExpected(`[WebApi] Token refresh failed with status ${response.status}, treating as offline`);
       return { token: null, isAuthError: false };
     } catch (error) {
       // Server refused this client version.
@@ -551,12 +537,12 @@ export class WebApiService {
 
       // Network errors (server unreachable, timeout, DNS, etc.), treat as offline
       if (error instanceof NetworkError) {
-        console.warn('Token refresh failed due to network error, treating as offline');
+        logExpected('[WebApi] Token refresh failed due to network error, treating as offline');
         return { token: null, isAuthError: false };
       }
 
       // Unexpected errors, treat as auth error so logout is triggered
-      console.error('Unexpected error during token refresh:', error);
+      logDefect('[WebApi] Unexpected error during token refresh', error);
       return { token: null, isAuthError: true };
     }
   }

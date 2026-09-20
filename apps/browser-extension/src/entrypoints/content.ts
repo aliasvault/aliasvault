@@ -15,6 +15,7 @@ import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
+import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
@@ -80,13 +81,13 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
     });
 
     if (!response.success) {
-      console.error('[AliasVault] Failed to save login:', response.error);
+      logFailure('[AliasVault] Failed to save login', response.error);
     }
 
     // Clear the last autofilled state after save
     await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
-    console.error('[AliasVault] Error saving login:', error);
+    logFailure('[AliasVault] Error saving login', error);
   }
 }
 
@@ -103,7 +104,7 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
       await storage.setItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS, blockedDomains);
     }
   } catch (error) {
-    console.error('[AliasVault] Error saving blocked domain:', error);
+    logFailure('[AliasVault] Error saving blocked domain', error);
   }
 }
 
@@ -129,13 +130,13 @@ async function handleAddUrlToCredential(item: ItemRef, url: string): Promise<voi
     });
 
     if (!response.success) {
-      console.error('[AliasVault] Failed to add URL to credential:', response.error);
+      logFailure('[AliasVault] Failed to add URL to credential', response.error);
     }
 
     // Clear the last autofilled state after successful add
     await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
-    console.error('[AliasVault] Error adding URL to credential:', error);
+    logFailure('[AliasVault] Error adding URL to credential', error);
   }
 }
 
@@ -283,7 +284,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
 
     ui.mount();
   } catch (error) {
-    console.error('[AliasVault] Error in early save prompt restore:', error);
+    logFailure('[AliasVault] Error in early save prompt restore', error);
   }
 }
 
@@ -346,7 +347,7 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       );
     }
   } catch (error) {
-    console.error('[AliasVault] Error restoring persisted save prompt:', error);
+    logFailure('[AliasVault] Error restoring persisted save prompt', error);
   }
 }
 
@@ -861,7 +862,7 @@ export default defineContentScript({
             }
             // If disabled, don't show any popup (user can rely on clipboard auto-copy for TOTP)
           } catch (error) {
-            console.error('[AliasVault] Error checking vault status:', error);
+            logFailure('[AliasVault] Error checking vault status', error);
             // Fall back to normal autofill popup if check fails
             POPUP_RUNTIME[DEFAULT_POPUP_TYPE].open(inputElement, container);
           }

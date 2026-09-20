@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ClipboardCopyService } from '@/entrypoints/popup/utils/ClipboardCopyService';
 
+import { logExpected } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
@@ -108,7 +109,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
         }
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy text:', err);
+      logExpected('[Clipboard] Copying the value failed', err);
     }
   };
 

@@ -2,6 +2,8 @@ import { Buffer } from 'buffer';
 
 import { selectFaviconTarget, toUrlList } from '@aliasvault/client/rust/RustCore';
 
+import { logExpected } from '@/utils/Diagnostics';
+
 import type { WebApiService } from '@aliasvault/client/api/WebApiService';
 import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import type { FaviconTarget } from '@aliasvault/client/rust/RustCore';
@@ -100,7 +102,7 @@ export class FaviconService {
     } catch (err) {
       // Favicon extraction failed or timed out - not critical
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('[Favicon] Error extracting favicon:', errorMessage);
+      logExpected('[Favicon] Extracting the favicon failed', errorMessage);
       return { success: false, error: errorMessage };
     }
   }

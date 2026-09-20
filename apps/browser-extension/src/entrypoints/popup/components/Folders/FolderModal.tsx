@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 type FolderModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -58,7 +60,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }
-      console.error('Error saving folder:', err);
+      logFailure('Error saving folder', err);
     } finally {
       setIsSubmitting(false);
     }

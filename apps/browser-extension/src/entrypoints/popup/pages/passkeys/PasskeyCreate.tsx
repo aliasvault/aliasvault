@@ -17,6 +17,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -173,7 +174,7 @@ const PasskeyCreate: React.FC = () => {
             }
           }
         } catch (error) {
-          console.error('Failed to fetch request data:', error);
+          logFailure('Failed to fetch request data', error);
           setError(t('common.errors.unknownError'));
         }
       }
@@ -486,7 +487,7 @@ const PasskeyCreate: React.FC = () => {
 
       setLocalLoading(false);
     } catch (error) {
-      console.error('PasskeyCreate: Error creating passkey', error);
+      logFailure('PasskeyCreate: Error creating passkey', error);
 
       /*
        * Always clear the loading overlay; otherwise it stays up and hides the error,

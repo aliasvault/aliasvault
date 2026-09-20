@@ -7,6 +7,7 @@ import { getPlatform } from '../platform/ClientPlatform';
 import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { VaultCodec } from '../sync/VaultCodec';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+import { logDefect } from '../utilities/Diagnostics';
 
 import { syncRepository } from './DbOp';
 
@@ -211,7 +212,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this._settings = null;
       this._logos = null;
     } catch (error) {
-      console.error('Error initializing SQLite database:', error);
+      logDefect('[Sqlite] Initializing the database failed', error);
       throw error;
     }
   }
@@ -239,7 +240,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this.db.exec('BEGIN TRANSACTION');
       this.transactionOpen = true;
     } catch (error) {
-      console.error('Error beginning transaction:', error);
+      logDefect('[Sqlite] BEGIN TRANSACTION failed', error);
       throw error;
     }
   }
@@ -260,7 +261,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this.db.exec('COMMIT');
       this.transactionOpen = false;
     } catch (error) {
-      console.error('Error committing transaction:', error);
+      logDefect('[Sqlite] COMMIT failed', error);
       throw error;
     }
   }
@@ -302,7 +303,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this.db.exec('ROLLBACK');
       this.transactionOpen = false;
     } catch (error) {
-      console.error('Error rolling back transaction:', error);
+      logDefect('[Sqlite] ROLLBACK failed', error);
       throw error;
     }
   }
@@ -328,7 +329,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this.vacuumIfFragmented();
       return this.db.export();
     } catch (error) {
-      console.error('Error exporting SQLite database:', error);
+      logDefect('[Sqlite] Exporting the database failed', error);
       throw error;
     }
   }
@@ -359,7 +360,7 @@ export class SqliteClient implements ISyncDatabaseClient {
     try {
       return this.db.query<T>(query, params);
     } catch (error) {
-      console.error('Error executing query:', error);
+      logDefect(`[Sqlite] Query failed: ${query}`, error);
       throw error;
     }
   }
@@ -388,7 +389,7 @@ export class SqliteClient implements ISyncDatabaseClient {
     try {
       return this.db.run(query, params);
     } catch (error) {
-      console.error('Error executing update:', error);
+      logDefect(`[Sqlite] Update failed: ${query}`, error);
       throw error;
     }
   }
@@ -419,7 +420,7 @@ export class SqliteClient implements ISyncDatabaseClient {
         this.db.exec(trimmedStatement);
       }
     } catch (error) {
-      console.error('Error executing raw SQL:', error);
+      logDefect('[Sqlite] Raw SQL failed', error);
       throw error;
     }
   }
@@ -486,7 +487,7 @@ export class SqliteClient implements ISyncDatabaseClient {
         compatibleUpToVersion: latestClientVersion.compatibleUpToVersion
       };
     } catch (error) {
-      console.error('Error getting database version:', error);
+      logDefect('[Sqlite] Reading the database version failed', error);
       throw error;
     }
   }
@@ -519,7 +520,7 @@ export class SqliteClient implements ISyncDatabaseClient {
 
       return currentVersion.revision < latestVersion.revision;
     } catch (error) {
-      console.error('Error checking pending migrations:', error);
+      logDefect('[Sqlite] Checking for pending migrations failed', error);
       throw error;
     }
   }
@@ -568,7 +569,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       const mimeType = this.detectMimeType(logoBytes);
       return `data:${mimeType};base64,${base64Logo}`;
     } catch (error) {
-      console.error('Error setting logo:', error);
+      logDefect('[Sqlite] Building the logo data URL failed', error);
       return null;
     }
   }
@@ -649,7 +650,7 @@ export class SqliteClient implements ISyncDatabaseClient {
     try {
       return bytesToBase64(this.toUint8Array(buffer));
     } catch (error) {
-      console.error('Error encoding to base64:', error);
+      logDefect('[Sqlite] Base64 encoding failed', error);
       return null;
     }
   }

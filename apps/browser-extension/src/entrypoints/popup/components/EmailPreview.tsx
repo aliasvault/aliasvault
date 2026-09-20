@@ -1,6 +1,7 @@
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
-import React, { useState, useEffect } from 'react';
+import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -9,6 +10,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logExpected } from '@/utils/Diagnostics';
 import { getStorageItem } from '@/utils/StorageUtility';
 
 import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
@@ -33,7 +35,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const webApi = useWebApi();
   const dbContext = useDb();
   const location = useLocation();
-
+  const consecutiveFailuresRef = useRef(0);
   const emailsPerLoad = 3;
   const canLoadMore = displayedCount < emails.length;
 
@@ -73,6 +75,21 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * Record that a poll failed for the incremental backoff to work.
+     * @param reason - what did not work
+     * @param error - the underlying error, when there is one
+     */
+    const markPollFailed = (reason: string, error?: unknown): void => {
+      if (consecutiveFailuresRef.current === 0) {
+        logExpected(`[EmailPreview] ${reason}`, error);
+      }
+      consecutiveFailuresRef.current++;
+    };
+
     /**
      * Loads the latest emails from the server and decrypts them locally if needed.
      */
@@ -110,6 +127,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
           });
 
           if (!response.ok) {
+            markPollFailed(`The mailbox request returned HTTP ${response.status}`);
             setError(t('common.errors.unknownError'));
             return;
           }
@@ -134,6 +152,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
             }
             return prevEmails;
           });
+          consecutiveFailuresRef.current = 0;
         } else if (isPrivate) {
           // For private domains, use existing encrypted email logic
           try {
@@ -173,6 +192,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
 
                 // Clear any previous error on successful load
                 setError(null);
+                consecutiveFailuresRef.current = 0;
               }
             } catch {
               // Try to parse as error response instead
@@ -187,30 +207,47 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 return;
               }
 
+              markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
               setError(t('emails.apiErrors.' + apiErrorResponse?.code));
               return;
             }
-          } catch {
+          } catch (err) {
             // Suppress errors while vault has unsynced changes
             if (dbContext.shouldSuppressEmailErrors()) {
               return;
             }
 
+            markPollFailed('The mailbox request failed', err);
             setError(t('common.errors.unknownError'));
             return;
           }
         }
       } catch (err) {
-        console.error('Error loading emails:', err);
+        markPollFailed('Loading the mailbox failed', err);
         setError(t('common.errors.unknownError'));
       }
       setLoading(false);
     };
 
-    loadEmails();
-    // Set up auto-refresh interval
-    const interval = setInterval(loadEmails, 2000);
-    return () : void => clearInterval(interval);
+    /**
+     * Poll, then schedule the next poll.
+     */
+    const poll = async (): Promise<void> => {
+      await loadEmails();
+      if (cancelled) {
+        return;
+      }
+      timer = setTimeout(poll, mailboxPollDelayMs(consecutiveFailuresRef.current));
+    };
+
+    void poll();
+
+    return () : void => {
+      cancelled = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, [email, loading, webApi, dbContext, t, displayedCount]);
 
   // Don't render anything if the domain is not supported

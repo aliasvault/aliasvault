@@ -63,7 +63,8 @@ export default [
                 "ignoreComments": false
             }],
             "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 1, "maxBOF": 0 }],
-            "no-console": ["error", { allow: ["warn", "error", "info", "debug"] }],
+            // Log through the Diagnostics utility helper instead of raw console.error.
+            "no-console": ["error", { allow: ["warn", "info", "debug"] }],
             "jsdoc/require-jsdoc": ["error", {
                 "require": {
                     "FunctionDeclaration": true,
@@ -115,6 +116,13 @@ export default [
                     project: './tsconfig.json',
                 },
             },
+        },
+    },
+    {
+        // The one module allowed to reach the console directly; everything else routes through it.
+        files: ["src/utilities/Diagnostics.ts"],
+        rules: {
+            "no-console": "off",
         },
     },
     {

@@ -9,6 +9,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   isPinEnabled,
@@ -50,7 +51,7 @@ const VaultUnlockSettings: React.FC = () => {
       setIsLocked(locked);
       setIsInitialLoading(false);
     } catch (err: unknown) {
-      console.error('Failed to load PIN settings:', err);
+      logFailure('Failed to load PIN settings', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       setIsInitialLoading(false);
     }
@@ -139,7 +140,7 @@ const VaultUnlockSettings: React.FC = () => {
       setSuccess(t('settings.unlockMethod.enableSuccess'));
       hideLoading();
     } catch (err: unknown) {
-      console.error('Failed to enable PIN:', err);
+      logFailure('Failed to enable PIN', err);
 
       if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
@@ -165,7 +166,7 @@ const VaultUnlockSettings: React.FC = () => {
       setIsLocked(false);
       hideLoading();
     } catch (err: unknown) {
-      console.error('Failed to disable PIN:', err);
+      logFailure('Failed to disable PIN', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       hideLoading();
     }

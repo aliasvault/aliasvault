@@ -1,6 +1,7 @@
 import { handleLockVault } from '@/entrypoints/background/VaultMessageHandler';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import type { Browser } from 'wxt/browser';
@@ -35,7 +36,7 @@ async function lockVaultDueToInactivity(): Promise<void> {
     await handleLockVault();
     console.info('[AUTO_LOCK] Vault locked due to inactivity');
   } catch (error) {
-    console.error('[AUTO_LOCK] Error locking vault:', error);
+    logFailure('[AUTO_LOCK] Error locking vault', error);
   }
 }
 

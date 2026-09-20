@@ -14,6 +14,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -241,7 +242,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       const bytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
       triggerAttachmentDownload(bytes, attachment.mimeType, attachment.filename);
     } catch (err) {
-      console.error('handleDownloadParsedAttachment error', err);
+      logFailure('[Email] Downloading the attachment failed', err);
       setError(err instanceof Error ? err.message : 'Failed to download attachment');
     }
   };

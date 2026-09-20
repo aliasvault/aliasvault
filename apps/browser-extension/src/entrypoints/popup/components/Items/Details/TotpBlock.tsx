@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import type { TotpCode } from '@aliasvault/models/vault';
@@ -62,7 +63,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
         setCopiedId(null);
       }, 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
+      logExpected('[Clipboard] Copying the TOTP code failed', error);
     }
   };
 
@@ -79,7 +80,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
         const codes = dbContext.sqliteClient.items.getTotpCodesForItem({ Id: itemId, ManifestId: manifestId });
         setTotpCodes(codes);
       } catch (error) {
-        console.error('Error loading TOTP codes:', error);
+        logFailure('Error loading TOTP codes', error);
       } finally {
         setLoading(false);
       }

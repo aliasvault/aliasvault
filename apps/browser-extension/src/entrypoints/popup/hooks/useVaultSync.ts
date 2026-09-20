@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { syncErrorMessage } from '@/utils/SyncError';
 
@@ -108,7 +109,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
-      console.error('Vault sync error:', err);
+      logFailure('Vault sync error', err);
       onError?.(errorMessage);
       return false;
     }

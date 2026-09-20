@@ -22,6 +22,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { syncErrorMessage } from '@/utils/SyncError';
 
@@ -146,7 +147,7 @@ const Upgrade: React.FC = () => {
         setLatestVersion(latest);
       }
     } catch (error) {
-      console.error('Failed to load version information:', error);
+      logFailure('Failed to load version information', error);
       setError(t('upgrade.alerts.unableToGetVersionInfo'));
     }
   }, [sqliteClient, t]);
@@ -165,7 +166,7 @@ const Upgrade: React.FC = () => {
 
     if (!result.success) {
       // Back to the consent screen, where the same button retries and the error says why it has to.
-      console.error('[Upgrade] Vault manifest migration failed:', result);
+      logFailure('[Upgrade] Vault manifest migration failed', result);
       const message = syncErrorMessage(result, t) ?? t('common.errors.unknownError');
       setError(message);
       setErrorDetail(result.error && result.error !== message ? result.error : null);
@@ -247,13 +248,13 @@ const Upgrade: React.FC = () => {
          * @param error Error message
          */
         onError: (error: string) => {
-          console.error('Sync error after upgrade:', error);
+          logFailure('Sync error after upgrade', error);
           // Still navigate to items even if sync fails
           finish();
         }
       });
     } catch (error) {
-      console.error('Error during post-upgrade sync:', error);
+      logFailure('Error during post-upgrade sync', error);
       // Navigate to items even if sync fails
       finish();
     }
@@ -301,7 +302,7 @@ const Upgrade: React.FC = () => {
           try {
             sqliteClient.executeRaw(sqlCommand);
           } catch (error) {
-            console.error(`Error executing SQL command ${i + 1}:`, sqlCommand, error);
+            logFailure(`[Upgrade] Migration SQL command ${i + 1} failed: ${sqlCommand}`, error);
             throw new Error(t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length }));
           }
         }
@@ -309,7 +310,7 @@ const Upgrade: React.FC = () => {
 
       await handleLegacyUpgradeSuccess();
     } catch (error) {
-      console.error('Upgrade failed:', error);
+      logFailure('Upgrade failed', error);
       setError(error instanceof Error ? error.message : t('common.errors.unknownError'));
       setStage('consent');
       setIsInitialLoading(false);
@@ -341,7 +342,7 @@ const Upgrade: React.FC = () => {
 
         await startManifestUpgrade();
       } catch (error) {
-        console.error('Failed to determine the pending vault upgrade:', error);
+        logFailure('Failed to determine the pending vault upgrade', error);
         setError(error instanceof Error ? error.message : t('common.errors.unknownError'));
         setStage('consent');
         setIsInitialLoading(false);
@@ -379,7 +380,7 @@ const Upgrade: React.FC = () => {
       await webApi.revokeTokens();
       await auth.clearAuthUserInitiated();
     } catch (error) {
-      console.error('Error during logout:', error);
+      logFailure('Error during logout', error);
     }
   };
 

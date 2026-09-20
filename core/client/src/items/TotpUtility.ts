@@ -1,6 +1,8 @@
 import { normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod } from '@aliasvault/models/vault';
 import * as OTPAuth from 'otpauth';
 
+import { logExpected } from '../utilities/Diagnostics';
+
 /**
  * The RFC 6238 parameters a TOTP code was created with, as stored on the vault row.
  */
@@ -41,7 +43,7 @@ export function generateTotpCode(secretKey: string, parameters?: TotpParameters)
   try {
     return createTotp(secretKey, parameters).generate();
   } catch (error) {
-    console.error('Error generating TOTP code:', error);
+    logExpected('[Totp] The stored secret cannot generate a code', error);
     return null;
   }
 }

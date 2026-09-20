@@ -24,6 +24,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import {
@@ -371,7 +372,7 @@ const Unlock: React.FC = () => {
       } else {
         await handlePasswordFailedAttempt();
       }
-      console.error('Unlock error:', err);
+      logFailure('Unlock error', err);
     } finally {
       hideLoading();
     }
@@ -489,16 +490,16 @@ const Unlock: React.FC = () => {
         const errorCode = extractErrorCode(getErrorMessage(err, ''));
         if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
           // Decryption failed during PIN unlock = wrong PIN, treat as incorrect PIN
-          console.error('PIN unlock failed (decryption error):', err);
+          logExpected('[Unlock] The entered PIN did not decrypt the vault', err);
           setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining: 3 }));
         } else {
           // Other error codes: show the formatted message as-is
-          console.error('PIN unlock failed:', err);
+          logFailure('PIN unlock failed', err);
           setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
         }
         setPin('');
       } else {
-        console.error('PIN unlock failed:', err);
+        logFailure('PIN unlock failed', err);
         setError(t('common.errors.unknownErrorTryAgain'));
         setPin('');
       }
@@ -552,7 +553,7 @@ const Unlock: React.FC = () => {
       await webApi.revokeTokens();
       await authContext.clearAuthUserInitiated();
     } catch (error) {
-      console.error('Error during logout:', error);
+      logFailure('Error during logout', error);
     }
   };
 
@@ -640,7 +641,7 @@ const Unlock: React.FC = () => {
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }
-      console.error('Mobile unlock error:', err);
+      logFailure('Mobile unlock error', err);
     } finally {
       hideLoading();
     }

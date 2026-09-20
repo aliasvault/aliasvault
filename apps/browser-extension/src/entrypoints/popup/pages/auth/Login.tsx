@@ -25,6 +25,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { syncErrorMessage } from '@/utils/SyncError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
@@ -93,7 +94,7 @@ const Login: React.FC = () => {
    * @param err - the error
    */
   const showLoginError = (context: string, err: unknown): void => {
-    console.error(`${context}:`, err);
+    logFailure(context, err);
     if (err instanceof ClientUpgradeRequiredError) {
       // Server refused this client version (HTTP 426).
       setError(t('common.errors.clientVersionNotSupported'));

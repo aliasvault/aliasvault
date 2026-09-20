@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 type DeleteFolderModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -33,7 +35,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
       await onDeleteFolderOnly();
       onClose();
     } catch (err) {
-      console.error('Error deleting folder:', err);
+      logFailure('Error deleting folder', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -48,7 +50,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
       await onDeleteFolderAndContents();
       onClose();
     } catch (err) {
-      console.error('Error deleting folder with contents:', err);
+      logFailure('Error deleting folder with contents', err);
     } finally {
       setIsSubmitting(false);
     }

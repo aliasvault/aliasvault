@@ -7,6 +7,8 @@ import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/F
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
 
 type FieldHistoryModalProps = {
@@ -59,7 +61,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
       const historyRecords = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, fieldKey);
       setHistory(historyRecords);
     } catch (error) {
-      console.error('Error loading field history:', error);
+      logFailure('Error loading field history', error);
     } finally {
       setLoading(false);
     }
@@ -118,7 +120,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
       loadHistory();
       setConfirmDeleteId(null);
     } catch (error) {
-      console.error('Error deleting field history:', error);
+      logFailure('Error deleting field history', error);
     }
   };
 

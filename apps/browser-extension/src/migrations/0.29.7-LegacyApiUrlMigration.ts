@@ -1,6 +1,7 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import { storage } from '#imports';
 
@@ -31,6 +32,6 @@ export async function migrateLegacyApiUrl(): Promise<void> {
       await storage.setItem(StorageKeys.CLIENT_URL, AppInfo.DEFAULT_CLIENT_URL);
     }
   } catch (error) {
-    console.error('Failed to migrate legacy API URL:', error);
+    logFailure('Failed to migrate legacy API URL', error);
   }
 }

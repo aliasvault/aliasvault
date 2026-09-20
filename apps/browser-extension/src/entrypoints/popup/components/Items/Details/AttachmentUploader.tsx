@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { Attachment } from '@aliasvault/models/vault';
@@ -67,7 +68,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       // Clear status message after 3 seconds
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
-      console.error('Error uploading files:', error);
+      logFailure('Error uploading files', error);
       setStatusMessage(t('common.errors.unknownErrorTryAgain'));
       setTimeout(() => setStatusMessage(''), 3000);
     }
@@ -93,7 +94,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       setStatusMessage(t('attachmentUploader.deleteSuccess'));
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
-      console.error('Error deleting attachment:', error);
+      logFailure('Error deleting attachment', error);
       setStatusMessage(t('common.errors.unknownErrorTryAgain'));
       setTimeout(() => setStatusMessage(''), 3000);
     }

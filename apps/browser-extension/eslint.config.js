@@ -66,7 +66,8 @@ export default [
                 "ignoreComments": false
             }],
             "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 1, "maxBOF": 0 }],
-            "no-console": ["error", { allow: ["warn", "error", "info", "debug"] }],
+            // Log through the Diagnostics utility helper instead of raw console.error.
+            "no-console": ["error", { allow: ["warn", "info", "debug"] }],
             "jsdoc/require-jsdoc": ["error", {
                 "require": {
                     "FunctionDeclaration": true,
@@ -158,6 +159,13 @@ export default [
             react: {
                 version: "detect",
             },
+        },
+    },
+    {
+        // The Diagnostics utility helper and the dev-only trace channel are the two modules allowed to reach the console directly.
+        files: ["src/utils/Diagnostics.ts", "src/utils/devLogger/DevLogger.ts"],
+        rules: {
+            "no-console": "off",
         },
     },
     {

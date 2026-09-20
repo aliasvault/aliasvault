@@ -1,3 +1,4 @@
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
@@ -46,7 +47,7 @@ async function createOffscreenDocument(): Promise<void> {
 
     offscreenDocumentCreated = true;
   } catch (error) {
-    console.error('[CLIPBOARD] Failed to create offscreen document:', error);
+    logFailure('[CLIPBOARD] Failed to create offscreen document', error);
     offscreenDocumentCreated = false;
   }
 }
@@ -149,7 +150,7 @@ export async function handleClipboardCopied() : Promise<void> {
 
       sendMessage('CLIPBOARD_CLEARED', {}).catch(() => {});
     } catch (error) {
-      console.error('[CLIPBOARD] Error during clipboard clear:', error);
+      logFailure('[CLIPBOARD] Error during clipboard clear', error);
 
       // Clean up even on error
       clipboardClearTimer = null;

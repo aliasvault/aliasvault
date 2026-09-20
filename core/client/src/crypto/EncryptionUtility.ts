@@ -1,6 +1,7 @@
 import { devWarn } from '../platform/Logger';
 import { argon2DeriveKey, parseEmailSource, type ParsedEmailAttachment } from '../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+import { logDefect } from '../utilities/Diagnostics';
 
 import type { EncryptionKey } from '@aliasvault/models/vault';
 import type { Email, EmailDecryptionKey, MailboxEmail } from '@aliasvault/models/webapi';
@@ -42,7 +43,7 @@ export class EncryptionUtility {
     try {
       return await argon2DeriveKey(password, salt, encryptionSettings);
     } catch (error) {
-      console.error('Argon2 hashing failed:', error);
+      logDefect('[Crypto] Argon2 hashing failed', error);
       throw error;
     }
   }
@@ -288,7 +289,7 @@ export class EncryptionUtility {
 
       return await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKeyObj);
     } catch (error) {
-      console.error('RSA decryption failed:', error);
+      logDefect('[Crypto] RSA decryption failed', error);
       throw new Error(`Failed to decrypt: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

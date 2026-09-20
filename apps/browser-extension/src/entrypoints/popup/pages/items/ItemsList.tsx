@@ -29,6 +29,8 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { devLog } from '@/utils/devLogger/DevLogger';
+import { logFailure } from '@/utils/Diagnostics';
 import { isSameItem, itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
@@ -264,7 +266,7 @@ const ItemsList: React.FC = () => {
    */
   const handleSaveFolder = useCallback(async (folderName: string) : Promise<void> => {
     if (!dbContext?.sqliteClient) {
-      console.error('[FOLDER DEBUG] No sqliteClient available');
+      devLog('[Folders] No sqliteClient available, skipping the folder save');
       return;
     }
 
@@ -443,11 +445,11 @@ const ItemsList: React.FC = () => {
          * On error.
          */
         onError: async (error) => {
-          console.error('Error syncing vault:', error);
+          logFailure('Error syncing vault', error);
         },
       });
     } catch (err) {
-      console.error('Error refreshing items:', err);
+      logFailure('Error refreshing items', err);
       await app.logout('Error while syncing vault, please re-authenticate.');
     }
   }, [dbContext, app, syncVault]);

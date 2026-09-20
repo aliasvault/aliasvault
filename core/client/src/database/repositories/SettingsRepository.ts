@@ -2,6 +2,7 @@ import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, mat
 
 import { deviceLanguage } from '../../platform/DeviceLanguage';
 import { getIdentityLanguages } from '../../rust/RustCore';
+import { logExpected } from '../../utilities/Diagnostics';
 import { BaseRepository } from '../BaseRepository';
 import { SettingsQueries } from '../queries/SettingsQueries';
 
@@ -86,7 +87,7 @@ export class SettingsRepository extends BaseRepository {
         return { ...defaultSettings, ...JSON.parse(settingsJson) };
       }
     } catch (error) {
-      console.warn('Failed to parse password settings:', error);
+      logExpected('[Settings] Parsing the stored password settings failed, falling back to defaults', error);
     }
 
     return defaultSettings;

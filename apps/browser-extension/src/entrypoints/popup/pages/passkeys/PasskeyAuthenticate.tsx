@@ -11,6 +11,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
@@ -94,7 +95,7 @@ const PasskeyAuthenticate: React.FC = () => {
             })));
           }
         } catch (error) {
-          console.error('Failed to fetch request data:', error);
+          logFailure('Failed to fetch request data', error);
           setError(t('common.errors.unknownError'));
         }
       }
@@ -168,7 +169,7 @@ const PasskeyAuthenticate: React.FC = () => {
         credential
       });
     } catch (error) {
-      console.error('PasskeyAuthenticate: Error during authentication', error);
+      logFailure('PasskeyAuthenticate: Error during authentication', error);
       setLoading(false);
       setError(t('common.errors.unknownError'));
     }

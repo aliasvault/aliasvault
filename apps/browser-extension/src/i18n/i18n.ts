@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import {
   DEFAULT_LANGUAGE,
@@ -56,7 +57,7 @@ const initI18n = async (): Promise<void> => {
 
 // Initialize immediately and handle potential errors
 initI18n().catch((error) => {
-  console.error('Failed to initialize i18n:', error);
+  logFailure('Failed to initialize i18n', error);
   // Even if initialization fails, emit initialized event to prevent app from hanging
   i18n.emit('initialized');
 });

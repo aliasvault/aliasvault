@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { ServiceDetectionUtility, type ServiceInfo } from '@/utils/serviceDetection/ServiceDetectionUtility';
 
 import { browser } from '#imports';
@@ -85,7 +86,7 @@ const useServiceDetection = (): {
         }
       }
     } catch (error) {
-      console.error('Error detecting service information:', error);
+      logFailure('Error detecting service information', error);
     }
 
     return {

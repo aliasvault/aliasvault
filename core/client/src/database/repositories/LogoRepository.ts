@@ -1,6 +1,7 @@
 import { LogoKinds } from '@aliasvault/models/vault';
 
 import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '../../rust/RustCore';
+import { logExpected } from '../../utilities/Diagnostics';
 import { BaseRepository } from '../BaseRepository';
 import { LogoQueries } from '../queries/LogoQueries';
 
@@ -150,7 +151,7 @@ export class LogoRepository extends BaseRepository {
         return new Uint8Array(image as ArrayLike<number>);
       }
     } catch (error) {
-      console.warn('Failed to convert logo image to Uint8Array:', error);
+      logExpected('[Logos] Converting a logo image to bytes failed', error);
     }
 
     return null;

@@ -6,7 +6,11 @@ import { useCallback, useRef } from 'react';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+
+/** How many unanswered sync-state polls in a row before the poll gives up on the background context. */
+const MAX_POLL_FAILURES = 10;
 
 /**
  * Hook to execute a vault mutation.
@@ -85,6 +89,9 @@ export function useVaultMutate(): {
 
     devLog('[VaultMutate] Starting to poll for sync completion');
 
+    /** How many consecutive poll failures before giving up. */
+    let consecutiveFailures = 0;
+
     pollIntervalRef.current = setInterval(async () => {
       try {
         /*
@@ -92,6 +99,7 @@ export function useVaultMutate(): {
          * and isSyncInProgress status from the background script
          */
         const syncState = await sendMessage('GET_SYNC_STATE');
+        consecutiveFailures = 0;
 
         /*
          * Only clear uploading indicator when:
@@ -115,7 +123,17 @@ export function useVaultMutate(): {
           }
         }
       } catch (error) {
-        console.error('[VaultMutate] Error polling sync state:', error);
+        consecutiveFailures++;
+        if (consecutiveFailures === 1) {
+          logFailure('[VaultMutate] Reading the sync state failed', error);
+        }
+        if (consecutiveFailures >= MAX_POLL_FAILURES && pollIntervalRef.current) {
+          devLog('[VaultMutate] Giving up on the sync completion poll, the background is not answering');
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+          dbContext.setIsUploading(false);
+          dbContext.setIsSyncing(false);
+        }
       }
     }, 200); /* Poll every 200ms */
   }, [dbContext]);
@@ -163,7 +181,7 @@ export function useVaultMutate(): {
         await dbContext.loadStoredDatabase();
       }
     }).catch((error) => {
-      console.error('Background sync error:', error);
+      logFailure('Background sync error', error);
     });
 
     // Start polling for completion (nothing to clear when no indicator was shown)

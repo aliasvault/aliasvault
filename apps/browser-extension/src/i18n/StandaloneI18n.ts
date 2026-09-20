@@ -4,6 +4,7 @@
  */
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import {
   DEFAULT_LANGUAGE,
@@ -34,7 +35,7 @@ export async function getCurrentLanguage(): Promise<string> {
 
     return detectedLanguage;
   } catch (error) {
-    console.error('Failed to get current language:', error);
+    logFailure('Failed to get current language', error);
     return DEFAULT_LANGUAGE;
   }
 }
@@ -74,7 +75,7 @@ export async function t(
     // Return fallback or key if no translation found
     return fallback || key;
   } catch (error) {
-    console.error('Translation error:', error);
+    logFailure('Translation error', error);
     return fallback || key;
   }
 }

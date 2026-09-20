@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentBlockProps = {
@@ -42,7 +44,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId })
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading attachment:', error);
+      logFailure('Error downloading attachment', error);
     }
   };
 
@@ -59,7 +61,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId })
         const attachmentList = dbContext.sqliteClient.items.getAttachmentsForItem({ Id: itemId, ManifestId: manifestId });
         setAttachments(attachmentList);
       } catch (error) {
-        console.error('Error loading attachments:', error);
+        logFailure('Error loading attachments', error);
       } finally {
         setLoading(false);
       }

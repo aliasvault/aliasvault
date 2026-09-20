@@ -16,6 +16,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { getStorageItem } from '@/utils/StorageUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -99,7 +100,7 @@ const EmailsList: React.FC = () => {
           setTotalRecords(data.totalRecords);
         }
       } catch (error) {
-        console.error(error);
+        logFailure('[Emails] Loading the mailbox failed', error);
         throw new Error(t('common.errors.unknownError'));
       }
     } catch (err) {
@@ -141,7 +142,7 @@ const EmailsList: React.FC = () => {
       setTotalRecords(data.totalRecords);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-      console.error('Failed to load more emails:', err);
+      logFailure('Failed to load more emails', err);
     } finally {
       setIsLoadingMore(false);
     }

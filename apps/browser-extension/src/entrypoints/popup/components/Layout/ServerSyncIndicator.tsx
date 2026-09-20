@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { syncErrorMessage } from '@/utils/SyncError';
 
@@ -136,7 +137,7 @@ const ServerSyncIndicator: React.FC = () => {
 
       await dbContext.refreshSyncState();
     } catch (error) {
-      console.error('Retry sync error:', error);
+      logFailure('Retry sync error', error);
     } finally {
       setIsRetrying(false);
     }

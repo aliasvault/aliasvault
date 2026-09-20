@@ -1,3 +1,5 @@
+import { logDefect } from '../utilities/Diagnostics';
+
 type LogoutListener = (errorMessage: string) => void | Promise<void>;
 
 /**
@@ -28,7 +30,7 @@ class LogoutEventEmitter {
       try {
         listener(errorTranslationKey);
       } catch (error) {
-        console.error('Error in logout listener:', error);
+        logDefect('[Logout] A logout listener threw', error);
       }
     });
   }

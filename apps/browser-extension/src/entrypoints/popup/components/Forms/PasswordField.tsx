@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import type { PasswordSettings } from '@aliasvault/models/vault';
 
 interface IPasswordFieldProps {
@@ -79,7 +81,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
           setIsLoaded(true);
         }
       } catch (error) {
-        console.error('Error loading password settings:', error);
+        logFailure('Error loading password settings', error);
       }
     };
     void loadSettings();
@@ -91,7 +93,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
       onChange(password);
       setShowPassword(true);
     } catch (error) {
-      console.error('Error generating password:', error);
+      logFailure('Error generating password', error);
     }
   }, [onChange, setShowPassword]);
 

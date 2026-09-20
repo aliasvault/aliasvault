@@ -28,6 +28,7 @@ import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorSta
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
@@ -206,7 +207,7 @@ export async function handleStoreUnlockKey(
     await storage.setItem(StorageKeys.UNLOCK_KEY, unlockKey);
     return { success: true };
   } catch (error) {
-    console.error('Failed to store unlock key:', error);
+    logFailure('Failed to store unlock key', error);
     // E-602: Storage write failed during unlock key store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
@@ -223,7 +224,7 @@ export async function handleStoreUnlockKeyDerivationParams(
     await storage.setItem(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS, params);
     return { success: true };
   } catch (error) {
-    console.error('Failed to store encryption key derivation params:', error);
+    logFailure('Failed to store encryption key derivation params', error);
     // E-602: Storage write failed during derivation params store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
@@ -244,7 +245,7 @@ export async function handleGetVault(
     const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
 
     if (!encryptedVault) {
-      console.error('Vault not available');
+      logExpected('[Vault] No encrypted vault in storage');
       // E-201: No encrypted vault in storage
       return { success: false, error: formatErrorWithCode(await t('common.errors.vaultNotAvailable'), AppErrorCode.VAULT_NOT_FOUND) };
     }
@@ -265,7 +266,7 @@ export async function handleGetVault(
       hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? []
     };
   } catch (error) {
-    console.error('Failed to get vault:', error);
+    logFailure('Failed to get vault', error);
     // E-203: Vault decryption failed during get
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED) };
   }
@@ -480,7 +481,7 @@ export async function handleGetFilteredItems(
 
     return { success: true, items: filteredItems };
   } catch (error) {
-    console.error('Error getting filtered items:', error);
+    logFailure('Error getting filtered items', error);
     // E-304: Item read failed
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
@@ -509,7 +510,7 @@ export async function handleGetSearchItems(
 
     return { success: true, items: searchResults };
   } catch (error) {
-    console.error('Error searching items:', error);
+    logFailure('Error searching items', error);
     // E-304: Item read failed during search
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
@@ -534,7 +535,7 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
 
       return { success: true, value: domain || undefined };
     } catch (error) {
-      console.error('Error getting default email domain:', error);
+      logFailure('Error getting default email domain', error);
       // E-601: Storage read failed
       return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
     }
@@ -560,7 +561,7 @@ export async function handleGetDefaultIdentitySettings(
       }
     };
   } catch (error) {
-    console.error('Error getting default identity settings:', error);
+    logFailure('Error getting default identity settings', error);
     // E-601: Storage read failed
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
@@ -577,7 +578,7 @@ export async function handleGetPasswordSettings(
 
     return { success: true, settings: passwordSettings };
   } catch (error) {
-    console.error('Error getting password settings:', error);
+    logFailure('Error getting password settings', error);
     // E-601: Storage read failed
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
@@ -593,7 +594,7 @@ export async function handleGeneratePassword(
     const password = await generatePassword(settings);
     return { success: true, password };
   } catch (error) {
-    console.error('Error generating password:', error);
+    logFailure('Error generating password', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UNKNOWN_ERROR) };
   }
 }
@@ -655,7 +656,7 @@ export async function handleGetPersistedFormValues(): Promise<any | null> {
     );
     return JSON.parse(decryptedData);
   } catch (error) {
-    console.error('Failed to decrypt or parse persisted form values:', error);
+    logFailure('Failed to decrypt or parse persisted form values', error);
     return null;
   }
 }
@@ -688,7 +689,7 @@ async function persistLocalVaultMutation(sqliteClient: SqliteClient, encryptionK
   cachedVaultBlob = encryptedVault;
 
   void handleFullVaultSync().catch(error => {
-    console.error('Background sync after local vault mutation failed:', error);
+    logFailure('Background sync after local vault mutation failed', error);
   });
 }
 
@@ -925,7 +926,7 @@ async function handleFullVaultSyncInternal(options?: VaultSyncOptions): Promise<
       hasPendingSync = false;
 
       handleFullVaultSync().catch(err => {
-        console.error('[VaultSync] Follow-up sync failed:', err);
+        logFailure('[VaultSync] Follow-up sync failed', err);
       });
     }
   }
@@ -1022,7 +1023,7 @@ export async function handleCheckLoginDuplicate(
 
     return { success: true, isDuplicate: false };
   } catch (error) {
-    console.error('Error checking for duplicate login:', error);
+    logFailure('Error checking for duplicate login', error);
     return { success: false, isDuplicate: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
@@ -1115,7 +1116,7 @@ export async function handleSaveLoginCredential(
 
     return { success: true, itemId: created.Id, manifestId: created.ManifestId };
   } catch (error) {
-    console.error('Failed to save login credential:', error);
+    logFailure('Failed to save login credential', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
   }
 }
@@ -1183,7 +1184,7 @@ export async function handleAddUrlToCredential(message: { itemId: string; manife
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to add URL to credential:', error);
+    logFailure('Failed to add URL to credential', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
   }
 }
@@ -1274,7 +1275,7 @@ export async function handleGetLoginSaveSettings(): Promise<{
       autoDismissSeconds
     };
   } catch (error) {
-    console.error('Error getting login save settings:', error);
+    logFailure('Error getting login save settings', error);
     return { success: false, enabled: false, autoDismissSeconds: 15, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
 }
@@ -1291,7 +1292,7 @@ export async function handleSetLoginSaveEnabled(
     await LocalPreferencesService.setLoginSaveEnabled(enabled);
     return { success: true };
   } catch (error) {
-    console.error('Error setting login save enabled:', error);
+    logFailure('Error setting login save enabled', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
@@ -1327,7 +1328,7 @@ export async function handleGetItemsWithTotp(
 
     return { success: true, items: prioritized.items, recentlySelected: prioritized.recentlySelected };
   } catch (error) {
-    console.error('Error getting items with TOTP:', error);
+    logFailure('Error getting items with TOTP', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
@@ -1359,7 +1360,7 @@ export async function handleSearchItemsWithTotp(
 
     return { success: true, items: searchResults };
   } catch (error) {
-    console.error('Error searching items with TOTP:', error);
+    logFailure('Error searching items with TOTP', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
@@ -1398,7 +1399,7 @@ export async function handleGetTotpSecrets(
 
     return { success: true, secrets };
   } catch (error) {
-    console.error('Error getting TOTP secrets:', error);
+    logFailure('Error getting TOTP secrets', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
@@ -1433,7 +1434,7 @@ export async function handleGenerateTotpCode(
 
     return { success: true, code };
   } catch (error) {
-    console.error('Error generating TOTP code:', error);
+    logFailure('Error generating TOTP code', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
@@ -1460,7 +1461,7 @@ export async function handleRecordItemUsage(
     await persistLocalVaultMutation(sqliteClient, encryptionKey);
     return { success: true };
   } catch (error) {
-    console.error('Failed to record item usage:', error);
+    logFailure('Failed to record item usage', error);
     return { success: false };
   }
 }
@@ -1476,7 +1477,7 @@ export async function handleSetRecentlySelected(
     await RecentlySelectedItemService.setRecentlySelected({ Id: message.itemId, ManifestId: message.manifestId }, rootDomain);
     return { success: true };
   } catch (error) {
-    console.error('Error setting recently selected item:', error);
+    logFailure('Error setting recently selected item', error);
     return { success: false };
   }
 }
@@ -1492,7 +1493,7 @@ export async function handleGetRecentlySelected(
     const item = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
     return { success: true, itemId: item?.Id ?? null, manifestId: item?.ManifestId ?? null };
   } catch (error) {
-    console.error('Error getting recently selected item:', error);
+    logFailure('Error getting recently selected item', error);
     return { success: false, itemId: null };
   }
 }
@@ -1543,7 +1544,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
   const result = await vaultSync.createSharedManifest(message.groupId, message.name);
   if (result.success) {
     // The engine left the new folder and keypair in a dirty vault; this pushes them.
-    void handleFullVaultSync().catch(error => console.error('Background sync after creating a shared manifest failed:', error));
+    void handleFullVaultSync().catch(error => logFailure('Background sync after creating a shared manifest failed', error));
   }
 
   return sharingActionResponse(result, 'sharing.family.errors.createVaultFailed');
@@ -1580,7 +1581,7 @@ export async function handleGroupRevokeAccess(message: { groupId: string; manife
     await SharingService.revokeAccess(webApi, message.groupId, message.manifestId, message.userId);
 
     devLog(`[Sharing] Revoked ${message.userId}'s access to vault ${message.manifestId}; syncing to pick up whatever the server left for this client to finish.`);
-    void handleFullVaultSync().catch(error => console.error('Background sync after a vault access change failed:', error));
+    void handleFullVaultSync().catch(error => logFailure('Background sync after a vault access change failed', error));
 
     return { success: true };
   } catch (error) {
@@ -1588,7 +1589,7 @@ export async function handleGroupRevokeAccess(message: { groupId: string; manife
       return { success: false, apiErrorCode: error.apiErrorCode };
     }
 
-    console.error('Failed to revoke shared manifest access:', error);
+    logFailure('Failed to revoke shared manifest access', error);
     return { success: false, error: await t('sharing.family.errors.revokeAccessFailed') };
   }
 }

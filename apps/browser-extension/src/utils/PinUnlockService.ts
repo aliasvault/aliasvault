@@ -3,6 +3,7 @@ import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base6
 import { browser } from 'wxt/browser';
 
 import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import { storage } from '#imports';
 
@@ -195,7 +196,7 @@ export async function setupPin(pin: string, unlockKey: string): Promise<void> {
       throw error;
     }
     /* Log internal errors and throw generic error for user */
-    console.error('[PinUnlockService] Failed to setup PIN:', error);
+    logFailure('[PinUnlockService] Failed to setup PIN', error);
     throw error;
   }
 }
@@ -278,7 +279,7 @@ export async function removeAndDisablePin(): Promise<void> {
   try {
     await storage.removeItems([...PIN_STORAGE_KEYS]);
   } catch (error) {
-    console.error('[PinUnlockService] Failed to disable PIN:', error);
+    logFailure('[PinUnlockService] Failed to disable PIN', error);
     throw error;
   }
 }
@@ -291,7 +292,7 @@ export async function resetFailedAttempts(): Promise<void> {
   try {
     await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
   } catch (error) {
-    console.error('[PinUnlockService] Failed to reset failed attempts:', error);
+    logFailure('[PinUnlockService] Failed to reset failed attempts', error);
   }
 }
 

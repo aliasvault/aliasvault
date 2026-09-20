@@ -4,6 +4,7 @@
  */
 
 import { getLogoMarkSvg } from '@/utils/constants/logo';
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
@@ -414,7 +415,7 @@ export async function restoreAddUrlPromptFromState(
   const { login, remainingTimeMs: restoredRemainingTime, initialAutoDismissMs: restoredInitialMs, existingCredential } = state;
 
   if (!existingCredential) {
-    console.error('[AliasVault] Cannot restore Add URL prompt without existing credential');
+    logExpected('[AliasVault] Cannot restore the Add URL prompt, its credential is gone');
     return;
   }
 
@@ -738,7 +739,7 @@ async function persistSavePromptState(): Promise<void> {
   try {
     await sendMessage('STORE_SAVE_PROMPT_STATE', state);
   } catch (error) {
-    console.error('[AliasVault] Error persisting save prompt state:', error);
+    logFailure('[AliasVault] Error persisting save prompt state', error);
   }
 }
 
@@ -790,7 +791,7 @@ export async function getPersistedSavePromptState(): Promise<SavePromptPersisted
 
     return state;
   } catch (error) {
-    console.error('[AliasVault] Error reading persisted save prompt state:', error);
+    logFailure('[AliasVault] Error reading persisted save prompt state', error);
     return null;
   }
 }
@@ -802,7 +803,7 @@ export async function clearPersistedSavePromptState(): Promise<void> {
   try {
     await sendMessage('CLEAR_SAVE_PROMPT_STATE');
   } catch (error) {
-    console.error('[AliasVault] Error clearing persisted save prompt state:', error);
+    logFailure('[AliasVault] Error clearing persisted save prompt state', error);
   }
 }
 

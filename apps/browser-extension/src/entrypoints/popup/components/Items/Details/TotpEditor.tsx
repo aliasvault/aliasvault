@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import type { TotpCode } from '@aliasvault/models/vault';
 
 type TotpFormData = {
@@ -304,7 +306,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
         }
       })
         .then(url => setQrCodeDataUrl(url))
-        .catch(err => console.error('Failed to generate QR code:', err));
+        .catch(err => logFailure('Failed to generate QR code', err));
     }
     setShowQrCode(!showQrCode);
   };

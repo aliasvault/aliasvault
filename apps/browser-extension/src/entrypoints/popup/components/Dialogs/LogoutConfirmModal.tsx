@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 interface ILogoutConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,7 +49,7 @@ const LogoutConfirmModal: React.FC<ILogoutConfirmModalProps> = ({
           setHasPendingChanges(pending);
         }
       } catch (error) {
-        console.error('Failed to check sync state:', error);
+        logFailure('Failed to check sync state', error);
         if (!cancelled) {
           // Default to showing the simple logout confirmation on error
           setHasPendingChanges(false);

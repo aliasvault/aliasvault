@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import type { Passkey } from '@aliasvault/models/vault';
 
 type PasskeyBlockProps = {
@@ -47,7 +49,7 @@ const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId, manifestId }) => {
       const itemPasskeys = dbContext.sqliteClient.passkeys.getByItemId({ Id: itemId, ManifestId: manifestId });
       setPasskeys(itemPasskeys);
     } catch (err) {
-      console.error('Error loading passkeys:', err);
+      logFailure('Error loading passkeys', err);
     } finally {
       setLoading(false);
     }

@@ -4,6 +4,7 @@ import { itemToCredential, FieldKey } from '@aliasvault/models/vault';
 import { openAutofillPopup, openTotpPopup, removeExistingPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
+import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
@@ -430,7 +431,7 @@ export async function fillTotpCode(item: ItemRef, input: HTMLInputElement): Prom
   const response = await sendMessage('GENERATE_TOTP_CODE', { itemId: item.Id, manifestId: item.ManifestId });
 
   if (!response.success || !response.code) {
-    console.error('Failed to generate TOTP code:', response.error);
+    logFailure('Failed to generate TOTP code', response.error);
     return;
   }
 

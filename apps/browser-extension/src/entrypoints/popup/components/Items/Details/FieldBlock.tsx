@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/FormInputCopyToClipboard';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 import FieldHistoryModal from './FieldHistoryModal';
 
 import type { ItemField } from '@aliasvault/models/vault';
@@ -129,7 +131,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, manifestId, hide
           setHistoryCount(0);
         }
       } catch (error) {
-        console.error('[FieldBlock] Error checking history:', error);
+        logFailure('[FieldBlock] Error checking history', error);
       }
     }
   }, [hasHistoryEnabled, itemId, manifestId, field.FieldKey, field.Value, dbContext?.sqliteClient]);

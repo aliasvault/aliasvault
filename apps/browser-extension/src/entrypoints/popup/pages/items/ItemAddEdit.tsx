@@ -35,6 +35,7 @@ import useItemLogo from '@/entrypoints/popup/hooks/useItemLogo';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { FaviconService } from '@/utils/FaviconService';
 import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -432,7 +433,7 @@ const ItemAddEdit: React.FC = () => {
       try {
         const result = sqliteClient.items.getById({ Id: id, ManifestId: manifestId });
         if (!result) {
-          console.error('Item not found');
+          logExpected('[Item] The item to edit no longer exists');
           navigate('/items');
           return;
         }
@@ -499,7 +500,7 @@ const ItemAddEdit: React.FC = () => {
         setLocalLoading(false);
         setIsInitialLoading(false);
       } catch (err) {
-        console.error('Error loading item:', err);
+        logFailure('Error loading item', err);
         setLocalLoading(false);
         setIsInitialLoading(false);
       }
@@ -716,7 +717,7 @@ const ItemAddEdit: React.FC = () => {
         elementIdentifier: fillBackElementIdentifier ?? undefined
       }, tabId);
     } catch (err) {
-      console.error('Error autofilling created item into page:', err);
+      logFailure('Error autofilling created item into page', err);
     }
 
     /*
@@ -726,7 +727,7 @@ const ItemAddEdit: React.FC = () => {
     try {
       await NavigationStateService.clearNavigationState();
     } catch (err) {
-      console.error('Error clearing persisted navigation state:', err);
+      logFailure('Error clearing persisted navigation state', err);
     }
 
     // Close this popup window (it was opened as a standalone window from the content script).
@@ -886,7 +887,7 @@ const ItemAddEdit: React.FC = () => {
         navigate(itemRoute(savedItem), { replace: true });
       }
     } catch (err) {
-      console.error('Error saving item:', err);
+      logFailure('Error saving item', err);
       setIsSaving(false);
     }
   }, [item, manifestId, isSaving, fieldValues, applicableSystemFields, customFields, dbContext, isEditMode, executeVaultMutationAsync, navigate, location.state, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, resolvedFaviconSource, webApi, clearPersistedValues, fillBackAndCloseWindow]);
@@ -906,7 +907,7 @@ const ItemAddEdit: React.FC = () => {
 
       navigate('/items');
     } catch (err) {
-      console.error('Error deleting item:', err);
+      logFailure('Error deleting item', err);
     } finally {
       setShowDeleteModal(false);
     }

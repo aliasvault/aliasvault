@@ -3,6 +3,8 @@ import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { logFailure } from '@/utils/Diagnostics';
+
 /**
  * Vault error report props.
  */
@@ -47,7 +49,7 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy error report:', err);
+      logFailure('Failed to copy error report', err);
     }
   };
 

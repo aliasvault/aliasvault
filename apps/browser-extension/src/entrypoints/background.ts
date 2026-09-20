@@ -13,6 +13,7 @@ import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePr
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
 import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
@@ -227,7 +228,7 @@ export default defineBackground({
           sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier }, tab.id);
         }
       } catch (error) {
-        console.error('Error handling show-autofill-popup command:', error);
+        logFailure('Error handling show-autofill-popup command', error);
       }
     });
 
@@ -368,7 +369,7 @@ export default defineBackground({
          */
         await runStartupMigrations();
       } catch (error) {
-        console.error('Error running startup migrations:', error);
+        logFailure('Error running startup migrations', error);
       }
 
       try {
@@ -377,7 +378,7 @@ export default defineBackground({
           await setupContextMenus();
         }
       } catch (error) {
-        console.error('Error setting up context menus:', error);
+        logFailure('Error setting up context menus', error);
       }
 
       try {
@@ -388,7 +389,7 @@ export default defineBackground({
          */
         await initializeAutoLockAlarm();
       } catch (error) {
-        console.error('Error initializing auto-lock alarm:', error);
+        logFailure('Error initializing auto-lock alarm', error);
       }
     })();
   }

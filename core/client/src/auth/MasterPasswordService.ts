@@ -3,6 +3,7 @@ import { StorageKeys } from '../constants/StorageKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
+import { logDefect } from '../utilities/Diagnostics';
 
 import { SrpAuthService, type SrpClientProof } from './SrpAuthService';
 import { VaultKeyService } from './VaultKeyService';
@@ -95,7 +96,7 @@ export class MasterPasswordService {
         return code === AppErrorCode.VAULT_DECRYPT_FAILED ? PasswordVerificationResult.InvalidPassword : PasswordVerificationResult.VerificationError;
       }
     } catch (error) {
-      console.error('Password verification failed unexpectedly.', error);
+      logDefect('[MasterPassword] Password verification failed unexpectedly', error);
       return PasswordVerificationResult.VerificationError;
     }
   }

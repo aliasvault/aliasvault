@@ -9,6 +9,7 @@ import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { NavigationStateService } from '@/utils/NavigationStateService';
 
@@ -153,7 +154,7 @@ const Reinitialize: React.FC = () => {
        * @param error Error message
        */
       onError: (error) => {
-        console.error('Background vault sync error:', error);
+        logFailure('Background vault sync error', error);
       }
     });
   }, [syncVault, refreshSyncState, navigate]);
