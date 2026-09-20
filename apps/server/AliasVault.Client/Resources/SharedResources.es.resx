@@ -261,7 +261,7 @@
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Por favor, corrija los siguientes errores.</value>
+    <value>Por favor, corrige los siguientes errores.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -269,7 +269,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Por favor, introduzca una dirección de correo válida.</value>
+    <value>Por favor, introduce una dirección de correo electrónico válida.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
