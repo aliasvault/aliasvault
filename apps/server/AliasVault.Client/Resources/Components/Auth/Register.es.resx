@@ -92,7 +92,7 @@
   </data>
   <!-- Links -->
   <data name="AlreadyRegisteredText" xml:space="preserve">
-    <value>¿Ya estás registrado?</value>
+    <value>¿Ya te has registrado?</value>
     <comment>Text before login link</comment>
   </data>
   <data name="LoginHereLink" xml:space="preserve">
