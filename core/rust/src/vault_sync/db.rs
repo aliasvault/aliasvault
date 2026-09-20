@@ -12,13 +12,15 @@ use crate::encoding::{base64_decode, base64_encode, uuid_from_bytes};
 use crate::sqlite_host::SqlStatement;
 use crate::timestamp::{now_iso_utc, now_vault_datetime};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
-use crate::vault_codec::{CodecRecord, CodecTableData, MaterializedTables};
-use crate::vault_model::{id_key, ids_equal, UNSTAMPED_SCOPE_SENTINEL};
+use crate::vault_codec::{is_skip_table, manifest_scoped_tables, CodecRecord, CodecTableData, MaterializedTables};
+use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL, UNSTAMPED_SCOPE_SENTINEL};
 
 pub(crate) type Row = Map<String, Value>;
 
 /// Rows per `dbExec` batch when bulk-loading a materialized vault.
 const INSERT_BATCH_ROWS: usize = 400;
+
+const TABLE_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnName FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table' ORDER BY m.name, p.cid";
 
 pub(crate) async fn query(host: &Host, db: Db, sql: &str, params: Vec<Value>) -> SyncResult<Vec<Row>> {
     let response: DbRows = host.call(Command::DbQuery { db, sql: sql.to_string(), params }).await?;
@@ -68,7 +70,8 @@ pub(crate) async fn list_user_tables(host: &Host, db: Db) -> SyncResult<Vec<Stri
 /// Every user table with its rows, the shape canonicalize takes.
 pub(crate) async fn read_tables(host: &Host, db: Db) -> SyncResult<Vec<CodecTableData>> {
     let mut tables = Vec::new();
-    for name in list_user_tables(host, db).await? {
+    // Bookkeeping tables never reach a manifest, so their rows are not read either.
+    for name in list_user_tables(host, db).await?.into_iter().filter(|name| !is_skip_table(name)) {
         let rows = query(host, db, &format!("SELECT * FROM \"{}\"", name), vec![]).await?;
         tables.push(CodecTableData { name, records: rows.into_iter().map(row_to_record).collect() });
     }
@@ -95,11 +98,10 @@ fn row_to_record(row: Row) -> CodecRecord {
 
 /// The column set of every table in a database, as materialize needs it.
 pub(crate) async fn schema_columns(host: &Host, db: Db) -> SyncResult<HashMap<String, Vec<String>>> {
-    let mut out = HashMap::new();
-    let tables = query(host, db, "SELECT name FROM sqlite_master WHERE type='table'", vec![]).await?;
-    for table in tables.iter().filter_map(|row| row.get("name").and_then(Value::as_str)) {
-        let columns = query(host, db, &format!("PRAGMA table_info(\"{}\")", table), vec![]).await?;
-        out.insert(table.to_string(), columns.iter().filter_map(|row| row.get("name").and_then(Value::as_str).map(str::to_string)).collect());
+    let mut out: HashMap<String, Vec<String>> = HashMap::new();
+    for row in query(host, db, TABLE_COLUMNS, vec![]).await? {
+        let (Some(table), Some(column)) = (row.get("TableName").and_then(Value::as_str), row.get("ColumnName").and_then(Value::as_str)) else { continue };
+        out.entry(table.to_string()).or_default().push(column.to_string());
     }
     Ok(out)
 }
@@ -140,26 +142,28 @@ pub(crate) async fn has_column(host: &Host, db: Db, table: &str, column: &str) -
     Ok(!query(host, db, "SELECT name FROM pragma_table_info(?) WHERE name = ?", vec![json!(table), json!(column)]).await?.is_empty())
 }
 
-/// The tables carrying a manifest stamp.
-pub(crate) async fn stamped_tables(host: &Host, db: Db) -> SyncResult<Vec<String>> {
-    let mut out = Vec::new();
-    for name in list_user_tables(host, db).await? {
-        if has_column(host, db, &name, "ManifestId").await? {
-            out.push(name);
-        }
-    }
-    Ok(out)
-}
-
-/// Every manifest id this vault holds a row for.
+/*
+ * Every manifest id the rows of this vault name. This reads what the vault holds and nothing else: which
+ * manifests may be written is decided by the grants the server served and the keys that opened, and the
+ * two are compared so rows naming a manifest outside that set stop the push instead of being left out of it.
+ */
 pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec<String>> {
+    // Table names come from the registry, never from the database; a vault on an older schema lacks some.
+    let columns = schema_columns(host, db).await?;
+    let selects: Vec<String> = manifest_scoped_tables()
+        .into_iter()
+        .filter(|table| columns.get(*table).is_some_and(|names| names.iter().any(|name| name == MANIFEST_ID_COL)))
+        .map(|table| format!("SELECT {} FROM \"{}\"", MANIFEST_ID_COL, table))
+        .collect();
+    if selects.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let rows = query(host, db, &format!("{} ORDER BY 1", selects.join(" UNION ")), vec![]).await?;
     let mut ids: Vec<String> = Vec::new();
-    for table in stamped_tables(host, db).await? {
-        let rows = query(host, db, &format!("SELECT DISTINCT ManifestId FROM \"{}\" WHERE ManifestId IS NOT NULL AND ManifestId != ''", table), vec![]).await?;
-        for id in rows.iter().filter_map(|row| row.get("ManifestId").and_then(Value::as_str)) {
-            if !ids_equal(id, UNSTAMPED_SCOPE_SENTINEL) && !ids.iter().any(|known| known == id) {
-                ids.push(id.to_string());
-            }
+    for id in rows.iter().filter_map(|row| row.get(MANIFEST_ID_COL).and_then(Value::as_str)) {
+        if !id.is_empty() && !ids_equal(id, UNSTAMPED_SCOPE_SENTINEL) && !ids.iter().any(|known| known == id) {
+            ids.push(id.to_string());
         }
     }
     Ok(ids)
@@ -167,18 +171,12 @@ pub(crate) async fn manifest_ids_in_vault(host: &Host, db: Db) -> SyncResult<Vec
 
 /// Load materialized tables into the (fresh) staging database, re-embedding blob bytes, and verify its
 /// referential integrity.
-pub(crate) async fn insert_materialized(host: &Host, materialized: &MaterializedTables, blobs: &HashMap<String, Vec<u8>>) -> SyncResult<()> {
-    let schema_tables: Vec<String> = query(host, Db::Staging, "SELECT name FROM sqlite_master WHERE type='table'", vec![])
-        .await?
-        .iter()
-        .filter_map(|row| row.get("name").and_then(Value::as_str).map(str::to_string))
-        .collect();
-
+pub(crate) async fn insert_materialized(host: &Host, materialized: &MaterializedTables, schema_columns: &HashMap<String, Vec<String>>, blobs: &HashMap<String, Vec<u8>>) -> SyncResult<()> {
     for table in &materialized.tables {
         if table.records.is_empty() {
             continue;
         }
-        if !schema_tables.contains(&table.name) {
+        if !schema_columns.contains_key(&table.name) {
             host.log(LogLevel::Warn, format!("[VaultCodec] Skipping table \"{}\" ({} rows), not present in the schema.", table.name, table.records.len())).await;
             continue;
         }
@@ -222,17 +220,18 @@ pub(crate) fn new_id() -> String {
     uuid_from_bytes(bytes, 4)
 }
 
-const GET_ACTIVE_KEY_FOR_MANIFEST: &str = "SELECT x.Id, x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";
-const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PublicKey, x.PrivateKey, x.IsPrimary FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
+const GET_ACTIVE_PUBLIC_KEY_FOR_MANIFEST: &str = "SELECT x.PublicKey FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";
+const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PrivateKey FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
 const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
 const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
 const MANIFEST_NAMES: &str = "SELECT Id, Name FROM Manifests WHERE Name IS NOT NULL";
 const UPDATE_MANIFEST_NAME: &str = "UPDATE Manifests SET Name = ? WHERE Id = ?";
 const UPSERT_MANIFEST_NAME: &str = "INSERT INTO Manifests (Id, Name) VALUES (?, ?) ON CONFLICT(Id) DO UPDATE SET Name = excluded.Name";
 
-/// The active mail delivery keypair of a manifest, when it has one.
-pub(crate) async fn active_key_for_manifest(host: &Host, manifest_id: &str) -> SyncResult<Option<Row>> {
-    Ok(query(host, Db::Local, GET_ACTIVE_KEY_FOR_MANIFEST, vec![json!(manifest_id)]).await?.into_iter().next())
+/// The public half of a manifest's active mail delivery keypair, when it has one.
+pub(crate) async fn active_public_key_for_manifest(host: &Host, manifest_id: &str) -> SyncResult<Option<String>> {
+    let rows = query(host, Db::Local, GET_ACTIVE_PUBLIC_KEY_FOR_MANIFEST, vec![json!(manifest_id)]).await?;
+    Ok(rows.first().and_then(|row| row.get("PublicKey")).and_then(Value::as_str).map(str::to_string))
 }
 
 /// The private half of the account keypair with the given public half, held in the personal manifest.
@@ -277,7 +276,7 @@ pub(crate) async fn set_manifest_name(host: &Host, manifest_id: &str, name: &str
 
 /// Name the manifests a database already holds; a manifest it does not hold stays out of it.
 pub(crate) async fn apply_manifest_names(host: &Host, db: Db, names: &HashMap<String, String>) -> SyncResult<()> {
-    let statements: Vec<SqlStatement> = names.iter().map(|(manifest_id, name)| SqlStatement { sql: UPDATE_MANIFEST_NAME.to_string(), params: vec![json!(name), json!(manifest_id)] }).collect();
+    let statements: Vec<SqlStatement> = names.iter().map(|(manifest_id, name)| SqlStatement { sql: UPDATE_MANIFEST_NAME.to_string(), params: vec![json!(name), json!(id_key(manifest_id))] }).collect();
     exec(host, db, statements).await
 }
 

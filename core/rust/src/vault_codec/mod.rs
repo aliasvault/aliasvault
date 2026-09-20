@@ -36,7 +36,7 @@ pub use manifest::{
 pub use materialize::materialize_as_sqlite;
 pub use scoped_assets::logo_id_for;
 pub use sharing::extract_encryption_key_for_public_key;
-pub use types::{bucket_categories, identity_part, is_bucketed_table, tables_for_category};
+pub use types::{bucket_categories, identity_part, is_bucketed_table, is_skip_table, manifest_scoped_tables, tables_for_category};
 pub use validate::{validate_data_bucket, validate_manifest, ValidationResult};
 
 /// The bucket layout: every category and the tables it owns, in declaration order.

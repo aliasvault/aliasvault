@@ -563,7 +563,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
 
         // Publish the public half of this manifest's mail delivery keypair; only admins may publish a shared one.
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
-        let manifest_key = if may_publish { db::active_key_for_manifest(&ctx.host, &candidate.record.manifest_id).await? } else { None };
+        let manifest_key = if may_publish { db::active_public_key_for_manifest(&ctx.host, &candidate.record.manifest_id).await? } else { None };
         if may_publish && manifest_key.is_none() && !candidate.record.is_personal {
             ctx.warn(format!("[V2Push] {} is missing its email keypair; its aliases stay personal until sharing is re-enabled.", label)).await;
         }
@@ -577,7 +577,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             current_revision: candidate.current_revision,
             credentials_count: candidate.manifest.tables.get("Items").map(Vec::len).unwrap_or(0),
             blob_references: blob_refs,
-            encryption_public_key: manifest_key.and_then(|row| row.get("PublicKey").and_then(serde_json::Value::as_str).map(str::to_string)),
+            encryption_public_key: manifest_key,
         });
         written.insert(fingerprint_key, fingerprint);
     }

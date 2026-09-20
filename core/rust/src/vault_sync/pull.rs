@@ -297,7 +297,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
 pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest], data_buckets: &[DataBucket], blob_map: &HashMap<String, Vec<u8>>, opened_names: &HashMap<String, String>) -> SyncResult<Vec<u8>> {
     ctx.log(format!("[V2Pull] {} blobs decrypted; running codec reassembly into a fresh SQLite ({} manifest(s) combined)...", blob_map.len(), manifests.len())).await;
     let schema = ctx.schema().await?;
-    let materialized = vault_codec::materialize_as_sqlite(MaterializeInput { manifests: manifests.to_vec(), data_buckets: data_buckets.to_vec(), schema_columns: schema.columns })?;
+    let materialized = vault_codec::materialize_as_sqlite(MaterializeInput { manifests: manifests.to_vec(), data_buckets: data_buckets.to_vec(), schema_columns: schema.columns.clone() })?;
 
     let overflow_tables = materialized.overflow.tables.len() + materialized.overflow.bucket_tables.values().map(HashMap::len).sum::<usize>();
     if overflow_tables > 0 || !materialized.overflow.columns.is_empty() {
@@ -306,7 +306,7 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
 
     // Use a fresh staging database for every materialize.
     db::open_staging(&ctx.host, None).await?;
-    db::insert_materialized(&ctx.host, &materialized, blob_map).await?;
+    db::insert_materialized(&ctx.host, &materialized, &schema.columns, blob_map).await?;
 
     // Names are not part of a manifest: the ones the vault already shows are kept, the ones this run opened win.
     let mut names = if ctx.has_local_vault().await? { db::manifest_display_names(&ctx.host).await? } else { HashMap::new() };

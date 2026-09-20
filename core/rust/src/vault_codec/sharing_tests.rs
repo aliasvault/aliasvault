@@ -1244,6 +1244,40 @@ fn combine_drops_child_rows_naming_an_item_the_manifest_does_not_hold() {
 }
 
 #[test]
+fn combine_restamps_rows_a_manifest_wrote_for_another_manifest() {
+    // A member of one shared manifest writes rows stamped for a manifest it cannot write. The stamp an
+    // author wrote is never trusted: every row claims the manifest it arrived in, so nothing crosses over.
+    let mut personal = canonicalize_from_sqlite(input_with_shares(vec![table("Items", vec![row(&[("Id", json!("i-mine")), ("Name", json!("mine")), ("FolderId", serde_json::Value::Null)])])], vec![])).unwrap().first().manifest.clone();
+    personal.tables.insert("Folders".to_string(), vec![]);
+
+    let mut victim = personal.clone();
+    victim.manifest_id = "m-victim".to_string();
+    victim.tables.insert("Items".to_string(), vec![row(&[("Id", json!("i-victim")), ("Name", json!("theirs")), ("FolderId", serde_json::Value::Null)])]);
+
+    let mut hostile = personal.clone();
+    hostile.manifest_id = "m-hostile".to_string();
+    hostile.tables.insert(
+        "Items".to_string(),
+        vec![
+            row(&[("Id", json!("i-planted")), ("ManifestId", json!("m-victim")), ("Name", json!("planted")), ("FolderId", serde_json::Value::Null)]),
+            row(&[("Id", json!("i-victim")), ("ManifestId", json!("m-victim")), ("Name", json!("overwritten")), ("FolderId", serde_json::Value::Null)]),
+        ],
+    );
+    hostile.tables.insert("Tags".to_string(), vec![row(&[("Id", json!("t-planted")), ("ManifestId", json!(PERSONAL_M)), ("Name", json!("planted"))])]);
+
+    let re = materialize_as_sqlite(materialize_input(personal, vec![victim, hostile], vec![])).unwrap();
+    let map = materialized_map(&re);
+
+    let in_victim: Vec<&CodecRecord> = map["Items"].iter().filter(|r| r["ManifestId"] == json!("m-victim")).collect();
+    assert_eq!(in_victim.len(), 1, "the victim manifest holds only its own item");
+    assert_eq!(in_victim[0]["Name"], json!("theirs"), "the victim's item is not overwritten");
+    for id in ["i-planted", "i-victim"] {
+        assert!(map["Items"].iter().any(|r| r["Id"] == json!(id) && r["ManifestId"] == json!("m-hostile")), "{id} stays in the manifest it arrived in");
+    }
+    assert!(map["Tags"].iter().all(|r| r["ManifestId"] == json!("m-hostile")), "a row stamped for the personal manifest stays out of it");
+}
+
+#[test]
 fn combine_nulls_an_item_folder_that_only_resolves_in_another_manifest() {
     // Folder ids are per-manifest now: a folder with the right Id in the wrong namespace is not this
     // item's folder, and leaving the reference would fail the platform's foreign_key_check.
