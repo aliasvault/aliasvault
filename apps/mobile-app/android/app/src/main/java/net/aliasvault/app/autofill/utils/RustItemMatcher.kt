@@ -23,10 +23,10 @@ object RustItemMatcher {
         DEFAULT("default"),
 
         /** Exact URL matching only - no subdomain matching. */
-        URL_EXACT("url_exact"),
+        URL_EXACT("urlExact"),
 
         /** Subdomain matching - matches subdomains and root domains. */
-        URL_SUBDOMAIN("url_subdomain"),
+        URL_SUBDOMAIN("urlSubdomain"),
     }
 
     init {
@@ -60,10 +60,10 @@ object RustItemMatcher {
                 val urlsArray = JSONArray()
                 item.urls.forEach { urlsArray.put(it) }
                 val credJson = JSONObject().apply {
-                    put("Id", idString)
-                    put("ItemName", item.name ?: JSONObject.NULL)
-                    put("ItemUrls", urlsArray)
-                    put("Username", item.username ?: JSONObject.NULL)
+                    put("id", idString)
+                    put("itemName", item.name ?: JSONObject.NULL)
+                    put("itemUrls", urlsArray)
+                    put("username", item.username ?: JSONObject.NULL)
                 }
                 rustCredentials.put(credJson)
                 itemMap[idString] = item
@@ -72,11 +72,11 @@ object RustItemMatcher {
             // Prepare input JSON for Rust
             val input = JSONObject().apply {
                 put("credentials", rustCredentials)
-                put("current_url", searchText)
-                put("page_title", "")
-                put("matching_mode", "default")
-                // Note: ignore_port=true because Android's Autofill API does not provide port numbers
-                put("ignore_port", true)
+                put("currentUrl", searchText)
+                put("pageTitle", "")
+                put("matchingMode", "default")
+                // Note: ignorePort=true because Android's Autofill API does not provide port numbers
+                put("ignorePort", true)
             }
 
             // Call Rust via UniFFI
@@ -84,7 +84,7 @@ object RustItemMatcher {
 
             // Parse output
             val output = JSONObject(outputJson)
-            val matchedIds = output.getJSONArray("matched_ids")
+            val matchedIds = output.getJSONArray("matchedIds")
 
             // If no matches found, return empty list
             if (matchedIds.length() == 0) {
@@ -137,10 +137,10 @@ object RustItemMatcher {
                 item.urls.forEach { urlsArray.put(it) }
 
                 val credJson = JSONObject().apply {
-                    put("Id", idString)
-                    put("ItemName", item.serviceName ?: JSONObject.NULL)
-                    put("ItemUrls", urlsArray)
-                    put("Username", item.username ?: JSONObject.NULL)
+                    put("id", idString)
+                    put("itemName", item.serviceName ?: JSONObject.NULL)
+                    put("itemUrls", urlsArray)
+                    put("username", item.username ?: JSONObject.NULL)
                 }
                 rustCredentials.put(credJson)
                 itemMap[idString] = item
@@ -150,9 +150,9 @@ object RustItemMatcher {
             // Use https:// prefix for the rpId to match URL format
             val input = JSONObject().apply {
                 put("credentials", rustCredentials)
-                put("current_url", "https://$rpId")
-                put("page_title", rpName ?: "")
-                put("matching_mode", matchingMode.value)
+                put("currentUrl", "https://$rpId")
+                put("pageTitle", rpName ?: "")
+                put("matchingMode", matchingMode.value)
             }
 
             // Call Rust via UniFFI
@@ -160,7 +160,7 @@ object RustItemMatcher {
 
             // Parse output
             val output = JSONObject(outputJson)
-            val matchedIds = output.getJSONArray("matched_ids")
+            val matchedIds = output.getJSONArray("matchedIds")
 
             // If no matches found, return empty list
             if (matchedIds.length() == 0) {

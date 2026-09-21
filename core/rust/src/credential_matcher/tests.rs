@@ -377,7 +377,9 @@ fn test_json_roundtrip() {
     };
 
     let json = serde_json::to_string(&input).unwrap();
+    assert!(json.contains("\"currentUrl\"") && json.contains("\"matchingMode\""), "input fields are camelCase on the wire");
     let output_json = filter_credentials_json(&json).unwrap();
+    assert!(output_json.contains("\"matchedIds\""), "output fields are camelCase on the wire");
     let output: CredentialMatcherOutput = serde_json::from_str(&output_json).unwrap();
 
     assert_eq!(output.matched_ids.len(), 1);

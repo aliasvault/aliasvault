@@ -24,7 +24,7 @@ const DEFAULT_MAX_RESULTS: usize = 10;
 
 /// Matching mode for credential filtering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub enum AutofillMatchingMode {
     #[default]
     Default,
@@ -34,7 +34,7 @@ pub enum AutofillMatchingMode {
 
 /// A credential record for matching.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename_all = "camelCase")]
 pub struct Credential {
     pub id: String,
     pub item_name: Option<String>,
@@ -47,6 +47,7 @@ pub struct Credential {
 
 /// Input for credential filtering.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CredentialMatcherInput {
     /// List of credentials to filter
     pub credentials: Vec<Credential>,
@@ -69,6 +70,7 @@ pub struct CredentialMatcherInput {
 
 /// Output from credential filtering.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CredentialMatcherOutput {
     /// IDs of matched credentials, in priority order, capped at `input.max_results` (10 by default).
     pub matched_ids: Vec<String>,

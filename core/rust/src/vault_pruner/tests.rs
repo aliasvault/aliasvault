@@ -187,8 +187,8 @@ fn test_prune_json_api() {
                 "DeletedAt": "{}"
             }}]
         }}],
-        "retention_days": 30,
-        "current_time": "{}"
+        "retentionDays": 30,
+        "currentTime": "{}"
     }}"#, old_date, now_str);
 
     let output_json = crate::error::json_call(&input_json, prune_vault).unwrap();

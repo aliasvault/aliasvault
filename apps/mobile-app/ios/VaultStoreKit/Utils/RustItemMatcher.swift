@@ -8,8 +8,8 @@ public enum RustItemMatcher {
     /// Matching mode for item filtering.
     public enum MatchingMode: String {
         case `default` = "default"
-        case urlExact = "url_exact"
-        case urlSubdomain = "url_subdomain"
+        case urlExact = "urlExact"
+        case urlSubdomain = "urlSubdomain"
     }
 
     /// Filter items based on rpId using the Rust core item matcher.
@@ -34,10 +34,10 @@ public enum RustItemMatcher {
             // Convert items to the format expected by Rust
             let rustCredentials = items.map { item -> [String: Any?] in
                 return [
-                    "Id": item.itemId.uuidString.lowercased(),
-                    "ItemName": item.serviceName as Any?,
-                    "ItemUrls": item.urls,
-                    "Username": item.username as Any?
+                    "id": item.itemId.uuidString.lowercased(),
+                    "itemName": item.serviceName as Any?,
+                    "itemUrls": item.urls,
+                    "username": item.username as Any?
                 ]
             }
 
@@ -45,9 +45,9 @@ public enum RustItemMatcher {
             // Use https:// prefix for the rpId to match URL format
             let input: [String: Any] = [
                 "credentials": rustCredentials,
-                "current_url": "https://\(rpId)",
-                "page_title": "",
-                "matching_mode": matchingMode.rawValue
+                "currentUrl": "https://\(rpId)",
+                "pageTitle": "",
+                "matchingMode": matchingMode.rawValue
             ]
 
             let inputData = try JSONSerialization.data(withJSONObject: input, options: [])
@@ -62,7 +62,7 @@ public enum RustItemMatcher {
             // Parse output
             guard let outputData = outputJson.data(using: .utf8),
                   let output = try JSONSerialization.jsonObject(with: outputData) as? [String: Any],
-                  let matchedIds = output["matched_ids"] as? [String] else {
+                  let matchedIds = output["matchedIds"] as? [String] else {
                 print("[RustItemMatcher] Failed to parse output JSON")
                 return []
             }

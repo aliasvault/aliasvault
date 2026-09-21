@@ -1,4 +1,5 @@
 import { migrateLegacyApiUrl } from '@/migrations/0.29.7-LegacyApiUrlMigration';
+import { migrateAutofillMatchingModeCasing } from '@/migrations/0.31.0-AutofillMatchingModeCasingMigration';
 
 /**
  * Generic entry point for one-time startup migrations. Called once during background startup;
@@ -11,4 +12,7 @@ import { migrateLegacyApiUrl } from '@/migrations/0.29.7-LegacyApiUrlMigration';
 export async function runStartupMigrations(): Promise<void> {
   // 0.29.7: Migrate legacy aliasvault.net URLs to aliasvault.com defaults.
   await migrateLegacyApiUrl();
+
+  // 0.31.0: Rewrite the stored snake_case autofill matching mode to camelCase.
+  await migrateAutofillMatchingModeCasing();
 }

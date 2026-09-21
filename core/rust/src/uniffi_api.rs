@@ -491,8 +491,8 @@ mod tests {
     fn test_prune_vault_json() {
         let input = r#"{
             "tables": [{"name": "Items", "records": []}],
-            "retention_days": 30,
-            "current_time": "2024-01-15T10:30:00.000Z"
+            "retentionDays": 30,
+            "currentTime": "2024-01-15T10:30:00.000Z"
         }"#;
 
         let result = prune_vault_json(input.to_string());

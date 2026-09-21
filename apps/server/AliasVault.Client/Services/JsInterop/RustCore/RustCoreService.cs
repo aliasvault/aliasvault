@@ -20,16 +20,10 @@ using Microsoft.JSInterop;
 /// </summary>
 public class RustCoreService : IAsyncDisposable
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        WriteIndented = false,
-    };
-
     /// <summary>
-    /// The vault codec and sharing DTOs are camelCase, unlike the older merge/prune DTOs. TODO: make all calls use consistent casing in future refactor.
+    /// Every Rust core DTO is camelCase on the wire.
     /// </summary>
-    private static readonly JsonSerializerOptions CodecJsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
@@ -495,7 +489,7 @@ public class RustCoreService : IAsyncDisposable
     public async Task<List<CodecBucketLayoutEntry>> VaultCodecBucketLayoutAsync()
     {
         var json = await InvokeCoreAsync<string>("rustCoreVaultCodecBucketLayout");
-        return JsonSerializer.Deserialize<List<CodecBucketLayoutEntry>>(json, CodecJsonOptions) ?? [];
+        return JsonSerializer.Deserialize<List<CodecBucketLayoutEntry>>(json, JsonOptions) ?? [];
     }
 
     /// <summary>
@@ -558,7 +552,7 @@ public class RustCoreService : IAsyncDisposable
     public async Task<CodecValidation> VaultCodecValidateManifestAsync(string manifestJson)
     {
         var json = await InvokeCoreAsync<string>("rustCoreVaultCodecValidateManifest", manifestJson);
-        return JsonSerializer.Deserialize<CodecValidation>(json, CodecJsonOptions) ?? throw new InvalidOperationException("Failed to deserialize manifest validation result.");
+        return JsonSerializer.Deserialize<CodecValidation>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize manifest validation result.");
     }
 
     /// <summary>
@@ -569,7 +563,7 @@ public class RustCoreService : IAsyncDisposable
     public async Task<CodecValidation> VaultCodecValidateDataBucketAsync(string bucketJson)
     {
         var json = await InvokeCoreAsync<string>("rustCoreVaultCodecValidateDataBucket", bucketJson);
-        return JsonSerializer.Deserialize<CodecValidation>(json, CodecJsonOptions) ?? throw new InvalidOperationException("Failed to deserialize data bucket validation result.");
+        return JsonSerializer.Deserialize<CodecValidation>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize data bucket validation result.");
     }
 
     /// <summary>
@@ -608,7 +602,7 @@ public class RustCoreService : IAsyncDisposable
     public async Task<ParsedEmail> ParseEmailSourceAsync(byte[] source)
     {
         var json = await InvokeCoreAsync<string>("rustCoreParseEmailSource", source);
-        return JsonSerializer.Deserialize<ParsedEmail>(json, CodecJsonOptions) ?? throw new InvalidOperationException("Failed to deserialize parsed email.");
+        return JsonSerializer.Deserialize<ParsedEmail>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize parsed email.");
     }
 
     /// <summary>

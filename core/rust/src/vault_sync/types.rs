@@ -162,7 +162,7 @@ impl OperationResult for FullSyncResult {
 
 /// The pending local migration, as the upgrade gate classifies it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "camelCase")]
 pub enum MigrationKind {
     /// Nothing to migrate, or nothing that may be migrated yet: a vault still on the frozen sqlite-blob chain
     /// classifies as `None` because that chain has to bring it to 2.0.0 before either kind below can apply.

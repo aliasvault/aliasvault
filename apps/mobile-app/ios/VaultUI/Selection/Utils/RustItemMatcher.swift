@@ -21,19 +21,19 @@ public class RustItemMatcher {
             // Convert AutofillCredential to the format expected by Rust
             let rustCredentials = credentials.map { credential -> [String: Any?] in
                 return [
-                    "Id": credential.id.uuidString.lowercased(),
-                    "ItemName": credential.serviceName,
-                    "ItemUrls": credential.serviceUrls,
-                    "Username": credential.username
+                    "id": credential.id.uuidString.lowercased(),
+                    "itemName": credential.serviceName,
+                    "itemUrls": credential.serviceUrls,
+                    "username": credential.username
                 ]
             }
 
             // Prepare input JSON for Rust
             let input: [String: Any] = [
                 "credentials": rustCredentials,
-                "current_url": searchText,
-                "page_title": "",
-                "matching_mode": "default"
+                "currentUrl": searchText,
+                "pageTitle": "",
+                "matchingMode": "default"
             ]
 
             let inputData = try JSONSerialization.data(withJSONObject: input, options: [])
@@ -48,7 +48,7 @@ public class RustItemMatcher {
             // Parse output
             guard let outputData = outputJson.data(using: .utf8),
                   let output = try JSONSerialization.jsonObject(with: outputData) as? [String: Any],
-                  let matchedIds = output["matched_ids"] as? [String] else {
+                  let matchedIds = output["matchedIds"] as? [String] else {
                 print("[RustItemMatcher] Failed to parse output JSON")
                 return []
             }

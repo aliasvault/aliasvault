@@ -21,6 +21,7 @@ use crate::vault_model::{BLOB_COLUMNS, MANIFEST_ID_COL, SYNCABLE_TABLES, TRASH_R
 
 /// Input for the prune operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PruneInput {
     /// Tables from the local database (at minimum, Items table is required)
     pub tables: Vec<CodecTableData>,
@@ -41,6 +42,7 @@ fn default_retention_days() -> u32 {
 
 /// Statistics about what was pruned.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct PruneStats {
     /// Number of items permanently deleted
@@ -58,6 +60,7 @@ pub struct PruneStats {
 
 /// Output of the prune operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PruneOutput {
     /// Whether the prune was successful
     pub success: bool,

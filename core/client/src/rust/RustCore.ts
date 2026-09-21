@@ -182,19 +182,19 @@ export function generateSeed(): string {
  */
 export async function filterItems(items: Item[], currentUrl: string, pageTitle: string, matchingMode: AutofillMatchingMode = AutofillMatchingMode.DEFAULT): Promise<Item[]> {
   const credentials = items.map(item => ({
-    Id: item.Id,
-    ItemName: item.Name ?? '',
-    ItemUrls: getFieldValues(item, FieldKey.LoginUrl)
+    id: item.Id,
+    itemName: item.Name ?? '',
+    itemUrls: getFieldValues(item, FieldKey.LoginUrl)
   }));
 
   const result = await rustCore().filterCredentials({
     credentials,
-    current_url: currentUrl,
-    page_title: pageTitle,
-    matching_mode: matchingMode
+    currentUrl,
+    pageTitle,
+    matchingMode
   });
 
-  return result.matched_ids
+  return result.matchedIds
     .map(id => items.find(item => item.Id === id))
     .filter((item): item is Item => item !== undefined);
 }

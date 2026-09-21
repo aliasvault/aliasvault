@@ -162,5 +162,5 @@ fn the_json_boundary_round_trips() {
 fn a_skip_reason_is_a_stable_token() {
     let set = resolve_manifest_write_set(write_set_request(&["PERSONAL"], &[], vec![record("MAN-1")]));
     let json = serde_json::to_value(&set).unwrap();
-    assert_eq!(json["skipped"][0]["reason"], "NO_ROWS_IN_VAULT");
+    assert_eq!(json["skipped"][0]["reason"], "noRowsInVault");
 }

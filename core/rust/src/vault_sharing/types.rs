@@ -36,7 +36,7 @@ pub struct ManifestWriteSetRequest {
 
 /// Why a manifest is left out of the write.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "camelCase")]
 pub enum WriteSkipReason {
     /// The vault holds no rows for it, so writing would delete all its rows.
     NoRowsInVault,

@@ -58,7 +58,7 @@ enum UpgradeKind {
 }
 
 /** The migration kind the native engine reports for the storage format move (see NativeVaultManager.getVaultMigrationStatus). */
-const MIGRATION_STATUS_STORAGE_FORMAT_UPGRADE = 'storage-format-upgrade';
+const MIGRATION_STATUS_STORAGE_FORMAT_UPGRADE = 'storageFormatUpgrade';
 
 /** Engine failures that end the session instead of a retry on this page. */
 const LOGOUT_ERROR_CODES: ReadonlySet<AppErrorCode> = new Set([

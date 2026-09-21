@@ -4,8 +4,8 @@
 
 export enum AutofillMatchingMode {
   DEFAULT = 'default',
-  URL_EXACT = 'url_exact',
-  URL_SUBDOMAIN = 'url_subdomain'
+  URL_EXACT = 'urlExact',
+  URL_SUBDOMAIN = 'urlSubdomain'
 }
 
 /**
@@ -59,14 +59,14 @@ export type ParsedEmail = {
 
 /** Credential filter input for autofill matching, as the Rust matcher expects it. */
 export type FilterCredentialsInput = {
-  credentials: Array<{ Id: string; ItemName: string; ItemUrls: string[] }>;
-  current_url: string;
-  page_title: string;
-  matching_mode: AutofillMatchingMode;
+  credentials: Array<{ id: string; itemName: string; itemUrls: string[] }>;
+  currentUrl: string;
+  pageTitle: string;
+  matchingMode: AutofillMatchingMode;
 };
 
 /** Credential filter output: the matched item ids. */
-export type FilterCredentialsOutput = { matched_ids: string[] };
+export type FilterCredentialsOutput = { matchedIds: string[] };
 
 /** SRP ephemeral key pair (uppercase hex). */
 export type SrpEphemeral = {

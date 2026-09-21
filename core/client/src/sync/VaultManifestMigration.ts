@@ -31,11 +31,11 @@ export enum VaultMigrationKind {
   /**
    * Rebuild the local database onto the current schema. Runs automatically.
    */
-  SchemaRebuild = 'schema-rebuild',
+  SchemaRebuild = 'schemaRebuild',
 
   /**
    * Upgrades from sqlite-blob to manifest-v1 (api v1 to api v2) storage format.
    */
-  StorageFormatUpgrade = 'storage-format-upgrade',
+  StorageFormatUpgrade = 'storageFormatUpgrade',
 }
 

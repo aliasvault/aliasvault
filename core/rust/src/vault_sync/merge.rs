@@ -185,7 +185,7 @@ fn validate_merged_manifest(entry: &CanonicalManifestMerge) -> Option<String> {
 }
 
 /// The bytes at hand for the blobs the merged manifests reference, per manifest. A blob without bytes is not loaded
-/// on this device: its row keeps the reference, and the push only uploads what the server lacks and this device has.
+/// (yet) by the client: its row keeps the reference, and the push only uploads what the server lacks and this device has.
 fn collect_merged_blobs(manifests: &[Manifest], blob_map: &HashMap<String, Vec<u8>>, local_blobs: &HashMap<String, BlobEntry>) -> HashMap<String, HashMap<String, BlobEntry>> {
     let mut by_manifest: HashMap<String, HashMap<String, BlobEntry>> = HashMap::new();
     for manifest in manifests {

@@ -431,7 +431,7 @@ fn legacy_account_without_vault_key_reports_the_manifest_migration() {
     assert_eq!(result["manifestMigrationRequired"], true);
 
     let status = host.drive(&SyncSession::new(&request("migrationStatus", &kek, false, 0)).unwrap());
-    assert_eq!(status["kind"], "storage-format-upgrade");
+    assert_eq!(status["kind"], "storageFormatUpgrade");
 }
 
 #[test]
@@ -486,7 +486,7 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
     let status = host.drive(&SyncSession::new(&request("migrationStatus", &vek, false, 0)).unwrap());
-    assert_eq!(status["kind"], "schema-rebuild");
+    assert_eq!(status["kind"], "schemaRebuild");
 
     let result = host.drive(&SyncSession::new(&request("migrateManifest", &vek, false, 0)).unwrap());
 
