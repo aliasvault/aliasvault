@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode, getErrorMessage, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
@@ -255,20 +255,31 @@ export async function handleGetVault(
       return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
 
-    // The popup receives the database as base64: messages carry strings, not bytes.
-    const decryptedVault = bytesToBase64(await decryptVaultBlob(encryptedVault, encryptionKey));
+    let decryptedBytes: Uint8Array;
+    try {
+      decryptedBytes = await decryptVaultBlob(encryptedVault, encryptionKey);
+    } catch (error) {
+      logFailure('Failed to decrypt the stored vault', error);
+      // E-203: the stored vault does not decrypt with the session key
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED) };
+    }
 
     return {
       success: true,
-      vault: decryptedVault,
+      // The popup receives the database as base64: messages carry strings, not bytes.
+      vault: bytesToBase64(decryptedBytes),
       publicEmailDomains: publicEmailDomains ?? [],
       privateEmailDomains: privateEmailDomains ?? [],
       hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? []
     };
   } catch (error) {
     logFailure('Failed to get vault', error);
-    // E-203: Vault decryption failed during get
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED) };
+    // Keep an already-coded error (the key chain reports its own failures) instead of masking it.
+    if (hasErrorCode(error)) {
+      return { success: false, error: getErrorMessage(error, '') };
+    }
+    // E-601: reading the vault or its key from storage failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
 }
 

@@ -230,8 +230,11 @@ internal final class VaultSync {
     private static let codedErrors: [String: (String) -> AppError] = [
         "E-202": { _ in .encryptionKeyNotFound },
         "E-203": { _ in .vaultDecryptFailed },
+        "E-206": { _ in .unlockKeyRejected },
+        "E-207": { .keyChainUnreadable(message: $0) },
+        "E-208": { _ in .keyOutOfSync },
         "E-502": { .syncVaultFetchFailed(message: $0) },
-        "E-503": { _ in .vaultDecryptFailed },
+        "E-503": { .serverVaultDecryptFailed(message: $0) },
         "E-505": { _ in .serverUnavailable(statusCode: 0) },
         "E-506": { .serverError(message: $0) },
         "E-507": { .syncResponseInvalid(message: $0) },

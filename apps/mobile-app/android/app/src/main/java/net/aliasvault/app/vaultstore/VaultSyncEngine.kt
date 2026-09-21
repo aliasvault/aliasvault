@@ -4,7 +4,6 @@ import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.aliasvault.app.R
 import net.aliasvault.app.rustcore.JnaInitializer
 import net.aliasvault.app.utils.AppInfo
 import net.aliasvault.app.vaultstore.models.VaultSql

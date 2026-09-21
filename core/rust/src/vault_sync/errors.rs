@@ -16,6 +16,15 @@ pub enum ErrorCode {
     /// The stored vault does not decrypt with the session key.
     #[serde(rename = "E-203")]
     VaultDecryptFailed,
+    /// The unlock key does not open the account key (wrong password).
+    #[serde(rename = "E-206")]
+    UnlockKeyRejected,
+    /// The account key opened, the vault encryption key under it did not.
+    #[serde(rename = "E-207")]
+    KeyChainUnreadable,
+    /// The session key does not open the key chain the server holds; only a re-login recovers.
+    #[serde(rename = "E-208")]
+    KeyOutOfSync,
     /// The server's snapshot cannot be assembled into a vault.
     #[serde(rename = "E-502")]
     SyncVaultFetchFailed,
@@ -118,6 +127,12 @@ pub enum SyncError {
     /// The stored vault does not decrypt with the session key.
     #[error("Vault could not be decrypted: {0}")]
     VaultDecryptFailed(String),
+    /// The unlock key does not open the account key (wrong password).
+    #[error("The unlock key does not open the account key")]
+    UnlockKeyRejected,
+    /// The account key opened, the vault encryption key under it did not.
+    #[error("The account key does not open the vault encryption key: {0}")]
+    KeyChainUnreadable(String),
     /// The session key matches neither the server's KEK nor its VEK; only a re-login recovers.
     #[error("Vault encryption key out of sync with the server; log in again")]
     KeyOutOfSync,
@@ -168,7 +183,10 @@ impl SyncError {
             SyncError::PayloadTooLarge => Failure::Coded(ErrorCode::UploadTooLarge),
             SyncError::Http { .. } => Failure::Coded(ErrorCode::SyncServerError),
             SyncError::VaultLocked => Failure::Coded(ErrorCode::VaultLocked),
-            SyncError::VaultDecryptFailed(_) | SyncError::KeyOutOfSync => Failure::Coded(ErrorCode::VaultDecryptFailed),
+            SyncError::VaultDecryptFailed(_) => Failure::Coded(ErrorCode::VaultDecryptFailed),
+            SyncError::UnlockKeyRejected => Failure::Coded(ErrorCode::UnlockKeyRejected),
+            SyncError::KeyChainUnreadable(_) => Failure::Coded(ErrorCode::KeyChainUnreadable),
+            SyncError::KeyOutOfSync => Failure::Coded(ErrorCode::KeyOutOfSync),
             SyncError::ServerVaultUnreadable(_) => Failure::Coded(ErrorCode::SyncVaultDecryptFailed),
             SyncError::Snapshot(_) => Failure::Coded(ErrorCode::SyncVaultFetchFailed),
             SyncError::MergeFailed(_) => Failure::Coded(ErrorCode::MergeFailed),
@@ -205,6 +223,10 @@ mod tests {
     fn codes_and_reasons_serialize_to_the_client_vocabulary() {
         assert_eq!(serde_json::to_string(&ErrorCode::VaultLocked).unwrap(), "\"E-202\"");
         assert_eq!(serde_json::to_string(&ErrorCode::UploadTimeout).unwrap(), "\"E-805\"");
+        assert_eq!(SyncError::VaultDecryptFailed(String::new()).failure(), Failure::Coded(ErrorCode::VaultDecryptFailed));
+        assert_eq!(SyncError::UnlockKeyRejected.failure(), Failure::Coded(ErrorCode::UnlockKeyRejected));
+        assert_eq!(SyncError::KeyChainUnreadable(String::new()).failure(), Failure::Coded(ErrorCode::KeyChainUnreadable));
+        assert_eq!(SyncError::KeyOutOfSync.failure(), Failure::Coded(ErrorCode::KeyOutOfSync));
         assert_eq!(serde_json::to_string(&LogoutReason::PasswordChanged).unwrap(), "\"passwordChanged\"");
         assert_eq!(SyncError::Auth.failure(), Failure::Logout(LogoutReason::SessionExpired));
         assert_eq!(SyncError::Host { command: CommandKind::DbOpen, message: String::new() }.failure(), Failure::Coded(ErrorCode::DatabaseInitFailed));

@@ -24,6 +24,17 @@ import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
+ * Whether a failed unlock means the entered password was wrong.
+ * @param errorCode - the error code the unlock failed with
+ */
+async function isWrongUnlockKey(errorCode: AppErrorCode): Promise<boolean> {
+  if (errorCode === AppErrorCode.UNLOCK_KEY_REJECTED) {
+    return true;
+  }
+  return errorCode === AppErrorCode.VAULT_DECRYPT_FAILED && (await NativeVaultManager.getAccountKeyChain()) === null;
+}
+
+/**
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
@@ -148,7 +159,7 @@ export default function UnlockScreen() : React.ReactNode {
           // Haptic feedback for authentication error
           HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
 
-          if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+          if (!errorCode || await isWrongUnlockKey(errorCode)) {
             setError(t('auth.errors.incorrectPassword'));
           } else {
             const translationKey = getErrorTranslationKey(errorCode);
@@ -236,11 +247,7 @@ export default function UnlockScreen() : React.ReactNode {
       // Haptic feedback for authentication error
       HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
 
-      /*
-       * During unlock, VAULT_DECRYPT_FAILED indicates wrong password.
-       * This is thrown when decryption fails due to incorrect encryption key.
-       */
-      if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+      if (!errorCode || await isWrongUnlockKey(errorCode)) {
         // Treat as incorrect password - show error and allow retry
         setError(t('auth.errors.incorrectPassword'));
       } else {

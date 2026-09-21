@@ -123,12 +123,44 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
 
     // Decryption errors
     /**
-     * Error indicating failed to decrypt vault.
+     * Error indicating the locally stored vault does not decrypt with the session key.
      */
     class VaultDecryptFailed(
         message: String = "Failed to decrypt vault",
         cause: Throwable? = null,
     ) : AppError(message, cause)
+
+    /**
+     * Error indicating the unlock key does not open the account key (wrong password or PIN).
+     */
+    class UnlockKeyRejected(
+        message: String = "The unlock key does not open the account key",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating the account key opened, the vault encryption key under it did not.
+     */
+    class KeyChainUnreadable(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("The account key does not open the vault encryption key: $message", cause)
+
+    /**
+     * Error indicating the session key does not open the key chain the server holds; only a re-login recovers.
+     */
+    class KeyOutOfSync(
+        message: String = "Vault encryption key out of sync with the server; log in again",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating a server manifest or bucket fails its hash check or does not decrypt.
+     */
+    class ServerVaultDecryptFailed(
+        message: String,
+        cause: Throwable? = null,
+    ) : AppError("Server vault could not be opened: $message", cause)
 
     /**
      * Error indicating base64 decode failed after decryption.
@@ -438,6 +470,10 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is BiometricNotAvailable -> "E-514"
             is BiometricNotEnrolled -> "E-515"
             is BiometricLockout -> "E-516"
+            is UnlockKeyRejected -> "E-517"
+            is KeyChainUnreadable -> "E-518"
+            is KeyOutOfSync -> "E-519"
+            is ServerVaultDecryptFailed -> "E-520"
             is StorageReadFailed -> "E-601"
             is StorageWriteFailed -> "E-602"
             is DatabaseInitFailed -> "E-603"

@@ -33,9 +33,12 @@ export enum AppErrorCode {
   // Vault retrieval errors (E-2xx) - handleGetVault
   VAULT_NOT_FOUND = 'E-201', // No encrypted vault in storage
   VAULT_LOCKED = 'E-202', // No encryption key available
-  VAULT_DECRYPT_FAILED = 'E-203', // Decryption failed
+  VAULT_DECRYPT_FAILED = 'E-203', // The locally stored vault does not decrypt with the session key
   VAULT_METADATA_READ_FAILED = 'E-204', // Failed to read vault metadata
   VAULT_LOAD_TIMEOUT = 'E-205', // Background did not return the vault in time
+  UNLOCK_KEY_REJECTED = 'E-206', // The unlock key does not open the account key (wrong password)
+  KEY_CHAIN_UNREADABLE = 'E-207', // The account key opened, the vault encryption key under it did not
+  KEY_OUT_OF_SYNC = 'E-208', // The session key does not open the key chain the server holds (re-login needed)
 
   // Item/credential operations (E-3xx) - handleCreateItem, handleUpdateItem, etc.
   ITEM_CREATE_FAILED = 'E-301',
@@ -139,6 +142,9 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_METADATA_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.VAULT_LOAD_TIMEOUT]: 'common.errors.vaultLoadTimeout',
+    [AppErrorCode.UNLOCK_KEY_REJECTED]: 'common.errors.wrongPassword',
+    [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.KEY_OUT_OF_SYNC]: 'common.errors.sessionExpired',
 
     // Item/credential operations (E-3xx)
     [AppErrorCode.ITEM_CREATE_FAILED]: 'common.errors.unknownErrorTryAgain',

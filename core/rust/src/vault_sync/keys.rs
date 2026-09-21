@@ -8,6 +8,7 @@ use super::state::{self, Ctx};
 use super::types::{SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
 use super::{db, http};
 use crate::crypto;
+use zeroize::Zeroizing;
 
 /// Whether this device holds a vault key.
 pub(crate) async fn has_local_vault_key(host: &Host) -> SyncResult<bool> {
@@ -136,9 +137,17 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     Ok(())
 }
 
+/// Walk a key chain, telling a key that does not open the account key (wrong password) apart from a chain whose VEK
+/// does not open under its own account key. Returns the VEK and the Account Key.
+fn walk_chain(encrypted_account_key: &str, encrypted_vek: &str, kek: &str) -> SyncResult<(Zeroizing<String>, Zeroizing<String>)> {
+    let account_key = crypto::unwrap_key(encrypted_account_key, kek).map_err(|_| SyncError::UnlockKeyRejected)?;
+    let vek = crypto::unwrap_key(encrypted_vek, &account_key).map_err(|e| SyncError::KeyChainUnreadable(e.to_string()))?;
+    Ok((vek, account_key))
+}
+
 /// Open a key chain with the password-derived key: the VEK becomes the session key and the private key is staged.
 async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, kek: &str) -> SyncResult<()> {
-    let (vek, account_key) = crypto::resolve_vault_encryption_key(encrypted_account_key, encrypted_vek, kek).map_err(|_| SyncError::VaultDecryptFailed("the password-derived key does not open the account key chain".to_string()))?;
+    let (vek, account_key) = walk_chain(encrypted_account_key, encrypted_vek, kek)?;
     ctx.set_encryption_key(vek.to_string());
     stage_account_private_key(ctx, &account_key, encrypted_private_key).await;
     Ok(())
@@ -184,7 +193,8 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
 /// hierarchy exists, the stored vault is brought under the VEK and the session key swapped, which the host adopts
 /// through the store command. Callers gate this on the absence of a cached chain and on a sync that pulls or
 /// pushes: another device's migration shows up as a revision change, so that is when it becomes visible.
-/// False only when the session key does not open the server's chain, which requires a re-login.
+/// False only when the session key does not open the server's chain, which requires a re-login; any other failure
+/// is returned as itself.
 pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
     if ctx.vault_key_probed {
         return Ok(true);
@@ -203,7 +213,7 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
 
     // Hosts hold the unlock key and derive the vault key from the cached chain.
     let adopted: SyncResult<()> = async {
-        let (vek, account_key) = crypto::resolve_vault_encryption_key(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
+        let (vek, account_key) = walk_chain(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
         adopt_vek(ctx, &session_key, &vek).await?;
         stage_account_private_key(ctx, &account_key, vault_key.encrypted_account_private_key.as_deref()).await;
@@ -216,10 +226,12 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
             ctx.log("[VaultSync] Another device created the account's key hierarchy; adopted it and swapped the session key to the VEK.").await;
             Ok(true)
         }
-        Err(error) => {
-            ctx.warn(format!("[VaultSync] The session key does not open the key hierarchy the server holds, forcing re-login: {}", error)).await;
+        Err(SyncError::UnlockKeyRejected) => {
+            ctx.warn("[VaultSync] The session key does not open the key hierarchy the server holds; a re-login is needed.").await;
             Ok(false)
         }
+        // A storage failure or an unreadable stored vault is its own failure, not a key mismatch.
+        Err(error) => Err(error),
     }
 }
 

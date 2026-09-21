@@ -242,8 +242,17 @@ class VaultCrypto(
         val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(derivedKey, null)
         val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
 
-        val accountKey = decrypt(Base64.decode(encryptedAccountKey, Base64.NO_WRAP), derivedKey)
-        val vaultEncryptionKey = decrypt(Base64.decode(encryptedVek, Base64.NO_WRAP), accountKey)
+        val accountKey = try {
+            decrypt(Base64.decode(encryptedAccountKey, Base64.NO_WRAP), derivedKey)
+        } catch (e: Exception) {
+            throw AppError.UnlockKeyRejected(cause = e)
+        }
+        // The account key opened, so a failure here is a damaged chain and never a wrong password.
+        val vaultEncryptionKey = try {
+            decrypt(Base64.decode(encryptedVek, Base64.NO_WRAP), accountKey)
+        } catch (e: Exception) {
+            throw AppError.KeyChainUnreadable(e.message ?: "decrypt failed", e)
+        }
 
         // A private key that does not open must not fail the unlock; grants stay closed until the next login.
         val accountPrivateKey = chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() }?.let {
@@ -329,9 +338,12 @@ class VaultCrypto(
                         try {
                             openSession(Base64.decode(result, Base64.NO_WRAP))
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
+                        } catch (e: AppError) {
+                            Log.e(TAG, "The unlock key from the keystore does not open the account key chain", e)
+                            callback.onError(e)
                         } catch (e: Exception) {
                             Log.e(TAG, "The unlock key from the keystore does not open the account key chain", e)
-                            callback.onError(AppError.VaultDecryptFailed(cause = e))
+                            callback.onError(AppError.UnlockKeyRejected(cause = e))
                         }
                     }
 

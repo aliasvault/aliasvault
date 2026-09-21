@@ -51,7 +51,7 @@ export enum AppErrorCode {
   SYNC_VAULT_FETCH_FAILED = 'E-404', // Sync engine: the server's vault snapshot cannot be assembled
 
   // Decryption/Encryption errors (E-5xx) - from AppError.kt
-  VAULT_DECRYPT_FAILED = 'E-501',
+  VAULT_DECRYPT_FAILED = 'E-501', // AppError: the locally stored vault does not decrypt with the session key
   ENCRYPTION_KEY_NOT_FOUND = 'E-502', // AppError: encryption key not available
   BASE64_DECODE_FAILED = 'E-503', // AppError: base64 decode failed after decryption
   DATABASE_TEMP_WRITE_FAILED = 'E-504', // AppError: could not write temp file
@@ -67,6 +67,10 @@ export enum AppErrorCode {
   BIOMETRIC_NOT_AVAILABLE = 'E-514', // iOS: biometric not available on device
   BIOMETRIC_NOT_ENROLLED = 'E-515', // iOS: no biometrics enrolled on device
   BIOMETRIC_LOCKOUT = 'E-516', // iOS: biometric locked out due to too many failed attempts
+  UNLOCK_KEY_REJECTED = 'E-517', // AppError: the unlock key does not open the account key (wrong password or PIN)
+  KEY_CHAIN_UNREADABLE = 'E-518', // AppError: the account key opened, the vault encryption key under it did not
+  KEY_OUT_OF_SYNC = 'E-519', // Sync engine: the session key does not open the key chain the server holds (re-login needed)
+  SERVER_VAULT_DECRYPT_FAILED = 'E-520', // Sync engine: a server manifest or bucket fails its hash check or does not decrypt
 
   // Database/Storage errors (E-6xx) - from VaultSync.kt
   STORAGE_READ_FAILED = 'E-601', // Sync engine: a state, database or at-rest vault read failed
@@ -249,6 +253,10 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.BIOMETRIC_NOT_AVAILABLE]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.BIOMETRIC_NOT_ENROLLED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.BIOMETRIC_LOCKOUT]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.UNLOCK_KEY_REJECTED]: 'auth.errors.incorrectPassword',
+    [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.KEY_OUT_OF_SYNC]: 'auth.errors.sessionExpired',
+    [AppErrorCode.SERVER_VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
 
     // Database/Storage errors
     [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unknownErrorTryAgain',

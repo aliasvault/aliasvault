@@ -59,7 +59,7 @@ export class VaultKeyService {
    * and cache it for offline unlock.
    * @param unlockKeyBase64 - the password-derived key (the KEK)
    * @param webApi - the API client to use
-   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain (wrong password).
+   * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
   public static async refreshKeyChain(unlockKeyBase64: string, webApi?: WebApiService): Promise<void> {
     const result = await VaultKeyService.fetchVaultKey(webApi);
@@ -82,7 +82,7 @@ export class VaultKeyService {
   /**
    * Check offline that the unlock key opens the locally cached chain. A legacy account has no chain to check against.
    * @param unlockKeyBase64 - the password-derived key (the KEK), typed in or restored by PIN
-   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain (wrong password).
+   * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
   public static async verifyUnlockKey(unlockKeyBase64: string): Promise<void> {
     await VaultKeyService.openKeyChain(unlockKeyBase64);
@@ -96,6 +96,18 @@ export class VaultKeyService {
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
     return (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;
+  }
+
+  /**
+   * Whether a failed unlock means the entered password or PIN was wrong. A key chain rejects a wrong key itself;
+   * a legacy account has no chain, so there the stored vault failing to decrypt is the only signal.
+   * @param code - the error code the unlock failed with
+   */
+  public static async isWrongUnlockKey(code: AppErrorCode | null): Promise<boolean> {
+    if (code === AppErrorCode.UNLOCK_KEY_REJECTED) {
+      return true;
+    }
+    return code === AppErrorCode.VAULT_DECRYPT_FAILED && !await VaultKeyService.hasLocalVaultKey();
   }
 
   /**
@@ -153,7 +165,7 @@ export class VaultKeyService {
    * Open the locally cached chain with the unlock key. Without a cached chain (legacy account) the unlock key is
    * the vault encryption key.
    * @param unlockKeyBase64 - the password-derived key (the KEK)
-   * @throws Error with {@link AppErrorCode.VAULT_DECRYPT_FAILED} when the key does not open the chain.
+   * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain.
    */
   public static async openKeyChain(unlockKeyBase64: string): Promise<SessionKeys> {
     const storage = getPlatform().storage;
@@ -180,8 +192,10 @@ export class VaultKeyService {
       throw new Error('Vault key chain is missing the encrypted VEK');
     }
 
-    const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, unlockKeyBase64);
-    const vaultEncryptionKey = await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey);
+    // E-206: the unlock key does not open the account key, which for the password key type means a wrong password.
+    const accountKey = await VaultKeyService.decryptKeyOrThrow(encryptedAccountKey, unlockKeyBase64, AppErrorCode.UNLOCK_KEY_REJECTED);
+    // E-207: the account key opened, so a failure here is a damaged chain and never a wrong password.
+    const vaultEncryptionKey = await VaultKeyService.decryptKeyOrThrow(encryptedVek, accountKey, AppErrorCode.KEY_CHAIN_UNREADABLE);
 
     let accountPrivateKey: string | null = null;
     if (encryptedAccountPrivateKey) {
@@ -213,17 +227,16 @@ export class VaultKeyService {
   }
 
   /**
-   * Decrypt an encrypted key blob, mapping an AES-GCM authentication failure onto the standard decrypt-failed
-   * error code so existing wrong-password handling applies.
+   * Decrypt an encrypted key blob, reporting a failure under the code of the chain step it belongs to.
    * @param encryptedKey - encrypted key blob
-   * @param decryptingKeyBase64 - the key that decrypts it (the KEK derived from the unlock method)
+   * @param decryptingKeyBase64 - the key that decrypts it
+   * @param failureCode - the error code a failure of this step carries
    */
-  private static async decryptKeyOrThrow(encryptedKey: string, decryptingKeyBase64: string): Promise<string> {
+  private static async decryptKeyOrThrow(encryptedKey: string, decryptingKeyBase64: string, failureCode: AppErrorCode): Promise<string> {
     try {
       return await EncryptionUtility.decryptVaultEncryptionKey(encryptedKey, decryptingKeyBase64);
     } catch {
-      // E-203: decrypt failed, which for the password key type means the entered password is wrong.
-      throw new Error(formatErrorWithCode('Failed to decrypt vault encryption key', AppErrorCode.VAULT_DECRYPT_FAILED));
+      throw new Error(formatErrorWithCode('Failed to decrypt key chain', failureCode));
     }
   }
 }

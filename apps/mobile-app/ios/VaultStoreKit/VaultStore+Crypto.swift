@@ -122,8 +122,16 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 41, userInfo: [NSLocalizedDescriptionKey: "Account key chain is missing the encrypted VEK"])
         }
 
-        let accountKey = try unwrapKey(encryptedAccountKey, with: derivedKey)
-        let vaultEncryptionKey = try unwrapKey(encryptedVek, with: accountKey)
+        guard let accountKey = try? unwrapKey(encryptedAccountKey, with: derivedKey) else {
+            throw AppError.unlockKeyRejected
+        }
+        // The account key opened, so a failure here is a damaged chain and never a wrong password.
+        let vaultEncryptionKey: Data
+        do {
+            vaultEncryptionKey = try unwrapKey(encryptedVek, with: accountKey)
+        } catch {
+            throw AppError.keyChainUnreadable(message: error.localizedDescription)
+        }
 
         // A private key that does not open must not fail the unlock; grants stay closed until the next login.
         var accountPrivateKey: String?
@@ -322,9 +330,12 @@ extension VaultStore {
 
             do {
                 try openSession(unlockKey: keyData)
+            } catch let vaultError as AppError {
+                print("The unlock key from the keychain does not open the account key chain: \(vaultError.message)")
+                throw vaultError
             } catch {
                 print("The unlock key from the keychain does not open the account key chain: \(error)")
-                throw AppError.vaultDecryptFailed
+                throw AppError.unlockKeyRejected
             }
             return
         }

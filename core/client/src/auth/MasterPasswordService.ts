@@ -93,7 +93,7 @@ export class MasterPasswordService {
         return PasswordVerificationResult.Success;
       } catch (error) {
         const code = error instanceof Error ? extractErrorCode(error.message) : null;
-        return code === AppErrorCode.VAULT_DECRYPT_FAILED ? PasswordVerificationResult.InvalidPassword : PasswordVerificationResult.VerificationError;
+        return code === AppErrorCode.UNLOCK_KEY_REJECTED ? PasswordVerificationResult.InvalidPassword : PasswordVerificationResult.VerificationError;
       }
     } catch (error) {
       logDefect('[MasterPassword] Password verification failed unexpectedly', error);

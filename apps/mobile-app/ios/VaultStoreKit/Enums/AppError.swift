@@ -25,7 +25,16 @@ public enum AppError: Error {
     case syncVaultFetchFailed(message: String)
 
     // Decryption errors
+    /// The locally stored vault does not decrypt with the session key.
     case vaultDecryptFailed
+    /// The unlock key does not open the account key (wrong password or PIN).
+    case unlockKeyRejected
+    /// The account key opened, the vault encryption key under it did not.
+    case keyChainUnreadable(message: String)
+    /// The session key does not open the key chain the server holds; only a re-login recovers.
+    case keyOutOfSync
+    /// A server manifest or bucket fails its hash check or does not decrypt.
+    case serverVaultDecryptFailed(message: String)
     case base64DecodeFailed
     case databaseTempWriteFailed
     case databaseOpenFailed
@@ -149,6 +158,14 @@ public enum AppError: Error {
             return "E-515"
         case .biometricLockout:
             return "E-516"
+        case .unlockKeyRejected:
+            return "E-517"
+        case .keyChainUnreadable:
+            return "E-518"
+        case .keyOutOfSync:
+            return "E-519"
+        case .serverVaultDecryptFailed:
+            return "E-520"
         case .storageReadFailed:
             return "E-601"
         case .storageWriteFailed:
@@ -217,6 +234,14 @@ public enum AppError: Error {
             return "Server vault could not be assembled: \(message)"
         case .vaultDecryptFailed:
             return "Failed to decrypt vault"
+        case .unlockKeyRejected:
+            return "The unlock key does not open the account key"
+        case .keyChainUnreadable(let message):
+            return "The account key does not open the vault encryption key: \(message)"
+        case .keyOutOfSync:
+            return "Vault encryption key out of sync with the server; log in again"
+        case .serverVaultDecryptFailed(let message):
+            return "Server vault could not be opened: \(message)"
         case .encryptionKeyNotFound:
             return "Encryption key not available"
         case .base64DecodeFailed:

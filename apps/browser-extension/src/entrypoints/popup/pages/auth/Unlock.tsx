@@ -1,4 +1,4 @@
-import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { hasErrorCode, getErrorMessage, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
@@ -288,8 +288,8 @@ const Unlock: React.FC = () => {
         });
 
         /*
-         * Fetch the account key chain, check the unlock key opens it and cache it as-is. Throws a decrypt-failed
-         * (E-203) error on a wrong password.
+         * Fetch the account key chain, check the unlock key opens it and cache it as-is. Throws an unlock-key-rejected
+         * (E-206) error on a wrong password.
          */
         unlockKey = credentials.passwordHashBase64;
         await VaultKeyService.refreshKeyChain(unlockKey, webApi);
@@ -308,8 +308,8 @@ const Unlock: React.FC = () => {
         const credentials = await SrpAuthService.prepareCredentials(password, storedParams.salt, storedParams.encryptionSettings);
 
         /*
-         * Offline: check the unlock key opens the locally cached account key chain. Throws a decrypt-failed
-         * (E-203) error on a wrong password.
+         * Offline: check the unlock key opens the locally cached account key chain. Throws an unlock-key-rejected
+         * (E-206) error on a wrong password.
          */
         unlockKey = credentials.passwordHashBase64;
         await VaultKeyService.verifyUnlockKey(unlockKey);
@@ -361,9 +361,7 @@ const Unlock: React.FC = () => {
         // Check if it's a version incompatibility error
         await app.logout(err.message);
       } else if (hasErrorCode(err)) {
-        // Check if it's a decryption failure (E-203): this means wrong password
-        const errorCode = extractErrorCode(getErrorMessage(err, ''));
-        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
           await handlePasswordFailedAttempt();
         } else {
           // Other error codes, show the formatted message as-is
@@ -486,10 +484,8 @@ const Unlock: React.FC = () => {
         setError(t('settings.unlockMethod.invalidPinFormat'));
         setPin('');
       } else if (hasErrorCode(err)) {
-        // Check if it's a decryption failure, this means wrong PIN
-        const errorCode = extractErrorCode(getErrorMessage(err, ''));
-        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
-          // Decryption failed during PIN unlock = wrong PIN, treat as incorrect PIN
+        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
+          // The key the PIN restored does not unlock the vault, treat as incorrect PIN
           logExpected('[Unlock] The entered PIN did not decrypt the vault', err);
           setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining: 3 }));
         } else {

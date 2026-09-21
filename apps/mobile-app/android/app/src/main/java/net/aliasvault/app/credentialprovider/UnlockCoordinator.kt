@@ -215,6 +215,8 @@ class UnlockCoordinator(
         val errorMessage = when (e) {
             is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
             is AppError.VaultDecryptFailed,
+            is AppError.UnlockKeyRejected,
+            is AppError.KeyChainUnreadable,
             is AppError.DatabaseOpenFailed,
             is AppError.DatabaseBackupFailed,
             -> "Failed to decrypt vault"
@@ -249,6 +251,8 @@ class UnlockCoordinator(
         return when (e) {
             is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
             is AppError.VaultDecryptFailed,
+            is AppError.UnlockKeyRejected,
+            is AppError.KeyChainUnreadable,
             is AppError.DatabaseOpenFailed,
             is AppError.DatabaseBackupFailed,
             -> "Failed to decrypt vault"

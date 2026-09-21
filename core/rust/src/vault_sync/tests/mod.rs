@@ -692,7 +692,7 @@ fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
     assert_eq!(result["encryptionKey"], hierarchy.vault_encryption_key);
 }
 
-/// A key that does not open the chain is reported as a decrypt failure, never silently kept.
+/// A key that does not open the chain is reported as a rejected unlock key, never silently kept.
 #[test]
 fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
     let hierarchy = crypto::create_account_key_hierarchy(&crypto::generate_key_base64()).unwrap();
@@ -703,8 +703,23 @@ fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
     let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &wrong_kek, false, 0)).unwrap());
 
     assert_eq!(result["success"], false);
-    assert_eq!(result["errorCode"], "E-203");
+    assert_eq!(result["errorCode"], "E-206");
     assert!(result.get("encryptionKey").is_none());
+}
+
+/// A chain whose VEK does not open under its own account key is not reported as a wrong password.
+#[test]
+fn resolve_vault_key_tells_an_unreadable_chain_apart_from_a_wrong_password() {
+    let kek = crypto::generate_key_base64();
+    let mut hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
+    hierarchy.account_keys.encrypted_vek = crypto::wrap_key(&crypto::generate_key_base64(), &crypto::generate_key_base64()).unwrap();
+    let mut host = TestHost::new(&kek);
+    host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
+
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
+
+    assert_eq!(result["success"], false);
+    assert_eq!(result["errorCode"], "E-207");
 }
 
 /// The sync trusts the key it is given: a KEK handed to a device that caches the chain is not upgraded any more,
