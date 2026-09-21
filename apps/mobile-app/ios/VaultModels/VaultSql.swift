@@ -1370,6 +1370,10 @@ public struct VaultSql {
         
         ALTER TABLE \"Attachments\" ADD \"ManifestId\" TEXT COLLATE NOCASE NOT NULL DEFAULT '';
         
+        ALTER TABLE \"Logos\" ADD \"FileDataHash\" TEXT NULL;
+        
+        ALTER TABLE \"Attachments\" ADD \"BlobHash\" TEXT NULL;
+        
         CREATE TABLE \"CodecOverflows\" (
             \"Id\" TEXT COLLATE NOCASE NOT NULL CONSTRAINT \"PK_CodecOverflows\" PRIMARY KEY,
             \"Data\" TEXT NOT NULL
@@ -1429,18 +1433,18 @@ public struct VaultSql {
             \"ManifestId\" TEXT COLLATE NOCASE NOT NULL,
             \"Id\" TEXT COLLATE NOCASE NOT NULL,
             \"Blob\" BLOB NULL,
+            \"BlobHash\" TEXT NULL,
             \"CreatedAt\" TEXT NOT NULL,
             \"Filename\" TEXT NOT NULL,
             \"IsDeleted\" INTEGER NOT NULL,
             \"ItemId\" TEXT COLLATE NOCASE NOT NULL,
             \"UpdatedAt\" TEXT NOT NULL,
             CONSTRAINT \"PK_Attachments\" PRIMARY KEY (\"ManifestId\", \"Id\"),
-            CONSTRAINT \"CK_Attachments_Blob_Tombstone\" CHECK (\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL),
             CONSTRAINT \"FK_Attachments_Items_ManifestId_ItemId\" FOREIGN KEY (\"ManifestId\", \"ItemId\") REFERENCES \"Items\" (\"ManifestId\", \"Id\") ON DELETE CASCADE
         );
         
-        INSERT INTO \"ef_temp_Attachments\" (\"ManifestId\", \"Id\", \"Blob\", \"CreatedAt\", \"Filename\", \"IsDeleted\", \"ItemId\", \"UpdatedAt\")
-        SELECT \"ManifestId\", \"Id\", \"Blob\", \"CreatedAt\", \"Filename\", \"IsDeleted\", \"ItemId\", \"UpdatedAt\"
+        INSERT INTO \"ef_temp_Attachments\" (\"ManifestId\", \"Id\", \"Blob\", \"BlobHash\", \"CreatedAt\", \"Filename\", \"IsDeleted\", \"ItemId\", \"UpdatedAt\")
+        SELECT \"ManifestId\", \"Id\", \"Blob\", \"BlobHash\", \"CreatedAt\", \"Filename\", \"IsDeleted\", \"ItemId\", \"UpdatedAt\"
         FROM \"Attachments\";
         
         CREATE TABLE \"ef_temp_FieldHistories\" (
@@ -1618,6 +1622,7 @@ public struct VaultSql {
             \"CreatedAt\" TEXT NOT NULL,
             \"FetchedAt\" TEXT NULL,
             \"FileData\" BLOB NULL,
+            \"FileDataHash\" TEXT NULL,
             \"IsDeleted\" INTEGER NOT NULL,
             \"Kind\" TEXT NOT NULL DEFAULT 'favicon',
             \"MimeType\" TEXT NULL,
@@ -1627,8 +1632,8 @@ public struct VaultSql {
             CONSTRAINT \"PK_Logos\" PRIMARY KEY (\"ManifestId\", \"Id\")
         );
         
-        INSERT INTO \"ef_temp_Logos\" (\"ManifestId\", \"Id\", \"CreatedAt\", \"FetchedAt\", \"FileData\", \"IsDeleted\", \"Kind\", \"MimeType\", \"Name\", \"Source\", \"UpdatedAt\")
-        SELECT \"ManifestId\", \"Id\", \"CreatedAt\", \"FetchedAt\", \"FileData\", \"IsDeleted\", \"Kind\", \"MimeType\", \"Name\", \"Source\", \"UpdatedAt\"
+        INSERT INTO \"ef_temp_Logos\" (\"ManifestId\", \"Id\", \"CreatedAt\", \"FetchedAt\", \"FileData\", \"FileDataHash\", \"IsDeleted\", \"Kind\", \"MimeType\", \"Name\", \"Source\", \"UpdatedAt\")
+        SELECT \"ManifestId\", \"Id\", \"CreatedAt\", \"FetchedAt\", \"FileData\", \"FileDataHash\", \"IsDeleted\", \"Kind\", \"MimeType\", \"Name\", \"Source\", \"UpdatedAt\"
         FROM \"Logos\";
         
         CREATE TABLE \"ef_temp_FieldDefinitions\" (

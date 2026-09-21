@@ -391,8 +391,8 @@ export class ItemRepository extends BaseRepository {
       },
       {
         table: 'Attachments',
-        sql: `INSERT INTO Attachments (Id, ItemId, ManifestId, Filename, Blob, CreatedAt, UpdatedAt, IsDeleted)
-              SELECT ?, ?, ManifestId, Filename, Blob, ?, ?, 0 FROM Attachments WHERE Id = ? AND ManifestId = ?`,
+        sql: `INSERT INTO Attachments (Id, ItemId, ManifestId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted)
+              SELECT ?, ?, ManifestId, Filename, Blob, BlobHash, ?, ?, 0 FROM Attachments WHERE Id = ? AND ManifestId = ?`,
       },
     ];
 
@@ -1226,11 +1226,22 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * The bytes of an attachment that is about to be inserted.
+   */
+  private attachmentBytes(attachment: Attachment): Uint8Array {
+    const bytes = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
+    if (bytes.length === 0) {
+      throw new Error(`Attachment ${attachment.Filename} carries no bytes`);
+    }
+    return bytes;
+  }
+
+  /**
    * Insert attachments for a new item.
    */
   private *insertAttachments(itemId: string, attachments: Attachment[], manifestId: string, currentDateTime: string): DbOp<void> {
     for (const attachment of attachments) {
-      const blobData = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
+      const blobData = this.attachmentBytes(attachment);
 
       yield* this.execute(AttachmentQueries.INSERT, [
         attachment.Id || this.generateId(),
@@ -1274,7 +1285,7 @@ export class ItemRepository extends BaseRepository {
           yield* this.execute(AttachmentQueries.SOFT_DELETE, [currentDateTime, attachment.Id, manifestId]);
         }
       } else if (!wasOriginal) {
-        const blobData = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
+        const blobData = this.attachmentBytes(attachment);
 
         yield* this.execute(AttachmentQueries.INSERT, [
           attachment.Id || this.generateId(),

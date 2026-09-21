@@ -304,9 +304,10 @@ impl PushBaselines {
 /// What decides whether an unchanged element still goes into the write.
 #[derive(Clone, Copy)]
 struct WriteGate {
+    /// Write every manifest and bucket whatever its fingerprint.
     force_full_write: bool,
-    /// A KEK/VEK migration push: the personal manifest and its blobs are re-encrypted whatever their content.
-    migrating: bool,
+    /// Upload every personal blob again, replacing the server copy (e.g. a KEK/VEK migration push changed its key).
+    overwrite_personal_blobs: bool,
 }
 
 /// One manifest of the write: its record, canonical content and the key it encrypts under.
@@ -424,7 +425,7 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
 
     let migration = start_account_key_migration(ctx, &vek, create_vault_key).await?;
     let content_key = migration.as_ref().map(|m| m.content_key.clone()).unwrap_or_else(|| vek.clone());
-    let gate = WriteGate { force_full_write, migrating: migration.is_some() };
+    let gate = WriteGate { force_full_write, overwrite_personal_blobs: migration.is_some() };
 
     let set = match cached {
         Some(set) => {
@@ -442,6 +443,9 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
     let baselines = PushBaselines::load(ctx).await?;
     let candidates = collect_candidates(&canonicalized, &manifest_records, &content_key, &baselines);
     let blobs = collect_upload_blobs(&candidates)?;
+    if gate.overwrite_personal_blobs {
+        refuse_overwrite_without_bytes(&candidates, &blobs)?;
+    }
     let mut written = WrittenFingerprints::default();
     let bucket_writes = encrypt_changed_buckets(ctx, &canonicalized.data_buckets, &candidates, &baselines, gate, &mut written).await?;
     let manifest_writes = encrypt_changed_manifests(ctx, &candidates, &baselines, gate, &mut written).await?;
@@ -512,6 +516,23 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
     Ok(blobs)
 }
 
+/// An overwriting push uploads every personal blob again. A blob whose bytes are not loaded on this device would keep
+/// its old server copy (on a migration: under the old key, never being able to open again) while its manifest moves on: refuse this on client instead.
+/// TODO: when implementing full lazy-load of blobs on client, review this logic as well.
+fn refuse_overwrite_without_bytes(candidates: &[Candidate], blobs: &UploadBlobs) -> SyncResult<()> {
+    let not_loaded: Vec<String> = candidates
+        .iter()
+        .filter(|candidate| candidate.record.is_personal)
+        .flat_map(|candidate| candidate.manifest.referenced_blobs())
+        .map(|(hash, _)| hash)
+        .filter(|hash| !blobs.entries.contains_key(hash))
+        .collect();
+    if not_loaded.is_empty() {
+        return Ok(());
+    }
+    Err(SyncError::UploadRejected(vec![format!("{} blob(s) of the personal manifest are not loaded on this device, so they cannot be uploaded again; sync again when they load", not_loaded.len())]))
+}
+
 /// Gate, validate, pack and encrypt each changed bucket under the key of the manifest that owns it.
 async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: &[Candidate<'_>], baselines: &PushBaselines, gate: WriteGate, written: &mut WrittenFingerprints) -> SyncResult<Vec<BucketWrite>> {
     let key_by_manifest: HashMap<&str, &str> = candidates.iter().map(|c| (c.record.manifest_id.as_str(), c.vek.as_str())).collect();
@@ -520,7 +541,7 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
         let label = format!("Data bucket \"{}\" of manifest {}", bucket.category, bucket.manifest_id);
         let fingerprint_key = state::fingerprint_bucket_key(&bucket.manifest_id, &bucket.category);
         let (plaintext, fingerprint) = fingerprinted(bucket)?;
-        if !gate.force_full_write && !gate.migrating && baselines.unchanged(&fingerprint_key, &fingerprint) {
+        if !gate.force_full_write && !gate.overwrite_personal_blobs && baselines.unchanged(&fingerprint_key, &fingerprint) {
             ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
         }
@@ -546,7 +567,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
         let label = candidate.label();
         let fingerprint_key = state::fingerprint_manifest_key(&candidate.record.manifest_id);
         let (plaintext, fingerprint) = fingerprinted(candidate.manifest)?;
-        let rekeyed = gate.migrating && candidate.record.is_personal;
+        let rekeyed = gate.overwrite_personal_blobs && candidate.record.is_personal;
         if !gate.force_full_write && !rekeyed && baselines.unchanged(&fingerprint_key, &fingerprint) {
             ctx.log(format!("[V2Push] {} unchanged versus server baseline, leaving it out of this write.", label)).await;
             continue;
@@ -568,8 +589,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             ctx.warn(format!("[V2Push] {} is missing its email keypair; its aliases stay personal until sharing is re-enabled.", label)).await;
         }
 
-        let mut blob_refs: Vec<BlobRef> = candidate.blobs.iter().map(|(hash, blob)| BlobRef { hash: hash.clone(), category: blob.kind.clone() }).collect();
-        blob_refs.sort_by(|a, b| a.hash.cmp(&b.hash));
+        let blob_refs: Vec<BlobRef> = candidate.manifest.referenced_blobs().into_iter().map(|(hash, category)| BlobRef { hash, category }).collect();
         writes.push(ManifestWrite {
             manifest_id: candidate.record.manifest_id.clone(),
             manifest_blob: sealed.ciphertext,
@@ -591,15 +611,15 @@ async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBa
     let shared_hashes = blobs.hashes(false);
     let unknown_to_server = |hashes: &[String]| -> Vec<String> { hashes.iter().filter(|h| !baselines.known_server_hashes.contains(*h)).cloned().collect() };
 
-    let (personal_to_upload, shared_to_upload) = if gate.migrating {
+    let (personal_to_upload, shared_to_upload) = if gate.overwrite_personal_blobs {
         (personal_hashes.clone(), missing_on_server(ctx, blobs, &unknown_to_server(&shared_hashes)).await?)
     } else {
         let missing: HashSet<String> = missing_on_server(ctx, blobs, &unknown_to_server(&blobs.order)).await?.into_iter().collect();
         (personal_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect(), shared_hashes.iter().filter(|h| missing.contains(*h)).cloned().collect())
     };
-    ctx.log(format!("[V2Push] Blob diff: {} blobs, uploading {} personal + {} shared{}.", blobs.order.len(), personal_to_upload.len(), shared_to_upload.len(), if gate.migrating { " (personal manifest re-encrypted, VEK migration)" } else { "" })).await;
+    ctx.log(format!("[V2Push] Blob diff: {} blobs, uploading {} personal + {} shared{}.", blobs.order.len(), personal_to_upload.len(), shared_to_upload.len(), if gate.overwrite_personal_blobs { " (every personal blob overwritten)" } else { "" })).await;
 
-    let mut uploaded = upload_blobs(ctx, blobs, &personal_to_upload, gate.migrating).await?;
+    let mut uploaded = upload_blobs(ctx, blobs, &personal_to_upload, gate.overwrite_personal_blobs).await?;
     uploaded.extend(upload_blobs(ctx, blobs, &shared_to_upload, false).await?);
     Ok(uploaded)
 }
@@ -626,7 +646,7 @@ async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs
     }
     ctx.warn(format!("[V2Sync] Server reported {} missing blob(s); uploading and retrying once.", response.missing_blob_hashes.len())).await;
     let (missing_personal, missing_shared): (Vec<String>, Vec<String>) = response.missing_blob_hashes.iter().cloned().partition(|h| blobs.entries[h].from_personal);
-    uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, gate.migrating).await?);
+    uploaded.extend(upload_blobs(ctx, blobs, &missing_personal, gate.overwrite_personal_blobs).await?);
     uploaded.extend(upload_blobs(ctx, blobs, &missing_shared, false).await?);
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if !response.missing_blob_hashes.is_empty() {

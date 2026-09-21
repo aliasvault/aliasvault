@@ -4,13 +4,12 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::vault_model::{id_key, ids_equal};
-use super::errors::{SyncError, SyncResult};
+use super::errors::SyncResult;
 use super::pull::{self, OpenedManifestSet, PulledVault};
 use super::push::{canonicalize_vault, CanonicalizedSet, ManifestRecord};
 use super::state::{self, Ctx};
 use super::types::EmailRoutingDto;
 use super::legacy;
-use crate::vault_codec::row::blob_ref_of;
 use crate::vault_codec::{self, BlobEntry, CanonicalizedVault, DataBucket, Manifest};
 use crate::vault_merge::{merge_canonical, CanonicalManifestMerge, CanonicalMergeInput, MergeStats};
 
@@ -141,8 +140,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
             }
         }
     }
-    let personal_id = opened.resolved.first().map(|m| m.manifest_id.clone()).unwrap_or_default();
-    let merged_blobs = resolve_merged_blob_refs(ctx, &manifests, &blob_map, &personal_id, &local_blobs).await?;
+    let merged_blobs = collect_merged_blobs(&manifests, &blob_map, &local_blobs);
 
     let sqlite_bytes = pull::materialize_to_sqlite(ctx, &manifests, &data_buckets, &blob_map, &opened.manifest_names).await?;
     let encrypted_vault = state::encrypt_vault_blob(&sqlite_bytes, vek)?;
@@ -153,8 +151,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
 }
 
 /// The merged vault in the shape the push writes from.
-fn merge_output_for_push(manifests: &[Manifest], data_buckets: &[DataBucket], blobs_by_manifest: Option<HashMap<String, HashMap<String, BlobEntry>>>, manifest_records: &[ManifestRecord], had_fallbacks: bool) -> Option<CanonicalizedSet> {
-    let blobs_by_manifest = blobs_by_manifest?;
+fn merge_output_for_push(manifests: &[Manifest], data_buckets: &[DataBucket], blobs_by_manifest: HashMap<String, HashMap<String, BlobEntry>>, manifest_records: &[ManifestRecord], had_fallbacks: bool) -> Option<CanonicalizedSet> {
     if had_fallbacks {
         return None;
     }
@@ -187,35 +184,19 @@ fn validate_merged_manifest(entry: &CanonicalManifestMerge) -> Option<String> {
     None
 }
 
-/// Every blob marker in the merged manifests must resolve to bytes.
-async fn resolve_merged_blob_refs(ctx: &Ctx, manifests: &[Manifest], blob_map: &HashMap<String, Vec<u8>>, personal_manifest_id: &str, local_blobs: &HashMap<String, BlobEntry>) -> SyncResult<Option<HashMap<String, HashMap<String, BlobEntry>>>> {
+/// The bytes at hand for the blobs the merged manifests reference, per manifest. A blob without bytes is not loaded
+/// on this device: its row keeps the reference, and the push only uploads what the server lacks and this device has.
+fn collect_merged_blobs(manifests: &[Manifest], blob_map: &HashMap<String, Vec<u8>>, local_blobs: &HashMap<String, BlobEntry>) -> HashMap<String, HashMap<String, BlobEntry>> {
     let mut by_manifest: HashMap<String, HashMap<String, BlobEntry>> = HashMap::new();
-    let mut complete = true;
     for manifest in manifests {
-        let is_personal = ids_equal(&manifest.manifest_id, personal_manifest_id);
         let blobs = by_manifest.entry(id_key(&manifest.manifest_id)).or_default();
-        for rows in manifest.tables.values() {
-            for row in rows {
-                for value in row.values() {
-                    let Some((reference, kind)) = blob_ref_of(value) else { continue };
-                    let Some(bytes) = blob_map.get(reference) else {
-                        if kind == Some("attachment") && is_personal {
-                            return Err(SyncError::MergeFailed(format!("merged vault references attachment blob {} with no bytes available, refusing to materialize an incomplete vault", reference)));
-                        }
-                        ctx.warn(format!("[V2Merge] Merged {} {} has no bytes available; it will materialize as empty.", kind.unwrap_or("blob"), reference)).await;
-                        complete = false;
-                        continue;
-                    };
-                    if let Some(local) = local_blobs.get(reference) {
-                        blobs.insert(reference.to_string(), local.clone());
-                    } else if let Some(kind) = kind {
-                        blobs.insert(reference.to_string(), BlobEntry { kind: kind.to_string(), bytes_base64: crate::encoding::base64_encode(bytes) });
-                    } else {
-                        complete = false;
-                    }
-                }
+        for (hash, kind) in manifest.referenced_blobs() {
+            if let Some(local) = local_blobs.get(&hash) {
+                blobs.insert(hash, local.clone());
+            } else if let Some(bytes) = blob_map.get(&hash) {
+                blobs.insert(hash, BlobEntry { kind, bytes_base64: crate::encoding::base64_encode(bytes) });
             }
         }
     }
-    Ok(if complete { Some(by_manifest) } else { None })
+    by_manifest
 }

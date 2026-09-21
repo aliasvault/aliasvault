@@ -34,6 +34,10 @@ namespace AliasClientDb.Migrations
                     b.Property<byte[]>("Blob")
                         .HasColumnType("BLOB");
 
+                    b.Property<string>("BlobHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -57,10 +61,7 @@ namespace AliasClientDb.Migrations
 
                     b.HasIndex("ManifestId", "ItemId");
 
-                    b.ToTable("Attachments", t =>
-                        {
-                            t.HasCheckConstraint("CK_Attachments_Blob_Tombstone", "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL");
-                        });
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("AliasClientDb.CodecOverflow", b =>
@@ -477,6 +478,10 @@ namespace AliasClientDb.Migrations
 
                     b.Property<byte[]>("FileData")
                         .HasColumnType("BLOB");
+
+                    b.Property<string>("FileDataHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");

@@ -105,7 +105,7 @@ function emitRust(registry) {
   // order buckets are emitted in (bucket_categories() dedups in tuple order).
   const bucketTables = registry.VAULT_BUCKET_CATEGORIES.flatMap((category) =>
     tables.filter((t) => t.BucketCategory === category).map((t) => `("${t.Name}", "${category}")`));
-  const blobColumns = tables.filter((t) => t.BlobColumn).map((t) => `("${t.Name}", "${t.BlobColumn.Column}", "${t.BlobColumn.Kind}")`);
+  const blobColumns = tables.filter((t) => t.BlobColumn).map((t) => `BlobColumn { table: "${t.Name}", column: "${t.BlobColumn.Column}", hash_column: "${t.BlobColumn.HashColumn}", kind: "${t.BlobColumn.Kind}" }`);
 
   return `//! Generated client vault datamodel registry data.
 //!
@@ -113,7 +113,7 @@ function emitRust(registry) {
 //! ${TS_SOURCE_REL} by ${GENERATOR_REL}.
 //! Edit the TypeScript source and run 'core/models/build.sh' to regenerate.
 
-use super::TableConfig;
+use super::{BlobColumn, TableConfig};
 
 /// All tables that need LWW merge, in registry order. Order is load-bearing: a merge inserts rows
 /// in this order, so child tables must be listed after the table they reference (Items first).
@@ -127,10 +127,8 @@ pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
 ${tables.map((t) => `    "${t.Name}",`).join('\n')}
 ];
 
-/// The SQLite columns whose contents are extracted into content-addressed blobs rather than
-/// kept inline in the manifest. Tuple form \`(table_name, blob_column, kind_label)\`. The kind label
-/// is reported to the server on upload (used for metrics / retention).
-pub static BLOB_COLUMNS: &[(&str, &str, &str)] = &[
+/// The columns whose bytes are extracted into content-addressed blobs rather than kept inline in the manifest.
+pub static BLOB_COLUMNS: &[BlobColumn] = &[
 ${blobColumns.map((entry) => `    ${entry},`).join('\n')}
 ];
 

@@ -1,8 +1,8 @@
 //! Engine tests: the whole sync driven through the command loop against a real SQLite host.
 
 mod item_move;
-mod manifest_name;
 mod test_host;
+mod unloaded_blobs;
 
 use std::collections::HashMap;
 

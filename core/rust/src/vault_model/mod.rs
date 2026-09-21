@@ -18,6 +18,18 @@ pub fn ids_equal(a: &str, b: &str) -> bool {
     a.trim().eq_ignore_ascii_case(b.trim())
 }
 
+/// A column whose bytes are extracted into a content-addressed blob.
+#[derive(Debug, Clone)]
+pub struct BlobColumn {
+    pub table: &'static str,
+    /// The column holding the bytes locally, and the `{ __blobRef }` marker in a manifest.
+    pub column: &'static str,
+    /// The local bookkeeping column holding the blob's hash, so a row whose bytes are not loaded still knows its blob.
+    pub hash_column: &'static str,
+    /// The label reported to the server on upload (metrics / retention).
+    pub kind: &'static str,
+}
+
 /// Configuration for a syncable table.
 #[derive(Debug, Clone)]
 pub struct TableConfig {

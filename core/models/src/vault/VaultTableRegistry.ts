@@ -40,9 +40,11 @@ export type VaultTableDefinition = {
   BucketCategory?: string;
   /**
    * The column whose contents are extracted into content-addressed blobs rather than kept inline
-   * in the manifest. Kind is the label reported to the server on upload (metrics / retention).
+   * in the manifest. HashColumn is local only (never part of the manifest): it holds the hash of that blob, so
+   * a row whose bytes are not loaded on this device still knows its blob. Kind is the label reported to the
+   * server on upload (metrics / retention).
    */
-  BlobColumn?: { Column: string; Kind: string };
+  BlobColumn?: { Column: string; HashColumn: string; Kind: string };
   /**
    * Rows in other tables that reference this table's rows from inside manifest content. On a
    * manifest split the referenced rows are reference-copied into the destination manifest so each
@@ -95,7 +97,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
     ManifestScoped: true,
     PrimaryKey: ['Id'],
     ItemChild: true,
-    BlobColumn: { Column: 'Blob', Kind: 'attachment' },
+    BlobColumn: { Column: 'Blob', HashColumn: 'BlobHash', Kind: 'attachment' },
   },
   { Name: 'TotpCodes', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true },
   { Name: 'Passkeys', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: true },
@@ -123,7 +125,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
     ManifestScoped: true,
     PrimaryKey: ['Id'],
     ItemChild: false,
-    BlobColumn: { Column: 'FileData', Kind: 'favicon' },
+    BlobColumn: { Column: 'FileData', HashColumn: 'FileDataHash', Kind: 'favicon' },
   },
   { Name: 'EncryptionKeys', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: false },
   {

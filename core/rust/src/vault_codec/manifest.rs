@@ -175,6 +175,22 @@ impl CodecOverflow {
     }
 }
 
+impl Manifest {
+    /// Every blob this manifest's rows reference as `(hash, kind)`, sorted by hash, each hash once.
+    pub fn referenced_blobs(&self) -> Vec<(String, String)> {
+        let mut refs: std::collections::BTreeMap<String, String> = std::collections::BTreeMap::new();
+        for (name, rows) in &self.tables {
+            let Some(spec) = super::types::blob_spec_for(name) else { continue };
+            for cell in rows.iter().filter_map(|row| row.get(spec.column)) {
+                if let Some((hash, kind)) = super::row::blob_ref_of(cell) {
+                    refs.entry(hash.to_string()).or_insert_with(|| kind.unwrap_or(spec.kind).to_string());
+                }
+            }
+        }
+        refs.into_iter().collect()
+    }
+}
+
 /// Materialized tables the platform inserts into a fresh schema DB. Blob columns carry
 /// `{ "__blobRef": hash }`; inline byte columns carry `{ "__b64": ... }`. Any overflow (see
 /// [`CodecOverflow`]) is already included in `tables` as the `OVERFLOW_TABLE` row, the platform

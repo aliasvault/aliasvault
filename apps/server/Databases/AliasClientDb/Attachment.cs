@@ -27,9 +27,15 @@ public class Attachment : ManifestScopedEntity
     public string Filename { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the file bytes; null once the attachment is deleted (see the tombstone check constraint).
+    /// Gets or sets the file bytes; null once the attachment is deleted, or while they are not loaded (see <see cref="BlobHash"/>).
     /// </summary>
     public byte[]? Blob { get; set; }
+
+    /// <summary>
+    /// Gets or sets the hash of the blob holding the file bytes. Local only: set while <see cref="Blob"/> is null, which means the bytes are not loaded by this client yet (lazy-loading).
+    /// </summary>
+    [StringLength(64)]
+    public string? BlobHash { get; set; }
 
     /// <summary>
     /// Gets or sets the item foreign key.

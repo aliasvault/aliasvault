@@ -175,9 +175,6 @@ public class AliasClientDbContext : DbContext
             property.SetCollation("NOCASE");
         }
 
-        // A live attachment carries its bytes; a tombstone drops them so the storage is reclaimed.
-        modelBuilder.Entity<Attachment>().ToTable(t => t.HasCheckConstraint("CK_Attachments_Blob_Tombstone", "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL"));
-
         // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
             .HasOne(l => l.Item)

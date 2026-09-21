@@ -116,7 +116,7 @@ function field(fieldKey: string, value: string | string[]): ItemField {
  * @param fields - The fields of the first save
  * @returns The database and a way to save the item again
  */
-async function vaultWithItem(fields: ItemField[]): Promise<{ db: ISqliteDatabase; save: (fields: ItemField[]) => Promise<void> }> {
+async function vaultWithItem(fields: ItemField[]): Promise<{ db: ISqliteDatabase; repository: ItemRepository; save: (fields: ItemField[]) => Promise<void> }> {
   const db = await getPlatform().sqlite.open();
   db.exec('PRAGMA foreign_keys = OFF;');
   db.exec(new VaultSqlGenerator().getCompleteSchemaSql());
@@ -130,6 +130,7 @@ async function vaultWithItem(fields: ItemField[]): Promise<{ db: ISqliteDatabase
   await repository.create(draft(fields));
   return {
     db,
+    repository,
     /**
      * Save the item again with the given fields.
      */
@@ -193,5 +194,28 @@ describe('field value rows', () => {
       { Value: 'https://c.example', ValueIndex: 2 },
     ]);
     expect(rows).toHaveLength(3);
+  });
+});
+
+describe('duplicating an item', () => {
+  it('keeps the blob reference of an attachment whose bytes are not loaded', async () => {
+    const { db, repository } = await vaultWithItem([]);
+    db.run('INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, 0)', [PERSONAL, 'ATTACHMENT', ITEM, 'scan.pdf', 'blob-hash', 't', 't']);
+
+    const copy = await repository.duplicate({ Id: ITEM, ManifestId: PERSONAL });
+
+    expect(db.query('SELECT Filename, Blob, BlobHash FROM Attachments WHERE ItemId = ?', [copy.Id])).toEqual([{ Filename: 'scan.pdf', Blob: null, BlobHash: 'blob-hash' }]);
+  });
+});
+
+describe('saving an attachment', () => {
+  it('refuses one without bytes, which would sync as an attachment that references no file', async () => {
+    const { db, repository } = await vaultWithItem([]);
+    const item = { Id: ITEM, ManifestId: PERSONAL, Name: 'Note', ItemType: ItemTypes.Note, Fields: [], CreatedAt: '', UpdatedAt: '' } as Item;
+    const empty = { Id: 'EMPTY', Filename: 'empty.pdf', Blob: new Uint8Array(0), ItemId: ITEM, CreatedAt: 't', UpdatedAt: 't' };
+
+    await expect(repository.update({ Id: ITEM, ManifestId: PERSONAL }, item, [], [empty])).rejects.toThrow('carries no bytes');
+
+    expect(db.query('SELECT Id FROM Attachments')).toEqual([]);
   });
 });

@@ -110,7 +110,7 @@ fn item_child_tables() -> impl Iterator<Item = &'static crate::vault_model::Tabl
 
 /// The extracted blob column of a table, if it has one (see `vault_model::BLOB_COLUMNS`).
 fn blob_column_for(table_name: &str) -> Option<&'static str> {
-    BLOB_COLUMNS.iter().find(|(t, _, _)| *t == table_name).map(|(_, col, _)| *col)
+    BLOB_COLUMNS.iter().find(|spec| spec.table == table_name).map(|spec| spec.column)
 }
 
 /// The `, <blob> = NULL` SET fragment that drops a table's blob bytes, empty for a table without one.
@@ -260,9 +260,10 @@ fn sweep_orphan_favicons(
  * Rows tombstoned by Pass 1 or Pass 2 in this same call are already cleared there.
  */
 fn clear_tombstoned_blobs(tables: &[CodecTableData], now_str: &str, statements: &mut Vec<SqlStatement>, stats: &mut PruneStats) {
-    for (table, blob_col, _) in BLOB_COLUMNS {
+    for spec in BLOB_COLUMNS {
+        let (table, blob_col) = (spec.table, spec.column);
         let Some(records) = records_of(tables, table) else { continue };
-        let stale = records.iter().filter(|row| is_deleted(row) && has_bytes(row.get(*blob_col)));
+        let stale = records.iter().filter(|row| is_deleted(row) && has_bytes(row.get(blob_col)));
         for row in stale {
             let Some(id) = str_col(row, ID_COL) else { continue };
             statements.push(SqlStatement {

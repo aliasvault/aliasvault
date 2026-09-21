@@ -611,10 +611,19 @@ namespace AliasClientDb.Migrations
                 oldClrType: typeof(byte[]),
                 oldType: "BLOB");
 
-            migrationBuilder.AddCheckConstraint(
-                name: "CK_Attachments_Blob_Tombstone",
+            migrationBuilder.AddColumn<string>(
+                name: "FileDataHash",
+                table: "Logos",
+                type: "TEXT",
+                maxLength: 64,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "BlobHash",
                 table: "Attachments",
-                sql: "\"IsDeleted\" = 1 OR \"Blob\" IS NOT NULL");
+                type: "TEXT",
+                maxLength: 64,
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "CodecOverflows",
@@ -989,8 +998,12 @@ namespace AliasClientDb.Migrations
                 name: "IX_EncryptionKeys_ManifestId_IsPrimary",
                 table: "EncryptionKeys");
 
-            migrationBuilder.DropCheckConstraint(
-                name: "CK_Attachments_Blob_Tombstone",
+            migrationBuilder.DropColumn(
+                name: "FileDataHash",
+                table: "Logos");
+
+            migrationBuilder.DropColumn(
+                name: "BlobHash",
                 table: "Attachments");
 
             migrationBuilder.AlterColumn<byte[]>(

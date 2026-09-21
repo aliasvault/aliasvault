@@ -16,7 +16,7 @@ use serde_json::{json, Value};
 
 use super::normalize::{normalize_id_spelling, normalize_row_shapes};
 use super::hash::salted_blob_hash;
-use super::row::{blob_ref, inline_b64, str_col};
+use super::row::{blob_ref, inline_b64, is_deleted, str_col};
 use super::scoped_assets::{normalize_logo_scope, reconcile_logo_references};
 use super::manifest::{BlobEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket, Manifest, ManifestSpec, CodecRecord};
 use super::sharing::{clone_referenced_rows, partition_by_manifest, prune_unreferenced_logos, referenced_tables};
@@ -261,13 +261,17 @@ fn is_unstamped(row: &CodecRecord) -> bool {
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
 fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> Vec<CodecRecord> {
-    let blob_spec = blob_spec_for(table);
+    let Some(spec) = blob_spec_for(table) else { return records };
     let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
     for mut row in records {
-        if let Some((_, blob_col, kind)) = blob_spec {
-            let extracted = extract_blob_cell(row.get(*blob_col), manifest_salt, kind, blobs);
-            row.insert((*blob_col).to_string(), extracted);
+        let known_hash = row.remove(spec.hash_column);
+        let mut cell = extract_blob_cell(row.get(spec.column), manifest_salt, spec.kind, blobs);
+        if cell.is_null() && !is_deleted(&row) {
+            if let Some(hash) = known_hash.as_ref().and_then(Value::as_str).filter(|hash| !hash.is_empty()) {
+                cell = blob_ref(hash, spec.kind);
+            }
         }
+        row.insert(spec.column.to_string(), cell);
         out_rows.push(row);
     }
     out_rows

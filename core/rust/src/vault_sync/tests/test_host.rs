@@ -124,14 +124,12 @@ impl TestHost {
                     json!({})
                 }
                 Command::DbOpen { bytes, .. } => {
-                    self.staging = Some(match bytes {
+                    let conn = match bytes {
                         None => open_schema_db(&self.schema_sql),
-                        Some(b64) => {
-                            let conn = open_from_bytes(&base64_decode(&b64).unwrap());
-                            conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
-                            conn
-                        }
-                    });
+                        Some(b64) => open_from_bytes(&base64_decode(&b64).unwrap()),
+                    };
+                    conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
+                    self.staging = Some(conn);
                     json!({})
                 }
                 Command::DbQuery { db, .. } | Command::DbExec { db, .. } | Command::DbExport { db } if db == Db::Local && self.vault_blob.is_none() => {

@@ -35,8 +35,11 @@ namespace AliasClientDb.Migrations
                         .UseCollation("NOCASE");
 
                     b.Property<byte[]>("Blob")
-                        .IsRequired()
                         .HasColumnType("BLOB");
+
+                    b.Property<string>("BlobHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -478,6 +481,10 @@ namespace AliasClientDb.Migrations
 
                     b.Property<byte[]>("FileData")
                         .HasColumnType("BLOB");
+
+                    b.Property<string>("FileDataHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");

@@ -5,7 +5,7 @@
 //! core/models/src/vault/VaultTableRegistry.ts; this module adds the codec-owned accessors on top.
 
 use crate::vault_model::names::ID_COL;
-use crate::vault_model::{ids_equal, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
+use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
 
 /// Manifest / metadata schema version.
 pub const SCHEMA_VERSION: u32 = 1;
@@ -38,9 +38,9 @@ pub(crate) fn is_guid(text: &str) -> bool {
 // Accessor methods
 // ---------------------------------------------------------------------------
 
-/// Returns the blob `(table, column, kind)` tuple for a table, if it owns an extracted blob column.
-pub fn blob_spec_for(table_name: &str) -> Option<&'static (&'static str, &'static str, &'static str)> {
-    BLOB_COLUMNS.iter().find(|(t, _, _)| *t == table_name)
+/// The blob column of a table, if it owns one.
+pub fn blob_spec_for(table_name: &str) -> Option<&'static BlobColumn> {
+    BLOB_COLUMNS.iter().find(|spec| spec.table == table_name)
 }
 
 /// True when a table must never be serialized into / inserted from the manifest.

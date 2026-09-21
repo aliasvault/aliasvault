@@ -17,7 +17,8 @@ use std::collections::{HashMap, HashSet};
 use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
-use super::types::{is_local_only_table, row_identity};
+use super::row::blob_ref_of;
+use super::types::{blob_spec_for, is_local_only_table, row_identity};
 use crate::error::{VaultError, VaultResult};
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
@@ -55,7 +56,8 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
-    for (name, records) in combined {
+    for (name, mut records) in combined {
+        store_blob_hashes(&name, &mut records, &schema_columns);
         // A local-only table must never occur in a manifest, and passing an OVERFLOW_TABLE row
         // through would collide with the row this function emits below.
         if is_local_only_table(&name) {
@@ -100,6 +102,20 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     }
 
     Ok(MaterializedTables { tables, overflow })
+}
+
+/// Write each row's blob hash into the local hash column of its table (when the caller's schema has it), so a row
+/// whose bytes are not loaded still knows its blob and canonicalize can keep the reference.
+fn store_blob_hashes(table_name: &str, records: &mut [CodecRecord], schema_columns: &HashMap<String, Vec<String>>) {
+    let Some(spec) = blob_spec_for(table_name) else { return };
+    if !schema_columns.get(table_name).is_some_and(|columns| columns.iter().any(|column| column == spec.hash_column)) {
+        return;
+    }
+    for row in records {
+        if let Some(hash) = row.get(spec.column).and_then(blob_ref_of).map(|(hash, _)| hash.to_string()) {
+            row.insert(spec.hash_column.to_string(), json!(hash));
+        }
+    }
 }
 
 /// One `Manifests` row per materialized manifest: `{ Id, Name }`.

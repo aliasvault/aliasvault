@@ -66,6 +66,12 @@ public class Logo : ManifestScopedEntity
     public byte[]? FileData { get; set; }
 
     /// <summary>
+    /// Gets or sets the hash of the blob holding the image data. Local only: set while <see cref="FileData"/> is null, which means the bytes are not loaded by this client yet (lazy-loading).
+    /// </summary>
+    [StringLength(64)]
+    public string? FileDataHash { get; set; }
+
+    /// <summary>
     /// Gets or sets an optional user-facing label, shown for uploaded logos in the logo library.
     /// </summary>
     [StringLength(255)]

@@ -276,7 +276,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
     let mut blob_map = HashMap::new();
     for reference in &refs {
         let Some(ciphertext) = cache.get(&reference.hash) else {
-            ctx.warn(format!("[V2Sync] Referenced {} blob {} missing on server, continuing without it.", reference.category, reference.hash)).await;
+            ctx.warn(format!("[V2Sync] Referenced {} blob {} was not served; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await;
             continue;
         };
         let key = owners.get(&reference.hash).map(|o| o.vek.as_str()).unwrap_or(fallback_vek);
@@ -285,7 +285,7 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), ciphertext.clone());
             }
-            Err(_) => ctx.warn(format!("[V2Sync] Referenced {} blob {} failed to decrypt with the current key, continuing without it.", reference.category, reference.hash)).await,
+            Err(_) => ctx.warn(format!("[V2Sync] Referenced {} blob {} did not decrypt with the manifest key; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await,
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &pruned_cache).await?;

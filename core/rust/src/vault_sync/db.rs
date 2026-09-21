@@ -204,7 +204,8 @@ pub(crate) async fn insert_materialized(host: &Host, materialized: &Materialized
     Ok(())
 }
 
-/// A materialized cell as a bind parameter: blob markers become bytes (NULL when the bytes are missing),
+/// A materialized cell as a bind parameter: blob markers become bytes (NULL while the bytes are not loaded; the row's
+/// hash column says which blob it is),
 /// inline `{ __b64 }` payloads bind as bytes, everything else binds as is.
 fn bind_value(value: &Value, blobs: &HashMap<String, Vec<u8>>) -> Value {
     if let Some((reference, _)) = blob_ref_of(value) {

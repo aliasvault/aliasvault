@@ -142,8 +142,6 @@ pub enum SyncError {
     /// The server's snapshot is inconsistent and cannot be assembled.
     #[error("Server snapshot cannot be assembled: {0}")]
     Snapshot(String),
-    #[error("Merge failed: {0}")]
-    MergeFailed(String),
     /// The server kept refusing the write as outdated after the re-sync limit.
     #[error("The server keeps refusing the write as outdated")]
     ResyncLimitReached,
@@ -189,7 +187,6 @@ impl SyncError {
             SyncError::KeyOutOfSync => Failure::Coded(ErrorCode::KeyOutOfSync),
             SyncError::ServerVaultUnreadable(_) => Failure::Coded(ErrorCode::SyncVaultDecryptFailed),
             SyncError::Snapshot(_) => Failure::Coded(ErrorCode::SyncVaultFetchFailed),
-            SyncError::MergeFailed(_) => Failure::Coded(ErrorCode::MergeFailed),
             SyncError::ResyncLimitReached => Failure::Coded(ErrorCode::MergeConflict),
             SyncError::UploadRejected(_) | SyncError::MissingBlobs(_) => Failure::Coded(ErrorCode::UploadFailed),
             SyncError::LegacyUpgradePending => Failure::Coded(ErrorCode::MigrationCheckFailed),

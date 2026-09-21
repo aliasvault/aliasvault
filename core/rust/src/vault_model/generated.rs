@@ -4,7 +4,7 @@
 //! core/models/src/vault/VaultTableRegistry.ts by core/models/scripts/generate-vault-table-registry.cjs.
 //! Edit the TypeScript source and run 'core/models/build.sh' to regenerate.
 
-use super::TableConfig;
+use super::{BlobColumn, TableConfig};
 
 /// All tables that need LWW merge, in registry order. Order is load-bearing: a merge inserts rows
 /// in this order, so child tables must be listed after the table they reference (Items first).
@@ -50,12 +50,10 @@ pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
     "Settings",
 ];
 
-/// The SQLite columns whose contents are extracted into content-addressed blobs rather than
-/// kept inline in the manifest. Tuple form `(table_name, blob_column, kind_label)`. The kind label
-/// is reported to the server on upload (used for metrics / retention).
-pub static BLOB_COLUMNS: &[(&str, &str, &str)] = &[
-    ("Attachments", "Blob", "attachment"),
-    ("Logos", "FileData", "favicon"),
+/// The columns whose bytes are extracted into content-addressed blobs.
+pub static BLOB_COLUMNS: &[BlobColumn] = &[
+    BlobColumn { table: "Attachments", column: "Blob", hash_column: "BlobHash", kind: "attachment" },
+    BlobColumn { table: "Logos", column: "FileData", hash_column: "FileDataHash", kind: "favicon" },
 ];
 
 /// Tables never serialized into the server-stored manifest: internal SQLite, platform, or EF bookkeeping
