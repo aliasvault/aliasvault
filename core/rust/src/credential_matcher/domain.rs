@@ -151,7 +151,7 @@ impl DomainWithPort {
 /// Extract domain and port from URL, handling both full URLs and partial domains.
 /// Returns DomainWithPort with empty domain if not a valid URL/domain.
 pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
-    let lowered = url.to_lowercase();
+    let lowered = url.trim().to_lowercase();
     let (scheme, authority, _) = split_url(&lowered);
 
     // A web scheme is what allows single-word hostnames like "http://plex" or "https://nas",

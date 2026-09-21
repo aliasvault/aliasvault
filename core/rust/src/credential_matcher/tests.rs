@@ -1025,3 +1025,15 @@ fn test_single_word_hostname_extraction_requires_protocol() {
     let with_match = filter(credentials_with_protocol.clone(), "http://plex:32400", "");
     assert_eq!(with_match.len(), 1, "Credential with protocol should match");
 }
+
+/// [#2299] - Whitespace around a stored URL or package name must not prevent a match
+#[test]
+fn test_stored_urls_are_trimmed() {
+    let credentials = vec![
+        create_test_credential_multi_url("Amazon", vec!["https://amazon.fr/", " https://amazon.de", "amazon.it\t", " com.amazon.app \n"], "user@amazon.com"),
+    ];
+
+    assert_eq!(filter(credentials.clone(), "https://www.amazon.de/ap/signin", "").len(), 1, "Leading space should be ignored");
+    assert_eq!(filter(credentials.clone(), "https://amazon.it", "").len(), 1, "Trailing whitespace should be ignored");
+    assert_eq!(filter(credentials, "com.amazon.app", "").len(), 1, "Package name should match when padded");
+}

@@ -152,7 +152,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
 fn match_package_name(credentials: &[Credential], package_name: &str, max_results: usize) -> Vec<String> {
     credentials
         .iter()
-        .filter(|cred| cred.item_urls.iter().any(|url| url == package_name))
+        .filter(|cred| cred.item_urls.iter().any(|url| url.trim() == package_name))
         .map(|cred| cred.id.clone())
         .take(max_results)
         .collect()
@@ -217,7 +217,7 @@ fn match_item_names(credentials: &[Credential], words: &[String], require_no_url
 
     credentials
         .iter()
-        .filter(|cred| !require_no_urls || !cred.item_urls.iter().any(|url| !url.is_empty()))
+        .filter(|cred| !require_no_urls || !cred.item_urls.iter().any(|url| !url.trim().is_empty()))
         .filter(|cred| {
             cred.item_name.as_deref().is_some_and(|name| {
                 let name_words = extract_words(name);
