@@ -267,7 +267,7 @@ public class VaultController(
         var manifestBlobs = new Dictionary<Guid, byte[]>();
         foreach (var mw in model.Manifests)
         {
-            if (!CiphertextHelper.TryDecode(mw.ManifestBlob, out var manifestBlob))
+            if (!CiphertextHelper.TryDecode(mw.ManifestBlob, out var manifestBlob) || !CiphertextHelper.MatchesHash(manifestBlob, mw.ManifestCiphertextHash))
             {
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
             }
@@ -278,7 +278,7 @@ public class VaultController(
         var bucketBlobs = new Dictionary<(Guid ManifestId, VaultDataBucketCategory Category), byte[]>();
         foreach (var bucket in model.Buckets.Where(b => !string.IsNullOrEmpty(b.Blob)))
         {
-            if (!CiphertextHelper.TryDecode(bucket.Blob, out var bucketBlob))
+            if (!CiphertextHelper.TryDecode(bucket.Blob, out var bucketBlob) || !CiphertextHelper.MatchesHash(bucketBlob, bucket.CiphertextHash))
             {
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
             }
@@ -621,6 +621,13 @@ public class VaultController(
         if (model.Overwrite && ownerGroupId != user.PersonalGroupId)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+        }
+
+        // Only allow overwriting the ciphertext if the user has no unlock key yet (as part of one-time legacy migration).
+        // TODO: when adding VEK rotation, overwrite will need to be made possible as well for the rotation flow itself.
+        if (model.Overwrite && await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
         }
 
         if (model.Blobs.Count == 0)
