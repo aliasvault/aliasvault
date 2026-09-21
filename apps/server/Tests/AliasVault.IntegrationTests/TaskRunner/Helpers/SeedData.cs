@@ -192,6 +192,7 @@ public static class SeedData
             Hash = hash,
             Category = "logo",
             EncryptedData = [1, 2, 3, 4],
+            EncryptedBlobKey = "key",
             SizeBytes = 4,
             CreatedAt = uploadedAt,
         };

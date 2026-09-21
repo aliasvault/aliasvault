@@ -624,7 +624,6 @@ public class VaultController(
         }
 
         // Only allow overwriting the ciphertext if the user has no unlock key yet (as part of one-time legacy migration).
-        // TODO: when adding VEK rotation, overwrite will need to be made possible as well for the rotation flow itself.
         if (model.Overwrite && await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
@@ -716,6 +715,7 @@ public class VaultController(
                 Hash = b.Hash,
                 Category = b.Category,
                 EncryptedDataBase64 = Convert.ToBase64String(b.EncryptedData),
+                EncryptedBlobKey = b.EncryptedBlobKey,
             })
             .ToListAsync();
 
@@ -911,6 +911,7 @@ public class VaultController(
                 {
                     row.Category = dto.Category;
                     row.EncryptedData = data!;
+                    row.EncryptedBlobKey = dto.EncryptedBlobKey;
                     row.SizeBytes = data!.Length;
                 }
 
@@ -923,6 +924,7 @@ public class VaultController(
                 ManifestId = manifestId,
                 Category = dto.Category,
                 EncryptedData = data!,
+                EncryptedBlobKey = dto.EncryptedBlobKey,
                 SizeBytes = data!.Length,
                 CreatedAt = nowUtc,
             };

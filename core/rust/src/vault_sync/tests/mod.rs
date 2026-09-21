@@ -227,6 +227,12 @@ fn pushed_blobs_name_the_manifest_that_owns_them() {
     assert_eq!(upload["manifestId"], PERSONAL_MANIFEST_ID);
     assert_eq!(upload["blobs"].as_array().unwrap().len(), 1);
     assert_eq!(upload["blobs"][0]["hash"], missing_checks[0].body.as_ref().unwrap()["hashes"][0]);
+
+    // The bytes are encrypted with the blob's own key, which travels encrypted with the VEK.
+    let ciphertext = crate::encoding::base64_decode(upload["blobs"][0]["encryptedDataBase64"].as_str().unwrap()).unwrap();
+    assert!(crypto::symmetric_decrypt_bytes(&ciphertext, &vek).is_err());
+    let blob_key = crypto::unwrap_key(upload["blobs"][0]["encryptedBlobKey"].as_str().unwrap(), &vek).unwrap();
+    assert_eq!(crypto::symmetric_decrypt_bytes(&ciphertext, &blob_key).unwrap(), vec![1u8, 2, 3, 4]);
 }
 
 #[test]

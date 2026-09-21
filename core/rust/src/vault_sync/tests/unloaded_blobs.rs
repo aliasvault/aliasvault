@@ -7,6 +7,7 @@ use super::test_host::{self, query, TestHost};
 use super::{insert_item, item_names, read_tables, request, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec::{self, CanonicalizeInput, ManifestSpec};
+use crate::vault_sync::blob_keys;
 use crate::vault_sync::session::SyncSession;
 use crate::vault_sync::state;
 
@@ -17,6 +18,14 @@ struct ServerBlob {
     hash: String,
     kind: String,
     ciphertext: String,
+    encrypted_blob_key: String,
+}
+
+impl ServerBlob {
+    /// The blob as the download endpoint serves it.
+    fn served(&self) -> Value {
+        json!({ "hash": self.hash, "category": self.kind, "encryptedDataBase64": self.ciphertext, "encryptedBlobKey": self.encrypted_blob_key })
+    }
 }
 
 /// A server vault holding one item with a logo and an attachment.
@@ -30,7 +39,7 @@ fn server_db(host: &TestHost) -> rusqlite::Connection {
     db
 }
 
-/// The status and vault responses of a server holding `conn` at `revision`, and its blobs encrypted with `blob_key`.
+/// The status and vault responses of a server holding `conn` at `revision`, and its blobs, their keys encrypted with `blob_key`.
 fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, revision: i64) -> (Value, Value, Vec<ServerBlob>) {
     let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput {
         tables: read_tables(conn),
@@ -41,7 +50,14 @@ fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, 
     .unwrap();
     let entry = &canonicalized.manifests[0];
     let blob = crypto::symmetric_encrypt_bytes(&vault_codec::pack_payload(&serde_json::to_string(&entry.manifest).unwrap()).unwrap(), vek).unwrap();
-    let blobs: Vec<ServerBlob> = entry.blobs.iter().map(|(hash, b)| ServerBlob { hash: hash.clone(), kind: b.kind.clone(), ciphertext: crypto::symmetric_encrypt_bytes(&crate::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key).unwrap() }).collect();
+    let blobs: Vec<ServerBlob> = entry
+        .blobs
+        .iter()
+        .map(|(hash, b)| {
+            let encrypted = blob_keys::encrypt_blob(&crate::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key).unwrap();
+            ServerBlob { hash: hash.clone(), kind: b.kind.clone(), ciphertext: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key }
+        })
+        .collect();
     let references: Vec<Value> = blobs.iter().map(|b| json!({ "hash": b.hash, "category": b.kind, "sizeBytes": 64 })).collect();
     let status = json!({
         "clientVersionSupported": true,
@@ -72,7 +88,7 @@ fn host_with_unloaded_blobs(vek: &str, serve_undecryptable: bool) -> (TestHost, 
     let (status, vault, blobs) = snapshot(&server_db(&host), vek, &blob_key, &vault_codec::generate_manifest_salt(), 7);
     host.respond("GET", "Status", status);
     host.respond("GET", "Vault", vault);
-    let served: Vec<Value> = if serve_undecryptable { blobs.iter().map(|b| json!({ "hash": b.hash, "category": b.kind, "encryptedDataBase64": b.ciphertext })).collect() } else { Vec::new() };
+    let served: Vec<Value> = if serve_undecryptable { blobs.iter().map(ServerBlob::served).collect() } else { Vec::new() };
     host.respond("POST", "Vault/blobs/download", json!(served));
 
     let pulled = host.drive(&SyncSession::new(&request("fullSync", vek, false, 0)).unwrap());
@@ -116,6 +132,27 @@ fn blobs_the_server_does_not_serve_neither_fail_the_pull_nor_lose_their_referenc
     assert_eq!(pushed["success"], true, "{}", pushed);
     assert_eq!(written_hashes(&host), sorted_hashes(&blobs), "a push may not drop the reference to a blob that is not loaded");
     assert!(host.requests_to("Vault/blobs").is_empty(), "there are no bytes to upload for a blob this device never loaded");
+}
+
+/// Pull the server vault at revision 7 with `served` as the download response, and return the loaded attachment bytes.
+fn pull_attachment_bytes(vek: &str, serve: impl Fn(&[ServerBlob]) -> Vec<Value>) -> Vec<Value> {
+    let mut host = TestHost::new(vek);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    let (status, vault, blobs) = snapshot(&server_db(&host), vek, vek, &vault_codec::generate_manifest_salt(), 7);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+    host.respond("POST", "Vault/blobs/download", json!(serve(&blobs)));
+
+    let pulled = host.drive(&SyncSession::new(&request("fullSync", vek, false, 0)).unwrap());
+    assert_eq!(pulled["success"], true, "{}", pulled);
+    query(&host.local, "SELECT hex(Blob) AS Bytes FROM Attachments WHERE IsDeleted = 0", &[]).unwrap().into_iter().map(|row| row["Bytes"].clone()).collect()
+}
+
+#[test]
+fn a_pulled_blob_opens_through_its_own_key() {
+    let vek = crypto::generate_key_base64();
+    let loaded = pull_attachment_bytes(&vek, |blobs| blobs.iter().map(ServerBlob::served).collect());
+    assert_eq!(loaded, vec![json!("09".repeat(64))]);
 }
 
 #[test]

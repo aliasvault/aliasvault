@@ -9,6 +9,7 @@ use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
 use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteRequest, VaultWriteResponse};
+use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys};
 use crate::crypto;
 use crate::vault_codec::{self, BlobEntry, CanonicalizeInput, CanonicalizedVault, DataBucket, Manifest, ManifestSpec};
@@ -606,7 +607,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
 
 /// Encrypt and upload only the blobs the server does not already have. On a migration push every personal
 /// blob is re-encrypted under the new key and overwritten. Returns hash to ciphertext for the local cache.
-async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBaselines, gate: WriteGate) -> SyncResult<HashMap<String, String>> {
+async fn upload_missing_blobs(ctx: &Ctx, blobs: &UploadBlobs, baselines: &PushBaselines, gate: WriteGate) -> SyncResult<HashMap<String, EncryptedBlob>> {
     let personal_hashes = blobs.hashes(true);
     let shared_hashes = blobs.hashes(false);
     let unknown_to_server = |hashes: &[String]| -> Vec<String> { hashes.iter().filter(|h| !baselines.known_server_hashes.contains(*h)).cloned().collect() };
@@ -635,7 +636,7 @@ async fn missing_on_server(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String]) ->
 
 /// `POST v2/Vault`. When the server reports blobs it lacks (stale local knowledge of its blob set), upload
 /// them and retry the identical write once; blobs this client cannot supply fail the push.
-async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, gate: WriteGate, uploaded: &mut HashMap<String, String>) -> SyncResult<VaultWriteResponse> {
+async fn write_vault(ctx: &Ctx, payload: &VaultWriteRequest, blobs: &UploadBlobs, gate: WriteGate, uploaded: &mut HashMap<String, EncryptedBlob>) -> SyncResult<VaultWriteResponse> {
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, payload, true).await?;
     if response.missing_blob_hashes.is_empty() {
         return Ok(response);
@@ -675,13 +676,13 @@ async fn commit_push_baselines(ctx: &Ctx, baselines: PushBaselines, manifest_rev
 }
 
 /// Record the server's blob set as this write left it, and keep the encrypted blob cache to what is still referenced.
-async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMap<String, String>) -> SyncResult<()> {
+async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMap<String, EncryptedBlob>) -> SyncResult<()> {
     state::set(&ctx.host, state::VAULT_SERVER_BLOB_HASHES, &blobs.order).await?;
-    let cache: HashMap<String, String> = state::get(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE).await?.unwrap_or_default();
-    let mut new_cache: HashMap<String, String> = HashMap::new();
+    let cache: HashMap<String, EncryptedBlob> = state::get(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE).await?.unwrap_or_default();
+    let mut new_cache: HashMap<String, EncryptedBlob> = HashMap::new();
     for hash in &blobs.order {
-        if let Some(ciphertext) = uploaded.get(hash).or_else(|| cache.get(hash)) {
-            new_cache.insert(hash.clone(), ciphertext.clone());
+        if let Some(encrypted) = uploaded.get(hash).or_else(|| cache.get(hash)) {
+            new_cache.insert(hash.clone(), encrypted.clone());
         }
     }
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &new_cache).await
@@ -701,15 +702,15 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
 
 /// Encrypt the given blobs (each under its own key) and upload them in size-capped batches per owning manifest.
 /// Returns hash to ciphertext for the local encrypted blob cache.
-async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, String>> {
-    let mut ciphertexts = HashMap::new();
+async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwrite: bool) -> SyncResult<HashMap<String, EncryptedBlob>> {
+    let mut encrypted_blobs = HashMap::new();
     for (manifest_id, hashes) in blobs.by_manifest(hashes) {
         let mut dtos = Vec::new();
         for hash in hashes {
             let entry = &blobs.entries[&hash];
-            let ciphertext = crypto::symmetric_encrypt_bytes(&entry.bytes, &entry.vek)?;
-            ciphertexts.insert(hash.clone(), ciphertext.clone());
-            dtos.push(BlobDto { hash, category: entry.kind.clone(), encrypted_data_base64: ciphertext });
+            let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek)?;
+            encrypted_blobs.insert(hash.clone(), encrypted.clone());
+            dtos.push(BlobDto { hash, category: entry.kind.clone(), encrypted_data_base64: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key });
         }
         for batch in http::batch_by_transfer_cost(dtos, |dto| dto.encrypted_data_base64.len()) {
             let chars: usize = batch.iter().map(|dto| dto.encrypted_data_base64.len()).sum();
@@ -717,7 +718,7 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
             http::post_no_content(&ctx.host, BLOBS_ENDPOINT, &BlobUploadRequest { manifest_id: manifest_id.clone(), blobs: batch, overwrite }).await?;
         }
     }
-    Ok(ciphertexts)
+    Ok(encrypted_blobs)
 }
 
 /*

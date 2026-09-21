@@ -9,6 +9,7 @@ namespace AliasVault.Client.Services.VaultSync;
 
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using AliasVault.Client.Services.Auth;
@@ -353,7 +354,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         }
 
         logger.LogInformation("[V2Push] Blob diff: {Total} blob(s) across {Manifests} manifest(s), uploading {Personal} personal and {Shared} shared.", allBlobHashes.Count, vault.Manifests.Count, personalToUpload.Count, sharedToUpload.Count);
-        var uploadedCiphertexts = new Dictionary<string, string>(StringComparer.Ordinal);
+        var uploadedCiphertexts = new Dictionary<string, Blob>(StringComparer.Ordinal);
         await UploadBlobsAsync(blobEntries, personalToUpload, migration is not null, uploadedCiphertexts);
         await UploadBlobsAsync(blobEntries, sharedToUpload, false, uploadedCiphertexts);
 
@@ -417,7 +418,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         // Every referenced hash is now known to be on the server; refresh the diff baseline and the cache.
         state.ServerBlobHashes.Clear();
         state.ServerBlobHashes.UnionWith(allBlobHashes);
-        var refreshedCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        var refreshedCache = new Dictionary<string, Blob>(StringComparer.Ordinal);
         foreach (var hash in allBlobHashes)
         {
             if (uploadedCiphertexts.TryGetValue(hash, out var uploaded))
@@ -431,9 +432,9 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         }
 
         state.BlobCipherCache.Clear();
-        foreach (var (hash, ciphertext) in refreshedCache)
+        foreach (var (hash, blob) in refreshedCache)
         {
-            state.BlobCipherCache[hash] = ciphertext;
+            state.BlobCipherCache[hash] = blob;
         }
 
         state.LastSnapshotWasLegacySqliteBlob = false;
@@ -1073,19 +1074,19 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             var blobs = await response.Content.ReadFromJsonAsync<List<Blob>>() ?? [];
             foreach (var blob in blobs)
             {
-                cache[blob.Hash] = blob.EncryptedDataBase64;
+                cache[blob.Hash] = blob;
             }
 
             logger.LogInformation("[V2Pull] Downloaded blob batch {Index}/{Total}: requested {Requested}, received {Received}.", index + 1, batches.Count, batch.Count, blobs.Count);
         }
 
         // Decrypt the referenced blobs and prune the cache to the referenced set, so it stays bounded by the current vault size.
-        var prunedCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        var prunedCache = new Dictionary<string, Blob>(StringComparer.Ordinal);
         var blobMap = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         foreach (var reference in refs)
         {
             var owner = refOwners[reference.Hash];
-            if (!cache.TryGetValue(reference.Hash, out var ciphertext))
+            if (!cache.TryGetValue(reference.Hash, out var blob))
             {
                 HandleUnavailableBlob(reference, owner, "is missing on the server");
                 continue;
@@ -1093,8 +1094,8 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
 
             try
             {
-                blobMap[reference.Hash] = await jsInteropService.SymmetricDecryptBase64ToBytes(ciphertext, owner.VaultEncryptionKey);
-                prunedCache[reference.Hash] = ciphertext;
+                blobMap[reference.Hash] = await DecryptBlobAsync(blob, owner.VaultEncryptionKey);
+                prunedCache[reference.Hash] = blob;
             }
             catch (JSException)
             {
@@ -1103,15 +1104,27 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
         }
 
         cache.Clear();
-        foreach (var (hash, ciphertext) in prunedCache)
+        foreach (var (hash, blob) in prunedCache)
         {
-            cache[hash] = ciphertext;
+            cache[hash] = blob;
         }
 
         // The server demonstrably has every blob it just served or referenced, seed the upload diff with them.
         state.ServerBlobHashes.Clear();
         state.ServerBlobHashes.UnionWith(refs.Select(reference => reference.Hash));
         return blobMap;
+    }
+
+    /// <summary>
+    /// Decrypt a stored blob: its bytes open with the blob's own key, which opens with the manifest's VEK.
+    /// </summary>
+    /// <param name="blob">The blob as the server stores it.</param>
+    /// <param name="vaultEncryptionKey">The VEK of the manifest that owns the blob (base64).</param>
+    /// <returns>The plaintext bytes.</returns>
+    private async Task<byte[]> DecryptBlobAsync(Blob blob, string vaultEncryptionKey)
+    {
+        var blobKey = await jsInteropService.SymmetricDecryptBase64ToBytes(blob.EncryptedBlobKey, vaultEncryptionKey);
+        return await jsInteropService.SymmetricDecryptBase64ToBytes(blob.EncryptedDataBase64, Convert.ToBase64String(blobKey));
     }
 
     /// <summary>
@@ -1459,15 +1472,15 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     }
 
     /// <summary>
-    /// Encrypt the given blobs, each with the key of the manifest that owns it, and upload them in size-capped batches
-    /// per manifest ahead of the manifest write.
+    /// Encrypt the given blobs, each with a fresh key of its own that is itself encrypted with the VEK of the manifest
+    /// that owns it, and upload them in size-capped batches per manifest ahead of the manifest write.
     /// </summary>
     /// <param name="entries">Every staged blob, by hash.</param>
     /// <param name="hashes">The subset to upload.</param>
     /// <param name="overwrite">Ask the server to replace the ciphertext of blobs it already has (the migration re-keys them).</param>
-    /// <param name="uploaded">Receives the uploaded ciphertext per hash, for the local cipher cache.</param>
+    /// <param name="uploaded">Receives the uploaded blob per hash, for the local cipher cache.</param>
     /// <returns>Task.</returns>
-    private async Task UploadBlobsAsync(Dictionary<string, UploadBlobEntry> entries, IEnumerable<string> hashes, bool overwrite, Dictionary<string, string> uploaded)
+    private async Task UploadBlobsAsync(Dictionary<string, UploadBlobEntry> entries, IEnumerable<string> hashes, bool overwrite, Dictionary<string, Blob> uploaded)
     {
         foreach (var group in hashes.Where(entries.ContainsKey).GroupBy(hash => entries[hash].ManifestId))
         {
@@ -1476,8 +1489,11 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             foreach (var hash in group)
             {
                 var entry = entries[hash];
-                var ciphertext = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(entry.Bytes, Convert.FromBase64String(entry.VaultEncryptionKey)));
-                uploaded[hash] = ciphertext;
+                var blobKey = RandomNumberGenerator.GetBytes(32);
+                var ciphertext = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(entry.Bytes, blobKey));
+                var encryptedBlobKey = Convert.ToBase64String(await jsInteropService.SymmetricEncryptBytes(blobKey, Convert.FromBase64String(entry.VaultEncryptionKey)));
+                var blob = new Blob { Hash = hash, Category = entry.Kind, EncryptedDataBase64 = ciphertext, EncryptedBlobKey = encryptedBlobKey };
+                uploaded[hash] = blob;
 
                 // Flush before adding when this blob would take the request past either bound.
                 if (batch.Count > 0 && (batchChars + ciphertext.Length > BlobTransferBatchMaxChars || batch.Count >= BlobTransferBatchMaxCount))
@@ -1487,7 +1503,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
                     batchChars = 0;
                 }
 
-                batch.Add(new Blob { Hash = hash, Category = entry.Kind, EncryptedDataBase64 = ciphertext });
+                batch.Add(blob);
                 batchChars += ciphertext.Length;
             }
 

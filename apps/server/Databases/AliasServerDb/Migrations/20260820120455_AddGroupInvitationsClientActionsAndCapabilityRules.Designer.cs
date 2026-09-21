@@ -1225,6 +1225,11 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EncryptedBlobKey")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<byte[]>("EncryptedData")
                         .IsRequired()
                         .HasColumnType("bytea");

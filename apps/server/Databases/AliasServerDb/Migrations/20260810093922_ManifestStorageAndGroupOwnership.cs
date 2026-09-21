@@ -563,6 +563,7 @@ namespace AliasServerDb.Migrations
                     Hash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Category = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     EncryptedData = table.Column<byte[]>(type: "bytea", nullable: false),
+                    EncryptedBlobKey = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     SizeBytes = table.Column<int>(type: "integer", nullable: false),
                     KeyVersion = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)

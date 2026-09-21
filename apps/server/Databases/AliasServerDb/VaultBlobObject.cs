@@ -38,9 +38,15 @@ public class VaultBlobObject
     public required string Category { get; set; }
 
     /// <summary>
-    /// Gets or sets the encrypted blob payload (AES-GCM ciphertext bytes).
+    /// Gets or sets the encrypted blob payload (AES-GCM ciphertext bytes), encrypted with the blob's own key.
     /// </summary>
     public required byte[] EncryptedData { get; set; }
+
+    /// <summary>
+    /// Gets or sets the blob's own key, encrypted with the manifest's VEK.
+    /// </summary>
+    [StringLength(255)]
+    public required string EncryptedBlobKey { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the encrypted payload in bytes (cached for cheap metrics).
@@ -48,7 +54,7 @@ public class VaultBlobObject
     public int SizeBytes { get; set; }
 
     /// <summary>
-    /// Gets or sets the version of the VEK that <see cref="EncryptedData"/> is encrypted with.
+    /// Gets or sets the version of the VEK that <see cref="EncryptedBlobKey"/> is encrypted with.
     /// </summary>
     public int KeyVersion { get; set; }
 

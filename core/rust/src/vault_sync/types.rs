@@ -528,7 +528,6 @@ pub struct StatusResponse {
 pub struct ManifestRevision {
     pub manifest_id: String,
     pub revision: i64,
-    /// The name of a shared manifest, encrypted with the manifest's own key.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub encrypted_name: Option<String>,
 }
@@ -674,6 +673,7 @@ pub struct BlobDto {
     pub hash: String,
     pub category: String,
     pub encrypted_data_base64: String,
+    pub encrypted_blob_key: String,
 }
 
 #[derive(Debug, Clone, Serialize)]

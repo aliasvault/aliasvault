@@ -89,6 +89,7 @@ public class VaultBlobRetentionPolicyTests
             Hash = hash,
             Category = "logo",
             EncryptedData = [1, 2, 3, 4],
+            EncryptedBlobKey = "key",
             SizeBytes = 4,
         };
     }

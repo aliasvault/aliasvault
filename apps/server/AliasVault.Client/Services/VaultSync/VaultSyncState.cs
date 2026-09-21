@@ -8,6 +8,7 @@
 namespace AliasVault.Client.Services.VaultSync;
 
 using AliasVault.Client.Services.VaultSync.Models;
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// The client's sync state as recorded by the last pull.
@@ -51,9 +52,9 @@ public sealed class VaultSyncState
     public HashSet<string> ServerBlobHashes { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the encrypted blob cache (hash to base64 ciphertext), pruned to the referenced set on every pull.
+    /// Gets the encrypted blob cache (hash to the blob as the server stores it), pruned to the referenced set on every pull.
     /// </summary>
-    public Dictionary<string, string> BlobCipherCache { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, Blob> BlobCipherCache { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets the shared manifests this session holds a grant on, keyed by manifest id.
