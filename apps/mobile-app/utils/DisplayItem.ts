@@ -76,11 +76,11 @@ export function toDisplayItems<T extends Item>(items: T[]): DisplayItem<T>[] {
       return undefined;
     }
     if (!item.LogoInfo) {
-      return toDataUri(item.Logo);
+      return logoToDataUri(item.Logo);
     }
     const key = `${item.ManifestId}/${item.LogoInfo.Id}`;
     if (!dataUris.has(key)) {
-      dataUris.set(key, toDataUri(item.Logo));
+      dataUris.set(key, logoToDataUri(item.Logo));
     }
     return dataUris.get(key);
   };
@@ -95,7 +95,7 @@ export function toDisplayItems<T extends Item>(items: T[]): DisplayItem<T>[] {
 /**
  * Encode logo bytes as a data URI, or undefined when they cannot be encoded.
  */
-function toDataUri(logo: Uint8Array | number[]): string | undefined {
+export function logoToDataUri(logo: Uint8Array | number[]): string | undefined {
   try {
     const bytes = logo instanceof Uint8Array ? logo : Uint8Array.from(logo);
     return `data:${detectMimeType(bytes)};base64,${Buffer.from(bytes).toString('base64')}`;

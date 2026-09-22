@@ -1,6 +1,6 @@
-import { Buffer } from 'buffer';
-
 import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { IdentityHelperUtils } from '@aliasvault/models/identity';
 import { ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
@@ -13,13 +13,14 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Keyboard, Platform, ScrollView, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { DisplayItem } from '@/utils/DisplayItem';
+import { logoToDataUri, type DisplayItem } from '@/utils/DisplayItem';
 import emitter, { type ItemChangedEvent } from '@/utils/EventEmitter';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { itemRoute } from '@/utils/ItemRoute';
 import { extractServiceNameFromUrl, sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useItemLogo } from '@/hooks/useItemLogo';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -35,6 +36,7 @@ import { MultiValueField } from '@/components/form/MultiValueField';
 import { ResizableTextArea } from '@/components/form/ResizableTextArea';
 import { AttachmentUploader } from '@/components/items/details/AttachmentUploader';
 import { TotpEditor } from '@/components/items/details/TotpEditor';
+import { ItemLogoPicker } from '@/components/items/ItemLogoPicker';
 import { ItemTypeSelector } from '@/components/items/ItemTypeSelector';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -47,7 +49,6 @@ import { useWebApi } from '@/context/WebApiContext';
 import type { Folder } from '@aliasvault/client/database/repositories/FolderRepository';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Attachment, Item, ItemField, TotpCode, ItemType, FieldType, PasswordSettings } from '@aliasvault/models/vault';
-import type { FaviconExtractModel } from '@aliasvault/models/webapi';
 
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
@@ -95,6 +96,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const totpShowAddFormRef = useRef<(() => void) | null>(null);
   const [passkeyIds, setPasskeyIds] = useState<string[]>([]);
   const [passkeyIdsMarkedForDeletion, setPasskeyIdsMarkedForDeletion] = useState<string[]>([]);
+  // The favicon bytes the editor resolved, kept out of React state; the item only carries them as a data URI.
+  const pendingLogoBytesRef = useRef<Uint8Array | undefined>(undefined);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
@@ -380,6 +383,26 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
     handleFieldChange('login.email', email);
   }, [dbContext.sqliteClient, handleFieldChange]);
+
+  /**
+   * Update the logo preview in the editor when the resolved icon bytes change.
+   */
+  const handleLogoBytesChange = useCallback((data?: Uint8Array): void => {
+    pendingLogoBytesRef.current = data;
+    const logoDataUri = data ? logoToDataUri(data) : undefined;
+    setItem(prev => (!prev || prev.LogoDataUri === logoDataUri) ? prev : { ...prev, LogoDataUri: logoDataUri });
+  }, []);
+
+  /*
+   * The item's icon: a pick from the built-in catalog, or the website's own favicon extracted from the URL.
+   */
+  const { logoSelection, isFetchingLogo, resolvedFaviconSource, websiteSource, selectLogo, fetchLogoFromWebsite } = useItemLogo({
+    url: fieldValues['login.url'],
+    currentLogoKind: item?.LogoInfo?.Kind,
+    isReady: item !== null,
+    isExistingItem: isEditMode,
+    onLogoBytesChange: handleLogoBytesChange
+  });
 
   /**
    * Prevent accidental dismissal when there are unsaved changes.
@@ -817,36 +840,18 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       UpdatedAt: new Date().toISOString()
     };
 
-    // Extract favicon from URL if present.
-    const faviconTarget = await RustCore.selectFaviconTarget(RustCore.toUrlList(fieldValues['login.url']));
-
-    if (faviconTarget && dbContext.sqliteClient) {
-      // Only fetch favicon if no logo exists for this source (deduplication)
-      const hasExistingLogo = await dbContext.sqliteClient.logos.hasFaviconForSource(faviconTarget.source);
-
-      if (!hasExistingLogo) {
-        // Only show loading indicator when fetching favicon
+    // Save the logo to the item.
+    if (usesWebsiteLogo(logoSelection) && dbContext.sqliteClient) {
+      const faviconTarget = await FaviconService.resolveTarget(fieldValues['login.url']);
+      if (faviconTarget && resolvedFaviconSource === faviconTarget.source) {
+        itemToSave.Logo = pendingLogoBytesRef.current;
+      } else if (faviconTarget && !(await dbContext.sqliteClient.logos.hasFaviconForSource(faviconTarget.source))) {
+        // Only show the loading indicator when fetching the favicon.
         setIsSaving(true);
         setSaveStatus(t('vault.savingChangesToVault'));
-
-        try {
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Favicon extraction timed out')), 5000)
-          );
-
-          const faviconPromise = webApi.get<FaviconExtractModel>('Favicon/Extract?url=' + encodeURIComponent(faviconTarget.url));
-          const faviconResponse = await Promise.race([faviconPromise, timeoutPromise]) as FaviconExtractModel;
-          if (faviconResponse?.image) {
-            const decodedImage = Uint8Array.from(Buffer.from(faviconResponse.image as string, 'base64'));
-            itemToSave.Logo = decodedImage;
-          }
-        } catch {
-          // Favicon extraction failed or timed out - not critical, continue with save
-        }
+        const result = await FaviconService.fetchFavicon(faviconTarget, dbContext.sqliteClient.logos, webApi, { ignoreStored: true });
+        itemToSave.Logo = result.success ? result.imageData : undefined;
       }
-    } else if (!faviconTarget) {
-      // No valid URL found: clear any existing logo.
-      itemToSave.Logo = undefined;
     }
 
     // Only newly picked attachments are inserted, so only they need their bytes back.
@@ -865,9 +870,9 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
             await dbContext.sqliteClient!.passkeys.deleteById(passkeyId, editRef.ManifestId);
           }
 
-          savedRef = await dbContext.sqliteClient!.items.update(editRef, itemToSave, originalAttachmentIds, attachmentsToSave, originalTotpCodeIds, totpCodes) ?? editRef;
+          savedRef = await dbContext.sqliteClient!.items.update(editRef, itemToSave, originalAttachmentIds, attachmentsToSave, originalTotpCodeIds, totpCodes, logoSelection) ?? editRef;
         } else {
-          savedRef = await dbContext.sqliteClient!.items.create(itemToSave, attachmentsToSave, totpCodes);
+          savedRef = await dbContext.sqliteClient!.items.create(itemToSave, attachmentsToSave, totpCodes, logoSelection);
         }
       });
       const currentRef = savedRef as ItemRef | null;
@@ -917,7 +922,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       setIsSaving(false);
       setIsSaveDisabled(false);
     }
-  }, [isEditMode, editRef, itemUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion]);
+  }, [isEditMode, editRef, itemUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion, logoSelection, resolvedFaviconSource]);
 
   /**
    * Handle the delete button press.
@@ -1389,6 +1394,23 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
                   setItem(prev => prev ? { ...prev, FolderId: folder?.Id ?? null, ManifestId: manifestForItemIn(folder, personalManifestId) } : prev);
                   setHasUnsavedChanges(true);
                 }}
+                logoSlot={
+                  <ItemLogoPicker
+                    item={item}
+                    pendingSelection={logoSelection}
+                    faviconSource={resolvedFaviconSource}
+                    websiteSource={websiteSource}
+                    isFetching={isFetchingLogo}
+                    onSelect={(selection) => {
+                      selectLogo(selection);
+                      setHasUnsavedChanges(true);
+                    }}
+                    onFetchFromWebsite={() => {
+                      void fetchLogoFromWebsite();
+                      setHasUnsavedChanges(true);
+                    }}
+                  />
+                }
               />
               {/* Primary fields (like URL) */}
               {primaryFields.map(field => (

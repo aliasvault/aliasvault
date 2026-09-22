@@ -7,12 +7,14 @@ import { SvgXml } from 'react-native-svg';
 import {
   ItemTypes,
   FieldKey,
+  LogoKinds,
 } from '@aliasvault/models/vault';
 
 import servicePlaceholder from '@/assets/images/service-placeholder.webp';
 import type { DisplayItem } from '@/utils/DisplayItem';
 
-// Import centralized icon components (auto-generated from core/models/src/icons/ItemTypeIcons.ts)
+// Import centralized icon components (auto-generated from core/models/src/icons/AppIcons.ts and ItemTypeIcons.ts)
+import { appIconComponents, type AppIconKey } from './AppIconComponents';
 import {
   iconComponents,
   PlaceholderIcon,
@@ -51,6 +53,13 @@ const detectCardBrand = (cardNumber: string | undefined): IconKey => {
 };
 
 /**
+ * The component for a built-in icon key, or null when the key is unknown to this client (a newer version may have added it).
+ */
+export const getAppIconComponent = (key: string): typeof appIconComponents[AppIconKey] | null => {
+  return Object.prototype.hasOwnProperty.call(appIconComponents, key) ? appIconComponents[key as AppIconKey] : null;
+};
+
+/**
  * Get the appropriate icon component for a card number.
  */
 const getCardIconComponent = (cardNumber: string | undefined) => {
@@ -58,11 +67,28 @@ const getCardIconComponent = (cardNumber: string | undefined) => {
 };
 
 /**
- * Item icon component: a type icon for notes and cards, the item's logo otherwise.
+ * Item icon component: a logo the user picked wins, then a type icon for notes and cards, then the item's logo.
  */
 export function ItemIcon({ item, style }: ItemIconProps) : React.ReactNode {
   const width = Number(style?.width ?? styles.logo.width);
   const height = Number(style?.height ?? styles.logo.height);
+
+  // A built-in icon carries no bytes: every platform draws it from the shared catalog.
+  if (item.LogoInfo?.Kind === LogoKinds.Builtin) {
+    const BuiltinIcon = getAppIconComponent(item.LogoInfo.Source);
+    if (BuiltinIcon) {
+      return (
+        <View style={[styles.iconContainer, style]}>
+          <BuiltinIcon width={width} height={height} />
+        </View>
+      );
+    }
+  }
+
+  // An uploaded image is shown like any other logo; a custom row without bytes falls through to the placeholder.
+  if (item.LogoInfo?.Kind === LogoKinds.Custom && item.LogoDataUri) {
+    return <LogoImage dataUri={item.LogoDataUri} style={style} />;
+  }
 
   // For Note type, always show note icon
   if (item.ItemType === ItemTypes.Note) {
