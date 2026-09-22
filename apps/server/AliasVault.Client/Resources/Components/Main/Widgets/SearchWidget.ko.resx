@@ -20,27 +20,27 @@
     </xsd:element>
   </xsd:schema>
   <data name="SearchVaultPlaceholder">
-    <value>Search vault...</value>
+    <value>보관함 검색...</value>
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">
-    <value>Type a term to search for, this can be the service name, description or email address.</value>
+    <value>검색어를 입력하세요. 서비스 이름, 설명 또는 이메일 주소로 검색할 수 있습니다.</value>
     <comment>Help text explaining what can be searched</comment>
   </data>
   <data name="SearchTooShortMessage">
-    <value>Please type more chars</value>
+    <value>더 많은 글자를 입력하세요</value>
     <comment>Message when search term is too short</comment>
   </data>
   <data name="SearchingForMessage">
-    <value>Searching for "{0}"</value>
+    <value>"{0}" 검색 중</value>
     <comment>Message showing current search term</comment>
   </data>
   <data name="NoResultsFoundMessage">
-    <value>No results found</value>
+    <value>검색 결과가 없습니다</value>
     <comment>Message when no search results are found</comment>
   </data>
   <data name="SearchingMessage">
-    <value>Searching...</value>
+    <value>검색 중...</value>
     <comment>Message when search is in progress</comment>
   </data>
 </root>
