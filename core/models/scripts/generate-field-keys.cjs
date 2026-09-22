@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generates FieldKey, FieldType, ItemType constants, SystemFieldRegistry, and ItemTypeIcons for C#, Swift, and Kotlin from TypeScript source.
+ * Generates FieldKey, FieldType, ItemType constants, SystemFieldRegistry, and the icon catalogs (ItemTypeIcons, AppIcons) for C#, Swift, Kotlin and React Native from TypeScript source.
  * All type definitions are dynamically extracted from the TypeScript source files.
  */
 
@@ -12,22 +12,53 @@ const REPO_ROOT = path.join(__dirname, '../../..');
 const TS_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/FieldKey.ts');
 const TS_ITEM_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/Item.ts');
 const TS_REGISTRY_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/SystemFieldRegistry.ts');
-const TS_ICONS_SOURCE = path.join(REPO_ROOT, 'core/models/src/icons/ItemTypeIcons.ts');
 const CS_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/FieldKey.cs');
 const CS_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/FieldType.cs');
 const CS_FIELD_TYPE_ENUM_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/FieldTypeKind.cs');
 const CS_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/ItemType.cs');
 const CS_REGISTRY_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/SystemFieldRegistry.cs');
-const CS_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/ItemTypeIcons.cs');
 const SWIFT_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/FieldKey.swift');
 const SWIFT_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/FieldType.swift');
 const SWIFT_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/ItemType.swift');
-const SWIFT_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/ItemTypeIcons.swift');
 const KOTLIN_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/FieldKey.kt');
 const KOTLIN_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/FieldType.kt');
 const KOTLIN_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/ItemType.kt');
-const KOTLIN_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/ItemTypeIcons.kt');
-const RN_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/components/items/ItemTypeIconComponents.tsx');
+
+/**
+ * The SVG icon catalogs.
+ */
+const ICON_CATALOGS = [
+  {
+    constName: 'ItemTypeIconSvgs',
+    className: 'ItemTypeIcons',
+    sourceFile: 'core/models/src/icons/ItemTypeIcons.ts',
+    description: ['Centralized SVG icon definitions for item types.', 'Single source of truth for all item type icons across platforms.'],
+    rnMapName: 'iconComponents',
+    rnKeyTypeName: 'IconKey',
+    lookup: false,
+    outputs: {
+      cs: path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/ItemTypeIcons.cs'),
+      swift: path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/ItemTypeIcons.swift'),
+      kotlin: path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/ItemTypeIcons.kt'),
+      rn: path.join(REPO_ROOT, 'apps/mobile-app/components/items/ItemTypeIconComponents.tsx'),
+    },
+  },
+  {
+    constName: 'AppIconSvgs',
+    className: 'AppIcons',
+    sourceFile: 'core/models/src/icons/AppIcons.ts',
+    description: ['The catalog of built-in icons a user can pick for an item, keyed by the Source a builtin logo row stores.', 'Single source of truth for all built-in icons across platforms.'],
+    rnMapName: 'appIconComponents',
+    rnKeyTypeName: 'AppIconKey',
+    lookup: true,
+    outputs: {
+      cs: path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/AppIcons.cs'),
+      swift: path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/AppIcons.swift'),
+      kotlin: path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/AppIcons.kt'),
+      rn: path.join(REPO_ROOT, 'apps/mobile-app/components/items/AppIconComponents.tsx'),
+    },
+  },
+];
 
 /**
  * Parse the TypeScript FieldKey.ts file and extract constants
@@ -1022,15 +1053,15 @@ function ensureDir(filePath) {
 // ==================== ICON GENERATION ====================
 
 /**
- * Parse ItemTypeIconSvgs from TypeScript source
+ * Parse an SVG catalog constant (a `{ Name: `<svg...>` }` object) from TypeScript source
  */
-function parseItemTypeIconSvgs(tsContent) {
+function parseIconSvgs(tsContent, constName) {
   const icons = {};
 
-  // Find the ItemTypeIconSvgs constant
-  const startMatch = tsContent.match(/export const ItemTypeIconSvgs\s*=\s*\{/);
+  // Find the catalog constant
+  const startMatch = tsContent.match(new RegExp(`export const ${constName}\\s*=\\s*\\{`));
   if (!startMatch) {
-    console.warn('Warning: Could not find ItemTypeIconSvgs in source');
+    console.warn(`Warning: Could not find ${constName} in source`);
     return icons;
   }
 
@@ -1099,20 +1130,19 @@ function parseItemTypeIconSvgs(tsContent) {
 
 
 /**
- * Generate C# ItemTypeIcons static class
+ * Generate a C# static class for an icon catalog
  */
-function generateCSharpIcons(icons) {
+function generateCSharpIcons(icons, catalog) {
   const header = `// <auto-generated />
-// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// This file is auto-generated from ${catalog.sourceFile}
 // Do not edit this file directly. Run 'npm run generate:models' to regenerate.
-
+${catalog.lookup ? '\n#nullable enable\n' : ''}
 namespace AliasClientDb.Models;
 
 /// <summary>
-/// Centralized SVG icon definitions for item types.
-/// Single source of truth for all item type icons across platforms.
+${catalog.description.map(line => `/// ${line}`).join('\n')}
 /// </summary>
-public static class ItemTypeIcons
+public static class ${catalog.className}
 {
 `;
 
@@ -1125,27 +1155,42 @@ public static class ItemTypeIcons
     })
     .join('\n\n');
 
+  const lookup = catalog.lookup ? `
+
+    /// <summary>
+    /// Gets the SVG for an icon key, or null when the key is unknown to this client.
+    /// </summary>
+    /// <param name="key">The icon key.</param>
+    /// <returns>The SVG markup, or null.</returns>
+    public static string? GetSvg(string key)
+    {
+        return key switch
+        {
+${Object.keys(icons).map(name => `            "${name}" => ${name},`).join('\n')}
+            _ => null,
+        };
+    }` : '';
+
   const footer = `
 }
 `;
 
-  return header + iconFields + footer;
+  return header + iconFields + lookup + footer;
 }
 
 /**
- * Generate Swift ItemTypeIcons struct
+ * Generate a Swift struct for an icon catalog
  */
-function generateSwiftIcons(icons) {
+function generateSwiftIcons(icons, catalog) {
   const header = `// <auto-generated />
-// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// This file is auto-generated from ${catalog.sourceFile}
 // Do not edit this file directly. Run 'npm run generate:models' to regenerate.
 // swiftlint:disable line_length
 
 import Foundation
 
-/// Centralized SVG icon definitions for item types.
-/// Single source of truth for all item type icons across platforms.
-public struct ItemTypeIcons {
+${catalog.description.map(line => `/// ${line}`).join('\n')}
+public struct ${catalog.className} {
 `;
 
   const iconFields = Object.entries(icons)
@@ -1159,11 +1204,21 @@ ${svg}
     })
     .join('\n\n');
 
+  const lookup = catalog.lookup ? `
+
+    /// The SVG for an icon key, or nil when the key is unknown to this client.
+    public static func svg(for key: String) -> String? {
+        switch key {
+${Object.keys(icons).map(name => `        case "${name}": return ${name.charAt(0).toLowerCase() + name.slice(1)}`).join('\n')}
+        default: return nil
+        }
+    }` : '';
+
   const footer = `
 }
 `;
 
-  return header + iconFields + footer;
+  return header + iconFields + lookup + footer;
 }
 
 /**
@@ -1275,9 +1330,9 @@ function toReactNativeAttr(attr) {
 /**
  * Generate React Native SVG components from icons.
  */
-function generateReactNativeIcons(icons) {
+function generateReactNativeIcons(icons, catalog) {
   const header = `// <auto-generated />
-// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// This file is auto-generated from ${catalog.sourceFile}
 // Do not edit this file directly. Run 'npm run generate:models' to regenerate.
 
 import React from 'react';
@@ -1293,32 +1348,31 @@ import Svg, { Circle, Path, Rect, Text as SvgText } from 'react-native-svg';
 /**
  * Map of icon key to React Native SVG component.
  */
-export const iconComponents = {
+export const ${catalog.rnMapName} = {
 ${Object.keys(icons).map(name => `  ${name}: ${name}Icon,`).join('\n')}
 };
 
-export type IconKey = keyof typeof iconComponents;
+export type ${catalog.rnKeyTypeName} = keyof typeof ${catalog.rnMapName};
 `;
 
   return header + components + iconMap;
 }
 
 /**
- * Generate Kotlin ItemTypeIcons object
+ * Generate a Kotlin object for an icon catalog
  */
-function generateKotlinIcons(icons) {
+function generateKotlinIcons(icons, catalog) {
   const header = `// <auto-generated />
-// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// This file is auto-generated from ${catalog.sourceFile}
 // Do not edit this file directly. Run 'npm run generate:models' to regenerate.
 @file:Suppress("MaxLineLength")
 
 package net.aliasvault.app.vaultstore.models
 
 /**
- * Centralized SVG icon definitions for item types.
- * Single source of truth for all item type icons across platforms.
+${catalog.description.map(line => ` * ${line}`).join('\n')}
  */
-object ItemTypeIcons {
+object ${catalog.className} {
 `;
 
   const iconFields = Object.entries(icons)
@@ -1334,11 +1388,21 @@ ${svg}
     })
     .join('\n\n');
 
+  const lookup = catalog.lookup ? `
+
+    /**
+     * The SVG for an icon key, or null when the key is unknown to this client.
+     */
+    fun svgFor(key: String): String? = when (key) {
+${Object.keys(icons).map(name => `        "${name}" -> ${name.replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '')}`).join('\n')}
+        else -> null
+    }` : '';
+
   const footer = `
 }
 `;
 
-  return header + iconFields + footer;
+  return header + iconFields + lookup + footer;
 }
 
 /**
@@ -1472,41 +1536,28 @@ function main() {
 
   // ==================== ICON GENERATION ====================
 
-  // Read TypeScript ItemTypeIcons source
-  if (!fs.existsSync(TS_ICONS_SOURCE)) {
-    console.warn(`Warning: Icons source file not found: ${TS_ICONS_SOURCE}`);
-  } else {
-    const tsIconsContent = fs.readFileSync(TS_ICONS_SOURCE, 'utf8');
-    const iconSvgs = parseItemTypeIconSvgs(tsIconsContent);
+  for (const catalog of ICON_CATALOGS) {
+    const source = path.join(REPO_ROOT, catalog.sourceFile);
+    if (!fs.existsSync(source)) {
+      throw new Error(`Icons source file not found: ${source}`);
+    }
 
+    const iconSvgs = parseIconSvgs(fs.readFileSync(source, 'utf8'), catalog.constName);
     if (Object.keys(iconSvgs).length === 0) {
-      console.warn('Warning: No icon SVGs found in source file');
-    } else {
-      console.log(`Parsed ${Object.keys(iconSvgs).length} icon SVGs: ${Object.keys(iconSvgs).join(', ')}`);
+      throw new Error(`No icon SVGs found in ${catalog.sourceFile}`);
+    }
+    console.log(`Parsed ${Object.keys(iconSvgs).length} ${catalog.className} SVGs: ${Object.keys(iconSvgs).join(', ')}`);
 
-      // Generate C# ItemTypeIcons
-      ensureDir(CS_ICONS_OUTPUT);
-      const csIconsContent = generateCSharpIcons(iconSvgs);
-      fs.writeFileSync(CS_ICONS_OUTPUT, csIconsContent, 'utf8');
-      console.log(`Generated: ${CS_ICONS_OUTPUT}`);
-
-      // Generate Swift ItemTypeIcons
-      ensureDir(SWIFT_ICONS_OUTPUT);
-      const swiftIconsContent = generateSwiftIcons(iconSvgs);
-      fs.writeFileSync(SWIFT_ICONS_OUTPUT, swiftIconsContent, 'utf8');
-      console.log(`Generated: ${SWIFT_ICONS_OUTPUT}`);
-
-      // Generate Kotlin ItemTypeIcons
-      ensureDir(KOTLIN_ICONS_OUTPUT);
-      const kotlinIconsContent = generateKotlinIcons(iconSvgs);
-      fs.writeFileSync(KOTLIN_ICONS_OUTPUT, kotlinIconsContent, 'utf8');
-      console.log(`Generated: ${KOTLIN_ICONS_OUTPUT}`);
-
-      // Generate React Native ItemTypeIcons components
-      ensureDir(RN_ICONS_OUTPUT);
-      const rnIconsContent = generateReactNativeIcons(iconSvgs);
-      fs.writeFileSync(RN_ICONS_OUTPUT, rnIconsContent, 'utf8');
-      console.log(`Generated: ${RN_ICONS_OUTPUT}`);
+    const generated = [
+      [catalog.outputs.cs, generateCSharpIcons(iconSvgs, catalog)],
+      [catalog.outputs.swift, generateSwiftIcons(iconSvgs, catalog)],
+      [catalog.outputs.kotlin, generateKotlinIcons(iconSvgs, catalog)],
+      [catalog.outputs.rn, generateReactNativeIcons(iconSvgs, catalog)],
+    ];
+    for (const [output, content] of generated) {
+      ensureDir(output);
+      fs.writeFileSync(output, content, 'utf8');
+      console.log(`Generated: ${output}`);
     }
   }
 

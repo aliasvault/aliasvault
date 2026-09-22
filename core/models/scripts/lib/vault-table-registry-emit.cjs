@@ -127,7 +127,7 @@ pub const SYNCABLE_TABLE_NAMES: &[&str] = &[
 ${tables.map((t) => `    "${t.Name}",`).join('\n')}
 ];
 
-/// The columns whose bytes are extracted into content-addressed blobs rather than kept inline in the manifest.
+/// The columns whose bytes are extracted into content-addressed blobs.
 pub static BLOB_COLUMNS: &[BlobColumn] = &[
 ${blobColumns.map((entry) => `    ${entry},`).join('\n')}
 ];
