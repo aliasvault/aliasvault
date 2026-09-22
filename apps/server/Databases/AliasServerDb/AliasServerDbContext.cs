@@ -404,6 +404,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => e.OwnerGroupId);
+
+            builder.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configure VaultManifestsHistory - superseded revisions, composite key (ManifestId, RevisionNumber).
@@ -415,6 +420,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .WithMany()
                 .HasForeignKey(e => e.ManifestId)
                 .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configure VaultManifestAccessKey: a per-(holder, manifest) encrypted-VEK access path (AccountKey row or grant).

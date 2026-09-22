@@ -438,6 +438,7 @@ public class VaultController(
                 row.FileSize = FileHelper.BytesToKilobytes(row.ManifestBlob.Length);
                 row.CredentialsCount = mw.CredentialsCount;
                 row.Client = ClientHeader;
+                row.UpdatedByUserId = user.Id;
                 row.UpdatedAt = timeProvider.UtcNow;
 
                 // Every manifest counts the aliases the push filed against it, shared manifests included. One

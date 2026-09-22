@@ -51,18 +51,6 @@ namespace AliasServerDb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EmailClaimLinks", x => new { x.EmailClaimId, x.VaultManifestId });
-                    table.ForeignKey(
-                        name: "FK_EmailClaimLinks_EmailClaims_EmailClaimId",
-                        column: x => x.EmailClaimId,
-                        principalTable: "EmailClaims",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_EmailClaimLinks_VaultManifests_VaultManifestId",
-                        column: x => x.VaultManifestId,
-                        principalTable: "VaultManifests",
-                        principalColumn: "ManifestId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -76,19 +64,15 @@ namespace AliasServerDb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EmailDecryptionKeys", x => new { x.EmailId, x.VaultManifestDeliveryKeyId });
-                    table.ForeignKey(
-                        name: "FK_EmailDecryptionKeys_Emails_EmailId",
-                        column: x => x.EmailId,
-                        principalTable: "Emails",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId",
-                        column: x => x.VaultManifestDeliveryKeyId,
-                        principalTable: "VaultManifestDeliveryKeys",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.Sql("""
+                INSERT INTO "EmailDecryptionKeys" ("EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey")
+                SELECT "Id", "EncryptionKeyId", "EncryptedSymmetricKey" FROM "Emails";
+
+                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
+                SELECT "Id", "VaultManifestId", CASE WHEN "Disabled" THEN 'Removed' ELSE 'Active' END FROM "EmailClaims" WHERE "VaultManifestId" IS NOT NULL;
+                """);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmailClaimLinks_VaultManifestId_EmailClaimId",
@@ -100,16 +84,37 @@ namespace AliasServerDb.Migrations
                 table: "EmailDecryptionKeys",
                 columns: new[] { "VaultManifestDeliveryKeyId", "EmailId" });
 
-            // Every existing email gets exactly one decryption key (its current key), every claim one link (its current
-            // manifest). A tombstoned claim (VaultManifestId already null) simply gets zero links. A disabled claim
-            // kept its manifest reference purely as an ownership record, which is what 'Removed' now indicates.
-            migrationBuilder.Sql("""
-                INSERT INTO "EmailDecryptionKeys" ("EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey")
-                SELECT "Id", "EncryptionKeyId", "EncryptedSymmetricKey" FROM "Emails";
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailClaimLinks_EmailClaims_EmailClaimId",
+                table: "EmailClaimLinks",
+                column: "EmailClaimId",
+                principalTable: "EmailClaims",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
-                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
-                SELECT "Id", "VaultManifestId", CASE WHEN "Disabled" THEN 'Removed' ELSE 'Active' END FROM "EmailClaims" WHERE "VaultManifestId" IS NOT NULL;
-                """);
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailClaimLinks_VaultManifests_VaultManifestId",
+                table: "EmailClaimLinks",
+                column: "VaultManifestId",
+                principalTable: "VaultManifests",
+                principalColumn: "ManifestId",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailDecryptionKeys_Emails_EmailId",
+                table: "EmailDecryptionKeys",
+                column: "EmailId",
+                principalTable: "Emails",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId",
+                table: "EmailDecryptionKeys",
+                column: "VaultManifestDeliveryKeyId",
+                principalTable: "VaultManifestDeliveryKeys",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.DropForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims");
             migrationBuilder.DropForeignKey(name: "FK_Emails_VaultManifestDeliveryKeys_EncryptionKeyId", table: "Emails");

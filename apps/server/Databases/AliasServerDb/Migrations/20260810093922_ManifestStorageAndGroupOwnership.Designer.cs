@@ -1176,6 +1176,10 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("VaultBlob")
                         .HasColumnType("text");
 
@@ -1190,6 +1194,8 @@ namespace AliasServerDb.Migrations
                     b.HasKey("ManifestId");
 
                     b.HasIndex("OwnerGroupId");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("VaultManifests");
                 });
@@ -1349,6 +1355,10 @@ namespace AliasServerDb.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UpdatedByUserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("VaultBlob")
                         .HasColumnType("text");
 
@@ -1361,6 +1371,8 @@ namespace AliasServerDb.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.HasKey("ManifestId", "RevisionNumber");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("VaultManifestsHistory", (string)null);
                 });
@@ -1683,7 +1695,14 @@ namespace AliasServerDb.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AliasServerDb.AliasVaultUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("OwnerGroup");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("AliasServerDb.VaultManifestAccessKey", b =>
@@ -1723,7 +1742,14 @@ namespace AliasServerDb.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("AliasServerDb.AliasVaultUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Manifest");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("AliasServerDb.AliasVaultUser", b =>

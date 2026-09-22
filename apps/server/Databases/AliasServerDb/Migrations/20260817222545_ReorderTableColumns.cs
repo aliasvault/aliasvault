@@ -66,7 +66,9 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "VaultDataBuckets" DROP CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId";
                 ALTER TABLE "VaultManifestAccessKeys" DROP CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId";
                 ALTER TABLE "VaultManifestDeliveryKeys" DROP CONSTRAINT "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId";
+                ALTER TABLE "VaultManifests" DROP CONSTRAINT "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId";
                 ALTER TABLE "VaultManifests" DROP CONSTRAINT "FK_VaultManifests_Groups_OwnerGroupId";
+                ALTER TABLE "VaultManifestsHistory" DROP CONSTRAINT "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId";
                 ALTER TABLE "VaultManifestsHistory" DROP CONSTRAINT "FK_VaultManifestsHistory_VaultManifests_ManifestId";
                 """);
         }
@@ -290,6 +292,7 @@ namespace AliasServerDb.Migrations
                     "CredentialsCount" integer NOT NULL,
                     "EmailClaimsCount" integer NOT NULL,
                     "Client" character varying(255),
+                    "UpdatedByUserId" character varying(255),
                     "CreatedAt" timestamp with time zone NOT NULL,
                     "UpdatedAt" timestamp with time zone NOT NULL,
                     "VaultBlob" text,
@@ -302,8 +305,8 @@ namespace AliasServerDb.Migrations
 
                 ALTER TABLE "VaultManifests_reordered" ALTER COLUMN "ManifestBlob" SET STORAGE EXTERNAL;
 
-                INSERT INTO "VaultManifests_reordered" ("ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings")
-                SELECT "ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings"
+                INSERT INTO "VaultManifests_reordered" ("ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "UpdatedByUserId", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings")
+                SELECT "ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "UpdatedByUserId", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings"
                 FROM "VaultManifests";
 
                 DROP TABLE "VaultManifests";
@@ -311,6 +314,7 @@ namespace AliasServerDb.Migrations
 
                 ALTER TABLE "VaultManifests" ADD CONSTRAINT "PK_VaultManifests" PRIMARY KEY ("ManifestId");
                 CREATE INDEX "IX_VaultManifests_OwnerGroupId" ON "VaultManifests" ("OwnerGroupId");
+                CREATE INDEX "IX_VaultManifests_UpdatedByUserId" ON "VaultManifests" ("UpdatedByUserId");
                 """);
         }
 
@@ -372,7 +376,9 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "VaultDataBuckets" ADD CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestAccessKeys" ADD CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestDeliveryKeys" ADD CONSTRAINT "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId" FOREIGN KEY ("VaultManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
+                ALTER TABLE "VaultManifests" ADD CONSTRAINT "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId" FOREIGN KEY ("UpdatedByUserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE SET NULL;
                 ALTER TABLE "VaultManifests" ADD CONSTRAINT "FK_VaultManifests_Groups_OwnerGroupId" FOREIGN KEY ("OwnerGroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
+                ALTER TABLE "VaultManifestsHistory" ADD CONSTRAINT "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId" FOREIGN KEY ("UpdatedByUserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE SET NULL;
                 ALTER TABLE "VaultManifestsHistory" ADD CONSTRAINT "FK_VaultManifestsHistory_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 """);
         }

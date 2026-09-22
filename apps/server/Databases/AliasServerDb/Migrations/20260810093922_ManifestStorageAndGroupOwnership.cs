@@ -162,6 +162,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.AddColumn<byte[]>(name: "ManifestBlob", table: "VaultManifests", type: "bytea", nullable: true);
             migrationBuilder.AddColumn<string>(name: "ManifestCiphertextHash", table: "VaultManifests", type: "character varying(64)", maxLength: 64, nullable: true);
             migrationBuilder.AddColumn<int>(name: "KeyVersion", table: "VaultManifests", type: "integer", nullable: false, defaultValue: 0);
+            migrationBuilder.AddColumn<string>(name: "UpdatedByUserId", table: "VaultManifests", type: "character varying(255)", maxLength: 255, nullable: true);
 
             // A manifest-v1 revision carries no vault blob and no SRP credentials, so the columns that only the legacy
             // sqlite-blob format fills become nullable. NULL is the sole "not applicable" marker; the empty string is not.
@@ -194,6 +195,7 @@ namespace AliasServerDb.Migrations
                     CredentialsCount = table.Column<int>(type: "integer", nullable: false),
                     EmailClaimsCount = table.Column<int>(type: "integer", nullable: false),
                     Client = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     VaultBlob = table.Column<string>(type: "text", nullable: true),
@@ -263,6 +265,8 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.AddPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests", column: "ManifestId");
             migrationBuilder.CreateIndex(name: "IX_VaultManifests_OwnerGroupId", table: "VaultManifests", column: "OwnerGroupId");
+            migrationBuilder.CreateIndex(name: "IX_VaultManifests_UpdatedByUserId", table: "VaultManifests", column: "UpdatedByUserId");
+            migrationBuilder.CreateIndex(name: "IX_VaultManifestsHistory_UpdatedByUserId", table: "VaultManifestsHistory", column: "UpdatedByUserId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_VaultManifests_Groups_OwnerGroupId",
@@ -279,6 +283,22 @@ namespace AliasServerDb.Migrations
                 principalTable: "VaultManifests",
                 principalColumn: "ManifestId",
                 onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId",
+                table: "VaultManifests",
+                column: "UpdatedByUserId",
+                principalTable: "AliasVaultUsers",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId",
+                table: "VaultManifestsHistory",
+                column: "UpdatedByUserId",
+                principalTable: "AliasVaultUsers",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <summary>
@@ -391,16 +411,10 @@ namespace AliasServerDb.Migrations
         /// <param name="migrationBuilder">Migration builder.</param>
         private static void AddAlgorithmToPublicKeys(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: true);
-            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: true);
-
-            migrationBuilder.Sql("""
-                UPDATE "VaultManifestDeliveryKeys" SET "Algorithm" = 'rsa-oaep-sha256';
-                UPDATE "MobileLoginRequests" SET "Algorithm" = 'rsa-oaep-sha256';
-                """);
-
-            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldNullable: true);
-            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldNullable: true);
+            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, defaultValue: "rsa-oaep-sha256");
+            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, defaultValue: "rsa-oaep-sha256");
+            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldDefaultValue: "rsa-oaep-sha256");
+            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldDefaultValue: "rsa-oaep-sha256");
         }
 
         /// <summary>
@@ -829,8 +843,11 @@ namespace AliasServerDb.Migrations
         /// <param name="migrationBuilder">Migration builder.</param>
         private static void RestoreManifestsToVaults(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId", table: "VaultManifestsHistory");
+            migrationBuilder.DropForeignKey(name: "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId", table: "VaultManifests");
             migrationBuilder.DropForeignKey(name: "FK_VaultManifestsHistory_VaultManifests_ManifestId", table: "VaultManifestsHistory");
             migrationBuilder.DropForeignKey(name: "FK_VaultManifests_Groups_OwnerGroupId", table: "VaultManifests");
+            migrationBuilder.DropIndex(name: "IX_VaultManifests_UpdatedByUserId", table: "VaultManifests");
             migrationBuilder.DropIndex(name: "IX_VaultManifests_OwnerGroupId", table: "VaultManifests");
 
             // A shared manifest has no owning user, so there is no "Vaults" row it can become.
@@ -868,6 +885,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropColumn(name: "StorageFormat", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "ManifestBlob", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "ManifestCiphertextHash", table: "VaultManifests");
+            migrationBuilder.DropColumn(name: "UpdatedByUserId", table: "VaultManifests");
 
             // The pre-manifest schema has no "not applicable" marker: an unset column reads as the empty string.
             migrationBuilder.Sql("""

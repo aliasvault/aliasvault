@@ -191,6 +191,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.CredentialsCount = model.CredentialsCount;
         currentManifest.EmailClaimsCount = model.EmailAddressList.Count;
         currentManifest.Client = ClientHeader;
+        currentManifest.UpdatedByUserId = user.Id;
         currentManifest.CreatedAt = timeProvider.UtcNow;
         currentManifest.UpdatedAt = timeProvider.UtcNow;
 
@@ -292,6 +293,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.EncryptionType = Defaults.EncryptionType;
         currentManifest.EncryptionSettings = Defaults.EncryptionSettings;
         currentManifest.Client = ClientHeader;
+        currentManifest.UpdatedByUserId = user.Id;
         currentManifest.CreatedAt = timeProvider.UtcNow;
         currentManifest.UpdatedAt = timeProvider.UtcNow;
 

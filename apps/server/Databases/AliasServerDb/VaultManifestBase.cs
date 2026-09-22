@@ -126,6 +126,18 @@ public abstract class VaultManifestBase : IVaultRevision
     public string? Client { get; set; }
 
     /// <summary>
+    /// Gets or sets the user whose push wrote this revision. Null for legacy revisions.
+    /// </summary>
+    [StringLength(255)]
+    public string? UpdatedByUserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the user whose push wrote this revision.
+    /// </summary>
+    [ForeignKey("UpdatedByUserId")]
+    public virtual AliasVaultUser? UpdatedByUser { get; set; }
+
+    /// <summary>
     /// Gets or sets the timestamp at which this revision was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -164,6 +176,7 @@ public abstract class VaultManifestBase : IVaultRevision
         EncryptionType = source.EncryptionType;
         EncryptionSettings = source.EncryptionSettings;
         Client = source.Client;
+        UpdatedByUserId = source.UpdatedByUserId;
         CreatedAt = source.CreatedAt;
         UpdatedAt = source.UpdatedAt;
     }
