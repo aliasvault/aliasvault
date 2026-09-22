@@ -42,6 +42,14 @@ export class ItemQueries {
     ORDER BY i.CreatedAt DESC`;
 
   /**
+   * Get the active items of one manifest.
+   */
+  public static readonly GET_ALL_ACTIVE_IN_MANIFEST = `
+    ${ItemQueries.BASE_SELECT}
+    WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ArchivedAt IS NULL AND i.ManifestId = ?
+    ORDER BY i.CreatedAt DESC`;
+
+  /**
    * Get the active items of one folder, matched on the folder's whole key.
    */
   public static readonly GET_BY_FOLDER = `

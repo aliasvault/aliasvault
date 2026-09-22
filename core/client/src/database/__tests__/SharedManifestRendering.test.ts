@@ -88,4 +88,12 @@ describe('a shared manifest rendered as a folder', () => {
   it('refuses to delete the folder', async () => {
     await expect(client.folders.delete(SHARED_ROOT)).rejects.toThrow();
   });
+
+  it('is left out of a personal export, which reads one manifest', async () => {
+    await client.items.create(draftItem('Netflix', SHARED, SHARED));
+    await client.items.create(draftItem('Mine', PERSONAL, null));
+
+    expect(client.items.getAll().map(item => item.Name).sort()).toEqual(['Mine', 'Netflix']);
+    expect(client.items.getAllInManifest(PERSONAL).map(item => item.Name)).toEqual(['Mine']);
+  });
 });

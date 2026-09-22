@@ -98,6 +98,16 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
+   * Fetch the active items of one manifest with their dynamic fields and tags.
+   * @param manifestId - The manifest to read
+   * @returns Array of Item objects
+   */
+  public *getAllInManifest(manifestId: string): DbOp<Item[]> {
+    const itemRows = yield* this.selectItemRows(ItemQueries.GET_ALL_ACTIVE_IN_MANIFEST, [manifestId]);
+    return yield* this.hydrateItems(itemRows);
+  }
+
+  /**
    * Fetch the active items of one folder with their dynamic fields and tags.
    * @param folder - The folder to read
    * @returns Array of Item objects (empty array if the folder does not exist)

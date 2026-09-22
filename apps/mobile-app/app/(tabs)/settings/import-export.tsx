@@ -308,8 +308,12 @@ export default function ImportExportScreen(): React.ReactNode {
     try {
       const dateStr = new Date().toISOString().split('T')[0];
 
-      // Export as CSV
-      const items = await dbContext.sqliteClient?.items.getAll() ?? [];
+      // Export as CSV. Only personal manifest entries are exported.
+      const personalManifestId = await dbContext.sqliteClient?.getPersonalManifestId();
+      if (!personalManifestId) {
+        throw new Error('No personal manifest id is recorded; the vault has not been loaded yet.');
+      }
+      const items = await dbContext.sqliteClient?.items.getAllInManifest(personalManifestId) ?? [];
       const csvContent = await itemsToCsv(items);
 
       const filename = `aliasvault-export-${dateStr}.csv`;

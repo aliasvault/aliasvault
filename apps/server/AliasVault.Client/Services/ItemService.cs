@@ -490,22 +490,17 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>List of all items.</returns>
     public async Task<List<Item>> LoadAllAsync()
     {
-        var context = await dbService.GetDbContextAsync();
+        return await LoadAllAsync(manifestId: null);
+    }
 
-        var items = await context.Items
-            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
-                .ThenInclude(fv => fv.FieldDefinition)
-            .Include(x => x.Logo)
-            .Include(x => x.Attachments.Where(a => !a.IsDeleted))
-            .Include(x => x.TotpCodes.Where(t => !t.IsDeleted))
-            .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
-            .AsSplitQuery()
-            .Where(x => !x.IsDeleted)
-            .Where(x => x.DeletedAt == null) // Exclude items in trash
-            .Where(x => x.ArchivedAt == null) // Exclude archived items
-            .ToListAsync();
-
-        return items;
+    /// <summary>
+    /// Load all active items of one manifest.
+    /// </summary>
+    /// <param name="manifestId">The manifest to read.</param>
+    /// <returns>List of the manifest's active items.</returns>
+    public async Task<List<Item>> LoadAllInManifestAsync(Guid manifestId)
+    {
+        return await LoadAllAsync(manifestId);
     }
 
     /// <summary>
@@ -1864,5 +1859,34 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         item.UpdatedAt = DateTime.UtcNow;
 
         return await dbService.SaveDatabaseAsync();
+    }
+
+    /// <summary>
+    /// Load all active items, optionally restricted to one manifest.
+    /// </summary>
+    /// <param name="manifestId">The manifest to read, or null for every manifest in the vault.</param>
+    /// <returns>List of active items.</returns>
+    private async Task<List<Item>> LoadAllAsync(Guid? manifestId)
+    {
+        var context = await dbService.GetDbContextAsync();
+
+        var query = context.Items
+            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
+                .ThenInclude(fv => fv.FieldDefinition)
+            .Include(x => x.Logo)
+            .Include(x => x.Attachments.Where(a => !a.IsDeleted))
+            .Include(x => x.TotpCodes.Where(t => !t.IsDeleted))
+            .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
+            .AsSplitQuery()
+            .Where(x => !x.IsDeleted)
+            .Where(x => x.DeletedAt == null) // Exclude items in trash
+            .Where(x => x.ArchivedAt == null); // Exclude archived items
+
+        if (manifestId is not null)
+        {
+            query = query.Where(x => x.ManifestId == manifestId.Value);
+        }
+
+        return await query.ToListAsync();
     }
 }
