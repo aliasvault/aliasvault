@@ -21,142 +21,142 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Vault storage insights</value>
+    <value>보관함 저장 공간 분석</value>
     <comment>Page title for vault storage insights</comment>
   </data>
   <data name="PageDescription">
-    <value>See an estimate of your vault size. For best sync performance, it's advised to keep your vault size small and delete items you no longer need.</value>
+    <value>보관함 크기 추정치를 확인하세요. 최상의 동기화 성능을 위해 보관함 크기를 작게 유지하고 더 이상 필요하지 않은 항목은 삭제하는 것이 좋습니다.</value>
     <comment>Page description for vault storage insights</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Storage insights</value>
+    <value>저장 공간 분석</value>
     <comment>Breadcrumb title for storage insights page</comment>
   </data>
   <!-- Estimated total -->
   <data name="EstimatedTotalTitle">
-    <value>Estimated vault size</value>
+    <value>예상 보관함 크기</value>
     <comment>Title for the estimated total vault size card</comment>
   </data>
   <data name="EstimatedTotalDescription">
-    <value>This is an approximation calculated from your local data.</value>
+    <value>로컬 데이터를 기반으로 계산된 대략적인 수치입니다.</value>
     <comment>Subtext explaining that the estimate is approximate</comment>
   </data>
   <!-- Counts -->
   <data name="CountsTitle">
-    <value>Overview</value>
+    <value>개요</value>
     <comment>Title for the counts/overview section</comment>
   </data>
   <data name="ItemCountLabel">
-    <value>Items</value>
+    <value>항목</value>
     <comment>Label for total item count card</comment>
   </data>
   <data name="ItemsWithAttachmentsLabel">
-    <value>Items with attachments</value>
+    <value>첨부 파일이 있는 항목</value>
     <comment>Label for count of items that have at least one attachment</comment>
   </data>
   <data name="ItemsWithLogosLabel">
-    <value>Items with a logo</value>
+    <value>로고가 있는 항목</value>
     <comment>Label for count of items that reference a logo</comment>
   </data>
   <!-- Breakdown -->
   <data name="BreakdownTitle">
-    <value>Storage usage breakdown</value>
+    <value>저장 공간 사용량 분석</value>
     <comment>Title for the breakdown bar section</comment>
   </data>
   <data name="BreakdownDescription">
-    <value>Approximate share of vault size by category. Attachments and logos usually take up most of the space.</value>
+    <value>카테고리별 보관함 용량 점유율(대략치)입니다. 일반적으로 첨부 파일과 로고가 대부분의 공간을 차지합니다.</value>
     <comment>Description for the breakdown bar</comment>
   </data>
   <data name="BreakdownCredentialsLabel">
-    <value>Credentials</value>
+    <value>로그인 정보</value>
     <comment>Legend label for credential data slice</comment>
   </data>
   <data name="BreakdownAttachmentsLabel">
-    <value>Attachments</value>
+    <value>첨부 파일</value>
     <comment>Legend label for attachments slice</comment>
   </data>
   <data name="BreakdownLogosLabel">
-    <value>Logos</value>
+    <value>로고</value>
     <comment>Legend label for logos slice</comment>
   </data>
   <data name="BreakdownBaseOverheadLabel">
-    <value>Database overhead</value>
+    <value>데이터베이스 오버헤드</value>
     <comment>Legend label for the fixed SQLite base/schema overhead slice</comment>
   </data>
   <!-- Top attachments table -->
   <data name="TopAttachmentsTitle">
-    <value>Largest attachments</value>
+    <value>가장 큰 첨부 파일</value>
     <comment>Title for the top attachments table</comment>
   </data>
   <data name="TopAttachmentsDescription">
-    <value>Top 10 largest file attachments. Remove the attachment if you no longer need it.</value>
+    <value>용량이 가장 큰 상위 10개 첨부 파일입니다. 더 이상 필요하지 않은 첨부 파일은 제거하세요.</value>
     <comment>Description for the top attachments table</comment>
   </data>
   <!-- Top logos table -->
   <data name="TopLogosTitle">
-    <value>Largest logos</value>
+    <value>가장 큰 로고</value>
     <comment>Title for the top logos table</comment>
   </data>
   <data name="TopLogosDescription">
-    <value>Top 10 largest service logos. Logos are reused for items with the same domain.</value>
+    <value>용량이 가장 큰 상위 10개 서비스 로고입니다. 동일한 도메인의 항목에는 로고가 재사용됩니다.</value>
     <comment>Description for the top logos table</comment>
   </data>
   <!-- Table column headers -->
   <data name="ColumnFilename">
-    <value>Filename</value>
+    <value>파일 이름</value>
     <comment>Table column header for attachment filename</comment>
   </data>
   <data name="ColumnSize">
-    <value>Size</value>
+    <value>크기</value>
     <comment>Table column header for size in KB</comment>
   </data>
   <data name="ColumnItem">
-    <value>Item</value>
+    <value>항목</value>
     <comment>Table column header for the parent item name</comment>
   </data>
   <data name="ColumnCreated">
-    <value>Created</value>
+    <value>생성일</value>
     <comment>Table column header for creation date</comment>
   </data>
   <data name="ColumnWebsiteURL">
-    <value>Website URL</value>
+    <value>웹사이트 URL</value>
     <comment>Table column header for logo source domain</comment>
   </data>
   <data name="ColumnItemCount">
-    <value>Used by</value>
+    <value>사용 항목 수</value>
     <comment>Table column header for the number of items using a logo</comment>
   </data>
   <!-- Logo management -->
   <data name="LogoManagementTitle">
-    <value>Manage logos</value>
+    <value>로고 관리</value>
     <comment>Title for the logo management section</comment>
   </data>
   <data name="LogoManagementDescription">
-    <value>Logos are fetched from the favicon of each item's website. You can delete every logo to reclaim space, or re-download them to pick up improved versions.</value>
+    <value>로고는 각 항목 웹사이트의 파비콘에서 가져옵니다. 저장 공간을 확보하기 위해 모든 로고를 삭제하거나, 개선된 버전을 가져오기 위해 다시 다운로드할 수 있습니다.</value>
     <comment>Description for the logo management section</comment>
   </data>
   <data name="DeleteAllLogosButton">
-    <value>Delete all logos</value>
+    <value>모든 로고 삭제</value>
     <comment>Button to delete every logo in the vault</comment>
   </data>
   <data name="RedownloadAllLogosButton">
-    <value>Re-download all logos</value>
+    <value>모든 로고 다시 다운로드</value>
     <comment>Button to re-fetch favicons for every item with a URL</comment>
   </data>
   <data name="DeleteAllLogosConfirmTitle">
-    <value>Delete all logos?</value>
+    <value>모든 로고를 삭제하시겠습니까?</value>
     <comment>Confirmation modal title for delete-all-logos</comment>
   </data>
   <data name="DeleteAllLogosConfirmMessage">
-    <value>This removes every stored logo from your vault and clears the logo on each credential. You can re-download them at any time. Continue?</value>
+    <value>보관함에 저장된 모든 로고가 제거되며 각 로그인 정보의 로고가 지워집니다. 언제든지 다시 다운로드할 수 있습니다. 계속하시겠습니까?</value>
     <comment>Confirmation modal body for delete-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmTitle">
-    <value>Re-download all logos?</value>
+    <value>모든 로고를 다시 다운로드하시겠습니까?</value>
     <comment>Confirmation modal title for redownload-all-logos</comment>
   </data>
   <data name="RedownloadAllLogosConfirmMessage">
-    <value>This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?</value>
+    <value>웹사이트 URL이 있는 모든 로그인 정보의 파비콘을 다시 가져와 기존 로고를 대체합니다. 보관함 크기에 따라 시간이 걸릴 수 있습니다. 계속하시겠습니까?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
 </root>
