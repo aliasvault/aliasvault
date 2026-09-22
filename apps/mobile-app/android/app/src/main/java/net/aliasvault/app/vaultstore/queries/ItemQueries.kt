@@ -17,6 +17,8 @@ object ItemQueries {
           i.ItemType,
           i.FolderId,
           l.FileData as Logo,
+          l.Kind as LogoKind,
+          l.Source as LogoSource,
           CASE WHEN EXISTS (
             SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.ManifestId = i.ManifestId AND pk.IsDeleted = 0
           ) THEN 1 ELSE 0 END as HasPasskey,

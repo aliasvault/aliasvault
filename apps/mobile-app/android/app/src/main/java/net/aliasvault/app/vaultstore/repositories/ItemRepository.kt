@@ -3,6 +3,7 @@ package net.aliasvault.app.vaultstore.repositories
 import android.util.Log
 import net.aliasvault.app.utils.DateHelpers
 import net.aliasvault.app.vaultstore.VaultDatabase
+import net.aliasvault.app.vaultstore.models.AppIcons
 import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.FieldType
 import net.aliasvault.app.vaultstore.models.Item
@@ -21,6 +22,7 @@ import java.util.UUID
 class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     companion object {
         private const val TAG = "ItemRepository"
+        private const val LOGO_KIND_BUILTIN = "builtin"
 
         private val MIN_DATE: Date = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
             set(Calendar.YEAR, 1)
@@ -34,6 +36,16 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     // MARK: - Read Operations
+
+    /**
+     * The bytes an item's logo is drawn from. A built-in logo carries none: it is drawn from the shared catalog, keyed by its Source.
+     */
+    private fun resolveLogo(row: Map<String, Any?>): ByteArray? {
+        if (row["LogoKind"] as? String == LOGO_KIND_BUILTIN) {
+            return (row["LogoSource"] as? String)?.let { AppIcons.svgFor(it) }?.toByteArray(Charsets.UTF_8)
+        }
+        return row["Logo"] as? ByteArray
+    }
 
     /**
      * Build folder paths for all folders, keyed by the folder's scoped key (manifest + id). The tree is walked
@@ -101,7 +113,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
                 val name = row["Name"] as? String
                 val itemType = row["ItemType"] as? String ?: continue
                 val folderId = row["FolderId"] as? String
-                val logo = row["Logo"] as? ByteArray
+                val logo = resolveLogo(row)
                 val hasPasskey = (row["HasPasskey"] as? Long) == 1L
                 val hasAttachment = (row["HasAttachment"] as? Long) == 1L
                 val hasTotp = (row["HasTotp"] as? Long) == 1L
