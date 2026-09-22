@@ -60,48 +60,48 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>2단계 인증 비활성화</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>보안 설정</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>2단계 인증 비활성화</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Disabling two-factor authentication means you will be able to login with only your password.</value>
+    <value>2단계 인증을 비활성화하면 비밀번호만으로 로그인할 수 있게 됩니다.</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again.</value>
+    <value>참고: 2단계 인증을 비활성화하면 설정된 모든 인증기 앱의 작동이 중단됩니다. 2단계 인증을 다시 활성화하려면 인증기 앱을 다시 구성해야 합니다.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.</value>
+    <value>현재 2단계 인증이 활성화되어 있습니다. 비밀번호만으로 보관함에 접근하려면 이 기능을 비활성화하세요.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Confirm Disable Two-Factor Authentication</value>
+    <value>2단계 인증 비활성화 확인</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Two-factor authentication is now successfully disabled.</value>
+    <value>2단계 인증이 성공적으로 비활성화되었습니다.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Failed to disable two-factor authentication.</value>
+    <value>2단계 인증을 비활성화하지 못했습니다.</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Two-factor authentication is not enabled.</value>
+    <value>2단계 인증이 활성화되어 있지 않습니다.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
