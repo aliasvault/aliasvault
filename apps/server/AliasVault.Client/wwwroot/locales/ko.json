@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "AliasVault를 불러오는 중입니다",
+    "message": "보안 환경을 초기화하는 중입니다. AliasVault는 브라우저에서 전적으로 실행되어 사용자의 개인정보를 최우선으로 보호합니다. 처음 로드할 때는 다소 시간이 걸릴 수 있습니다.",
+    "refreshText": "로딩이 멈춘 것처럼 보이면 아래 버튼을 클릭하여 페이지를 새로고침할 수 있습니다.",
+    "refreshButtonText": "페이지 새로고침"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "처리되지 않은 오류가 발생했습니다. 페이지를 다시 로드해 보세요. 문제가 지속되면 지원팀에 문의하세요.",
+    "webAssemblyError": "AliasVault를 실행하려면 WebAssembly가 필요하지만, 현재 브라우저에서는 지원되지 않습니다. WebAssembly를 지원하는 최신 브라우저를 사용해 보세요.",
+    "reloadPageText": "페이지 다시 로드"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "귀하의 신원 정보는 가장 귀중한 자산입니다. 그에 걸맞게 소중히 보호하세요.",
+      "디지털 세상에서 강력한 비밀번호는 최전선의 방어선입니다.",
+      "보안은 단순한 제품이 아니라 지속적인 과정입니다.",
+      "보안 사슬에서 가장 취약한 고리는 사람입니다.",
+      "보안은 불충분해지기 전까지는 항상 지나쳐 보이는 법입니다.",
+      "신뢰하되 검증하세요. 온라인에서는 더욱 그렇습니다.",
+      "데이터의 안전성은 가장 취약한 비밀번호의 안전성에 의해 결정됩니다.",
+      "가장 안전한 비밀번호는 기억할 수 없는 비밀번호입니다."
     ]
   }
 }
