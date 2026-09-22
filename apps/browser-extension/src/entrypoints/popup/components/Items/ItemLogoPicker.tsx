@@ -1,4 +1,4 @@
-import { LogoKinds } from '@aliasvault/models/vault';
+import { effectiveItemLogo, logoSourceTranslationKey } from '@aliasvault/client/items/ItemLogoView';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +6,7 @@ import LogoPickerModal from '@/entrypoints/popup/components/Items/LogoPickerModa
 
 import ItemIconComponent from './ItemIcon';
 
-import type { Item, LogoSelection, ItemLogo } from '@aliasvault/models/vault';
+import type { Item, LogoSelection } from '@aliasvault/models/vault';
 
 type ItemLogoPickerProps = {
   item: Item;
@@ -24,32 +24,12 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
   const { t } = useTranslation();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  /*
-   * What the item will show once saved: an unsaved choice takes precedence over the stored logo, so
-   * the preview matches the outcome rather than the past.
-   */
-  let effectiveLogo: ItemLogo | undefined = item.LogoInfo;
-  if (pendingSelection?.Kind === LogoKinds.Favicon) {
-    effectiveLogo = faviconSource ? { Id: '', Kind: LogoKinds.Favicon, Source: faviconSource } : undefined;
-  } else if (pendingSelection) {
-    effectiveLogo = { Id: '', Kind: pendingSelection.Kind, Source: pendingSelection.Source ?? '', Name: pendingSelection.Name };
-  }
+  const effectiveLogo = effectiveItemLogo(item.LogoInfo, pendingSelection, faviconSource);
 
   /**
    * Display the source of the logo.
    */
-  const renderSource = (): string => {
-    switch (effectiveLogo?.Kind) {
-      case LogoKinds.Builtin:
-        return t('items.logo.sourceBuiltin');
-      case LogoKinds.Custom:
-        return t('items.logo.sourceCustom');
-      case LogoKinds.Favicon:
-        return t('items.logo.sourceFavicon', { domain: effectiveLogo.Source });
-      default:
-        return t('items.logo.sourceNone');
-    }
-  };
+  const renderSource = (): string => t(logoSourceTranslationKey(effectiveLogo), { domain: effectiveLogo?.Source });
 
   return (
     <>

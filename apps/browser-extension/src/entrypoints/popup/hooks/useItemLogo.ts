@@ -1,10 +1,10 @@
+import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import { LogoKinds } from '@aliasvault/models/vault';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-
-import { FaviconService } from '@/utils/FaviconService';
 
 import type { LogoKind, LogoSelection } from '@aliasvault/models/vault';
 
@@ -46,7 +46,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
   const resolvedSourceRef = useRef<string | null>(null);
   const requestIdRef = useRef(0);
   const hasInitialisedRef = useRef(false);
-  const usesWebsiteIcon = logoSelection ? logoSelection.Kind === LogoKinds.Favicon : (currentLogoKind ?? LogoKinds.Favicon) === LogoKinds.Favicon;
+  const usesWebsiteIcon = logoSelection ? usesWebsiteLogo(logoSelection) : (currentLogoKind ?? LogoKinds.Favicon) === LogoKinds.Favicon;
 
   /**
    * Resolve the favicon for the URL the item currently has.
@@ -75,7 +75,10 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
 
     // The vault already holds this domain's favicon: show that one.
     if (!force) {
-      const stored = FaviconService.getStoredFavicon(target, sqliteClient);
+      const stored = await FaviconService.getStoredFavicon(target, sqliteClient.logos);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
       if (stored) {
         onLogoBytesChange(stored);
         return;
@@ -88,7 +91,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
 
     setIsFetchingLogo(true);
     try {
-      const result = await FaviconService.fetchFavicon(target, sqliteClient, webApi, { ignoreStored: true });
+      const result = await FaviconService.fetchFavicon(target, sqliteClient.logos, webApi, { ignoreStored: true });
       if (requestId !== requestIdRef.current) {
         return;
       }

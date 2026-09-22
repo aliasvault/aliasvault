@@ -1,7 +1,9 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn } from '@aliasvault/client/database/ItemRef';
+import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
-import { FieldCategories, FieldTypes, LogoKinds, ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
+import { FieldCategories, FieldTypes, ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +38,6 @@ import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { logExpected, logFailure } from '@/utils/Diagnostics';
-import { FaviconService } from '@/utils/FaviconService';
 import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -823,15 +824,10 @@ const ItemAddEdit: React.FC = () => {
        * already resolved this URL's icon: if a preview fetched the icon and stored it in memory, we don't need to fetch it again.
        */
       const urlValue = fieldValues['login.url'];
-      const usesAutomaticLogo = !logoSelection || logoSelection.Kind === LogoKinds.Favicon;
+      const usesAutomaticLogo = usesWebsiteLogo(logoSelection);
       const isLogoResolved = usesAutomaticLogo && resolvedFaviconSource === (await FaviconService.resolveTarget(urlValue))?.source;
       if (dbContext?.sqliteClient && urlValue && usesAutomaticLogo && !isLogoResolved) {
-        updatedItem = await FaviconService.fetchAndAttachFavicon(
-          updatedItem,
-          urlValue,
-          dbContext.sqliteClient,
-          webApi
-        );
+        updatedItem = await FaviconService.fetchAndAttachFavicon(updatedItem, urlValue, dbContext.sqliteClient.logos, webApi);
       } else if (!urlValue) {
         // Explicitly clear logo if no URL (Note items, etc.)
         updatedItem.Logo = undefined;
