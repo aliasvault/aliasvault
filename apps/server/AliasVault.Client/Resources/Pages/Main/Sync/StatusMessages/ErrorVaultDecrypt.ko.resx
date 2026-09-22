@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorTitle" xml:space="preserve">
-    <value>Vault decryption error.</value>
+    <value>보관함 복호화 오류.</value>
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>An error occurred while locally decrypting your vault. Your data is not accessible at this moment. Please try again (later) or contact support.</value>
+    <value>보관함을 로컬에서 복호화하는 동안 오류가 발생했습니다. 현재 데이터에 접근할 수 없습니다. 잠시 후 다시 시도하거나 지원팀에 문의하세요.</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>
