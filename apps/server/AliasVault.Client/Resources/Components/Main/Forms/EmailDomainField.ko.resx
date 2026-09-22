@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Alias" xml:space="preserve">
-    <value>Alias</value>
+    <value>에일리어스</value>
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email</value>
+    <value>비공개 이메일</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>E2E encrypted, fully private.</value>
+    <value>종단간 암호화(E2E), 완전한 비공개 보호.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Public Temp Email Providers</value>
+    <value>공용 임시 이메일 제공업체</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <value>익명성은 보장되지만 개인정보 보호는 제한적입니다. 주소를 아는 사람은 누구나 이메일 내용을 읽을 수 있습니다.</value>
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>AliasVault server</value>
+    <value>AliasVault 서버</value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>
