@@ -21,28 +21,28 @@
   </xsd:schema>
   <!-- Type names -->
   <data name="TypeLogin">
-    <value>Login</value>
+    <value>로그인</value>
     <comment>Login item type name</comment>
   </data>
   <data name="TypeAlias">
-    <value>Alias</value>
+    <value>에일리어스</value>
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>신용카드</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
-    <value>Secure Note</value>
+    <value>보안 메모</value>
     <comment>Secure Note item type name</comment>
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>생성 중</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>수정 중</value>
     <comment>Status text when editing an existing item</comment>
   </data>
 </root>
