@@ -54,6 +54,7 @@ export type FaviconFetchOptions = {
  */
 const FAVICON_FETCH_TIMEOUT_MS = 5000;
 
+
 /**
  * Centralized service for favicon/logo operations, shared by every client.
  */

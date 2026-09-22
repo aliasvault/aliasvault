@@ -8,6 +8,7 @@ import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { VaultCodec } from '../sync/VaultCodec';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
+import { detectImageMimeType } from '../utilities/ImageType';
 
 import { syncRepository } from './DbOp';
 
@@ -575,47 +576,12 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * Detect MIME type from file signature (magic numbers).
+   * Detect MIME type from file signature (magic numbers), defaulting to an icon.
    * @param bytes - Binary data to analyze
    * @returns MIME type string
    */
   private static detectMimeType(bytes: Uint8Array): string {
-    /**
-     * Check if the file is an SVG file.
-     * @returns True if the file is an SVG
-     */
-    const isSvg = (): boolean => {
-      const header = new TextDecoder().decode(bytes.slice(0, 5)).toLowerCase();
-      return header.includes('<?xml') || header.includes('<svg');
-    };
-
-    /**
-     * Check if the file is an ICO file.
-     * @returns True if the file is an ICO
-     */
-    const isIco = (): boolean => {
-      return bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00;
-    };
-
-    /**
-     * Check if the file is a PNG file.
-     * @returns True if the file is a PNG
-     */
-    const isPng = (): boolean => {
-      return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
-    };
-
-    if (isSvg()) {
-      return 'image/svg+xml';
-    }
-    if (isIco()) {
-      return 'image/x-icon';
-    }
-    if (isPng()) {
-      return 'image/png';
-    }
-
-    return 'image/x-icon';
+    return detectImageMimeType(bytes) ?? 'image/x-icon';
   }
 
   /**

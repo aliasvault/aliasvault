@@ -77,7 +77,6 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
       password: login.password,
       url: login.url,
       domain: login.domain,
-      faviconUrl: login.faviconUrl,
     });
 
     if (!response.success) {

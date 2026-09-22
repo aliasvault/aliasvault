@@ -19,8 +19,6 @@ export type CapturedLogin = {
   timestamp: number;
   /** Suggested service name based on page title/URL */
   suggestedName: string;
-  /** URL of the favicon/logo if found */
-  faviconUrl?: string;
 };
 
 /**

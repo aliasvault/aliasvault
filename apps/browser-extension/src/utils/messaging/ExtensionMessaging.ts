@@ -111,7 +111,7 @@ export interface IExtensionMessageProtocol {
   POPUP_HEARTBEAT(): void;
   RECORD_ITEM_USAGE(data: { itemId: string; manifestId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;
-  SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string; faviconUrl?: string }): SaveLoginResponse;
+  SAVE_LOGIN_CREDENTIAL(data: { serviceName: string; username: string; password: string; url: string; domain: string }): SaveLoginResponse;
   SEARCH_ITEMS_WITH_TOTP(data: { searchTerm: string }): ItemsResponse;
   SET_AUTO_LOCK_TIMEOUT(data: number): boolean;
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
