@@ -26,14 +26,11 @@ interface IItemNameFieldProps {
   folders: Folder[];
   selectedFolder: FolderRef | null | undefined;
   onFolderChange: (folder: FolderRef | null) => void;
+  logoSlot?: React.ReactNode;
 }
 
 /**
- * ItemNameField component
- *
- * An item name input field with an integrated folder selection button.
- * The folder button appears inside the input when folders are available,
- * matching the browser extension's design pattern.
+ * An item name input field with an integrated logo button on the left and folder selection button on the right.
  */
 export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>(({
   value,
@@ -41,6 +38,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
   folders,
   selectedFolder: selectedFolderRef,
   onFolderChange,
+  logoSlot,
 }, ref) => {
   const { t } = useTranslation();
   const colors = useColors();
@@ -68,6 +66,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       borderWidth: 1,
       flexDirection: 'row',
       alignItems: 'center',
+      overflow: 'hidden',
     },
     folderButton: {
       alignItems: 'center',
@@ -111,6 +110,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
         {t('items.itemName')} <Text style={styles.requiredAsterisk}>*</Text>
       </Text>
       <View style={styles.container}>
+        {logoSlot}
         <TextInput
           ref={inputRef}
           style={styles.input}
