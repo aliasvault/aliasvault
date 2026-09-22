@@ -542,7 +542,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             Id = x.Id,
             ItemType = x.ItemType ?? AliasClientDb.Models.ItemType.Login,
-            LogoDataUri = LogoConverter.ToDataUri(x.Logo?.FileData),
+            LogoDataUri = LogoConverter.ToDataUri(x.Logo),
             Service = x.Name,
             Username = GetFieldValue(x, FieldKey.LoginUsername),
             Email = GetFieldValue(x, FieldKey.LoginEmail),
