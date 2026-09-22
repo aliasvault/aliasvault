@@ -21,45 +21,45 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>확장 프로그램 및 앱</value>
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Install browser extensions and mobile apps to access your vault from all your devices and automatically fill credentials on websites.</value>
+    <value>모든 기기에서 보관함에 접근하고 웹사이트에서 계정 정보를 자동으로 완성하려면 브라우저 확장 프로그램 및 모바일 앱을 설치하세요.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>확장 프로그램 및 앱</value>
     <comment>Breadcrumb title for extensions and apps</comment>
   </data>
   <!-- Browser Extensions Section -->
   <data name="BrowserExtensionsTitle">
-    <value>Browser Extensions</value>
+    <value>브라우저 확장 프로그램</value>
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>The AliasVault browser extension allows you to autofill existing credentials on any website. It also allows you to generate new aliases during registration, access received emails on all of your aliases, and view your aliases and identities.</value>
+    <value>AliasVault 브라우저 확장 프로그램을 사용하면 모든 웹사이트에서 기존 계정 정보를 자동으로 완성할 수 있습니다. 또한 회원가입 시 새 에일리어스를 생성하고, 모든 에일리어스로 수신된 이메일에 접근하며, 에일리어스와 신원 정보를 확인할 수 있습니다.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
-    <value>Install</value>
+    <value>설치</value>
     <comment>Install button text</comment>
   </data>
   <data name="ComingSoonText">
-    <value>Coming soon</value>
+    <value>출시 예정</value>
     <comment>Coming soon text for unavailable extensions</comment>
   </data>
   <!-- Mobile Apps Section -->
   <data name="MobileAppsTitle">
-    <value>Mobile Apps</value>
+    <value>모바일 앱</value>
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>The AliasVault mobile app allows you to access your aliases and identities on the go, view and manage received emails, and generate new aliases anytime. Your data is fully protected with on-device biometric authentication.</value>
+    <value>AliasVault 모바일 앱을 사용하면 이동 중에도 에일리어스와 신원 정보에 접근하고, 수신된 이메일을 확인 및 관리하며, 언제든지 새 에일리어스를 생성할 수 있습니다. 기기 내 생체 인증으로 데이터가 안전하게 보호됩니다.</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
-    <value>Download</value>
+    <value>다운로드</value>
     <comment>Download button text</comment>
   </data>
 </root>
