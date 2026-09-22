@@ -20,19 +20,19 @@
     </xsd:element>
   </xsd:schema>
   <data name="NoFolder">
-    <value>No folder</value>
+    <value>폴더 없음</value>
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
-    <value>Select Folder</value>
+    <value>폴더 선택</value>
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
-    <value>No folders available. Create a folder from the vault home page.</value>
+    <value>사용 가능한 폴더가 없습니다. 보관함 기본 페이지에서 폴더를 생성하세요.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
   <data name="MaxDepth">
-    <value>max depth</value>
+    <value>최대 깊이</value>
     <comment>Label shown for folders at maximum nesting depth</comment>
   </data>
 </root>
