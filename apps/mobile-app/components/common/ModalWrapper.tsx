@@ -93,7 +93,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
       justifyContent: 'center',
     },
     container: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.modalSurface,
       borderColor: colors.accentBorder,
       borderRadius: 12,
       borderWidth: 1,

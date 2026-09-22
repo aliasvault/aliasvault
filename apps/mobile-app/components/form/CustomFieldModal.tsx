@@ -94,7 +94,7 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({
       backgroundColor: colors.primary,
     },
     buttonSecondary: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderWidth: 1,
     },
@@ -108,7 +108,7 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({
       color: colors.text,
     },
     input: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,
@@ -125,7 +125,7 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({
       marginBottom: 8,
     },
     fieldTypeChip: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 16,
       borderWidth: 1,

@@ -166,7 +166,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
       fontSize: 14,
     },
     historyItem: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,
@@ -211,7 +211,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     },
     closeButton: {
       alignItems: 'center',
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,

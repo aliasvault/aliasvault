@@ -137,7 +137,7 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       marginLeft: 8,
     },
     menuContainer: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.modalSurface,
       borderColor: colors.accentBorder,
       borderRadius: 12,
       borderWidth: 1,

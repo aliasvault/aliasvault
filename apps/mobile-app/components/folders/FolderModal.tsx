@@ -81,7 +81,7 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
       fontWeight: '500',
     },
     input: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,

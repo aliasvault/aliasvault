@@ -109,13 +109,13 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
 
   const styles = useMemo(() => StyleSheet.create({
     card: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderRadius: 10,
       marginBottom: 16,
       paddingHorizontal: 16,
     },
     chip: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.modalSurface,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
@@ -172,7 +172,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
     },
     previewContainer: {
       alignItems: 'center',
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
@@ -235,7 +235,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       backgroundColor: colors.primary,
     },
     tabRow: {
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderRadius: 10,
       flexDirection: 'row',
       marginBottom: 16,
@@ -256,7 +256,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
       paddingVertical: 10,
     },
     valuePill: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.modalSurface,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
