@@ -12,6 +12,7 @@ type ItemLogoPickerProps = {
   item: Item;
   pendingSelection?: LogoSelection;
   faviconSource?: string | null;
+  websiteSource?: string | null;
   isFetching?: boolean;
   onSelect: (selection: LogoSelection) => void;
   onFetchFromWebsite: () => void;
@@ -20,7 +21,7 @@ type ItemLogoPickerProps = {
 /**
  * The item's icon on the edit screen: shows what the item will look like and opens the picker.
  */
-const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection, faviconSource, isFetching = false, onSelect, onFetchFromWebsite }) => {
+const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection, faviconSource, websiteSource, isFetching = false, onSelect, onFetchFromWebsite }) => {
   const { t } = useTranslation();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -53,7 +54,9 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
       <LogoPickerModal
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
+        item={item}
         currentLogo={effectiveLogo}
+        websiteSource={websiteSource}
         onSelect={onSelect}
         onFetchFromWebsite={onFetchFromWebsite}
       />

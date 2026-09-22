@@ -25,6 +25,7 @@ type UseItemLogoResult = {
   logoSelection: LogoSelection | undefined;
   isFetchingLogo: boolean;
   resolvedFaviconSource: string | null;
+  websiteSource: string | null;
   selectLogo: (selection: LogoSelection) => void;
   fetchLogoFromWebsite: () => Promise<void>;
 };
@@ -42,6 +43,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
   const [logoSelection, setLogoSelection] = useState<LogoSelection | undefined>(undefined);
   const [isFetchingLogo, setIsFetchingLogo] = useState(false);
   const [resolvedFaviconSource, setResolvedFaviconSource] = useState<string | null>(null);
+  const [websiteSource, setWebsiteSource] = useState<string | null>(null);
 
   const resolvedSourceRef = useRef<string | null>(null);
   const requestIdRef = useRef(0);
@@ -125,6 +127,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
       if (cancelled) {
         return;
       }
+      setWebsiteSource(source);
 
       if (!hasInitialisedRef.current) {
         hasInitialisedRef.current = true;
@@ -161,7 +164,7 @@ const useItemLogo = ({ url, currentLogoKind, isReady, isExistingItem, onLogoByte
    */
   const fetchLogoFromWebsite = useCallback((): Promise<void> => resolveFromWebsite(true), [resolveFromWebsite]);
 
-  return { logoSelection, isFetchingLogo, resolvedFaviconSource, selectLogo, fetchLogoFromWebsite };
+  return { logoSelection, isFetchingLogo, resolvedFaviconSource, websiteSource, selectLogo, fetchLogoFromWebsite };
 };
 
 export default useItemLogo;

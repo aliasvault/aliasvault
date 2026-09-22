@@ -687,7 +687,7 @@ const ItemAddEdit: React.FC = () => {
   /*
    * The item's favicon: a pick from the built-in catalog, or the website's own favicon extracted from the URL.
    */
-  const { logoSelection, isFetchingLogo, resolvedFaviconSource, selectLogo, fetchLogoFromWebsite } = useItemLogo({
+  const { logoSelection, isFetchingLogo, resolvedFaviconSource, websiteSource, selectLogo, fetchLogoFromWebsite } = useItemLogo({
     url: fieldValues['login.url'],
     currentLogoKind: item?.LogoInfo?.Kind,
     isReady: !localLoading && item !== null,
@@ -1421,6 +1421,7 @@ const ItemAddEdit: React.FC = () => {
               item={item}
               pendingSelection={logoSelection}
               faviconSource={resolvedFaviconSource}
+              websiteSource={websiteSource}
               isFetching={isFetchingLogo}
               onSelect={selectLogo}
               onFetchFromWebsite={() => void fetchLogoFromWebsite()}

@@ -291,7 +291,8 @@
     },
     "logo": {
       "chooseLogo": "Choose icon",
-      "builtinLogos": "Built-in icons",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
       "fetchFromWebsite": "Fetch icon from website",
       "refetchFromWebsite": "(Re)fetch icon from website",
       "sourceFavicon": "From {{domain}}",
