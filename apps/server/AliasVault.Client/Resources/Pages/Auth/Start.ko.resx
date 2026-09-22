@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainTitle" xml:space="preserve">
-    <value>Password &amp; (Email) Alias Manager</value>
+    <value>비밀번호 및 (이메일) 에일리어스 관리자</value>
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>당신의 개인정보를 안전하게 보호합니다.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>새 보관함 만들기</value>
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>기존 계정으로 로그인</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS 필수</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>브라우저는 localhost를 제외하고 HTTPS를 통해서만 안전한 암호화 작업을 허용합니다. 현재 호스트 이름에서는 HTTP를 통한 로그인 및 회원가입이 작동하지 않습니다. HTTPS로 전환하세요.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
