@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ New</value>
+    <value>+ 새로 만들기</value>
     <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -67,79 +67,79 @@
     <comment>Short text for the new alias button on mobile</comment>
   </data>
   <data name="CreateNewAliasTitle" xml:space="preserve">
-    <value>Create New Alias</value>
+    <value>새 에일리어스 생성</value>
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>이름</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>웹사이트 URL</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>예: Facebook</value>
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>예: Facebook</value>
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
-    <value>E.g. Mastercard</value>
+    <value>예: 마스터카드</value>
     <comment>Placeholder text for card name field</comment>
   </data>
   <data name="NamePlaceholderNote" xml:space="preserve">
-    <value>E.g. Passport Details</value>
+    <value>예: 여권 정보</value>
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>생성</value>
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>계속</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
-    <value>Create New Login</value>
+    <value>새 로그인 정보 생성</value>
     <comment>Title for creating a new login item</comment>
   </data>
   <data name="CreateNewCreditCardTitle" xml:space="preserve">
-    <value>Create New Card</value>
+    <value>새 카드 생성</value>
     <comment>Title for creating a new credit card item</comment>
   </data>
   <data name="CreateNewNoteTitle" xml:space="preserve">
-    <value>Create New Note</value>
+    <value>새 노트 생성</value>
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Login</value>
+    <value>로그인</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
-    <value>Alias</value>
+    <value>에일리어스</value>
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
-    <value>Card</value>
+    <value>카드</value>
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>Note</value>
+    <value>노트</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Creating new alias...</value>
+    <value>새 에일리어스 생성 중...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
-    <value>Error creating a new item. Please try again (later) or log-out and in again.</value>
+    <value>새 항목을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 로그아웃 후 다시 로그인하세요.</value>
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>Item created successfully.</value>
+    <value>항목이 성공적으로 생성되었습니다.</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>
