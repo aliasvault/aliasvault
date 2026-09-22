@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CopyrightText" xml:space="preserve">
-    <value>All rights reserved.</value>
+    <value>모든 권리 보유.</value>
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Tip: Use the g+c (go create) keyboard shortcut to quickly create a new alias.</value>
+    <value>팁: 'g+c(생성으로 이동)' 단축키를 사용하여 새 에일리어스를 빠르게 생성할 수 있습니다.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Tip: Use the g+f (go find) keyboard shortcut to focus the search field.</value>
+    <value>팁: 'g+f(검색으로 이동)' 단축키를 사용하여 검색 필드로 바로 이동할 수 있습니다.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Tip: Use the g+h (go home) keyboard shortcut to go to the homepage.</value>
+    <value>팁: 'g+h(홈으로 이동)' 단축키를 사용하여 홈 화면으로 이동할 수 있습니다.</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Tip: Use the g+l (go lock) keyboard shortcut to lock the vault.</value>
+    <value>팁: 'g+l(잠금으로 이동)' 단축키를 사용하여 보관함을 잠글 수 있습니다.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>
