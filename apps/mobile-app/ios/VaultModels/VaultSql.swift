@@ -1809,6 +1809,14 @@ public struct VaultSql {
         AFTER UPDATE OF \"ManifestId\" ON \"Items\"
         FOR EACH ROW WHEN OLD.\"ManifestId\" <> NEW.\"ManifestId\"
         BEGIN
+            INSERT INTO \"Tags\" (\"ManifestId\", \"Id\", \"Name\", \"Color\", \"DisplayOrder\", \"CreatedAt\", \"UpdatedAt\", \"IsDeleted\")
+            SELECT NEW.\"ManifestId\", \"Id\", \"Name\", \"Color\", \"DisplayOrder\", \"CreatedAt\", NEW.\"UpdatedAt\", \"IsDeleted\" FROM \"Tags\"
+            WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"Id\" IN (SELECT \"TagId\" FROM \"ItemTags\" WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"ItemId\" = NEW.\"Id\")
+            ON CONFLICT (\"ManifestId\", \"Id\") DO UPDATE SET \"Name\" = excluded.\"Name\", \"Color\" = excluded.\"Color\", \"DisplayOrder\" = excluded.\"DisplayOrder\", \"UpdatedAt\" = excluded.\"UpdatedAt\", \"IsDeleted\" = 0 WHERE \"IsDeleted\" = 1 AND excluded.\"IsDeleted\" = 0;
+            INSERT INTO \"FieldDefinitions\" (\"ManifestId\", \"Id\", \"FieldType\", \"Label\", \"IsMultiValue\", \"IsHidden\", \"EnableHistory\", \"Weight\", \"ApplicableToTypes\", \"CreatedAt\", \"UpdatedAt\", \"IsDeleted\")
+            SELECT NEW.\"ManifestId\", \"Id\", \"FieldType\", \"Label\", \"IsMultiValue\", \"IsHidden\", \"EnableHistory\", \"Weight\", \"ApplicableToTypes\", \"CreatedAt\", NEW.\"UpdatedAt\", \"IsDeleted\" FROM \"FieldDefinitions\"
+            WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"Id\" IN (SELECT \"FieldDefinitionId\" FROM \"FieldValues\" WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"ItemId\" = NEW.\"Id\" UNION SELECT \"FieldDefinitionId\" FROM \"FieldHistories\" WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"ItemId\" = NEW.\"Id\")
+            ON CONFLICT (\"ManifestId\", \"Id\") DO UPDATE SET \"FieldType\" = excluded.\"FieldType\", \"Label\" = excluded.\"Label\", \"IsMultiValue\" = excluded.\"IsMultiValue\", \"IsHidden\" = excluded.\"IsHidden\", \"EnableHistory\" = excluded.\"EnableHistory\", \"Weight\" = excluded.\"Weight\", \"ApplicableToTypes\" = excluded.\"ApplicableToTypes\", \"UpdatedAt\" = excluded.\"UpdatedAt\", \"IsDeleted\" = 0 WHERE \"IsDeleted\" = 1 AND excluded.\"IsDeleted\" = 0;
             UPDATE \"FieldValues\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
             UPDATE \"FieldHistories\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";
             UPDATE \"ItemTags\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";

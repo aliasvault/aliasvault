@@ -12,10 +12,11 @@ namespace AliasClientDb.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             /*
-             * The trigger keeps item-scoped rows stamped with their item's manifest. It lives in its own migration
-             * because the SQLite provider emits a table rebuild after the migration's own statements, and SQLite
-             * reparses every trigger while it rebuilds: a trigger created alongside the rebuild of a table it names
-             * aborts the script.
+             * The triggers keep item-scoped rows stamped with their item's manifest. They live in their own migration
+             * and cannot be squashed into the previous one: the SQLite provider emits its table rebuilds after the
+             * migration's own statements, dropping a table drops its triggers (the Items rebuild would silently
+             * discard them), and SQLite reparses the remaining triggers during a rebuild, aborting on one that
+             * names a momentarily dropped table.
              */
             migrationBuilder.Sql(ItemChildManifestTriggerSql.Create);
 

@@ -21,6 +21,15 @@ internal static class ItemChildManifestTriggerSql
     private static readonly string[] ItemIdChildTables = ["FieldValues", "FieldHistories", "ItemTags", "Attachments", "Passkeys", "TotpCodes"];
 
     /// <summary>
+    /// The manifest-level tables an item's rows reference: the content columns copied on a move and the child columns that reach them.
+    /// </summary>
+    private static readonly (string Table, string[] ContentColumns, (string Child, string Column)[] ReferencedBy)[] ReferencedTables =
+    [
+        ("Tags", ["Name", "Color", "DisplayOrder"], [("ItemTags", "TagId")]),
+        ("FieldDefinitions", ["FieldType", "Label", "IsMultiValue", "IsHidden", "EnableHistory", "Weight", "ApplicableToTypes"], [("FieldValues", "FieldDefinitionId"), ("FieldHistories", "FieldDefinitionId")]),
+    ];
+
+    /// <summary>
     /// Gets the name of the trigger.
     /// </summary>
     public static string Name => "TR_Items_ResyncChildManifestIds";
@@ -44,6 +53,11 @@ internal static class ItemChildManifestTriggerSql
         {
             var restamp = new StringBuilder();
             var clear = new StringBuilder();
+            foreach (var (table, contentColumns, referencedBy) in ReferencedTables)
+            {
+                restamp.AppendLine(CopyReferencedRows(table, contentColumns, referencedBy));
+            }
+
             foreach (var table in ItemIdChildTables)
             {
                 restamp.AppendLine($"    UPDATE \"{table}\" SET \"ManifestId\" = NEW.\"ManifestId\" WHERE \"ItemId\" = NEW.\"Id\" AND \"ManifestId\" = OLD.\"ManifestId\";");
@@ -77,5 +91,21 @@ internal static class ItemChildManifestTriggerSql
                 END;
                 """;
         }
+    }
+
+    /// <summary>
+    /// The statement that copies the rows of a referenced table that the moving item's child rows point at into the destination manifest.
+    /// </summary>
+    private static string CopyReferencedRows(string table, string[] contentColumns, (string Child, string Column)[] referencedBy)
+    {
+        var quotedContent = string.Join(", ", contentColumns.Select(column => $"\"{column}\""));
+        var referencedIds = string.Join(" UNION ", referencedBy.Select(r => $"SELECT \"{r.Column}\" FROM \"{r.Child}\" WHERE \"ManifestId\" = OLD.\"ManifestId\" AND \"ItemId\" = NEW.\"Id\""));
+        var revive = string.Join(", ", contentColumns.Select(column => $"\"{column}\" = excluded.\"{column}\""));
+        return $"""
+                INSERT INTO "{table}" ("ManifestId", "Id", {quotedContent}, "CreatedAt", "UpdatedAt", "IsDeleted")
+                SELECT NEW."ManifestId", "Id", {quotedContent}, "CreatedAt", NEW."UpdatedAt", "IsDeleted" FROM "{table}"
+                WHERE "ManifestId" = OLD."ManifestId" AND "Id" IN ({referencedIds})
+                ON CONFLICT ("ManifestId", "Id") DO UPDATE SET {revive}, "UpdatedAt" = excluded."UpdatedAt", "IsDeleted" = 0 WHERE "IsDeleted" = 1 AND excluded."IsDeleted" = 0;
+            """;
     }
 }

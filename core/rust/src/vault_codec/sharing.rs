@@ -332,15 +332,14 @@ pub(super) fn partition_by_manifest(
         reconcile_logo_references(&mut partition.tables, &scope, all_logos);
         normalize_logo_scope(&mut partition.tables, &scope);
         prune_unreferenced_logos(&mut partition.tables);
-        clone_referenced_rows(&mut partition.tables, &scope, snapshots);
+        clone_referenced_rows(&mut partition.tables, &scope, snapshots, writing_manifest_id);
     }
 
     Ok(partitions)
 }
 
-/// Copy in every opaque-id row this manifest references but does not hold, out of `snapshots` (the
-/// vault-wide set captured before routing), stamped for this manifest and keeping its id.
-pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str, snapshots: &HashMap<String, Vec<CodecRecord>>) {
+/// Clone any row this manifest references but does not hold.
+pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str, snapshots: &HashMap<String, Vec<CodecRecord>>, writing_manifest_id: &str) {
     for (target, referencing) in REFERENCED_TABLES {
         let Some(source_rows) = snapshots.get(*target) else { continue };
 
@@ -364,7 +363,7 @@ pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord
         let scope_value = json!(scope);
         let clones: Vec<CodecRecord> = missing
             .iter()
-            .filter_map(|id| source_rows.iter().find(|row| str_col(row, ID_COL) == Some(id.as_str())))
+            .filter_map(|id| pick_source_row(source_rows, id, writing_manifest_id))
             .map(|row| {
                 let mut clone = row.clone();
                 clone.insert(MANIFEST_ID_COL.to_string(), scope_value.clone());
@@ -375,6 +374,15 @@ pub(super) fn clone_referenced_rows(tables: &mut HashMap<String, Vec<CodecRecord
             tables.entry((*target).to_string()).or_default().extend(clones);
         }
     }
+}
+
+/// The snapshot row to clone for `id`.
+fn pick_source_row<'a>(rows: &'a [CodecRecord], id: &str, writing_manifest_id: &str) -> Option<&'a CodecRecord> {
+    let candidates: Vec<&CodecRecord> = rows.iter().filter(|row| str_col(row, ID_COL) == Some(id)).collect();
+    if let Some(own) = candidates.iter().find(|row| str_col(row, MANIFEST_ID_COL).map(|scope| ids_equal(scope, writing_manifest_id)).unwrap_or(false)) {
+        return Some(own);
+    }
+    candidates.into_iter().min_by_key(|row| str_col(row, MANIFEST_ID_COL).unwrap_or_default().to_ascii_lowercase())
 }
 
 /// Reproducible content like `Logos` can be refetched, so we drop rows no item in this table set references.

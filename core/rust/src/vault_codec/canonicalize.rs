@@ -99,7 +99,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     reconcile_logo_references(&mut all_tables, &writing_manifest_id, all_logos);
     normalize_logo_scope(&mut all_tables, &writing_manifest_id);
     prune_unreferenced_logos(&mut all_tables);
-    clone_referenced_rows(&mut all_tables, &writing_manifest_id, &snapshots);
+    clone_referenced_rows(&mut all_tables, &writing_manifest_id, &snapshots, &writing_manifest_id);
     normalize_row_shapes(&mut all_tables);
 
     let mut blobs: HashMap<String, BlobEntry> = HashMap::new();
