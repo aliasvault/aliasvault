@@ -144,7 +144,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         logo: ByteArray? = null,
     ): Item {
         return withTransaction {
-            val manifestId = activeManifestId()
+            val manifestId = writeManifestId()
             val itemId = passkey.parentItemId.toString().lowercase()
             val now = Date()
             val timestamp = DateHelpers.toStandardFormat(now)

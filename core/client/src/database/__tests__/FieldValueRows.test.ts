@@ -85,14 +85,6 @@ class TestDatabaseClient implements ISyncDatabaseClient {
   }
 
   /**
-   * Get the manifest new rows are written into.
-   * @returns The personal manifest id
-   */
-  public getActiveManifestId(): string {
-    return PERSONAL;
-  }
-
-  /**
    * Get the personal manifest.
    * @returns The personal manifest id
    */

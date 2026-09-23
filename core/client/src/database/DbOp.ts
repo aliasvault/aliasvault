@@ -9,20 +9,12 @@ import type { VaultMutationScope } from '../sync/VaultMutationScope';
  */
 
 /**
- * The active and personal manifest ids of the client an op runs on.
- */
-export type ManifestScope = {
-  active: string | null;
-  personal: string | null;
-};
-
-/**
  * One database step a DbOp asks its host to perform.
  */
 export type DbEffect =
   | { kind: 'query'; sql: string; params: SqliteBindValue[] }
   | { kind: 'execute'; sql: string; params: SqliteBindValue[] }
-  | { kind: 'manifestScope' };
+  | { kind: 'personalManifestId' };
 
 /**
  * A database operation that can run both synchronously and asynchronously.
@@ -190,8 +182,8 @@ function performSync(effect: DbEffect, client: ISyncDatabaseClient): unknown {
       return client.executeQuery(effect.sql, effect.params);
     case 'execute':
       return client.executeUpdate(effect.sql, effect.params);
-    case 'manifestScope':
-      return { active: client.getActiveManifestId(), personal: client.getPersonalManifestId() } satisfies ManifestScope;
+    case 'personalManifestId':
+      return client.getPersonalManifestId();
   }
 }
 
@@ -207,8 +199,8 @@ async function performAsync(effect: DbEffect, client: IDatabaseClient): Promise<
       return client.executeQuery(effect.sql, effect.params);
     case 'execute':
       return client.executeUpdate(effect.sql, effect.params);
-    case 'manifestScope':
-      return { active: client.getActiveManifestId(), personal: await client.getPersonalManifestId() } satisfies ManifestScope;
+    case 'personalManifestId':
+      return client.getPersonalManifestId();
   }
 }
 

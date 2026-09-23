@@ -222,7 +222,6 @@ pub(crate) fn new_id() -> String {
 }
 
 const GET_ACTIVE_PUBLIC_KEY_FOR_MANIFEST: &str = "SELECT x.PublicKey FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.IsPrimary = 1 AND x.IsDeleted = 0 LIMIT 1";
-const GET_ACCOUNT_KEY_BY_PUBLIC_KEY: &str = "SELECT x.PrivateKey FROM EncryptionKeys x WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0 LIMIT 1";
 const DEMOTE_KEYS_FOR_MANIFEST: &str = "UPDATE EncryptionKeys SET IsPrimary = 0, UpdatedAt = ? WHERE ManifestId = ? AND IsPrimary = 1";
 const INSERT_KEY_FOR_MANIFEST: &str = "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, 1, ?, ?, 0)";
 const MANIFEST_NAMES: &str = "SELECT Id, Name FROM Manifests WHERE Name IS NOT NULL";
@@ -233,12 +232,6 @@ const UPSERT_MANIFEST_NAME: &str = "INSERT INTO Manifests (Id, Name) VALUES (?, 
 pub(crate) async fn active_public_key_for_manifest(host: &Host, manifest_id: &str) -> SyncResult<Option<String>> {
     let rows = query(host, Db::Local, GET_ACTIVE_PUBLIC_KEY_FOR_MANIFEST, vec![json!(manifest_id)]).await?;
     Ok(rows.first().and_then(|row| row.get("PublicKey")).and_then(Value::as_str).map(str::to_string))
-}
-
-/// The private half of the account keypair with the given public half, held in the personal manifest.
-pub(crate) async fn account_private_key_for(host: &Host, personal_manifest_id: &str, public_key: &str) -> SyncResult<Option<String>> {
-    let rows = query(host, Db::Local, GET_ACCOUNT_KEY_BY_PUBLIC_KEY, vec![json!(personal_manifest_id), json!(public_key)]).await?;
-    Ok(rows.first().and_then(|row| row.get("PrivateKey")).and_then(Value::as_str).map(str::to_string))
 }
 
 /// Make a keypair the manifest's active one, demoting (never deleting) whatever it supersedes.

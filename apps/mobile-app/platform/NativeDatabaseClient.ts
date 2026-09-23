@@ -81,13 +81,6 @@ export class NativeDatabaseClient implements IDatabaseClient {
   }
 
   /**
-   * TODO: implement multi-manifest group support.
-   */
-  public getActiveManifestId(): string | null {
-    return null;
-  }
-
-  /**
    * The personal manifest id, as the last sync recorded it in the native sync engine state.
    */
   public getPersonalManifestId(): Promise<string | null> {

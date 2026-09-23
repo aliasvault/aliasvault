@@ -130,7 +130,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     let ordered: Vec<&ManifestDto> = std::iter::once(personal_dto).chain(snapshot.manifests.iter().filter(|m| m.manifest_id != personal_dto.manifest_id)).collect();
     for dto in ordered {
         let is_personal = dto.manifest_id == personal_dto.manifest_id;
-        let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal, resolved.first().map(|m| &m.manifest)).await?;
+        let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal).await?;
         if dto.blob.as_deref().unwrap_or("").is_empty() {
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
             let (encrypted_vek, encryption_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
@@ -337,7 +337,7 @@ fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<
 }
 
 /// The key that opens one snapshot manifest.
-async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool, personal_manifest: Option<&Manifest>) -> SyncResult<String> {
+async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id: &str, personal_vek: &str, is_personal: bool) -> SyncResult<String> {
     let key_type = dto.key_type.clone().unwrap_or_else(|| if is_personal { types::KEY_TYPE_ACCOUNT_KEY.to_string() } else { types::KEY_TYPE_GRANT_KEY.to_string() });
     if key_type == types::KEY_TYPE_ACCOUNT_KEY {
         if dto.manifest_id != personal_manifest_id {
@@ -348,25 +348,14 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
     if key_type != types::KEY_TYPE_GRANT_KEY {
         return Err(SyncError::Snapshot(format!("manifest {} states an unknown key type \"{}\" (newer server?), refusing to assemble", dto.manifest_id, key_type)));
     }
-    let personal_manifest = personal_manifest.ok_or_else(|| SyncError::Snapshot(format!("manifest {} is opened through a grant, but no personal manifest is open to resolve the private key from, refusing to assemble", dto.manifest_id)))?;
-    resolve_granted_vek(ctx, personal_manifest, dto).await
+    resolve_granted_vek(ctx, dto).await
 }
 
-async fn resolve_granted_vek(ctx: &Ctx, personal_manifest: &Manifest, dto: &ManifestDto) -> SyncResult<String> {
+async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String> {
     let (encrypted_vek, public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant to open it with, refusing to assemble", dto.manifest_id)))?;
     if algorithm != types::ALGORITHM_RSA_OAEP_SHA256 {
         return Err(SyncError::Snapshot(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\" (newer server?), refusing to assemble", dto.manifest_id, algorithm)));
     }
-    let private_key = resolve_private_key_jwk(ctx, personal_manifest, &public_key).await?.ok_or_else(|| SyncError::Snapshot(format!("no private key in this vault opens the grant on shared manifest {}, refusing to assemble", dto.manifest_id)))?;
+    let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or_else(|| SyncError::Snapshot(format!("this session holds no account private key that opens the grant on shared manifest {}, refusing to assemble", dto.manifest_id)))?;
     keys::decrypt_manifest_vek(&encrypted_vek, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
-}
-
-/// The private key (JWK) matching a grant's public key: the session's, else one the personal manifest keeps.
-async fn resolve_private_key_jwk(ctx: &Ctx, personal_manifest: &Manifest, encryption_public_key: &str) -> SyncResult<Option<String>> {
-    if ctx.account_public_key.as_deref() == Some(encryption_public_key) {
-        if let Some(private) = &ctx.account_private_key {
-            return Ok(Some(private.clone()));
-        }
-    }
-    Ok(vault_codec::extract_encryption_key_for_public_key(personal_manifest, encryption_public_key).and_then(|row| row.get("PrivateKey").and_then(serde_json::Value::as_str).map(str::to_string)))
 }

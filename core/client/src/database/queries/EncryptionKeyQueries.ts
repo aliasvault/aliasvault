@@ -13,16 +13,4 @@ export class EncryptionKeyQueries {
       x.IsPrimary
     FROM EncryptionKeys x
     WHERE x.IsDeleted = 0`;
-
-  /**
-   * Get the account keypair matching the given public half.
-   */
-  public static readonly GET_ACCOUNT_KEY_BY_PUBLIC_KEY = `
-    SELECT
-      x.PublicKey,
-      x.PrivateKey,
-      x.IsPrimary
-    FROM EncryptionKeys x
-    WHERE x.ManifestId = ? AND x.PublicKey = ? AND x.IsDeleted = 0
-    LIMIT 1`;
 }

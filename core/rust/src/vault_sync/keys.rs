@@ -6,7 +6,7 @@ use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::state::{self, Ctx};
 use super::types::{SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
-use super::{db, http};
+use super::http;
 use crate::crypto;
 use zeroize::Zeroizing;
 
@@ -71,14 +71,11 @@ pub(crate) async fn re_encrypt_shared_manifest_records(ctx: &Ctx, new_key: &str)
 }
 
 /// The private key that opens a grant made out to `public_key`.
-pub(crate) async fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> SyncResult<Option<String>> {
-    if ctx.account_public_key.as_deref() == Some(public_key) {
-        if let Some(private) = &ctx.account_private_key {
-            return Ok(Some(private.clone()));
-        }
+pub(crate) fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Option<String> {
+    if ctx.account_public_key.as_deref() != Some(public_key) {
+        return None;
     }
-    let Some(personal_manifest_id) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? else { return Ok(None) };
-    db::account_private_key_for(&ctx.host, &personal_manifest_id, public_key).await
+    ctx.account_private_key.clone()
 }
 
 /// Decrypt an RSA-OAEP encrypted manifest VEK.
@@ -93,8 +90,8 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
         ctx.warn(format!("[Sharing] Manifest {} grants its key under an unsupported algorithm \"{}\" (newer server?); leaving it closed.", record.manifest_id, record.algorithm)).await;
         return Ok(None);
     }
-    let Some(private_key) = resolve_grant_private_key(ctx, &record.encryption_public_key).await? else {
-        ctx.warn(format!("[Sharing] No account key in this vault opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
+    let Some(private_key) = resolve_grant_private_key(ctx, &record.encryption_public_key) else {
+        ctx.warn(format!("[Sharing] This session holds no account private key that opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
         return Ok(None);
     };
     match decrypt_manifest_vek(&record.encrypted_vek, &private_key) {
@@ -248,12 +245,11 @@ async fn adopt_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()> {
     Ok(())
 }
 
-/// Open the account private key with the Account Key and stage it for the grant flows of this run. A chain without
-/// a keypair, or one whose private key does not open, leaves grant decryption to the personal manifest's key rows.
+/// Open the account private key with the Account Key and stage it for the grant flows of this run.
 async fn stage_account_private_key(ctx: &mut Ctx, account_key: &str, encrypted_private_key: Option<&str>) {
     let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) else { return };
     match crypto::symmetric_decrypt(encrypted, account_key) {
         Ok(private_key) => ctx.set_account_private_key(private_key),
-        Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants fall back to the vault's key rows. {}", error)).await,
+        Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants stay closed. {}", error)).await,
     }
 }

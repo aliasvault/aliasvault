@@ -18,7 +18,7 @@ open class BaseRepository(
      * folder or item take that parent's manifest through the SQL instead. Throws when no manifest has been
      * recorded yet, since an unstamped row would make every later push of the vault fail.
      */
-    protected fun activeManifestId(): String {
+    protected fun writeManifestId(): String {
         return database.getPersonalManifestId() ?: throw AppError.ManifestNotRecorded()
     }
 

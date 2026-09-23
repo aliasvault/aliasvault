@@ -19,14 +19,13 @@ export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical'
  */
 export class SettingsRepository extends BaseRepository {
   /**
-   * Get setting from database for a given key, from the manifest this client writes into.
+   * Get setting from database for a given key.
    * @param key - The setting key
    * @param defaultValue - Default value if setting not found
    * @returns The setting value
    */
   public *getSetting(key: string, defaultValue: string = ''): DbOp<string> {
-    const { active, personal } = yield* this.manifestScope();
-    const manifestId = active ?? personal;
+    const manifestId = yield* this.personalManifestId();
     if (!manifestId) {
       return defaultValue;
     }

@@ -49,12 +49,6 @@ export class SqliteClient implements ISyncDatabaseClient {
   private readonly pendingMutationScopes = new Set<VaultMutationScope>();
 
   /**
-   * The manifest this client writes new rows into, when the user has switched to one explicitly.
-   * Null means "not chosen" and the user's personal manifest applies.
-   */
-  private activeManifestId: string | null = null;
-
-  /**
    * The id of the user's personal manifest.
    */
   private personalManifestId: string | null = null;
@@ -70,27 +64,7 @@ export class SqliteClient implements ISyncDatabaseClient {
   private _logoRepository: LogoRepository | null = null;
 
   /**
-   * The manifest new rows are stamped with when they cannot inherit one from a parent row, or null when
-   * the client has not switched vaults and the personal manifest applies.
-   * @returns The active manifest id, or null when none is set
-   */
-  public getActiveManifestId(): string | null {
-    return this.activeManifestId;
-  }
-
-  /**
-   * Switch the manifest this client writes into. Pass null to go back to the personal manifest.
-   *
-   * TODO: this method is not called yet, as a null manifestId will default to the personal manifest
-   * which is what we want for now.
-   */
-  public setActiveManifestId(manifestId: string | null): void {
-    this.activeManifestId = manifestId;
-  }
-
-  /**
-   * The id of the user's personal manifest, as reported by the last pull. It is what the client writes into while
-   * no other manifest is switched to.
+   * The id of the user's personal manifest, as reported by the last pull.
    * @returns The personal manifest id, or null when no pull has recorded one yet
    */
   public getPersonalManifestId(): string | null {

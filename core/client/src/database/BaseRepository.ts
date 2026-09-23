@@ -5,7 +5,7 @@ import * as dateFormatter from '../utilities/DateFormatter';
 import { runAsync } from './DbOp';
 import { FolderQueries } from './queries/FolderQueries';
 
-import type { DbOp, ManifestScope } from './DbOp';
+import type { DbOp } from './DbOp';
 import type { Folder } from './repositories/FolderRepository';
 import type { ISqliteDatabase } from '../platform/SqliteEngine';
 import type { SharedManifest } from '../sharing/MultiManifestRendering';
@@ -26,7 +26,6 @@ export interface IDatabaseClient {
   commitTransaction(scope?: VaultMutationScope): Promise<void>;
   rollbackTransaction(): void | Promise<void>;
   isInTransaction(): boolean;
-  getActiveManifestId(): string | null;
   getPersonalManifestId(): string | null | Promise<string | null>;
   recordMutationScope?(scope: VaultMutationScope): void;
 }
@@ -88,30 +87,21 @@ export abstract class BaseRepository {
   }
 
   /**
-   * The active and personal manifest ids of the client this op runs on.
-   * @returns Both ids, each null when unknown
-   */
-  protected *manifestScope(): DbOp<ManifestScope> {
-    return (yield { kind: 'manifestScope' }) as ManifestScope;
-  }
-
-  /**
    * The id of the user's personal manifest, as recorded by the last pull.
    * @returns The personal manifest id, or null when absent
    */
   protected *personalManifestId(): DbOp<string | null> {
-    return (yield* this.manifestScope()).personal;
+    return (yield { kind: 'personalManifestId' }) as string | null;
   }
 
   /**
-   * The manifest new rows are written into: the active manifest, else the personal one.
+   * The manifest new rows outside any folder or item are written into: the personal manifest.
    * @returns The manifest id
    */
   protected *writeManifestId(): DbOp<string> {
-    const { active, personal } = yield* this.manifestScope();
-    const manifestId = active ?? personal;
+    const manifestId = yield* this.personalManifestId();
     if (!manifestId) {
-      throw new Error('BaseRepository: this client has no manifest recorded yet (no active manifest and no personal manifest); sync once before writing.');
+      throw new Error('BaseRepository: this client has no personal manifest recorded yet; sync once before writing.');
     }
     return manifestId;
   }
