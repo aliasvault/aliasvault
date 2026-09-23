@@ -7,7 +7,6 @@ import { getPlatform } from '../platform/ClientPlatform';
 import { devWarn } from '../platform/Logger';
 
 import type { WebApiService } from '../api/WebApiService';
-import type { SqliteClient } from '../database/SqliteClient';
 
 /**
  * Vault sharing logic. A shared manifest is a non-personal VaultManifest server-side, owned by a group and encrypted with its own VEK.
@@ -25,9 +24,9 @@ export type SharingApi = Pick<WebApiService, 'get' | 'post' | 'delete'>;
 export type SrpChallengeResponder = (challenge: DeleteSharedManifestInitiateResponse) => Promise<DeleteSharedManifestRequest>;
 
 /**
- * Finds the private key that opens something encrypted for the given public key, or null when this client holds none.
+ * Decrypts a vault name encrypted into an invitation for the given public key, or returns null when this session holds no key that opens it.
  */
-export type PrivateKeyResolver = (publicKey: string) => Promise<string | null>;
+export type InvitationNameDecryptor = (encryptedName: string, recipientPublicKey: string) => Promise<string | null>;
 
 /**
  * A manifest's VEK as this account holds it.
@@ -63,21 +62,12 @@ export class SharingService {
 
   /**
    * Decrypt the vault names encrypted into the invitations addressed to this account.
-   * @param sqliteClient - the open local vault, which holds this account's superseded private keys.
    * @param invitations - the invitations as served by the API.
+   * @param decryptName - decrypts one name; defaults to the session account private key this realm holds. The mobile app
+   * passes a native call instead, as its private key never leaves the native layer.
    * @returns The name of each invitation's vault, keyed by invitation id; invitations whose name will not open are left out.
    */
-  public static async openInvitationNames(sqliteClient: SqliteClient, invitations: ReceivedManifestInvitation[]): Promise<Record<string, string>> {
-    return this.openInvitationNamesWith(publicKey => this.resolveGrantPrivateKey(sqliteClient, publicKey), invitations);
-  }
-
-  /**
-   * Decrypt the vault names encrypted into the invitations addressed to this account, for a host that keeps its keys elsewhere.
-   * @param resolvePrivateKey - finds the private key for the public key an invitation was encrypted for.
-   * @param invitations - the invitations as served by the API.
-   * @returns The name of each invitation's vault, keyed by invitation id; invitations whose name will not open are left out.
-   */
-  public static async openInvitationNamesWith(resolvePrivateKey: PrivateKeyResolver, invitations: ReceivedManifestInvitation[]): Promise<Record<string, string>> {
+  public static async openInvitationNames(invitations: ReceivedManifestInvitation[], decryptName: InvitationNameDecryptor = (name, key) => this.decryptWithSessionKey(name, key)): Promise<Record<string, string>> {
     const names: Record<string, string> = {};
 
     for (const invitation of invitations) {
@@ -85,14 +75,13 @@ export class SharingService {
         continue;
       }
 
-      const privateKey = await resolvePrivateKey(invitation.recipientPublicKey);
-      if (!privateKey) {
-        devWarn(`[Sharing] No account key in this vault decrypts the name encrypted into invitation ${invitation.id}.`);
-        continue;
-      }
-
       try {
-        names[invitation.id] = new TextDecoder().decode(await EncryptionUtility.decryptWithPrivateKey(invitation.encryptedName, privateKey));
+        const name = await decryptName(invitation.encryptedName, invitation.recipientPublicKey);
+        if (name === null) {
+          devWarn(`[Sharing] This session holds no account private key that decrypts the name encrypted into invitation ${invitation.id}.`);
+          continue;
+        }
+        names[invitation.id] = name;
       } catch (error) {
         devWarn(`[Sharing] Failed to decrypt the name encrypted into invitation ${invitation.id}.`, error);
       }
@@ -178,19 +167,20 @@ export class SharingService {
   }
 
   /**
-   * The private key that opens a grant made out to `publicKey`.
-   * @param sqliteClient - the open local vault.
-   * @param publicKey - the public half the grant was encrypted for.
+   * Decrypt something encrypted for `publicKey` with the account private key of this session.
+   * @param ciphertext - the base64 RSA-OAEP ciphertext.
+   * @param publicKey - the public half it was encrypted for.
+   * @returns The UTF-8 plaintext, or null when this session holds no private key for `publicKey`.
    */
-  private static async resolveGrantPrivateKey(sqliteClient: SqliteClient, publicKey: string): Promise<string | null> {
-    if (await VaultKeyService.getAccountPublicKey() === publicKey) {
-      const sessionPrivateKey = await VaultKeyService.getSessionAccountPrivateKey();
-      if (sessionPrivateKey) {
-        return sessionPrivateKey;
-      }
+  private static async decryptWithSessionKey(ciphertext: string, publicKey: string): Promise<string | null> {
+    if (await VaultKeyService.getAccountPublicKey() !== publicKey) {
+      return null;
     }
-
-    return sqliteClient.encryptionKeys.getAccountKeypair(publicKey)?.PrivateKey ?? null;
+    const privateKey = await VaultKeyService.getSessionAccountPrivateKey();
+    if (!privateKey) {
+      return null;
+    }
+    return new TextDecoder().decode(await EncryptionUtility.decryptWithPrivateKey(ciphertext, privateKey));
   }
 
 }

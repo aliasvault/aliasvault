@@ -12,6 +12,8 @@ import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.models.TotpCode
 import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
+import uniffi.aliasvault_core.VaultException
+import uniffi.aliasvault_core.rsaDecrypt
 import kotlin.coroutines.resume
 
 /**
@@ -249,6 +251,20 @@ class VaultStore(
      */
     internal val accountPrivateKey: String?
         get() = crypto.accountPrivateKey
+
+    /**
+     * Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or null when the session
+     * holds no private key or it does not open the ciphertext.
+     */
+    fun decryptWithAccountPrivateKey(base64Ciphertext: String): String? {
+        val privateKey = accountPrivateKey ?: return null
+        return try {
+            rsaDecrypt(base64Ciphertext, privateKey).toString(Charsets.UTF_8)
+        } catch (e: VaultException) {
+            Log.w(TAG, "The account private key did not open the ciphertext", e)
+            null
+        }
+    }
 
     /**
      * Derive a key from a password using Argon2Id.

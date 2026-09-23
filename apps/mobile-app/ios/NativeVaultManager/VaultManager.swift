@@ -141,6 +141,14 @@ public class VaultManager: NSObject {
         resolve(vaultStore.getPersonalManifestId())
     }
 
+    /// Decrypt an invitation's vault name with the session account private key; nil when the session holds none that opens it.
+    @objc
+    func decryptInvitationName(_ encryptedName: String,
+                               resolver resolve: @escaping RCTPromiseResolveBlock,
+                               rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
+    }
+
     /// Resolve and store the vault key right after login from the password-derived key (see VaultStore.resolveVaultKey).
     @objc
     func resolveVaultKey(_ base64DerivedKey: String,

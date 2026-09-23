@@ -350,6 +350,16 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Decrypt an invitation's vault name with the session account private key; null when the session holds none that opens it.
+     * @param encryptedName The base64 RSA-OAEP ciphertext of the name
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun decryptInvitationName(encryptedName: String, promise: Promise) {
+        promise.resolve(vaultStore.decryptWithAccountPrivateKey(encryptedName))
+    }
+
+    /**
      * Resolve and store the vault key right after login from the unlock key (see VaultStore.resolveVaultKey).
      * Resolves with the stored key; rejects with the native error code when the chain does not open or the session is gone.
      * @param base64DerivedKey The password-derived key as base64

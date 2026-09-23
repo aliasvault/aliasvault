@@ -49,7 +49,6 @@ export default function FamilySharingScreen(): React.ReactNode {
 
   const [overview, setOverview] = useState<GroupOverviewResponse | null>(null);
   const [vaultNames, setVaultNames] = useState<Record<string, string>>({});
-  const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -58,6 +57,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
   const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
   const [pendingVaultRename, setPendingVaultRename] = useState<{ group: GroupInfo; manifest: SharedManifestInfo } | null>(null);
+  const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
   /**
    * Load the families, their shared folders and the open invitations, plus the names this vault has for them.
@@ -66,12 +66,12 @@ export default function FamilySharingScreen(): React.ReactNode {
     try {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
+      setInvitationNames(await SharingService.openInvitationNames(loaded.receivedInvitations, encryptedName => NativeVaultManager.decryptInvitationName(encryptedName)));
 
       if (sqliteClient) {
         // A shared vault is shown as a top-level folder.
         const folders = await sqliteClient.folders.getAll();
         setVaultNames(Object.fromEntries(folders.filter(folder => multiManifestRendering.isVirtualFolder(folder)).map(folder => [folder.Id.toLowerCase(), folder.Name])));
-        setInvitationNames(await SharingService.openInvitationNamesWith(async publicKey => (await sqliteClient.encryptionKeys.getAccountKeypair(publicKey))?.PrivateKey ?? null, loaded.receivedInvitations));
       }
 
       setError(null);

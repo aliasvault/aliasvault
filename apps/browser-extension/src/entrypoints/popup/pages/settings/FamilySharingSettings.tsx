@@ -65,7 +65,7 @@ const FamilySharingSettings: React.FC = () => {
     try {
       const loaded = await SharingService.getOverview(webApi);
       setOverview(loaded);
-      setInvitationNames(sqliteClient ? await SharingService.openInvitationNames(sqliteClient, loaded.receivedInvitations) : {});
+      setInvitationNames(await SharingService.openInvitationNames(loaded.receivedInvitations));
       setVaultNames(sqliteClient ? multiManifestRendering.displayNames(sqliteClient) : {});
       setError(null);
     } catch {

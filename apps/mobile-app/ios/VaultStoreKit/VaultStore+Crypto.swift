@@ -141,6 +141,15 @@ extension VaultStore {
         return (vaultEncryptionKey, accountPrivateKey)
     }
 
+    /// Decrypt base64 RSA-OAEP ciphertext with the session's account private key as UTF-8 text, or nil when the session holds
+    /// no private key or it does not open the ciphertext.
+    public func decryptWithAccountPrivateKey(_ base64Ciphertext: String) -> String? {
+        guard let privateKey = accountPrivateKey, let plaintext = try? RustCoreFramework.rsaDecrypt(base64Ciphertext: base64Ciphertext, privateKeyJwk: privateKey) else {
+            return nil
+        }
+        return String(data: plaintext, encoding: .utf8)
+    }
+
     /// Decrypt a wrapped key with the given key.
     private func unwrapKey(_ base64Blob: String, with key: Data) throws -> Data {
         guard let blob = Data(base64Encoded: base64Blob) else {
