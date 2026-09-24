@@ -34,10 +34,12 @@ public struct PasskeyQueries {
         INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         """
 
-    /// Get a passkey by its ID (credential ID).
+    /// Get a passkey by its ID (credential ID) across every manifest deterministically.
     public static let getById = """
         \(baseSelectWithItemCheck)
         WHERE p.Id = ? AND p.IsDeleted = 0
+        ORDER BY p.CreatedAt DESC, p.ManifestId
+        LIMIT 1
         """
 
     /// Get one passkey inside one manifest, bound as [passkeyId, manifestId].
@@ -57,7 +59,7 @@ public struct PasskeyQueries {
     public static let getByRpId = """
         \(baseSelectWithItemCheck)
         WHERE p.RpId = ? AND p.IsDeleted = 0
-        ORDER BY p.CreatedAt DESC
+        ORDER BY p.CreatedAt DESC, p.ManifestId
         """
 
     /// Get passkeys with item info for a specific rpId.
@@ -70,7 +72,7 @@ public struct PasskeyQueries {
         FROM Passkeys p
         INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
         WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
-        ORDER BY p.CreatedAt DESC
+        ORDER BY p.CreatedAt DESC, p.ManifestId
         """
 
     /// Insert a new passkey, stamped with the manifest of the item it hangs off (bound third, after the item id).

@@ -36,10 +36,12 @@ object PasskeyQueries {
 
     /**
      * Get a passkey by its ID (which is also the WebAuthn credential ID), only while its item is live.
+     * Searches every manifest deterministically.
      */
     const val GET_BY_ID = """
         $BASE_SELECT_WITH_ITEM
         WHERE p.Id = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        ORDER BY p.CreatedAt DESC, p.ManifestId
         LIMIT 1
     """
 
@@ -58,7 +60,7 @@ object PasskeyQueries {
     const val GET_BY_RP_ID = """
         $BASE_SELECT_WITH_ITEM
         WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
-        ORDER BY p.CreatedAt DESC
+        ORDER BY p.CreatedAt DESC, p.ManifestId
     """
 
     /**
@@ -67,7 +69,7 @@ object PasskeyQueries {
     const val GET_ALL_WITH_ITEMS = """
         $BASE_SELECT_WITH_ITEM
         WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
-        ORDER BY p.CreatedAt DESC
+        ORDER BY p.CreatedAt DESC, p.ManifestId
     """
 
     /**

@@ -30,7 +30,7 @@ export class PasskeyQueries {
     INNER JOIN Items i ON p.ItemId = i.Id AND i.ManifestId = p.ManifestId
     WHERE p.RpId = ? AND p.IsDeleted = 0
       AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
-    ORDER BY p.CreatedAt DESC`;
+    ORDER BY p.CreatedAt DESC, p.ManifestId`;
 
   /**
    * Get passkey by ID with item information.
