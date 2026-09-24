@@ -27,11 +27,7 @@ public static class ManifestAccessHelper
     public static async Task<ManifestAccessScope> ResolveScopeAsync(AliasServerDbContext context, string userId, Guid? personalGroupId = null)
     {
         var groupId = personalGroupId ?? await context.AliasVaultUsers.Where(u => u.Id == userId).Select(u => u.PersonalGroupId).FirstOrDefaultAsync();
-        var grantedManifestIds = await context.VaultManifestAccessKeys
-            .Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey)
-            .Select(k => k.VaultManifestId)
-            .Distinct()
-            .ToListAsync();
+        var grantedManifestIds = await Grants(context, userId).Select(k => k.VaultManifestId).Distinct().ToListAsync();
 
         return new ManifestAccessScope(groupId, grantedManifestIds);
     }
@@ -48,5 +44,28 @@ public static class ManifestAccessHelper
         var grantedManifestIds = scope.GrantedManifestIds;
 
         return context.VaultManifests.Where(m => m.OwnerGroupId == personalGroupId || grantedManifestIds.Contains(m.ManifestId));
+    }
+
+    /// <summary>
+    /// The grant keys the user holds.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The user.</param>
+    /// <returns>Query over the user's grant keys.</returns>
+    public static IQueryable<VaultManifestAccessKey> Grants(AliasServerDbContext context, string userId)
+    {
+        return context.VaultManifestAccessKeys.Where(k => k.UserId == userId && k.Type == ManifestKeyType.GrantKey);
+    }
+
+    /// <summary>
+    /// Whether the user holds a grant on the manifest.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="userId">The user.</param>
+    /// <param name="manifestId">The manifest.</param>
+    /// <returns>True when the user holds a grant key on the manifest.</returns>
+    public static Task<bool> HoldsGrantAsync(AliasServerDbContext context, string userId, Guid manifestId)
+    {
+        return Grants(context, userId).AnyAsync(k => k.VaultManifestId == manifestId);
     }
 }

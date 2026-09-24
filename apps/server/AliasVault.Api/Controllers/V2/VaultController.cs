@@ -728,10 +728,11 @@ public class VaultController(
             return [];
         }
 
+        var grants = ManifestAccessHelper.Grants(context, userId);
         var administered = await GroupHelper.SharedManifests(context)
             .Where(m => ids.Contains(m.ManifestId)
                 && context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == userId && (gm.Role == GroupRole.Admin || gm.Role == GroupRole.Owner))
-                && context.VaultManifestAccessKeys.Any(k => k.VaultManifestId == m.ManifestId && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
+                && grants.Any(k => k.VaultManifestId == m.ManifestId))
             .Select(m => m.ManifestId)
             .ToListAsync();
 

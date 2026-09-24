@@ -252,7 +252,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
          * admin of the group no longer implies access to each one of them, and an admin who was left out of a manifest
          * cannot pass on what they cannot open.
          */
-        if (!await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == me.Id && k.Type == ManifestKeyType.GrantKey))
+        if (!await ManifestAccessHelper.HoldsGrantAsync(context, me.Id, manifestId))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.SHARED_MANIFEST_NOT_FOUND, 404));
         }
@@ -275,7 +275,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.RECIPIENT_KEY_NOT_FOUND, 404));
         }
 
-        if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == model.UserId && k.Type == ManifestKeyType.GrantKey))
+        if (await ManifestAccessHelper.HoldsGrantAsync(context, model.UserId, manifestId))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCESS_ALREADY_GRANTED, 400));
         }
@@ -761,7 +761,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var manifestId = invitation.VaultManifestId.Value;
-        if (await context.VaultManifestAccessKeys.AnyAsync(k => k.VaultManifestId == manifestId && k.UserId == userId && k.Type == ManifestKeyType.GrantKey))
+        if (await ManifestAccessHelper.HoldsGrantAsync(context, userId, manifestId))
         {
             return true;
         }
