@@ -1002,7 +1002,7 @@ public static class SystemFieldRegistry
     }
 
     /// <summary>
-    /// Get system fields that are NOT shown by default for a specific item type.
+    /// Get system fields that are not shown by default for a specific item type.
     /// These are the fields that can be added via an "add field" button.
     /// Results are sorted by DefaultDisplayOrder.
     /// </summary>
