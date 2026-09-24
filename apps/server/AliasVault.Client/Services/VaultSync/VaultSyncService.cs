@@ -363,9 +363,8 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
             Username = await authService.GetUsernameAsync(),
             Manifests = manifestWrites,
             Buckets = bucketWrites,
-            NewBlobs = [],
             EmailRouting = emailRouting,
-            AccountKeys = migration?.Keys,
+            Migration = migration is null ? null : new VaultWriteMigration { AccountKeys = migration.Keys },
         };
 
         var response = await PostWriteAsync(request);

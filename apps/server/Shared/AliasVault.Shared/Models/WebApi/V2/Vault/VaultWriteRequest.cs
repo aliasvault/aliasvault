@@ -7,6 +7,8 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// Unified atomic write for POST /v2/Vault.
 /// </summary>
@@ -21,15 +23,11 @@ public class VaultWriteRequest
     /// <summary>Gets or sets the data buckets to upsert.</summary>
     public List<BucketWrite> Buckets { get; set; } = [];
 
-    /// <summary>Gets or sets the new blob objects the client is uploading for this write. Each is stored under every
-    /// manifest in this write that references its hash.</summary>
-    public List<Blob> NewBlobs { get; set; } = [];
-
     /// <summary>Gets or sets the email routing data to update server-side.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public EmailRoutingPush? EmailRouting { get; set; }
 
-    /// <summary>
-    /// Gets or sets a newly created account key hierarchy. Only sent for the one-time legacy vault's migration push (pre-0.31.0).
-    /// </summary>
-    public AccountKeysUpload? AccountKeys { get; set; }
+    /// <summary>Gets or sets the one-time migrations to apply atomically with this write.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public VaultWriteMigration? Migration { get; set; }
 }

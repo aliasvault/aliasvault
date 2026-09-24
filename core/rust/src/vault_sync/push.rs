@@ -8,7 +8,7 @@ use crate::vault_model::{id_key, ids_equal, OVERFLOW_TABLE, TRASH_RETENTION_DEFA
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteRequest, VaultWriteResponse};
+use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys};
 use crate::crypto;
@@ -458,7 +458,7 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
 
     let mut uploaded = upload_missing_blobs(ctx, &blobs, &baselines, gate).await?;
     let email_routing = build_email_routing(&canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect::<Vec<_>>(), &ctx.request.private_email_domains);
-    let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, new_blobs: Vec::new(), email_routing: Some(email_routing), account_keys: migration.as_ref().map(|m| m.account_keys.clone()) };
+    let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
     let response = write_vault(ctx, &payload, &blobs, gate, &mut uploaded).await?;
 
     if response.status != 0 {
@@ -748,9 +748,8 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
         username: ctx.request.username.clone(),
         manifests: Vec::new(),
         buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision }],
-        new_blobs: Vec::new(),
         email_routing: None,
-        account_keys: None,
+        migration: None,
     };
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await?;
     let reported = response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);

@@ -462,8 +462,8 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert_ne!(new_key, kek, "the host receives the new VEK through the store command");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
-    assert!(body["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
-    let (vek, _) = crypto::resolve_vault_encryption_key(body["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["accountKeys"]["encryptedVek"].as_str().unwrap(), &kek).unwrap();
+    assert!(body["migration"]["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
+    let (vek, _) = crypto::resolve_vault_encryption_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), &kek).unwrap();
     assert_eq!(*vek, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_PRIVATE_KEY));
@@ -502,7 +502,7 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     assert_eq!(item_names(&host.local), vec!["Kept item"]);
     assert!(host.requests_to("VaultKey/Password").is_empty(), "a migrated account is not probed for a key hierarchy");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
-    assert!(posts[0].body.as_ref().unwrap()["accountKeys"].is_null(), "no key hierarchy is created");
+    assert!(posts[0].body.as_ref().unwrap()["migration"].is_null(), "no key hierarchy is created");
     assert_eq!(host.vault_key, vek, "the session key stays the VEK");
 }
 
@@ -549,7 +549,7 @@ fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the migration push names the revision the server holds");
-    assert!(body["accountKeys"]["encryptedAccountKey"].is_string());
+    assert!(body["migration"]["accountKeys"]["encryptedAccountKey"].is_string());
     assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 4);
 }
 

@@ -685,8 +685,18 @@ pub struct VaultWriteRequest {
     pub username: String,
     pub manifests: Vec<ManifestWrite>,
     pub buckets: Vec<BucketWrite>,
-    pub new_blobs: Vec<BlobDto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub email_routing: Option<EmailRoutingPush>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub migration: Option<VaultWriteMigration>,
+}
+
+/// One-time migrations applied atomically with a vault write (optional field).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultWriteMigration {
+    /// The newly created key hierarchy for a legacy vault's first manifest-v1 push (pre-0.31.0).
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub account_keys: Option<crate::crypto::AccountKeyBlobs>,
 }
 

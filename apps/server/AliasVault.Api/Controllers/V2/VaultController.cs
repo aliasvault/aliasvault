@@ -233,8 +233,8 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Unified atomic write. Applies any number of changed manifests (the personal manifest and/or shared manifests), changed data
-    /// buckets, and new blobs in a single all-or-nothing DB transaction.
+    /// Unified atomic write. Applies any number of changed manifests (personal and/or shared) and changed data buckets in a single
+    /// all-or-nothing DB transaction. Blobs are uploaded beforehand through POST v2/Vault/blobs.
     /// </summary>
     /// <param name="model">Vault write request DTO.</param>
     /// <returns>Vault write response DTO.</returns>
@@ -315,7 +315,7 @@ public class VaultController(
 
         // Account-key migration: a legacy vault's first manifest-v1 push includes a newly created Account Key hierarchy, which is accepted exactly once.
         // Every later personal write must find the stored password unlock key. TODO: remove once legacy accounts are no longer supported.
-        var accountKeys = model.AccountKeys;
+        var accountKeys = model.Migration?.AccountKeys;
         var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (accountKeys != null)
         {
@@ -369,24 +369,7 @@ public class VaultController(
         {
             await using var tx = await context.Database.BeginTransactionAsync();
 
-            // 1) Upsert any new blob objects, each under the manifests in this write that reference it.
-            if (model.NewBlobs.Count > 0)
-            {
-                foreach (var (mw, row) in resolved)
-                {
-                    var referenced = mw.BlobReferences.Select(br => br.Hash).ToHashSet(StringComparer.Ordinal);
-                    var referencedBlobs = model.NewBlobs.Where(b => referenced.Contains(b.Hash)).ToList();
-                    if (!await TryUpsertBlobObjectsAsync(context, row.ManifestId, referencedBlobs, overwrite: accountKeys != null && row.OwnerGroupId == user.PersonalGroupId))
-                    {
-                        await tx.RollbackAsync();
-                        return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
-                    }
-                }
-
-                await context.SaveChangesAsync();
-            }
-
-            // 2) Validate every referenced hash exists in the store of the manifest that references it.
+            // 1) Validate every referenced hash exists in the store of the manifest that references it.
             var referencedHashes = resolved.SelectMany(r => r.Write.BlobReferences).Select(br => br.Hash).Distinct().ToList();
             var missing = new List<string>();
             if (referencedHashes.Count > 0)
@@ -412,7 +395,7 @@ public class VaultController(
                 });
             }
 
-            // 3) Apply each manifest: archive the current revision into history, update the row in place, run the
+            // 2) Apply each manifest: archive the current revision into history, update the row in place, run the
             // personal-only side effects (email claims count + KEK/VEK key creation), and prune history per retention.
             var manifestResults = new List<ManifestWriteResult>();
             foreach (var (mw, row) in resolved)
@@ -519,7 +502,7 @@ public class VaultController(
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
             }
 
-            // 4) Add blob references for each manifest's new revision.
+            // 3) Add blob references for each manifest's new revision.
             foreach (var (mw, row) in resolved)
             {
                 foreach (var dto in mw.BlobReferences)
@@ -533,7 +516,7 @@ public class VaultController(
                 }
             }
 
-            // 5) Data bucket upserts (settings, etc.). Each insert adds a new revision row (history).
+            // 4) Data bucket upserts (settings, etc.). Each insert adds a new revision row (history).
             var newBucketRevisions = new List<BucketRevision>();
             foreach (var bucket in model.Buckets)
             {
