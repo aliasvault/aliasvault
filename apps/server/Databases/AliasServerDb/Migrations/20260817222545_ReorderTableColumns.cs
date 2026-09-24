@@ -18,10 +18,8 @@ namespace AliasServerDb.Migrations
 
             RebuildAliasVaultUsers(migrationBuilder);
             RebuildGroups(migrationBuilder);
-            RebuildEmails(migrationBuilder);
             RebuildEmailClaims(migrationBuilder);
             RebuildRateLimits(migrationBuilder);
-            RebuildVaultManifests(migrationBuilder);
             RebuildVaultManifestDeliveryKeys(migrationBuilder);
 
             RecreateForeignKeys(migrationBuilder);
@@ -48,12 +46,8 @@ namespace AliasServerDb.Migrations
             migrationBuilder.Sql("""
                 ALTER TABLE "AliasVaultUserRefreshTokens" DROP CONSTRAINT "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId";
                 ALTER TABLE "AliasVaultUsers" DROP CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId";
-                ALTER TABLE "EmailAttachments" DROP CONSTRAINT "FK_EmailAttachments_Emails_EmailId";
                 ALTER TABLE "EmailClaimLinks" DROP CONSTRAINT "FK_EmailClaimLinks_EmailClaims_EmailClaimId";
-                ALTER TABLE "EmailClaimLinks" DROP CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId";
-                ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId";
                 ALTER TABLE "EmailDecryptionKeys" DROP CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId";
-                ALTER TABLE "EmailParts" DROP CONSTRAINT "FK_EmailParts_Emails_EmailId";
                 ALTER TABLE "GroupMembers" DROP CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId";
                 ALTER TABLE "GroupMembers" DROP CONSTRAINT "FK_GroupMembers_Groups_GroupId";
                 ALTER TABLE "MobileLoginRequests" DROP CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId";
@@ -61,15 +55,11 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "UserGrantKeys" DROP CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId";
                 ALTER TABLE "UserUnlockKeys" DROP CONSTRAINT "FK_UserUnlockKeys_AliasVaultUsers_UserId";
                 ALTER TABLE "UserUnlockKeysHistory" DROP CONSTRAINT "FK_UserUnlockKeysHistory_AliasVaultUsers_UserId";
-                ALTER TABLE "VaultBlobObjects" DROP CONSTRAINT "FK_VaultBlobObjects_VaultManifests_ManifestId";
-                ALTER TABLE "VaultBlobReferences" DROP CONSTRAINT "FK_VaultBlobReferences_VaultManifests_ManifestId";
-                ALTER TABLE "VaultDataBuckets" DROP CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId";
                 ALTER TABLE "VaultManifestAccessKeys" DROP CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId";
                 ALTER TABLE "VaultManifestDeliveryKeys" DROP CONSTRAINT "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId";
                 ALTER TABLE "VaultManifests" DROP CONSTRAINT "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId";
                 ALTER TABLE "VaultManifests" DROP CONSTRAINT "FK_VaultManifests_Groups_OwnerGroupId";
                 ALTER TABLE "VaultManifestsHistory" DROP CONSTRAINT "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId";
-                ALTER TABLE "VaultManifestsHistory" DROP CONSTRAINT "FK_VaultManifestsHistory_VaultManifests_ManifestId";
                 """);
         }
 
@@ -153,57 +143,6 @@ namespace AliasServerDb.Migrations
         }
 
         /// <summary>
-        /// Groups the recipient and sender columns, moves the message body columns the current storage format uses
-        /// (preview, source bytes and the attachment counter) up next to each other, and pushes the v1 body columns
-        /// that are no longer written to the back.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        private static void RebuildEmails(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql("""
-                CREATE TABLE "Emails_reordered" (
-                    "Id" integer NOT NULL,
-                    "Subject" text NOT NULL,
-                    "From" text NOT NULL,
-                    "FromLocal" text NOT NULL,
-                    "FromDomain" text NOT NULL,
-                    "To" text NOT NULL,
-                    "ToLocal" text NOT NULL,
-                    "ToDomain" text NOT NULL,
-                    "Date" timestamp with time zone NOT NULL,
-                    "DateSystem" timestamp with time zone NOT NULL,
-                    "MessagePreview" text,
-                    "MessageSourceBytes" bytea,
-                    "AttachmentCount" integer DEFAULT 0 NOT NULL,
-                    "Visible" boolean NOT NULL,
-                    "PushNotificationSent" boolean NOT NULL,
-                    "MessageHtml" text,
-                    "MessagePlain" text,
-                    "MessageSource" text
-                );
-
-                ALTER TABLE "Emails_reordered" ALTER COLUMN "MessageSourceBytes" SET STORAGE EXTERNAL;
-
-                INSERT INTO "Emails_reordered" ("Id", "Subject", "From", "FromLocal", "FromDomain", "To", "ToLocal", "ToDomain", "Date", "DateSystem", "MessagePreview", "MessageSourceBytes", "AttachmentCount", "Visible", "PushNotificationSent", "MessageHtml", "MessagePlain", "MessageSource")
-                SELECT "Id", "Subject", "From", "FromLocal", "FromDomain", "To", "ToLocal", "ToDomain", "Date", "DateSystem", "MessagePreview", "MessageSourceBytes", "AttachmentCount", "Visible", "PushNotificationSent", "MessageHtml", "MessagePlain", "MessageSource"
-                FROM "Emails";
-
-                DROP TABLE "Emails";
-                ALTER TABLE "Emails_reordered" RENAME TO "Emails";
-
-                ALTER TABLE "Emails" ADD CONSTRAINT "PK_Emails" PRIMARY KEY ("Id");
-                ALTER TABLE "Emails" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY;
-                SELECT setval(pg_get_serial_sequence('"Emails"', 'Id'), COALESCE((SELECT MAX("Id") FROM "Emails"), 0) + 1, false);
-
-                CREATE INDEX "IX_Emails_Date" ON "Emails" ("Date");
-                CREATE INDEX "IX_Emails_DateSystem" ON "Emails" ("DateSystem");
-                CREATE INDEX "IX_Emails_PushNotificationSent" ON "Emails" ("PushNotificationSent");
-                CREATE INDEX "IX_Emails_To_DateSystem" ON "Emails" ("To", "DateSystem");
-                CREATE INDEX "IX_Emails_Visible" ON "Emails" ("Visible");
-                """);
-        }
-
-        /// <summary>
         /// Moves the anonymized sender flag up next to the address it describes, and compacts the dead column slots
         /// this table carries from the user-owned claim model it was migrated away from.
         /// </summary>
@@ -273,52 +212,6 @@ namespace AliasServerDb.Migrations
         }
 
         /// <summary>
-        /// Leads with the manifest identity and its owning group, followed by the manifest-v1 payload and the
-        /// bookkeeping counters, and ends with the legacy sqlite-blob and SRP columns.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        private static void RebuildVaultManifests(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql("""
-                CREATE TABLE "VaultManifests_reordered" (
-                    "ManifestId" uuid NOT NULL,
-                    "OwnerGroupId" uuid NOT NULL,
-                    "StorageFormat" character varying(20) NOT NULL,
-                    "ManifestBlob" bytea,
-                    "ManifestCiphertextHash" character varying(64),
-                    "KeyVersion" integer DEFAULT 0 NOT NULL,
-                    "RevisionNumber" bigint NOT NULL,
-                    "FileSize" integer NOT NULL,
-                    "CredentialsCount" integer NOT NULL,
-                    "EmailClaimsCount" integer NOT NULL,
-                    "Client" character varying(255),
-                    "UpdatedByUserId" character varying(255),
-                    "CreatedAt" timestamp with time zone NOT NULL,
-                    "UpdatedAt" timestamp with time zone NOT NULL,
-                    "VaultBlob" text,
-                    "Version" character varying(255),
-                    "Salt" character varying(100),
-                    "Verifier" character varying(1000),
-                    "EncryptionType" text,
-                    "EncryptionSettings" text
-                );
-
-                ALTER TABLE "VaultManifests_reordered" ALTER COLUMN "ManifestBlob" SET STORAGE EXTERNAL;
-
-                INSERT INTO "VaultManifests_reordered" ("ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "UpdatedByUserId", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings")
-                SELECT "ManifestId", "OwnerGroupId", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "KeyVersion", "RevisionNumber", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "UpdatedByUserId", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings"
-                FROM "VaultManifests";
-
-                DROP TABLE "VaultManifests";
-                ALTER TABLE "VaultManifests_reordered" RENAME TO "VaultManifests";
-
-                ALTER TABLE "VaultManifests" ADD CONSTRAINT "PK_VaultManifests" PRIMARY KEY ("ManifestId");
-                CREATE INDEX "IX_VaultManifests_OwnerGroupId" ON "VaultManifests" ("OwnerGroupId");
-                CREATE INDEX "IX_VaultManifests_UpdatedByUserId" ON "VaultManifests" ("UpdatedByUserId");
-                """);
-        }
-
-        /// <summary>
         /// Moves the manifest a delivery key belongs to and its algorithm up next to the primary key instead of
         /// leaving them behind the timestamps.
         /// </summary>
@@ -358,12 +251,8 @@ namespace AliasServerDb.Migrations
             migrationBuilder.Sql("""
                 ALTER TABLE "AliasVaultUserRefreshTokens" ADD CONSTRAINT "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "AliasVaultUsers" ADD CONSTRAINT "FK_AliasVaultUsers_Groups_PersonalGroupId" FOREIGN KEY ("PersonalGroupId") REFERENCES "Groups"("Id") ON DELETE RESTRICT;
-                ALTER TABLE "EmailAttachments" ADD CONSTRAINT "FK_EmailAttachments_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "EmailClaimLinks" ADD CONSTRAINT "FK_EmailClaimLinks_EmailClaims_EmailClaimId" FOREIGN KEY ("EmailClaimId") REFERENCES "EmailClaims"("Id") ON DELETE CASCADE;
-                ALTER TABLE "EmailClaimLinks" ADD CONSTRAINT "FK_EmailClaimLinks_VaultManifests_VaultManifestId" FOREIGN KEY ("VaultManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
-                ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "EmailDecryptionKeys" ADD CONSTRAINT "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId" FOREIGN KEY ("VaultManifestDeliveryKeyId") REFERENCES "VaultManifestDeliveryKeys"("Id") ON DELETE CASCADE;
-                ALTER TABLE "EmailParts" ADD CONSTRAINT "FK_EmailParts_Emails_EmailId" FOREIGN KEY ("EmailId") REFERENCES "Emails"("Id") ON DELETE CASCADE;
                 ALTER TABLE "GroupMembers" ADD CONSTRAINT "FK_GroupMembers_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "GroupMembers" ADD CONSTRAINT "FK_GroupMembers_Groups_GroupId" FOREIGN KEY ("GroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
                 ALTER TABLE "MobileLoginRequests" ADD CONSTRAINT "FK_MobileLoginRequests_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
@@ -371,15 +260,11 @@ namespace AliasServerDb.Migrations
                 ALTER TABLE "UserGrantKeys" ADD CONSTRAINT "FK_UserGrantKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "UserUnlockKeys" ADD CONSTRAINT "FK_UserUnlockKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "UserUnlockKeysHistory" ADD CONSTRAINT "FK_UserUnlockKeysHistory_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
-                ALTER TABLE "VaultBlobObjects" ADD CONSTRAINT "FK_VaultBlobObjects_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
-                ALTER TABLE "VaultBlobReferences" ADD CONSTRAINT "FK_VaultBlobReferences_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
-                ALTER TABLE "VaultDataBuckets" ADD CONSTRAINT "FK_VaultDataBuckets_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestAccessKeys" ADD CONSTRAINT "FK_VaultManifestAccessKeys_AliasVaultUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestDeliveryKeys" ADD CONSTRAINT "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId" FOREIGN KEY ("VaultManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifests" ADD CONSTRAINT "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId" FOREIGN KEY ("UpdatedByUserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE SET NULL;
                 ALTER TABLE "VaultManifests" ADD CONSTRAINT "FK_VaultManifests_Groups_OwnerGroupId" FOREIGN KEY ("OwnerGroupId") REFERENCES "Groups"("Id") ON DELETE CASCADE;
                 ALTER TABLE "VaultManifestsHistory" ADD CONSTRAINT "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId" FOREIGN KEY ("UpdatedByUserId") REFERENCES "AliasVaultUsers"("Id") ON DELETE SET NULL;
-                ALTER TABLE "VaultManifestsHistory" ADD CONSTRAINT "FK_VaultManifestsHistory_VaultManifests_ManifestId" FOREIGN KEY ("ManifestId") REFERENCES "VaultManifests"("ManifestId") ON DELETE CASCADE;
                 """);
         }
     }
