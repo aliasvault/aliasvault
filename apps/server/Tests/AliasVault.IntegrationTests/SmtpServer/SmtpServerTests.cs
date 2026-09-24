@@ -344,7 +344,7 @@ public class SmtpServerTests
     /// <summary>
     /// Every recipient group is charged once per delivered email. The counter drives quota enforcement and is now
     /// incremented by a statement rather than through the change tracker, so it needs coverage proving it still
-    /// counts at all — it had none before.
+    /// counts at all; it had none before.
     /// </summary>
     /// <returns>Task.</returns>
     [Test]

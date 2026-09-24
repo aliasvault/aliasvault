@@ -102,7 +102,7 @@ export const StorageKeys = {
 
   /** Whether PIN unlock is enabled. */
   PIN_ENABLED: 'local:aliasvault_pin_enabled',
-  /** The vault encryption key, encrypted with the PIN derived key. */
+  /** The unlock key (password-derived KEK), encrypted with the PIN derived key. */
   PIN_ENCRYPTED_KEY: 'local:aliasvault_pin_encrypted_key',
   /** Salt used to derive the PIN key. */
   PIN_SALT: 'local:aliasvault_pin_salt',
@@ -115,7 +115,7 @@ export const StorageKeys = {
 /** Keys that hold auth tokens, ephemeral error state and account-scoped server state. Cleared on any logout. */
 export const AUTH_STORAGE_KEYS: readonly StorageKey[] = CORE_AUTH_STORAGE_KEYS;
 
-/** Keys holding the PIN unlock material: the PIN-wrapped vault key and the parameters that unwrap it. */
+/** Keys holding the PIN unlock material: the PIN-encrypted unlock key and the parameters that unwrap it. */
 export const PIN_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.PIN_ENABLED,
   StorageKeys.PIN_ENCRYPTED_KEY,

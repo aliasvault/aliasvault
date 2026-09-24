@@ -8,7 +8,7 @@ import { logDefect, logExpected } from '@aliasvault/client/utilities/Diagnostics
 
 /**
  * Common messages the browser produces when a message crosses to a context that is not there (any more).
- * These are routinely expected during normal lifecycle events, and no not indicate a defect.
+ * These are routinely expected during normal lifecycle events, and do not indicate a defect.
  */
 const LIFECYCLE_FAILURE_MESSAGES = [
   'could not establish connection',

@@ -851,7 +851,7 @@ export class ItemRepository extends BaseRepository {
 
       // For custom fields, create or get FieldDefinition
       if (field.IsCustomField) {
-        fieldDefinitionId = yield* this.ensureFieldDefinition(field, itemId, itemType, manifestId, currentDateTime);
+        fieldDefinitionId = yield* this.upsertFieldDefinition(field, itemType, manifestId, currentDateTime);
       }
 
       // Handle multi-value fields
@@ -898,38 +898,6 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Ensure a field definition exists for a custom field.
-   */
-  private *ensureFieldDefinition(
-    field: ItemField,
-    itemId: string,
-    itemType: string,
-    manifestId: string,
-    currentDateTime: string
-  ): DbOp<string> {
-    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS, [field.FieldKey, manifestId]);
-
-    if (existingDef.length === 0) {
-      yield* this.execute(FieldDefinitionQueries.INSERT, [
-        field.FieldKey,
-        manifestId,
-        field.FieldType,
-        field.Label,
-        0, // IsMultiValue
-        field.IsHidden ? 1 : 0,
-        0, // EnableHistory
-        field.DisplayOrder ?? 0,
-        itemType,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
-    }
-
-    return field.FieldKey;
-  }
-
-  /**
    * Update field values for an existing item.
    */
   private *updateFieldValues(item: Item, manifestId: string, currentDateTime: string): DbOp<void> {
@@ -953,7 +921,7 @@ export class ItemRepository extends BaseRepository {
       let fieldDefinitionId = null;
 
       if (field.IsCustomField) {
-        fieldDefinitionId = yield* this.ensureOrUpdateFieldDefinition(field, item.Id, item.ItemType, manifestId, currentDateTime);
+        fieldDefinitionId = yield* this.upsertFieldDefinition(field, item.ItemType, manifestId, currentDateTime);
       }
 
       const values = Array.isArray(field.Value) ? field.Value : [field.Value];
@@ -1037,16 +1005,10 @@ export class ItemRepository extends BaseRepository {
   }
 
   /**
-   * Ensure a field definition exists and is up-to-date.
+   * Insert or update the field definition of a custom field; a soft-deleted definition is revived.
    */
-  private *ensureOrUpdateFieldDefinition(
-    field: ItemField,
-    itemId: string,
-    itemType: string,
-    manifestId: string,
-    currentDateTime: string
-  ): DbOp<string> {
-    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS_ACTIVE, [field.FieldKey, manifestId]);
+  private *upsertFieldDefinition(field: ItemField, itemType: string, manifestId: string, currentDateTime: string): DbOp<string> {
+    const existingDef = yield* this.query<{ Id: string }>(FieldDefinitionQueries.EXISTS, [field.FieldKey, manifestId]);
 
     if (existingDef.length === 0) {
       yield* this.execute(FieldDefinitionQueries.INSERT, [
@@ -1054,9 +1016,9 @@ export class ItemRepository extends BaseRepository {
         manifestId,
         field.FieldType,
         field.Label,
-        0,
+        0, // IsMultiValue
         field.IsHidden ? 1 : 0,
-        0,
+        0, // EnableHistory
         field.DisplayOrder ?? 0,
         itemType,
         currentDateTime,

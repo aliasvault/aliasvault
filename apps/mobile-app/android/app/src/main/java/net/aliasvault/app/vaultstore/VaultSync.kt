@@ -160,12 +160,11 @@ class VaultSync(
     /**
      * Push the pending local changes (after a native mutation such as an autofill link or a passkey creation).
      */
-    suspend fun mutateVault(webApiService: WebApiService): Boolean {
+    suspend fun mutateVault(webApiService: WebApiService) {
         val result = syncVaultWithServer(webApiService)
         if (!result.success && !result.wasOffline) {
             throw AppError.VaultUploadFailed(result.errorMessage ?: result.error ?: "Vault sync failed")
         }
-        return result.success
     }
 
     /**

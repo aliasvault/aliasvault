@@ -1,18 +1,17 @@
 import { argon2DeriveKey } from '@aliasvault/client/rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
-import { browser } from 'wxt/browser';
 
 import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 
-import { storage } from '#imports';
+import { browser, storage } from '#imports';
 
 /**
  * PinUnlockService - Handles PIN-based vault unlock
  *
  * This service allows users to set a 6-8 digit PIN to unlock their vault instead
- * of entering their full master password. The vault encryption key is encrypted
- * with a key derived from the PIN and stored locally.
+ * of entering their full master password. The unlock key (the password-derived KEK)
+ * is encrypted with a key derived from the PIN and stored locally.
  *
  * Security features:
  * - 4 failed attempts maximum before requiring full password
@@ -239,19 +238,19 @@ export async function unlockWithPin(pin: string): Promise<string> {
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Decrypt the vault encryption key
+    // Decrypt the unlock key
     const decryptedData = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
       pinKey,
       encryptedData
     );
 
-    const vaultEncryptionKey = new TextDecoder().decode(decryptedData);
+    const unlockKey = new TextDecoder().decode(decryptedData);
 
     /* Reset failed attempts on success */
     await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
 
-    return vaultEncryptionKey;
+    return unlockKey;
   } catch {
     /* Increment failed attempts */
     const currentAttempts = await getFailedAttempts();

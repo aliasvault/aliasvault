@@ -1,9 +1,7 @@
 import { type DeleteSharedManifestInitiateResponse, type DeleteSharedManifestRequest, type GroupOverviewResponse, type ReceivedManifestInvitation } from '@aliasvault/models/webapi';
 
 import { VaultKeyService } from '../auth/VaultKeyService';
-import { StorageKeys } from '../constants/StorageKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
-import { getPlatform } from '../platform/ClientPlatform';
 import { devWarn } from '../platform/Logger';
 
 import type { WebApiService } from '../api/WebApiService';
@@ -27,26 +25,6 @@ export type SrpChallengeResponder = (challenge: DeleteSharedManifestInitiateResp
  * Decrypts a vault name encrypted into an invitation for the given public key, or returns null when this session holds no key that opens it.
  */
 export type InvitationNameDecryptor = (encryptedName: string, recipientPublicKey: string) => Promise<string | null>;
-
-/**
- * A manifest's VEK as this account holds it.
- */
-export type ManifestVekGrant = {
-  encryptedVek: string;
-  encryptionPublicKey: string;
-  algorithm: string;
-};
-
-/**
- * Key record of a shared manifest, resolved during the last pull (or a share create) and rebuilt from the server
- * grant on every pull.
- */
-export type SharedManifestRecord = ManifestVekGrant & {
-  manifestId: string;
-  salt: string;
-  encryptedName?: string | null;
-  canAdminister?: boolean;
-};
 
 /**
  * Service with static helpers implementing the vault sharing flows.
@@ -139,31 +117,6 @@ export class SharingService {
    */
   public static async declineInvitation(webApi: SharingApi, invitationId: string): Promise<void> {
     await webApi.post<object, void>(`Groups/invitations/${invitationId}/decline`, {}, false);
-  }
-
-  /**
-   * The shared-manifest key records (see {@link SharedManifestRecord}), keyed by manifest id.
-   */
-  public static async getSharedManifestRecords(): Promise<Record<string, SharedManifestRecord>> {
-    const ciphertext = (await getPlatform().storage.get(StorageKeys.SHARED_MANIFESTS)) as string | null;
-    const encryptionKey = ciphertext ? await this.sessionEncryptionKey() : null;
-    if (!ciphertext || !encryptionKey) {
-      return {};
-    }
-
-    try {
-      return JSON.parse(await EncryptionUtility.symmetricDecrypt(ciphertext, encryptionKey)) as Record<string, SharedManifestRecord>;
-    } catch (error) {
-      devWarn('[Sharing] The stored shared-manifest key records did not decrypt (re-keyed vault?); treating them as absent.', error);
-      return {};
-    }
-  }
-
-  /**
-   * The session vault encryption key, or null while the vault is locked.
-   */
-  private static async sessionEncryptionKey(): Promise<string | null> {
-    return VaultKeyService.getSessionVaultEncryptionKey();
   }
 
   /**

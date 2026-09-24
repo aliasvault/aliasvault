@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// <summary>
 /// A superseded revision of a vault manifest, kept for backup/rollback per the retention policy. On every upload the
 /// current <see cref="VaultManifest"/> row is first copied into this table, after which the current row is updated in
-/// place. Composite primary key (ManifestId, RevisionNumber) — a revision number occurs at most once per manifest.
+/// place. Composite primary key (ManifestId, RevisionNumber): a revision number occurs at most once per manifest.
 /// </summary>
 public class VaultManifestsHistory : VaultManifestBase
 {

@@ -774,8 +774,8 @@ class VaultStore(
     /**
      * Push the pending local changes (after a native mutation).
      */
-    suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
-        return sync.mutateVault(webApiService)
+    suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService) {
+        sync.mutateVault(webApiService)
     }
 
     // endregion

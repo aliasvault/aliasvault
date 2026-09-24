@@ -47,7 +47,12 @@ function buildCodeChoices(verificationCode: string) : string[] {
     const fake = Math.floor(Math.random() * 10 ** MobileLoginProtocol.VERIFICATION_CODE_LENGTH);
     choices.add(fake.toString().padStart(MobileLoginProtocol.VERIFICATION_CODE_LENGTH, '0'));
   }
-  return [...choices].sort(() => Math.random() - 0.5);
+  const shuffled = [...choices];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 /**
@@ -344,7 +349,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
           ))}
         </View>
         <RobustPressable style={styles.declineButton} onPress={handleDecline} testID="mobile-login-decline">
-          <ThemedText style={styles.declineButtonText}>{t('sharing.family.decline')}</ThemedText>
+          <ThemedText style={styles.declineButtonText}>{t('common.cancel')}</ThemedText>
         </RobustPressable>
       </ThemedScrollView>
     </ThemedContainer>

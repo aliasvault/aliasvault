@@ -171,7 +171,7 @@ fn owner_tables() -> Vec<CodecTableData> {
     stamp_subtree(owner_tables_unstamped(), "f-shared", "m-f-shared")
 }
 
-/// The same vault with no `ManifestId` stamps at all, as a pre-2.2.0 vault holds it.
+/// The same vault with no `ManifestId` stamps at all, as a 2.0.0 client schema vault holds it.
 fn owner_tables_unstamped() -> Vec<CodecTableData> {
     vec![
         table("Folders", vec![

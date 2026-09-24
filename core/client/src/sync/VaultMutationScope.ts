@@ -30,14 +30,6 @@ export const DEFAULT_VAULT_MUTATION_SCOPE: VaultMutationScope = 'Main';
 export const SILENT_VAULT_MUTATION_SCOPES: readonly VaultMutationScope[] = [VaultDataBucketCategory.Stats];
 
 /**
- * True when a scope is a manifest category (i.e. a dirty flag on it requires a full manifest push, not a
- * bucket-only push).
- * @param scope - the mutation scope
- */
-export const isManifestScope = (scope: VaultMutationScope): scope is VaultManifestScope =>
-  (ALL_VAULT_MANIFEST_SCOPES as readonly string[]).includes(scope);
-
-/**
  * True when a scope's sync must stay invisible in the UI. It still syncs like any other scope; only the
  * indicators ignore it.
  * @param scope - the mutation scope

@@ -3347,6 +3347,13 @@ var VaultSqlGenerator = class {
   getCompleteSchemaSql() {
     return COMPLETE_SCHEMA_SQL;
   }
+  /**
+   * Get the EF migration id the complete schema stamps a new vault with (empty string if none).
+   */
+  getCompleteSchemaMigrationId() {
+    const ids = [...COMPLETE_SCHEMA_SQL.matchAll(/INSERT\s+INTO\s+"__EFMigrationsHistory"[^;]*?VALUES\s*\(\s*'([^']+)'/gi)].map((m) => m[1]);
+    return ids.length === 0 ? "" : ids.reduce((a, b) => b > a ? b : a);
+  }
 };
 
 // src/factories/VaultSqlGeneratorFactory.ts

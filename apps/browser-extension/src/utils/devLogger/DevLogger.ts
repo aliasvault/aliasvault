@@ -10,9 +10,7 @@
  */
 
 /**
- * A channel filter. `only` is an allowlist (when non-empty, ONLY these channels log);
- * `mute` is a denylist applied afterwards. Channel names are matched case-insensitively
- * and without the surrounding brackets (e.g. `'V2Push'`, not `'[V2Push]'`).
+ * A channel filter.
  */
 export type DevLogFilter = {
   /** Allowlist. When present and non-empty, only these channels are shown. */

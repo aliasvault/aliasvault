@@ -19,20 +19,6 @@ const ACTION_COLUMNS: Record<ItemUsageAction, { last: string; count: string }> =
 };
 
 /**
- * Per-item usage statistics.
- */
-export type ItemStats = {
-  LastUsedAt: string | null;
-  UseCount: number;
-  LastAutofilledAt: string | null;
-  AutofillCount: number;
-  LastCopiedAt: string | null;
-  CopyCount: number;
-  LastPasskeyAuthAt: string | null;
-  PasskeyAuthCount: number;
-};
-
-/**
  * Repository for per-item usage statistics.
  */
 export class ItemStatsRepository extends BaseRepository {

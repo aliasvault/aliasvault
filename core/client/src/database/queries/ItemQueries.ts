@@ -407,12 +407,6 @@ export class FieldDefinitionQueries {
     SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ?`;
 
   /**
-   * Check if a field definition exists in the item's manifest and is not deleted. Binds [definitionId, manifestId].
-   */
-  public static readonly EXISTS_ACTIVE = `
-    SELECT Id FROM FieldDefinitions WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
-
-  /**
    * Insert a new field definition into the item's manifest. Binds [definitionId, manifestId, ...].
    */
   public static readonly INSERT = `
@@ -420,7 +414,7 @@ export class FieldDefinitionQueries {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   /**
-   * Update an existing field definition.
+   * Update an existing field definition, reviving it when soft-deleted.
    */
   public static readonly UPDATE = `
     UPDATE FieldDefinitions
@@ -428,7 +422,8 @@ export class FieldDefinitionQueries {
         FieldType = ?,
         IsHidden = ?,
         Weight = ?,
-        UpdatedAt = ?
+        UpdatedAt = ?,
+        IsDeleted = 0
     WHERE Id = ? AND ManifestId = ?`;
 }
 

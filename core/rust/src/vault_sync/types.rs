@@ -75,22 +75,10 @@ pub struct SyncRequest {
     pub sharing: Option<SharingParams>,
 }
 
-/// Session values the engine changed and the host has to adopt.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionUpdates {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub encryption_key: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_private_key: Option<String>,
-}
-
 /// What every operation reports on top of its own outcome.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionOutcome {
-    #[serde(default)]
-    pub session_updates: SessionUpdates,
     /// Whether the stored vault changed; hosts reload what reads it (autofill stores, open UI).
     #[serde(default)]
     pub vault_changed: bool,
@@ -791,13 +779,13 @@ mod tests {
     fn failure_fields_flatten_into_the_result_wire_shape() {
         let coded = FailureFields::from(&SyncError::VaultLocked);
         let full = serde_json::to_string(&FullSyncResult { failure: coded, ..Default::default() }).unwrap();
-        assert_eq!(full, r#"{"success":false,"hasNewVault":false,"wasOffline":false,"sqliteBlobUpgradeRequired":false,"manifestMigrationRequired":false,"error":"No encryption key available","errorCode":"E-202","requiresLogout":false,"isOfflineMode":false,"sessionUpdates":{},"vaultChanged":false}"#);
+        assert_eq!(full, r#"{"success":false,"hasNewVault":false,"wasOffline":false,"sqliteBlobUpgradeRequired":false,"manifestMigrationRequired":false,"error":"No encryption key available","errorCode":"E-202","requiresLogout":false,"isOfflineMode":false,"vaultChanged":false}"#);
         let round_trip: FullSyncResult = serde_json::from_str(&full).unwrap();
         assert_eq!(serde_json::to_string(&round_trip).unwrap(), full);
 
         let logout = FailureFields::logout(LogoutReason::SessionExpired);
         let migrate = serde_json::to_string(&MigrateManifestResult { failure: logout.clone(), ..Default::default() }).unwrap();
-        assert_eq!(migrate, r#"{"success":false,"pushed":false,"errorKey":"sessionExpired","requiresLogout":true,"sessionUpdates":{},"vaultChanged":false}"#);
+        assert_eq!(migrate, r#"{"success":false,"pushed":false,"errorKey":"sessionExpired","requiresLogout":true,"vaultChanged":false}"#);
         let round_trip: MigrateManifestResult = serde_json::from_str(&migrate).unwrap();
         assert_eq!(round_trip.failure, logout);
 

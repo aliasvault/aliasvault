@@ -18,7 +18,7 @@ public class Manifest
     /// <summary>Gets or sets the stable identifier of the logical manifest (constant across its revisions).</summary>
     public required Guid ManifestId { get; set; }
 
-    /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext) — null on empty vault.</summary>
+    /// <summary>Gets or sets the encrypted manifest blob (base64 of AES-GCM ciphertext), null on empty vault.</summary>
     public string? Blob { get; set; }
 
     /// <summary>Gets or sets the SHA-256 (hex) of the manifest ciphertext for client-side storage-integrity check.</summary>

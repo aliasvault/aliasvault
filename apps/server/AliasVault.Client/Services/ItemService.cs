@@ -910,9 +910,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // doesn't redirect to /welcome.
         await dbService.Settings.SetTutorialDoneAsync(true);
 
-        // Reclaim free pages from the in-memory SQLite so the live session
-        // reflects the smaller size; the server-bound copy is also vacuumed
-        // by ExportSqliteToBase64Async during SaveDatabaseAsync.
+        // Reclaim free pages from the in-memory SQLite so the live session reflects the smaller size.
         await dbService.VacuumDatabaseAsync();
 
         // Save the database to server

@@ -1,5 +1,5 @@
 /**
- * Category 13: Forward-compat overflow — no data loss (Requires API)
+ * Category 13: Forward-compat overflow: no data loss (Requires API)
  *
  * These tests enforce the manifest-v1 forward-compatibility guarantee: when a NEWER client writes
  * vault data this client's schema doesn't know (a new row column, a whole new table), the current
@@ -11,9 +11,9 @@
  * 2. A simulated "newer client" (node-side, real Rust WASM codec) pulls the manifest, injects an
  *    unknown column (`Items.AliasEnabled`) and an unknown table (`FutureFeatures`), and pushes it
  *    back as a new revision
- * 3. The extension pulls that manifest — the vault must load and stay fully usable
+ * 3. The extension pulls that manifest; the vault must load and stay fully usable
  * 4. The extension edits the credential (rename) and pushes
- * 5. The newer client pulls again — the rename is applied AND the unknown column/table are intact
+ * 5. The newer client pulls again; the rename is applied AND the unknown column/table are intact
  */
 import { test, expect, TestClient, FieldSelectors } from '../fixtures';
 import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requirePersonalManifest, resolveVaultEncryptionKey, type DecryptedManifest } from '../helpers/manifest-v2-api';
@@ -21,7 +21,7 @@ import type { TestUser } from '../helpers/test-api';
 
 test.describe.serial('13. Forward-compat overflow', () => {
   let client: TestClient;
-  /** The account under test — the testUser fixture is per-test, so 13.1 pins it for later tests. */
+  /** The account under test; the testUser fixture is per-test, so 13.1 pins it for later tests. */
   let user: TestUser;
   let baseApiUrl: string;
 

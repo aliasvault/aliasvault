@@ -5,13 +5,12 @@
 import { createRustSqliteEngine } from '@aliasvault/client/database/RustSqliteEngine';
 import { type IClientPlatform, type IKeyValueStore, type StorageKey, TranslatableMessage } from '@aliasvault/client/platform';
 import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
-import { browser } from 'wxt/browser';
 
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 
 import { t } from '@/i18n/StandaloneI18n';
 
-import { storage } from '#imports';
+import { browser, storage } from '#imports';
 
 /**
  * The current extension version. This should be updated with each release of the extension.

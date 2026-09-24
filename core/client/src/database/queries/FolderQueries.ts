@@ -17,14 +17,6 @@ export class FolderQueries {
     ORDER BY Weight, Name`;
 
   /**
-   * Get one folder by its manifest-qualified key.
-   */
-  public static readonly GET_BY_ID = `
-    SELECT Id, Name, ParentFolderId, ManifestId
-    FROM Folders
-    WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0`;
-
-  /**
    * Whether a live folder exists under this manifest-qualified key.
    */
   public static readonly EXISTS = `

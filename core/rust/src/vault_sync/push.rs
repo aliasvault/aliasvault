@@ -395,18 +395,18 @@ fn fingerprinted<T: serde::Serialize>(payload: &T) -> SyncResult<(String, String
 }
 
 /// A payload packed and encrypted for the write, with the hash the server verifies it by.
-struct Sealed {
+struct EncryptedPayload {
     ciphertext: String,
     hash: String,
 }
 
 /// Pack and encrypt a JSON payload under `key`, logging its size at every stage.
-async fn seal(ctx: &Ctx, label: &str, plaintext: &str, key: &str) -> SyncResult<Sealed> {
+async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
     let ciphertext = crypto::symmetric_encrypt_bytes(&packed, key)?;
     ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
     let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
-    Ok(Sealed { ciphertext, hash })
+    Ok(EncryptedPayload { ciphertext, hash })
 }
 
 /// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a KEK/VEK
@@ -554,8 +554,8 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
         if !validation.ok {
             return Err(SyncError::UploadRejected(vec![format!("{} validation failed: {}. {}", label, validation.failed_rules.join(", "), validation.message).trim().to_string()]));
         }
-        let sealed = seal(ctx, &label, &plaintext, bucket_key).await?;
-        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext, ciphertext_hash: sealed.hash, current_revision: baselines.bucket_revision(bucket) });
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key).await?;
+        writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision: baselines.bucket_revision(bucket) });
         written.insert(fingerprint_key, fingerprint);
     }
     Ok(writes)
@@ -581,7 +581,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             ctx.warn(format!("[V2Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
             continue;
         }
-        let sealed = seal(ctx, &label, &plaintext, &candidate.vek).await?;
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, &candidate.vek).await?;
 
         // Publish the public half of this manifest's mail delivery keypair; only admins may publish a shared one.
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
@@ -593,8 +593,8 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
         let blob_refs: Vec<BlobRef> = candidate.manifest.referenced_blobs().into_iter().map(|(hash, category)| BlobRef { hash, category }).collect();
         writes.push(ManifestWrite {
             manifest_id: candidate.record.manifest_id.clone(),
-            manifest_blob: sealed.ciphertext,
-            manifest_ciphertext_hash: sealed.hash,
+            manifest_blob: encrypted.ciphertext,
+            manifest_ciphertext_hash: encrypted.hash,
             current_revision: candidate.current_revision,
             credentials_count: candidate.manifest.tables.get("Items").map(Vec::len).unwrap_or(0),
             blob_references: blob_refs,
@@ -696,7 +696,7 @@ async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccount
     state::set(&ctx.host, state::ACCOUNT_PUBLIC_KEY, &blobs.account_public_key).await?;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY, &blobs.encrypted_account_private_key).await?;
     ctx.account_public_key = Some(blobs.account_public_key.clone());
-    ctx.set_account_private_key(migration.account_private_key.clone());
+    ctx.account_private_key = Some(migration.account_private_key.clone());
     Ok(())
 }
 
@@ -741,13 +741,13 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
         ctx.log(format!("[V2Push] {} unchanged versus server baseline, skipping upload.", label)).await;
         return Ok((PushStatus::Ok, baselines.bucket_revision(bucket)));
     }
-    let sealed = seal(ctx, &label, &plaintext, vek).await?;
+    let encrypted = encrypt_payload(ctx, &label, &plaintext, vek).await?;
 
     let current_revision = baselines.bucket_revision(bucket);
     let payload = VaultWriteRequest {
         username: ctx.request.username.clone(),
         manifests: Vec::new(),
-        buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: sealed.ciphertext, ciphertext_hash: sealed.hash, current_revision }],
+        buckets: vec![BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision }],
         new_blobs: Vec::new(),
         email_routing: None,
         account_keys: None,

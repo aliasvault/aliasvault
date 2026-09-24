@@ -30,7 +30,7 @@ const FolderIcon: React.FC<FolderIconProps> = ({
       )}
       {isShared && (
         <span
-          title={familySharingText.sharedFolder}
+          title={familySharingText.sharedVault}
           className={`absolute -bottom-1 -right-1 flex items-center justify-center w-2.5 h-2.5 rounded-full ring-1 ${badgeClassName}`}
         >
           <svg className="w-2 h-2 text-primary-500 dark:text-primary-400" viewBox="0 0 24 24" fill="currentColor">

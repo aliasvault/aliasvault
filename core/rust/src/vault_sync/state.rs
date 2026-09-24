@@ -9,7 +9,7 @@ use serde_json::Value;
 use super::db;
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
-use super::types::{Ack, CleanOutcome, Command, Db, LogLevel, SessionUpdates, StateValue, StoreOutcome, StoredVault, SyncRequest};
+use super::types::{Ack, CleanOutcome, Command, Db, LogLevel, StateValue, StoreOutcome, StoredVault, SyncRequest};
 use crate::crypto;
 
 /// The mutable state of one engine run.
@@ -21,7 +21,8 @@ pub(crate) struct Ctx {
     pub account_private_key: Option<String>,
     pub is_dirty: bool,
     pub mutation_sequence: u64,
-    pub updates: SessionUpdates,
+    /// The session key this run switched to; the next vault store hands it to the host.
+    pub new_encryption_key: Option<String>,
     pub vault_changed: bool,
     pub schema: Option<SchemaInfo>,
     pub vault_key_probed: bool,
@@ -44,7 +45,7 @@ impl Ctx {
             account_private_key: request.account_private_key.clone(),
             is_dirty: request.is_dirty,
             mutation_sequence: request.mutation_sequence,
-            updates: SessionUpdates::default(),
+            new_encryption_key: None,
             vault_changed: false,
             schema: None,
             vault_key_probed: false,
@@ -68,21 +69,15 @@ impl Ctx {
         self.encryption_key.clone().ok_or(SyncError::VaultLocked)
     }
 
-    /// Adopt a new session encryption key, reporting it to the host.
+    /// Adopt a new session encryption key; the next vault store hands it to the host.
     pub fn set_encryption_key(&mut self, key: String) {
-        self.updates.encryption_key = Some(key.clone());
+        self.new_encryption_key = Some(key.clone());
         self.encryption_key = Some(key);
-    }
-
-    /// Adopt the account private key a migration push minted, reporting it to the host.
-    pub fn set_account_private_key(&mut self, key: String) {
-        self.updates.account_private_key = Some(key.clone());
-        self.account_private_key = Some(key);
     }
 
     /// Persist the at-rest vault blob.
     pub async fn store_vault(&self, encrypted_blob: &str, mark_dirty: bool, expected_mutation_seq: Option<u64>, revision: Option<i64>) -> SyncResult<StoreOutcome> {
-        store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.updates.encryption_key.clone()).await
+        store_vault_with_key(&self.host, encrypted_blob, mark_dirty, expected_mutation_seq, revision, self.new_encryption_key.clone()).await
     }
 
     /// The current schema.

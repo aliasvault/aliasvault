@@ -458,15 +458,15 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
-    let new_key = result["sessionUpdates"]["encryptionKey"].as_str().expect("the session adopts the new VEK");
-    assert_ne!(new_key, kek);
+    let new_key = host.vault_key.clone();
+    assert_ne!(new_key, kek, "the host adopts the new VEK through the store command");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
     let (vek, _) = crypto::resolve_vault_encryption_key(body["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["accountKeys"]["encryptedVek"].as_str().unwrap(), &kek).unwrap();
     assert_eq!(*vek, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
-    assert!(result["sessionUpdates"]["accountPrivateKey"].is_string());
+    assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_PRIVATE_KEY));
     assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
 }
 
@@ -502,8 +502,8 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
     assert_eq!(item_names(&host.local), vec!["Kept item"]);
     assert!(host.requests_to("VaultKey/Password").is_empty(), "a migrated account is not probed for a key hierarchy");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
-    assert!(posts[0].body.as_ref().unwrap()["accountKeys"].is_null(), "no key hierarchy is minted");
-    assert!(result["sessionUpdates"]["encryptionKey"].is_null(), "the session key stays the VEK");
+    assert!(posts[0].body.as_ref().unwrap()["accountKeys"].is_null(), "no key hierarchy is created");
+    assert_eq!(host.vault_key, vek, "the session key stays the VEK");
 }
 
 /// A legacy sqlite-blob snapshot of the given database, as the server serves an account that has not migrated.
@@ -568,7 +568,7 @@ fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the baseline still comes from the server");
-    let manifest_json = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), result["sessionUpdates"]["encryptionKey"].as_str().unwrap()).unwrap();
+    let manifest_json = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), &host.vault_key).unwrap();
     assert!(vault_codec::unpack_payload(&manifest_json).unwrap().contains("Local item"), "the push carries the local changes");
 }
 
@@ -635,8 +635,6 @@ fn a_hierarchy_created_on_another_device_is_adopted_on_the_next_pull() {
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    assert_eq!(result["sessionUpdates"]["encryptionKey"], vek);
-    assert_eq!(result["sessionUpdates"]["accountPrivateKey"], hierarchy.account_private_key);
     assert_eq!(host.vault_key, vek, "the store carried the VEK, so the host adopted it before opening the blob");
     assert!(matches!(&host.store_calls[0], Command::VaultStore { encryption_key: Some(key), .. } if *key == vek));
     assert_eq!(item_names(&host.local), vec!["Server item"]);
@@ -659,8 +657,7 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], true);
     assert_eq!(result["encryptionKey"], hierarchy.vault_encryption_key);
-    assert_eq!(result["sessionUpdates"]["encryptionKey"], hierarchy.vault_encryption_key);
-    assert_eq!(result["sessionUpdates"]["accountPrivateKey"], hierarchy.account_private_key);
+    assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_PRIVATE_KEY], hierarchy.account_keys.encrypted_account_private_key);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);
     assert!(host.store_calls.is_empty(), "resolving a key never touches the stored vault");
 }
@@ -678,7 +675,6 @@ fn resolve_vault_key_keeps_the_kek_for_a_legacy_account() {
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], false);
     assert_eq!(result["encryptionKey"], kek);
-    assert!(result["sessionUpdates"].get("encryptionKey").is_none());
     assert!(!host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
 }
 
@@ -742,9 +738,9 @@ fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
-    let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
+    host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
-    assert!(result["sessionUpdates"].get("encryptionKey").is_none());
+    assert!(host.store_calls.iter().all(|c| matches!(c, Command::VaultStore { encryption_key: None, .. })), "no key swap reaches the host");
     assert!(host.requests_to("VaultKey/Password").is_empty(), "a device with a cached chain is never probed");
 }
 
@@ -764,7 +760,6 @@ fn a_vek_session_key_is_left_alone() {
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    assert!(result["sessionUpdates"].get("encryptionKey").is_none());
     assert!(host.store_calls.is_empty());
 }
 

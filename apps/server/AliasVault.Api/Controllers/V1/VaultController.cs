@@ -184,7 +184,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var archivedRevision = ArchiveCurrentRevision(context, currentManifest);
 
         currentManifest.VaultBlob = model.Blob;
-        currentManifest.StorageFormat = "sqlite-blob";
+        currentManifest.StorageFormat = VaultManifestBase.LegacyStorageFormat;
         currentManifest.Version = model.Version;
         currentManifest.RevisionNumber = newRevisionNumber;
         currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.Blob);
@@ -282,7 +282,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         var archivedRevision = ArchiveCurrentRevision(context, currentManifest);
 
         currentManifest.VaultBlob = model.Blob;
-        currentManifest.StorageFormat = "sqlite-blob";
+        currentManifest.StorageFormat = VaultManifestBase.LegacyStorageFormat;
         currentManifest.Version = model.Version;
         currentManifest.RevisionNumber = newRevisionNumber;
         currentManifest.CredentialsCount = model.CredentialsCount;

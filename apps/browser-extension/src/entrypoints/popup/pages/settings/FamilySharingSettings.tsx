@@ -253,7 +253,7 @@ const FamilySharingSettings: React.FC = () => {
    * What to call a shared manifest on screen.
    * @param manifest - the vault.
    */
-  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedFolder;
+  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedVault;
 
   /**
    * The title and message of the confirmation dialog.
@@ -341,7 +341,7 @@ const FamilySharingSettings: React.FC = () => {
             {receivedInvitations.map(invitation => (
               <div key={invitation.id} className="p-3 space-y-2">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{invitationNames[invitation.id] ?? familySharingText.sharedFolder}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{invitationNames[invitation.id] ?? familySharingText.sharedVault}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invitedBy(invitation.inviterUsername)}</p>
                 </div>
                 <div className="flex gap-2">
@@ -407,10 +407,10 @@ const FamilySharingSettings: React.FC = () => {
               )}
             </div>
 
-            {/* One block per shared folder, each with the members who can open it. */}
+            {/* One block per shared manifest, each with the members who can open it. */}
             {group.manifests.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-md font-semibold text-gray-900 dark:text-white">{familySharingText.sharedFolders}</h3>
+                <h3 className="text-md font-semibold text-gray-900 dark:text-white">{familySharingText.sharedVaults}</h3>
                 {group.manifests.map(manifest => {
                   const iHoldKey = holdsManifestKey(manifest, myUserId);
 
@@ -534,7 +534,7 @@ const FamilySharingSettings: React.FC = () => {
               </div>
             )}
 
-            {/* Creating another shared folder. */}
+            {/* Creating another shared manifest. */}
             {(canAdminister || group.manifests.length === 0) && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
                 {group.manifests.length === 0 && (

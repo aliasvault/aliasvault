@@ -7,7 +7,7 @@ import type { DevLogFilter } from './DevLogger';
 const devLogFilter: DevLogFilter = {
   /**
    * Allowlist: when non-empty, only these channels are shown. Leave empty to show all.
-   * Example: focus on vault sync only: only: ['V2Push', 'V2Pull', 'V2Sync']
+   * Example: focus on vault sync only: only: ['VaultSync', 'VaultMutate']
    */
   only: [],
 

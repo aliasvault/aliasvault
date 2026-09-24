@@ -11,7 +11,7 @@ import type { GroupInfo, GroupMemberInfo, SentManifestInvitation, SharedManifest
 export const familySharingText = {
   title: 'Family Sharing',
   beta: 'Beta',
-  description: 'Share folders with the people in your family.',
+  description: 'Share vaults with the people in your family.',
   notAvailable: 'Family sharing is not enabled for this account yet. Once a family has been set up for you, it appears here.',
   invitations: 'Invitations',
   /** Who sent an invitation. */
@@ -23,11 +23,11 @@ export const familySharingText = {
   admin: 'Admin',
   member: 'Member',
   you: 'You',
-  noSharedVaultAdmin: 'This family has no shared folder yet. Creating one adds a folder to your vault that every member you invite can see.',
-  noSharedVaultMember: 'Nobody has created a shared folder for this family yet.',
-  createSharedVault: 'Create a shared folder',
-  sharedFolder: 'Shared folder',
-  sharedFolders: 'Shared folders',
+  noSharedVaultAdmin: 'This family has no shared vault yet. Once created, it shows up as a folder for every member you invite.',
+  noSharedVaultMember: 'Nobody has created a shared vault for this family yet.',
+  createSharedVault: 'Create a shared vault',
+  sharedVault: 'Shared vault',
+  sharedVaults: 'Shared vaults',
   hasAccess: 'Has access',
   invited: 'Invited',
   noAccess: 'No access',
@@ -35,37 +35,37 @@ export const familySharingText = {
   withdraw: 'Withdraw',
   invite: 'Invite',
   create: 'Create',
-  leaveVault: 'Leave folder',
-  /** Confirmation for leaving a shared folder. */
+  leaveVault: 'Leave vault',
+  /** Confirmation for leaving a shared vault. */
   leaveVaultConfirm: (vault: string): string => `Leave “${vault}”? You lose access to it, but stay in the family.`,
-  cannotInviteWithoutAccess: 'You do not have access to this folder, so you cannot invite anyone to it. Ask a member who has access to invite you first.',
-  vaultNamePlaceholder: 'Folder name, for example Streaming',
+  cannotInviteWithoutAccess: 'You do not have access to this vault, so you cannot invite anyone to it. Ask a member who has access to invite you first.',
+  vaultNamePlaceholder: 'Vault name, for example Streaming',
   /** Notice after an invitation was sent. */
   invitationSent: (username: string): string => `Invitation sent to ${username}.`,
   /** Confirmation for taking a member's access away. */
   revokeAccessConfirm: (username: string, vault: string): string => `Take ${username} out of “${vault}”? They lose access to it right away, but stay in the family.`,
-  revokeAccessWarning: 'They keep any copy of this folder they already downloaded. Change the passwords in it that you do not want them to keep using.',
-  deleteVault: 'Delete folder',
-  /** Confirmation for deleting a shared folder. */
-  deleteVaultConfirm: (vault: string): string => `Permanently delete “${vault}”? Every member of the family loses this folder and everything in it. This cannot be undone.`,
-  /** Password prompt for deleting a shared folder. */
+  revokeAccessWarning: 'They keep any copy of this vault they already downloaded. Change the passwords in it that you do not want them to keep using.',
+  deleteVault: 'Delete vault',
+  /** Confirmation for deleting a shared vault. */
+  deleteVaultConfirm: (vault: string): string => `Permanently delete “${vault}”? Every member of the family loses this vault and everything in it. This cannot be undone.`,
+  /** Password prompt for deleting a shared vault. */
   deleteVaultPasswordPrompt: (vault: string): string => `Enter your master password to confirm deleting “${vault}” for the whole family.`,
-  vaultDeleted: 'The shared folder has been deleted.',
+  vaultDeleted: 'The shared vault has been deleted.',
   errors: {
     loadFailed: 'Family sharing could not be loaded.',
-    createVaultFailed: 'The shared folder could not be created. Please try again.',
+    createVaultFailed: 'The shared vault could not be created. Please try again.',
     vaultUpgradeRequired: 'Your vault has to finish upgrading before it can be shared.',
     revokeAccessFailed: 'The access could not be changed. Please try again.',
     inviteFailed: 'The invitation could not be sent. Please try again.',
-    userNotReady: 'That account has to finish upgrading AliasVault before a folder can be shared with it.',
+    userNotReady: 'That account has to finish upgrading AliasVault before a vault can be shared with it.',
     alreadyInvited: 'That person has already been invited.',
     invitationGone: 'That invitation is no longer available.',
-    invitationKeyOutdated: "This invitation is no longer valid because the shared folder's key has changed. Ask for a new invitation.",
+    invitationKeyOutdated: "This invitation is no longer valid because the shared vault's key has changed. Ask for a new invitation.",
     notFamilyMember: 'That person is not in this family.',
-    alreadyHasAccess: 'That person already has access to this folder.',
-    lastMemberWithAccess: 'Somebody has to be able to open the shared folder. Give another member access to it first.',
-    vaultLimitReached: 'Max amount of shared folders reached.',
-    deleteVaultFailed: 'The shared folder could not be deleted. Please try again.',
+    alreadyHasAccess: 'That person already has access to this vault.',
+    lastMemberWithAccess: 'Somebody has to be able to open the shared vault. Give another member access to it first.',
+    vaultLimitReached: 'Max amount of shared vaults reached.',
+    deleteVaultFailed: 'The shared vault could not be deleted. Please try again.',
   },
 };
 

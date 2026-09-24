@@ -49,12 +49,6 @@ export type VaultSyncEngineRequest = {
   sharing?: VaultSyncSharingParams;
 };
 
-/** Session values the engine changed and the host has to adopt. */
-export type VaultSyncSessionUpdates = {
-  encryptionKey?: string;
-  accountPrivateKey?: string;
-};
-
 /** The email routing a pulled vault came with. */
 export type VaultSyncEmailRouting = {
   emailAddressList: string[];
@@ -65,7 +59,6 @@ export type VaultSyncEmailRouting = {
 
 /** What every engine result carries. */
 export type VaultSyncEngineResultBase = {
-  sessionUpdates: VaultSyncSessionUpdates;
   vaultChanged: boolean;
 };
 
@@ -102,20 +95,6 @@ export type VaultSyncMigrateManifestResult = VaultSyncEngineResultBase & {
   requiresLogout: boolean;
 };
 
-/**
- * Outcome of the login-time key resolution: the vault key to store as the session key (the VEK behind the
- * account's key chain, or the password-derived key itself for a legacy account without a chain).
- */
-export type VaultSyncResolveVaultKeyResult = VaultSyncEngineResultBase & {
-  success: boolean;
-  hasVaultKey: boolean;
-  encryptionKey?: string;
-  error?: string;
-  errorCode?: string;
-  errorKey?: string;
-  requiresLogout: boolean;
-};
-
 /** Outcome of a sharing operation (the Rust `SharingOperationResult`). */
 export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
   success: boolean;
@@ -126,20 +105,6 @@ export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
   errorCode?: string;
   errorKey?: string;
   requiresLogout: boolean;
-};
-
-/** Outcome of the lightweight status check. */
-export type VaultSyncStatusCheckResult = VaultSyncEngineResultBase & {
-  success: boolean;
-  hasNewerVault: boolean;
-  hasDirtyChanges: boolean;
-  isOffline: boolean;
-  requiresLogout: boolean;
-  errorKey?: string;
-  error?: string;
-  errorCode?: string;
-  serverVersion?: string;
-  capabilities?: Record<string, string>;
 };
 
 /** What the engine asks to persist as the at-rest vault blob. */

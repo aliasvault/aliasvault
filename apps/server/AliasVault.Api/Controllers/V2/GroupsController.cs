@@ -36,8 +36,6 @@ using Microsoft.Extensions.Caching.Memory;
 [ApiVersion("2")]
 public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
 {
-    private const string ManifestFormat = "manifest-v1";
-
     /// <summary>
     /// How many shared manifests one group may hold. TODO: hardcoded for now; make this dynamic when needed.
     /// </summary>
@@ -184,7 +182,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         {
             ManifestId = model.ManifestId,
             OwnerGroupId = groupId,
-            StorageFormat = ManifestFormat,
+            StorageFormat = VaultManifestBase.ManifestStorageFormat,
             RevisionNumber = 0,
             FileSize = 0,
             Client = ClientHeader,
@@ -593,7 +591,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_KEY_OUTDATED, 400));
         }
 
-        if (!await PromoteSealedGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
+        if (!await PromoteInvitationGrantAsync(context, invitation, me.Id, manifestKeyVersion.Value))
         {
             return NotFound(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITATION_NOT_FOUND, 404));
         }
@@ -748,14 +746,14 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
     }
 
     /// <summary>
-    /// Turn the manifest key encrypted into an offer of access into the accepting member's grant on that manifest.
+    /// Turn the invitation's encrypted manifest key into the accepting member's grant on that manifest.
     /// </summary>
     /// <param name="context">The database context.</param>
     /// <param name="invitation">The invitation being accepted.</param>
     /// <param name="userId">The accepting user.</param>
     /// <param name="keyVersion">The manifest's current VEK version, already checked against the offer's.</param>
     /// <returns>Whether the accepting user ends up holding a grant on the manifest.</returns>
-    private async Task<bool> PromoteSealedGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId, int keyVersion)
+    private async Task<bool> PromoteInvitationGrantAsync(AliasServerDbContext context, GroupInvitation invitation, string userId, int keyVersion)
     {
         if (invitation.EncryptedVek is null || invitation.UserGrantKeyId is null || invitation.VaultManifestId is null)
         {

@@ -66,7 +66,7 @@ pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {
 
 /// Attach the sync outcome onto an operation's result and serialize it.
 fn finish<T: OperationResult>(ctx: &Ctx, mut result: T) -> Value {
-    *result.session_mut() = SessionOutcome { session_updates: ctx.updates.clone(), vault_changed: ctx.vault_changed };
+    *result.session_mut() = SessionOutcome { vault_changed: ctx.vault_changed };
     serde_json::to_value(result).unwrap_or(Value::Null)
 }
 

@@ -134,15 +134,6 @@ export type CodecCanonicalized = {
   dataBuckets: CodecDataBucket[];
 };
 
-/**
- * Data a newer writer put in the manifest that this client's local SQLite schema cannot hold.
- */
-export type CodecOverflow = {
-  tables: Record<string, Array<Record<string, unknown>>>;
-  bucketTables: Record<string, Record<string, Array<Record<string, unknown>>>>;
-  columns: Record<string, Record<string, Record<string, unknown>>>;
-};
-
 /** Input for canonicalize. */
 export type CodecCanonicalizeInput = {
   tables: CodecTableData[];

@@ -21,7 +21,7 @@ import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncResolveVaultKeyResult, VaultSyncSharingParams, VaultSyncSharingResult, VaultSyncStatusCheckResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
 
 /**
@@ -150,24 +150,6 @@ export class VaultSync {
     } catch (error) {
       return this.failedSync(VaultSync.driverError(error));
     }
-  }
-
-  /**
-   * One status call: whether the server holds newer state than this device.
-   */
-  public async checkVaultVersion(): Promise<VaultSyncStatusCheckResult> {
-    const result = await this.run<VaultSyncStatusCheckResult>('statusCheck');
-    await getPlatform().storage.set(StorageKeys.IS_OFFLINE_MODE, result.isOffline);
-    return result;
-  }
-
-  /**
-   * Resolve the vault key right after login: the engine opens the account's key chain with the unlock key (the
-   * cached chain when the server cannot be reached) and caches it as-is.
-   * @param unlockKeyBase64 - the password-derived key (KEK)
-   */
-  public async resolveVaultKey(unlockKeyBase64: string): Promise<VaultSyncResolveVaultKeyResult> {
-    return this.run<VaultSyncResolveVaultKeyResult>('resolveVaultKey', {}, { encryptionKey: unlockKeyBase64 });
   }
 
   /**

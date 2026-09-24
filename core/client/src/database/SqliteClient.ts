@@ -283,14 +283,6 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * Export the SQLite database to a base64 string.
-   * @returns Base64 encoded string of the database
-   */
-  public exportToBase64(): string {
-    return bytesToBase64(this.exportToBytes());
-  }
-
-  /**
    * Export the SQLite database as raw bytes.
    * @returns The database bytes
    */

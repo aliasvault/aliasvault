@@ -34,7 +34,7 @@ import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, SharedManifestI
 class SharingOperationError extends Error {}
 
 /**
- * Family sharing screen: create a family's shared folders, invite the members of that family to them, and answer the
+ * Family sharing screen: create a family's shared manifests, invite the members of that family to them, and answer the
  * invitations others sent.
  */
 export default function FamilySharingScreen(): React.ReactNode {
@@ -60,7 +60,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
   /**
-   * Load the families, their shared folders and the open invitations, plus the names this vault has for them.
+   * Load the families, their shared manifests and the open invitations, plus the names this vault has for them.
    */
   const loadOverview = useCallback(async (): Promise<void> => {
     try {
@@ -154,7 +154,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Create another shared folder for the family. The sync that follows pushes it to the server.
+   * Create another shared manifest for the family. The sync that follows pushes it to the server.
    * @param group - the family to create it for.
    */
   const createSharedVault = (group: GroupInfo): Promise<void> => {
@@ -171,7 +171,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Rename a shared folder, which only an administrator of the family may do. Every member fetches the name on their next sync.
+   * Rename a shared manifest, which only an administrator of the family may do. Every member fetches the name on their next sync.
    * @param name - the new name.
    */
   const renameSharedVault = async (name: string): Promise<void> => {
@@ -187,9 +187,9 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Invite one member to one shared folder.
-   * @param group - the family the shared folder belongs to.
-   * @param manifest - the shared folder.
+   * Invite one member to one shared manifest.
+   * @param group - the family the shared manifest belongs to.
+   * @param manifest - the shared manifest.
    * @param member - the member being invited.
    */
   const inviteMember = (group: GroupInfo, manifest: SharedManifestInfo, member: GroupMemberInfo): Promise<void> => run(async () => {
@@ -198,7 +198,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   }, familySharingText.errors.inviteFailed);
 
   /**
-   * Accept an invitation. The sync that follows is what brings the shared folder into this vault.
+   * Accept an invitation. The sync that follows is what brings the shared manifest into this vault.
    * @param invitationId - the invitation to accept.
    */
   const acceptInvitation = (invitationId: string): Promise<void> => run(async () => {
@@ -207,10 +207,10 @@ export default function FamilySharingScreen(): React.ReactNode {
   }, familySharingText.errors.invitationGone);
 
   /**
-   * What to call a shared folder on screen.
-   * @param manifest - the shared folder.
+   * What to call a shared manifest on screen.
+   * @param manifest - the shared manifest.
    */
-  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedFolder;
+  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedVault;
 
   /**
    * Ask before taking a member's access away, or before giving up one's own.
@@ -228,10 +228,10 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Delete a shared folder behind the native password prompt. The server wants proof of the master password, which
+   * Delete a shared manifest behind the native password prompt. The server wants proof of the master password, which
    * the native layer answers with the unlock key of the open session.
-   * @param group - the group the shared folder belongs to.
-   * @param manifest - the shared folder to delete.
+   * @param group - the group the shared manifest belongs to.
+   * @param manifest - the shared manifest to delete.
    */
   const deleteSharedVault = async (group: GroupInfo, manifest: SharedManifestInfo): Promise<void> => {
     const authenticated = await VaultUnlockHelper.authenticateForAction(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(vaultLabel(manifest)), null, t('common.delete'));
@@ -257,7 +257,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Ask before deleting a shared folder, then move on to the native master password prompt.
+   * Ask before deleting a shared manifest, then move on to the native master password prompt.
    */
   const confirmVaultDelete = (group: GroupInfo, manifest: SharedManifestInfo): void => {
     showConfirm(
@@ -416,7 +416,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const groups = overview?.groups ?? [];
 
   /**
-   * One member of a family or of a shared folder, with whatever can be done about them on the right.
+   * One member of a family or of a shared manifest, with whatever can be done about them on the right.
    */
   const renderMemberRow = (member: GroupMemberInfo, isSelf: boolean, detail: string, action?: React.ReactNode): React.ReactNode => (
     <View key={member.userId} style={styles.memberRow}>
@@ -471,7 +471,7 @@ export default function FamilySharingScreen(): React.ReactNode {
                 <ThemedText style={styles.sectionTitle}>{familySharingText.invitations}</ThemedText>
                 {receivedInvitations.map(invitation => (
                   <View key={invitation.id} style={styles.card}>
-                    <ThemedText style={styles.cardTitle}>{invitationNames[invitation.id] ?? familySharingText.sharedFolder}</ThemedText>
+                    <ThemedText style={styles.cardTitle}>{invitationNames[invitation.id] ?? familySharingText.sharedVault}</ThemedText>
                     <ThemedText style={styles.mutedText}>{familySharingText.invitedBy(invitation.inviterUsername)}</ThemedText>
                     <View style={styles.buttonRow}>
                       {renderAction(familySharingText.accept, () => acceptInvitation(invitation.id))}
@@ -504,8 +504,8 @@ export default function FamilySharingScreen(): React.ReactNode {
                     {isRosterExpanded && group.members.map(member => renderMemberRow(member, member.userId === myUserId, roleLabel(member)))}
                   </View>
 
-                  {/* One card per shared folder, each with the members who can open it. */}
-                  <ThemedText style={styles.sectionTitle}>{familySharingText.sharedFolders}</ThemedText>
+                  {/* One card per shared manifest, each with the members who can open it. */}
+                  <ThemedText style={styles.sectionTitle}>{familySharingText.sharedVaults}</ThemedText>
                   {group.manifests.length === 0 && (
                     <ThemedText style={styles.mutedText}>{canAdminister ? familySharingText.noSharedVaultAdmin : familySharingText.noSharedVaultMember}</ThemedText>
                   )}
@@ -539,7 +539,7 @@ export default function FamilySharingScreen(): React.ReactNode {
                     </View>
                   ))}
 
-                  {/* Creating another shared folder. */}
+                  {/* Creating another shared manifest. */}
                   {canAdminister && (
                     <View style={styles.card}>
                       <ThemedText style={styles.cardTitle}>{familySharingText.createSharedVault}</ThemedText>

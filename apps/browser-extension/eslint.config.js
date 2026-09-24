@@ -162,8 +162,8 @@ export default [
         },
     },
     {
-        // The Diagnostics utility helper and the dev-only trace channel are the two modules allowed to reach the console directly.
-        files: ["src/utils/Diagnostics.ts", "src/utils/devLogger/DevLogger.ts"],
+        // The dev-only trace channel is the only module allowed to reach the console directly.
+        files: ["src/utils/devLogger/DevLogger.ts"],
         rules: {
             "no-console": "off",
         },

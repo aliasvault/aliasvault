@@ -249,7 +249,7 @@ async fn adopt_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()> {
 async fn stage_account_private_key(ctx: &mut Ctx, account_key: &str, encrypted_private_key: Option<&str>) {
     let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) else { return };
     match crypto::symmetric_decrypt(encrypted, account_key) {
-        Ok(private_key) => ctx.set_account_private_key(private_key),
+        Ok(private_key) => ctx.account_private_key = Some(private_key),
         Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants stay closed. {}", error)).await,
     }
 }

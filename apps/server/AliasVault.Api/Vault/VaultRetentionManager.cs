@@ -20,7 +20,7 @@ public static class VaultRetentionManager
 {
     /// <summary>
     /// Applies retention policies to the superseded (history) revisions of a revisioned entity. The current revision
-    /// can be passed in so the rules see the full revision timeline, but it is never eligible for deletion — only
+    /// can be passed in so the rules see the full revision timeline, but it is never eligible for deletion; only
     /// history revisions are returned.
     /// </summary>
     /// <typeparam name="THistory">The history row type of the entity (e.g. <see cref="VaultManifestsHistory"/> or <see cref="VaultDataBucketsHistory"/>).</typeparam>

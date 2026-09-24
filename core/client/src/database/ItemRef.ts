@@ -1,7 +1,7 @@
 /**
  * A manifest-qualified reference to an item: the only thing that names one item in the vault.
  *
- * Items are keyed by `(ManifestId, Id)`, so an Id on its own is not an identity — a shared manifest
+ * Items are keyed by `(ManifestId, Id)`, so an Id on its own is not an identity: a shared manifest
  * may hold an item whose Id matches one of the user's own. Anything that reads an item's child rows
  * or writes to them takes one of these, and an `Item` is structurally assignable to it.
  */

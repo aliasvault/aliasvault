@@ -26,9 +26,9 @@ get_browser_extension_package_json_version() {
     grep "\"version\": " ../apps/browser-extension/package.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
-# Function to extract version from browser extension AppInfo.ts
+# Function to extract version from browser extension ExtensionPlatform.ts
 get_browser_extension_ts_version() {
-    grep "public static readonly VERSION = " ../apps/browser-extension/src/utils/AppInfo.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "export const EXTENSION_VERSION = " ../apps/browser-extension/src/platform/ExtensionPlatform.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from mobile app
@@ -95,7 +95,7 @@ printf "%-50s %-20s %-15s\n" "Server (AppInfo.cs)" "$server_version" "N/A"
 echo ""
 printf "%-50s %-20s %-15s\n" "Browser Extension (wxt.config.ts)" "$browser_wxt_version" "N/A"
 printf "%-50s %-20s %-15s\n" "Browser Extension (package.json)" "$browser_package_version" "N/A"
-printf "%-50s %-20s %-15s\n" "Browser Extension (AppInfo.ts)" "$browser_ts_version" "N/A"
+printf "%-50s %-20s %-15s\n" "Browser Extension (ExtensionPlatform.ts)" "$browser_ts_version" "N/A"
 
 # Safari Extension
 echo ""

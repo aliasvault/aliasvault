@@ -23,7 +23,7 @@ public class TotpGenerator {
     ///   - time: The current time (defaults to now)
     ///   - period: The time step in seconds (defaults to 30)
     ///   - digits: Number of digits in the code (defaults to 6)
-    ///   - algorithm: The HMAC algorithm name — SHA1, SHA256 or SHA512 (defaults to SHA1)
+    ///   - algorithm: The HMAC algorithm name: SHA1, SHA256 or SHA512 (defaults to SHA1)
     /// - Returns: The generated TOTP code as a string, or nil if generation fails
     public static func generateCode(
         secret: String,
@@ -52,7 +52,7 @@ public class TotpGenerator {
     ///   - secret: The secret key as Data
     ///   - counter: The counter value
     ///   - digits: Number of digits in the code
-    ///   - algorithm: The HMAC algorithm name — SHA1, SHA256 or SHA512
+    ///   - algorithm: The HMAC algorithm name: SHA1, SHA256 or SHA512
     /// - Returns: The generated HOTP code as a string
     private static func generateHOTP(secret: Data, counter: UInt64, digits: Int, algorithm: String) -> String {
         // Convert counter to 8-byte big-endian

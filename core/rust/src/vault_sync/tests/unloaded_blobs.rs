@@ -236,7 +236,7 @@ fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
 
     assert_eq!(result["pushed"], false, "{}", result);
     assert!(host.requests_to("Vault").iter().all(|r| r.method != "POST"), "nothing was written with the new key");
-    assert!(result["sessionUpdates"]["encryptionKey"].is_null(), "and the session keeps its key");
+    assert_eq!(host.vault_key, kek, "and the session keeps its key");
 }
 
 #[test]

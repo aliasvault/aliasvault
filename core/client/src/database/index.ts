@@ -22,4 +22,4 @@ export { FolderRepository, type Folder, type FolderRef } from './repositories/Fo
 export { SettingsRepository } from './repositories/SettingsRepository';
 export { EncryptionKeyRepository } from './repositories/EncryptionKeyRepository';
 export { LogoRepository } from './repositories/LogoRepository';
-export { ItemStatsRepository, type ItemStats, type ItemUsageAction } from './repositories/ItemStatsRepository';
+export { ItemStatsRepository, type ItemUsageAction } from './repositories/ItemStatsRepository';

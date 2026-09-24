@@ -36,7 +36,7 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
 }
 
 /// The one-way move of a sqlite-blob account onto the manifest storage format: the local vault is rebuilt onto the
-/// current schema with its unstamped rows adopted into the personal manifest, and the push that carries it mints the
+/// current schema with its unstamped rows adopted into the personal manifest, and the push that carries it creates the
 /// account key hierarchy. Returns whether that push reached the server.
 pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
     if engine::schema_state(ctx).await? == SchemaState::LegacyChain {

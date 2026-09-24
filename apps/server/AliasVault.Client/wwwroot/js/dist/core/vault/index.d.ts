@@ -104,6 +104,10 @@ declare class VaultSqlGenerator {
      * Get complete schema SQL for creating new vault
      */
     getCompleteSchemaSql(): string;
+    /**
+     * Get the EF migration id the complete schema stamps a new vault with (empty string if none).
+     */
+    getCompleteSchemaMigrationId(): string;
 }
 
 /**
@@ -114,7 +118,7 @@ declare class VaultSqlGenerator {
 /**
  * All vault migrations/versions in chronological order.
  *
- * NOTE: this legacy migration chain is FROZEN — do not add new entries. It exists solely to
+ * NOTE: this legacy migration chain is FROZEN: do not add new entries. It exists solely to
  * upgrade pre-2.0.0 blob-era vaults (via the user-facing upgrade prompt) up to vault version
  * 2.0.0, the first schema compatible with the manifest-v1 storage model. From 2.0.0 onwards the
  * local SQLite is re-materialized from COMPLETE_SCHEMA_SQL on every vault pull, so schema changes

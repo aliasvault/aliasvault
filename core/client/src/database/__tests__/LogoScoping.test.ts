@@ -49,7 +49,7 @@ describe('logo manifest scoping', () => {
   it('GET_BY_ID answers for an item whose logo lives in another manifest', async () => {
     const db = await makeDb();
     db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','builtin','shopping',NULL,NULL,NULL,'t','t',0)`);
-    // Moved into the shared folder by a restamp, still pointing at the personal logo row.
+    // Moved into the shared manifest by a restamp, still pointing at the personal logo row.
     db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
 
     /*

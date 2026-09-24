@@ -32,6 +32,7 @@ import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResul
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
@@ -116,32 +117,37 @@ const Login: React.FC = () => {
   };
 
   /**
-   * Handle successful authentication by storing tokens and initializing the database
+   * Finish a password or mobile login: store the tokens and unlock key, then pull and load the vault.
+   * @param username - the normalized username
+   * @param token - the access token
+   * @param refreshToken - the refresh token
+   * @param unlockKey - the unlock key (KEK), base64
+   * @param derivationParams - how the unlock key is derived from the password
    */
   const handleSuccessfulAuth = async (
     username: string,
     token: string,
     refreshToken: string,
-    passwordHashBase64: string,
-    loginResponse: LoginResponse
+    unlockKey: string,
+    derivationParams: UnlockKeyDerivationParams
   ) : Promise<void> => {
-    // Store auth info first — the vault fetch below makes an authenticated request via the stored access token.
+    // Store auth info first; the vault fetch below makes an authenticated request via the stored access token.
     await app.setAuthTokens(username, token, refreshToken);
 
     /*
-     * The derived key is the unlock key (KEK). Fetch the account's key chain, check the key opens it and cache it
-     * as-is; the vault encryption key is derived from the two on demand. Legacy accounts have no chain.
+     * Fetch the account's key chain, check the unlock key opens it and cache it as-is; the vault encryption key is
+     * derived from the two on demand. Legacy accounts have no chain.
      */
-    await VaultKeyService.refreshKeyChain(passwordHashBase64, webApi);
+    await VaultKeyService.refreshKeyChain(unlockKey, webApi);
 
     await dbContext.storeUnlockKeyDerivationParams({
-      salt: loginResponse.salt,
-      encryptionType: loginResponse.encryptionType,
-      encryptionSettings: loginResponse.encryptionSettings
+      salt: derivationParams.salt,
+      encryptionType: derivationParams.encryptionType,
+      encryptionSettings: derivationParams.encryptionSettings
     });
 
     // Store the unlock key as the session key, then pull and load the vault.
-    await dbContext.storeUnlockKey(passwordHashBase64);
+    await dbContext.storeUnlockKey(unlockKey);
     await pullAndLoadVault();
 
     // Reset prefill flag so next logout will prefill again
@@ -383,33 +389,10 @@ const Login: React.FC = () => {
     try {
       // Clear global message if set
       app.clearGlobalMessage();
-
-      // Store auth tokens and username first — the vault fetch below uses the stored access token.
-      await app.setAuthTokens(result.username, result.token, result.refreshToken);
-
-      // The mobile device sends the unlock key: fetch the account's key chain, check the key opens it and cache it.
-      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
-
-      // Store the unlock key and derivation params.
-      await dbContext.storeUnlockKey(result.unlockKey);
-      await dbContext.storeUnlockKeyDerivationParams({
-        salt: result.salt,
-        encryptionType: result.encryptionType,
-        encryptionSettings: result.encryptionSettings,
-      });
-
-      // Pull and load the vault.
-      await pullAndLoadVault();
-
-      /*
-       * Navigate to reinitialize page which will:
-       * 1. Call syncVault() to check version compatibility
-       * 2. Send the vault through /upgrade when either the legacy sqlite-blob chain or the manifest migration applies
-       * 3. Navigate to appropriate page
-       */
-      hideLoading();
       setIsInitialLoading(false);
-      navigate('/reinitialize', { replace: true });
+
+      // The mobile device sends the unlock key.
+      await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.unlockKey, result);
     } catch (err) {
       if (err instanceof ServerUpdateRequiredError) {
         // Server does not support the v2 API, throw unsupported error.

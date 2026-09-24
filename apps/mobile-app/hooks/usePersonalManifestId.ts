@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useDb } from '@/context/DbContext';
 
 /**
- * The id of the user's personal manifest, which is what tells a shared folder apart from the user's own.
+ * The id of the user's personal manifest, which is what tells a shared manifest apart from the user's own.
  */
 export function usePersonalManifestId(): string | null {
   const { sqliteClient, dbAvailable, isSyncing } = useDb();

@@ -37,7 +37,7 @@ const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSelection,
       <button
         type="button"
         onClick={() => setIsPickerOpen(true)}
-        title={`${t('items.logo.chooseLogo')} — ${renderSource()}`}
+        title={`${t('items.logo.chooseLogo')}: ${renderSource()}`}
         aria-label={t('items.logo.chooseLogo')}
         className="flex items-center justify-center w-[calc(2.5rem+2px)] h-[calc(2.5rem+2px)] flex-shrink-0 cursor-pointer rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-500 dark:hover:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
       >

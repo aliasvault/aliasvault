@@ -43,9 +43,6 @@ public class VaultController(
     Config config,
     RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
-    private const string ManifestFormat = "manifest-v1";
-    private const string LegacyFormat = "sqlite-blob";
-
     /// <summary>
     /// Retention policy for superseded bucket revisions.
     /// </summary>
@@ -316,7 +313,8 @@ public class VaultController(
         // The caller's own manifest is the one owned by their personal group; a personal group owns no other.
         var personalWrite = resolved.FirstOrDefault(r => r.Row.OwnerGroupId == user.PersonalGroupId).Write;
 
-        // Account-key migration: a legacy vault's first manifest-v1 push includes a newly created Account Key hierarchy,
+        // Account-key migration: a legacy vault's first manifest-v1 push includes a newly created Account Key hierarchy, which is accepted exactly once.
+        // Every later personal write must find the stored password unlock key. TODO: remove once legacy accounts are no longer supported.
         var accountKeys = model.AccountKeys;
         var hasExistingUnlockKey = await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
         if (accountKeys != null)
@@ -377,8 +375,8 @@ public class VaultController(
                 foreach (var (mw, row) in resolved)
                 {
                     var referenced = mw.BlobReferences.Select(br => br.Hash).ToHashSet(StringComparer.Ordinal);
-                    var manifestBlobs = model.NewBlobs.Where(b => referenced.Contains(b.Hash)).ToList();
-                    if (!await TryUpsertBlobObjectsAsync(context, row.ManifestId, manifestBlobs, overwrite: accountKeys != null && row.OwnerGroupId == user.PersonalGroupId))
+                    var referencedBlobs = model.NewBlobs.Where(b => referenced.Contains(b.Hash)).ToList();
+                    if (!await TryUpsertBlobObjectsAsync(context, row.ManifestId, referencedBlobs, overwrite: accountKeys != null && row.OwnerGroupId == user.PersonalGroupId))
                     {
                         await tx.RollbackAsync();
                         return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
@@ -428,7 +426,7 @@ public class VaultController(
                 }
 
                 row.VaultBlob = null;
-                row.StorageFormat = ManifestFormat;
+                row.StorageFormat = VaultManifestBase.ManifestStorageFormat;
                 row.ManifestBlob = manifestBlobs[mw.ManifestId];
                 row.ManifestCiphertextHash = mw.ManifestCiphertextHash;
 
@@ -456,13 +454,6 @@ public class VaultController(
                     // the client re-encrypted the vault under a fresh VEK).
                     if (accountKeys != null)
                     {
-                        // Check if the user already has an unlock key: if so, reject the write.
-                        if (await context.UserUnlockKeys.AnyAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password))
-                        {
-                            await tx.RollbackAsync();
-                            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
-                        }
-
                         context.UserUnlockKeys.Add(new UserUnlockKey
                         {
                             Id = Guid.NewGuid(),
@@ -523,8 +514,7 @@ public class VaultController(
             }
             catch (DbUpdateException) when (accountKeys != null)
             {
-                // A concurrent migration push won the race between the re-check above and this insert. Nothing was committed, so the client retries.
-                // TODO: remove once all users have migrated and we don't support legacy users anymore.
+                // A concurrent migration push won the race since the unlock key check above.
                 await tx.RollbackAsync();
                 return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_ALREADY_EXISTS, 400));
             }
@@ -773,7 +763,7 @@ public class VaultController(
     /// <returns>Query over the accessible manifest-v1 manifests.</returns>
     private static IQueryable<VaultManifest> AccessibleManifests(AliasServerDbContext context, ManifestAccessScope scope)
     {
-        return ManifestAccessHelper.AccessibleManifests(context, scope).Where(m => m.StorageFormat == ManifestFormat);
+        return ManifestAccessHelper.AccessibleManifests(context, scope).Where(m => m.StorageFormat == VaultManifestBase.ManifestStorageFormat);
     }
 
     /// <summary>
@@ -792,7 +782,7 @@ public class VaultController(
     /// <summary>
     /// Gets the caller's key row on each of the given manifests, whichever way that manifest's VEK is encrypted for
     /// them: an account-key row (unlocked through their password chain) or a grant encrypted to one of their public
-    /// keys. An account-key row wins when a manifest has both, being the caller's own direct path to it.
+    /// keys. The highest key version wins; within one version an account-key row is preferred over a grant.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="userId">The calling user.</param>
