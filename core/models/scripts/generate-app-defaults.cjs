@@ -126,10 +126,16 @@ ${members}
 `;
 }
 
+/** Write a generated file, creating its directory when missing. */
+function writeFile(filePath, contents) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, contents);
+}
+
 function main() {
   const constants = parseConstants(fs.readFileSync(TS_SOURCE, 'utf8'));
-  fs.writeFileSync(SWIFT_OUTPUT, generateSwift(constants));
-  fs.writeFileSync(KOTLIN_OUTPUT, generateKotlin(constants));
+  writeFile(SWIFT_OUTPUT, generateSwift(constants));
+  writeFile(KOTLIN_OUTPUT, generateKotlin(constants));
   console.log(`  ✓ Generated ${path.relative(REPO_ROOT, SWIFT_OUTPUT)}`);
   console.log(`  ✓ Generated ${path.relative(REPO_ROOT, KOTLIN_OUTPUT)}`);
 }
