@@ -113,6 +113,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let data_buckets = build_data_buckets(bucketed_rows, &overflow, &manifest_ids);
 
     // Start with the manifest the caller wrote from, which the input lists first.
+    let writing_extra = overflow.manifest_extra(&writing_manifest_id);
     let mut manifests: Vec<CanonicalizedManifest> = Vec::with_capacity(1 + partitions.len());
     manifests.push(CanonicalizedManifest {
         manifest: Manifest {
@@ -122,7 +123,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             manifest_id: writing_manifest_id,
             name: writing_spec.name.clone(),
             tables: manifest_tables,
-            extra: HashMap::new(),
+            extra: writing_extra,
         },
         blobs,
     });
@@ -139,6 +140,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 (name, out_rows)
             })
             .collect();
+        let partition_extra = overflow.manifest_extra(&partition.manifest_id);
         manifests.push(CanonicalizedManifest {
             manifest: Manifest {
                 schema_version: SCHEMA_VERSION,
@@ -147,7 +149,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
                 manifest_id: partition.manifest_id,
                 name: partition.name,
                 tables: partition_tables,
-                extra: HashMap::new(),
+                extra: partition_extra,
             },
             blobs: partition_blobs,
         });
@@ -161,10 +163,16 @@ fn build_data_buckets(bucketed_rows: HashMap<String, Vec<CodecRecord>>, overflow
     let mut data_buckets: Vec<DataBucket> = Vec::new();
     for category in categories_present(overflow) {
         let grouped = group_category_rows(category_tables(&category, &bucketed_rows, overflow), manifest_ids);
-        data_buckets.extend(grouped.into_iter().map(|(manifest_id, tables)| DataBucket::new(manifest_id, category.clone(), tables)));
+        data_buckets.extend(grouped.into_iter().map(|(manifest_id, tables)| bucket_with_extra(manifest_id, &category, tables, overflow)));
     }
     data_buckets.sort_by(|a, b| (&a.manifest_id, &a.category).cmp(&(&b.manifest_id, &b.category)));
     data_buckets
+}
+
+/// A data bucket carrying the unknown top-level keys the overflow last saw on it.
+fn bucket_with_extra(manifest_id: String, category: &str, tables: HashMap<String, Vec<CodecRecord>>, overflow: &CodecOverflow) -> DataBucket {
+    let extra = overflow.bucket_extra(&manifest_id, category);
+    DataBucket { extra, ..DataBucket::new(manifest_id, category, tables) }
 }
 
 /// Every bucket category to emit: the declared ones plus any a newer writer put in the overflow (a category
@@ -363,7 +371,7 @@ pub fn extract_buckets(category: String, manifest_ids: Vec<String>, mut tables: 
 
     let mut buckets: Vec<DataBucket> = group_category_rows(tables, &manifest_ids)
         .into_iter()
-        .map(|(manifest_id, tables)| DataBucket::new(manifest_id, category.clone(), tables))
+        .map(|(manifest_id, tables)| bucket_with_extra(manifest_id, &category, tables, &overflow))
         .collect();
     buckets.sort_by(|a, b| a.manifest_id.cmp(&b.manifest_id));
     Ok(buckets)

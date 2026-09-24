@@ -7,8 +7,21 @@
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
 
-/// Manifest / metadata schema version.
+/// Manifest / data bucket format version; bump only for a change older clients cannot carry without the built-in overflow.
 pub const SCHEMA_VERSION: u32 = 1;
+
+/// True when this build can read a manifest or data bucket written at `schema_version`.
+pub fn is_readable_schema_version(schema_version: u32) -> bool {
+    (1..=SCHEMA_VERSION).contains(&schema_version)
+}
+
+/// Refuse a manifest or data bucket written at a format version this build cannot read.
+pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> crate::error::VaultResult<()> {
+    if is_readable_schema_version(schema_version) {
+        return Ok(());
+    }
+    Err(crate::error::VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
+}
 
 /// One identity component of a row, as a string: a GUID lowercased, any other string as-is,
 /// anything else canonical JSON.

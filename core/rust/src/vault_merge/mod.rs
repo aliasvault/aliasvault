@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::VaultResult;
 use crate::timestamp::updated_at;
 use crate::vault_model::{id_key, TableConfig, SYNCABLE_TABLES};
-use crate::vault_codec::{bucket_categories, identity_part, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
+use crate::vault_codec::{bucket_categories, ensure_readable_schema_version, identity_part, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
 
 mod item_deletes;
 #[cfg(test)]
@@ -82,6 +82,13 @@ pub struct CanonicalMergeOutput {
 pub fn merge_canonical(input: CanonicalMergeInput) -> VaultResult<CanonicalMergeOutput> {
     let CanonicalMergeInput { server_manifests, server_buckets, contentless_server_manifest_ids, local_manifests, local_buckets, schema_columns } = input;
 
+    for manifest in &server_manifests {
+        ensure_readable_schema_version(manifest.schema_version, &format!("server manifest {}", manifest.manifest_id))?;
+    }
+    for bucket in &server_buckets {
+        ensure_readable_schema_version(bucket.schema_version, &format!("\"{}\" server bucket of manifest {}", bucket.category, bucket.manifest_id))?;
+    }
+
     let mut local_by_id: HashMap<String, Manifest> = local_manifests.into_iter().map(|m| (id_key(&m.manifest_id), m)).collect();
     let mut local_buckets_by_id = group_buckets(local_buckets);
     let mut server_buckets_by_id = group_buckets(server_buckets);
@@ -133,6 +140,7 @@ fn merge_manifest_pair(
     // A bucket of a category this build does not know cannot be flattened without losing its
     // category; the server's ride through as-is and the local ones are dropped with the rest of
     // the local carrier, exactly as the base-wins rule treats every unknown table.
+    let server_bucket_extras: HashMap<String, HashMap<String, serde_json::Value>> = server_buckets.iter().map(|bucket| (bucket.category.clone(), bucket.extra.clone())).collect();
     let (server_bucket_tables, unknown_server_buckets) = split_known_buckets(server_buckets);
     let (local_bucket_tables, _) = split_known_buckets(local_buckets);
 
@@ -183,7 +191,9 @@ fn merge_manifest_pair(
             }
         }
         if !bucket_tables.is_empty() {
-            buckets.push(DataBucket::new(manifest_id.clone(), category.to_string(), bucket_tables));
+            // A merged bucket keeps the server's extra top-level keys.
+            let extra = server_bucket_extras.get(category).cloned().unwrap_or_default();
+            buckets.push(DataBucket { extra, ..DataBucket::new(manifest_id.clone(), category.to_string(), bucket_tables) });
         }
     }
 

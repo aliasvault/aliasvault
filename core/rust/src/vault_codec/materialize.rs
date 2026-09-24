@@ -10,7 +10,9 @@
 //! crash the platform insert). The overflow is emitted as a regular table row (`OVERFLOW_TABLE`),
 //! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
 //! ordinary table read, this client's next push never drops the data, and no platform has to wire
-//! (or remember) a separate persistence channel.
+//! (or remember) a separate persistence channel. Unknown top-level keys of a manifest or bucket ride in
+//! the same overflow. A manifest or bucket written at a newer major format version is refused and reqiures
+/// updating the app to read it.
 
 use std::collections::{HashMap, HashSet};
 
@@ -18,10 +20,10 @@ use serde_json::json;
 
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
 use super::row::blob_ref_of;
-use super::types::{blob_spec_for, is_local_only_table, row_identity};
+use super::types::{blob_spec_for, ensure_readable_schema_version, is_local_only_table, row_identity};
 use crate::error::{VaultError, VaultResult};
 use crate::vault_model::names::ID_COL;
-use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
+use crate::vault_model::{id_key, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
 /// Materialize the vault's manifests into the table set the platform inserts. Every manifest arrives
 /// in one list, each carrying its own data buckets; they are combined into a single table set with
@@ -35,6 +37,22 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     }
     if manifests.is_empty() {
         return Err(VaultError::General("materialize input carries no manifests".to_string()));
+    }
+
+    for manifest in &manifests {
+        ensure_readable_schema_version(manifest.schema_version, &format!("manifest {}", manifest.manifest_id))?;
+    }
+    for bucket in &data_buckets {
+        ensure_readable_schema_version(bucket.schema_version, &format!("\"{}\" bucket of manifest {}", bucket.category, bucket.manifest_id))?;
+    }
+
+    let mut overflow = CodecOverflow::default();
+    // Top-level keys a newer writer added to a manifest or bucket; the next canonicalize writes them back.
+    for manifest in manifests.iter().filter(|manifest| !manifest.extra.is_empty()) {
+        overflow.manifest_extras.insert(id_key(&manifest.manifest_id), manifest.extra.clone());
+    }
+    for bucket in data_buckets.iter().filter(|bucket| !bucket.extra.is_empty()) {
+        overflow.bucket_extras.entry(id_key(&bucket.manifest_id)).or_default().insert(bucket.category.clone(), bucket.extra.clone());
     }
 
     let manifest_records = manifest_bookkeeping_records(&manifests);
@@ -53,7 +71,6 @@ pub fn materialize_as_sqlite(input: MaterializeInput) -> VaultResult<Materialize
     // Normalize all id columns.
     super::normalize::normalize_id_spelling(&mut combined);
 
-    let mut overflow = CodecOverflow::default();
     let mut tables: Vec<CodecTableData> = Vec::with_capacity(combined.len() + data_buckets.len());
 
     for (name, mut records) in combined {

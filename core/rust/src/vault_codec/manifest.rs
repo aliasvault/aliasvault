@@ -30,7 +30,7 @@ pub struct Manifest {
     pub name: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
     pub tables: HashMap<String, Vec<CodecRecord>>,
-    /// Forward-compat: unknown top-level keys preserved on round-trip.
+    /// Unknown top-level keys from a newer writer, carried through the local vault in [`CodecOverflow`].
     #[serde(flatten)]
     pub extra: HashMap<String, serde_json::Value>,
 }
@@ -147,12 +147,28 @@ pub struct CodecOverflow {
     /// Unknown columns split off rows of known tables: table > row primary-key value > {column: value}.
     #[serde(default)]
     pub columns: HashMap<String, HashMap<String, CodecRecord>>,
+    /// Unknown top-level manifest keys: lowercased manifest id > {key: value}.
+    #[serde(default)]
+    pub manifest_extras: HashMap<String, HashMap<String, serde_json::Value>>,
+    /// Unknown top-level data bucket keys: lowercased manifest id > category > {key: value}.
+    #[serde(default)]
+    pub bucket_extras: HashMap<String, HashMap<String, HashMap<String, serde_json::Value>>>,
 }
 
 impl CodecOverflow {
     /// True when nothing was split off (the common case: reader and writer share a schema).
     pub fn is_empty(&self) -> bool {
-        self.tables.is_empty() && self.bucket_tables.is_empty() && self.columns.is_empty()
+        self.tables.is_empty() && self.bucket_tables.is_empty() && self.columns.is_empty() && self.manifest_extras.is_empty() && self.bucket_extras.is_empty()
+    }
+
+    /// The unknown top-level keys last seen on `manifest_id`, to write back into it.
+    pub fn manifest_extra(&self, manifest_id: &str) -> HashMap<String, serde_json::Value> {
+        self.manifest_extras.get(&crate::vault_model::id_key(manifest_id)).cloned().unwrap_or_default()
+    }
+
+    /// The unknown top-level keys last seen on the `category` bucket of `manifest_id`, to write back into it.
+    pub fn bucket_extra(&self, manifest_id: &str, category: &str) -> HashMap<String, serde_json::Value> {
+        self.bucket_extras.get(&crate::vault_model::id_key(manifest_id)).and_then(|by_category| by_category.get(category)).cloned().unwrap_or_default()
     }
 
     /// Render this overflow as the single `OVERFLOW_TABLE` row the platform inserts into the vault DB.

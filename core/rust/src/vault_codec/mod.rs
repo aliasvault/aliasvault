@@ -26,7 +26,7 @@ use serde_json::json;
 use crate::encoding::{base64_decode, hex_encode_lower};
 use crate::error::{VaultError, VaultResult};
 use crate::vault_model::names::LOGO_KIND_FAVICON;
-use types::SCHEMA_VERSION;
+pub use types::SCHEMA_VERSION;
 
 pub use canonicalize::{canonicalize_from_sqlite, extract_buckets};
 pub use manifest::{
@@ -36,7 +36,8 @@ pub use manifest::{
 pub use materialize::materialize_as_sqlite;
 pub use scoped_assets::logo_id_for;
 pub use sharing::extract_encryption_key_for_public_key;
-pub use types::{bucket_categories, identity_part, is_bucketed_table, is_skip_table, manifest_scoped_tables, tables_for_category};
+pub(crate) use types::ensure_readable_schema_version;
+pub use types::{bucket_categories, identity_part, is_bucketed_table, is_readable_schema_version, is_skip_table, manifest_scoped_tables, tables_for_category};
 pub use validate::{validate_data_bucket, validate_manifest, ValidationResult};
 
 /// The bucket layout: every category and the tables it owns, in declaration order.
@@ -83,13 +84,34 @@ pub fn pack_payload(payload_json: &str) -> VaultResult<Vec<u8>> {
     compress::gzip(envelope_json.as_bytes())
 }
 
+/// A decompressed payload envelope: its content, or the format version of one this build cannot read.
+pub enum UnpackedPayload {
+    Readable(String),
+    NewerFormat(u32),
+}
+
 /// Unpack a payload: decompress (gzip or plain JSON) > parse envelope > verify the embedded content hash.
+/// Refuses an envelope written at a format version this build cannot read.
 pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
+    match unpack_versioned_payload(plain_bytes)? {
+        UnpackedPayload::Readable(payload_json) => Ok(payload_json),
+        UnpackedPayload::NewerFormat(version) => Err(VaultError::General(format!("payload has format version {}, this build supports reading up to {}", version, SCHEMA_VERSION))),
+    }
+}
+
+/// [`unpack_payload`], reporting a newer format version as a value instead of an error. The version is read
+/// before the content hash, since a newer format may hash differently and must not read as corruption.
+pub fn unpack_versioned_payload(plain_bytes: &[u8]) -> VaultResult<UnpackedPayload> {
     let envelope_json = compress::decompress_to_string(plain_bytes)?;
     let envelope: serde_json::Value = serde_json::from_str(&envelope_json)?;
 
-    if !envelope.get("schemaVersion").map(|v| v.is_number()).unwrap_or(false) {
-        return Err(VaultError::General("envelope missing schemaVersion".to_string()));
+    let version = envelope.get("schemaVersion").and_then(|v| v.as_u64()).ok_or_else(|| VaultError::General("envelope missing schemaVersion".to_string()))?;
+    let version = u32::try_from(version).unwrap_or(u32::MAX);
+    if !types::is_readable_schema_version(version) {
+        if version > SCHEMA_VERSION {
+            return Ok(UnpackedPayload::NewerFormat(version));
+        }
+        return Err(VaultError::General(format!("envelope has invalid format version {}", version)));
     }
 
     let content_hash = envelope
@@ -110,7 +132,7 @@ pub fn unpack_payload(plain_bytes: &[u8]) -> VaultResult<String> {
         )));
     }
 
-    Ok(serde_json::to_string(payload)?)
+    Ok(UnpackedPayload::Readable(serde_json::to_string(payload)?))
 }
 
 /// SHA-256 (lowercase hex) of a base64 ciphertext string: storage-layer integrity.

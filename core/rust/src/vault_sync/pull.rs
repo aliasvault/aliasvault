@@ -10,7 +10,7 @@ use super::types::{self, BlobDto, BlobHashesRequest, Db, EmailRoutingDto, GetRes
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
 use crate::crypto;
-use crate::vault_codec::{self, DataBucket, Manifest, MaterializeInput};
+use crate::vault_codec::{self, DataBucket, Manifest, MaterializeInput, UnpackedPayload};
 
 const BLOBS_DOWNLOAD_ENDPOINT: &str = "Vault/blobs/download";
 
@@ -80,7 +80,23 @@ fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, expected_ciphertext
     let unreadable = |e: crate::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
     let encrypted = crate::encoding::base64_decode(base64_ciphertext).map_err(unreadable)?;
     let plain = crypto::symmetric_decrypt_bytes(&encrypted, vek).map_err(unreadable)?;
-    vault_codec::unpack_payload(&plain).map_err(unreadable)
+    match vault_codec::unpack_versioned_payload(&plain).map_err(unreadable)? {
+        UnpackedPayload::Readable(payload_json) => Ok(payload_json),
+        UnpackedPayload::NewerFormat(version) => Err(newer_format(label, version)),
+    }
+}
+
+/// Refuse a manifest or data bucket written at a format version this build cannot read: the app is outdated.
+fn ensure_readable(schema_version: u32, label: &str) -> SyncResult<()> {
+    if vault_codec::is_readable_schema_version(schema_version) {
+        return Ok(());
+    }
+    Err(newer_format(label, schema_version))
+}
+
+/// The error for data written by a newer app than this one.
+fn newer_format(label: &str, version: u32) -> SyncError {
+    SyncError::VaultVersionIncompatible(format!("{} has format version {}, this app reads up to {}; update the app", label, version, vault_codec::SCHEMA_VERSION))
 }
 
 /// The grant a shared manifest is remembered by, when the snapshot carries one.
@@ -226,6 +242,7 @@ async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[Resolv
         let label = format!("\"{}\" bucket of manifest {}", dto.category, dto.manifest_id);
         let bucket_json = verify_decrypt_unpack(blob, key, dto.ciphertext_hash.as_deref(), &label)?;
         let bucket: DataBucket = serde_json::from_str(&bucket_json)?;
+        ensure_readable(bucket.schema_version, &label)?;
         if !ids_equal(&bucket.manifest_id, &dto.manifest_id) || bucket.category != dto.category {
             return Err(SyncError::Snapshot(format!("{} declares a different address (manifest {}, category \"{}\") inside its encrypted payload, refusing to assemble", label, bucket.manifest_id, bucket.category)));
         }
@@ -322,6 +339,7 @@ fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<
     let label = if is_personal { "manifest".to_string() } else { format!("shared manifest {}", dto.manifest_id) };
     let manifest_json = verify_decrypt_unpack(dto.blob.as_deref().unwrap_or(""), vek, dto.ciphertext_hash.as_deref(), &label)?;
     let manifest: Manifest = serde_json::from_str(&manifest_json)?;
+    ensure_readable(manifest.schema_version, &label)?;
     if !ids_equal(&manifest.manifest_id, &dto.manifest_id) {
         return Err(SyncError::Snapshot(format!("manifest {} declares a different id ({}) inside its encrypted payload, refusing to open it", dto.manifest_id, manifest.manifest_id)));
     }
