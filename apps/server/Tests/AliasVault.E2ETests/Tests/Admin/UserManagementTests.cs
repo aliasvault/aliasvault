@@ -54,8 +54,9 @@ public class UserManagementTests : AdminPlaywrightTest
         var testUser = await DbContext.AliasVaultUsers.FindAsync(_testUserId);
         if (testUser != null)
         {
-            DbContext.Groups.Remove(await DbContext.Groups.FirstAsync(g => g.Id == testUser.PersonalGroupId));
+            var personalGroup = await DbContext.Groups.FirstAsync(g => g.Id == testUser.PersonalGroupId);
             DbContext.AliasVaultUsers.Remove(testUser);
+            DbContext.Groups.Remove(personalGroup);
             await DbContext.SaveChangesAsync();
         }
 
