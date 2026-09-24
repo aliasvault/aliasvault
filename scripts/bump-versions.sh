@@ -262,9 +262,9 @@ get_browser_extension_package_json_version() {
     grep "\"version\": " "$REPO_ROOT/apps/browser-extension/package.json" | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
-# Function to extract version from browser extension AppInfo.ts
+# Function to extract version from browser extension ExtensionPlatform.ts
 get_browser_extension_ts_version() {
-    grep "public static readonly VERSION = " "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "export const EXTENSION_VERSION = " "$REPO_ROOT/apps/browser-extension/src/platform/ExtensionPlatform.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from mobile app
@@ -338,7 +338,7 @@ declare -A display_names
 display_names["server"]="Server"
 display_names["browser_wxt"]="Browser Extension (wxt.config.ts)"
 display_names["browser_package"]="Browser Extension (package.json)"
-display_names["browser_ts"]="Browser Extension (AppInfo.ts)"
+display_names["browser_ts"]="Browser Extension (ExtensionPlatform.ts)"
 display_names["mobile"]="Mobile App"
 display_names["mobile_ts"]="Mobile App (TS)"
 display_names["ios"]="iOS App"
@@ -627,11 +627,11 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     echo -e "${BLUE}Updating docs package-lock.json version...${RESET}"
     sed -i '' '/"name": "aliasvault-docs"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/docs/package-lock.json"
 
-    # Update browser extension AppInfo.ts version
-    echo -e "${BLUE}Updating browser extension AppInfo.ts version...${RESET}"
-    update_version "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" \
-        "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
-        "public static readonly VERSION = '$display_version';"
+    # Update browser extension ExtensionPlatform.ts version
+    echo -e "${BLUE}Updating browser extension ExtensionPlatform.ts version...${RESET}"
+    update_version "$REPO_ROOT/apps/browser-extension/src/platform/ExtensionPlatform.ts" \
+        "export const EXTENSION_VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
+        "export const EXTENSION_VERSION = '$display_version';"
 
     # Update generic mobile app version
     echo -e "${BLUE}Updating mobile app version...${RESET}"
@@ -674,10 +674,11 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     echo -e "${BLUE}Updating core client package-lock.json version...${RESET}"
     sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/client/package-lock.json"
 
-    # The browser extension links core/client via file:, so npm inlines that manifest
-    # (name + version) into its own lockfile. Keep it in sync to avoid lockfile churn.
+    # The browser extension and mobile app link core/client via file:, which embeds the version into their lockfiles.
     echo -e "${BLUE}Updating browser extension package-lock.json core client version...${RESET}"
     sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
+    echo -e "${BLUE}Updating mobile app package-lock.json core client version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/mobile-app/package-lock.json"
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
     echo -e "${BLUE}Updating Rust core version...${RESET}"
