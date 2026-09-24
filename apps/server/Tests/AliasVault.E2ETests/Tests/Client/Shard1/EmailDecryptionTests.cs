@@ -69,8 +69,8 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         var claim = await ApiDbContext.EmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
         Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
-        // Assert that the users public key was created on the server.
-        var publicKey = await ApiDbContext.UserEncryptionKeys.Where(x => x.UserId == claim.UserId).FirstOrDefaultAsync();
+        // Assert that the public key of the manifest carrying the claim was created on the server.
+        var publicKey = await ApiDbContext.VaultManifestDeliveryKeys.Where(k => k.IsPrimary && ApiDbContext.EmailClaimLinks.Any(l => l.EmailClaimId == claim.Id && l.VaultManifestId == k.VaultManifestId)).FirstOrDefaultAsync();
         Assert.That(publicKey, Is.Not.Null, "Public key for user not found in database. Check if public key creation is working correctly.");
         Assert.That(publicKey.PublicKey, Has.Length.GreaterThanOrEqualTo(100), "Public key exists but length does not match expected. Check if public key creation is working correctly.");
 
@@ -166,8 +166,8 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         var claim = await ApiDbContext.EmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
         Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
-        // Assert that the users public key was created on the server.
-        var publicKey = await ApiDbContext.UserEncryptionKeys.Where(x => x.UserId == claim.UserId).FirstOrDefaultAsync();
+        // Assert that the public key of the manifest carrying the claim was created on the server.
+        var publicKey = await ApiDbContext.VaultManifestDeliveryKeys.Where(k => k.IsPrimary && ApiDbContext.EmailClaimLinks.Any(l => l.EmailClaimId == claim.Id && l.VaultManifestId == k.VaultManifestId)).FirstOrDefaultAsync();
         Assert.That(publicKey, Is.Not.Null, "Public key for user not found in database. Check if public key creation is working correctly.");
         Assert.That(publicKey!.PublicKey, Has.Length.GreaterThanOrEqualTo(100), "Public key exists but length does not match expected. Check if public key creation is working correctly.");
 
@@ -510,17 +510,6 @@ public class EmailDecryptionTests : ClientPlaywrightTest
     }
 
     /// <summary>
-    /// Checks whether an alias is still carried by any vault. There is no disabled flag on the claim: a link that is
-    /// not removed is what says the alias is live, and paused counts as live because the user still has the alias.
-    /// </summary>
-    /// <param name="emailClaimId">The email claim to check.</param>
-    /// <returns>True while at least one manifest still carries the alias.</returns>
-    private async Task<bool> IsClaimLiveAsync(Guid emailClaimId)
-    {
-        return await ApiDbContext.EmailClaimLinks.AsNoTracking().AnyAsync(l => l.EmailClaimId == emailClaimId && l.State != EmailClaimLinkState.Removed);
-    }
-
-    /// <summary>
     /// Sends a message to the SMTP server.
     /// </summary>
     /// <param name="message">MimeMessage to send.</param>
@@ -537,5 +526,16 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         {
             await client.DisconnectAsync(true);
         }
+    }
+
+    /// <summary>
+    /// Checks whether an alias is still carried by any vault. There is no disabled flag on the claim: a link that is
+    /// not removed is what says the alias is live, and paused counts as live because the user still has the alias.
+    /// </summary>
+    /// <param name="emailClaimId">The email claim to check.</param>
+    /// <returns>True while at least one manifest still carries the alias.</returns>
+    private async Task<bool> IsClaimLiveAsync(Guid emailClaimId)
+    {
+        return await ApiDbContext.EmailClaimLinks.AsNoTracking().AnyAsync(l => l.EmailClaimId == emailClaimId && l.State != EmailClaimLinkState.Removed);
     }
 }
