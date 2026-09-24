@@ -225,8 +225,8 @@ using (var scope = app.Services.CreateScope())
     var migrationLogger = container.GetRequiredService<ILoggerFactory>().CreateLogger("AliasVault.DatabaseMigrations");
     await using var db = await container.GetRequiredService<IAliasServerDbContextFactory>().CreateDbContextAsync();
 
-    // Raise the command timeout for migrations.
-    db.Database.SetCommandTimeout((int)TimeSpan.FromMinutes(60).TotalSeconds);
+    // The API is responsible for database migrations and runtime should not be limited by a command timeout.
+    db.Database.SetCommandTimeout(0);
     await db.MigrateWithLoggingAsync(migrationLogger);
 }
 
