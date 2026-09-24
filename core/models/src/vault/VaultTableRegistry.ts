@@ -54,13 +54,13 @@ export type VaultTableDefinition = {
 };
 
 /**
- * All syncable client vault tables, in registry order. Order is load-bearing: a merge inserts rows
+ * All syncable client vault tables, in registry order. Order matters: a merge inserts rows
  * in this order, so child tables must be listed after the table they reference (Items first).
  */
 export const VAULT_TABLES: VaultTableDefinition[] = [
   { Name: 'Items', ManifestScoped: true, PrimaryKey: ['Id'], ItemChild: false },
   /*
-   * ItemStats is keyed by the item it describes: Id IS the item's id, so recording a use is an
+   * ItemStats is keyed by the item it describes: Id is the item's id, so recording a use is an
    * upsert and two devices never create competing rows. Listed after Items so a merge inserts the
    * item first.
    */
@@ -70,7 +70,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
    * FieldDefinitionId for custom ones; exactly one is set), so independently created rows of the
    * same field are merged into one. Both sides are normalized first, which strips the derived id of every
    * single-value row, so adding Id to the key makes a single-value row match by its field while a 
-   * multi-value row matches by its OWNED id: two devices each adding a login.url are two different 
+   * multi-value row matches by its own id: two devices each adding a login.url are two different 
    * rows that must both survive, and the id, unlike ValueIndex, is stable under reordering.
    */
   {
@@ -110,7 +110,7 @@ export const VAULT_TABLES: VaultTableDefinition[] = [
   },
   /*
    * FieldHistories: every history row derives its id from (item, field, ChangedAt), so after
-   * normalization the natural key IS the identity: concurrent changes union (distinct ChangedAt),
+   * normalization the natural key is the identity: concurrent changes union (distinct ChangedAt),
    * same-millisecond snapshots converge.
    */
   {

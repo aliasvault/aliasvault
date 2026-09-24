@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 /// <summary>
 /// EmailClaim object. This object is used to reserve an email address. The claim is linked to every manifest that
 /// has ever held the alias (see <see cref="Links"/>), each link saying whether that manifest still carries it; a
-/// claim whose links are all gone is a tombstone that blocks re-use of the address on purpose and by design.
+/// claim whose links are all gone is a tombstone that blocks re-use of the address by design.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
 public class EmailClaim

@@ -566,7 +566,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Mobile login initiate endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
+    /// Mobile login initiate endpoint (v1). Removed, use the v2 API instead.
     /// </summary>
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/initiate")]
@@ -577,7 +577,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Mobile login poll endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
+    /// Mobile login poll endpoint (v1). Removed, use the v2 API instead.
     /// </summary>
     /// <param name="requestId">The unique identifier for the login request.</param>
     /// <returns>IActionResult.</returns>
@@ -589,7 +589,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Mobile login request details endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
+    /// Mobile login request details endpoint (v1). Removed, use the v2 API instead.
     /// </summary>
     /// <param name="requestId">The unique identifier for the login request.</param>
     /// <returns>IActionResult.</returns>
@@ -601,7 +601,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Mobile login submit endpoint (v1). Note: deprecated and removed on purpose, use the v2 API instead.
+    /// Mobile login submit endpoint (v1). Removed, use the v2 API instead.
     /// </summary>
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/submit")]

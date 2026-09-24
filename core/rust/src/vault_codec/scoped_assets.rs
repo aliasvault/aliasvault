@@ -136,7 +136,7 @@ fn rewrite_logo_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, scope: &str
 /// Repair every `Items.LogoId` in this table set: follow `remap`, then null a reference that resolves
 /// to no logo present here (dangling -> the FK's `ON DELETE SET NULL`). Callers run
 /// [`reconcile_logo_references`] first, so by this point a reference that crossed a scope boundary has
-/// already been pulled into this scope and only genuinely dead references are left to `NULL`.
+/// already been pulled into this scope and only dead references are left to `NULL`.
 fn repoint_items(tables: &mut HashMap<String, Vec<CodecRecord>>, remap: &HashMap<String, String>) {
     let valid_ids = logo_ids(tables);
     let Some(items) = tables.get_mut(ITEMS_TABLE) else { return };

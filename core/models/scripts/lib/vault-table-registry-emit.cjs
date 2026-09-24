@@ -115,7 +115,7 @@ function emitRust(registry) {
 
 use super::{BlobColumn, TableConfig};
 
-/// All tables that need LWW merge, in registry order. Order is load-bearing: a merge inserts rows
+/// All tables that need LWW merge, in registry order. Order matters: a merge inserts rows
 /// in this order, so child tables must be listed after the table they reference (Items first).
 /// Per-table rationale (merge key choices, natural keys) is documented in the TypeScript source.
 pub static SYNCABLE_TABLES: &[TableConfig] = &[

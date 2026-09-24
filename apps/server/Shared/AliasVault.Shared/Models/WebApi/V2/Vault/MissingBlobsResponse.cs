@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
 /// <summary>
 /// Response for POST /v2/Vault/blobs/missing. This contains the subset of the client-supplied hashes
-/// the server does NOT have stored for this user. The client only needs to upload the bytes for these.
+/// the server does not have stored for this user. The client only needs to upload the bytes for these.
 /// </summary>
 public class MissingBlobsResponse
 {

@@ -101,7 +101,7 @@ fn logo_sources(m: &Manifest) -> Vec<&str> {
 /// exactly what the client's `FolderRepository.restampSubtree` writes when a folder starts being
 /// shared, so fixtures carry the membership the codec now routes on.
 ///
-/// Logos are deliberately NOT stamped here, just as the client does not stamp them: a logo is a
+/// Logos are not stamped here, just as the client does not stamp them: a logo is a
 /// per-manifest asset the codec reconciles itself (cloning a copy into every manifest whose items
 /// reference it), so moving items between manifests never has to move logo rows.
 fn stamp_subtree(mut tables: Vec<CodecTableData>, folder_id: &str, manifest_id: &str) -> Vec<CodecTableData> {
@@ -227,9 +227,7 @@ fn canonicalize_owner() -> CanonicalizedVault {
     canonicalize_from_sqlite(input_with_shares(owner_tables(), vec![spec("f-shared")])).unwrap()
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Canonicalize: splitting
-// ─────────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn split_moves_folder_subtree_and_items_into_shared_manifest() {
@@ -337,7 +335,7 @@ fn split_clones_a_tag_into_the_manifest_an_item_moved_into() {
 #[test]
 fn split_refuses_rows_that_name_no_manifest() {
     /*
-     * Membership IS the stamp, so a row that names no manifest is a client that could not say where its
+     * Membership is the stamp, so a row that names no manifest is a client that could not say where its
      * data belongs. There is no fallback scope to demote it into: the push is refused, naming the table
      * and row, rather than homing it somewhere plausible and hoping.
      */
@@ -397,7 +395,7 @@ fn sqlite_blob_migration_stamps_every_row_of_a_vault_that_has_no_manifest_id_col
      * `ManifestId` column (so no row carries the key at all) is canonicalized and materialized straight
      * back out, with no share in sight. Nothing stamps those rows beforehand, the column they would be
      * stamped in does not exist yet, so canonicalize adopting them into the manifest being written from
-     * IS the conversion. Every row must come out carrying a real manifest id: the materialized schema
+     * is the conversion. Every row must come out carrying a real manifest id: the materialized schema
      * declares the column NOT NULL, so a single unstamped row fails the whole migration.
      */
     let mut input = raw_input_with_shares(owner_tables_unstamped(), vec![]);
@@ -424,7 +422,7 @@ fn sqlite_blob_migration_stamps_every_row_of_a_vault_that_has_no_manifest_id_col
 
 #[test]
 fn split_scopes_logos_per_manifest_instead_of_copying_them() {
-    // Logos are NOT reference-copied: each manifest gets its own row per domain, identified by its
+    // Logos are not reference-copied: each manifest gets its own row per domain, identified by its
     // own scope. The owner's legacy rows carry no scope.
     let out = canonicalize_owner();
     let shared = &out.rest()[0].manifest;
@@ -591,7 +589,7 @@ fn split_routes_bucket_rows_to_the_manifest_that_owns_them() {
 #[test]
 fn combine_stamps_bucket_rows_with_the_manifest_that_delivered_them() {
     /*
-     * The mirror rule of "the shipping manifest IS the membership": a bucket arrives under one manifest,
+     * The mirror rule of "the shipping manifest is the membership": a bucket arrives under one manifest,
      * so its rows claim that manifest. A bucket whose rows name someone else cannot move them there.
      */
     let out = canonicalize_owner();
@@ -875,9 +873,7 @@ fn split_regrafts_overflow_columns_onto_shared_rows() {
     assert!(rows(&out.first().manifest, "Items").iter().all(|r| !r.contains_key("FutureCol")));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Materialize: combining
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// Materialized tables as a name > rows map for easy assertions.
 fn materialized_map(m: &MaterializedTables) -> HashMap<String, Vec<CodecRecord>> {
@@ -1374,9 +1370,7 @@ fn combine_of_a_single_manifest_carries_only_its_own_rows() {
     assert_eq!(ids(&map["Items"]), vec!["i-nofolder", "i-personal"]);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Primary encryption key extraction
-// ─────────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn extract_encryption_key_for_public_key_picks_matching_row_over_primary() {
@@ -1424,9 +1418,7 @@ fn extract_encryption_key_for_public_key_skips_deleted_and_returns_none_on_miss(
     assert!(extract_encryption_key_for_public_key(&out.first().manifest, "pub-unknown").is_none());
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Wire-format compatibility
-// ─────────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn manifest_specs_deserialize_from_camel_case_json() {
@@ -1580,7 +1572,7 @@ fn member_edit_repointing_the_item_at_a_personal_logo_keeps_the_shared_logo() {
 fn member_whose_shared_logo_blob_never_arrived_does_not_wipe_the_folders_logo() {
     // The member's pull could not resolve the shared logo's bytes (blob missing/undecryptable), so their
     // local row sits there empty while their own personal row for that domain has real bytes. Their next
-    // push must NOT publish the empty row as the folder's logo: that drops the last reference to the
+    // push must not publish the empty row as the folder's logo: that drops the last reference to the
     // owner's blob and every member loses the image.
     let owner = canonicalize_owner();
     let mut tables = member_tables_after_pull(&owner);
@@ -1605,9 +1597,7 @@ fn member_whose_shared_logo_blob_never_arrived_does_not_wipe_the_folders_logo() 
     assert!(!shared.blobs.is_empty(), "and register them so the write keeps a live blob reference");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Logo kinds: one row shape, one `Items.LogoId` pointer, three key spaces.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// The scoped logo id for any `(scope, kind, source)`.
 fn logo_id_of_kind(scope: &str, kind: &str, source: &str) -> String {
@@ -1720,7 +1710,6 @@ fn a_builtin_logo_survives_without_any_image_bytes() {
     assert_eq!(shared_item["LogoId"], json!(scoped_id));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Folder keypairs (manifest-stamped `EncryptionKeys` rows)
 //
 // One table serves every manifest: personal-stamped rows are the personal manifest's own delivery keys,
@@ -1728,7 +1717,6 @@ fn a_builtin_logo_survives_without_any_image_bytes() {
 // personal key must never travel INTO a shared manifest, and a folder key must never travel OUT of
 // its own. Both directions are attacks a folder co-owner can attempt by writing rows into a manifest
 // the victim materializes.
-// ─────────────────────────────────────────────────────────────────────────────
 
 /// A delivery keypair row stamped with `scope` (a manifest id, or a legacy folder-id stamp).
 fn folder_key(id: &str, scope: &str, public_key: &str, is_primary: i32) -> CodecRecord {
@@ -1766,7 +1754,7 @@ fn split_routes_folder_keypair_into_its_manifest_and_never_the_personal_one() {
 #[test]
 fn split_drops_folder_keypair_whose_scope_is_not_shared() {
     // A key row stamped for a manifest that is not part of this push (revoked, deleted, or fabricated
-    // locally) has nowhere to go: it must be dropped, NOT fall back into the personal manifest, a stale
+    // locally) has nowhere to go: it must be dropped, not fall back into the personal manifest, a stale
     // copy demoted into the personal manifest would resurrect the old keypair on a future re-share, and would
     // leave a private delivery key in a namespace revocation cannot reach.
     let out = canonicalize_from_sqlite(input_with_shares(
@@ -1960,9 +1948,7 @@ fn validate_rejects_misplaced_folder_keypairs_before_upload() {
     assert!(validate_manifest(&out.first().manifest).ok);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Cross-manifest routing: the same id in two manifests
-// ─────────────────────────────────────────────────────────────────────────────
 //
 // A manifest is a namespace, so two of them may each hold a row with the same `Id`, and they do, for
 // ordinary reasons: a member moves a shared item into their own vault (the client re-stamps the row and
@@ -2172,9 +2158,7 @@ fn split_roundtrips_two_same_id_items_without_mixing_their_children() {
     assert_eq!(field_values.len(), 2, "neither row was dropped or duplicated into the other manifest");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Cross-manifest routing: the blanket invariant
-// ─────────────────────────────────────────────────────────────────────────────
 
 #[test]
 fn every_row_of_a_canonicalized_manifest_carries_that_manifests_own_stamp() {

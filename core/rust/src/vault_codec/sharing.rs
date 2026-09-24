@@ -236,8 +236,8 @@ pub(super) fn partition_by_manifest(
     }
 
     /*
-     * 3b. EncryptionKeys routes by stamp like every other table; it is called out only because dropping
-     * a `Route::Gone` row here is load-bearing. Re-homing a dead manifest's keypair would resurrect it
+     * 3b. EncryptionKeys routes by stamp like every other table; it is called out only because a
+     * `Route::Gone` row here must be dropped. Re-homing a dead manifest's keypair would resurrect it
      * on a future re-share (handing pre-share mail to the new members) and would let a tampered local
      * DB pass a fabricated key row off as the writing manifest's own. Mail encrypted to a dropped key
      * becomes unreadable, which is the intended outcome: the key is readable only by whoever currently
@@ -409,7 +409,7 @@ pub(super) fn combine_manifest_tables(
     /*
      * First-manifest-wins registry: table -> set of row identities already present. Every row is stamped
      * by `claim_manifest_scope` above, tables this build does not know included, and the identity folds
-     * the stamp in, so this can never fire across manifests; it only dedupes a genuinely duplicated row
+     * the stamp in, so this can never fire across manifests; it only dedupes a truly duplicated row
      * inside one manifest.
      */
     let mut seen: HashMap<String, HashSet<String>> = HashMap::new();
