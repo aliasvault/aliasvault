@@ -1,42 +1,41 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace AliasServerDb.Migrations
 {
     /// <summary>
-    /// Moves vault storage to the manifest model and makes groups the ownership path for everything a user owns.
-    ///
-    /// Existing rows are carried over in place:
-    /// - every user gains a Personal group that takes over their vault, aliases, quotas and rate limit overrides,
-    /// - the append-only "Vaults" revision log becomes one "VaultManifests" head row per user plus a
-    ///   "VaultManifestsHistory" tail, keyed by a newly generated manifest id,
-    /// - per-user email encryption keys become per-manifest delivery keys,
-    /// - every stored public key records the algorithm it belongs to.
-    ///
-    /// The tables that only the manifest-v1 write path uses (buckets, blobs, grant, access and unlock keys) start empty. Every
-    /// ciphertext they hold carries the version of the key it was written with, so a future key rotation can tell the
-    /// generations apart.
+    /// Moves vault and email storage onto group-owned manifests.
     /// </summary>
     public partial class ManifestStorageAndGroupOwnership : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            DropForeignKeysToUsers(migrationBuilder);
+            CreateUserMigrationMap(migrationBuilder);
             IntroduceGroups(migrationBuilder);
             ConvertVaultsToManifests(migrationBuilder);
-            ScopeEmailClaimsToManifests(migrationBuilder);
+            LinkEmailClaimsToManifests(migrationBuilder);
             ScopeDeliveryKeysToManifests(migrationBuilder);
-            AddAlgorithmToPublicKeys(migrationBuilder);
             ScopeRateLimitsToGroups(migrationBuilder);
+            AddAlgorithmToMobileLoginRequests(migrationBuilder);
+            MoveMessageSourceToBytes(migrationBuilder);
+            AddDetachedMessageParts(migrationBuilder);
             AddManifestV1Tables(migrationBuilder);
             SkipToastCompressionOnCiphertextColumns(migrationBuilder);
+            AddForeignKeys(migrationBuilder);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            RemoveAnonymizedSenderCounts(migrationBuilder);
+            DropDetachedMessageParts(migrationBuilder);
+            RestoreMessageSourceText(migrationBuilder);
+            RestoreSingleManifestLinks(migrationBuilder);
             DropManifestV1Tables(migrationBuilder);
             RestoreRateLimitsToUsers(migrationBuilder);
             RemoveAlgorithmFromPublicKeys(migrationBuilder);
@@ -46,10 +45,29 @@ namespace AliasServerDb.Migrations
             RemoveGroups(migrationBuilder);
         }
 
-        /// <summary>
-        /// Adds the group tables and gives every existing user a Personal group holding their email quotas.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void DropForeignKeysToUsers(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(name: "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId", table: "AliasVaultUserRefreshTokens");
+            migrationBuilder.DropForeignKey(name: "FK_MobileLoginRequests_AliasVaultUsers_UserId", table: "MobileLoginRequests");
+            migrationBuilder.DropForeignKey(name: "FK_RateLimits_AliasVaultUsers_UserId", table: "RateLimits");
+            migrationBuilder.DropForeignKey(name: "FK_UserEmailClaims_AliasVaultUsers_UserId", table: "UserEmailClaims");
+            migrationBuilder.DropForeignKey(name: "FK_UserEncryptionKeys_AliasVaultUsers_UserId", table: "UserEncryptionKeys");
+            migrationBuilder.DropForeignKey(name: "FK_Vaults_AliasVaultUsers_UserId", table: "Vaults");
+        }
+
+        private static void CreateUserMigrationMap(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""
+                CREATE TEMP TABLE "UserMigrationMap" ON COMMIT DROP AS
+                SELECT u."Id" AS "UserId", gen_random_uuid() AS "GroupId",
+                       CASE WHEN EXISTS (SELECT 1 FROM "Vaults" v WHERE v."UserId" = u."Id") THEN gen_random_uuid() END AS "ManifestId"
+                FROM "AliasVaultUsers" u;
+
+                ALTER TABLE "UserMigrationMap" ADD PRIMARY KEY ("UserId");
+                ANALYZE "UserMigrationMap";
+                """);
+        }
+
         private static void IntroduceGroups(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -64,6 +82,7 @@ namespace AliasServerDb.Migrations
                     MaxEmails = table.Column<int>(type: "integer", nullable: false),
                     MaxEmailAgeDays = table.Column<int>(type: "integer", nullable: false),
                     EmailsReceived = table.Column<int>(type: "integer", nullable: false),
+                    AnonymizedEmailAliasSenderCounts = table.Column<int[]>(type: "integer[]", nullable: false, defaultValueSql: "array_fill(0, ARRAY[64])"),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -86,99 +105,85 @@ namespace AliasServerDb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GroupMembers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GroupMembers_AliasVaultUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AliasVaultUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_GroupMembers_Groups_GroupId",
-                        column: x => x.GroupId,
-                        principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(name: "IX_GroupMembers_GroupId_UserId", table: "GroupMembers", columns: new[] { "GroupId", "UserId" }, unique: true);
-            migrationBuilder.CreateIndex(name: "IX_GroupMembers_UserId", table: "GroupMembers", column: "UserId");
-
-            migrationBuilder.AddColumn<Guid>(name: "PersonalGroupId", table: "AliasVaultUsers", type: "uuid", nullable: true);
-
-            // Every user owns exactly one Personal group (type 0) and is its owner (role 0). The abuse counters and
-            // email limits are charged to the group that owns the content from here on, so they move across with it.
+            // Personal group is type 0, owner is role 0.
             migrationBuilder.Sql("""
-                UPDATE "AliasVaultUsers" SET "PersonalGroupId" = gen_random_uuid() WHERE "PersonalGroupId" IS NULL;
-
                 INSERT INTO "Groups" ("Id", "Name", "Type", "ShadowBlocked", "ShadowBlockedAt", "MaxEmails", "MaxEmailAgeDays", "EmailsReceived", "CreatedAt", "UpdatedAt")
-                SELECT u."PersonalGroupId", COALESCE(u."UserName", 'Personal'), 0, u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", now(), now()
-                FROM "AliasVaultUsers" u;
+                SELECT m."GroupId", COALESCE(u."UserName", 'Personal'), 0, u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", now(), now()
+                FROM "AliasVaultUsers" u
+                JOIN "UserMigrationMap" m ON m."UserId" = u."Id";
 
                 INSERT INTO "GroupMembers" ("Id", "GroupId", "UserId", "Role", "CreatedAt", "UpdatedAt")
-                SELECT gen_random_uuid(), u."PersonalGroupId", u."Id", 0, now(), now()
-                FROM "AliasVaultUsers" u;
+                SELECT gen_random_uuid(), m."GroupId", m."UserId", 0, now(), now()
+                FROM "UserMigrationMap" m;
+
+                CREATE TABLE "AliasVaultUsers_reordered" (
+                    "Id" text NOT NULL,
+                    "UserName" text,
+                    "NormalizedUserName" text,
+                    "Email" text,
+                    "NormalizedEmail" text,
+                    "EmailConfirmed" boolean NOT NULL,
+                    "SrpIdentity" character varying(255),
+                    "PersonalGroupId" uuid NOT NULL,
+                    "PasswordHash" text,
+                    "SecurityStamp" text,
+                    "ConcurrencyStamp" text,
+                    "Blocked" boolean NOT NULL,
+                    "BlockedAt" timestamp with time zone,
+                    "LastActivityDate" timestamp with time zone,
+                    "PasswordChangedAt" timestamp with time zone NOT NULL,
+                    "CreatedAt" timestamp with time zone NOT NULL,
+                    "UpdatedAt" timestamp with time zone NOT NULL,
+                    "PhoneNumber" text,
+                    "PhoneNumberConfirmed" boolean NOT NULL,
+                    "TwoFactorEnabled" boolean NOT NULL,
+                    "LockoutEnd" timestamp with time zone,
+                    "LockoutEnabled" boolean NOT NULL,
+                    "AccessFailedCount" integer NOT NULL
+                );
+
+                INSERT INTO "AliasVaultUsers_reordered" ("Id", "UserName", "NormalizedUserName", "Email", "NormalizedEmail", "EmailConfirmed", "SrpIdentity", "PersonalGroupId", "PasswordHash", "SecurityStamp", "ConcurrencyStamp", "Blocked", "BlockedAt", "LastActivityDate", "PasswordChangedAt", "CreatedAt", "UpdatedAt", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnd", "LockoutEnabled", "AccessFailedCount")
+                SELECT u."Id", u."UserName", u."NormalizedUserName", u."Email", u."NormalizedEmail", u."EmailConfirmed", u."SrpIdentity", m."GroupId", u."PasswordHash", u."SecurityStamp", u."ConcurrencyStamp", u."Blocked", u."BlockedAt", u."LastActivityDate", u."PasswordChangedAt", u."CreatedAt", u."UpdatedAt", u."PhoneNumber", u."PhoneNumberConfirmed", u."TwoFactorEnabled", u."LockoutEnd", u."LockoutEnabled", u."AccessFailedCount"
+                FROM "AliasVaultUsers" u
+                JOIN "UserMigrationMap" m ON m."UserId" = u."Id";
+
+                DROP TABLE "AliasVaultUsers";
+                ALTER TABLE "AliasVaultUsers_reordered" RENAME TO "AliasVaultUsers";
+                ALTER TABLE "AliasVaultUsers" ADD CONSTRAINT "PK_AliasVaultUsers" PRIMARY KEY ("Id");
                 """);
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "PersonalGroupId",
-                table: "AliasVaultUsers",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
-
             migrationBuilder.CreateIndex(name: "UX_AliasVaultUsers_PersonalGroupId", table: "AliasVaultUsers", column: "PersonalGroupId", unique: true);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AliasVaultUsers_Groups_PersonalGroupId",
-                table: "AliasVaultUsers",
-                column: "PersonalGroupId",
-                principalTable: "Groups",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.DropColumn(name: "ShadowBlocked", table: "AliasVaultUsers");
-            migrationBuilder.DropColumn(name: "ShadowBlockedAt", table: "AliasVaultUsers");
-            migrationBuilder.DropColumn(name: "MaxEmails", table: "AliasVaultUsers");
-            migrationBuilder.DropColumn(name: "MaxEmailAgeDays", table: "AliasVaultUsers");
-            migrationBuilder.DropColumn(name: "EmailsReceived", table: "AliasVaultUsers");
+            migrationBuilder.CreateIndex(name: "IX_GroupMembers_GroupId_UserId", table: "GroupMembers", columns: new[] { "GroupId", "UserId" }, unique: true);
+            migrationBuilder.CreateIndex(name: "IX_GroupMembers_UserId", table: "GroupMembers", column: "UserId");
         }
 
-        /// <summary>
-        /// Turns the per-revision "Vaults" log into a group-owned manifest plus its revision history.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void ConvertVaultsToManifests(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(name: "FK_Vaults_AliasVaultUsers_UserId", table: "Vaults");
-            migrationBuilder.DropIndex(name: "IX_Vaults_UserId", table: "Vaults");
-            migrationBuilder.RenameTable(name: "Vaults", newName: "VaultManifests");
-            migrationBuilder.Sql("""ALTER TABLE "VaultManifests" RENAME CONSTRAINT "PK_Vaults" TO "PK_VaultManifests";""");
-
-            migrationBuilder.AddColumn<Guid>(name: "ManifestId", table: "VaultManifests", type: "uuid", nullable: true);
-            migrationBuilder.AddColumn<Guid>(name: "OwnerGroupId", table: "VaultManifests", type: "uuid", nullable: true);
-            migrationBuilder.AddColumn<string>(name: "StorageFormat", table: "VaultManifests", type: "character varying(20)", maxLength: 20, nullable: true);
-            migrationBuilder.AddColumn<byte[]>(name: "ManifestBlob", table: "VaultManifests", type: "bytea", nullable: true);
-            migrationBuilder.AddColumn<string>(name: "ManifestCiphertextHash", table: "VaultManifests", type: "character varying(64)", maxLength: 64, nullable: true);
-            migrationBuilder.AddColumn<int>(name: "KeyVersion", table: "VaultManifests", type: "integer", nullable: false, defaultValue: 0);
-            migrationBuilder.AddColumn<string>(name: "UpdatedByUserId", table: "VaultManifests", type: "character varying(255)", maxLength: 255, nullable: true);
-
-            // A manifest-v1 revision carries no vault blob and no SRP credentials, so the columns that only the legacy
-            // sqlite-blob format fills become nullable. NULL is the sole "not applicable" marker; the empty string is not.
-            MakeLegacyRevisionColumnsNullable(migrationBuilder, "VaultManifests");
-
-            // Every revision of a user's vault belongs to one manifest, owned by that user's personal group.
             migrationBuilder.Sql("""
-                UPDATE "VaultManifests" v
-                SET "ManifestId" = ids.gid
-                FROM (SELECT "UserId", gen_random_uuid() AS gid FROM "VaultManifests" GROUP BY "UserId") ids
-                WHERE v."UserId" = ids."UserId";
-
-                UPDATE "VaultManifests" v
-                SET "OwnerGroupId" = u."PersonalGroupId", "StorageFormat" = 'sqlite-blob'
-                FROM "AliasVaultUsers" u
-                WHERE u."Id" = v."UserId";
+                CREATE TABLE "VaultManifests" (
+                    "VaultBlob" text,
+                    "Version" character varying(255),
+                    "RevisionNumber" bigint NOT NULL,
+                    "FileSize" integer NOT NULL,
+                    "Salt" character varying(100),
+                    "Verifier" character varying(1000),
+                    "CredentialsCount" integer NOT NULL,
+                    "EmailClaimsCount" integer NOT NULL,
+                    "EncryptionType" text,
+                    "EncryptionSettings" text,
+                    "CreatedAt" timestamp with time zone NOT NULL,
+                    "UpdatedAt" timestamp with time zone NOT NULL,
+                    "Client" character varying(255),
+                    "ManifestId" uuid NOT NULL,
+                    "OwnerGroupId" uuid NOT NULL,
+                    "StorageFormat" character varying(20) NOT NULL,
+                    "ManifestBlob" bytea,
+                    "ManifestCiphertextHash" character varying(64),
+                    "KeyVersion" integer DEFAULT 0 NOT NULL,
+                    "UpdatedByUserId" character varying(255)
+                );
                 """);
 
             migrationBuilder.CreateTable(
@@ -204,253 +209,233 @@ namespace AliasServerDb.Migrations
                     Verifier = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     EncryptionType = table.Column<string>(type: "text", nullable: true),
                     EncryptionSettings = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_VaultManifestsHistory", x => new { x.ManifestId, x.RevisionNumber });
                 });
 
-            // The newest revision stays behind as the manifest head; everything older becomes history.
+            // Newest revision is the head; older ones go to history.
             migrationBuilder.Sql("""
-                INSERT INTO "VaultManifestsHistory" ("ManifestId", "RevisionNumber", "VaultBlob", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "Version", "FileSize", "Salt", "Verifier", "CredentialsCount", "EmailClaimsCount", "EncryptionType", "EncryptionSettings", "Client", "CreatedAt", "UpdatedAt")
-                SELECT "ManifestId", "RevisionNumber", "VaultBlob", "StorageFormat", "ManifestBlob", "ManifestCiphertextHash", "Version", "FileSize", "Salt", "Verifier", "CredentialsCount", "EmailClaimsCount", "EncryptionType", "EncryptionSettings", "Client", "CreatedAt", "UpdatedAt"
-                FROM (
-                    SELECT v.*, ROW_NUMBER() OVER (PARTITION BY "ManifestId" ORDER BY "RevisionNumber" DESC, "CreatedAt" DESC, "Id" DESC) AS rn
-                    FROM "VaultManifests" v
-                ) ranked
-                WHERE ranked.rn > 1
-                ON CONFLICT ("ManifestId", "RevisionNumber") DO NOTHING;
+                CREATE TEMP TABLE "VaultRevisionRanks" ON COMMIT DROP AS
+                SELECT "Id", "UserId", "RevisionNumber", ROW_NUMBER() OVER (PARTITION BY "UserId" ORDER BY "RevisionNumber" DESC, "CreatedAt" DESC, "Id" DESC) AS "Rank"
+                FROM "Vaults";
 
-                DELETE FROM "VaultManifests" v
-                USING (
-                    SELECT "Id", ROW_NUMBER() OVER (PARTITION BY "ManifestId" ORDER BY "RevisionNumber" DESC, "CreatedAt" DESC, "Id" DESC) AS rn
-                    FROM "VaultManifests"
-                ) ranked
-                WHERE v."Id" = ranked."Id" AND ranked.rn > 1;
+                INSERT INTO "VaultManifests" ("VaultBlob", "Version", "RevisionNumber", "FileSize", "Salt", "Verifier", "CredentialsCount", "EmailClaimsCount", "EncryptionType", "EncryptionSettings", "CreatedAt", "UpdatedAt", "Client", "ManifestId", "OwnerGroupId", "StorageFormat")
+                SELECT v."VaultBlob", v."Version", v."RevisionNumber", v."FileSize", v."Salt", v."Verifier", v."CredentialsCount", v."EmailClaimsCount", v."EncryptionType", v."EncryptionSettings", v."CreatedAt", v."UpdatedAt", v."Client", m."ManifestId", m."GroupId", 'sqlite-blob'
+                FROM "VaultRevisionRanks" r
+                JOIN "Vaults" v ON v."Id" = r."Id"
+                JOIN "UserMigrationMap" m ON m."UserId" = r."UserId"
+                WHERE r."Rank" = 1;
+
+                INSERT INTO "VaultManifestsHistory" ("ManifestId", "RevisionNumber", "StorageFormat", "FileSize", "CredentialsCount", "EmailClaimsCount", "Client", "CreatedAt", "UpdatedAt", "VaultBlob", "Version", "Salt", "Verifier", "EncryptionType", "EncryptionSettings")
+                SELECT m."ManifestId", v."RevisionNumber", 'sqlite-blob', v."FileSize", v."CredentialsCount", v."EmailClaimsCount", v."Client", v."CreatedAt", v."UpdatedAt", v."VaultBlob", v."Version", v."Salt", v."Verifier", v."EncryptionType", v."EncryptionSettings"
+                FROM (
+                    SELECT DISTINCT ON ("UserId", "RevisionNumber") "Id", "UserId"
+                    FROM "VaultRevisionRanks"
+                    WHERE "Rank" > 1
+                    ORDER BY "UserId", "RevisionNumber", "Rank"
+                ) r
+                JOIN "Vaults" v ON v."Id" = r."Id"
+                JOIN "UserMigrationMap" m ON m."UserId" = r."UserId";
+
+                DROP TABLE "Vaults";
                 """);
 
-            // Swap the per-revision key for the manifest key now that there is exactly one row per manifest.
-            migrationBuilder.DropPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests");
-            migrationBuilder.DropColumn(name: "Id", table: "VaultManifests");
-            migrationBuilder.DropColumn(name: "UserId", table: "VaultManifests");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "ManifestId",
-                table: "VaultManifests",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "OwnerGroupId",
-                table: "VaultManifests",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "StorageFormat",
-                table: "VaultManifests",
-                type: "character varying(20)",
-                maxLength: 20,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(20)",
-                oldMaxLength: 20,
-                oldNullable: true);
-
             migrationBuilder.AddPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests", column: "ManifestId");
+            migrationBuilder.AddPrimaryKey(name: "PK_VaultManifestsHistory", table: "VaultManifestsHistory", columns: new[] { "ManifestId", "RevisionNumber" });
             migrationBuilder.CreateIndex(name: "IX_VaultManifests_OwnerGroupId", table: "VaultManifests", column: "OwnerGroupId");
             migrationBuilder.CreateIndex(name: "IX_VaultManifests_UpdatedByUserId", table: "VaultManifests", column: "UpdatedByUserId");
             migrationBuilder.CreateIndex(name: "IX_VaultManifestsHistory_UpdatedByUserId", table: "VaultManifestsHistory", column: "UpdatedByUserId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_VaultManifests_Groups_OwnerGroupId",
-                table: "VaultManifests",
-                column: "OwnerGroupId",
-                principalTable: "Groups",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_VaultManifestsHistory_VaultManifests_ManifestId",
-                table: "VaultManifestsHistory",
-                column: "ManifestId",
-                principalTable: "VaultManifests",
-                principalColumn: "ManifestId",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId",
-                table: "VaultManifests",
-                column: "UpdatedByUserId",
-                principalTable: "AliasVaultUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId",
-                table: "VaultManifestsHistory",
-                column: "UpdatedByUserId",
-                principalTable: "AliasVaultUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
         }
 
-        /// <summary>
-        /// Repoints email aliases from their user to the manifest that holds the alias, which is what mail delivery
-        /// resolves the recipient's encryption key through.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        private static void ScopeEmailClaimsToManifests(MigrationBuilder migrationBuilder)
+        private static void LinkEmailClaimsToManifests(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(name: "FK_UserEmailClaims_AliasVaultUsers_UserId", table: "UserEmailClaims");
-            migrationBuilder.DropIndex(name: "IX_UserEmailClaims_UserId_CreatedAt", table: "UserEmailClaims");
-            migrationBuilder.DropIndex(name: "IX_UserEmailClaims_UserId_Disabled", table: "UserEmailClaims");
-            migrationBuilder.RenameTable(name: "UserEmailClaims", newName: "EmailClaims");
-            migrationBuilder.Sql("""ALTER TABLE "EmailClaims" RENAME CONSTRAINT "PK_UserEmailClaims" TO "PK_EmailClaims";""");
-            migrationBuilder.RenameIndex(name: "IX_UserEmailClaims_Address", table: "EmailClaims", newName: "IX_EmailClaims_Address");
+            migrationBuilder.CreateTable(
+                name: "EmailClaims",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Address = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    AddressLocal = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    AddressDomain = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    AnonymizedSenderCounted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                });
 
-            migrationBuilder.AddColumn<Guid>(name: "VaultManifestId", table: "EmailClaims", type: "uuid", nullable: true);
+            migrationBuilder.CreateTable(
+                name: "EmailClaimLinks",
+                columns: table => new
+                {
+                    EmailClaimId = table.Column<Guid>(type: "uuid", nullable: false),
+                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    State = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
+                });
 
-            // A claim of a user who never uploaded a vault has no manifest to hang off and stays unassigned.
             migrationBuilder.Sql("""
-                UPDATE "EmailClaims" c
-                SET "VaultManifestId" = m."ManifestId"
-                FROM "AliasVaultUsers" u
-                JOIN "VaultManifests" m ON m."OwnerGroupId" = u."PersonalGroupId"
-                WHERE u."Id" = c."UserId";
+                INSERT INTO "EmailClaims" ("Id", "Address", "AddressLocal", "AddressDomain", "CreatedAt", "UpdatedAt")
+                SELECT "Id", "Address", "AddressLocal", "AddressDomain", "CreatedAt", "UpdatedAt"
+                FROM "UserEmailClaims";
+
+                INSERT INTO "EmailClaimLinks" ("EmailClaimId", "VaultManifestId", "State")
+                SELECT c."Id", m."ManifestId", CASE WHEN c."Disabled" THEN 'Removed' ELSE 'Active' END
+                FROM "UserEmailClaims" c
+                JOIN "UserMigrationMap" m ON m."UserId" = c."UserId"
+                WHERE m."ManifestId" IS NOT NULL;
                 """);
 
-            migrationBuilder.DropColumn(name: "UserId", table: "EmailClaims");
+            migrationBuilder.DropTable(name: "UserEmailClaims");
 
-            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_CreatedAt", table: "EmailClaims", columns: new[] { "VaultManifestId", "CreatedAt" });
-            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_Disabled", table: "EmailClaims", columns: new[] { "VaultManifestId", "Disabled" });
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_EmailClaims_VaultManifests_VaultManifestId",
-                table: "EmailClaims",
-                column: "VaultManifestId",
-                principalTable: "VaultManifests",
-                principalColumn: "ManifestId",
-                onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddPrimaryKey(name: "PK_EmailClaims", table: "EmailClaims", column: "Id");
+            migrationBuilder.AddPrimaryKey(name: "PK_EmailClaimLinks", table: "EmailClaimLinks", columns: new[] { "EmailClaimId", "VaultManifestId" });
+            migrationBuilder.CreateIndex(name: "IX_EmailClaims_Address", table: "EmailClaims", column: "Address", unique: true);
+            migrationBuilder.CreateIndex(name: "IX_EmailClaimLinks_VaultManifestId_EmailClaimId", table: "EmailClaimLinks", columns: new[] { "VaultManifestId", "EmailClaimId" });
+            migrationBuilder.Sql("""CREATE INDEX "IX_EmailClaimLinks_EmailClaimId_Live" ON "EmailClaimLinks" ("EmailClaimId") WHERE "State" <> 'Removed';""");
         }
 
-        /// <summary>
-        /// Turns the per-user email encryption keys into per-manifest delivery keys.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void ScopeDeliveryKeysToManifests(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(name: "FK_UserEncryptionKeys_AliasVaultUsers_UserId", table: "UserEncryptionKeys");
-            migrationBuilder.DropIndex(name: "IX_UserEncryptionKeys_UserId", table: "UserEncryptionKeys");
-            migrationBuilder.RenameTable(name: "UserEncryptionKeys", newName: "VaultManifestDeliveryKeys");
+            // No vault means no manifest to attach the key to.
             migrationBuilder.Sql("""
-                ALTER TABLE "VaultManifestDeliveryKeys" RENAME CONSTRAINT "PK_UserEncryptionKeys" TO "PK_VaultManifestDeliveryKeys";
-                ALTER TABLE "Emails" RENAME CONSTRAINT "FK_Emails_UserEncryptionKeys_UserEncryptionKeyId" TO "FK_Emails_VaultManifestDeliveryKeys_EncryptionKeyId";
-                """);
-            migrationBuilder.RenameColumn(name: "UserEncryptionKeyId", table: "Emails", newName: "EncryptionKeyId");
-            migrationBuilder.RenameIndex(name: "IX_Emails_UserEncryptionKeyId", table: "Emails", newName: "IX_Emails_EncryptionKeyId");
-
-            migrationBuilder.AddColumn<Guid>(name: "VaultManifestId", table: "VaultManifestDeliveryKeys", type: "uuid", nullable: true);
-
-            migrationBuilder.Sql("""
-                UPDATE "VaultManifestDeliveryKeys" k
-                SET "VaultManifestId" = m."ManifestId"
-                FROM "AliasVaultUsers" u
-                JOIN "VaultManifests" m ON m."OwnerGroupId" = u."PersonalGroupId"
-                WHERE u."Id" = k."UserId";
+                DELETE FROM "UserEncryptionKeys" k
+                WHERE NOT EXISTS (SELECT 1 FROM "UserMigrationMap" m WHERE m."UserId" = k."UserId" AND m."ManifestId" IS NOT NULL);
                 """);
 
-            // A key whose owner has no vault has no manifest to belong to. Its private half only ever existed inside
-            // that vault, so mail encrypted to it is already unreadable; the cascade takes those emails with it.
-            migrationBuilder.Sql("""DELETE FROM "VaultManifestDeliveryKeys" WHERE "VaultManifestId" IS NULL;""");
+            migrationBuilder.CreateTable(
+                name: "VaultManifestDeliveryKeys",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    VaultManifestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Algorithm = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    PublicKey = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    IsPrimary = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                });
 
-            // The unique index below allows one primary key per manifest; keep the most recently updated one.
+            migrationBuilder.CreateTable(
+                name: "EmailDecryptionKeys",
+                columns: table => new
+                {
+                    EmailId = table.Column<int>(type: "integer", nullable: false),
+                    VaultManifestDeliveryKeyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EncryptedSymmetricKey = table.Column<string>(type: "text", nullable: false)
+                });
+
+            // Existing keys are rsa-oaep-sha256; one primary per user.
             migrationBuilder.Sql("""
-                UPDATE "VaultManifestDeliveryKeys" k
-                SET "IsPrimary" = FALSE
-                WHERE k."IsPrimary"
-                  AND k."Id" NOT IN (
-                    SELECT DISTINCT ON ("VaultManifestId") "Id"
-                    FROM "VaultManifestDeliveryKeys"
-                    WHERE "IsPrimary"
-                    ORDER BY "VaultManifestId", "UpdatedAt" DESC, "Id");
+                INSERT INTO "VaultManifestDeliveryKeys" ("Id", "VaultManifestId", "Algorithm", "PublicKey", "IsPrimary", "CreatedAt", "UpdatedAt")
+                SELECT k."Id", m."ManifestId", 'rsa-oaep-sha256', k."PublicKey",
+                       k."IsPrimary" AND ROW_NUMBER() OVER (PARTITION BY k."UserId", k."IsPrimary" ORDER BY k."UpdatedAt" DESC, k."Id") = 1,
+                       k."CreatedAt", k."UpdatedAt"
+                FROM "UserEncryptionKeys" k
+                JOIN "UserMigrationMap" m ON m."UserId" = k."UserId";
+
+                INSERT INTO "EmailDecryptionKeys" ("EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey")
+                SELECT "Id", "UserEncryptionKeyId", "EncryptedSymmetricKey" FROM "Emails";
                 """);
 
-            migrationBuilder.DropColumn(name: "UserId", table: "VaultManifestDeliveryKeys");
+            migrationBuilder.DropForeignKey(name: "FK_Emails_UserEncryptionKeys_UserEncryptionKeyId", table: "Emails");
+            migrationBuilder.DropIndex(name: "IX_Emails_UserEncryptionKeyId", table: "Emails");
+            migrationBuilder.DropColumn(name: "EncryptedSymmetricKey", table: "Emails");
+            migrationBuilder.DropColumn(name: "UserEncryptionKeyId", table: "Emails");
+            migrationBuilder.DropTable(name: "UserEncryptionKeys");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "VaultManifestId",
-                table: "VaultManifestDeliveryKeys",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldNullable: true);
-
+            migrationBuilder.AddPrimaryKey(name: "PK_VaultManifestDeliveryKeys", table: "VaultManifestDeliveryKeys", column: "Id");
+            migrationBuilder.AddPrimaryKey(name: "PK_EmailDecryptionKeys", table: "EmailDecryptionKeys", columns: new[] { "EmailId", "VaultManifestDeliveryKeyId" });
             migrationBuilder.CreateIndex(name: "IX_VaultManifestDeliveryKeys_VaultManifestId_IsPrimary", table: "VaultManifestDeliveryKeys", columns: new[] { "VaultManifestId", "IsPrimary" });
             migrationBuilder.CreateIndex(name: "UX_VaultManifestDeliveryKeys_Manifest_Primary", table: "VaultManifestDeliveryKeys", column: "VaultManifestId", unique: true, filter: "\"IsPrimary\"");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId",
-                table: "VaultManifestDeliveryKeys",
-                column: "VaultManifestId",
-                principalTable: "VaultManifests",
-                principalColumn: "ManifestId",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.CreateIndex(name: "IX_EmailDecryptionKeys_VaultManifestDeliveryKeyId_EmailId", table: "EmailDecryptionKeys", columns: new[] { "VaultManifestDeliveryKeyId", "EmailId" });
         }
 
-        /// <summary>
-        /// Records the algorithm on the public keys that predate the column. All of them are RSA-OAEP keys.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        private static void AddAlgorithmToPublicKeys(MigrationBuilder migrationBuilder)
+        private static void ScopeRateLimitsToGroups(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, defaultValue: "rsa-oaep-sha256");
+            migrationBuilder.Sql("""
+                CREATE TABLE "RateLimits_reordered" (
+                    "Id" uuid NOT NULL,
+                    "GroupId" uuid,
+                    "LimitType" integer NOT NULL,
+                    "Tier" integer,
+                    "WindowSeconds" integer NOT NULL,
+                    "MaxCount" integer NOT NULL,
+                    "AppliesToAccountAgeMaxDays" integer,
+                    "Enabled" boolean NOT NULL,
+                    "Notes" character varying(1000),
+                    "EffectiveFrom" timestamp with time zone,
+                    "EffectiveUntil" timestamp with time zone,
+                    "CreatedBy" character varying(255),
+                    "CreatedAt" timestamp with time zone NOT NULL,
+                    "UpdatedAt" timestamp with time zone NOT NULL
+                );
+
+                INSERT INTO "RateLimits_reordered" ("Id", "GroupId", "LimitType", "Tier", "WindowSeconds", "MaxCount", "AppliesToAccountAgeMaxDays", "Enabled", "Notes", "EffectiveFrom", "EffectiveUntil", "CreatedBy", "CreatedAt", "UpdatedAt")
+                SELECT r."Id", m."GroupId", r."LimitType", r."Tier", r."WindowSeconds", r."MaxCount", r."AppliesToAccountAgeMaxDays", r."Enabled", r."Notes", r."EffectiveFrom", r."EffectiveUntil", r."CreatedBy", r."CreatedAt", r."UpdatedAt"
+                FROM "RateLimits" r
+                LEFT JOIN "UserMigrationMap" m ON m."UserId" = r."UserId";
+
+                DROP TABLE "RateLimits";
+                ALTER TABLE "RateLimits_reordered" RENAME TO "RateLimits";
+                ALTER TABLE "RateLimits" ADD CONSTRAINT "PK_RateLimits" PRIMARY KEY ("Id");
+                """);
+
+            migrationBuilder.CreateIndex(name: "IX_RateLimits_GroupId", table: "RateLimits", column: "GroupId");
+            migrationBuilder.CreateIndex(name: "IX_RateLimits_LimitType_Enabled", table: "RateLimits", columns: new[] { "LimitType", "Enabled" });
+            migrationBuilder.CreateIndex(name: "IX_RateLimits_Tier", table: "RateLimits", column: "Tier");
+        }
+
+        private static void AddAlgorithmToMobileLoginRequests(MigrationBuilder migrationBuilder)
+        {
             migrationBuilder.AddColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, defaultValue: "rsa-oaep-sha256");
-            migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "VaultManifestDeliveryKeys", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldDefaultValue: "rsa-oaep-sha256");
             migrationBuilder.AlterColumn<string>(name: "Algorithm", table: "MobileLoginRequests", type: "character varying(30)", maxLength: 30, nullable: false, oldClrType: typeof(string), oldType: "character varying(30)", oldMaxLength: 30, oldDefaultValue: "rsa-oaep-sha256");
         }
 
-        /// <summary>
-        /// Charges rate limit overrides to the group that owns the content instead of to the user.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        private static void ScopeRateLimitsToGroups(MigrationBuilder migrationBuilder)
+        private static void MoveMessageSourceToBytes(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(name: "GroupId", table: "RateLimits", type: "uuid", nullable: true);
+            migrationBuilder.AlterColumn<string>(name: "MessageSource", table: "Emails", type: "text", nullable: true, oldClrType: typeof(string), oldType: "text");
+            migrationBuilder.AddColumn<int>(name: "AttachmentCount", table: "Emails", type: "integer", nullable: false, defaultValue: 0);
 
             migrationBuilder.Sql("""
-                UPDATE "RateLimits" r
-                SET "GroupId" = u."PersonalGroupId"
-                FROM "AliasVaultUsers" u
-                WHERE r."UserId" = u."Id";
+                UPDATE "Emails" SET "AttachmentCount" = counts."AttachmentCount"
+                FROM (SELECT "EmailId", COUNT(*) AS "AttachmentCount" FROM "EmailAttachments" GROUP BY "EmailId") AS counts
+                WHERE "Emails"."Id" = counts."EmailId";
                 """);
 
-            migrationBuilder.DropForeignKey(name: "FK_RateLimits_AliasVaultUsers_UserId", table: "RateLimits");
-            migrationBuilder.DropIndex(name: "IX_RateLimits_UserId", table: "RateLimits");
-            migrationBuilder.DropColumn(name: "UserId", table: "RateLimits");
-            migrationBuilder.CreateIndex(name: "IX_RateLimits_GroupId", table: "RateLimits", column: "GroupId");
+            migrationBuilder.AddColumn<byte[]>(name: "MessageSourceBytes", table: "Emails", type: "bytea", nullable: true);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_RateLimits_Groups_GroupId",
-                table: "RateLimits",
-                column: "GroupId",
-                principalTable: "Groups",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            // Ciphertext: skip TOAST compression.
+            migrationBuilder.Sql("""
+                ALTER TABLE "Emails" ALTER COLUMN "MessageSourceBytes" SET STORAGE EXTERNAL;
+                ALTER TABLE "EmailAttachments" ALTER COLUMN "Bytes" SET STORAGE EXTERNAL;
+                """);
         }
 
-        /// <summary>
-        /// Creates the tables that only the manifest-v1 write path uses. They start empty: a client fills them on its
-        /// first manifest-v1 push.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void AddDetachedMessageParts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "EmailParts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    EmailId = table.Column<int>(type: "integer", nullable: false),
+                    PartIndex = table.Column<int>(type: "integer", nullable: false),
+                    Bytes = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmailParts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmailParts_Emails_EmailId",
+                        column: x => x.EmailId,
+                        principalTable: "Emails",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(name: "IX_EmailParts_EmailId_PartIndex", table: "EmailParts", columns: new[] { "EmailId", "PartIndex" }, unique: true);
+
+            // Ciphertext: skip TOAST compression.
+            migrationBuilder.Sql("""ALTER TABLE "EmailParts" ALTER COLUMN "Bytes" SET STORAGE EXTERNAL;""");
+        }
+
         private static void AddManifestV1Tables(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -669,12 +654,6 @@ namespace AliasServerDb.Migrations
             migrationBuilder.CreateIndex(name: "UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version", table: "VaultManifestAccessKeys", columns: new[] { "UserId", "Type", "VaultManifestId", "KeyVersion" }, unique: true);
         }
 
-        /// <summary>
-        /// Every manifest-v1 payload column holds AES ciphertext of an already-gzipped payload, which is
-        /// incompressible, so TOAST would burn a compression attempt per write and always discard the result.
-        /// EXTERNAL keeps the out-of-line storage but skips that attempt, matching the Emails.MessageSourceBytes column.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void SkipToastCompressionOnCiphertextColumns(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("""
@@ -686,10 +665,88 @@ namespace AliasServerDb.Migrations
                 """);
         }
 
-        /// <summary>
-        /// Drops the manifest-v1 only tables again.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
+        private static void AddForeignKeys(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddForeignKey(name: "FK_AliasVaultUserRefreshTokens_AliasVaultUsers_UserId", table: "AliasVaultUserRefreshTokens", column: "UserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_MobileLoginRequests_AliasVaultUsers_UserId", table: "MobileLoginRequests", column: "UserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_AliasVaultUsers_Groups_PersonalGroupId", table: "AliasVaultUsers", column: "PersonalGroupId", principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_GroupMembers_AliasVaultUsers_UserId", table: "GroupMembers", column: "UserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_GroupMembers_Groups_GroupId", table: "GroupMembers", column: "GroupId", principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_VaultManifests_Groups_OwnerGroupId", table: "VaultManifests", column: "OwnerGroupId", principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_VaultManifests_AliasVaultUsers_UpdatedByUserId", table: "VaultManifests", column: "UpdatedByUserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddForeignKey(name: "FK_VaultManifestsHistory_VaultManifests_ManifestId", table: "VaultManifestsHistory", column: "ManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId", table: "VaultManifestsHistory", column: "UpdatedByUserId", principalTable: "AliasVaultUsers", principalColumn: "Id", onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddForeignKey(name: "FK_EmailClaimLinks_EmailClaims_EmailClaimId", table: "EmailClaimLinks", column: "EmailClaimId", principalTable: "EmailClaims", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_EmailClaimLinks_VaultManifests_VaultManifestId", table: "EmailClaimLinks", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId", table: "VaultManifestDeliveryKeys", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_EmailDecryptionKeys_Emails_EmailId", table: "EmailDecryptionKeys", column: "EmailId", principalTable: "Emails", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId", table: "EmailDecryptionKeys", column: "VaultManifestDeliveryKeyId", principalTable: "VaultManifestDeliveryKeys", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+            migrationBuilder.AddForeignKey(name: "FK_RateLimits_Groups_GroupId", table: "RateLimits", column: "GroupId", principalTable: "Groups", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+        }
+
+        private static void RemoveAnonymizedSenderCounts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(name: "AnonymizedEmailAliasSenderCounts", table: "Groups");
+            migrationBuilder.DropColumn(name: "AnonymizedSenderCounted", table: "EmailClaims");
+        }
+
+        private static void DropDetachedMessageParts(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(name: "EmailParts");
+        }
+
+        private static void RestoreMessageSourceText(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(@"ALTER TABLE ""EmailAttachments"" ALTER COLUMN ""Bytes"" SET STORAGE EXTENDED;");
+            migrationBuilder.DropColumn(name: "AttachmentCount", table: "Emails");
+            migrationBuilder.DropColumn(name: "MessageSourceBytes", table: "Emails");
+            migrationBuilder.AlterColumn<string>(name: "MessageSource", table: "Emails", type: "text", nullable: false, defaultValue: "", oldClrType: typeof(string), oldType: "text", oldNullable: true);
+        }
+
+        private static void RestoreSingleManifestLinks(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("""DROP INDEX IF EXISTS "IX_EmailClaimLinks_EmailClaimId_Live";""");
+
+            migrationBuilder.AddColumn<bool>(name: "Disabled", table: "EmailClaims", type: "boolean", nullable: false, defaultValue: false);
+
+            migrationBuilder.Sql("""
+                UPDATE "EmailClaims" c
+                SET "Disabled" = NOT EXISTS (SELECT 1 FROM "EmailClaimLinks" l WHERE l."EmailClaimId" = c."Id" AND l."State" <> 'Removed');
+                """);
+
+            migrationBuilder.AddColumn<string>(name: "EncryptedSymmetricKey", table: "Emails", type: "text", nullable: true);
+            migrationBuilder.AddColumn<Guid>(name: "EncryptionKeyId", table: "Emails", type: "uuid", maxLength: 255, nullable: true);
+            migrationBuilder.AddColumn<Guid>(name: "VaultManifestId", table: "EmailClaims", type: "uuid", nullable: true);
+
+            // One key per row. Emails left with none are deleted.
+            migrationBuilder.Sql("""
+                UPDATE "Emails" e
+                SET "EncryptionKeyId" = d."VaultManifestDeliveryKeyId", "EncryptedSymmetricKey" = d."EncryptedSymmetricKey"
+                FROM (SELECT DISTINCT ON ("EmailId") "EmailId", "VaultManifestDeliveryKeyId", "EncryptedSymmetricKey" FROM "EmailDecryptionKeys" ORDER BY "EmailId", "VaultManifestDeliveryKeyId") d
+                WHERE d."EmailId" = e."Id";
+
+                DELETE FROM "Emails" WHERE "EncryptionKeyId" IS NULL;
+
+                UPDATE "EmailClaims" c
+                SET "VaultManifestId" = l."VaultManifestId"
+                FROM (SELECT DISTINCT ON ("EmailClaimId") "EmailClaimId", "VaultManifestId" FROM "EmailClaimLinks" ORDER BY "EmailClaimId", "VaultManifestId") l
+                WHERE l."EmailClaimId" = c."Id";
+                """);
+
+            migrationBuilder.AlterColumn<string>(name: "EncryptedSymmetricKey", table: "Emails", type: "text", nullable: false, oldClrType: typeof(string), oldType: "text", oldNullable: true);
+            migrationBuilder.AlterColumn<Guid>(name: "EncryptionKeyId", table: "Emails", type: "uuid", maxLength: 255, nullable: false, oldClrType: typeof(Guid), oldType: "uuid", oldMaxLength: 255, oldNullable: true);
+
+            migrationBuilder.DropTable(name: "EmailClaimLinks");
+            migrationBuilder.DropTable(name: "EmailDecryptionKeys");
+
+            migrationBuilder.CreateIndex(name: "IX_Emails_EncryptionKeyId", table: "Emails", column: "EncryptionKeyId");
+            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_CreatedAt", table: "EmailClaims", columns: new[] { "VaultManifestId", "CreatedAt" });
+            migrationBuilder.CreateIndex(name: "IX_EmailClaims_VaultManifestId_Disabled", table: "EmailClaims", columns: new[] { "VaultManifestId", "Disabled" });
+
+            migrationBuilder.AddForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims", column: "VaultManifestId", principalTable: "VaultManifests", principalColumn: "ManifestId", onDelete: ReferentialAction.SetNull);
+            migrationBuilder.AddForeignKey(name: "FK_Emails_VaultManifestDeliveryKeys_EncryptionKeyId", table: "Emails", column: "EncryptionKeyId", principalTable: "VaultManifestDeliveryKeys", principalColumn: "Id", onDelete: ReferentialAction.Cascade);
+        }
+
         private static void DropManifestV1Tables(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(name: "VaultDataBucketsHistory");
@@ -702,15 +759,11 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropTable(name: "UserGrantKeys");
         }
 
-        /// <summary>
-        /// Charges rate limit overrides back to the user.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RestoreRateLimitsToUsers(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(name: "UserId", table: "RateLimits", type: "character varying(255)", maxLength: 255, nullable: true);
 
-            // Only a personal group maps back to a user. A rule scoped to a shared group has no user equivalent.
+            // Shared-group rules have no user to map back to.
             migrationBuilder.Sql("""
                 UPDATE "RateLimits" r
                 SET "UserId" = u."Id"
@@ -734,20 +787,12 @@ namespace AliasServerDb.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
 
-        /// <summary>
-        /// Drops the algorithm from the public keys that predate the column.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RemoveAlgorithmFromPublicKeys(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(name: "Algorithm", table: "MobileLoginRequests");
             migrationBuilder.DropColumn(name: "Algorithm", table: "VaultManifestDeliveryKeys");
         }
 
-        /// <summary>
-        /// Turns the per-manifest delivery keys back into per-user email encryption keys.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RestoreDeliveryKeysToUsers(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(name: "FK_VaultManifestDeliveryKeys_VaultManifests_VaultManifestId", table: "VaultManifestDeliveryKeys");
@@ -756,7 +801,7 @@ namespace AliasServerDb.Migrations
 
             migrationBuilder.AddColumn<string>(name: "UserId", table: "VaultManifestDeliveryKeys", type: "character varying(255)", maxLength: 255, nullable: true);
 
-            // A key of a shared manifest has no single owning user to go back to.
+            // Shared-manifest keys have no single user.
             migrationBuilder.Sql("""
                 UPDATE "VaultManifestDeliveryKeys" k
                 SET "UserId" = u."Id"
@@ -799,10 +844,6 @@ namespace AliasServerDb.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
 
-        /// <summary>
-        /// Repoints email aliases from their manifest back to the owning user.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RestoreEmailClaimsToUsers(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(name: "FK_EmailClaims_VaultManifests_VaultManifestId", table: "EmailClaims");
@@ -837,10 +878,6 @@ namespace AliasServerDb.Migrations
                 onDelete: ReferentialAction.SetNull);
         }
 
-        /// <summary>
-        /// Folds the manifest head and its history back into the per-revision "Vaults" log.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RestoreManifestsToVaults(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(name: "FK_VaultManifestsHistory_AliasVaultUsers_UpdatedByUserId", table: "VaultManifestsHistory");
@@ -850,7 +887,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropIndex(name: "IX_VaultManifests_UpdatedByUserId", table: "VaultManifests");
             migrationBuilder.DropIndex(name: "IX_VaultManifests_OwnerGroupId", table: "VaultManifests");
 
-            // A shared manifest has no owning user, so there is no "Vaults" row it can become.
+            // Shared manifests have no owning user.
             migrationBuilder.Sql("""
                 DELETE FROM "VaultManifests" m
                 WHERE NOT EXISTS (SELECT 1 FROM "AliasVaultUsers" u WHERE u."PersonalGroupId" = m."OwnerGroupId");
@@ -864,7 +901,6 @@ namespace AliasServerDb.Migrations
                 WHERE u."PersonalGroupId" = m."OwnerGroupId";
                 """);
 
-            // Restore the per-revision key, then fold the history rows back in as ordinary revisions.
             migrationBuilder.DropPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests");
             migrationBuilder.Sql("""ALTER TABLE "VaultManifests" ADD COLUMN "Id" uuid NOT NULL DEFAULT gen_random_uuid();""");
             migrationBuilder.AddPrimaryKey(name: "PK_VaultManifests", table: "VaultManifests", column: "Id");
@@ -887,7 +923,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropColumn(name: "ManifestCiphertextHash", table: "VaultManifests");
             migrationBuilder.DropColumn(name: "UpdatedByUserId", table: "VaultManifests");
 
-            // The pre-manifest schema has no "not applicable" marker: an unset column reads as the empty string.
+            // Unset legacy columns become empty strings.
             migrationBuilder.Sql("""
                 UPDATE "VaultManifests" SET
                     "VaultBlob" = COALESCE("VaultBlob", ''),
@@ -925,10 +961,6 @@ namespace AliasServerDb.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
 
-        /// <summary>
-        /// Moves the email quotas back onto the user record and drops the group tables.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
         private static void RemoveGroups(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(name: "ShadowBlocked", table: "AliasVaultUsers", type: "boolean", nullable: false, defaultValue: false);
@@ -956,26 +988,6 @@ namespace AliasServerDb.Migrations
             migrationBuilder.DropTable(name: "Groups");
         }
 
-        /// <summary>
-        /// Makes the columns that only the legacy sqlite-blob format fills nullable.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        /// <param name="table">The revision table to alter.</param>
-        private static void MakeLegacyRevisionColumnsNullable(MigrationBuilder migrationBuilder, string table)
-        {
-            migrationBuilder.AlterColumn<string>(name: "VaultBlob", table: table, type: "text", nullable: true, oldClrType: typeof(string), oldType: "text");
-            migrationBuilder.AlterColumn<string>(name: "Version", table: table, type: "character varying(255)", maxLength: 255, nullable: true, oldClrType: typeof(string), oldType: "character varying(255)", oldMaxLength: 255);
-            migrationBuilder.AlterColumn<string>(name: "Salt", table: table, type: "character varying(100)", maxLength: 100, nullable: true, oldClrType: typeof(string), oldType: "character varying(100)", oldMaxLength: 100);
-            migrationBuilder.AlterColumn<string>(name: "Verifier", table: table, type: "character varying(1000)", maxLength: 1000, nullable: true, oldClrType: typeof(string), oldType: "character varying(1000)", oldMaxLength: 1000);
-            migrationBuilder.AlterColumn<string>(name: "EncryptionType", table: table, type: "text", nullable: true, oldClrType: typeof(string), oldType: "text");
-            migrationBuilder.AlterColumn<string>(name: "EncryptionSettings", table: table, type: "text", nullable: true, oldClrType: typeof(string), oldType: "text");
-        }
-
-        /// <summary>
-        /// Makes the columns that only the legacy sqlite-blob format fills required again.
-        /// </summary>
-        /// <param name="migrationBuilder">Migration builder.</param>
-        /// <param name="table">The revision table to alter.</param>
         private static void MakeLegacyRevisionColumnsRequired(MigrationBuilder migrationBuilder, string table)
         {
             migrationBuilder.AlterColumn<string>(name: "VaultBlob", table: table, type: "text", nullable: false, defaultValue: string.Empty, oldClrType: typeof(string), oldType: "text", oldNullable: true);
