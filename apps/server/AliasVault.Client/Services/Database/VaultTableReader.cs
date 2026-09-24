@@ -120,7 +120,7 @@ public static class VaultTableReader
     public static async Task<string?> ReadActivePublicKeyAsync(SqliteConnection connection, Guid manifestId)
     {
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT PublicKey FROM EncryptionKeys WHERE UPPER(ManifestId) = UPPER(@manifestId) AND IsPrimary = 1 AND IsDeleted = 0 LIMIT 1";
+        command.CommandText = "SELECT PublicKey FROM EncryptionKeys WHERE ManifestId = @manifestId AND IsPrimary = 1 AND IsDeleted = 0 LIMIT 1";
         command.Parameters.AddWithValue("@manifestId", manifestId.ToString());
         return await command.ExecuteScalarAsync() as string;
     }
