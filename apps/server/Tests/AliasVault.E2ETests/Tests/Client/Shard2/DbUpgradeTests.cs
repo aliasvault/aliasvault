@@ -45,6 +45,12 @@ public class DbUpgradeTests : ClientPlaywrightTest
         // Update the user's SrpIdentity to match what the old vault expects (lowercase username).
         var user = ApiDbContext.AliasVaultUsers.First();
         user.SrpIdentity = TestUserUsername.ToLowerInvariant();
+
+        // Remove v2 key material so login falls back to the legacy salt/verifier on the vault row,
+        // as it would for an account that predates the unlock-key model.
+        ApiDbContext.UserUnlockKeys.RemoveRange(ApiDbContext.UserUnlockKeys.Where(x => x.UserId == user.Id));
+        ApiDbContext.UserGrantKeys.RemoveRange(ApiDbContext.UserGrantKeys.Where(x => x.UserId == user.Id));
+        ApiDbContext.VaultManifestAccessKeys.RemoveRange(ApiDbContext.VaultManifestAccessKeys.Where(x => x.UserId == user.Id));
         await ApiDbContext.SaveChangesAsync();
 
         // Overwrite the user's current vault with the static 1.0.0 vault (the current row is updated in place;

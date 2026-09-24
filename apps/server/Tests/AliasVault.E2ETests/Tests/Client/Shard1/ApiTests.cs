@@ -32,6 +32,17 @@ public class ApiTests : ClientPlaywrightTest
     }
 
     /// <summary>
+    /// Reset the environment variables so later fixtures in the same process get the default.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [OneTimeTearDown]
+    public override async Task OneTimeTearDown()
+    {
+        Environment.SetEnvironmentVariable("IP_LOGGING_ENABLED", null);
+        await base.OneTimeTearDown();
+    }
+
+    /// <summary>
     /// Test if an error in the API is logged to the database.
     /// </summary>
     /// <returns>Async task.</returns>

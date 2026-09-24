@@ -30,7 +30,7 @@ public class UnlockTests : ClientPlaywrightTest
         await RefreshPageAndUnlockVault();
 
         // Check if we get redirected back to the page we were trying to access.
-        await WaitForUrlAsync(startUrl, "Test webapi call 1");
+        await WaitForUrlAsync(startUrl, "Test 1 OK.");
 
         var pageContent = await Page.TextContentAsync("body");
         Assert.That(pageContent, Does.Contain("Test 1 OK."), "No index content after unlocking database.");
@@ -69,7 +69,7 @@ public class UnlockTests : ClientPlaywrightTest
         await submitButton.ClickAsync();
 
         // Check if we get redirected back to the page we were trying to access.
-        await WaitForUrlAsync(startUrl, "Test webapi call 1");
+        await WaitForUrlAsync(startUrl, "Test 1 OK.");
 
         var pageContent = await Page.TextContentAsync("body");
         Assert.That(pageContent, Does.Contain("Test 1 OK."), "No index content after unlocking database.");

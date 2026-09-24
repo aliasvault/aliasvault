@@ -223,6 +223,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on attachments
         foreach (var attachment in item.Attachments)
         {
+            attachment.Id = attachment.Id == Guid.Empty ? Guid.NewGuid() : attachment.Id;
             attachment.ItemId = item.Id;
             SetInsertTimestamps(attachment, currentDateTime);
         }
@@ -230,6 +231,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on TOTP codes
         foreach (var totpCode in item.TotpCodes)
         {
+            totpCode.Id = totpCode.Id == Guid.Empty ? Guid.NewGuid() : totpCode.Id;
             totpCode.ItemId = item.Id;
             SetInsertTimestamps(totpCode, currentDateTime);
         }
@@ -237,6 +239,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on passkeys
         foreach (var passkey in item.Passkeys)
         {
+            passkey.Id = passkey.Id == Guid.Empty ? Guid.NewGuid() : passkey.Id;
             passkey.ItemId = item.Id;
             SetInsertTimestamps(passkey, currentDateTime);
         }
