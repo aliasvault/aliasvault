@@ -19,7 +19,6 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
-import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -82,8 +81,7 @@ const Upgrade: React.FC = () => {
   const { sqliteClient, requiresLegacySqliteBlobMigration, loadStoredDatabase, refreshSyncState } = useDb();
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
-  const { executeVaultMutationAsync } = useVaultMutate();
-  const { syncVault } = useVaultSync();
+  const { executeVaultMutationLocally } = useVaultMutate();
 
   const [stage, setStage] = useState<Stage>('classifying');
   const [kind, setKind] = useState<UpgradeKind | null>(null);
@@ -227,38 +225,12 @@ const Upgrade: React.FC = () => {
 
   /**
    * Pick up whatever is left after the legacy chain has run. The sqlite-blob upgrade brings the vault to 2.0.0,
-   * which is the point at which the manifest migration becomes applicable, so it is classified only now.
+   * which is the point at which the manifest migration becomes applicable, so it is classified only now. The
+   * migration pulls its own server baseline and its push carries the dirty local vault, so no sync runs first.
    */
   const handleLegacyUpgradeSuccess = useCallback(async (): Promise<void> => {
-    try {
-      // Sync vault to ensure we have the latest data
-      await syncVault({
-        /**
-         * Handle successful sync completion.
-         */
-        onSuccess: finish,
-        /**
-         * Continue into the manifest migration, which the sync reports as still pending.
-         */
-        onManifestMigrationRequired: () => {
-          void startManifestUpgrade();
-        },
-        /**
-         * Handle sync error.
-         * @param error Error message
-         */
-        onError: (error: string) => {
-          logFailure('Sync error after upgrade', error);
-          // Still navigate to items even if sync fails
-          finish();
-        }
-      });
-    } catch (error) {
-      logFailure('Error during post-upgrade sync', error);
-      // Navigate to items even if sync fails
-      finish();
-    }
-  }, [syncVault, finish, startManifestUpgrade]);
+    await startManifestUpgrade();
+  }, [startManifestUpgrade]);
 
   /**
    * Walk the legacy sqlite-blob upgrade chain against the local vault.
@@ -289,12 +261,12 @@ const Upgrade: React.FC = () => {
       }
 
       /**
-       * Use the useVaultMutate hook to handle the upgrade and vault upload.
+       * Save the upgraded vault locally only as input for the manifest-v1 migration, as v2 API server rejects old legacy vaults.
        * IMPORTANT: Do NOT wrap migration SQL in beginTransaction/commitTransaction!
        * The migration SQL contains PRAGMA foreign_keys statements that MUST be executed
        * outside of any transaction to take effect. The SQL handles its own transactions.
        */
-      await executeVaultMutationAsync(async () => {
+      await executeVaultMutationLocally(async () => {
         // Execute each SQL command (each migration script handles its own transactions)
         for (let i = 0; i < upgradeResult.sqlCommands.length; i++) {
           const sqlCommand = upgradeResult.sqlCommands[i];
@@ -315,7 +287,7 @@ const Upgrade: React.FC = () => {
       setStage('consent');
       setIsInitialLoading(false);
     }
-  }, [sqliteClient, currentVersion, latestVersion, executeVaultMutationAsync, handleLegacyUpgradeSuccess, setIsInitialLoading, t]);
+  }, [sqliteClient, currentVersion, latestVersion, executeVaultMutationLocally, handleLegacyUpgradeSuccess, setIsInitialLoading, t]);
 
   /**
    * Work out what this vault needs and route to the matching stage. Order matters: a pre-2.0.0 vault has to walk

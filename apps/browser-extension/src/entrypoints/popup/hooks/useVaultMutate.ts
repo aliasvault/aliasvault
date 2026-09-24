@@ -30,6 +30,7 @@ const MAX_POLL_FAILURES = 10;
  */
 export function useVaultMutate(): {
     executeVaultMutationAsync: (operation: () => Promise<void>) => Promise<void>;
+    executeVaultMutationLocally: (operation: () => Promise<void>) => Promise<void>;
     } {
   const dbContext = useDb();
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -204,7 +205,15 @@ export function useVaultMutate(): {
     triggerBackgroundSync(scopes);
   }, [saveLocally, triggerBackgroundSync]);
 
+  /**
+   * Execute a vault mutation and save it locally as dirty, without triggering a sync.
+   */
+  const executeVaultMutationLocally = useCallback(async (operation: () => Promise<void>): Promise<void> => {
+    await saveLocally(operation);
+  }, [saveLocally]);
+
   return {
     executeVaultMutationAsync,
+    executeVaultMutationLocally,
   };
 }

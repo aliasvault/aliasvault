@@ -48,6 +48,12 @@ public class VaultUpgradeTests : BrowserExtensionPlaywrightTest
         // Update the user's SrpIdentity to match what the old vault expects (lowercase username).
         var user = ApiDbContext.AliasVaultUsers.First();
         user.SrpIdentity = TestUserUsername.ToLowerInvariant();
+
+        // Remove v2 key material so login falls back to the legacy salt/verifier on the vault row,
+        // as it would for an account that predates the unlock-key model so we test the full upgrade path from a 1.0.0 vault to the current version.
+        ApiDbContext.UserUnlockKeys.RemoveRange(ApiDbContext.UserUnlockKeys.Where(x => x.UserId == user.Id));
+        ApiDbContext.UserGrantKeys.RemoveRange(ApiDbContext.UserGrantKeys.Where(x => x.UserId == user.Id));
+        ApiDbContext.VaultManifestAccessKeys.RemoveRange(ApiDbContext.VaultManifestAccessKeys.Where(x => x.UserId == user.Id));
         await ApiDbContext.SaveChangesAsync();
 
         // Overwrite the user's current vault with the static 1.0.0 vault (the current row is updated in place;
@@ -91,6 +97,14 @@ public class VaultUpgradeTests : BrowserExtensionPlaywrightTest
         // Click the upgrade button.
         var upgradeConfirmButton = extensionPopup.Locator("text=Continue Upgrade").First;
         await upgradeConfirmButton.ClickAsync();
+
+        // The legacy chain brings the vault to 2.0.0; the storage-format upgrade that follows asks for consent separately.
+        await extensionPopup.WaitForSelectorAsync("text=need version", new() { Timeout = 15000 });
+        await extensionPopup.Locator("button[id='upgrade-button']").First.ClickAsync();
+
+        // Continue from the success screen into the vault.
+        await extensionPopup.WaitForSelectorAsync("text=Vault upgraded", new() { Timeout = 15000 });
+        await extensionPopup.Locator("button[id='upgrade-continue-button']").ClickAsync();
 
         // Wait for upgrade to complete and credentials to show.
         await extensionPopup.WaitForSelectorAsync("text=Test credential 1", new() { Timeout = 15000 });
