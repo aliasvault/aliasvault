@@ -1,5 +1,5 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { canAdministerGroup, describeMemberAccess, holdsManifestKey, ownUserIdIn, roleTranslationKey, sharingErrorTranslationKey } from '@aliasvault/client/sharing/FamilySharingView';
+import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
@@ -76,11 +76,11 @@ export default function FamilySharingScreen(): React.ReactNode {
 
       setError(null);
     } catch {
-      setError(t('sharing.family.errors.loadFailed'));
+      setError(familySharingText.errors.loadFailed);
     } finally {
       setIsLoading(false);
     }
-  }, [webApi, sqliteClient, t, setIsLoading]);
+  }, [webApi, sqliteClient, setIsLoading]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -98,9 +98,9 @@ export default function FamilySharingScreen(): React.ReactNode {
     }
 
     const code = actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
-    const knownErrorKey = sharingErrorTranslationKey(code);
-    if (knownErrorKey) {
-      return t(knownErrorKey);
+    const knownError = sharingErrorMessage(code);
+    if (knownError) {
+      return knownError;
     }
 
     return code !== null ? `${fallback} [${code}]` : fallback;
@@ -145,12 +145,12 @@ export default function FamilySharingScreen(): React.ReactNode {
     }
 
     if (result.vaultUpgradeRequired) {
-      throw new SharingOperationError(t('sharing.family.errors.vaultUpgradeRequired'));
+      throw new SharingOperationError(familySharingText.errors.vaultUpgradeRequired);
     }
 
-    const knownErrorKey = sharingErrorTranslationKey(result.apiErrorCode);
+    const knownError = sharingErrorMessage(result.apiErrorCode);
     const code = result.apiErrorCode ?? result.error;
-    throw new SharingOperationError(knownErrorKey ? t(knownErrorKey) : code ? `${fallback} [${code}]` : fallback);
+    throw new SharingOperationError(knownError ?? (code ? `${fallback} [${code}]` : fallback));
   };
 
   /**
@@ -164,10 +164,10 @@ export default function FamilySharingScreen(): React.ReactNode {
     }
 
     return run(async () => {
-      await runSharingOperation('createSharedManifest', { groupId: group.groupId, name }, t('sharing.family.errors.createVaultFailed'));
+      await runSharingOperation('createSharedManifest', { groupId: group.groupId, name }, familySharingText.errors.createVaultFailed);
       setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
       await syncVault();
-    }, t('sharing.family.errors.createVaultFailed'));
+    }, familySharingText.errors.createVaultFailed);
   };
 
   /**
@@ -193,9 +193,9 @@ export default function FamilySharingScreen(): React.ReactNode {
    * @param member - the member being invited.
    */
   const inviteMember = (group: GroupInfo, manifest: SharedManifestInfo, member: GroupMemberInfo): Promise<void> => run(async () => {
-    await runSharingOperation('inviteToSharedManifest', { groupId: group.groupId, manifestId: manifest.manifestId, userId: member.userId }, t('sharing.family.errors.inviteFailed'));
-    setNotice(t('sharing.family.invitationSent', { username: member.username }));
-  }, t('sharing.family.errors.inviteFailed'));
+    await runSharingOperation('inviteToSharedManifest', { groupId: group.groupId, manifestId: manifest.manifestId, userId: member.userId }, familySharingText.errors.inviteFailed);
+    setNotice(familySharingText.invitationSent(member.username));
+  }, familySharingText.errors.inviteFailed);
 
   /**
    * Accept an invitation. The sync that follows is what brings the shared folder into this vault.
@@ -204,27 +204,27 @@ export default function FamilySharingScreen(): React.ReactNode {
   const acceptInvitation = (invitationId: string): Promise<void> => run(async () => {
     await SharingService.acceptInvitation(webApi, invitationId);
     await syncVault();
-  }, t('sharing.family.errors.invitationGone'));
+  }, familySharingText.errors.invitationGone);
 
   /**
    * What to call a shared folder on screen.
    * @param manifest - the shared folder.
    */
-  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? t('sharing.family.unnamedVault');
+  const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedFolder;
 
   /**
    * Ask before taking a member's access away, or before giving up one's own.
    */
   const confirmRemoval = (group: GroupInfo, manifest: SharedManifestInfo, member: GroupMemberInfo, isSelf: boolean): void => {
-    const title = isSelf ? t('sharing.family.leaveVault') : t('sharing.revoke');
+    const title = isSelf ? familySharingText.leaveVault : familySharingText.revoke;
     const message = isSelf
-      ? t('sharing.family.leaveVaultConfirm', { vault: vaultLabel(manifest) })
-      : `${t('sharing.family.revokeAccessConfirm', { username: member.username, vault: vaultLabel(manifest) })}\n\n${t('sharing.family.revokeAccessWarning')}`;
+      ? familySharingText.leaveVaultConfirm(vaultLabel(manifest))
+      : `${familySharingText.revokeAccessConfirm(member.username, vaultLabel(manifest))}\n\n${familySharingText.revokeAccessWarning}`;
 
     showConfirm(title, message, title, () => run(async () => {
       await SharingService.revokeAccess(webApi, group.groupId, manifest.manifestId, member.userId);
       await syncVault();
-    }, t('sharing.family.errors.revokeAccessFailed')), { confirmStyle: 'destructive' });
+    }, familySharingText.errors.revokeAccessFailed), { confirmStyle: 'destructive' });
   };
 
   /**
@@ -234,7 +234,7 @@ export default function FamilySharingScreen(): React.ReactNode {
    * @param manifest - the shared folder to delete.
    */
   const deleteSharedVault = async (group: GroupInfo, manifest: SharedManifestInfo): Promise<void> => {
-    const authenticated = await VaultUnlockHelper.authenticateForAction(t('sharing.family.deleteVault'), t('settings.passwordConfirm.description'), null, t('common.delete'));
+    const authenticated = await VaultUnlockHelper.authenticateForAction(familySharingText.deleteVault, familySharingText.deleteVaultPasswordPrompt(vaultLabel(manifest)), null, t('common.delete'));
     if (!authenticated) {
       return;
     }
@@ -252,8 +252,8 @@ export default function FamilySharingScreen(): React.ReactNode {
       }
 
       await syncVault();
-      setNotice(t('sharing.family.vaultDeleted'));
-    }, t('sharing.family.errors.deleteVaultFailed'));
+      setNotice(familySharingText.vaultDeleted);
+    }, familySharingText.errors.deleteVaultFailed);
   };
 
   /**
@@ -261,8 +261,8 @@ export default function FamilySharingScreen(): React.ReactNode {
    */
   const confirmVaultDelete = (group: GroupInfo, manifest: SharedManifestInfo): void => {
     showConfirm(
-      t('sharing.family.deleteVault'),
-      t('sharing.family.deleteVaultConfirm', { vault: vaultLabel(manifest) }),
+      familySharingText.deleteVault,
+      familySharingText.deleteVaultConfirm(vaultLabel(manifest)),
       t('common.delete'),
       () => deleteSharedVault(group, manifest),
       { confirmStyle: 'destructive' }
@@ -422,7 +422,7 @@ export default function FamilySharingScreen(): React.ReactNode {
     <View key={member.userId} style={styles.memberRow}>
       <View style={styles.memberText}>
         <ThemedText style={styles.memberName} numberOfLines={1}>
-          {member.username}{isSelf && ` (${t('sharing.family.you')})`}
+          {member.username}{isSelf && ` (${familySharingText.you})`}
         </ThemedText>
         <ThemedText style={styles.mutedText}>{detail}</ThemedText>
       </View>
@@ -443,9 +443,9 @@ export default function FamilySharingScreen(): React.ReactNode {
     <ThemedContainer>
       <ThemedScrollView refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />}>
         <View style={styles.headerRow}>
-          <ThemedText style={styles.headerText}>{t('sharing.family.description')}</ThemedText>
+          <ThemedText style={styles.headerText}>{familySharingText.description}</ThemedText>
           <View style={styles.betaBadge}>
-            <ThemedText style={styles.betaBadgeText}>{t('sharing.family.beta')}</ThemedText>
+            <ThemedText style={styles.betaBadgeText}>{familySharingText.beta}</ThemedText>
           </View>
         </View>
 
@@ -468,14 +468,14 @@ export default function FamilySharingScreen(): React.ReactNode {
           <>
             {receivedInvitations.length > 0 && (
               <View style={styles.section}>
-                <ThemedText style={styles.sectionTitle}>{t('sharing.family.invitations')}</ThemedText>
+                <ThemedText style={styles.sectionTitle}>{familySharingText.invitations}</ThemedText>
                 {receivedInvitations.map(invitation => (
                   <View key={invitation.id} style={styles.card}>
-                    <ThemedText style={styles.cardTitle}>{invitationNames[invitation.id] ?? t('sharing.family.unnamedVault')}</ThemedText>
-                    <ThemedText style={styles.mutedText}>{t('sharing.family.invitedBy', { username: invitation.inviterUsername })}</ThemedText>
+                    <ThemedText style={styles.cardTitle}>{invitationNames[invitation.id] ?? familySharingText.sharedFolder}</ThemedText>
+                    <ThemedText style={styles.mutedText}>{familySharingText.invitedBy(invitation.inviterUsername)}</ThemedText>
                     <View style={styles.buttonRow}>
-                      {renderAction(t('sharing.family.accept'), () => acceptInvitation(invitation.id))}
-                      {renderAction(t('sharing.family.decline'), () => run(() => SharingService.declineInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone')), true)}
+                      {renderAction(familySharingText.accept, () => acceptInvitation(invitation.id))}
+                      {renderAction(familySharingText.decline, () => run(() => SharingService.declineInvitation(webApi, invitation.id), familySharingText.errors.invitationGone), true)}
                     </View>
                   </View>
                 ))}
@@ -484,7 +484,7 @@ export default function FamilySharingScreen(): React.ReactNode {
 
             {groups.length === 0 && receivedInvitations.length === 0 && !error && (
               <View style={styles.section}>
-                <ThemedText style={styles.mutedText}>{t('sharing.family.notAvailable')}</ThemedText>
+                <ThemedText style={styles.mutedText}>{familySharingText.notAvailable}</ThemedText>
               </View>
             )}
 
@@ -498,16 +498,16 @@ export default function FamilySharingScreen(): React.ReactNode {
                   {/* The family's members. */}
                   <View style={styles.card}>
                     <TouchableOpacity style={styles.cardHeader} onPress={() => setExpandedRosters(previous => ({ ...previous, [group.groupId]: !isRosterExpanded }))} activeOpacity={0.7}>
-                      <ThemedText style={styles.cardTitle}>{t('sharing.members')} ({group.members.length})</ThemedText>
+                      <ThemedText style={styles.cardTitle}>{familySharingText.members} ({group.members.length})</ThemedText>
                       <Ionicons name={isRosterExpanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.textMuted} />
                     </TouchableOpacity>
-                    {isRosterExpanded && group.members.map(member => renderMemberRow(member, member.userId === myUserId, t(roleTranslationKey(member))))}
+                    {isRosterExpanded && group.members.map(member => renderMemberRow(member, member.userId === myUserId, roleLabel(member)))}
                   </View>
 
                   {/* One card per shared folder, each with the members who can open it. */}
-                  <ThemedText style={styles.sectionTitle}>{t('sharing.family.sharedFolders')}</ThemedText>
+                  <ThemedText style={styles.sectionTitle}>{familySharingText.sharedFolders}</ThemedText>
                   {group.manifests.length === 0 && (
-                    <ThemedText style={styles.mutedText}>{canAdminister ? t('sharing.family.noSharedVaultAdmin') : t('sharing.family.noSharedVaultMember')}</ThemedText>
+                    <ThemedText style={styles.mutedText}>{canAdminister ? familySharingText.noSharedVaultAdmin : familySharingText.noSharedVaultMember}</ThemedText>
                   )}
                   {group.manifests.map(manifest => (
                     <View key={manifest.manifestId} style={styles.card}>
@@ -515,24 +515,24 @@ export default function FamilySharingScreen(): React.ReactNode {
                         <ThemedText style={styles.cardTitle} numberOfLines={1}>{vaultLabel(manifest)}</ThemedText>
                         {/* Renaming encrypts the name with the folder's key, so it takes a member who holds it. */}
                         {canAdminister && holdsManifestKey(manifest, myUserId) && renderAction(t('items.folders.editFolder'), () => setPendingVaultRename({ group, manifest }))}
-                        {canAdminister && renderAction(t('sharing.family.deleteVault'), () => confirmVaultDelete(group, manifest), true)}
+                        {canAdminister && renderAction(familySharingText.deleteVault, () => confirmVaultDelete(group, manifest), true)}
                       </View>
 
                       {/* Inviting somebody encrypts this folder's key for them, which an admin who holds no grant on it cannot do. */}
                       {canAdminister && !holdsManifestKey(manifest, myUserId) && (
-                        <ThemedText style={styles.mutedText}>{t('sharing.family.cannotInviteWithoutAccess')}</ThemedText>
+                        <ThemedText style={styles.mutedText}>{familySharingText.cannotInviteWithoutAccess}</ThemedText>
                       )}
 
                       {group.members.map((member) => {
                         const access = describeMemberAccess(group, manifest, member, myUserId);
                         const invitation = access.invitation;
 
-                        return renderMemberRow(member, access.isSelf, t(access.statusKey), (
+                        return renderMemberRow(member, access.isSelf, access.statusText, (
                           <>
-                            {access.canLeave && renderAction(t('sharing.family.leaveVault'), () => confirmRemoval(group, manifest, member, true), true)}
-                            {access.canRevoke && renderAction(t('sharing.revoke'), () => confirmRemoval(group, manifest, member, false), true)}
-                            {access.canWithdraw && invitation && renderAction(t('sharing.family.withdraw'), () => run(() => SharingService.withdrawInvitation(webApi, invitation.id), t('sharing.family.errors.invitationGone')))}
-                            {access.canInvite && renderAction(t('sharing.family.invite'), () => inviteMember(group, manifest, member), false, access.isReadyForInvite)}
+                            {access.canLeave && renderAction(familySharingText.leaveVault, () => confirmRemoval(group, manifest, member, true), true)}
+                            {access.canRevoke && renderAction(familySharingText.revoke, () => confirmRemoval(group, manifest, member, false), true)}
+                            {access.canWithdraw && invitation && renderAction(familySharingText.withdraw, () => run(() => SharingService.withdrawInvitation(webApi, invitation.id), familySharingText.errors.invitationGone))}
+                            {access.canInvite && renderAction(familySharingText.invite, () => inviteMember(group, manifest, member), false, access.isReadyForInvite)}
                           </>
                         ));
                       })}
@@ -542,18 +542,18 @@ export default function FamilySharingScreen(): React.ReactNode {
                   {/* Creating another shared folder. */}
                   {canAdminister && (
                     <View style={styles.card}>
-                      <ThemedText style={styles.cardTitle}>{t('sharing.family.createSharedVault')}</ThemedText>
+                      <ThemedText style={styles.cardTitle}>{familySharingText.createSharedVault}</ThemedText>
                       <View style={styles.createRow}>
                         <TextInput
                           style={styles.createInput}
                           value={newVaultNames[group.groupId] ?? ''}
                           onChangeText={text => setNewVaultNames(previous => ({ ...previous, [group.groupId]: text }))}
-                          placeholder={t('sharing.family.vaultNamePlaceholder')}
+                          placeholder={familySharingText.vaultNamePlaceholder}
                           placeholderTextColor={colors.textMuted}
                           editable={!busy}
                           onSubmitEditing={() => createSharedVault(group)}
                         />
-                        {renderAction(t('sharing.family.create'), () => createSharedVault(group))}
+                        {renderAction(familySharingText.create, () => createSharedVault(group))}
                       </View>
                     </View>
                   )}

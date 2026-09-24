@@ -1,4 +1,5 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useNavigation } from 'expo-router';
@@ -415,9 +416,9 @@ export default function SettingsScreen() : React.ReactNode {
               </View>
               <View style={styles.settingItemContent}>
                 <View style={styles.settingItemLabel}>
-                  <ThemedText style={styles.settingItemLabelText}>{t('sharing.family.title')}</ThemedText>
+                  <ThemedText style={styles.settingItemLabelText}>{familySharingText.title}</ThemedText>
                   <View style={styles.betaBadge}>
-                    <ThemedText style={styles.betaBadgeText}>{t('sharing.family.beta')}</ThemedText>
+                    <ThemedText style={styles.betaBadgeText}>{familySharingText.beta}</ThemedText>
                   </View>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />

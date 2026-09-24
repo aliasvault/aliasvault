@@ -13,6 +13,7 @@ import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -22,7 +23,6 @@ import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase a
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@aliasvault/models/vault';
-import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
@@ -50,6 +50,8 @@ import { t } from '@/i18n/StandaloneI18n';
 import type { ItemUsageAction } from '@aliasvault/client/database';
 import type { ISqliteDatabase, SqliteValue } from '@aliasvault/client/platform';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
+
+import { storage } from '#imports';
 
 /**
  * Cache for the SqliteClient to avoid repeated decryption and initialization.
@@ -1354,9 +1356,9 @@ type SharingActionResponse = { success: boolean; error?: string; apiErrorCode?: 
 /**
  * Put the outcome of a sharing engine operation into the words the family sharing page shows.
  * @param result - what the sync engine reported.
- * @param failureKey - the translation key of the message for a failure without a more specific reason.
+ * @param failureMessage - the message for a failure without a more specific reason.
  */
-async function sharingActionResponse(result: SharingOperationResult, failureKey: string): Promise<SharingActionResponse> {
+async function sharingActionResponse(result: SharingOperationResult, failureMessage: string): Promise<SharingActionResponse> {
   if (result.success) {
     return { success: true };
   }
@@ -1366,7 +1368,7 @@ async function sharingActionResponse(result: SharingOperationResult, failureKey:
   }
 
   if (result.vaultUpgradeRequired) {
-    return { success: false, error: await t('sharing.family.errors.vaultUpgradeRequired') };
+    return { success: false, error: familySharingText.errors.vaultUpgradeRequired };
   }
 
   if (result.errorCode === AppErrorCode.VAULT_LOCKED) {
@@ -1379,7 +1381,7 @@ async function sharingActionResponse(result: SharingOperationResult, failureKey:
    * appended the way the upload path does it.
    */
   const detail = result.error && result.error.length > 0 ? ` [${result.error}]` : '';
-  return { success: false, error: `${await t(failureKey)}${detail}` };
+  return { success: false, error: `${failureMessage}${detail}` };
 }
 
 /**
@@ -1395,7 +1397,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
     void handleFullVaultSync().catch(error => logFailure('Background sync after creating a shared manifest failed', error));
   }
 
-  return sharingActionResponse(result, 'sharing.family.errors.createVaultFailed');
+  return sharingActionResponse(result, familySharingText.errors.createVaultFailed);
 }
 
 /**
@@ -1405,7 +1407,7 @@ export async function handleGroupCreateVault(message: { groupId: string; name: s
  * @param message - the family, the manifest, and the details to change.
  */
 export async function handleGroupUpdateVault(message: { groupId: string; manifestId: string; details: SharedManifestDetails }): Promise<SharingActionResponse> {
-  return sharingActionResponse(await vaultSync.updateSharedManifest(message.groupId, message.manifestId, message.details), 'common.errors.unknownErrorTryAgain');
+  return sharingActionResponse(await vaultSync.updateSharedManifest(message.groupId, message.manifestId, message.details), await t('common.errors.unknownErrorTryAgain'));
 }
 
 /**
@@ -1415,7 +1417,7 @@ export async function handleGroupUpdateVault(message: { groupId: string; manifes
  * @param message - the family, the manifest, and the member being invited.
  */
 export async function handleGroupInviteMember(message: { groupId: string; manifestId: string; userId: string }): Promise<SharingActionResponse> {
-  return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), 'sharing.family.errors.inviteFailed');
+  return sharingActionResponse(await vaultSync.inviteToSharedManifest(message.groupId, message.manifestId, message.userId), familySharingText.errors.inviteFailed);
 }
 
 /**
@@ -1438,6 +1440,6 @@ export async function handleGroupRevokeAccess(message: { groupId: string; manife
     }
 
     logFailure('Failed to revoke shared manifest access', error);
-    return { success: false, error: await t('sharing.family.errors.revokeAccessFailed') };
+    return { success: false, error: familySharingText.errors.revokeAccessFailed };
   }
 }

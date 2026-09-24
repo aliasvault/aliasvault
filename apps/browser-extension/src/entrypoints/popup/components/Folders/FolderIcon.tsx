@@ -1,5 +1,5 @@
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 type FolderIconProps = {
   isShared?: boolean;
@@ -17,8 +17,6 @@ const FolderIcon: React.FC<FolderIconProps> = ({
   className = 'w-4 h-4',
   badgeClassName = 'bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600',
 }) => {
-  const { t } = useTranslation();
-
   return (
     <span className="relative flex-shrink-0">
       {variant === 'filled' ? (
@@ -32,7 +30,7 @@ const FolderIcon: React.FC<FolderIconProps> = ({
       )}
       {isShared && (
         <span
-          title={t('sharing.family.sharedVault')}
+          title={familySharingText.sharedFolder}
           className={`absolute -bottom-1 -right-1 flex items-center justify-center w-2.5 h-2.5 rounded-full ring-1 ${badgeClassName}`}
         >
           <svg className="w-2 h-2 text-primary-500 dark:text-primary-400" viewBox="0 0 24 24" fill="currentColor">

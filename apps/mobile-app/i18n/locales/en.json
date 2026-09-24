@@ -193,7 +193,6 @@
     "exportConfirmTitle": "Export Vault",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "passwordConfirm": {
-      "description": "For security reasons, please enter your master password to confirm this action.",
       "exportDescription": "For security reasons, please enter your master password to confirm this export."
     },
     "security": "Security",
@@ -339,61 +338,6 @@
         "successDescription": "The remote device has been successfully logged in.",
         "requestExpired": "This login request has expired. Please generate a new QR code."
       }
-    }
-  },
-  "sharing": {
-    "members": "Family members",
-    "owner": "Owner",
-    "revoke": "Revoke",
-    "family": {
-      "title": "Family Sharing",
-      "beta": "Beta",
-      "description": "Share folders with the people in your family.",
-      "notAvailable": "Family sharing is not enabled for this account yet. Once a family has been set up for you, it appears here.",
-      "invitations": "Invitations",
-      "invitedBy": "Invited by {{username}}",
-      "accept": "Accept",
-      "decline": "Decline",
-      "noSharedVaultAdmin": "This family has no shared folder yet. Creating one adds a folder to your vault that every member you invite can see.",
-      "noSharedVaultMember": "Nobody has created a shared folder for this family yet.",
-      "createSharedVault": "Create a shared folder",
-      "sharedFolders": "Shared folders",
-      "hasAccess": "Has access",
-      "invited": "Invited",
-      "you": "You",
-      "admin": "Admin",
-      "member": "Member",
-      "withdraw": "Withdraw",
-      "leaveVault": "Leave folder",
-      "leaveVaultConfirm": "Leave “{{vault}}”? You lose access to it, but stay in the family.",
-      "cannotInviteWithoutAccess": "You do not have access to this folder, so you cannot invite anyone to it. Ask a member who has access to invite you first.",
-      "errors": {
-        "loadFailed": "Family sharing could not be loaded.",
-        "createVaultFailed": "The shared folder could not be created. Please try again.",
-        "vaultUpgradeRequired": "Your vault has to finish upgrading before it can be shared.",
-        "revokeAccessFailed": "The access could not be changed. Please try again.",
-        "inviteFailed": "The invitation could not be sent. Please try again.",
-        "userNotReady": "That account has to finish upgrading AliasVault before a folder can be shared with it.",
-        "alreadyInvited": "That person has already been invited.",
-        "invitationGone": "That invitation is no longer available.",
-        "invitationKeyOutdated": "This invitation is no longer valid because the shared folder's key has changed. Ask for a new invitation.",
-        "notFamilyMember": "That person is not in this family.",
-        "alreadyHasAccess": "That person already has access to this folder.",
-        "lastMemberWithAccess": "Somebody has to be able to open the shared folder. Give another member access to it first.",
-        "vaultLimitReached": "Max amount of shared folders reached.",
-        "deleteVaultFailed": "The shared folder could not be deleted. Please try again."
-      },
-      "vaultNamePlaceholder": "Folder name, for example Streaming",
-      "create": "Create",
-      "invite": "Invite",
-      "invitationSent": "Invitation sent to {{username}}.",
-      "noAccess": "No access",
-      "revokeAccessConfirm": "Take {{username}} out of “{{vault}}”? They lose access to it right away, but stay in the family.",
-      "revokeAccessWarning": "They keep any copy of this folder they already downloaded. Change the passwords in it that you do not want them to keep using.",
-      "deleteVault": "Delete folder",
-      "deleteVaultConfirm": "Permanently delete “{{vault}}”? Every member of the family loses this folder and everything in it. This cannot be undone.",
-      "vaultDeleted": "The shared folder has been deleted.",
-      "unnamedVault": "Shared folder"
     }
   },
   "navigation": {
