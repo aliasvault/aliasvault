@@ -1,22 +1,12 @@
 /**
- * Storage keys that ONLY exist because an older extension version wrote them. Nothing writes them any more:
- * each is either read once and migrated onto its current {@link StorageKeys} counterpart, or kept purely so a
- * logout still purges the value an upgrade left behind. They live apart from `storageKeys.ts` so the current key
- * set stays readable at a glance.
- *
- * Deleting this file is the whole cleanup for these one-time reads: the compiler then points at every
- * remaining reader (all of which live in `@/utils/legacy/LegacyStorageKeyFallbacks`).
+ * Storage keys that may exist because an older extension version wrote them. Nothing reads or writes them any
+ * more; they are kept purely so a logout still purges the value an upgrade left behind. These are defined
+ * in this separate file so the current key set stays compact and readable.
  */
 
 import type { StorageKey } from '@/utils/constants/storageKeys';
 
 export const LegacyStorageKeys = {
-  /** Pre-v0.26 Session locations migrated to local (see readLegacyStorageFallback) */
-  SESSION_PUBLIC_EMAIL_DOMAINS: 'session:publicEmailDomains',
-  SESSION_PRIVATE_EMAIL_DOMAINS: 'session:privateEmailDomains',
-  SESSION_HIDDEN_PRIVATE_EMAIL_DOMAINS: 'session:hiddenPrivateEmailDomains',
-  SESSION_UNLOCK_KEY_DERIVATION_PARAMS: 'session:encryptionKeyDerivationParams',
-
   /** Pre-v0.31 single server revision, superseded by the per-manifest `StorageKeys.SERVER_MANIFEST_REVISIONS`. */
   SERVER_REVISION: 'local:serverRevision',
 } as const satisfies Record<string, StorageKey>;

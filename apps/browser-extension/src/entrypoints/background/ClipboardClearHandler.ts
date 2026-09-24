@@ -167,28 +167,6 @@ export async function handleClipboardCopied() : Promise<void> {
 }
 
 /**
- * Cancel clipboard clear countdown and timer.
- */
-export function handleCancelClipboardClear(): void {
-  if (clipboardClearTimer) {
-    clearTimeout(clipboardClearTimer);
-    clipboardClearTimer = null;
-  }
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-    countdownInterval = null;
-  }
-  sendMessage('CLIPBOARD_COUNTDOWN_CANCELLED', {}).catch(() => {});
-}
-
-/**
- * Get the clipboard clear timeout setting.
- */
-export async function handleGetClipboardClearTimeout(): Promise<number> {
-  return LocalPreferencesService.getClipboardClearTimeout();
-}
-
-/**
  * Set the clipboard clear timeout setting.
  */
 export async function handleSetClipboardClearTimeout(data: number): Promise<boolean> {

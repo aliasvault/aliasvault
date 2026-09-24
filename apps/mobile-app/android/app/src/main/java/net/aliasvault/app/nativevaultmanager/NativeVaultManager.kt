@@ -325,22 +325,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Store the account-key chain the native password unlock unwraps (null for a legacy account).
-     * @param chainJson The chain as JSON, or null
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun storeAccountKeyChain(chainJson: String?, promise: Promise) {
-        try {
-            vaultStore.storeAccountKeyChain(chainJson)
-            promise.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error storing account key chain", e)
-            promise.reject("ERR_STORE_ACCOUNT_KEY_CHAIN", "Failed to store account key chain: ${e.message}", e)
-        }
-    }
-
-    /**
      * The id of the user's personal manifest as the last sync recorded it, or null before the first pull.
      * @param promise The promise to resolve
      */
@@ -1315,22 +1299,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     // MARK: - Server Version Management
 
     /**
-     * Check if the stored server version is greater than or equal to the specified version.
-     * @param targetVersion The version to compare against (e.g., "0.25.0")
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun isServerVersionGreaterThanOrEqualTo(targetVersion: String, promise: Promise) {
-        try {
-            val isGreaterOrEqual = vaultStore.metadata.isServerVersionGreaterThanOrEqualTo(targetVersion)
-            promise.resolve(isGreaterOrEqual)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error comparing server version", e)
-            promise.reject("ERR_COMPARE_SERVER_VERSION", "Failed to compare server version: ${e.message}", e)
-        }
-    }
-
-    /**
      * Get the stored server version, or null if none has been stored yet.
      * @param promise The promise to resolve.
      */
@@ -2136,22 +2104,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 Log.e(TAG, "Rust core call '$name' failed", e)
                 promise.reject("RUST_CORE_ERROR", "Rust core call '$name' failed: ${e.message}", e)
             }
-        }
-    }
-
-    /**
-     * Store the encrypted vault blob the app produced, so the native store and the autofill service read it.
-     * @param base64EncryptedDb The encrypted vault as base64.
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun storeEncryptedDatabase(base64EncryptedDb: String, promise: Promise) {
-        try {
-            vaultStore.storeEncryptedDatabase(base64EncryptedDb)
-            promise.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error storing encrypted database", e)
-            promise.reject("ERR_STORE_DATABASE", "Failed to store encrypted database: ${e.message}", e)
         }
     }
 

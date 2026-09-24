@@ -8,7 +8,6 @@ import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 import { browser } from 'wxt/browser';
 
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
-import { readLegacyStorageFallback } from '@/utils/legacy/LegacyStorageKeyFallbacks';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -53,15 +52,9 @@ const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
  */
 const extensionStorage: IKeyValueStore = {
   /**
-   * Read a key, falling back to its legacy location.
+   * Read a key.
    */
-  get: async <T,>(key: StorageKey): Promise<T | null> => {
-    const value = await storage.getItem<T>(key);
-    if (value !== null) {
-      return value;
-    }
-    return readLegacyStorageFallback<T>(key);
-  },
+  get: <T,>(key: StorageKey): Promise<T | null> => storage.getItem<T>(key),
   /**
    * Write a key.
    */

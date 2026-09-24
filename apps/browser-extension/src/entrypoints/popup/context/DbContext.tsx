@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { getStorageItem } from '@/utils/StorageUtility';
 import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
 
 import { markOwnUnlockKey, vaultStateEvents } from '@/events/VaultStateEvents';
@@ -308,9 +307,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
     try {
       // Use fallback for keys migrated from session: to local: in v0.26.0
-      const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
-      const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-      const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
+      const publicEmailDomains = await storage.getItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+      const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+      const hiddenPrivateEmailDomains = await storage.getItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
 
       if (!publicEmailDomains && !privateEmailDomains) {
         return null;

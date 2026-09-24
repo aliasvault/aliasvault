@@ -11,9 +11,10 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected } from '@/utils/Diagnostics';
-import { getStorageItem } from '@/utils/StorageUtility';
 
 import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
+
+import { storage } from '#imports';
 
 type EmailPreviewProps = {
   email: string;
@@ -61,7 +62,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPublicDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS) ?? [];
+    const publicEmailDomains = await storage.getItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS) ?? [];
     return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -70,7 +71,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPrivateDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
+    const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
     return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 

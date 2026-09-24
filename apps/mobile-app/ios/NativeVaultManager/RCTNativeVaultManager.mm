@@ -117,10 +117,6 @@
     [vaultManager getUnlockKeyDerivationParams:resolve rejecter:reject];
 }
 
-- (void)storeAccountKeyChain:(NSString *)chainJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeAccountKeyChain:chainJson resolver:resolve rejecter:reject];
-}
-
 - (void)getAccountKeyChain:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager getAccountKeyChain:resolve rejecter:reject];
 }
@@ -265,10 +261,6 @@
 
 // MARK: - Server Version Management
 
-- (void)isServerVersionGreaterThanOrEqualTo:(NSString *)targetVersion resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager isServerVersionGreaterThanOrEqualTo:targetVersion resolver:resolve rejecter:reject];
-}
-
 - (void)getServerVersion:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager getServerVersion:resolve rejecter:reject];
 }
@@ -401,10 +393,6 @@
 
 - (void)rustCall:(NSString *)name argsJson:(NSString *)argsJson resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager rustCall:name argsJson:argsJson resolver:resolve rejecter:reject];
-}
-
-- (void)storeEncryptedDatabase:(NSString *)base64EncryptedDb resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeEncryptedDatabase:base64EncryptedDb resolver:resolve rejecter:reject];
 }
 
 @end

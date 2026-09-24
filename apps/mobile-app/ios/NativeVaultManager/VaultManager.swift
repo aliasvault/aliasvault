@@ -121,14 +121,6 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func storeAccountKeyChain(_ chainJson: String?,
-                              resolver resolve: @escaping RCTPromiseResolveBlock,
-                              rejecter reject: @escaping RCTPromiseRejectBlock) {
-        vaultStore.storeAccountKeyChain(chainJson)
-        resolve(nil)
-    }
-
-    @objc
     func getAccountKeyChain(_ resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
         resolve(vaultStore.getAccountKeyChain())
@@ -709,14 +701,6 @@ public class VaultManager: NSObject {
     }
 
     // MARK: - Server Version Management
-
-    @objc
-    func isServerVersionGreaterThanOrEqualTo(_ targetVersion: String,
-                                            resolver resolve: @escaping RCTPromiseResolveBlock,
-                                            rejecter reject: @escaping RCTPromiseRejectBlock) {
-        let isGreaterOrEqual = vaultStore.isServerVersionGreaterThanOrEqualTo(targetVersion)
-        resolve(isGreaterOrEqual)
-    }
 
     @objc
     func getCapabilities(_ resolve: @escaping RCTPromiseResolveBlock,
@@ -1526,19 +1510,6 @@ public class VaultManager: NSObject {
             } catch {
                 reject("RUST_CORE_ERROR", "Rust core call '\(name)' failed: \(error.localizedDescription)", error)
             }
-        }
-    }
-
-    /// Store the encrypted vault blob the app produced, so the native store and the autofill extension read it.
-    @objc
-    func storeEncryptedDatabase(_ base64EncryptedDb: String,
-                                resolver resolve: @escaping RCTPromiseResolveBlock,
-                                rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            try vaultStore.storeEncryptedDatabase(base64EncryptedDb)
-            resolve(nil)
-        } catch {
-            reject("DB_ERROR", "Failed to store encrypted database: \(error.localizedDescription)", error)
         }
     }
 }

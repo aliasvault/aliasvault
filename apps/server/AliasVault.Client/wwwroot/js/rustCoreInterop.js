@@ -94,31 +94,6 @@ window.rustCoreIsAvailable = async function() {
 };
 
 /**
- * Filter credentials for autofill.
- * @param {string} inputJson - JSON string containing CredentialMatcherInput.
- * @returns {Promise<string>} JSON string containing CredentialMatcherOutput.
- */
-window.rustCoreFilterCredentials = async function(inputJson) {
-    if (!await initRustCore()) {
-        return JSON.stringify({
-            matches: [],
-            error: 'Rust WASM module not available'
-        });
-    }
-
-    try {
-        const result = wasmModule.filterCredentialsJson(inputJson);
-        return result;
-    } catch (error) {
-        console.error('[RustCore] Filter credentials failed:', error);
-        return JSON.stringify({
-            matches: [],
-            error: error.toString()
-        });
-    }
-};
-
-/**
  * Get the list of syncable table names.
  * @returns {Promise<string[]>} Array of table names.
  */
@@ -172,30 +147,6 @@ window.rustCoreExtractDomain = async function(url) {
         return wasmModule.extractDomain(url);
     } catch (error) {
         console.error('[RustCore] Extract domain failed:', error);
-        return '';
-    }
-};
-
-/**
- * The Logos.Id to use for a source domain inside a given manifest scope.
- *
- * Logo identity is derived, not random: two clients that fetch the same favicon independently produce
- * the same row and merge by LWW, instead of two rows that collide on UNIQUE(ManifestId, Source).
- * The same domain in two different manifests deliberately yields two different ids, so a shared
- * manifest's icon and the user's own icon for that domain never overwrite each other.
- * @param {string|null} manifestId - Owning manifest, or null for the user's own vault.
- * @param {string} source - The normalized source domain (e.g. 'github.com').
- * @returns {Promise<string>} The logo id, or '' when the WASM module is unavailable.
- */
-window.rustCoreVaultCodecLogoIdForSource = async function(manifestId, source) {
-    if (!await initRustCore()) {
-        return '';
-    }
-
-    try {
-        return wasmModule.vaultCodecLogoIdForSource(manifestId ?? undefined, source);
-    } catch (error) {
-        console.error('[RustCore] Logo id derivation failed:', error);
         return '';
     }
 };
@@ -625,34 +576,6 @@ window.rustCoreVaultCodecExtractEncryptionKeyForPublicKey = async function(manif
     const core = await requireRustCore();
     const row = core.vaultCodecExtractEncryptionKeyForPublicKey(JSON.parse(manifestJson), publicKey);
     return row ? JSON.stringify(row) : null;
-};
-
-/**
- * Build a bucket category's data buckets from its tables, one per manifest.
- * @param {string} inputJson - JSON string containing { category, manifestIds, tables }.
- * @returns {Promise<string>} JSON string containing the data bucket list.
- */
-window.rustCoreVaultCodecExtractBuckets = async function(inputJson) {
-    const core = await requireRustCore();
-    return JSON.stringify(core.vaultCodecExtractBuckets(JSON.parse(inputJson)));
-};
-
-/**
- * The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
- * @returns {Promise<string>} The table name.
- */
-window.rustCoreVaultCodecOverflowTable = async function() {
-    const core = await requireRustCore();
-    return core.vaultCodecOverflowTable();
-};
-
-/**
- * The bucket layout: every category and the tables it owns.
- * @returns {Promise<string>} JSON string containing the layout entries.
- */
-window.rustCoreVaultCodecBucketLayout = async function() {
-    const core = await requireRustCore();
-    return JSON.stringify(core.vaultCodecBucketLayout());
 };
 
 /**

@@ -7,16 +7,16 @@
         ".": "./src/index.ts"
     },
     "scripts": {
-        "build": "tsup",
-        "clean": "rm -rf dist",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage",
-        "lint": "eslint src",
-        "lint:custom": "eslint",
-        "lint:fix": "eslint src --fix",
-        "generate": "node scripts/generate-vault-sql.cjs"
-    },
+      "build": "tsup",
+      "clean": "rm -rf dist",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:coverage": "vitest run --coverage",
+      "lint": "eslint src",
+      "lint:custom": "eslint",
+      "lint:fix": "eslint src --fix",
+      "generate": "node scripts/generate-vault-sql.cjs"
+  },
     "files": [
         "dist"
     ],
@@ -24,10 +24,10 @@
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^8.21.0",
         "@typescript-eslint/parser": "^8.21.0",
-        "@vitest/coverage-v8": "^5.0.1",
         "eslint": "^9.19.0",
         "tsup": "^8.4.0",
         "typescript": "^5.3.3",
-        "vitest": "^5.0.1"
+        "vitest": "^5.0.1",
+        "@vitest/coverage-v8": "^5.0.1"
     }
 }

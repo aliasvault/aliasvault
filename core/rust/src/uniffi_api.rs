@@ -7,7 +7,7 @@ use crate::crypto::argon2::Argon2Error;
 use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
 use crate::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
-use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
+use crate::vault_codec::{self, CanonicalizeInput};
 
 /// Get the list of table names that take part in a vault sync.
 #[uniffi::export]
@@ -20,14 +20,6 @@ pub fn get_syncable_table_names() -> Vec<String> {
 #[uniffi::export]
 pub fn prune_vault_json(input_json: String) -> Result<String, VaultError> {
     json_call(&input_json, crate::vault_pruner::prune_vault)
-}
-
-/// Get the per-table SELECT queries used to build prune input.
-/// Blob columns are reduced to a 1-byte presence marker to avoid
-/// serializing large binary data to JSON.
-#[uniffi::export]
-pub fn get_prune_table_queries() -> Vec<crate::vault_pruner::PruneTableQuery> {
-    crate::vault_pruner::get_prune_table_queries()
 }
 
 /// Filter credentials for autofill by the current URL/app and page title.
@@ -154,22 +146,6 @@ pub fn get_identity_age_ranges() -> Vec<String> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Vault Sharing Functions
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Resolve which manifests the next push writes, personal manifest first.
-#[uniffi::export]
-pub fn vault_sharing_resolve_manifest_write_set(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, |request| Ok(crate::vault_sharing::resolve_manifest_write_set(request)))
-}
-
-/// Split what the vault holds into what cannot be written and what access was lost.
-#[uniffi::export]
-pub fn vault_sharing_partition_manifest_access(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, |request| Ok(crate::vault_sharing::partition_manifest_access(request)))
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // Vault Codec Functions (manifest-v1 storage format), JSON-string in/out.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -180,43 +156,10 @@ pub fn vault_codec_canonicalize_from_sqlite(input_json: String) -> Result<String
     json_call(&input_json, |input: CanonicalizeInput| vault_codec::canonicalize_from_sqlite(input))
 }
 
-/// Materialize manifest + metadata into the table set the platform inserts.
-/// Input: `MaterializeInput` JSON. Output: `MaterializedTables` JSON.
-#[uniffi::export]
-pub fn vault_codec_materialize_as_sqlite(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, |input: MaterializeInput| vault_codec::materialize_as_sqlite(input))
-}
-
-/// Build a bucket category's data buckets, one per manifest this vault writes.
-/// Input: `{ category, manifestIds, tables }` JSON. Output: `DataBucket[]` JSON.
-#[uniffi::export]
-pub fn vault_codec_extract_buckets(input_json: String) -> Result<String, VaultError> {
-    json_call(&input_json, |input: ExtractBucketsInput| vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables))
-}
-
-/// The bucket layout: `[{ category, tables: [<name>] }]` JSON. Source of truth for bucket-only sync.
-#[uniffi::export]
-pub fn vault_codec_bucket_layout() -> Result<String, VaultError> {
-    Ok(serde_json::to_string(&vault_codec::bucket_layout())?)
-}
-
-/// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
-#[uniffi::export]
-pub fn vault_codec_overflow_table() -> String {
-    crate::vault_model::OVERFLOW_TABLE.to_string()
-}
-
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
 #[uniffi::export]
 pub fn vault_codec_generate_manifest_salt() -> String {
     crate::vault_codec::generate_manifest_salt()
-}
-
-/// The `Logos.Id` to use for `source` inside the manifest with id `manifest_id`.
-/// Every platform derives logo ids via this method to prevent duplicates.
-#[uniffi::export]
-pub fn vault_codec_logo_id_for_source(manifest_id: String, source: String) -> String {
-    crate::vault_codec::logo_id_for_source(&manifest_id, &source)
 }
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
@@ -243,38 +186,6 @@ pub fn vault_codec_pack_payload(payload_json: String) -> Result<Vec<u8>, VaultEr
 #[uniffi::export]
 pub fn vault_codec_unpack_payload(plain_bytes: Vec<u8>) -> Result<String, VaultError> {
     crate::vault_codec::unpack_payload(&plain_bytes)
-}
-
-/// Structurally validate a manifest. Input: `Manifest` JSON. Output: `ValidationResult` JSON.
-#[uniffi::export]
-pub fn vault_codec_validate_manifest(manifest_json: String) -> Result<String, VaultError> {
-    json_call(&manifest_json, |manifest: Manifest| Ok(vault_codec::validate_manifest(&manifest)))
-}
-
-/// Validate a data bucket. Input: `DataBucket` JSON. Output: `ValidationResult` JSON.
-#[uniffi::export]
-pub fn vault_codec_validate_data_bucket(data_bucket_json: String) -> Result<String, VaultError> {
-    json_call(&data_bucket_json, |bucket: DataBucket| Ok(vault_codec::validate_data_bucket(&bucket)))
-}
-
-/// SHA-256 (lowercase hex) of a base64 ciphertext string.
-#[uniffi::export]
-pub fn vault_codec_compute_ciphertext_hash(base64_ciphertext: String) -> String {
-    crate::vault_codec::compute_ciphertext_hash(&base64_ciphertext)
-}
-
-/// Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase
-/// hex) of the canonical JSON, excluding the volatile `canonicalizedAt` timestamp.
-#[uniffi::export]
-pub fn vault_codec_compute_content_fingerprint(payload_json: String) -> String {
-    crate::vault_codec::compute_content_fingerprint(&payload_json)
-}
-
-/// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
-/// `EncryptionKeys` table.
-#[uniffi::export]
-pub fn vault_codec_extract_encryption_key_for_public_key(manifest_json: String, public_key: String) -> Result<String, VaultError> {
-    json_call(&manifest_json, |manifest: Manifest| Ok(vault_codec::extract_encryption_key_for_public_key(&manifest, &public_key)))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -328,59 +239,9 @@ pub fn srp_derive_session(client_secret: String, server_public: String, salt: St
     crate::crypto::srp::srp_derive_session(&client_secret, &server_public, &salt, &identity, &private_key)
 }
 
-/// A server ephemeral pair: public (B) and secret (b) as uppercase hex, from the hex verifier.
-#[uniffi::export]
-pub fn srp_generate_ephemeral_server(verifier: String) -> Result<SrpEphemeral, SrpError> {
-    crate::crypto::srp::srp_generate_ephemeral_server(&verifier)
-}
-
-/// The server session (proof M2 and key K) once the client's proof verifies, `None` when it does not; hex inputs.
-#[uniffi::export]
-pub fn srp_derive_session_server(server_secret: String, client_public: String, salt: String, identity: String, verifier: String, client_proof: String) -> Result<Option<SrpSession>, SrpError> {
-    crate::crypto::srp::srp_derive_session_server(&server_secret, &client_public, &salt, &identity, &verifier, &client_proof)
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // Crypto
 // ═══════════════════════════════════════════════════════════════════════════════
-
-/// AES-256-GCM encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
-#[uniffi::export]
-pub fn aes_gcm_encrypt(plaintext: Vec<u8>, key_base64: String) -> Result<String, VaultError> {
-    crate::crypto::symmetric_encrypt_bytes(&plaintext, &key_base64)
-}
-
-/// AES-256-GCM decrypt base64 `IV | ciphertext | tag` with a base64 key.
-#[uniffi::export]
-pub fn aes_gcm_decrypt(base64_ciphertext: String, key_base64: String) -> Result<Vec<u8>, VaultError> {
-    let bytes = crate::encoding::base64_decode(&base64_ciphertext)?;
-    crate::crypto::symmetric_decrypt_bytes(&bytes, &key_base64)
-}
-
-/// Unwrap a wrapped key (base64 of `IV | ciphertext | tag`) with a base64 key. Returns the key as base64.
-#[uniffi::export]
-pub fn unwrap_key(wrapped_key_base64: String, wrapping_key_base64: String) -> Result<String, VaultError> {
-    // The caller owns the copy it gets across the FFI boundary; nothing here can wipe that one.
-    Ok(crate::crypto::unwrap_key(&wrapped_key_base64, &wrapping_key_base64)?.to_string())
-}
-
-/// Wrap a base64 key with another base64 key.
-#[uniffi::export]
-pub fn wrap_key(key_base64: String, wrapping_key_base64: String) -> Result<String, VaultError> {
-    crate::crypto::wrap_key(&key_base64, &wrapping_key_base64)
-}
-
-/// Generate an RSA-OAEP-256 key pair. Output: `RsaKeyPair` JSON (`publicKey`, `privateKey` as JWK strings).
-#[uniffi::export]
-pub fn rsa_generate_key_pair_json() -> Result<String, VaultError> {
-    Ok(serde_json::to_string(&crate::crypto::generate_rsa_key_pair()?)?)
-}
-
-/// RSA-OAEP-256 encrypt bytes for a JWK public key. Returns base64 ciphertext.
-#[uniffi::export]
-pub fn rsa_encrypt(plaintext: Vec<u8>, public_key_jwk: String) -> Result<String, VaultError> {
-    crate::crypto::encrypt_with_public_key(&plaintext, &public_key_jwk)
-}
 
 /// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
 #[uniffi::export]

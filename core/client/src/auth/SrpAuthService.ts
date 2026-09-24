@@ -2,6 +2,7 @@ import { WebApiService } from '../api/WebApiService';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { rustCore } from '../rust/RustCore';
+import { bytesToBase64 } from '../utilities/Base64';
 
 import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
 import type { TokenModel, LoginResponse, BadRequestResponse } from '@aliasvault/models/webapi';
@@ -122,16 +123,6 @@ export class SrpAuthService {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
       .toUpperCase();
-  }
-
-  /**
-   * Converts a Uint8Array to a base64 string.
-   *
-   * @param bytes - The byte array to convert
-   * @returns Base64 string
-   */
-  public static bytesToBase64(bytes: Uint8Array): string {
-    return btoa(String.fromCharCode(...bytes));
   }
 
   /**
@@ -261,7 +252,7 @@ export class SrpAuthService {
 
     return {
       passwordHashString: SrpAuthService.bytesToHexString(passwordHash),
-      passwordHashBase64: SrpAuthService.bytesToBase64(passwordHash),
+      passwordHashBase64: bytesToBase64(passwordHash),
     };
   }
 
@@ -372,104 +363,6 @@ export class SrpAuthService {
         derivedKey: prepared.derivedKey,
         accountKeys: prepared.keys.accountKeys,
         accountPrivateKey: prepared.keys.accountPrivateKey,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-    }
-  }
-
-  /**
-   * Performs the full SRP login flow.
-   *
-   * @param apiBaseUrl - The base URL of the API
-   * @param username - The username
-   * @param password - The password
-   * @param rememberMe - Whether to request extended token lifetime
-   * @returns Login result with tokens and encryption key
-   */
-  public static async login(
-    apiBaseUrl: string,
-    username: string,
-    password: string,
-    rememberMe: boolean = false
-  ): Promise<{
-    success: boolean;
-    token?: TokenModel;
-    passwordHashBase64?: string;
-    loginResponse?: LoginResponse;
-    requiresTwoFactor?: boolean;
-    error?: string;
-  }> {
-    try {
-      const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
-      const normalizedUsername = SrpAuthService.normalizeUsername(username);
-
-      // Step 1: Initiate login
-      const initiateResponse = await fetch(`${baseUrl}Auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: normalizedUsername }),
-      });
-
-      if (!initiateResponse.ok) {
-        const errorText = await initiateResponse.text();
-        try {
-          const errorJson = JSON.parse(errorText) as BadRequestResponse;
-          return { success: false, error: errorJson.title };
-        } catch {
-          return { success: false, error: errorText || 'Login initiation failed' };
-        }
-      }
-
-      const loginResponse = (await initiateResponse.json()) as LoginResponse;
-
-      // Step 2: Prepare credentials
-      const credentials = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
-
-      // Step 3: Generate the SRP proof for this login response
-      const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, credentials.passwordHashString);
-
-      // Step 4: Validate login
-      const validateResponse = await fetch(`${baseUrl}Auth/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: normalizedUsername,
-          rememberMe,
-          ...proof,
-        }),
-      });
-
-      if (!validateResponse.ok) {
-        const errorText = await validateResponse.text();
-        try {
-          const errorJson = JSON.parse(errorText) as BadRequestResponse;
-          return { success: false, error: errorJson.title };
-        } catch {
-          return { success: false, error: errorText || 'Login validation failed' };
-        }
-      }
-
-      const validateResult = await validateResponse.json();
-
-      // Check for 2FA requirement
-      if (validateResult.requiresTwoFactor) {
-        return {
-          success: false,
-          requiresTwoFactor: true,
-          loginResponse,
-          passwordHashBase64: credentials.passwordHashBase64,
-        };
-      }
-
-      return {
-        success: true,
-        token: validateResult.token,
-        passwordHashBase64: credentials.passwordHashBase64,
-        loginResponse,
       };
     } catch (error) {
       return {

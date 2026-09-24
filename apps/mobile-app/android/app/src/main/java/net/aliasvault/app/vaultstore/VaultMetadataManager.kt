@@ -5,7 +5,6 @@ import net.aliasvault.app.vaultstore.models.SyncState
 import net.aliasvault.app.vaultstore.models.VaultMetadata
 import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
-import net.aliasvault.app.vaultstore.utils.VersionComparison
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -142,16 +141,6 @@ class VaultMetadataManager(
      */
     fun getCapabilities(): String? {
         return storageProvider.getCapabilities()
-    }
-
-    /**
-     * Check if the stored server version is greater than or equal to the specified version.
-     * @param targetVersion The version to compare against (e.g., "0.25.0")
-     * @return true if stored server version >= targetVersion, false if server version not available or less than target
-     */
-    fun isServerVersionGreaterThanOrEqualTo(targetVersion: String): Boolean {
-        val serverVersion = getServerVersion() ?: return false // No server version stored yet
-        return VersionComparison.isGreaterThanOrEqualTo(serverVersion, targetVersion)
     }
 
     // endregion

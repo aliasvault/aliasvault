@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput, CredentialMatcherOutput};
 use crate::password_generator::{available_languages, generate_password};
-use crate::vault_codec::{self, CanonicalizeInput, DataBucket, ExtractBucketsInput, Manifest, MaterializeInput};
+use crate::vault_codec::{self, CanonicalizeInput, DataBucket, Manifest, MaterializeInput};
 use crate::vault_merge::{merge_canonical, CanonicalMergeInput, CanonicalMergeOutput};
 use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
 use crate::vault_pruner::prune_vault;
@@ -71,14 +71,6 @@ pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
 // Vault Codec WASM Bindings (manifest-v1 storage format)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// The `Logos.Id` to use for `source` inside the manifest with id `manifestId`. Every platform derives
-/// logo ids through this so independent writers produce the same row instead of colliding on
-/// `UNIQUE(ManifestId, Kind, Source)`.
-#[wasm_bindgen(js_name = vaultCodecLogoIdForSource)]
-pub fn vault_codec_logo_id_for_source_js(manifest_id: String, source: String) -> String {
-    vault_codec::logo_id_for_source(&manifest_id, &source)
-}
-
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a `custom` logo row, and
 /// what `vaultCodecLogoIdFor` then derives the row id from.
 #[wasm_bindgen(js_name = vaultCodecLogoContentHash)]
@@ -109,29 +101,6 @@ pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, J
     let input: MaterializeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
     let output = vault_codec::materialize_as_sqlite(input).map_err(js_err)?;
     to_js(&output)
-}
-
-/// Build a bucket category's data buckets, one per manifest this vault writes: rows route by the manifest
-/// each one names. Input: `{ category, manifestIds, tables: { <name>: [rows] } }`. Output: `DataBucket[]`.
-#[wasm_bindgen(js_name = vaultCodecExtractBuckets)]
-pub fn vault_codec_extract_buckets_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ExtractBucketsInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    let buckets = vault_codec::extract_buckets(input.category, input.manifest_ids, input.tables).map_err(js_err)?;
-    to_js(&buckets)
-}
-
-/// The bucket layout: `[{ category, tables: [<name>] }]`. Source of truth for platform bucket-only sync.
-#[wasm_bindgen(js_name = vaultCodecBucketLayout)]
-pub fn vault_codec_bucket_layout_js() -> Result<JsValue, JsValue> {
-    to_js(&vault_codec::bucket_layout())
-}
-
-/// The name of the client-local SQLite table that carries the codec overflow inside the vault DB.
-/// Platforms include this table alongside a bucket's tables on a bucket-only push so a newer writer's
-/// unknown columns/tables re-merge and survive.
-#[wasm_bindgen(js_name = vaultCodecOverflowTable)]
-pub fn vault_codec_overflow_table_js() -> String {
-    crate::vault_model::OVERFLOW_TABLE.to_string()
 }
 
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
@@ -220,12 +189,6 @@ pub fn filter_credentials_js(input: JsValue) -> Result<JsValue, JsValue> {
     let output: CredentialMatcherOutput = filter_credentials(input);
 
     serde_wasm_bindgen::to_value(&output).map_err(js_err)
-}
-
-/// JSON sibling of `filterCredentials`.
-#[wasm_bindgen(js_name = filterCredentialsJson)]
-pub fn filter_credentials_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::credential_matcher::filter_credentials_json(input_json).map_err(js_err)
 }
 
 /// The domain of a URL or partial domain: no protocol, `www.` prefix, path, query or fragment.
@@ -385,64 +348,10 @@ pub fn srp_derive_session_js(client_secret: &str, server_public: &str, salt: &st
     serde_wasm_bindgen::to_value(&session).map_err(js_err)
 }
 
-/// A server ephemeral pair as `{ public, secret }` (uppercase hex) from the hex verifier.
-#[wasm_bindgen(js_name = srpGenerateEphemeralServer)]
-pub fn srp_generate_ephemeral_server_js(verifier: &str) -> Result<JsValue, JsValue> {
-    let ephemeral = crate::crypto::srp::srp_generate_ephemeral_server(verifier).map_err(js_err)?;
-    serde_wasm_bindgen::to_value(&ephemeral).map_err(js_err)
-}
-
-/// The server session as `{ proof, key }` once the client's proof verifies, null when it does not; hex inputs.
-#[wasm_bindgen(js_name = srpDeriveSessionServer)]
-pub fn srp_derive_session_server_js(server_secret: &str, client_public: &str, salt: &str, identity: &str, verifier: &str, client_proof: &str) -> Result<JsValue, JsValue> {
-    let session = crate::crypto::srp::srp_derive_session_server(server_secret, client_public, salt, identity, verifier, client_proof).map_err(js_err)?;
-
-    match session {
-        Some(s) => serde_wasm_bindgen::to_value(&s).map_err(js_err),
-        None => Ok(JsValue::NULL),
-    }
-}
-
 /// Whether the server's proof (M2) matches, which confirms it derived the same session key; hex inputs.
 #[wasm_bindgen(js_name = srpVerifySession)]
 pub fn srp_verify_session_js(client_public: &str, client_proof: &str, session_key: &str, server_proof: &str) -> Result<bool, JsValue> {
     crate::crypto::srp::srp_verify_session(client_public, client_proof, session_key, server_proof).map_err(js_err)
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Crypto WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// AES-256-GCM encrypt bytes with a base64 key. Returns base64 of `IV | ciphertext | tag`.
-#[wasm_bindgen(js_name = aesGcmEncrypt)]
-pub fn aes_gcm_encrypt_js(plaintext: &[u8], key_base64: &str) -> Result<String, JsValue> {
-    crate::crypto::symmetric_encrypt_bytes(plaintext, key_base64).map_err(js_err)
-}
-
-/// AES-256-GCM decrypt base64 `IV | ciphertext | tag` with a base64 key.
-#[wasm_bindgen(js_name = aesGcmDecrypt)]
-pub fn aes_gcm_decrypt_js(base64_ciphertext: &str, key_base64: &str) -> Result<Vec<u8>, JsValue> {
-    let bytes = crate::encoding::base64_decode(base64_ciphertext).map_err(js_err)?;
-    crate::crypto::symmetric_decrypt_bytes(&bytes, key_base64).map_err(js_err)
-}
-
-/// Generate an RSA-OAEP-256 key pair as `{ publicKey, privateKey }` JWK strings.
-#[wasm_bindgen(js_name = rsaGenerateKeyPair)]
-pub fn rsa_generate_key_pair_js() -> Result<JsValue, JsValue> {
-    let pair = crate::crypto::generate_rsa_key_pair().map_err(js_err)?;
-    serde_wasm_bindgen::to_value(&pair).map_err(js_err)
-}
-
-/// RSA-OAEP-256 encrypt bytes for a JWK public key. Returns base64 ciphertext.
-#[wasm_bindgen(js_name = rsaEncrypt)]
-pub fn rsa_encrypt_js(plaintext: &[u8], public_key_jwk: &str) -> Result<String, JsValue> {
-    crate::crypto::encrypt_with_public_key(plaintext, public_key_jwk).map_err(js_err)
-}
-
-/// RSA-OAEP-256 decrypt base64 ciphertext with a JWK private key.
-#[wasm_bindgen(js_name = rsaDecrypt)]
-pub fn rsa_decrypt_js(base64_ciphertext: &str, private_key_jwk: &str) -> Result<Vec<u8>, JsValue> {
-    crate::crypto::decrypt_with_private_key(base64_ciphertext, private_key_jwk).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -17,11 +17,12 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
-import { getStorageItem } from '@/utils/StorageUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+
+import { storage } from '#imports';
 
 /**
  * Emails list page.
@@ -55,7 +56,7 @@ const EmailsList: React.FC = () => {
    */
   const getMailboxAddresses = useCallback(async () : Promise<string[]> => {
     const routableAddresses = dbContext.sqliteClient?.items.getRoutableEmailAddresses() ?? [];
-    const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
+    const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
     return routableAddresses.filter(address => privateEmailDomains.some(domain => address.toLowerCase().endsWith(`@${domain.toLowerCase()}`)));
   }, [dbContext?.sqliteClient]);
 

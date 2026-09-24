@@ -25,7 +25,6 @@ use serde_json::json;
 
 use crate::encoding::{base64_decode, hex_encode_lower};
 use crate::error::{VaultError, VaultResult};
-use crate::vault_model::names::LOGO_KIND_FAVICON;
 pub use types::SCHEMA_VERSION;
 
 pub use canonicalize::{canonicalize_from_sqlite, extract_buckets};
@@ -49,12 +48,6 @@ pub fn bucket_layout() -> Vec<BucketLayoutEntry> {
             tables: tables_for_category(category).into_iter().map(str::to_string).collect(),
         })
         .collect()
-}
-
-/// The `Logos.Id` for the automatically fetched favicon of `source`. Shorthand for [`logo_id_for`]
-/// with [`LOGO_KIND_FAVICON`].
-pub fn logo_id_for_source(manifest_id: &str, source: &str) -> String {
-    logo_id_for(manifest_id, LOGO_KIND_FAVICON, source)
 }
 
 /// The sha256 (lowercase hex) of an uploaded logo's bytes: the `Source` of a

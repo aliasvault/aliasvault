@@ -470,29 +470,6 @@ public class RustCoreService : IAsyncDisposable
     public Task<string?> VaultCodecExtractEncryptionKeyForPublicKeyAsync(string manifestJson, string publicKey) => InvokeCoreAsync<string?>("rustCoreVaultCodecExtractEncryptionKeyForPublicKey", manifestJson, publicKey);
 
     /// <summary>
-    /// Build a bucket category's data buckets from its tables, one per manifest.
-    /// </summary>
-    /// <param name="inputJson">JSON with category, manifestIds and tables.</param>
-    /// <returns>The data bucket list JSON.</returns>
-    public Task<string> VaultCodecExtractBucketsAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultCodecExtractBuckets", inputJson);
-
-    /// <summary>
-    /// The name of the client-local table that carries the codec overflow inside the vault database.
-    /// </summary>
-    /// <returns>The table name.</returns>
-    public Task<string> VaultCodecOverflowTableAsync() => InvokeCoreAsync<string>("rustCoreVaultCodecOverflowTable");
-
-    /// <summary>
-    /// The bucket layout: every category and the tables it owns.
-    /// </summary>
-    /// <returns>The layout entries.</returns>
-    public async Task<List<CodecBucketLayoutEntry>> VaultCodecBucketLayoutAsync()
-    {
-        var json = await InvokeCoreAsync<string>("rustCoreVaultCodecBucketLayout");
-        return JsonSerializer.Deserialize<List<CodecBucketLayoutEntry>>(json, JsonOptions) ?? [];
-    }
-
-    /// <summary>
     /// The Logos.Id to use for the logo (kind, source) inside the given manifest.
     /// </summary>
     /// <param name="manifestId">Owning manifest id.</param>

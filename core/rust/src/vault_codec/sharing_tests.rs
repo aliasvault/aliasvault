@@ -1677,7 +1677,7 @@ fn logo_kinds_key_independently_so_a_domain_and_a_catalog_key_never_collide() {
 #[test]
 fn icon_row_without_a_kind_is_a_favicon_and_keeps_its_legacy_id() {
     // Rows written before the Kind column exists must not be re-derived: their id has to stay exactly
-    // what `logo_id_for_source` produces, or every item in every older vault loses its logo once.
+    // what `logo_id_for` derives for a favicon, or every item in every older vault loses its logo once.
     let tables = vec![
         table("Items", vec![row(&[("Id", json!("i-1")), ("FolderId", serde_json::Value::Null), ("LogoId", json!("random-guid"))])]),
         table("Logos", vec![row(&[("Id", json!("random-guid")), ("Source", json!("github.com")), ("FileData", json!({ "__b64": b64(&[7]) }))])]),

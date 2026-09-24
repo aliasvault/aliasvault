@@ -29,9 +29,6 @@ export interface Spec extends TurboModule {
   // result is JSON text. Swift/Kotlin hold one case per function and no logic; see platform/NativeRustCore.ts.
   rustCall(name: string, argsJson: string): Promise<string>;
 
-  // Store the encrypted vault blob for persistence and which is also accessed by the native autofill extensions.
-  storeEncryptedDatabase(base64EncryptedDb: string): Promise<void>;
-
   // Vault sync.
   syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null; errorMessage: string | null; sqliteBlobUpgradeRequired: boolean; manifestMigrationRequired: boolean }>;
   
@@ -72,7 +69,6 @@ export interface Spec extends TurboModule {
   storeUnlockKey(base64UnlockKey: string): Promise<void>;
   storeUnlockKeyDerivationParams(keyDerivationParams: string): Promise<void>;
   getUnlockKeyDerivationParams(): Promise<string | null>;
-  storeAccountKeyChain(chainJson: string | null): Promise<void>;
   getAccountKeyChain(): Promise<string | null>;
   resolveVaultKey(base64DerivedKey: string): Promise<string>;
   getPersonalManifestId(): Promise<string | null>;
@@ -114,7 +110,6 @@ export interface Spec extends TurboModule {
   getOfflineMode(): Promise<boolean>;
 
   // Server version management
-  isServerVersionGreaterThanOrEqualTo(targetVersion: string): Promise<boolean>;
   getServerVersion(): Promise<string | null>;
 
   // The capabilities the server resolved for this account as a JSON object, or null when no sync stored any yet.

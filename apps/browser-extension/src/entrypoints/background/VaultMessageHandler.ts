@@ -12,7 +12,7 @@ import { manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/d
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
-import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked, generatePassword } from '@aliasvault/client/rust/RustCore';
+import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
@@ -21,7 +21,7 @@ import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type Sha
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 import { bytesToBase64 } from '@aliasvault/client/utilities/Base64';
-import { FieldKey, ItemTypes, createSystemField, type Item, type PasswordSettings } from '@aliasvault/models/vault';
+import { FieldKey, ItemTypes, createSystemField, type Item } from '@aliasvault/models/vault';
 import { storage } from 'wxt/utils/storage';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
@@ -35,15 +35,12 @@ import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { getStorageItem } from '@/utils/StorageUtility';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
-import type { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import type { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
-import type { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
@@ -240,10 +237,9 @@ export async function handleGetVault(
     const encryptionKey = await handleGetEncryptionKey();
 
     const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string;
-    // TODO: the fallback mechanism can be removed some period of time after 0.27.0 is released.
-    const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
-    const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-    const hiddenPrivateEmailDomains = await getStorageItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
+    const publicEmailDomains = await storage.getItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+    const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+    const hiddenPrivateEmailDomains = await storage.getItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
 
     if (!encryptedVault) {
       logExpected('[Vault] No encrypted vault in storage');
@@ -529,57 +525,6 @@ export async function handleGetSearchItems(
 }
 
 /**
- * Get default email domain for a vault.
- * Falls back to first private or public domain if no default is configured.
- */
-export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
-  return (async (): Promise<stringResponse> => {
-    try {
-      const sqliteClient = await createVaultSqliteClient();
-      let domain = sqliteClient.settings.getDefaultEmailDomain();
-
-      // If no default domain is configured, fall back to first private or public domain
-      if (!domain) {
-        const privateEmailDomains = await getStorageItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
-        const publicEmailDomains = await getStorageItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS) ?? [];
-        domain = privateEmailDomains[0] || publicEmailDomains[0] || '';
-      }
-
-      return { success: true, value: domain || undefined };
-    } catch (error) {
-      logFailure('Error getting default email domain', error);
-      // E-601: Storage read failed
-      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
-    }
-  })();
-}
-
-/**
- * Get the default identity settings.
- * Returns the effective language (with smart UI language matching if no explicit override is set).
- */
-export async function handleGetDefaultIdentitySettings(
-) : Promise<IdentitySettingsResponse> {
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    const language = await sqliteClient.settings.getEffectiveIdentityLanguage();
-    const gender = sqliteClient.settings.getDefaultIdentityGender();
-
-    return {
-      success: true,
-      settings: {
-        language,
-        gender
-      }
-    };
-  } catch (error) {
-    logFailure('Error getting default identity settings', error);
-    // E-601: Storage read failed
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
-  }
-}
-
-/**
  * Get the password settings.
  */
 export async function handleGetPasswordSettings(
@@ -593,21 +538,6 @@ export async function handleGetPasswordSettings(
     logFailure('Error getting password settings', error);
     // E-601: Storage read failed
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
-  }
-}
-
-/**
- * Generate a password or passphrase from the given settings using the Rust core.
- */
-export async function handleGeneratePassword(
-  settings: PasswordSettings
-): Promise<{ success: boolean; password?: string; error?: string }> {
-  try {
-    const password = await generatePassword(settings);
-    return { success: true, password };
-  } catch (error) {
-    logFailure('Error generating password', error);
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UNKNOWN_ERROR) };
   }
 }
 
@@ -1232,23 +1162,6 @@ export async function handleGetLoginSaveSettings(): Promise<{
 }
 
 /**
- * Set the login save feature enabled state.
- *
- * @param enabled - Whether the feature should be enabled.
- */
-export async function handleSetLoginSaveEnabled(
-  enabled: boolean
-): Promise<messageBoolResponse> {
-  try {
-    await LocalPreferencesService.setLoginSaveEnabled(enabled);
-    return { success: true };
-  } catch (error) {
-    logFailure('Error setting login save enabled', error);
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
-  }
-}
-
-/**
  * Get items that have TOTP codes, filtered by URL matching.
  * Used for TOTP autofill popup to show only items with 2FA codes.
  *
@@ -1430,22 +1343,6 @@ export async function handleSetRecentlySelected(
   } catch (error) {
     logFailure('Error setting recently selected item', error);
     return { success: false };
-  }
-}
-
-/**
- * Get recently selected item for smart autofill.
- */
-export async function handleGetRecentlySelected(
-  message: { domain: string }
-): Promise<{ success: boolean; itemId?: string | null; manifestId?: string | null }> {
-  try {
-    const rootDomain = await extractRootDomain(message.domain);
-    const item = await RecentlySelectedItemService.getRecentlySelected(rootDomain);
-    return { success: true, itemId: item?.Id ?? null, manifestId: item?.ManifestId ?? null };
-  } catch (error) {
-    logFailure('Error getting recently selected item', error);
-    return { success: false, itemId: null };
   }
 }
 

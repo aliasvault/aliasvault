@@ -124,16 +124,6 @@ extension VaultStore {
         return userDefaults.string(forKey: VaultConstants.capabilitiesKey)
     }
 
-    /// Check if the stored server version is greater than or equal to the specified version
-    /// - Parameter targetVersion: The version to compare against (e.g., "0.25.0")
-    /// - Returns: true if stored server version >= targetVersion, false if server version not available or less than target
-    public func isServerVersionGreaterThanOrEqualTo(_ targetVersion: String) -> Bool {
-        guard let serverVersion = getServerVersion() else {
-            return false // No server version stored yet
-        }
-        return VersionComparison.isGreaterThanOrEqualTo(serverVersion, targetVersion)
-    }
-
     // MARK: - Sync State Storage (isDirty, mutationSequence, isSyncing)
 
     /// Set the dirty flag indicating local changes need to be synced. Clearing it forgets the pending scopes
