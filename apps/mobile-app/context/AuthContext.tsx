@@ -192,7 +192,7 @@ export const AuthProvider: React.FC<{
     await NativeVaultManager.clearUsername();
     await AsyncStorage.removeItem('username'); // TODO: Remove in 0.25.0+
 
-    // Clear ALL vault data - user explicitly chose to logout
+    // Clear all vault data - user explicitly chose to logout
     dbContext?.clearDatabase();
 
     setUsername(null);

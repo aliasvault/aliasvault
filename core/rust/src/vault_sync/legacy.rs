@@ -36,23 +36,23 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
 }
 
 /// The one-way move of a sqlite-blob account onto the manifest storage format: the local vault is rebuilt onto the
-/// current schema with its unstamped rows adopted into the personal manifest, and the push that carries it creates the
+/// current schema with its unstamped rows stamped with the personal manifest, and the push that carries it creates the
 /// account key hierarchy. Returns whether that push reached the server.
 pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
     if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
         return Err(SyncError::LegacyUpgradePending);
     }
-    // Another device may have created the hierarchy since this one logged in. Adopting it swaps the session key to the VEK, which the baseline pull below needs.
-    if !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
+    // Another device may have created the hierarchy since this one logged in. Accepting it swaps the session key to the VEK, which the baseline pull below needs.
+    if !keys::accept_hierarchy_created_elsewhere(ctx).await? {
         return Err(SyncError::KeyOutOfSync);
     }
     record_server_baseline_if_missing(ctx).await?;
     if keys::has_local_vault_key(&ctx.host).await? {
-        // The account turned out to be migrated already (adopted above, or pulled with the baseline); a schema rebuild is all that can remain.
+        // The account turned out to be migrated already (accepted above, or pulled with the baseline); a schema rebuild is all that can remain.
         return engine::migrate_schema(ctx).await;
     }
     if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
-        // The baseline pull adopted a server vault that is still on the chain.
+        // The baseline pull stored a server vault that is still on the chain.
         return Err(SyncError::LegacyUpgradePending);
     }
     let personal = resolve_personal_manifest_id(ctx).await?;

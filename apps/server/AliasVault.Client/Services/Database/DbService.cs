@@ -337,7 +337,7 @@ public sealed class DbService : IDisposable
             }
 
             // Rebuild on the complete schema via the codec; this stamps every row with the personal manifest.
-            AdoptDatabase(await _vaultSync.MigrateVaultToCurrentSchemaAsync(_sqlConnection!));
+            ReplaceDatabase(await _vaultSync.MigrateVaultToCurrentSchemaAsync(_sqlConnection!));
 
             // The server holds no manifest-v1 state for this vault yet, so the next push must write everything.
             _forceFullWriteOnNextPush = true;
@@ -695,7 +695,7 @@ public sealed class DbService : IDisposable
         for (var attempt = 1; attempt <= MaxPushAttempts; attempt++)
         {
             // LEGACY: an account without a key chain creates one on its first manifest-v1 push, unless another device already did.
-            var createVaultKey = !await _vaultKeyService.HasLocalVaultKeyAsync() && !await TryAdoptRemoteVaultKeyAsync();
+            var createVaultKey = !await _vaultKeyService.HasLocalVaultKeyAsync() && !await TryAcceptRemoteVaultKeyAsync();
 
             PushResult result;
             try
@@ -764,25 +764,25 @@ public sealed class DbService : IDisposable
             _logger.LogWarning("Canonical merge fell back to the server's rows for manifest {ManifestId}; local changes to it were dropped.", manifestId);
         }
 
-        AdoptDatabase(result.Database!);
+        ReplaceDatabase(result.Database!);
         await _settingsService.ReloadAsync(this);
     }
 
     /// <summary>
-    /// Adopt a key chain the server holds but this device does not: the account was migrated on another device while
+    /// Accept a key chain the server holds but this device does not: the account was migrated on another device while
     /// this session still holds the old password-derived key, which opens the chain as its KEK.
     /// </summary>
-    /// <returns>True when a chain was adopted, false when the server holds none.</returns>
+    /// <returns>True when a chain was accepted, false when the server holds none.</returns>
     /// <exception cref="VaultKeyDecryptException">Thrown when the server's chain does not open with the session key.</exception>
-    private async Task<bool> TryAdoptRemoteVaultKeyAsync()
+    private async Task<bool> TryAcceptRemoteVaultKeyAsync()
     {
-        var resolved = await _vaultKeyService.AdoptRemoteVaultKeyAsync(_authService.GetEncryptionKeyAsBase64Async());
+        var resolved = await _vaultKeyService.AcceptRemoteVaultKeyAsync(_authService.GetEncryptionKeyAsBase64Async());
         if (resolved is null)
         {
             return false;
         }
 
-        _logger.LogInformation("Adopted the account key chain another device created; the session key is now the VEK.");
+        _logger.LogInformation("Accepted the account key chain another device created; the session key is now the VEK.");
         await _authService.StoreSessionKeysAsync(resolved);
         return true;
     }
@@ -922,8 +922,8 @@ public sealed class DbService : IDisposable
     /// Copy another database into the live connection and refresh the context over it. The connection object stays
     /// the same, so a context handed out earlier keeps working and simply sees the new content.
     /// </summary>
-    /// <param name="source">The open in-memory database to adopt; disposed afterwards.</param>
-    private void AdoptDatabase(SqliteConnection source)
+    /// <param name="source">The in-memory database that replaces the live one; disposed afterwards.</param>
+    private void ReplaceDatabase(SqliteConnection source)
     {
         source.BackupDatabase(_sqlConnection!);
         source.Dispose();

@@ -448,14 +448,14 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * The logo an item should point at, following ItemRepository.ts resolveLogoId without an explicit selection:
      * a logo the user chose earlier (built-in or uploaded) is kept; a favicon the item already has for this
      * domain is kept; fresh bytes create or refresh this domain's favicon row in the item's manifest; otherwise
-     * the favicon this domain already has anywhere in the vault is adopted, or none at all.
+     * the favicon this domain already has anywhere in the vault is reused, or none at all.
      *
      * @return The logo id, or null when the item should keep what it has (update) or get none (create)
      */
     private fun resolveLogoId(scope: String, existingLogoId: String?, url: String, logo: ByteArray?, timestamp: String): String? {
         val existing = existingLogoId?.let { getLogoById(it) }
         if (existing != null && existing.kind != LOGO_KIND_FAVICON) {
-            return adoptIntoScope(scope, existing.kind, existing.source, timestamp)
+            return ensureInScope(scope, existing.kind, existing.source, timestamp)
         }
 
         // Without a domain there is no natural key to store a favicon under.
@@ -465,14 +465,14 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
         }
 
         if (existing != null && existing.source == source) {
-            return adoptIntoScope(scope, LOGO_KIND_FAVICON, source, timestamp)
+            return ensureInScope(scope, LOGO_KIND_FAVICON, source, timestamp)
         }
 
         if (logo != null && logo.isNotEmpty()) {
             return upsertLogo(scope, LOGO_KIND_FAVICON, source, logo, FAVICON_MIME_TYPE, null, timestamp)
         }
 
-        return adoptIntoScope(scope, LOGO_KIND_FAVICON, source, timestamp)
+        return ensureInScope(scope, LOGO_KIND_FAVICON, source, timestamp)
     }
 
     /**
@@ -488,7 +488,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * The id this logo has inside the manifest, copying it in from another manifest when it is not there yet.
      * Null when the vault holds no such logo at all.
      */
-    private fun adoptIntoScope(manifestId: String, kind: String, source: String, timestamp: String): String? {
+    private fun ensureInScope(manifestId: String, kind: String, source: String, timestamp: String): String? {
         val inScope = executeQuery(LogoQueries.GET_ID_FOR_KEY, arrayOf(manifestId, kind, source)).firstOrNull()?.get("Id") as? String
         if (inScope != null) {
             return inScope

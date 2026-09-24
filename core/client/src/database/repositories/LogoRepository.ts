@@ -58,7 +58,7 @@ export class LogoRepository extends BaseRepository {
    * @param currentDateTime The current date/time string for timestamps
    * @returns The logo id inside this manifest, or null when the vault holds no such logo at all
    */
-  public async adoptIntoScope(manifestId: string, kind: LogoKind, source: string, currentDateTime: string): Promise<string | null> {
+  public async ensureInScope(manifestId: string, kind: LogoKind, source: string, currentDateTime: string): Promise<string | null> {
     const inScope = await this.run(this.getIdForKey(manifestId, kind, source));
     if (inScope) {
       return inScope;

@@ -31,7 +31,7 @@ test.describe.serial('5. Vault Merge', () => {
     clientB = await TestClient.create();
     await clientB.login(apiUrl, testUser.username, testUser.password);
 
-    // Navigate BOTH clients to the add credential form NOW, before either makes changes.
+    // Navigate both clients to the add credential form now, before either makes changes.
     // This ensures both have the same vault revision (empty vault, revision 1).
     await clientA.goToVault().then((c) => c.openAddCredentialForm());
     await clientB.goToVault().then((c) => c.openAddCredentialForm());

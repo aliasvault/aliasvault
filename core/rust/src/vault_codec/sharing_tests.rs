@@ -43,7 +43,7 @@ fn raw_input_with_shares(tables: Vec<CodecTableData>, shared_manifests: Vec<Mani
         tables,
         canonicalized_at: "2026-01-01T00:00:00.000Z".to_string(),
         manifests: std::iter::once(personal).chain(shared_manifests).collect(),
-        adopt_unstamped_into: None,
+        stamp_unstamped_into: None,
     }
 }
 
@@ -365,25 +365,25 @@ fn split_reads_the_all_zero_guid_as_naming_no_manifest() {
     assert!(err.contains("Tags"), "the sentinel is refused like any other unstamped row: {err}");
 
     let mut input = raw_input_with_shares(tables, vec![spec("f-shared")]);
-    input.adopt_unstamped_into = Some(PERSONAL_M.to_string());
+    input.stamp_unstamped_into = Some(PERSONAL_M.to_string());
     let out = canonicalize_from_sqlite(input).unwrap();
-    assert_eq!(ids(rows(&out.first().manifest, "Tags")), vec!["tag-both", "tag-shared-only", "tag-unused"], "and adopted, never dropped");
+    assert_eq!(ids(rows(&out.first().manifest, "Tags")), vec!["tag-both", "tag-shared-only", "tag-unused"], "and stamped, never dropped");
 }
 
 #[test]
-fn split_adopts_unstamped_rows_only_when_the_client_asks() {
+fn split_stamps_unstamped_rows_only_when_the_client_asks() {
     // The sqlite-blob conversion is the one caller allowed to hand over unstamped rows, and it has to
-    // say so: `adoptUnstampedInto` names the manifest they join. Rows that already name one keep it.
+    // say so: `stampUnstampedInto` names the manifest they join. Rows that already name one keep it.
     let tables = stamp_subtree(owner_tables_unstamped(), "f-shared", "m-f-shared");
     let mut input = raw_input_with_shares(tables, vec![spec("f-shared")]);
-    input.adopt_unstamped_into = Some(PERSONAL_M.to_string());
+    input.stamp_unstamped_into = Some(PERSONAL_M.to_string());
 
     let out = canonicalize_from_sqlite(input).unwrap();
     let base = &out.first().manifest;
     assert_eq!(ids(rows(base, "Items")), vec!["i-nofolder", "i-personal"], "no row was dropped");
     assert_eq!(ids(rows(base, "Tags")), vec!["tag-both", "tag-shared-only", "tag-unused"]);
     for row in rows(base, "Tags") {
-        assert_eq!(row["ManifestId"], json!(PERSONAL_M), "adopted rows carry a real manifest id on the way out");
+        assert_eq!(row["ManifestId"], json!(PERSONAL_M), "stamped rows carry a real manifest id on the way out");
     }
     assert_eq!(ids(rows(&out.rest()[0].manifest, "Items")), vec!["i-shared", "i-sub"], "explicit stamps still route");
 }
@@ -394,12 +394,12 @@ fn sqlite_blob_migration_stamps_every_row_of_a_vault_that_has_no_manifest_id_col
      * The sqlite-blob > manifest-v1 migration, end to end: a vault whose schema stops short of the
      * `ManifestId` column (so no row carries the key at all) is canonicalized and materialized straight
      * back out, with no share in sight. Nothing stamps those rows beforehand, the column they would be
-     * stamped in does not exist yet, so canonicalize adopting them into the manifest being written from
+     * stamped in does not exist yet, so canonicalize stamping them with the manifest being written from
      * is the conversion. Every row must come out carrying a real manifest id: the materialized schema
      * declares the column NOT NULL, so a single unstamped row fails the whole migration.
      */
     let mut input = raw_input_with_shares(owner_tables_unstamped(), vec![]);
-    input.adopt_unstamped_into = Some(PERSONAL_M.to_string());
+    input.stamp_unstamped_into = Some(PERSONAL_M.to_string());
     let out = canonicalize_from_sqlite(input).unwrap();
     assert_eq!(out.rest().len(), 0, "no shares in this push");
 
@@ -1068,8 +1068,8 @@ fn item_moved_into_shared_manifest_brings_its_logo_along() {
 }
 
 #[test]
-fn item_moved_into_shared_manifest_adopts_its_existing_logo() {
-    // Same move, but the folder already shows a logo for that domain. The item adopts it rather than
+fn item_moved_into_shared_manifest_reuses_its_existing_logo() {
+    // Same move, but the folder already shows a logo for that domain. The item reuses it rather than
     // dragging a second row onto the same (scope, domain), the folder's members keep seeing one logo.
     let mut tables = owner_tables();
     let items = tables.iter_mut().find(|t| t.name == "Items").unwrap();
@@ -1747,7 +1747,7 @@ fn split_routes_folder_keypair_into_its_manifest_and_never_the_personal_one() {
 
     assert_eq!(ids(rows(&out.rest()[0].manifest, "EncryptionKeys")), vec!["sfk-1"]);
     assert_eq!(ids(rows(&out.first().manifest, "EncryptionKeys")), vec!["ek-1"], "the personal manifest keeps exactly its personal keys");
-    // The unstamped legacy personal row was adopted: stamped with the personal manifest's id.
+    // The unstamped legacy personal row was stamped with the personal manifest's id.
     assert_eq!(rows(&out.first().manifest, "EncryptionKeys")[0]["ManifestId"], json!(PERSONAL_M));
 }
 
@@ -2081,7 +2081,7 @@ fn split_keeps_child_rows_when_a_manifest_this_vault_lost_shares_their_item_id()
     let personal = &out.first().manifest;
     assert_eq!(ids(rows(personal, "Items")), vec!["i-dup"], "the revoked manifest's item is dropped, the live one kept");
     assert_eq!(values(rows(personal, "FieldValues")), vec!["personal_secret"], "the live item keeps its own child rows");
-    assert!(!manifest_mentions(personal, "gone"), "the revoked manifest's rows are not adopted into the personal one");
+    assert!(!manifest_mentions(personal, "gone"), "the revoked manifest's rows are not moved into the personal one");
 }
 
 #[test]

@@ -45,7 +45,7 @@ fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, 
         tables: read_tables(conn),
         canonicalized_at: "2026-09-11T00:00:00.000Z".to_string(),
         manifests: vec![ManifestSpec { manifest_id: PERSONAL_MANIFEST_ID.to_string(), manifest_salt: salt.to_string(), name: None }],
-        adopt_unstamped_into: None,
+        stamp_unstamped_into: None,
     })
     .unwrap();
     let entry = &canonicalized.manifests[0];

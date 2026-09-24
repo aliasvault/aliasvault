@@ -97,7 +97,7 @@ public struct PasskeyQueries {
         WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
         """
 
-    /// Get ALL active Login items that don't have a passkey yet (no URL filtering).
+    /// Get all active Login items that don't have a passkey yet (no URL filtering).
     /// Used with Rust credential matcher for intelligent filtering.
     /// Returns items with their URLs aggregated using GROUP_CONCAT for multi-URL support.
     public static let getAllItemsWithoutPasskey = """

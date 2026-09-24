@@ -1,5 +1,5 @@
 /**
- * The vault sync wrapper: one method per engine operation, adoption of what the engine reported, and the mapping of
+ * The vault sync wrapper: one method per engine operation, persisting what the engine reported, and the mapping of
  * its failures into the result the UI reads. The driver below it is VaultSyncEngine, which turns the Rust engine's
  * commands into host actions.
  *
@@ -73,7 +73,7 @@ export type SharingOperationResult = SyncErrorDetail & {
 };
 
 /** What every engine result may report for the host to persist. */
-type AdoptableSyncResult = VaultSyncEngineResultBase & {
+type PersistableSyncResult = VaultSyncEngineResultBase & {
   serverVersion?: string;
   capabilities?: Record<string, string>;
   isOfflineMode?: boolean;
@@ -111,7 +111,7 @@ export function syncResult(overrides: Partial<FullVaultSyncResult> = {}): FullVa
 }
 
 /**
- * Runs the sync engine's operations for one host and adopts what each one reported.
+ * Runs the sync engine's operations for one host and persists what each one reported.
  */
 export class VaultSync {
   /**
@@ -239,7 +239,7 @@ export class VaultSync {
   }
 
   /**
-   * Run one engine operation and adopt what it reported.
+   * Run one engine operation and persist what it reported.
    * @param operation - the operation
    * @param options - what the caller asks beyond what the engine decides
    * @param overrides - what one operation sets on the request itself: the unlock key resolveVaultKey runs on, or the target of a sharing operation
@@ -247,7 +247,7 @@ export class VaultSync {
   private async run<T extends VaultSyncEngineResultBase>(operation: VaultSyncOperation, options: VaultSyncOptions = {}, overrides: Partial<Pick<VaultSyncEngineRequest, 'encryptionKey' | 'sharing'>> = {}): Promise<T> {
     const request = { ...await buildVaultSyncRequest(operation, options), ...overrides };
     const result = await runVaultSyncEngine<T>(this.host, request, this.webApi);
-    await this.adoptSyncResult(result);
+    await this.persistSyncResult(result);
     return result;
   }
 
@@ -256,7 +256,7 @@ export class VaultSync {
    * the email routing a pulled vault came with.
    * @param result - the engine's outcome
    */
-  private async adoptSyncResult(result: AdoptableSyncResult): Promise<void> {
+  private async persistSyncResult(result: PersistableSyncResult): Promise<void> {
     const storage = getPlatform().storage;
     if (result.serverVersion && result.serverVersion !== '0.0.0') {
       await storage.set(StorageKeys.SERVER_VERSION, result.serverVersion);

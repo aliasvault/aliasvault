@@ -246,7 +246,7 @@ extension VaultStore {
         } catch {
             print("Decryption failed: \(error)")
 
-            // Note: We intentionally do NOT clear the encryption key here.
+            // Note: We intentionally do not clear the encryption key here.
             // The key may be valid for a different vault (e.g., after password change
             // during login, the new key is stored but the old vault can't be decrypted).
             // Clearing it would break the subsequent sync that downloads the new vault.

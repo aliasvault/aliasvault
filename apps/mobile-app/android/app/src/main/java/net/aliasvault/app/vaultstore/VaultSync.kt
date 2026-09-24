@@ -8,7 +8,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * The vault sync wrapper: one method per engine operation, adoption of what the engine reported, and the mapping of
+ * The vault sync wrapper: one method per engine operation, persisting what the engine reported, and the mapping of
  * its failures into the native error. The driver below it is VaultSyncEngine, which turns the Rust engine's
  * commands into host actions.
  *
@@ -168,7 +168,7 @@ class VaultSync(
     }
 
     /**
-     * Run one engine operation and adopt what it reported. A driver failure surfaces as the native error.
+     * Run one engine operation and persist what it reported. A driver failure surfaces as the native error.
      */
     @Suppress("TooGenericExceptionCaught")
     private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null, sharing: JSONObject? = null): JSONObject {
@@ -177,7 +177,7 @@ class VaultSync(
         } catch (e: Exception) {
             throw driverError(e)
         }
-        adoptSyncResult(result)
+        persistSyncResult(result)
         return result
     }
 
@@ -185,7 +185,7 @@ class VaultSync(
      * Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
      * and the email routing a pulled vault came with.
      */
-    private fun adoptSyncResult(result: JSONObject) {
+    private fun persistSyncResult(result: JSONObject) {
         result.optString("serverVersion").takeIf { it.isNotEmpty() }?.let { vaultStore.metadata.setServerVersion(it) }
         result.optJSONObject("capabilities")?.let { vaultStore.metadata.setCapabilities(it.toString()) }
         if (result.has("isOfflineMode")) {

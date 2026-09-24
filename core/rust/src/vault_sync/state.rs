@@ -69,7 +69,7 @@ impl Ctx {
         self.encryption_key.clone().ok_or(SyncError::VaultLocked)
     }
 
-    /// Adopt a new session encryption key; the next vault store hands it to the host.
+    /// Set a new session encryption key; the next vault store hands it to the host.
     pub fn set_encryption_key(&mut self, key: String) {
         self.new_encryption_key = Some(key.clone());
         self.encryption_key = Some(key);

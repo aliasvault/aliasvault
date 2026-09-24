@@ -247,7 +247,7 @@ public class PasskeyProviderViewModel: ObservableObject {
             return
         }
 
-        // Filter credentials where ALL search words match (each in at least one field)
+        // Filter credentials where all search words match (each in at least one field)
         filteredCredentials = credentials.filter { credential in
             // Prepare searchable fields including passkey rpIds
             var searchableFields = [

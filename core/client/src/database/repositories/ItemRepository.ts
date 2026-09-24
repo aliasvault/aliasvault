@@ -756,7 +756,7 @@ export class ItemRepository extends BaseRepository {
 
     const existing = existingLogoId ? await this.run(this.logoRepository.getById(existingLogoId, storedManifestId)) : null;
     if (!selection && existing && existing.Kind !== LogoKinds.Favicon) {
-      return this.logoRepository.adoptIntoScope(scope, existing.Kind, existing.Source, currentDateTime);
+      return this.logoRepository.ensureInScope(scope, existing.Kind, existing.Source, currentDateTime);
     }
 
     const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
@@ -784,7 +784,7 @@ export class ItemRepository extends BaseRepository {
 
     // Keep the current favicon when it is already this domain's, whatever scope it lives in.
     if (existing && existing.Kind === LogoKinds.Favicon && existing.Source === source) {
-      return this.logoRepository.adoptIntoScope(scope, LogoKinds.Favicon, source, currentDateTime);
+      return this.logoRepository.ensureInScope(scope, LogoKinds.Favicon, source, currentDateTime);
     }
 
     /*
@@ -798,10 +798,10 @@ export class ItemRepository extends BaseRepository {
     }
 
     /*
-     * Otherwise adopt the favicon this domain already has, or none at all. Falling back to the item's
+     * Otherwise reuse the favicon this domain already has, or none at all. Falling back to the item's
      * previous logo here is what made an item keep the old site's logo after its URL was changed.
      */
-    return this.logoRepository.adoptIntoScope(scope, LogoKinds.Favicon, source, currentDateTime);
+    return this.logoRepository.ensureInScope(scope, LogoKinds.Favicon, source, currentDateTime);
   }
 
   /**
@@ -826,7 +826,7 @@ export class ItemRepository extends BaseRepository {
     /*
      * No new bytes: the user picked an image from their library, addressed by its hash.
      */
-    return selection.Source ? this.logoRepository.adoptIntoScope(scope, LogoKinds.Custom, selection.Source, currentDateTime) : null;
+    return selection.Source ? this.logoRepository.ensureInScope(scope, LogoKinds.Custom, selection.Source, currentDateTime) : null;
   }
 
   /**

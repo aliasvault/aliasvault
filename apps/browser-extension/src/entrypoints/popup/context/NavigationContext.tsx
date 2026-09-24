@@ -39,7 +39,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const requiresAuth = isFullyInitialized && (!isLoggedIn || !dbAvailable);
 
   /**
-   * Adopt a restored navigation stack so it keeps growing from where the previous popup left off.
+   * Restore a navigation stack so it keeps growing from where the previous popup left off.
    * @param entries - The restored entries, oldest first
    */
   const seedStack = useCallback((entries: NavigationHistoryEntry[]): void => {

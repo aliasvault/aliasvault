@@ -73,7 +73,7 @@ public class PasskeyRepository: BaseRepository {
         return mappedResults
     }
 
-    /// Get ALL Login items that don't have a passkey yet (no URL filtering).
+    /// Get all Login items that don't have a passkey yet (no URL filtering).
     /// Used with RustItemMatcher for intelligent, cross-platform consistent filtering.
     /// - Returns: Array of ItemWithCredentialInfoData objects with all URLs
     public func getAllItemsWithoutPasskey() throws -> [ItemWithCredentialInfoData] {
@@ -291,7 +291,7 @@ public class PasskeyRepository: BaseRepository {
     private func resolveLogoId(existingLogoId: String?, manifestId: String, rpId: String, logo: Data?, now: String) throws -> String? {
         let existing = try existingLogoId.flatMap { try getLogo(byId: $0) }
         if let existing = existing, existing.kind != "favicon" {
-            return try adoptIntoScope(LogoKey(manifestId: manifestId, kind: existing.kind, source: existing.source), now: now)
+            return try ensureInScope(LogoKey(manifestId: manifestId, kind: existing.kind, source: existing.source), now: now)
         }
 
         // The same URL string the item's login.url field is written with, which is what the TypeScript side derives the favicon target from.
@@ -302,12 +302,12 @@ public class PasskeyRepository: BaseRepository {
 
         let key = LogoKey(manifestId: manifestId, kind: "favicon", source: source)
         if let existing = existing, existing.source == source {
-            return try adoptIntoScope(key, now: now)
+            return try ensureInScope(key, now: now)
         }
         if let logo = logo, !logo.isEmpty {
             return try getOrCreateLogo(key, image: LogoImage(data: logo, mimeType: "image/x-icon", name: nil), now: now)
         }
-        return try adoptIntoScope(key, now: now)
+        return try ensureInScope(key, now: now)
     }
 
     /// Get or create the logo for a key inside one manifest, refreshing its image data.
@@ -321,7 +321,7 @@ public class PasskeyRepository: BaseRepository {
 
     /// The id this logo has inside the key's manifest, copying it in from another manifest when it is not there yet.
     /// - Returns: The logo id inside this manifest, or nil when the vault holds no such logo at all
-    private func adoptIntoScope(_ key: LogoKey, now: String) throws -> String? {
+    private func ensureInScope(_ key: LogoKey, now: String) throws -> String? {
         let inScope = try client.executeQuery(LogoQueries.getIdForKey, params: [key.manifestId, key.kind, key.source])
         if let logoId = inScope.first?["Id"] as? String {
             return logoId

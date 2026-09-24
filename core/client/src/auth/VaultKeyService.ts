@@ -92,7 +92,7 @@ export class VaultKeyService {
    * Whether this device holds a key chain, i.e. whether the account is on the account-key model rather than a
    * legacy account whose unlock key encrypts the vault directly. The cache is written on every login and cleared
    * when the server reports no vault key, so it needs no server round-trip. A false answer is only ever stale in
-   * one direction (another device migrated since the last login), which the sync resolves by adopting the remote chain.
+   * one direction (another device migrated since the last login), which the sync resolves by accepting the remote chain.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
     return (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;

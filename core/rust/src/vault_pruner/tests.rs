@@ -487,7 +487,7 @@ fn test_trash_purge_clears_attachment_blobs() {
         .expect("expected an UPDATE Attachments statement");
     assert!(attachment_update.sql.contains("Blob = NULL"),
         "attachment trash purge must drop the blob: {}", attachment_update.sql);
-    // The pass-3 sweeper should NOT also fire for the same row in this call.
+    // The pass-3 sweeper should not also fire for the same row in this call.
     assert_eq!(count(&output.stats.blobs_cleared, ATTACHMENTS_TABLE), 0);
 }
 

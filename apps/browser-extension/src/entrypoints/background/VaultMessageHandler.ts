@@ -60,7 +60,7 @@ import { storage } from '#imports';
  * Cache Strategy:
  * - Local mutations (createCredential, etc.): Work directly on cachedSqliteClient, no cache clearing
  * - New vault from remote (login, sync): Clear cache by setting both to null, WITHOUT closing: an in-flight
- *   flow (e.g. a push holding the client across an HTTP await, or persistLocalVaultMutation re-adopting the
+ *   flow (e.g. a push holding the client across an HTTP await, or persistLocalVaultMutation reusing the
  *   client it just stored) may legitimately still use the detached instance.
  * - Lock/logout/clear vault: clearInMemoryVaultState().
  */

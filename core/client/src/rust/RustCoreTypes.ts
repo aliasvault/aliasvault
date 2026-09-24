@@ -139,6 +139,6 @@ export type CodecCanonicalizeInput = {
   tables: CodecTableData[];
   canonicalizedAt: string;
   manifests: CodecManifestSpec[];
-  /** For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into. TODO: delete this field once the migration is complete. */
-  adoptUnstampedInto?: string | null;
+  /** For legacy sqlite-blob migration: the manifest that unstamped rows are stamped with. TODO: delete this field once the migration is complete. */
+  stampUnstampedInto?: string | null;
 };

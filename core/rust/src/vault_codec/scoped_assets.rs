@@ -172,7 +172,7 @@ pub(super) fn reconcile_logo_references(tables: &mut HashMap<String, Vec<CodecRe
         return;
     }
 
-    // (kind, source) -> id of the row already in this scope, so an incoming item adopts it rather than
+    // (kind, source) -> id of the row already in this scope, so an incoming item reuses it rather than
     // cloning a second row onto the same natural key.
     let mut id_by_key: HashMap<(String, String), String> = tables
         .get(LOGOS_TABLE)

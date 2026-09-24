@@ -34,7 +34,7 @@ const isSamePage = (a: NavigationHistoryEntry | null | undefined, b: NavigationH
 export const createNavigationStack = (): NavigationStackState => ({ stack: [], replay: null, replayCursor: 0 });
 
 /**
- * Adopt a restored trail so the stack keeps growing from where the previous popup left off.
+ * Restore a trail so the stack keeps growing from where the previous popup left off.
  * @param entries - The restored entries, oldest first
  */
 export const seedNavigationStack = (entries: NavigationHistoryEntry[]): NavigationStackState => {

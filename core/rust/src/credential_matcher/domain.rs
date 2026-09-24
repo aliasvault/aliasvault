@@ -245,7 +245,7 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
 
     // Check subdomain relationship (must end with ".domain" not just contain it)
     // e.g., "sub.example.com" is a subdomain of "example.com"
-    // but "another-example.com" is NOT related to "example.com"
+    // but "another-example.com" is not related to "example.com"
     if is_subdomain_of(domain1, domain2) || is_subdomain_of(domain2, domain1) {
         return true;
     }
@@ -259,7 +259,7 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
 
 /// Check if domain1 is a subdomain of domain2.
 /// e.g., "sub.example.com" is a subdomain of "example.com"
-/// but "another-example.com" is NOT a subdomain of "example.com"
+/// but "another-example.com" is not a subdomain of "example.com"
 fn is_subdomain_of(domain1: &str, domain2: &str) -> bool {
     // domain1 must be longer and end with ".domain2"
     if domain1.len() <= domain2.len() {
@@ -314,7 +314,7 @@ mod tests {
         assert_eq!(extract_domain("http://homeassistant"), "homeassistant");
         assert_eq!(extract_domain("http://pihole/admin"), "pihole");
 
-        // Single-word hostnames WITHOUT protocol should NOT be accepted
+        // Single-word hostnames without protocol should not be accepted
         // (to avoid matching random text as domains)
         assert_eq!(extract_domain("localhost"), "");
         assert_eq!(extract_domain("plex"), "");
@@ -331,7 +331,7 @@ mod tests {
         assert_eq!(extract_domain("https://nas:5001"), "nas");
         assert_eq!(extract_domain("http://router:8080/admin"), "router");
 
-        // Without protocol - should NOT work (could be ambiguous)
+        // Without protocol - should not work (could be ambiguous)
         assert_eq!(extract_domain("localhost:8080"), "");
         assert_eq!(extract_domain("plex:32400"), "");
 
@@ -419,7 +419,7 @@ mod tests {
         // Same IP matches
         assert!(domains_match("192.168.1.5", "192.168.1.5"));
 
-        // Distinct IPs sharing trailing octets must NOT match
+        // Distinct IPs sharing trailing octets must not match
         // (previously both reduced to root "1.5" and matched)
         assert!(!domains_match("192.168.1.5", "10.0.1.5"));
 
@@ -453,8 +453,8 @@ mod tests {
         assert!(!domains_match("example.com", "different.com"));
         assert!(!domains_match("coolblue.nl", "coolblue.be"));
 
-        // CRITICAL: Substring match should NOT work (anti-phishing protection)
-        // "another-example.com" contains "example.com" but is NOT a subdomain
+        // Critical: Substring match should not work (anti-phishing protection)
+        // "another-example.com" contains "example.com" but is not a subdomain
         assert!(!domains_match("another-example.com", "example.com"));
         assert!(!domains_match("example.com", "another-example.com"));
         assert!(!domains_match("myexample.com", "example.com"));

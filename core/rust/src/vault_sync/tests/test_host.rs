@@ -158,7 +158,7 @@ impl TestHost {
                         if expected != self.mutation_sequence {
                             json!({ "success": false, "mutationSequence": self.mutation_sequence })
                         } else {
-                            self.adopt_blob(&encrypted_blob);
+                            self.store_blob(&encrypted_blob);
                             json!({ "success": true, "mutationSequence": self.mutation_sequence })
                         }
                     } else {
@@ -166,7 +166,7 @@ impl TestHost {
                             self.mutation_sequence += 1;
                             self.is_dirty = true;
                         }
-                        self.adopt_blob(&encrypted_blob);
+                        self.store_blob(&encrypted_blob);
                         json!({ "success": true, "mutationSequence": self.mutation_sequence })
                     }
                 }
@@ -189,7 +189,7 @@ impl TestHost {
     }
 
     /// Store a blob and reload `local` from it, as the contract requires.
-    fn adopt_blob(&mut self, encrypted_blob: &str) {
+    fn store_blob(&mut self, encrypted_blob: &str) {
         self.vault_blob = Some(encrypted_blob.to_string());
         let bytes = crypto::symmetric_decrypt_bytes(&base64_decode(encrypted_blob).unwrap(), &self.vault_key).expect("stored blob decrypts with the vault key");
         self.local = open_from_bytes(&bytes);

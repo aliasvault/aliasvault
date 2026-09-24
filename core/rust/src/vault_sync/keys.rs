@@ -187,12 +187,12 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
 
 /// The cross-device race: this device holds no key chain (it logged in while the account was still a legacy
 /// vault), and another device may have created the hierarchy since. Probes the server once per run; when the
-/// hierarchy exists, the stored vault is brought under the VEK and the session key swapped, which the host adopts
+/// hierarchy exists, the stored vault is brought under the VEK and the session key swapped, which the host picks up
 /// through the store command. Callers gate this on the absence of a cached chain and on a sync that pulls or
 /// pushes: another device's migration shows up as a revision change, so that is when it becomes visible.
 /// False only when the session key does not open the server's chain, which requires a re-login; any other failure
 /// is returned as itself.
-pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
+pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResult<bool> {
     if ctx.vault_key_probed {
         return Ok(true);
     }
@@ -201,7 +201,7 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
     let vault_key = match fetch_vault_key(&ctx.host).await {
         Ok(result) => result,
         Err(error) => {
-            ctx.warn(format!("[VaultSync] Vault key probe failed, deferring vault key adoption: {}", error)).await;
+            ctx.warn(format!("[VaultSync] Vault key probe failed, deferring the vault key check: {}", error)).await;
             return Ok(true);
         }
     };
@@ -209,18 +209,18 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
     let Some(encrypted_vek) = vault_key.encrypted_vek.clone() else { return Ok(true) };
 
     // Hosts hold the unlock key and derive the vault key from the cached chain.
-    let adopted: SyncResult<()> = async {
+    let accepted: SyncResult<()> = async {
         let (vek, account_key) = walk_chain(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
-        adopt_vek(ctx, &session_key, &vek).await?;
+        switch_to_vek(ctx, &session_key, &vek).await?;
         stage_account_private_key(ctx, &account_key, vault_key.encrypted_account_private_key.as_deref()).await;
         Ok(())
     }
     .await;
 
-    match adopted {
+    match accepted {
         Ok(()) => {
-            ctx.log("[VaultSync] Another device created the account's key hierarchy; adopted it and swapped the session key to the VEK.").await;
+            ctx.log("[VaultSync] Another device created the account's key hierarchy; accepted it and swapped the session key to the VEK.").await;
             Ok(true)
         }
         Err(SyncError::UnlockKeyRejected) => {
@@ -234,7 +234,7 @@ pub(crate) async fn adopt_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncResu
 
 /// Swap the session key for the VEK: re-encrypt the stored vault and the shared-manifest records under it, then
 /// report it to the host.
-async fn adopt_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()> {
+async fn switch_to_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()> {
     if let Some(encrypted_vault) = state::load_vault(&ctx.host).await? {
         let plaintext = state::decrypt_vault_blob(&encrypted_vault, old_key)?;
         let re_encrypted = crypto::symmetric_encrypt_bytes(&plaintext, vek)?;

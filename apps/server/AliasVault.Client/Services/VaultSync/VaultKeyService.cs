@@ -168,7 +168,7 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     /// keypair both wrapped by the Account Key. Used on registration and on the one-time legacy migration push.
     /// </summary>
     /// <param name="kekBase64">The password-derived key that becomes the KEK.</param>
-    /// <returns>The plaintext keys to adopt and the wrapped chain to upload.</returns>
+    /// <returns>The plaintext keys to use and the wrapped chain to upload.</returns>
     public async Task<AccountKeyHierarchy> CreateAccountKeyHierarchyAsync(string kekBase64)
     {
         var vek = RandomNumberGenerator.GetBytes(32);
@@ -187,12 +187,12 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     }
 
     /// <summary>
-    /// Adopt a hierarchy the server just committed: cache the wrapped chain for offline unlock and mark the cached
+    /// Store a hierarchy the server just committed: cache the wrapped chain for offline unlock and mark the cached
     /// derivation parameters as belonging to an account-key account.
     /// </summary>
     /// <param name="hierarchy">The hierarchy that was uploaded.</param>
     /// <returns>Task.</returns>
-    public async Task AdoptLocalAccountKeysAsync(AccountKeyHierarchy hierarchy)
+    public async Task StoreLocalAccountKeysAsync(AccountKeyHierarchy hierarchy)
     {
         await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedAccountKey, hierarchy.Keys.EncryptedAccountKey!);
         await localStorage.SetItemAsStringAsync(StorageKeys.EncryptedVek, hierarchy.Keys.EncryptedVek!);
@@ -207,12 +207,12 @@ public sealed class VaultKeyService(HttpClient httpClient, ILocalStorageService 
     }
 
     /// <summary>
-    /// Adopt a chain the server holds but this device does not (the account was migrated on another device while
+    /// Accept a chain the server holds but this device does not (the account was migrated on another device while
     /// this session still holds the old password-derived key): open it with the session key, which then is the KEK.
     /// </summary>
     /// <param name="sessionKeyBase64">The session's current key.</param>
-    /// <returns>The resolved keys when a chain was adopted, null when the server holds none. Throws when the chain does not open.</returns>
-    public async Task<ResolvedVaultKey?> AdoptRemoteVaultKeyAsync(string sessionKeyBase64)
+    /// <returns>The resolved keys when a chain was accepted, null when the server holds none. Throws when the chain does not open.</returns>
+    public async Task<ResolvedVaultKey?> AcceptRemoteVaultKeyAsync(string sessionKeyBase64)
     {
         var vaultKey = await FetchVaultKeyAsync();
         if (vaultKey is null)

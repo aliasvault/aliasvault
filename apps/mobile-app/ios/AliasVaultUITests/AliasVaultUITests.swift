@@ -816,7 +816,7 @@ final class AliasVaultUITests: XCTestCase {
 
     /// Unlocks the vault if the unlock screen is displayed.
     /// Use this after deep links or other actions that may lock the vault.
-    /// Unlike loginWithTestUser, this does NOT logout - it just enters the password.
+    /// Unlike loginWithTestUser, this does not logout - it just enters the password.
     /// - Parameter testUser: The test user whose password to use for unlock
     @MainActor
     private func unlockVaultIfNeeded(with testUser: TestUser) {

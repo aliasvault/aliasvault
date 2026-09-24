@@ -163,7 +163,7 @@ export function useVaultMutate() : {
   ): Promise<void> => {
     await operation();
 
-    // Set uploading state BEFORE refreshing sync state to prevent "pending" flash
+    // Set uploading state before refreshing sync state to prevent "pending" flash
     dbContext.setIsUploading(true);
 
     // Refresh sync state to update isDirty flag

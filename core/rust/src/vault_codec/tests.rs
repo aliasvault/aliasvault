@@ -31,7 +31,7 @@ fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
             manifest_salt: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff".to_string(),
             name: None,
         }],
-        adopt_unstamped_into: None,
+        stamp_unstamped_into: None,
     }
 }
 
@@ -606,7 +606,7 @@ fn item_stats_route_into_the_stats_bucket_of_the_manifest_that_owns_the_item() {
                 name: Some("Shared".to_string()),
             },
         ],
-        adopt_unstamped_into: None,
+        stamp_unstamped_into: None,
     };
 
     let out = canonicalize_from_sqlite(input).unwrap();

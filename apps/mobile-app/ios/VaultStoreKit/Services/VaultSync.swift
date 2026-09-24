@@ -2,7 +2,7 @@ import Foundation
 import VaultModels
 import VaultUtils
 
-/// The vault sync wrapper: one method per engine operation, adoption of what the engine reported, and the mapping of
+/// The vault sync wrapper: one method per engine operation, persisting what the engine reported, and the mapping of
 /// its failures into the native error. The driver below it is VaultSyncEngine, which turns the Rust engine's
 /// commands into host actions.
 ///
@@ -140,7 +140,7 @@ internal final class VaultSync {
         }
     }
 
-    /// Run one engine operation and adopt what it reported. A driver failure surfaces as the native error.
+    /// Run one engine operation and persist what it reported. A driver failure surfaces as the native error.
     private func run(_ operation: String, using webApiService: WebApiService, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
         let result: [String: Any]
         do {
@@ -148,13 +148,13 @@ internal final class VaultSync {
         } catch {
             throw Self.driverError(error)
         }
-        adoptSyncResult(result)
+        persistSyncResult(result)
         return result
     }
 
     /// Persist what the engine reported: server version and capabilities, offline mode, session values it changed,
     /// and the email routing a pulled vault came with.
-    private func adoptSyncResult(_ result: [String: Any]) {
+    private func persistSyncResult(_ result: [String: Any]) {
         if let serverVersion = result["serverVersion"] as? String, !serverVersion.isEmpty {
             vaultStore.setServerVersion(serverVersion)
         }

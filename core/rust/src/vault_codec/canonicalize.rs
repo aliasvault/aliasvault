@@ -70,10 +70,10 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         normalize_id_spelling(bucket_tables);
     }
 
-    // Legacy migration: adopt unstamped rows into the manifest if specified by the caller.
+    // Legacy migration: stamp unstamped rows with the manifest if specified by the caller.
     // TODO: delete this once the migration is complete.
-    if let Some(adopt_into) = input.adopt_unstamped_into.as_deref() {
-        adopt_unstamped_rows(&mut all_tables, adopt_into);
+    if let Some(stamp_into) = input.stamp_unstamped_into.as_deref() {
+        stamp_unstamped_rows(&mut all_tables, stamp_into);
     }
     reject_unstamped_rows(&all_tables)?;
     for bucket_tables in overflow.bucket_tables.values() {
@@ -230,12 +230,12 @@ fn owning_manifest(row: &CodecRecord, manifest_ids: &[String]) -> Option<String>
     manifest_ids.iter().find(|id| ids_equal(id, stamp)).cloned()
 }
 
-/// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
+/// For legacy sqlite-blob migration: the manifest that unstamped rows are stamped with.
 /// TODO: delete this function once the migration is complete.
 ///
 /// Stamp every unstamped row of a manifest-scoped table with `manifest_id`. A row that already names a
 /// manifest keeps it, so a vault that has been converted once pays nothing on later runs.
-fn adopt_unstamped_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
+fn stamp_unstamped_rows(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
     for name in manifest_scoped_tables() {
         let Some(rows) = tables.get_mut(name) else { continue };
         for row in rows.iter_mut().filter(|row| is_unstamped(row)) {

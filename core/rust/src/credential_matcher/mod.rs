@@ -113,7 +113,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                 return CredentialMatcherOutput::matched(2, ids);
             }
 
-            // Priority 3b: words from ONLY the root domain (no subdomains, no path/query) against item
+            // Priority 3b: words from only the root domain (no subdomains, no path/query) against item
             // names, e.g. outlook.office.com contributes "office" but not "outlook". Same anti-phishing
             // rule as Priority 3: only credentials with no URLs are eligible. This wildcard is what the
             // Default mode adds on top of URL matching, so the URL-only modes must not fall back to it.
@@ -131,7 +131,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
     }
 
     // Priority 3: page title against item names when domain extraction failed (desktop apps, malformed
-    // URLs). Anti-phishing: only credentials with NO URLs are eligible.
+    // URLs). Anti-phishing: only credentials with no URLs are eligible.
     let title_words = extract_words(&page_title);
     let ids = match_item_names(&credentials, &title_words, true, max_results);
     if !ids.is_empty() {

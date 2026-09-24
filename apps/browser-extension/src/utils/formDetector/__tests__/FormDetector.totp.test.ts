@@ -278,7 +278,7 @@ describe('FormDetector TOTP tests', () => {
       const formDetector = new FormDetector(document, focusedElement);
       const result = formDetector.getForm();
 
-      // The form should NOT be detected as TOTP because it's a Dutch email verification form
+      // The form should not be detected as TOTP because it's a Dutch email verification form
       expect(result?.totpField).toBeNull();
     });
 

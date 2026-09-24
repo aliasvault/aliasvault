@@ -229,10 +229,10 @@ pub struct CanonicalizeInput {
     pub tables: Vec<CodecTableData>,
     pub canonicalized_at: String,
     pub manifests: Vec<ManifestSpec>,
-    /// For legacy sqlite-blob migration: the manifest that unstamped rows are adopted into.
+    /// For legacy sqlite-blob migration: the manifest that unstamped rows are stamped with.
     /// TODO: delete this field once the migration is complete.
     #[serde(default)]
-    pub adopt_unstamped_into: Option<String>,
+    pub stamp_unstamped_into: Option<String>,
 }
 
 /// Input for [`crate::vault_codec::materialize_as_sqlite`].

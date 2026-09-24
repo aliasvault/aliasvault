@@ -56,7 +56,7 @@ fn snapshot_of(conn: &rusqlite::Connection, vek: &str, revision: i64, salt: &str
         tables: read_tables(conn),
         canonicalized_at: "2026-09-11T00:00:00.000Z".to_string(),
         manifests: vec![ManifestSpec { manifest_id: PERSONAL_MANIFEST_ID.to_string(), manifest_salt: salt.to_string(), name: None }],
-        adopt_unstamped_into: None,
+        stamp_unstamped_into: None,
     })
     .unwrap();
     let manifest_json = serde_json::to_string(&canonicalized.manifests[0].manifest).unwrap();
@@ -459,7 +459,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
     let new_key = host.vault_key.clone();
-    assert_ne!(new_key, kek, "the host adopts the new VEK through the store command");
+    assert_ne!(new_key, kek, "the host receives the new VEK through the store command");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
@@ -616,10 +616,10 @@ fn vault_key_body(hierarchy: &crypto::AccountKeyHierarchy) -> Value {
 }
 
 /// The cross-device race: this device logged in while the account was legacy (no cached chain, KEK session), and
-/// another device created the hierarchy since. The pull adopts it, and the stored vault reaches the host
+/// another device created the hierarchy since. The pull accepts it, and the stored vault reaches the host
 /// together with the VEK it is now encrypted under.
 #[test]
-fn a_hierarchy_created_on_another_device_is_adopted_on_the_next_pull() {
+fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
     let kek = crypto::generate_key_base64();
     let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
@@ -635,7 +635,7 @@ fn a_hierarchy_created_on_another_device_is_adopted_on_the_next_pull() {
     let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
-    assert_eq!(host.vault_key, vek, "the store carried the VEK, so the host adopted it before opening the blob");
+    assert_eq!(host.vault_key, vek, "the store carried the VEK, so the host switched to it before opening the blob");
     assert!(matches!(&host.store_calls[0], Command::VaultStore { encryption_key: Some(key), .. } if *key == vek));
     assert_eq!(item_names(&host.local), vec!["Server item"]);
     assert_eq!(host.state[state::ENCRYPTED_ACCOUNT_KEY], hierarchy.account_keys.encrypted_account_key);

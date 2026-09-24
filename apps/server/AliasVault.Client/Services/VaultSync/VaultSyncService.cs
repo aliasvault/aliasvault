@@ -164,7 +164,7 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
 
     /// <summary>
     /// Migrate the local vault onto the current full schema canonicalize the database into
-    /// manifest-v1 form (adopting rows that predate the manifest stamp into the personal manifest) and materialize
+    /// manifest-v1 form (stamping rows that predate the manifest stamp with the personal manifest) and materialize
     /// it straight back out again. This is the permanent delivery path for client schema changes.
     /// </summary>
     /// <param name="connection">The local vault to migrate.</param>
@@ -439,10 +439,10 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
 
         state.LastSnapshotWasLegacySqliteBlob = false;
 
-        // Adopt the newly created account keys if this push included the one-time sqlite-blob to manifest-v1 migration.
+        // Store the newly created account keys if this push included the one-time sqlite-blob to manifest-v1 migration.
         if (migration is not null)
         {
-            await vaultKeyService.AdoptLocalAccountKeysAsync(migration);
+            await vaultKeyService.StoreLocalAccountKeysAsync(migration);
             await authService.StoreSessionKeysAsync(Convert.FromBase64String(migration.VaultEncryptionKey), migration.AccountPrivateKey);
             logger.LogInformation("[V2Push] Account-key migration complete: hierarchy created server-side, chain cached locally.");
         }
@@ -1286,9 +1286,9 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
     /// </summary>
     /// <param name="connection">The local vault.</param>
     /// <param name="personalVek">The key the personal manifest encrypts with.</param>
-    /// <param name="adoptUnstampedInto">One-time migration only: the manifest rows without a stamp are adopted into.</param>
+    /// <param name="stampUnstampedInto">One-time migration only: the manifest that rows without a stamp are stamped with.</param>
     /// <returns>The canonicalized vault, personal manifest first.</returns>
-    private async Task<CanonicalizedVault> CanonicalizeAsync(SqliteConnection connection, string personalVek, Guid? adoptUnstampedInto)
+    private async Task<CanonicalizedVault> CanonicalizeAsync(SqliteConnection connection, string personalVek, Guid? stampUnstampedInto)
     {
         var records = await ResolveManifestRecordsAsync(connection, personalVek);
         var tablesJson = await VaultTableReader.ReadTablesAsCodecJsonAsync(connection);
@@ -1317,9 +1317,9 @@ public sealed class VaultSyncService(HttpClient httpClient, AuthService authServ
                 }
 
                 writer.WriteEndArray();
-                if (adoptUnstampedInto is { } adoptInto)
+                if (stampUnstampedInto is { } stampInto)
                 {
-                    writer.WriteString("adoptUnstampedInto", adoptInto.ToString());
+                    writer.WriteString("stampUnstampedInto", stampInto.ToString());
                 }
 
                 writer.WriteEndObject();

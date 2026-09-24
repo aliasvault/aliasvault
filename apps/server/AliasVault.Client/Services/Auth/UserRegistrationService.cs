@@ -90,7 +90,7 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
             await authService.StoreAccessTokenAsync(tokenObject.Token);
             await authService.StoreRefreshTokenAsync(tokenObject.RefreshToken);
 
-            // Cache the chain the server just stored and adopt the VEK as the session key.
+            // Cache the chain the server just stored and use the VEK as the session key.
             await vaultKeyService.CacheVaultKeyBlobsAsync(new VaultKeyResponse
             {
                 Type = UnlockMethodTypes.ToToken(UnlockMethodType.Password),

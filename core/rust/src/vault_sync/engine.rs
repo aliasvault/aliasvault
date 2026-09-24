@@ -218,7 +218,7 @@ async fn run_sync_preflight(ctx: &mut Ctx) -> SyncResult<Preflight> {
     // case the sync has to catch itself: this device holds no chain because the account was still legacy when it
     // logged in, and another device created the hierarchy since. That shows up as a revision change, so a pull
     // (or a push about to hit the server) is where it is checked.
-    if (needs_pull || ctx.is_dirty) && !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
+    if (needs_pull || ctx.is_dirty) && !keys::has_local_vault_key(&ctx.host).await? && !keys::accept_hierarchy_created_elsewhere(ctx).await? {
         return Ok(Preflight::Finish(logout(LogoutReason::PasswordChanged)));
     }
 
@@ -455,7 +455,7 @@ async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<
 }
 
 /// Store the server's vault as the local vault, replacing whatever was there, and report it.
-async fn adopt_server_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Flow> {
+async fn store_server_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Flow> {
     if let Some(resync) = commit_pulled_vault(ctx, pulled).await? {
         return Ok(resync);
     }
@@ -465,21 +465,21 @@ async fn adopt_server_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<F
 /// Pull the server's latest vault and merge it with what is stored locally when needed.
 async fn pull_and_materialize_server_vault(ctx: &mut Ctx, grant_sync_changed_vault: bool) -> SyncResult<Flow> {
     if !ctx.is_dirty || !ctx.has_local_vault().await? {
-        return adopt_pulled_vault(ctx).await;
+        return store_pulled_vault(ctx).await;
     }
 
     // A dirty vault the codec cannot canonicalize is not merged.
     if vault_predates_current_schema(ctx).await? {
         ctx.warn("[VaultSync] The local vault predates the current storage model, so its pending changes can be neither merged nor uploaded; taking the server's vault.").await;
-        return adopt_pulled_vault(ctx).await;
+        return store_pulled_vault(ctx).await;
     }
     canonical_pull_and_merge(ctx, grant_sync_changed_vault).await
 }
 
 /// Pull the server's vault and store it as the local one.
-async fn adopt_pulled_vault(ctx: &mut Ctx) -> SyncResult<Flow> {
+async fn store_pulled_vault(ctx: &mut Ctx) -> SyncResult<Flow> {
     let pulled = pull::pull(ctx).await?;
-    adopt_server_vault(ctx, &pulled).await
+    store_server_vault(ctx, &pulled).await
 }
 
 /// Canonical-merge path of a dirty pull.
@@ -492,7 +492,7 @@ async fn canonical_pull_and_merge(ctx: &mut Ctx, grant_sync_changed_vault: bool)
             }
             Ok(Flow::Done(FullSyncResult { success: true, has_new_vault: grant_sync_changed_vault, ..Default::default() }))
         }
-        PullAndMergeOutcome::ServerOnly(pulled) => adopt_server_vault(ctx, &pulled).await,
+        PullAndMergeOutcome::ServerOnly(pulled) => store_server_vault(ctx, &pulled).await,
         PullAndMergeOutcome::Merged { pulled, stats, fallback_manifest_ids, dropped_local_manifest_ids, push_canonical } => {
             if let Some(resync) = commit_pulled_vault(ctx, &pulled).await? {
                 return Ok(resync);
@@ -553,7 +553,7 @@ async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
         }
         if !keys::has_local_vault_key(&ctx.host).await? {
             // A hierarchy another device created since this device logged in classifies as no migration at all.
-            keys::adopt_hierarchy_created_elsewhere(ctx).await?;
+            keys::accept_hierarchy_created_elsewhere(ctx).await?;
         }
         if !keys::has_local_vault_key(&ctx.host).await? {
             return Ok(MigrationKind::StorageFormatUpgrade);
@@ -604,11 +604,11 @@ pub(crate) async fn migrate_schema(ctx: &mut Ctx) -> SyncResult<bool> {
 }
 
 /// Rebuild the local vault onto the current schema (a local round-trip through the codec, no server involved) and
-/// store it as a pending change. `adopt_unstamped_into` stamps rows that carry no manifest yet, which only a
+/// store it as a pending change. `stamp_unstamped_into` stamps rows that carry no manifest yet, which only a
 /// sqlite-blob vault has.
-pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, adopt_unstamped_into: Option<String>) -> SyncResult<()> {
+pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, stamp_unstamped_into: Option<String>) -> SyncResult<()> {
     ctx.log("[ManifestMigration] Migrating local vault onto the current schema (local round-trip, no server involved)...").await;
-    let set = push::canonicalize_vault(ctx, adopt_unstamped_into).await?;
+    let set = push::canonicalize_vault(ctx, stamp_unstamped_into).await?;
     let mut blob_map = HashMap::new();
     for entry in &set.canonicalized.manifests {
         for (hash, blob) in &entry.blobs {

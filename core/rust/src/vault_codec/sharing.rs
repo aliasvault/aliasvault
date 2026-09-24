@@ -491,9 +491,9 @@ fn claim_manifest_scope(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest
 /// Keep only the `EncryptionKeys` rows a manifest may legitimately publish: the ones stamped with its
 /// own id. Applied to every manifest alike, so each namespace is protected from the others.
 ///
-/// Unstamped rows are dropped here rather than adopted. Adoption is a *local* migration concern handled
+/// Unstamped rows are dropped here rather than stamped. Stamping them is a *local* migration concern handled
 /// on the canonicalize side, so an unstamped row in a manifest coming back through combine is not a
-/// legacy row: it is a manifest asking to have key material adopted into a scope it never proved it
+/// legacy row: it is a manifest asking to have key material moved into a scope it never proved it
 /// owns.
 fn retain_own_encryption_keys(tables: &mut HashMap<String, Vec<CodecRecord>>, manifest_id: &str) {
     if let Some(rows) = tables.get_mut(ENCRYPTION_KEYS_TABLE) {

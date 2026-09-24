@@ -66,11 +66,11 @@ pub(crate) struct UploadOutcome {
  */
 
 /// Canonicalize the local vault against every manifest this vault writes.
-pub(crate) async fn canonicalize_vault(ctx: &Ctx, adopt_unstamped_into: Option<String>) -> SyncResult<CanonicalizedSet> {
+pub(crate) async fn canonicalize_vault(ctx: &Ctx, stamp_unstamped_into: Option<String>) -> SyncResult<CanonicalizedSet> {
     let tables = db::read_tables(&ctx.host, Db::Local).await?;
     let manifest_records = resolve_manifest_records(ctx).await?;
     let manifests: Vec<ManifestSpec> = manifest_records.iter().map(|r| ManifestSpec { manifest_id: r.manifest_id.clone(), manifest_salt: r.salt.clone(), name: None }).collect();
-    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests, adopt_unstamped_into })?;
+    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests, stamp_unstamped_into })?;
     Ok(CanonicalizedSet { canonicalized, manifest_records })
 }
 
@@ -180,7 +180,7 @@ async fn resolve_bucket_write_keys(ctx: &Ctx, personal_vek: &str) -> SyncResult<
 /// with `KeyOutOfSync` when the session key does not open a hierarchy another device created meanwhile.
 pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, CanonicalizedSet)>, force_full_write: bool, create_vault_key: bool) -> SyncResult<UploadOutcome> {
     let mutation_seq_at_start = ctx.mutation_sequence;
-    if !keys::has_local_vault_key(&ctx.host).await? && !keys::adopt_hierarchy_created_elsewhere(ctx).await? {
+    if !keys::has_local_vault_key(&ctx.host).await? && !keys::accept_hierarchy_created_elsewhere(ctx).await? {
         return Err(SyncError::KeyOutOfSync);
     }
 
@@ -410,7 +410,7 @@ async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str) -> 
 }
 
 /// Canonicalize, gate by content fingerprint, encrypt and `POST v2/Vault`. Returns the outcome and, on a KEK/VEK
-/// migration push, the new content key the session adopts.
+/// migration push, the new content key the session switches to.
 pub(crate) async fn push(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_vault_key: bool, force_full_write: bool) -> SyncResult<(PushStatus, Option<String>)> {
     http::with_outdated_server_guard(push_internal(ctx, cached, create_vault_key, force_full_write).await)
 }
@@ -688,7 +688,7 @@ async fn commit_blob_baselines(ctx: &Ctx, blobs: &UploadBlobs, uploaded: &HashMa
     state::set(&ctx.host, state::VAULT_BLOB_CIPHER_CACHE, &new_cache).await
 }
 
-/// Adopt the hierarchy a migration push just committed: cache the encrypted chain and stage the private key.
+/// Store the hierarchy a migration push just committed: cache the encrypted chain and stage the private key.
 async fn complete_account_key_migration(ctx: &mut Ctx, migration: &LegacyAccountKeyMigration) -> SyncResult<()> {
     let blobs = &migration.account_keys;
     state::set(&ctx.host, state::ENCRYPTED_ACCOUNT_KEY, &blobs.encrypted_account_key).await?;

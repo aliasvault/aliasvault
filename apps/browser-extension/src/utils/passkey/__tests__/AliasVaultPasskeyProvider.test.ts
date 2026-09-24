@@ -496,7 +496,7 @@ describe('PasskeyAuthenticator', () => {
       expect(flags & 0x08).toBe(0x08); // Backup Eligible
       expect(flags & 0x10).toBe(0x10); // Backup State
 
-      // Should NOT have AT (0x40) set (attested credential data only in creation)
+      // Should not have AT (0x40) set (attested credential data only in creation)
       expect(flags & 0x40).toBe(0x00);
 
       // Sign count should be 0 (bytes 33-36)
@@ -713,7 +713,7 @@ describe('PasskeyAuthenticator', () => {
       const authDataBytes = Uint8Array.from(fromBase64url(assertion.authenticatorData), c => c.charCodeAt(0));
       const flags = authDataBytes[32];
 
-      // Should NOT have BE (0x08) or BS (0x10) set
+      // Should not have BE (0x08) or BS (0x10) set
       expect(flags & 0x08).toBe(0x00);
       expect(flags & 0x10).toBe(0x00);
 
