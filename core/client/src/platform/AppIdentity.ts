@@ -7,7 +7,4 @@ export interface IAppIdentity {
 
   /** The client name sent in the `X-AliasVault-Client` header, e.g. `chrome`, `ios`, `web`. */
   clientName: string;
-
-  /** True for development builds; enables dev-only diagnostics such as stage timers. */
-  isDevelopment: boolean;
 }

@@ -155,5 +155,3 @@ const subfolderRendering: MultiManifestRenderer = {
  * The rendering mode this build ships. Every caller goes through this, so the mode is decided here and nowhere else.
  */
 export const multiManifestRendering: MultiManifestRenderer = subfolderRendering;
-
-export default multiManifestRendering;

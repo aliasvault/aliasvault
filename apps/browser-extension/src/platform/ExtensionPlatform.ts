@@ -93,7 +93,6 @@ export const extensionPlatform: IClientPlatform = {
   app: {
     version: EXTENSION_VERSION,
     clientName: detectClientName(),
-    isDevelopment: import.meta.env.DEV,
   },
   rustCore,
   sqlite: createRustSqliteEngine(rustCore),

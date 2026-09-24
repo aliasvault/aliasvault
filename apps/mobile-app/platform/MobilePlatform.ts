@@ -1,5 +1,4 @@
-import { setPlatform, TranslatableMessage } from '@aliasvault/client/platform';
-import { unavailableService } from '@aliasvault/client/platform/InMemoryPlatform';
+import { setPlatform, TranslatableMessage, unavailableService } from '@aliasvault/client/platform';
 
 import type { IClientPlatform, IKeyValueStore, ISqliteEngine } from '@aliasvault/client/platform';
 
@@ -51,7 +50,6 @@ const mobilePlatform: IClientPlatform = {
   app: {
     version: MobileAppIdentity.VERSION,
     clientName: MobileAppIdentity.CLIENT_NAME,
-    isDevelopment: __DEV__,
   },
   rustCore: nativeRustCore,
   sqlite: unavailableService<ISqliteEngine>('SQLite engine'),

@@ -254,33 +254,6 @@ export class EncryptionUtility {
   }
 
   /**
-   * Encrypts data using RSA-OAEP asymmetric encryption with a public key
-   */
-  public static async encryptWithPublicKey(plaintext: string, publicKey: string): Promise<string> {
-    const publicKeyObj = await crypto.subtle.importKey(
-      "jwk",
-      JSON.parse(publicKey),
-      {
-        name: "RSA-OAEP",
-        hash: "SHA-256",
-      },
-      false,
-      ["encrypt"]
-    );
-
-    const encodedPlaintext = new TextEncoder().encode(plaintext);
-    const cipherBuffer = await crypto.subtle.encrypt(
-      {
-        name: "RSA-OAEP"
-      },
-      publicKeyObj,
-      encodedPlaintext
-    );
-
-    return bytesToBase64(new Uint8Array(cipherBuffer));
-  }
-
-  /**
    * Decrypts data using RSA-OAEP asymmetric encryption with a JWK private key
    */
   public static async decryptWithPrivateKey(ciphertext: string, privateKey: string): Promise<Uint8Array> {

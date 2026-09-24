@@ -20,7 +20,7 @@ interface IFolderPillProps {
  * FolderPill component
  *
  * Displays a folder as a compact pill/tag that can be clicked to navigate into.
- * Designed to be displayed inline with other folder pills. Shared folders get a
+ * Designed to be displayed inline with other folder pills. A folder of a shared manifest gets a
  * small people badge overlaid on the folder icon.
  */
 const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = false, optionId, isShared = false }) => {

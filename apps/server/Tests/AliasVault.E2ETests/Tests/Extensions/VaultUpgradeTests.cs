@@ -58,7 +58,7 @@ public class VaultUpgradeTests : BrowserExtensionPlaywrightTest
             {
                 ManifestId = currentVault.ManifestId,
                 OwnerUserId = user.Id,
-                StorageFormat = "sqlite-blob",
+                StorageFormat = VaultManifestBase.LegacyStorageFormat,
                 Version = "1.0.0",
                 RevisionNumber = 2,
                 CreatedAt = DateTime.UtcNow,

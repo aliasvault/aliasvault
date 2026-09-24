@@ -30,8 +30,7 @@ fn spec(folder_id: &str) -> ManifestSpec {
     }
 }
 
-/// A canonicalize input whose rows are stamped the way a real client writes them (see
-/// [`super::tests::stamp_unstamped`]): fixtures declare the stamps that matter and this fills in the rest.
+/// A canonicalize input whose rows are stamped the way a real client writes them.
 fn input_with_shares(tables: Vec<CodecTableData>, shared_manifests: Vec<ManifestSpec>) -> CanonicalizeInput {
     raw_input_with_shares(stamp_unstamped(tables, PERSONAL_M), shared_manifests)
 }

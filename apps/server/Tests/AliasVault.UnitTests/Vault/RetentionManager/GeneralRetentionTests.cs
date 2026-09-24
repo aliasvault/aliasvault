@@ -30,15 +30,15 @@ public class GeneralRetentionTests
         now = new DateTime(2023, 6, 1, 12, 0, 0); // Set a fixed "now" date for testing: June 1, 2023, 12:00 PM
         testVaults =
         [
-            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 9 },
-            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 4, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 8 },
-            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 30, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 7 }, // 2 days ago
-            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 29, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 6 }, // 3 days ago
-            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 28, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 5 }, // 4 days ago
-            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 18, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 4 }, // 2 weeks ago
-            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 11, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 3 }, // 3 weeks ago
-            new VaultManifestsHistory { Version = "1.0.2", UpdatedAt = new DateTime(2023, 5, 1, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 2 }, // 1 month ago
-            new VaultManifestsHistory { Version = "1.0.1", UpdatedAt = new DateTime(2023, 4, 1, 12, 0, 0), Salt = "ghi", Verifier = "ghi", VaultBlob = string.Empty, StorageFormat = "sqlite-blob", EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 1 }, // 2 months ago
+            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 9 },
+            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 31, 4, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 8 },
+            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 30, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 7 }, // 2 days ago
+            new VaultManifestsHistory { Version = "1.1.0", UpdatedAt = new DateTime(2023, 5, 29, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 6 }, // 3 days ago
+            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 28, 12, 0, 0), Salt = "abc", Verifier = "abc", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 5 }, // 4 days ago
+            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 18, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 4 }, // 2 weeks ago
+            new VaultManifestsHistory { Version = "1.0.3", UpdatedAt = new DateTime(2023, 5, 11, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 3 }, // 3 weeks ago
+            new VaultManifestsHistory { Version = "1.0.2", UpdatedAt = new DateTime(2023, 5, 1, 12, 0, 0), Salt = "def", Verifier = "def", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 2 }, // 1 month ago
+            new VaultManifestsHistory { Version = "1.0.1", UpdatedAt = new DateTime(2023, 4, 1, 12, 0, 0), Salt = "ghi", Verifier = "ghi", VaultBlob = string.Empty, StorageFormat = VaultManifestBase.LegacyStorageFormat, EncryptionType = string.Empty, EncryptionSettings = string.Empty, RevisionNumber = 1 }, // 2 months ago
         ];
     }
 
@@ -221,7 +221,7 @@ public class GeneralRetentionTests
         var newVault = new VaultManifest
         {
             VaultBlob = string.Empty,
-            StorageFormat = "sqlite-blob",
+            StorageFormat = VaultManifestBase.LegacyStorageFormat,
             Version = string.Empty,
             Salt = string.Empty,
             Verifier = string.Empty,

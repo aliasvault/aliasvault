@@ -10,6 +10,15 @@ beforeEach(() => {
 });
 
 /**
+ * RSA-OAEP encrypts a string with a JWK public key, the way the server encrypts email keys.
+ */
+async function encryptWithPublicKey(plaintext: string, publicKey: string): Promise<string> {
+  const key = await crypto.subtle.importKey('jwk', JSON.parse(publicKey), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  const cipherBuffer = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(plaintext));
+  return Buffer.from(cipherBuffer).toString('base64');
+}
+
+/**
  * Creates a mailbox email with fields encrypted by the supplied RSA key pair. The decryption key references the key
  * by its position in the response-level public key table, mirroring what the API sends.
  */
@@ -35,7 +44,7 @@ async function createMailboxEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: id,
-    decryptionKeys: [{ keyIndex, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
+    decryptionKeys: [{ keyIndex, encryptedSymmetricKey: await encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
   };
 }
 
@@ -59,7 +68,7 @@ async function createEmail(
     date: '2026-05-26T00:00:00Z',
     dateSystem: '2026-05-26T00:00:00Z',
     secondsAgo: 1,
-    decryptionKeys: [{ keyIndex: 0, encryptedSymmetricKey: await EncryptionUtility.encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
+    decryptionKeys: [{ keyIndex: 0, encryptedSymmetricKey: await encryptWithPublicKey(rawSymmetricKey, encryptionKey.PublicKey) }],
     publicKeys: [encryptionKey.PublicKey],
   };
 }
@@ -138,7 +147,7 @@ describe('generateRsaKeyPairNonExtractable', () => {
   it('round-trips: encrypt with JWK public key, decrypt with CryptoKey', async () => {
     const { publicKeyJwk, privateKey } = await EncryptionUtility.generateRsaKeyPairNonExtractable();
 
-    const ciphertext = await EncryptionUtility.encryptWithPublicKey('hello mobile login', publicKeyJwk);
+    const ciphertext = await encryptWithPublicKey('hello mobile login', publicKeyJwk);
     const plaintextBytes = await EncryptionUtility.decryptWithPrivateKeyObject(ciphertext, privateKey);
 
     expect(new TextDecoder().decode(plaintextBytes)).toBe('hello mobile login');
@@ -149,7 +158,7 @@ describe('generateRsaKeyPair (legacy JWK path, used by vault email decrypt)', ()
   it('still round-trips through the JWK-string decrypt path', async () => {
     const { publicKey, privateKey } = await EncryptionUtility.generateRsaKeyPair();
 
-    const ciphertext = await EncryptionUtility.encryptWithPublicKey('email body', publicKey);
+    const ciphertext = await encryptWithPublicKey('email body', publicKey);
     const plaintextBytes = await EncryptionUtility.decryptWithPrivateKey(ciphertext, privateKey);
 
     expect(new TextDecoder().decode(plaintextBytes)).toBe('email body');

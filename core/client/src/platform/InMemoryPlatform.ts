@@ -1,3 +1,5 @@
+import { unavailableService } from './UnavailableService';
+
 import type { IClientPlatform } from './ClientPlatform';
 import type { IKeyValueStore, StorageKey } from './KeyValueStore';
 import type { ISqliteEngine } from './SqliteEngine';
@@ -64,17 +66,6 @@ export class InMemoryKeyValueStore implements IKeyValueStore {
 }
 
 /**
- * A platform service that refuses every call, for hosts that do not provide it.
- * @param what - the service name, for the error message
- */
-export function unavailableService<T extends object>(what: string): T {
-  return new Proxy({} as T, {
-    /** Every member access yields a rejecting function. */
-    get: (_target, property): unknown => (): Promise<never> => Promise.reject(new Error(`No ${what} configured for this platform (${String(property)}).`)),
-  });
-}
-
-/**
  * A platform with in-memory storage and no-op logging, for unit tests. Override what the test needs (typically
  * the Rust core binding and the SQLite engine).
  * @param overrides - members to replace
@@ -90,7 +81,7 @@ export function createInMemoryPlatform(overrides: Partial<IClientPlatform> = {})
       /** Discard. */
       error: (): void => {},
     },
-    app: { version: '0.0.0-test', clientName: 'test', isDevelopment: false },
+    app: { version: '0.0.0-test', clientName: 'test' },
     rustCore: unavailableService<IRustCore>('Rust core'),
     sqlite: unavailableService<ISqliteEngine>('SQLite engine'),
     /**

@@ -49,7 +49,7 @@ public static class TestUserSeeder
         dbContext.GroupMembers.Add(new GroupMember { Id = Guid.NewGuid(), GroupId = group.Id, UserId = user.Id, Role = GroupRole.Owner, CreatedAt = now, UpdatedAt = now });
 
         // The personal group owns a single manifest; email claims link to it and delivery keys scope to it.
-        var manifest = new VaultManifest { ManifestId = Guid.NewGuid(), OwnerGroupId = group.Id, StorageFormat = "sqlite-blob", RevisionNumber = 1, CreatedAt = now, UpdatedAt = now };
+        var manifest = new VaultManifest { ManifestId = Guid.NewGuid(), OwnerGroupId = group.Id, StorageFormat = VaultManifestBase.LegacyStorageFormat, RevisionNumber = 1, CreatedAt = now, UpdatedAt = now };
         dbContext.VaultManifests.Add(manifest);
 
         // At most one primary delivery key exists per manifest (unique filtered index).
