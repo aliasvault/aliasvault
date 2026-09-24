@@ -16,11 +16,14 @@ import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSessi
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
+import type { IExtensionMessageProtocol } from "@/utils/messaging/ExtensionMessaging";
 import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
 import { isRpIdAllowedForHost, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { runStartupMigrations } from '@/migrations';
+
+import type { ExtensionMessage, GetReturnType, MaybePromise, Message } from '@webext-core/messaging';
 
 import { defineBackground, browser } from '#imports';
 
@@ -102,6 +105,21 @@ function isTrustedExtensionSender(sender: WebAuthnMessageSender): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Register a handler that only the extension's own pages may call; a message from a content script is rejected.
+ */
+function onExtensionPageMessage<TType extends keyof IExtensionMessageProtocol>(
+  type: TType,
+  handler: (message: Message<IExtensionMessageProtocol, TType> & ExtensionMessage) => MaybePromise<GetReturnType<IExtensionMessageProtocol[TType]>>
+): void {
+  onMessage(type, (message) => {
+    if (!isTrustedExtensionSender(message.sender)) {
+      throw new Error(`${type} is only available to extension pages`);
+    }
+    return handler(message);
+  });
 }
 
 /**
@@ -235,20 +253,16 @@ export default defineBackground({
     /*
      * Listen for messages via @webext-core/messaging.
      */
-    onMessage('PING', () => true);
+    onExtensionPageMessage('PING', () => true);
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
-    onMessage('GET_ENCRYPTION_KEY', ({ sender }) => isTrustedExtensionSender(sender) ? handleGetEncryptionKey() : null);
-    onMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
-    onMessage('GET_VAULT', () => handleGetVault());
+    onExtensionPageMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
+    onExtensionPageMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
+    onExtensionPageMessage('GET_VAULT', () => handleGetVault());
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
-    onMessage('STORE_UNLOCK_KEY', async ({ data, sender }) => {
-      if (!isTrustedExtensionSender(sender)) {
-        return { success: false };
-      }
-
+    onExtensionPageMessage('STORE_UNLOCK_KEY', async ({ data }) => {
       const result = await handleStoreUnlockKey(data);
       /*
        * Storing the unlock key means the vault just became unlocked; let content scripts
@@ -259,30 +273,30 @@ export default defineBackground({
       }
       return result;
     });
-    onMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
+    onExtensionPageMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
 
-    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
-    onMessage('GET_SYNC_STATE', () => handleGetSyncState());
+    onExtensionPageMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
+    onExtensionPageMessage('GET_SYNC_STATE', () => handleGetSyncState());
 
-    onMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));
-    onMessage('GET_VAULT_MIGRATION_STATUS', () => handleGetVaultMigrationStatus());
-    onMessage('MIGRATE_VAULT_MANIFEST', () => handleMigrateVaultManifest());
-    onMessage('GROUP_CREATE_VAULT', ({ data, sender }) => isTrustedExtensionSender(sender) ? handleGroupCreateVault(data) : { success: false });
-    onMessage('GROUP_UPDATE_VAULT', ({ data, sender }) => isTrustedExtensionSender(sender) ? handleGroupUpdateVault(data) : { success: false });
-    onMessage('GROUP_INVITE_MEMBER', ({ data, sender }) => isTrustedExtensionSender(sender) ? handleGroupInviteMember(data) : { success: false });
-    onMessage('GROUP_REVOKE_ACCESS', ({ data, sender }) => isTrustedExtensionSender(sender) ? handleGroupRevokeAccess(data) : { success: false });
-    onMessage('LOCK_VAULT', () => handleLockVault());
-    onMessage('CLEAR_SESSION', () => handleClearSession());
-    onMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
+    onExtensionPageMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));
+    onExtensionPageMessage('GET_VAULT_MIGRATION_STATUS', () => handleGetVaultMigrationStatus());
+    onExtensionPageMessage('MIGRATE_VAULT_MANIFEST', () => handleMigrateVaultManifest());
+    onExtensionPageMessage('GROUP_CREATE_VAULT', ({ data }) => handleGroupCreateVault(data));
+    onExtensionPageMessage('GROUP_UPDATE_VAULT', ({ data }) => handleGroupUpdateVault(data));
+    onExtensionPageMessage('GROUP_INVITE_MEMBER', ({ data }) => handleGroupInviteMember(data));
+    onExtensionPageMessage('GROUP_REVOKE_ACCESS', ({ data }) => handleGroupRevokeAccess(data));
+    onExtensionPageMessage('LOCK_VAULT', () => handleLockVault());
+    onExtensionPageMessage('CLEAR_SESSION', () => handleClearSession());
+    onExtensionPageMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
 
     onMessage('OPEN_POPUP', () => handleOpenPopup());
     onMessage('OPEN_POPUP_WITH_ITEM', ({ data }) => handlePopupWithItem(data));
     onMessage('OPEN_POPUP_CREATE_CREDENTIAL', ({ data, sender }) => handleOpenPopupCreateCredential(data, sender));
-    onMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
+    onExtensionPageMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
 
-    onMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
-    onMessage('GET_PERSISTED_FORM_VALUES', ({ sender }) => isTrustedExtensionSender(sender) ? handleGetPersistedFormValues() : null);
-    onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
+    onExtensionPageMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
+    onExtensionPageMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
+    onExtensionPageMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
 
     // Remember login save messages
     onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data));
@@ -314,19 +328,19 @@ export default defineBackground({
     onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
-    onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
-    onMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
-    onMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
+    onExtensionPageMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
+    onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
+    onExtensionPageMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 
     // Clipboard management messages
     onMessage('CLIPBOARD_COPIED', () => handleClipboardCopied());
-    onMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data));
-    onMessage('GET_CLIPBOARD_COUNTDOWN_STATE', () => handleGetClipboardCountdownState());
+    onExtensionPageMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data));
+    onExtensionPageMessage('GET_CLIPBOARD_COUNTDOWN_STATE', () => handleGetClipboardCountdownState());
 
     // Auto-lock management messages
     onMessage('RESET_AUTO_LOCK_TIMER', () => handleResetAutoLockTimer());
-    onMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data));
-    onMessage('POPUP_HEARTBEAT', () => handlePopupHeartbeat());
+    onExtensionPageMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data));
+    onExtensionPageMessage('POPUP_HEARTBEAT', () => handlePopupHeartbeat());
 
     // Passkey/WebAuthn settings
     onMessage('GET_WEBAUTHN_SETTINGS', ({ data }) => handleGetWebAuthnSettings(data));
@@ -340,8 +354,8 @@ export default defineBackground({
     onMessage('GET_MATCHING_PASSKEYS', ({ data, sender }) => handleValidatedGetMatchingPasskeys(data, sender));
 
     // Passkey popup request/response flow
-    onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
-    onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
+    onExtensionPageMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
+    onExtensionPageMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
 
     /*
      * Async setup (context menus, alarm restoration) runs in a fire-and-forget
