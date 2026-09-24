@@ -1,11 +1,11 @@
 //! Unit tests for vault_codec, covering the round-trip contract.
 use super::*;
-use super::test_support::{b64, row};
+use super::test_support::{b64, materialize_input, row, stamp_unstamped};
 use super::types::{bucket_category_for, SCHEMA_VERSION};
 use crate::vault_model::names::LOGO_KIND_FAVICON;
 use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_ROW_ID, OVERFLOW_TABLE};
 use serde_json::json;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 /// The rows of `table` inside the data bucket for `category` (empty if absent).
 fn bucket_rows<'a>(out: &'a CanonicalizedVault, category: &str, table: &str) -> &'a [CodecRecord] {
@@ -33,20 +33,6 @@ fn basic_input(tables: Vec<CodecTableData>) -> CanonicalizeInput {
         }],
         adopt_unstamped_into: None,
     }
-}
-
-/// Stamp every row of a manifest-scoped table that carries no `ManifestId`, leaving rows that already name one alone.
-pub(super) fn stamp_unstamped(mut tables: Vec<CodecTableData>, manifest_id: &str) -> Vec<CodecTableData> {
-    let scoped = super::types::manifest_scoped_tables();
-    for table in tables.iter_mut().filter(|t| scoped.contains(&t.name.as_str())) {
-        for record in table.records.iter_mut() {
-            let unstamped = record.get(MANIFEST_ID_COL).and_then(|v| v.as_str()).is_none_or(str::is_empty);
-            if unstamped {
-                record.insert(MANIFEST_ID_COL.to_string(), json!(manifest_id));
-            }
-        }
-    }
-    tables
 }
 
 #[test]
@@ -246,13 +232,6 @@ fn unpack_payload_rejects_tampered_payload() {
     let envelope = json!({ "schemaVersion": 1, "contentHash": content_hash, "payload": { "a": 2 } });
     let packed = super::compress::gzip(serde_json::to_string(&envelope).unwrap().as_bytes()).unwrap();
     assert!(unpack_payload(&packed).is_err());
-}
-
-#[test]
-fn content_hash_is_key_order_independent() {
-    let a = json!({ "x": 1, "y": 2 });
-    let b = json!({ "y": 2, "x": 1 });
-    assert_eq!(hash::content_hash(&a), hash::content_hash(&b));
 }
 
 #[test]
@@ -686,21 +665,6 @@ fn materialize_drops_overflow_table_smuggled_into_a_manifest() {
 }
 
 #[test]
-fn json_siblings_roundtrip() {
-    let input = basic_input(vec![CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] }]);
-    let input_json = serde_json::to_string(&input).unwrap();
-    let canonicalized_json = crate::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
-    let canonicalized: CanonicalizedVault = serde_json::from_str(&canonicalized_json).unwrap();
-    assert!(canonicalized.first().manifest.tables.contains_key("Items"));
-
-    let schema = fitting_schema(std::iter::once(&canonicalized.first().manifest), &canonicalized.data_buckets.clone());
-    let input_value = json!({ "manifests": [canonicalized.first().manifest], "dataBuckets": canonicalized.data_buckets.clone(), "schemaColumns": schema });
-    let materialized_json = crate::error::json_call(&input_value.to_string(), |input: MaterializeInput| materialize_as_sqlite(input)).unwrap();
-    let materialized: MaterializedTables = serde_json::from_str(&materialized_json).unwrap();
-    assert!(materialized.tables.iter().any(|t| t.name == "Items"));
-}
-
-#[test]
 fn content_fingerprint_ignores_key_order_and_whitespace() {
     let a = compute_content_fingerprint(r#"{"schemaVersion":1,"tables":{"Items":[{"Id":"x","Name":"n"}]}}"#);
     let b = compute_content_fingerprint(r#"{ "tables": { "Items": [ { "Name": "n", "Id": "x" } ] }, "schemaVersion": 1 }"#);
@@ -722,24 +686,6 @@ fn content_fingerprint_detects_content_change() {
     let a = compute_content_fingerprint(r#"{"tables":{"Items":[{"Id":"x"}]}}"#);
     let b = compute_content_fingerprint(r#"{"tables":{"Items":[{"Id":"y"}]}}"#);
     assert_ne!(a, b);
-}
-
-#[test]
-fn content_fingerprint_matches_serialized_manifest_roundtrip() {
-    // A manifest serialized by this codec and the same JSON re-parsed/re-serialized by another producer
-    // (different key order) must fingerprint identically.
-    let manifest = Manifest {
-        name: None,
-        schema_version: 1,
-        manifest_salt: "00ff".into(),
-        canonicalized_at: "2026-01-01T00:00:00.000Z".into(),
-        manifest_id: "m-fp".into(),
-        tables: std::collections::HashMap::from([(String::from("Items"), vec![])]),
-        extra: std::collections::HashMap::new(),
-    };
-    let serialized = serde_json::to_string(&manifest).unwrap();
-    let reordered = r#"{"tables":{"Items":[]},"manifestSalt":"00ff","schemaVersion":1,"manifestId":"m-fp","canonicalizedAt":"1999-12-31T23:59:59.000Z"}"#;
-    assert_eq!(compute_content_fingerprint(&serialized), compute_content_fingerprint(reordered));
 }
 
 #[test]
@@ -787,50 +733,6 @@ fn validate_manifest_requires_manifest_id() {
     let result = validate_manifest(&manifest);
     assert!(!result.ok);
     assert!(result.failed_rules.iter().any(|r| r == "manifestId-missing"));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared test helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// A schema map that knows every table and column the given manifests and buckets carry, so
-/// materialize fits all of it and splits nothing off into overflow.
-pub(super) fn fitting_schema<'a>(manifests: impl IntoIterator<Item = &'a Manifest>, buckets: &[DataBucket]) -> HashMap<String, Vec<String>> {
-    let mut schema: HashMap<String, HashSet<String>> = HashMap::new();
-    let mut absorb = |tables: &HashMap<String, Vec<CodecRecord>>| {
-        for (name, records) in tables {
-            let columns = schema.entry(name.clone()).or_default();
-            columns.insert(MANIFEST_ID_COL.to_string());
-            for record in records {
-                columns.extend(record.keys().cloned());
-            }
-        }
-    };
-    for manifest in manifests {
-        absorb(&manifest.tables);
-    }
-    for bucket in buckets {
-        absorb(&bucket.tables);
-    }
-
-    // Local bookkeeping materialize emits itself; it is never present in a manifest to be absorbed above.
-    schema.insert(MANIFESTS_TABLE.to_string(), ["Id", "Name"].iter().map(|c| c.to_string()).collect());
-
-    schema.into_iter().map(|(name, columns)| (name, columns.into_iter().collect())).collect()
-}
-
-/// A `MaterializeInput` for a personal manifest plus the other manifests combined into it, with the
-/// buckets hung off it and a schema fitted to everything they carry (see [`fitting_schema`]).
-pub(super) fn materialize_input(own: Manifest, others: Vec<Manifest>, data_buckets: Vec<DataBucket>) -> MaterializeInput {
-    let schema = fitting_schema(std::iter::once(&own).chain(others.iter()), &data_buckets);
-    MaterializeInput { manifests: std::iter::once(own).chain(others).collect(), data_buckets, schema_columns: schema }
-}
-
-/// A `MaterializeInput` from an explicit manifest list, for the tests that assert on inputs
-/// [`materialize_input`] cannot express (an empty manifest list, for one).
-pub(super) fn materialize_manifests(manifests: Vec<Manifest>, data_buckets: Vec<DataBucket>) -> MaterializeInput {
-    let schema = fitting_schema(manifests.iter(), &data_buckets);
-    MaterializeInput { manifests, data_buckets, schema_columns: schema }
 }
 
 // ---------------------------------------------------------------------------

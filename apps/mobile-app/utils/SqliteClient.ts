@@ -10,7 +10,6 @@ import { PasskeyRepository } from '@aliasvault/client/database/repositories/Pass
 import { SettingsRepository } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@aliasvault/vault';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
-import { VaultCodec } from '@aliasvault/client/sync/VaultCodec';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import { NativeDatabaseClient } from '@/platform/NativeDatabaseClient';
@@ -300,7 +299,7 @@ class SqliteClient {
     }
 
     const localMigrationId = await this.getLatestMigrationId();
-    const schemaMigrationId = VaultCodec.getSchemaMigrationId(new VaultSqlGenerator().getCompleteSchemaSql());
+    const schemaMigrationId = new VaultSqlGenerator().getCompleteSchemaMigrationId();
 
     // An unstamped database or an unreadable schema constant gives no evidence of staleness; don't block on a guess.
     if (!localMigrationId || !schemaMigrationId) {

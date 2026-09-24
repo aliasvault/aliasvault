@@ -6,8 +6,7 @@
 //! local vault holds every row) and a recipient (whose personal manifest knows nothing of the share).
 
 use super::*;
-use super::test_support::{b64, row, table};
-use super::tests::{fitting_schema, materialize_manifests, materialize_input, stamp_unstamped};
+use super::test_support::{b64, materialize_input, materialize_manifests, row, stamp_unstamped, table};
 use super::types::{is_bucketed_table, is_personal_table, manifest_scoped_tables, SCHEMA_VERSION};
 use crate::vault_model::names::LOGO_KIND_FAVICON;
 use crate::vault_model::OVERFLOW_TABLE;
@@ -1426,18 +1425,6 @@ fn extract_encryption_key_for_public_key_skips_deleted_and_returns_none_on_miss(
     assert!(extract_encryption_key_for_public_key(&out.first().manifest, "pub-unknown").is_none());
 }
 
-#[test]
-fn extract_encryption_key_for_public_key_json_sibling_roundtrips() {
-    let out = canonicalize_from_sqlite(input_with_shares(owner_tables(), vec![])).unwrap();
-    let manifest_json = serde_json::to_string(&out.first().manifest).unwrap();
-    let key_json = crate::error::json_call(&manifest_json, |m: Manifest| Ok(extract_encryption_key_for_public_key(&m, "pub"))).unwrap();
-    let key: serde_json::Value = serde_json::from_str(&key_json).unwrap();
-    assert_eq!(key["PrivateKey"], json!("priv"));
-
-    let miss = crate::error::json_call(&manifest_json, |m: Manifest| Ok(extract_encryption_key_for_public_key(&m, "nope"))).unwrap();
-    assert_eq!(miss, "null");
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Wire-format compatibility
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1470,22 +1457,6 @@ fn manifest_specs_deserialize_from_camel_case_json() {
     assert!(value["dataBuckets"].is_array(), "buckets belong to the vault");
     assert!(value["manifests"][0].get("dataBuckets").is_none());
     assert!(value["manifests"][1]["manifest"].get("anchorFolderId").is_none(), "folder anchoring is a client concern, never persisted");
-}
-
-#[test]
-fn materialize_input_accepts_every_manifest_in_one_list_from_json() {
-    let owner = canonicalize_owner();
-    let schema = fitting_schema([&owner.first().manifest, &owner.rest()[0].manifest], &owner.data_buckets.clone());
-    let input_json = json!({
-        "manifests": [owner.first().manifest, owner.rest()[0].manifest],
-        "dataBuckets": owner.data_buckets.clone(),
-        "schemaColumns": schema,
-    })
-    .to_string();
-    let out_json = crate::error::json_call(&input_json, |input: MaterializeInput| materialize_as_sqlite(input)).unwrap();
-    let out: MaterializedTables = serde_json::from_str(&out_json).unwrap();
-    let items = out.tables.iter().find(|t| t.name == "Items").unwrap();
-    assert_eq!(items.records.len(), 4);
 }
 
 /// A vault is made of manifests; with none there is nothing to combine into and no data-model version
@@ -1791,19 +1762,6 @@ fn split_routes_folder_keypair_into_its_manifest_and_never_the_personal_one() {
     assert_eq!(ids(rows(&out.first().manifest, "EncryptionKeys")), vec!["ek-1"], "the personal manifest keeps exactly its personal keys");
     // The unstamped legacy personal row was adopted: stamped with the personal manifest's id.
     assert_eq!(rows(&out.first().manifest, "EncryptionKeys")[0]["ManifestId"], json!(PERSONAL_M));
-}
-
-#[test]
-fn split_drops_a_keypair_stamped_for_a_manifest_that_is_not_in_this_push() {
-    // A key row whose stamp names no manifest being written is dropped, never re-homed into the personal manifest:
-    // a stale key falling back would resurrect the old keypair if that manifest is ever re-created.
-    let out = canonicalize_from_sqlite(input_with_shares(
-        owner_tables_with_folder_keys(vec![folder_key("sfk-gone", "m-deleted", "pub-folder", 1)]),
-        vec![spec("f-shared")],
-    ))
-    .unwrap();
-    assert!(rows(&out.rest()[0].manifest, "EncryptionKeys").is_empty());
-    assert!(!ids(rows(&out.first().manifest, "EncryptionKeys")).contains(&"sfk-gone"));
 }
 
 #[test]

@@ -5,7 +5,6 @@ import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompa
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { TranslatableMessage } from '../platform/TranslatableMessage';
-import { VaultCodec } from '../sync/VaultCodec';
 import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
 import { detectImageMimeType } from '../utilities/ImageType';
@@ -514,8 +513,8 @@ export class SqliteClient implements ISyncDatabaseClient {
       return false;
     }
 
-    const localMigrationId = VaultCodec.getLatestMigrationId(this);
-    const schemaMigrationId = VaultCodec.getSchemaMigrationId(new VaultSqlGenerator().getCompleteSchemaSql());
+    const localMigrationId = this.getLatestMigrationId();
+    const schemaMigrationId = new VaultSqlGenerator().getCompleteSchemaMigrationId();
 
     // An unstamped database or an unreadable schema constant gives no evidence of staleness; don't block on a guess.
     if (!localMigrationId || !schemaMigrationId) {
@@ -523,6 +522,17 @@ export class SqliteClient implements ISyncDatabaseClient {
     }
 
     return localMigrationId < schemaMigrationId;
+  }
+
+  /**
+   * The latest EF migration id the vault is stamped with, or an empty string when it carries none.
+   */
+  private getLatestMigrationId(): string {
+    try {
+      return this.executeQuery<{ MigrationId: string }>('SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 1')[0]?.MigrationId ?? '';
+    } catch {
+      return '';
+    }
   }
 
   /**

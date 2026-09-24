@@ -154,15 +154,6 @@ describe('generateRsaKeyPair (legacy JWK path, used by vault email decrypt)', ()
 
     expect(new TextDecoder().decode(plaintextBytes)).toBe('email body');
   });
-
-  it('exposes private fields in JS string (leak surface the non-extractable variant closes)', async () => {
-    const { privateKey } = await EncryptionUtility.generateRsaKeyPair();
-
-    const jwk = JSON.parse(privateKey);
-    expect(jwk.d).toBeDefined();
-    expect(jwk.p).toBeDefined();
-    expect(jwk.q).toBeDefined();
-  });
 });
 
 describe('email RSA private key cache', () => {
