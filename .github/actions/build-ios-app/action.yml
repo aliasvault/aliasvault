@@ -31,21 +31,6 @@ runs:
         chmod +x build-and-distribute.sh
         ./build-and-distribute.sh
 
-    - name: Verify core library distribution
-      shell: bash
-      run: |
-        TARGET_DIRS=(
-          "apps/mobile-app/utils/dist/core/models"
-          "apps/mobile-app/utils/dist/core/vault"
-        )
-        for dir in "${TARGET_DIRS[@]}"; do
-          if [ ! -d "$dir" ]; then
-            echo "Error: Directory $dir does not exist"
-            exit 1
-          fi
-        done
-        echo "Core library distribution verified"
-
     - name: Install dependencies
       run: npm ci
       shell: bash

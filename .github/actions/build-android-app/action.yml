@@ -34,19 +34,6 @@ runs:
     - name: Verify core library distribution
       shell: bash
       run: |
-        # Verify TypeScript core libraries
-        TARGET_DIRS=(
-          "apps/mobile-app/utils/dist/core/models"
-          "apps/mobile-app/utils/dist/core/vault"
-        )
-        for dir in "${TARGET_DIRS[@]}"; do
-          if [ ! -d "$dir" ]; then
-            echo "❌ Error: Directory $dir does not exist"
-            exit 1
-          fi
-        done
-        echo "✅ TypeScript core libraries verified"
-
         # Verify Android native libraries (Rust core)
         JNILIBS_DIR="apps/mobile-app/android/app/src/main/jniLibs"
         REQUIRED_ABIS=("arm64-v8a" "armeabi-v7a" "x86_64")

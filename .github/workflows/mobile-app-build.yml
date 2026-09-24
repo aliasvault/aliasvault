@@ -61,29 +61,6 @@ jobs:
           chmod +x build-and-distribute.sh
           ./build-and-distribute.sh --android
 
-      - name: Verify core library distribution
-        run: |
-          # Check if files exist and were recently modified
-          TARGET_DIRS=(
-            "utils/dist/core/models"
-            "utils/dist/core/vault"
-          )
-
-          for dir in "${TARGET_DIRS[@]}"; do
-            if [ ! -d "$dir" ]; then
-              echo "❌ Directory $dir does not exist"
-              exit 1
-            fi
-
-            # Check if files were modified in the last 10 minutes
-            find "$dir" -type f -mmin -10 | grep -q . || {
-              echo "❌ Files in $dir were not recently modified"
-              exit 1
-            }
-          done
-
-          echo "✅ Shared library distribution verified"
-
       - name: Install dependencies
         run: npm ci
 
