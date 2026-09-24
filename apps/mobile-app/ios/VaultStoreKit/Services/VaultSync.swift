@@ -85,11 +85,11 @@ internal final class VaultSync {
         return try vaultStore.getEncryptionKeyBase64()
     }
 
-    /// Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
-    /// `storage-format-upgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
+    /// Classify the pending manifest migration as the engine sees it: `none`, `schemaRebuild` (runs unattended) or
+    /// `storageFormatUpgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
     func getVaultMigrationStatus(using webApiService: WebApiService) async throws -> String {
         let status = try await run("migrationStatus", using: webApiService)
-        return status["kind"] as? String ?? "storage-format-upgrade"
+        return status["kind"] as? String ?? "storageFormatUpgrade"
     }
 
     /// Bring the local vault onto the current storage model (a schema rebuild after an app update, or the one-time

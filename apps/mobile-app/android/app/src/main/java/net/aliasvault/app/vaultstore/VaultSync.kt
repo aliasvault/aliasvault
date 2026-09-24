@@ -108,12 +108,12 @@ class VaultSync(
     }
 
     /**
-     * Classify the pending manifest migration as the engine sees it: `none`, `schema-rebuild` (runs unattended) or
-     * `storage-format-upgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
+     * Classify the pending manifest migration as the engine sees it: `none`, `schemaRebuild` (runs unattended) or
+     * `storageFormatUpgrade` (the app asks first). A vault still on the sqlite-blob chain classifies as `none`.
      */
     suspend fun getVaultMigrationStatus(webApiService: WebApiService): String {
         val status = run("migrationStatus", webApiService)
-        return status.optString("kind").takeIf { it.isNotEmpty() } ?: "storage-format-upgrade"
+        return status.optString("kind").takeIf { it.isNotEmpty() } ?: "storageFormatUpgrade"
     }
 
     /**
