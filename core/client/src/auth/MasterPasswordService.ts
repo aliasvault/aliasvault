@@ -1,9 +1,7 @@
-import { AppErrorCode, extractErrorCode } from '../api/errors/AppErrorCodes';
 import { StorageKeys } from '../constants/StorageKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { getPlatform } from '../platform/ClientPlatform';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
-import { logDefect } from '../utilities/Diagnostics';
 
 import { SrpAuthService, type SrpClientProof } from './SrpAuthService';
 import { VaultKeyService } from './VaultKeyService';
@@ -36,15 +34,6 @@ export class PasswordChangedElsewhereError extends Error {
   }
 }
 
-/**
- * Outcome of a local master password check.
- */
-export enum PasswordVerificationResult {
-  Success = 'Success',
-  InvalidPassword = 'InvalidPassword',
-  VerificationError = 'VerificationError',
-}
-
 /** The SRP challenge a server endpoint issues before it accepts a password-confirmed action. */
 export type SrpChallenge = {
   salt: string;
@@ -69,36 +58,6 @@ export class MasterPasswordService {
    */
   public static async getStoredDerivationParams(): Promise<UnlockKeyDerivationParams | null> {
     return getPlatform().storage.get<UnlockKeyDerivationParams>(StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS);
-  }
-
-  /**
-   * Verify the master password locally.
-   * @param password - the master password to check
-   */
-  public static async verifyPassword(password: string): Promise<PasswordVerificationResult> {
-    try {
-      const parameters = await MasterPasswordService.getStoredDerivationParams();
-      if (!parameters) {
-        return PasswordVerificationResult.VerificationError;
-      }
-
-      // Without a cached chain a derived key cannot be checked against anything.
-      if (!await VaultKeyService.hasLocalVaultKey()) {
-        return PasswordVerificationResult.VerificationError;
-      }
-
-      const prepared = await SrpAuthService.prepareCredentials(password, parameters.salt, parameters.encryptionSettings);
-      try {
-        await VaultKeyService.verifyUnlockKey(prepared.passwordHashBase64);
-        return PasswordVerificationResult.Success;
-      } catch (error) {
-        const code = error instanceof Error ? extractErrorCode(error.message) : null;
-        return code === AppErrorCode.UNLOCK_KEY_REJECTED ? PasswordVerificationResult.InvalidPassword : PasswordVerificationResult.VerificationError;
-      }
-    } catch (error) {
-      logDefect('[MasterPassword] Password verification failed unexpectedly', error);
-      return PasswordVerificationResult.VerificationError;
-    }
   }
 
   /**

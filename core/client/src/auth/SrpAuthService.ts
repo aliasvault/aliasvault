@@ -1,11 +1,10 @@
-import { WebApiService } from '../api/WebApiService';
 import { createAccountKeyHierarchy, type AccountKeyBlobs, type AccountKeyHierarchy } from '../crypto/AccountKeys';
 import { EncryptionUtility } from '../crypto/EncryptionUtility';
 import { rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
-import type { TokenModel, LoginResponse, BadRequestResponse } from '@aliasvault/models/webapi';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * Register request type for creating a new user.
@@ -26,19 +25,6 @@ export type PreparedRegistration = {
   request: RegisterRequest;
   keys: AccountKeyHierarchy;
   derivedKey: string;
-};
-
-/**
- * Registration result type.
- */
-export type RegistrationResult = {
-  success: boolean;
-  token?: TokenModel;
-  encryptionKey?: string;
-  derivedKey?: string;
-  accountKeys?: AccountKeyBlobs;
-  accountPrivateKey?: string;
-  error?: string;
 };
 
 /**
@@ -313,63 +299,6 @@ export class SrpAuthService {
       keys: hierarchy,
       derivedKey: material.kekBase64,
     };
-  }
-
-  /**
-   * Registers a new user via the API.
-   *
-   * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
-   * @param username - The username for the new account
-   * @param password - The password for the new account
-   * @returns Registration result with token on success
-   */
-  public static async registerUser(
-    apiBaseUrl: string,
-    username: string,
-    password: string
-  ): Promise<RegistrationResult> {
-    try {
-      // Prepare registration data
-      const prepared = await SrpAuthService.prepareRegistration(username, password);
-
-      const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
-
-      // Send registration request to API
-      const response = await fetch(`${baseUrl}Auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(prepared.request),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `Registration failed with status ${response.status}`;
-        try {
-          const errorJson = JSON.parse(errorText) as BadRequestResponse;
-          errorMessage = errorJson.title || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
-        }
-        return { success: false, error: errorMessage };
-      }
-
-      const tokenModel = (await response.json()) as TokenModel;
-      return {
-        success: true,
-        token: tokenModel,
-        encryptionKey: prepared.keys.vaultEncryptionKey,
-        derivedKey: prepared.derivedKey,
-        accountKeys: prepared.keys.accountKeys,
-        accountPrivateKey: prepared.keys.accountPrivateKey,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-    }
   }
 }
 

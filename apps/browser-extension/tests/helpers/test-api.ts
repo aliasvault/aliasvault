@@ -5,7 +5,7 @@
  */
 
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { base64ToBytes } from '@aliasvault/client/utilities/Base64';
 import * as OTPAuth from 'otpauth';
 
@@ -63,20 +63,13 @@ export async function registerTestUser(
   username: string,
   password: string
 ): Promise<{ tokenModel: TokenModel; encryptionKey: Uint8Array }> {
-  const prepared = await SrpAuthService.prepareRegistration(username, password);
-  const response = await fetch(`${WebApiService.versionedBaseUrl(apiBaseUrl)}Auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(prepared.request),
-  });
-  if (!response.ok) {
-    throw new Error(`Registration failed with status ${response.status}: ${await response.text()}`);
-  }
+  const baseUrl = WebApiService.versionedBaseUrl(apiBaseUrl);
+  const auth = new SrpLoginService({ rawFetch: (endpoint, options) => fetch(`${baseUrl}${endpoint}`, options) });
+  const { token, keys, derivedKey } = await auth.register(username, password);
 
-  const tokenModel = await response.json() as TokenModel;
-  await pushInitialVault(apiBaseUrl, tokenModel.token, username, base64ToBytes(prepared.keys.vaultEncryptionKey));
+  await pushInitialVault(apiBaseUrl, token.token, username, base64ToBytes(keys.vaultEncryptionKey));
 
-  return { tokenModel, encryptionKey: base64ToBytes(prepared.derivedKey) };
+  return { tokenModel: token, encryptionKey: base64ToBytes(derivedKey) };
 }
 
 /**
