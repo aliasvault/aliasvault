@@ -17,7 +17,6 @@ cd "$SCRIPT_DIR"
 # Output directories
 DIST_DIR="$SCRIPT_DIR/dist"
 WASM_DIR="$DIST_DIR/wasm"
-DOTNET_DIR="$DIST_DIR/dotnet"
 IOS_DIR="$DIST_DIR/ios"
 ANDROID_DIR="$DIST_DIR/android"
 
@@ -79,7 +78,6 @@ echo -e "  Rust version: ${GREEN}$RUST_VERSION${NC}"
 # Build mode selection
 BUILD_ALL=false
 BROWSER_TARGET=""  # "web" or "browser-extension": both write core/client/wasm, so one per run
-BUILD_DOTNET=false
 BUILD_IOS=false
 BUILD_ANDROID=false
 INCREMENTAL=false
@@ -100,10 +98,6 @@ while [[ $# -gt 0 ]]; do
             echo -e "${RED}Error: --browser was split into --web (size-optimized) and --browser-extension (speed-optimized)${NC}"
             exit 1
             ;;
-        --dotnet)
-            BUILD_DOTNET=true
-            shift
-            ;;
         --ios)
             BUILD_IOS=true
             shift
@@ -114,7 +108,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --all)
             BROWSER_TARGET="${BROWSER_TARGET:-web}"
-            BUILD_DOTNET=true
             BUILD_IOS=true
             BUILD_ANDROID=true
             shift
@@ -133,7 +126,6 @@ while [[ $# -gt 0 ]]; do
             echo "Target options:"
             echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
             echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
-            echo "  --dotnet             Build native library for .NET server-side use (macOS/Linux/Windows, speed-optimized)"
             echo "  --ios                Build for iOS (device + simulator arm64) with Swift bindings"
             echo "  --android            Build for Android (arm64-v8a, armeabi-v7a, x86_64) with Kotlin bindings"
             echo "  --all                Build all targets (WASM as --web)"
@@ -155,13 +147,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 # If no targets specified, show help
-if [ -z "$BROWSER_TARGET" ] && ! $BUILD_DOTNET && ! $BUILD_IOS && ! $BUILD_ANDROID; then
+if [ -z "$BROWSER_TARGET" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
     echo "No target specified. Use --help for usage."
     echo ""
     echo "Quick start:"
     echo "  ./build.sh --web                # Build for web app"
     echo "  ./build.sh --browser-extension  # Build for browser extension"
-    echo "  ./build.sh --dotnet     # Build for .NET"
     echo "  ./build.sh --ios        # Build for iOS"
     echo "  ./build.sh --android    # Build for Android"
     exit 0
@@ -265,80 +256,6 @@ README_EOF
         echo -e "${GREEN}Distributed to: $BLAZOR_CLIENT_DIST${NC}"
         ls -lh "$BLAZOR_CLIENT_DIST/"
     fi
-}
-
-# ============================================
-# .NET Build (Native Library with FFI)
-# ============================================
-build_dotnet() {
-    echo ""
-    echo -e "${BLUE}Building native library for .NET...${NC}"
-
-    local start_time=$(date +%s)
-
-    # Detect current platform
-    local os_name
-    local arch_name
-    local lib_name
-    local target_dir
-
-    case "$(uname -s)" in
-        Darwin)
-            os_name="macos"
-            lib_name="libaliasvault_core.dylib"
-            ;;
-        Linux)
-            os_name="linux"
-            lib_name="libaliasvault_core.so"
-            ;;
-        MINGW*|MSYS*|CYGWIN*)
-            os_name="windows"
-            lib_name="aliasvault_core.dll"
-            ;;
-        *)
-            echo -e "${RED}Unsupported OS: $(uname -s)${NC}"
-            exit 1
-            ;;
-    esac
-
-    case "$(uname -m)" in
-        x86_64|amd64)
-            arch_name="x64"
-            ;;
-        arm64|aarch64)
-            arch_name="arm64"
-            ;;
-        *)
-            arch_name="$(uname -m)"
-            ;;
-    esac
-
-    target_dir="$DOTNET_DIR/${os_name}-${arch_name}"
-    mkdir -p "$target_dir"
-
-    echo -e "  Platform: ${YELLOW}${os_name}-${arch_name}${NC}"
-
-    # Build with cargo
-    echo -e "  Running cargo build..."
-    cargo build --profile dotnet --features ffi
-    local cargo_target="target/dotnet"
-
-    # Copy the library
-    if [ -f "$cargo_target/$lib_name" ]; then
-        cp "$cargo_target/$lib_name" "$target_dir/"
-        local lib_size
-        lib_size=$(ls -lh "$target_dir/$lib_name" | awk '{print $5}')
-        echo -e "${GREEN}Native library built! ${NC}"
-        echo -e "  Output: ${YELLOW}$target_dir/$lib_name${NC}"
-        echo -e "  Size: ${YELLOW}$lib_size${NC}"
-    else
-        echo -e "${RED}Build failed: $lib_name not found${NC}"
-        exit 1
-    fi
-
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    echo -e "${GREEN}.NET build complete! (${duration}s)${NC}"
 }
 
 # ============================================
@@ -727,13 +644,6 @@ TOTAL_START=$(date +%s)
 if [ -n "$BROWSER_TARGET" ]; then
     build_browser
     distribute_browser
-fi
-
-if $BUILD_DOTNET; then
-    build_dotnet
-    # Note: dotnet native libs are built to dist/dotnet/ but not distributed
-    # Blazor WASM uses the WASM module via JS interop instead
-    echo -e "${YELLOW}Note: Native library built to dist/dotnet/ (for server-side .NET use)${NC}"
 fi
 
 if $BUILD_IOS; then

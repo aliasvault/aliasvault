@@ -451,8 +451,7 @@ core/rust/target/
 # Browser WASM for web app and extension (built by: cd core/rust && ./build.sh --web or --browser-extension)
 core/client/wasm
 
-# Server .NET bindings (built by: cd core/rust && ./build.sh --server)
-apps/server/Utilities/AliasVault.RustCore/
+# Blazor client browser WASM (built by: cd core/rust && ./build.sh --web)
 apps/server/AliasVault.Client/wwwroot/wasm
 
 # Client JS bundle (built by: npm run build:js in apps/server/AliasVault.Client)

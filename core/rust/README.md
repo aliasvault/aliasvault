@@ -5,7 +5,6 @@ Cross-platform core library providing shared business logic for all AliasVault c
 - **Browser Extensions** (Chrome, Firefox, Edge, Safari via WASM)
 - **Web App and Blazor Client** (via the same WASM build)
 - **Mobile Apps** (iOS via Swift bindings, Android via Kotlin bindings)
-- **.NET** (C FFI exports for P/Invoke, built with `--dotnet`; nothing consumes them yet)
 
 ## Core Modules
 
@@ -65,16 +64,15 @@ type with the JSON-in/JSON-out call helper the bindings share.
 ./build.sh --browser-extension  # WASM for the browser extension
 ./build.sh --ios                # iOS device + simulator with Swift bindings
 ./build.sh --android            # Android ABIs with Kotlin bindings
-./build.sh --dotnet             # Native library for .NET
 ./build.sh --mobile             # iOS + Android
 ./build.sh --all                # All targets (WASM as --web)
 ```
 
 Only the web app (fetched on page load) builds with the size-optimized `release` profile. The browser extension
-(`extension` profile), iOS and Android (`mobile` profile) and .NET (`dotnet` profile) build with `opt-level = 3`, which
-trades a few megabytes for faster sync, since those ship as a one time download or run server-side. Both WASM builds write to `core/client/wasm`, so locally the
+(`extension` profile), iOS and Android (`mobile` profile) build with `opt-level = 3`, which
+trades a few megabytes for faster sync, since those ship as a one time download. Both WASM builds write to `core/client/wasm`, so locally the
 apps run whichever was built last. Every build bundles SQLite behind
-`SqliteMemoryDatabase` (the .NET C exports included), which hosts every client's vault database in
+`SqliteMemoryDatabase`, which hosts every client's vault database in
 memory (the sync engine's staging database included), so all clients run one SQLite build and the phones never
 write plaintext to disk. On wasm32 that SQLite is compiled by clang (sqlite-wasm-rs); macOS needs Homebrew LLVM
 (`brew install llvm`), which `build.sh` finds on its own.

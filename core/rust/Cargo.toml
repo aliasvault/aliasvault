@@ -26,8 +26,6 @@ uniffi = ["dep:uniffi"]
 uniffi-cli = ["uniffi/cli"]
 # Feature for WASM builds (browser extension)
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook", "dep:js-sys"]
-# Feature for C FFI exports (.NET P/Invoke)
-ffi = []
 
 [dependencies]
 # Serialization - core dependency for JSON handling
@@ -113,10 +111,5 @@ opt-level = 3
 
 # Mobile profile - optimized for speed as increased bundle size is less relevant as its a one time download
 [profile.mobile]
-inherits = "release"
-opt-level = 3
-
-# .NET profile - optimized for speed as the native library runs server-side where size is irrelevant
-[profile.dotnet]
 inherits = "release"
 opt-level = 3

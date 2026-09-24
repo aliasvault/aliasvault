@@ -41,10 +41,6 @@ pub use error::VaultError;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
-// C FFI exports (.NET P/Invoke), built with --dotnet but not consumed by any app yet
-#[cfg(feature = "ffi")]
-pub mod ffi;
-
 // UniFFI bindings for Swift/Kotlin
 #[cfg(feature = "uniffi")]
 pub mod uniffi_api;

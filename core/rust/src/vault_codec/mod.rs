@@ -30,7 +30,7 @@ pub use types::SCHEMA_VERSION;
 pub use canonicalize::{canonicalize_from_sqlite, extract_buckets};
 pub use manifest::{
     BlobEntry, BucketLayoutEntry, CanonicalizeInput, CanonicalizedManifest, CanonicalizedVault, CodecOverflow, DataBucket,
-    ExtractBucketsInput, Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
+    Manifest, MaterializeInput, MaterializedTables, CodecRecord, CodecTableData, ManifestSpec,
 };
 pub use materialize::materialize_as_sqlite;
 pub use scoped_assets::logo_id_for;
