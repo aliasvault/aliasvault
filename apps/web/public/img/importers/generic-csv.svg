@@ -1,0 +1,43 @@
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <defs>
+    <linearGradient id="csv-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="4" y="2" width="16" height="20" rx="2" ry="2" fill="url(#csv-gradient)" stroke="#047857" stroke-width="0.5"/>
+
+  <!-- File fold -->
+  <path d="M16 2v4h4" fill="none" stroke="#047857" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- CSV text -->
+  <text x="12" y="10" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="3" font-weight="bold">CSV</text>
+
+  <!-- Table grid -->
+  <g stroke="white" stroke-width="0.8" fill="none">
+    <!-- Horizontal lines -->
+    <line x1="6" y1="13" x2="18" y2="13"/>
+    <line x1="6" y1="15.5" x2="18" y2="15.5"/>
+    <line x1="6" y1="18" x2="18" y2="18"/>
+
+    <!-- Vertical lines -->
+    <line x1="9" y1="13" x2="9" y2="20"/>
+    <line x1="12" y1="13" x2="12" y2="20"/>
+    <line x1="15" y1="13" x2="15" y2="20"/>
+  </g>
+
+  <!-- Small dots to represent data -->
+  <g fill="white">
+    <circle cx="7.5" cy="14.25" r="0.3"/>
+    <circle cx="10.5" cy="14.25" r="0.3"/>
+    <circle cx="13.5" cy="14.25" r="0.3"/>
+    <circle cx="16.5" cy="14.25" r="0.3"/>
+
+    <circle cx="7.5" cy="16.75" r="0.3"/>
+    <circle cx="10.5" cy="16.75" r="0.3"/>
+    <circle cx="13.5" cy="16.75" r="0.3"/>
+    <circle cx="16.5" cy="16.75" r="0.3"/>
+  </g>
+</svg>
