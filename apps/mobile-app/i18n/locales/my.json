@@ -36,6 +36,7 @@
       "unknownError": "မသိသော အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်။.",
       "unknownErrorTryAgain": "မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "serverVersionTooOld": "ဤအင်္ဂါရပ်ကိုအသုံးပြုရန် AliasVault ဆာဗာကို ဗားရှင်းအသစ်သို့ အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။ အကူအညီလိုအပ်ပါက ဆာဗာအက်ဒမင်ထံ ဆက်သွယ်ပါ။"
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirm Login Request",
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "The remote device has been successfully logged in.",
         "requestExpired": "This login request has expired. Please generate a new QR code."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Item restored",
       "itemDeleted": "Item permanently deleted",
       "allItemsDeleted": "All items permanently deleted"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
       "applyingDatabaseMigrations": "Applying database migrations...",
       "applyingMigration": "Applying migration {{current}} of {{total}}...",
       "committingChanges": "Committing changes..."
