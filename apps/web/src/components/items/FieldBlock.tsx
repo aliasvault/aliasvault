@@ -55,7 +55,7 @@ const TextWithLinks: React.FC<{ text: string }> = ({ text }) => {
   return (
     <>
       {parts.map((part, index) => /^https?:\/\//.test(part)
-        ? <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{part}</a>
+        ? <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">{part}</a>
         : <React.Fragment key={index}>{part}</React.Fragment>)}
     </>
   );
@@ -131,7 +131,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
           <div className="col-span-6">
             {labelElement}
             {field.Value.length > 0 && (/^https?:\/\//i.test(field.Value)
-              ? <a href={field.Value} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline break-all">{field.Value}</a>
+              ? <a href={field.Value} target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline break-all">{field.Value}</a>
               : <span className="text-gray-700 dark:text-gray-300 break-all">{field.Value}</span>)}
           </div>
         );

@@ -188,7 +188,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
                   {showItemLink && (item !== null && item.name.length > 0 ? (
                     <p>
                       <span className="font-medium">{t('sharedResources.EmailItemLabel')}</span>{' '}
-                      <button type="button" onClick={() => navigate(itemRoute(item.ref))} className="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">{item.name}</button>
+                      <button type="button" onClick={() => navigate(itemRoute(item.ref))} className="text-primary-600 hover:underline dark:text-primary-400 cursor-pointer">{item.name}</button>
                     </p>
                   ) : (
                     <p>

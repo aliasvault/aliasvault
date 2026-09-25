@@ -110,7 +110,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
                 <p><span className="font-medium">{t('components.main.email.emailPreview.DateLabel')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
                 {item !== null && item.name.length > 0 ? (
                   <p><span className="font-medium">{t('sharedResources.EmailItemLabel')}</span>{' '}
-                    <button type="button" onClick={() => onItemClick(item.ref)} className="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">{item.name}</button>
+                    <button type="button" onClick={() => onItemClick(item.ref)} className="text-primary-600 hover:underline dark:text-primary-400 cursor-pointer">{item.name}</button>
                   </p>
                 ) : (
                   <p><span className="font-medium">{t('sharedResources.EmailItemLabel')}</span> <span className="text-gray-400 dark:text-gray-500">{t('sharedResources.EmailItemNone')}</span></p>
@@ -136,7 +136,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
                       <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                       </svg>
-                      <button type="button" onClick={() => void downloadAttachment(attachment)} className="text-blue-600 hover:underline text-sm truncate dark:text-blue-400 attachment-link">
+                      <button type="button" onClick={() => void downloadAttachment(attachment)} className="text-primary-600 hover:underline text-sm truncate dark:text-primary-400 attachment-link">
                         ({Math.ceil(attachment.size / 1024)} KB) {attachment.filename}
                       </button>
                     </div>
