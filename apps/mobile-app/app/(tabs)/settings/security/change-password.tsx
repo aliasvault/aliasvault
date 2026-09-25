@@ -1,3 +1,4 @@
+import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
+import { PasswordStrengthIndicator } from '@/components/form/PasswordStrengthIndicator';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedButton } from '@/components/themed/ThemedButton';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -68,6 +70,11 @@ export default function ChangePasswordScreen(): React.ReactNode {
   const handleSubmit = async (): Promise<void> => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       showAlert(t('common.error'), t('settings.securitySettings.changePassword.fillAllFields'));
+      return;
+    }
+
+    if (newPassword.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
+      showAlert(t('common.error'), t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
 
@@ -145,6 +152,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
                   onChangeText={setNewPassword}
                   placeholder={t('settings.securitySettings.changePassword.enterNewPassword')}
                 />
+                <PasswordStrengthIndicator password={newPassword} />
               </View>
 
               <View style={styles.inputContainer}>

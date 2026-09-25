@@ -1,28 +1,6 @@
+import { getPasswordStrength } from '@aliasvault/client/utilities/PasswordStrength';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-
-/** Passwords shorter than this are rejected; it is also where the strength scale reaches "Fair". */
-export const MIN_PASSWORD_LENGTH = 12;
-
-/**
- * Strength score of a password, 0 to 4, by length.
- */
-export function getPasswordStrength(password: string): number {
-  const length = password.length;
-  if (length < 8) {
-    return 0;
-  }
-  if (length < MIN_PASSWORD_LENGTH) {
-    return 1;
-  }
-  if (length < 16) {
-    return 2;
-  }
-  if (length < 20) {
-    return 3;
-  }
-  return 4;
-}
 
 const LABEL_KEYS = ['StrengthVeryWeak', 'StrengthWeak', 'StrengthFair', 'StrengthGood', 'StrengthStrong'];
 const BAR_CLASSES = ['bg-orange-400 dark:bg-orange-500', 'bg-yellow-500 dark:bg-yellow-600', 'bg-green-500 dark:bg-green-600', 'bg-green-600 dark:bg-green-700', 'bg-green-700 dark:bg-green-800'];

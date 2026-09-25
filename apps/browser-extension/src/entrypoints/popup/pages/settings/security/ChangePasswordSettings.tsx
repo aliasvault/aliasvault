@@ -1,5 +1,6 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +8,7 @@ import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
-import PasswordStrengthIndicator, { MIN_GOOD_PASSWORD_LENGTH } from '@/entrypoints/popup/components/PasswordStrengthIndicator';
+import PasswordStrengthIndicator from '@/entrypoints/popup/components/PasswordStrengthIndicator';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
@@ -118,8 +119,8 @@ const ChangePasswordSettings: React.FC = () => {
       setError(t('settings.securitySettings.changePassword.passwordsDoNotMatch'));
       return;
     }
-    if (newPassword.length < MIN_GOOD_PASSWORD_LENGTH) {
-      setError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_GOOD_PASSWORD_LENGTH }));
+    if (newPassword.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
+      setError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
 

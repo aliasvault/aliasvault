@@ -1,11 +1,12 @@
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import EditFormRow from '@/components/forms/EditFormRow';
-import PasswordStrengthIndicator, { MIN_GOOD_PASSWORD_LENGTH } from '@/components/shared/PasswordStrengthIndicator';
+import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
 import { useApp } from '@/context/AppContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -185,8 +186,8 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
    * Length and match checks.
    */
   const validate = (value: string, confirm: string): void => {
-    if (value.length < MIN_GOOD_PASSWORD_LENGTH) {
-      setErrorMessage(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_GOOD_PASSWORD_LENGTH }));
+    if (value.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
+      setErrorMessage(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_ACCEPTED_PASSWORD_LENGTH }));
       onPasswordChange('');
       return;
     }
