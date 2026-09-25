@@ -1,7 +1,6 @@
 /**
- * Runtime configuration, read from /appsettings.json at startup which was migrated from the Blazor WASM app
- * structure as the Docker entrypoint rewrites the appsettings.json in the root. So we keep this inline with the Blazor WASM app
- * for compatibility reasons for now.
+ * Runtime configuration, read from /appsettings.json at startup. The Docker entrypoint rewrites that file in the web
+ * root, so its name and structure are kept for compatibility.
  */
 
 import { StorageKeys } from '@aliasvault/client/constants/StorageKeys';

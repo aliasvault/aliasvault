@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 
-Ported from the Blazor WASM app.css. 
+/*
 TODO: migrate all styles to native Tailwind CSS and components where possible.
 */
 .validation-message {
@@ -35,7 +34,7 @@ TODO: migrate all styles to native Tailwind CSS and components where possible.
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Shared spinner styles, ported from the Blazor loading indicator components. */
+/* Shared spinner styles. */
 .aliasvault-spinner {
     display: flex;
     justify-content: center;
@@ -126,7 +125,7 @@ TODO: migrate all styles to native Tailwind CSS and components where possible.
     word-wrap: break-word;
 }
 
-/* Skeleton loaders, ported from SkeletonBase.razor. */
+/* Skeleton loaders. */
 .skeleton-base {
     background-color: rgb(229 231 235);
     border-radius: 0.5rem;
@@ -157,7 +156,7 @@ TODO: migrate all styles to native Tailwind CSS and components where possible.
     100% { transform: translateX(100%); }
 }
 
-/* Inline notification containers, ported from GlobalNotificationDisplay.razor. */
+/* Inline notification containers. */
 .messages-container > :first-child {
     margin-top: 0 !important;
 }

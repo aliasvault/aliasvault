@@ -12,7 +12,7 @@ type LoadingContextType = {
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 /**
- * Global loading spinner (the Blazor GlobalLoadingService), rendered as a full screen overlay.
+ * Global loading spinner, rendered as a full screen overlay.
  */
 export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);

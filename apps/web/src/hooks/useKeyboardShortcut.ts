@@ -16,7 +16,7 @@ const isTypingTarget = (): boolean => {
 };
 
 /**
- * Register a two-key chord such as "gc" (the Blazor KeyboardShortcutService).
+ * Register a two-key chord such as "gc".
  * @param chord - the two keys, e.g. 'gc'
  * @param handler - what to run when the chord is pressed
  */

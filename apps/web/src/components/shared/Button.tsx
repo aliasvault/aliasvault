@@ -35,7 +35,7 @@ export const getButtonColorClasses = (color: ButtonColor): string => {
 };
 
 /**
- * Generic button (the shared Razor Button component).
+ * Generic button.
  */
 const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', additionalClasses = '', display = 'inline', id }) => {
   const classes = `${display} ${BASE_CLASSES} ${getButtonColorClasses(color)} ${isDisabled ? DISABLED_CLASSES : ''} ${additionalClasses}`.trim();

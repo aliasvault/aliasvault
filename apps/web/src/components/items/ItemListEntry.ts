@@ -1,5 +1,5 @@
 /**
- * Item list entry model for the item lists (the Blazor ItemListEntry), built from the vault's items.
+ * Item list entry model for the item lists, built from the vault's items.
  */
 
 import SqliteClient from '@aliasvault/client/database/SqliteClient';

@@ -9,7 +9,7 @@ import enTranslations from './locales/en.json';
 /**
  * Create a map of all available languages and their resources for i18n.
  * When adding a new language, add the translation JSON file to the locales folder and add the language to the map here.
- * TODO: add all languages here once the Crowdin integration is (re)enabled for this new web app and replacing the existing Blazor WASM web client translations.
+ * TODO: add all languages here once the Crowdin integration is (re)enabled for this web app.
  */
 export const LANGUAGE_RESOURCES = {
   en: {
