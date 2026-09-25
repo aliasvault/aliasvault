@@ -30,7 +30,7 @@
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
     "unlockWithMobile": "Desbloquear con la aplicación móvil",
     "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda.",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Cuando la aplicación lo solicite, introduzca este número.",
     "passwordAttemptsWarning": "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta {{remainingAttempts}} más veces.",
     "maxAttemptsReached": "Demasiados intentos de desbloqueo fallidos. Se ha cerrado la sesión por razones de seguridad."
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "La carga de la bóveda tardó demasiado. Por favor, cierre y vuelva a abrir la extensión e inténtelo de nuevo, o reinicie su navegador si el problema persiste.",
       "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
       "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "Algo salió mal al cargar tu bóveda. Por favor, copia los detalles de error a continuación y ponte en contacto con soporte para obtener ayuda.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
       "sessionExpired": "Su sesión ha caducado. Por favor, inicie sesión de nuevo.",
       "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "La solicitud de acceso fue rechazada en tu dispositivo móvil."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
@@ -290,26 +290,26 @@
       "required": "Se requiere este campo"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Seleccionar icono",
+      "currentLogo": "Icono actual",
+      "builtinLogos": "Biblioteca de iconos",
+      "fetchFromWebsite": "Obtener icono del sitio web",
+      "refetchFromWebsite": "(Re)obtener icono del sitio web",
+      "sourceFavicon": "De {{domain}}",
+      "sourceBuiltin": "Icono integrado",
+      "sourceCustom": "Ícono personalizado",
+      "sourceNone": "Sin icono",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
+        "Shopping": "Compras",
+        "Bank": "Banca",
+        "Mail": "Correo",
         "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
+        "Work": "Trabajo",
+        "Game": "Juegos",
         "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Travel": "Viajes",
+        "Health": "Salud",
+        "Dev": "Desarrollo"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "Gestiona la configuración de seguridad de tu cuenta y bóveda.",
       "changePassword": {
         "title": "Cambiar contraseña",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Cambiar tu contraseña maestra cerrará la sesión de tus otros dispositivos que requieren volver a iniciar sesión con la nueva contraseña.",
         "currentPassword": "Contraseña actual",
         "newPassword": "Nueva contraseña",
         "confirmNewPassword": "Confirmar nueva contraseña",
         "passwordsDoNotMatch": "Las contraseñas nuevas no coinciden",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "La contraseña debe tener al menos {{minLength}} caracteres.",
         "success": "Contraseña cambiada con éxito"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "Novedades",
     "whatsNewDescription": "Se requiere una actualización para soportar los siguientes cambios:",
     "noDescriptionAvailable": "Ninguna descripción disponible para esta versión.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Después de esta actualización, tus otras aplicaciones de AliasVault necesitan la versión {{version}} o posterior. Aplicaciones antiguas y extensiones del navegador se desconectan y piden que se actualicen antes de que puedan abrir tu bóveda de nuevo.",
+    "successTitle": "Caja fuerte mejorada",
+    "successOtherDevices": "Tu bóveda está lista para usar. Asegúrate de actualizar la aplicación AliasVault también en tus otros dispositivos.",
     "alerts": {
       "unableToGetVersionInfo": "No se pudo obtener información de la versión. Por favor, inténtalo de nuevo.",
       "selfHostedServer": "Servidor autoalojado",
