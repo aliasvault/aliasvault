@@ -30,6 +30,7 @@
     "loginWithMobile": "Autentificare prin aplicația mobilă",
     "unlockWithMobile": "Deblochează prin aplicația mobilă",
     "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{remainingAttempts}} ori.",
     "maxAttemptsReached": "Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Se sincronizează...",
     "mergingVaultChanges": "Se îmbină modificările seifului...",
     "uploadingVault": "Se încarcă seiful...",
+    "passwordStrength": {
+      "title": "Nivelul de securitate al parolei",
+      "veryWeak": "Continuă",
+      "weak": "Se îmbunătățește",
+      "fair": "Bun",
+      "good": "Super",
+      "strong": "Excelent"
+    },
     "errors": {
       "serverNotAvailable": "Serverul AliasVault nu este disponibil. Încearcă mai târziu sau contactează asistența.",
       "clientVersionNotSupported": "Această versiune a extensiei AliasVault nu mai este compatibilă cu serverul. Actualizează extensia la cea mai recentă versiune.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Încărcarea seifului a durat prea mult. Închide și redeschide extensia și încearcă din nou, sau repornește browserul dacă problema persistă.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",
       "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
-      "mobileLoginRequestExpired": "Cererea de autentificare de pe dispozitivul mobil a expirat. Reîncarcă pagina și încearcă din nou."
+      "mobileLoginRequestExpired": "Cererea de autentificare de pe dispozitivul mobil a expirat. Reîncarcă pagina și încearcă din nou.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonim, dar cu confidențialitate limitată. Conținutul poate fi citit de oricine cunoaște adresa.",
     "validation": {
       "required": "Acest câmp este obligatoriu"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Nu s-au găsit e-mailuri",
     "noEmailsDescription": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "offlineMessage": "Sunteți offline. Conectează-te la internet pentru a încărca e-mailurile.",
-    "updateClientForFormattedView": "Acest e-mail necesită o versiune mai nouă a aplicației pentru a fi afișat corect. Actualizează aplicația.",
     "loadMore": "Încarcă mai multe ({{count}} rămase)",
     "dateFormat": {
       "justNow": "acum",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Site-uri unde solicitarea de salvare nu va apărea niciodată.",
       "clearAllBlockedSites": "Șterge toate site-urile blocate"
     },
+    "securitySettings": {
+      "title": "Securitate",
+      "description": "Gestionează setările de securitate ale contului și seifului.",
+      "changePassword": {
+        "title": "Schimbă Parola",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Parolă actuală",
+        "newPassword": "Parolă nouă",
+        "confirmNewPassword": "Confirmă parola nouă",
+        "passwordsDoNotMatch": "Parolele noi nu se potrivesc",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Parola a fost schimbată cu succes"
+      },
+      "activeSessions": {
+        "title": "Sesiuni Active",
+        "description": "Mai jos găsești lista dispozitivelor pe care ești conectat în prezent sau unde ai o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.",
+        "noSessions": "Nicio sesiune activă",
+        "revoke": "Revocă",
+        "revokeSession": "Revocă Sesiunea",
+        "revokeConfirmation": "Sigur dorești să revoci această sesiune? Vei fi deconectat de pe dispozitivul ales.",
+        "sessionRevoked": "Sesiune revocată cu succes",
+        "failedToRevoke": "Revocarea sesiunii a eșuat",
+        "failedToLoad": "Încărcarea sesiunilor a eșuat",
+        "lastActive": "Ultima activitate",
+        "expires": "Expiră la"
+      },
+      "authLogs": {
+        "title": "Autentificări recente",
+        "description": "Prezentare generală a încercărilor recente de autentificare.",
+        "noLogs": "Niciun log găsit",
+        "success": "Succes",
+        "failed": "Eșuat",
+        "time": "Oră",
+        "ipAddress": "Adresă IP",
+        "client": "Client",
+        "failedToLoad": "Încărcarea log-urilor a eșuat"
+      }
+    },
     "unlockMethod": {
       "title": "Metodă deblocare seif",
       "introText": "Alege cum dorești să îți deblochezi seiful. Poți folosi parola principală (întotdeauna disponibilă) sau poți configura un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola principală.",
@@ -579,6 +650,9 @@
     "whatsNew": "Ce este nou",
     "whatsNewDescription": "Este necesară o actualizare pentru a permite următoarele modificări:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Informațiile despre versiune nu au putut fi obținute. Reîncearcă.",
       "selfHostedServer": "Server Self-Hosted",
