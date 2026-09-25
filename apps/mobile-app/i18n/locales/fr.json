@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmer la demande de connexion",
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Un autre appareil demande de se connecter avec votre compte. Il aura un accès complet à votre coffre. Ne continuez que si vous avez commencé à vous connecter vous-même.",
+        "selectCode": "Appuyez sur le numéro affiché sur l'autre appareil",
+        "openedFromLink": "Ne continuez que si vous venez de scanner ce code QR avec votre propre caméra. Si vous êtes arrivé ici en appuyant sur un lien ou un bouton, refusez.",
+        "codeMismatch": "Le numéro ne correspond pas. La demande de connexion a été refusée.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
         "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Tous les éléments ont été définitivement supprimés"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Choisir une icône",
+      "currentLogo": "Icône actuelle",
+      "builtinLogos": "Bibliothèque des icônes",
+      "fetchFromWebsite": "Récupérer l'icône depuis le site web",
+      "refetchFromWebsite": "(Re)récupérer l'icône depuis le site web",
+      "sourceFavicon": "Depuis {{domain}}",
+      "sourceBuiltin": "Icône intégrée",
+      "sourceCustom": "Icône personnalisée",
+      "sourceNone": "Pas d'icône",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
+        "Shopping": "Achats",
+        "Bank": "Banque",
         "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Social": "Réseaux",
+        "Work": "Travail",
+        "Game": "Jeux",
+        "Media": "Médias",
+        "Travel": "Voyages",
+        "Health": "Santé",
+        "Dev": "Développement"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Nouveautés",
     "whatsNewDescription": "Une mise à jour est nécessaire pour prendre en charge les modifications suivantes:",
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Après cette mise à jour, vos autres applications AliasVault auront besoin de la version {{version}} ou plus récente. Les anciennes applications et extensions de navigateur se déconnecteront et demanderont à être mises à jour avant de pouvoir ouvrir à nouveau votre coffre.",
+    "successTitle": "Coffre-fort mis à jour",
+    "successOtherDevices": "Votre coffre est prêt à être utilisé. Assurez-vous de mettre à jour l'application AliasVault sur vos autres appareils également.",
     "status": {
       "preparingUpgrade": "Préparation de la mise à jour...",
       "applyingDatabaseMigrations": "Application des migrations de base de données...",
