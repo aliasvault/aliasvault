@@ -30,6 +30,7 @@
     "loginWithMobile": "Войти с помощью мобильного приложения",
     "unlockWithMobile": "Разблокировать через мобильное приложение",
     "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Неверный пароль. Вы выйдете из системы, если введете его неправильно еще {{remainingAttempts}} раз.",
     "maxAttemptsReached": "Слишком много неудачных попыток. Выход из системы выполнен в целях безопасности."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Синхронизация...",
     "mergingVaultChanges": "Объединение изменений в хранилище...",
     "uploadingVault": "Загрузка хранилища...",
+    "passwordStrength": {
+      "title": "Надежность пароля",
+      "veryWeak": "Очень низкая",
+      "weak": "Низкая",
+      "fair": "Средняя",
+      "good": "Высокая",
+      "strong": "Максимальная"
+    },
     "errors": {
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
       "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Неверный пароль. Повторите попытку.",
       "sessionExpired": "Срок действия сессии истек. Войдите снова.",
-      "mobileLoginRequestExpired": "Срок запроса на вход истек. Обновите страницу и попробуйте снова."
+      "mobileLoginRequestExpired": "Срок запроса на вход истек. Обновите страницу и попробуйте снова.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Анонимность, но ограниченная конфиденциальность. Содержимое письма может прочитать любой, кому известен адрес.",
     "validation": {
       "required": "Это поле является обязательным"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Электронные письма не найдены",
     "noEmailsDescription": "Вы еще не получали никаких электронных писем на свои личные адреса электронной почты. Когда вы получите новое электронное письмо, оно появится здесь.",
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
-    "updateClientForFormattedView": "Для корректного отображения этого письма нужна новая версия приложения. Обновите приложение.",
     "loadMore": "Загрузить еще (осталось: {{count}})",
     "dateFormat": {
       "justNow": "прямо сейчас",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Сайты, где запрос на сохранение никогда не появится.",
       "clearAllBlockedSites": "Очистить весь список"
     },
+    "securitySettings": {
+      "title": "Безопасность",
+      "description": "Управляйте своей учетной записью и настройками безопасности хранилища.",
+      "changePassword": {
+        "title": "Изменить пароль",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Текущий пароль",
+        "newPassword": "Новый пароль",
+        "confirmNewPassword": "Подтвердите новый пароль",
+        "passwordsDoNotMatch": "Новые пароли не совпадают",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Пароль успешно изменен"
+      },
+      "activeSessions": {
+        "title": "Активные сессии",
+        "description": "Ниже приведен список устройств, на которых ваша учетная запись в данный момент авторизована или имеет активный сеанс. Вы можете выйти из любого из этих сеансов здесь.",
+        "noSessions": "Нет активных сессий",
+        "revoke": "Завершить",
+        "revokeSession": "Завершить сеанс",
+        "revokeConfirmation": "Вы уверены, что хотите завершить этот сеанс? После этого вы выйдете из системы на выбранном устройстве.",
+        "sessionRevoked": "Сеанс успешно отменен",
+        "failedToRevoke": "Не удалось завершить сеанс",
+        "failedToLoad": "Не удалось загрузить активные сеансы",
+        "lastActive": "Последняя активность",
+        "expires": "Истекает"
+      },
+      "authLogs": {
+        "title": "Последние журналы аутентификации",
+        "description": "Ниже вы можете ознакомиться с обзором последних попыток входа в вашу учетную запись.",
+        "noLogs": "Журналы авторизации не найдены",
+        "success": "Успешно",
+        "failed": "Неудачно",
+        "time": "Время",
+        "ipAddress": "IP-адрес",
+        "client": "Клиент",
+        "failedToLoad": "Не удалось загрузить журналы авторизации"
+      }
+    },
     "unlockMethod": {
       "title": "Способ разблокировки хранилища",
       "introText": "Выберите способ разблокировки хранилища. Вы можете использовать свой мастер-пароль (он доступен всегда) или установить ПИН-код для быстрого доступа. После 3 неудачных попыток ввода ПИН-кода необходимо будет ввести мастер-пароль.",
@@ -579,6 +650,9 @@
     "whatsNew": "Что нового",
     "whatsNewDescription": "Для поддержки следующих изменений требуется обновление:",
     "noDescriptionAvailable": "Описание для этой версии недоступно.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Не удалось получить информацию о версии. Пожалуйста, попробуйте снова.",
       "selfHostedServer": "Автономный сервер",
