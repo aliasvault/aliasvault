@@ -36,6 +36,7 @@
       "unknownError": "Tapahtui tuntematon virhe.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Vahvista kirjautumispyyntö",
         "confirmSubtitle": "Tunnistaudu uudelleen hyväksyäksesi kirjautuminen toisella laitteella.",
-        "confirmMessage": "Olet kirjautumamassa sisään etälaitteeseen, jossa on oma tilisi. Tällä toisella laitteella on täysi pääsy holviisi. Jatka vain, jos luotat tähän laitteeseen.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Etälaite on onnistuneesti kirjautunut sisään.",
         "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Item restored",
       "itemDeleted": "Item permanently deleted",
       "allItemsDeleted": "All items permanently deleted"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Mitä uutta?",
     "whatsNewDescription": "Päivitys on tarpeen, jotta voidaan tukea seuraavia muutoksia:",
     "noDescriptionAvailable": "Kuvausta ei ole saatavilla tälle versiolle.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Valmistellaan päivitystä...",
-      "vaultAlreadyUpToDate": "Holvi on jo ajan tasalla",
       "applyingDatabaseMigrations": "Toteutetaan tietokannan siirtoja...",
       "applyingMigration": "Suoritetaan tietokannan siirtoa {{current}} / {{total}}...",
       "committingChanges": "Suoritetaan muutoksia..."
