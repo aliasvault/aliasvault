@@ -1,0 +1,95 @@
+import { type ItemType, ItemTypes } from '@aliasvault/models/vault';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+type ItemTypeSelectorProps = {
+  selectedType: ItemType;
+  onSelectedTypeChange: (itemType: ItemType) => void;
+  showDropdown: boolean;
+  onShowDropdownChange: (show: boolean) => void;
+};
+
+/** All item types, in menu order. */
+const ALL_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
+
+/**
+ * The icon of an item type.
+ */
+const TypeIcon: React.FC<{ itemType: ItemType }> = ({ itemType }) => {
+  switch (itemType) {
+    case ItemTypes.Login:
+      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>;
+    case ItemTypes.Alias:
+      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+    case ItemTypes.CreditCard:
+      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>;
+    default:
+      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+  }
+};
+
+/**
+ * The translation key of an item type's name.
+ */
+const typeNameKey = (itemType: ItemType): string => {
+  switch (itemType) {
+    case ItemTypes.Login: return 'components.main.items.itemTypeSelector.TypeLogin';
+    case ItemTypes.Alias: return 'components.main.items.itemTypeSelector.TypeAlias';
+    case ItemTypes.CreditCard: return 'components.main.items.itemTypeSelector.TypeCreditCard';
+    default: return 'components.main.items.itemTypeSelector.TypeNote';
+  }
+};
+
+/**
+ * Dropdown to pick the item type.
+ */
+const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({ selectedType, onSelectedTypeChange, showDropdown, onShowDropdownChange }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="relative mb-4">
+      <div className="relative w-full px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
+        <button type="button" onClick={() => onShowDropdownChange(!showDropdown)} className="peer absolute inset-0 rounded-lg" aria-label={t('sharedResources.ItemTypeLabel')}></button>
+        <div className="relative flex items-center gap-2 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+          <span className="shrink-0 text-primary-600 dark:text-primary-400"><TypeIcon itemType={selectedType} /></span>
+          <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">{t(typeNameKey(selectedType))}</span>
+        </div>
+        <div className="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
+          <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">{t('sharedResources.ItemTypeLabel')}</span>
+          <svg className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {showDropdown && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => onShowDropdownChange(false)}></div>
+          <div className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+            {ALL_TYPES.map((itemType) => {
+              const selected = selectedType === itemType;
+              return (
+                <button key={itemType} type="button" id={`itemTypeSelector_${itemType}`} onClick={() => {
+                  if (!selected) {
+                    onSelectedTypeChange(itemType);
+                  }
+                  onShowDropdownChange(false);
+                }} className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${selected ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-white'}`}>
+                  <span className={selected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'}><TypeIcon itemType={itemType} /></span>
+                  <span className="font-medium text-sm">{t(typeNameKey(itemType))}</span>
+                  {selected && (
+                    <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ItemTypeSelector;
