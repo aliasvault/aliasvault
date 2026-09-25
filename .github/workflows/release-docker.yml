@@ -35,10 +35,11 @@ on:
           - github-hosted
           - self-hosted
 
+# Every job only runs on the upstream repo: images are pushed to the aliasvault namespaces, which forks cannot write to.
 jobs:
   # Guard job to prevent releases from main branch
   valid-release:
-    if: github.event_name == 'release'
+    if: github.repository == 'aliasvault/aliasvault' && github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -62,7 +63,7 @@ jobs:
 
   # Detect version from input, branch name, or release tag
   detect-version:
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success')
+    if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success')
     needs: [valid-release]
     runs-on: ubuntu-latest
     outputs:
@@ -133,7 +134,7 @@ jobs:
   build-and-push-docker-client:
     needs: [valid-release, detect-version]
     # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -159,7 +160,7 @@ jobs:
   # claim the runners first.
   stagger-light-images:
     needs: [valid-release, detect-version]
-    if: always() && inputs.runner == 'self-hosted' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    if: always() && github.repository == 'aliasvault/aliasvault' && inputs.runner == 'self-hosted' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -172,7 +173,7 @@ jobs:
     # It is skipped entirely on GitHub-hosted runs, which is also fine -- always() ignores that too.
     needs: [valid-release, detect-version, stagger-light-images]
     # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
+    if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -240,7 +241,7 @@ jobs:
   build-and-push-docker-all-in-one:
     needs: [valid-release, detect-version]
     # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one) && (github.event_name != 'release' || needs.detect-version.outputs.all_in_one_exists != 'true')
+    if: always() && github.repository == 'aliasvault/aliasvault' && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one) && (github.event_name != 'release' || needs.detect-version.outputs.all_in_one_exists != 'true')
     runs-on: ${{ inputs.runner == 'self-hosted' && 'docker-build' || 'ubuntu-latest' }}
     permissions:
       contents: read
@@ -332,7 +333,7 @@ jobs:
   # Tag existing images as :latest without rebuilding (for release events when images already exist)
   tag-docker-images-latest:
     needs: [valid-release, detect-version]
-    if: github.event_name == 'release' && needs.valid-release.result == 'success' && needs.detect-version.outputs.tag_latest == 'true'
+    if: github.repository == 'aliasvault/aliasvault' && github.event_name == 'release' && needs.valid-release.result == 'success' && needs.detect-version.outputs.tag_latest == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
