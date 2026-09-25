@@ -24,10 +24,6 @@ https://github.com/aliasvault/aliasvault | AGPLv3
 <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
 <link rel="prefetch" href="/wasm/sql-wasm-browser.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
 <script>
-  /*
-   * Apply the saved theme before the first paint so the loading screen does not flash. Same rule and the same
-   * localStorage key ('color-theme') as the Blazor client, so an existing preference carries over.
-   */
   (function () {
     var theme = localStorage.getItem('color-theme');
     if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -81,26 +77,17 @@ https://github.com/aliasvault/aliasvault | AGPLv3
 </div>
 <div id="app"></div>
 <script>
-  var translations = {};
-  function getCurrentLanguage() { return localStorage.getItem('AppLanguage') || 'en'; }
-  async function fetchTranslations(lang) {
-    var response = await fetch('/locales/' + lang + '.json');
-    if (!response.ok) { throw new Error('No loading screen translations for ' + lang); }
-    return response.json();
-  }
-  async function loadTranslations() {
-    var lang = getCurrentLanguage();
+  var translations = (function () {
+    var all = {};
     try {
-      translations = await fetchTranslations(lang);
+      all = JSON.parse(document.getElementById('loading-screen-translations').textContent);
     } catch (error) {
-      try {
-        translations = lang === 'en' ? {} : await fetchTranslations('en');
-      } catch (fallbackError) {
-        console.warn('Failed to load localization files, using fallback strings:', fallbackError);
-        translations = {};
-      }
+      console.warn('Failed to read the loading screen translations, using fallback strings:', error);
     }
-  }
+    var stored = localStorage.getItem('AppLanguage');
+    var browserLang = (navigator.language || '').split('-')[0];
+    return all[stored] || all[browserLang] || all.en || {};
+  })();
   function getTranslation(path) {
     var keys = path.split('.');
     var value = translations;
@@ -167,7 +154,7 @@ https://github.com/aliasvault/aliasvault | AGPLv3
       showError(getTranslation('errors.webAssemblyError'));
     }
   });
-  loadTranslations().then(localizeContent);
+  localizeContent();
   window.addEventListener('load', manageLoadingScreen);
 </script>
 <script type="module" src="/src/main.tsx"></script>
