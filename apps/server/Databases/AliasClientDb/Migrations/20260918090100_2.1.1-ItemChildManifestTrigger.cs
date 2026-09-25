@@ -8,6 +8,46 @@ namespace AliasClientDb.Migrations
     /// <inheritdoc />
     public partial class _211ItemChildManifestTrigger : Migration
     {
+        private const string CreateTriggers = """
+            CREATE TRIGGER IF NOT EXISTS "TR_Items_ClearTombstoneBeforeReturn"
+            BEFORE UPDATE OF "ManifestId" ON "Items"
+            FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
+                AND EXISTS (SELECT 1 FROM "Items" WHERE "ManifestId" = NEW."ManifestId" AND "Id" = NEW."Id" AND "IsDeleted" = 1)
+            BEGIN
+                DELETE FROM "FieldValues" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "FieldHistories" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "ItemTags" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "Attachments" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "Passkeys" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "TotpCodes" WHERE "ItemId" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "ItemStats" WHERE "Id" = NEW."Id" AND "ManifestId" = NEW."ManifestId";
+                DELETE FROM "Items" WHERE "ManifestId" = NEW."ManifestId" AND "Id" = NEW."Id" AND "IsDeleted" = 1;
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS "TR_Items_ResyncChildManifestIds"
+            AFTER UPDATE OF "ManifestId" ON "Items"
+            FOR EACH ROW WHEN OLD."ManifestId" <> NEW."ManifestId"
+            BEGIN
+                INSERT INTO "Tags" ("ManifestId", "Id", "Name", "Color", "DisplayOrder", "CreatedAt", "UpdatedAt", "IsDeleted")
+                SELECT NEW."ManifestId", "Id", "Name", "Color", "DisplayOrder", "CreatedAt", NEW."UpdatedAt", "IsDeleted" FROM "Tags"
+                WHERE "ManifestId" = OLD."ManifestId" AND "Id" IN (SELECT "TagId" FROM "ItemTags" WHERE "ManifestId" = OLD."ManifestId" AND "ItemId" = NEW."Id")
+                ON CONFLICT ("ManifestId", "Id") DO UPDATE SET "Name" = excluded."Name", "Color" = excluded."Color", "DisplayOrder" = excluded."DisplayOrder", "UpdatedAt" = excluded."UpdatedAt", "IsDeleted" = 0 WHERE "IsDeleted" = 1 AND excluded."IsDeleted" = 0;
+                INSERT INTO "FieldDefinitions" ("ManifestId", "Id", "FieldType", "Label", "IsMultiValue", "IsHidden", "EnableHistory", "Weight", "ApplicableToTypes", "CreatedAt", "UpdatedAt", "IsDeleted")
+                SELECT NEW."ManifestId", "Id", "FieldType", "Label", "IsMultiValue", "IsHidden", "EnableHistory", "Weight", "ApplicableToTypes", "CreatedAt", NEW."UpdatedAt", "IsDeleted" FROM "FieldDefinitions"
+                WHERE "ManifestId" = OLD."ManifestId" AND "Id" IN (SELECT "FieldDefinitionId" FROM "FieldValues" WHERE "ManifestId" = OLD."ManifestId" AND "ItemId" = NEW."Id" UNION SELECT "FieldDefinitionId" FROM "FieldHistories" WHERE "ManifestId" = OLD."ManifestId" AND "ItemId" = NEW."Id")
+                ON CONFLICT ("ManifestId", "Id") DO UPDATE SET "FieldType" = excluded."FieldType", "Label" = excluded."Label", "IsMultiValue" = excluded."IsMultiValue", "IsHidden" = excluded."IsHidden", "EnableHistory" = excluded."EnableHistory", "Weight" = excluded."Weight", "ApplicableToTypes" = excluded."ApplicableToTypes", "UpdatedAt" = excluded."UpdatedAt", "IsDeleted" = 0 WHERE "IsDeleted" = 1 AND excluded."IsDeleted" = 0;
+                UPDATE "FieldValues" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "FieldHistories" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "ItemTags" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "Attachments" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "Passkeys" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "TotpCodes" SET "ManifestId" = NEW."ManifestId" WHERE "ItemId" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                UPDATE "ItemStats" SET "ManifestId" = NEW."ManifestId" WHERE "Id" = NEW."Id" AND "ManifestId" = OLD."ManifestId";
+                INSERT OR IGNORE INTO "Items" ("ManifestId", "Id", "ItemType", "CreatedAt", "UpdatedAt", "IsDeleted")
+                SELECT OLD."ManifestId", OLD."Id", OLD."ItemType", OLD."CreatedAt", NEW."UpdatedAt", 1 WHERE OLD."IsDeleted" = 0;
+            END;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,7 +58,7 @@ namespace AliasClientDb.Migrations
              * discard them), and SQLite reparses the remaining triggers during a rebuild, aborting on one that
              * names a momentarily dropped table.
              */
-            migrationBuilder.Sql(ItemChildManifestTriggerSql.Create);
+            migrationBuilder.Sql(CreateTriggers);
 
             // Restores what the previous migration turned off for its rebuild.
             migrationBuilder.Sql("PRAGMA foreign_keys = ON;", suppressTransaction: true);
@@ -27,7 +67,7 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(ItemChildManifestTriggerSql.Drop);
+            migrationBuilder.Sql("DROP TRIGGER IF EXISTS \"TR_Items_ResyncChildManifestIds\"; DROP TRIGGER IF EXISTS \"TR_Items_ClearTombstoneBeforeReturn\";");
         }
     }
 }

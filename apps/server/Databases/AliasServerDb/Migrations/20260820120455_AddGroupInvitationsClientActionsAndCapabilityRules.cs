@@ -52,7 +52,7 @@ namespace AliasServerDb.Migrations
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     InviterUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     InviteeUserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false),
+                    Role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     VaultManifestId = table.Column<Guid>(type: "uuid", nullable: true),
                     EncryptedName = table.Column<string>(type: "text", nullable: true),
                     EncryptedVek = table.Column<string>(type: "text", nullable: true),

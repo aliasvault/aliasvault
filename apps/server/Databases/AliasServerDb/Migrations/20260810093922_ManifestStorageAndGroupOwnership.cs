@@ -76,7 +76,7 @@ namespace AliasServerDb.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     ShadowBlocked = table.Column<bool>(type: "boolean", nullable: false),
                     ShadowBlockedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     MaxEmails = table.Column<int>(type: "integer", nullable: false),
@@ -98,7 +98,7 @@ namespace AliasServerDb.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     GroupId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false),
+                    Role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -107,15 +107,14 @@ namespace AliasServerDb.Migrations
                     table.PrimaryKey("PK_GroupMembers", x => x.Id);
                 });
 
-            // Personal group is type 0, owner is role 0.
             migrationBuilder.Sql("""
                 INSERT INTO "Groups" ("Id", "Name", "Type", "ShadowBlocked", "ShadowBlockedAt", "MaxEmails", "MaxEmailAgeDays", "EmailsReceived", "CreatedAt", "UpdatedAt")
-                SELECT m."GroupId", COALESCE(u."UserName", 'Personal'), 0, u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", now(), now()
+                SELECT m."GroupId", COALESCE(u."UserName", 'Personal'), 'Personal', u."ShadowBlocked", u."ShadowBlockedAt", u."MaxEmails", u."MaxEmailAgeDays", u."EmailsReceived", now(), now()
                 FROM "AliasVaultUsers" u
                 JOIN "UserMigrationMap" m ON m."UserId" = u."Id";
 
                 INSERT INTO "GroupMembers" ("Id", "GroupId", "UserId", "Role", "CreatedAt", "UpdatedAt")
-                SELECT gen_random_uuid(), m."GroupId", m."UserId", 0, now(), now()
+                SELECT gen_random_uuid(), m."GroupId", m."UserId", 'Owner', now(), now()
                 FROM "UserMigrationMap" m;
 
                 CREATE TABLE "AliasVaultUsers_reordered" (

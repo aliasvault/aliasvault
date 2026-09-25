@@ -328,6 +328,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
         {
             builder.Property(e => e.AnonymizedEmailAliasSenderCounts)
                 .HasDefaultValueSql("array_fill(0, ARRAY[64])");
+            builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(20);
         });
 
         // Configure GroupMember, who may be granted access to the group's shared manifests.
@@ -345,6 +346,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(e => e.UserId);
+            builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
         });
 
         // Configure GroupInvitation, an offer to join a group.
@@ -367,6 +369,7 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
 
             builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending");
             builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
             builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
 
             // Losing the keypair the vault key was encrypted to leaves an invitation nobody could ever decrypt.
