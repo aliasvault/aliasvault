@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UpgradeVaultTitle" xml:space="preserve">
-    <value>Upgrade Vault</value>
+    <value>보관함 업그레이드</value>
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <value>AliasVault가 업데이트되어 보관함을 업그레이드해야 합니다. 몇 초 정도만 소요됩니다.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
-    <value>Version Information</value>
+    <value>버전 정보</value>
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>An upgrade is required to support the following changes: {0}</value>
+    <value>다음 변경 사항을 지원하려면 업그레이드가 필요합니다: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
-    <value>No description available for this version.</value>
+    <value>이 버전에 대한 설명이 없습니다.</value>
     <comment>Fallback text when version description is not available</comment>
   </data>
   <data name="YourVaultLabel" xml:space="preserve">
-    <value>Your vault version:</value>
+    <value>현재 보관함 버전:</value>
     <comment>Label for current vault version</comment>
   </data>
   <data name="NewVersionLabel" xml:space="preserve">
-    <value>New available version:</value>
+    <value>사용 가능한 새 버전:</value>
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Start upgrade process</value>
+    <value>업그레이드 시작</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Vault upgrade successful.</value>
+    <value>보관함 업그레이드가 완료되었습니다.</value>
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>데이터베이스 업그레이드는 성공했으나 서버에 저장하지 못했습니다. 다시 시도하거나 지원팀에 문의하세요.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>데이터베이스 업그레이드에 실패했습니다. 다시 시도하거나 지원팀에 문의하세요.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>

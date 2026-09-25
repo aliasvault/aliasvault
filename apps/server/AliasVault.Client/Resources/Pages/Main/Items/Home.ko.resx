@@ -60,57 +60,57 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>보관함</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>아래에서 모든 항목을 확인할 수 있습니다.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Items" xml:space="preserve">
-    <value>Items</value>
+    <value>항목</value>
     <comment>Items label used in breadcrumb navigation</comment>
   </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
-    <value>View Mode</value>
+    <value>보기 모드</value>
     <comment>Label for view mode dropdown</comment>
   </data>
   <data name="GridViewOption" xml:space="preserve">
-    <value>Grid View</value>
+    <value>그리드 보기</value>
     <comment>Grid view option in dropdown</comment>
   </data>
   <data name="TableViewOption" xml:space="preserve">
-    <value>Table View</value>
+    <value>테이블 보기</value>
     <comment>Table view option in dropdown</comment>
   </data>
   <data name="SortOrderLabel" xml:space="preserve">
-    <value>Sort Order</value>
+    <value>정렬 순서</value>
     <comment>Label for sort order dropdown</comment>
   </data>
   <data name="OldestFirstOption" xml:space="preserve">
-    <value>Oldest First</value>
+    <value>오래된 순</value>
     <comment>Oldest first sort option</comment>
   </data>
   <data name="NewestFirstOption" xml:space="preserve">
-    <value>Newest First</value>
+    <value>최신순</value>
     <comment>Newest first sort option</comment>
   </data>
   <data name="AlphabeticalOption" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>이름순</value>
     <comment>Alphabetical sort option</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>아직 항목이 없습니다</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>첫 번째 항목을 생성하려면</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>"+ New Alias"</value>
+    <value>"+ 새 에일리어스"</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
@@ -118,113 +118,113 @@
     <comment>Text reference to the New Alias button (mobile)</comment>
   </data>
   <data name="ButtonLocationText" xml:space="preserve">
-    <value>button in the top right corner.</value>
+    <value>버튼(오른쪽 상단)을 누르세요.</value>
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>또는</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>이전에 다른 비밀번호 관리자를 사용하셨다면 해당 항목들을 가져올 수 있습니다.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Import from KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>KeePass, Bitwarden, Chrome, Firefox에서 가져오기...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>항목을 불러오지 못했습니다.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
   <data name="FilterLabel" xml:space="preserve">
-    <value>Filter</value>
+    <value>필터</value>
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>항목</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
-    <value>Folders</value>
+    <value>폴더</value>
     <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkeys</value>
+    <value>패스키</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>에일리어스</value>
     <comment>Filter option to show only aliases</comment>
   </data>
   <data name="FilterUserpassOption" xml:space="preserve">
-    <value>Passwords</value>
+    <value>비밀번호</value>
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>첨부 파일</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterTotpOption" xml:space="preserve">
-    <value>2FA Codes</value>
+    <value>2단계 인증 코드</value>
     <comment>Filter option to show only items with TOTP codes</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>최근 삭제된 항목</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>선택한 필터와 일치하는 항목이 없습니다.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>이 폴더는 비어 있습니다.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>모든 항목이 폴더별로 정리되어 있습니다. 위에서 폴더를 클릭하여 로그인 정보를 확인하거나 검색을 사용하여 특정 항목을 찾으세요.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>새 폴더</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>폴더 수정</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>폴더 삭제</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>뒤로</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>폴더를 생성하지 못했습니다.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>폴더를 삭제하지 못했습니다.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>더 불러오는 중...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>필터 지우기</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>필터 조건:</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>

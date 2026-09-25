@@ -253,15 +253,15 @@
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.</value>
+    <value>La bóveda es demasiado grande para que el servidor la acepte. Intenta eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelve a intentarlo.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Error al guardar los cambios en la bóveda. Por favor, inténtelo de nuevo.</value>
+    <value>Error al guardar los cambios en la bóveda. Por favor, inténtalo de nuevo.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Por favor, corrija los siguientes errores.</value>
+    <value>Por favor, corrige los siguientes errores.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -269,7 +269,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Por favor, introduzca una dirección de correo válida.</value>
+    <value>Por favor, introduce una dirección de correo electrónico válida.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">

@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>보관함 초기화</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>이 옵션을 사용하면 계정과 이메일 에일리어스는 유지하면서 보관함을 완전히 비울 수 있습니다. 다른 비밀번호 관리자에서 데이터를 가져온 후 처음부터 다시 시작하거나 기존의 모든 계정 정보를 삭제하고 다시 시작하려는 경우에 사용하세요.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>Reset vault</value>
+    <value>보관함 재설정</value>
     <comment>Reset vault button</comment>
   </data>
 </root>

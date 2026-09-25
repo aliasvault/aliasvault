@@ -111,11 +111,11 @@
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Iniciar sesión con un código de recuperación en cambio.</value>
+    <value>Inicia sesión con un código de recuperación en su lugar.</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Iniciar sesión con un código de autenticación en cambio.</value>
+    <value>Inicia sesión con un código de autenticación en su lugar.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
@@ -124,11 +124,11 @@
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>Su inicio de sesión está protegido con una aplicación de autenticación. Introduzca su código de autenticación abajo.</value>
+    <value>Tu inicio de sesión está protegido con una aplicación de autenticación. Introduce su código de autenticación abajo.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>Ha solicitado iniciar sesión con un código de recuperación. Un código de recuperación es un código de una sola vez que se puede utilizar para iniciar sesión en su cuenta. Tenga en cuenta que si no desactiva manualmente 2FA después de iniciar sesión, se le pedirá un código de autenticación de nuevo en el próximo inicio de sesión.</value>
+    <value>Has solicitado iniciar sesión con un código de recuperación. Un código de recuperación es un código de una sola vez que se puede utilizar para iniciar sesión en su cuenta. Ten en cuenta que si no desactivas manualmente 2FA después de iniciar sesión, se te pedirá un código de autenticación de nuevo en el próximo inicio de sesión.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">

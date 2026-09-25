@@ -119,245 +119,245 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>저장</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>취소</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>Generate</value>
+    <value>생성</value>
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>삭제</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Remove</value>
+    <value>삭제</value>
     <comment>Button text for removing an item</comment>
   </data>
   <data name="TotpDefaultName" xml:space="preserve">
-    <value>Authenticator</value>
+    <value>인증기</value>
     <comment>Display-only fallback name shown for a TOTP code that has no name set</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>수정</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
-    <value>Duplicate</value>
+    <value>복제</value>
     <comment>Button text for duplicating an item</comment>
   </data>
   <data name="DuplicateSuccessMessage" xml:space="preserve">
-    <value>Item duplicated successfully.</value>
+    <value>항목을 복제했습니다.</value>
     <comment>Success message shown after duplicating an item</comment>
   </data>
   <data name="DuplicateErrorMessage" xml:space="preserve">
-    <value>Failed to duplicate item.</value>
+    <value>항목을 복제하지 못했습니다.</value>
     <comment>Error message shown when duplicating an item failed</comment>
   </data>
   <data name="ItemOptions" xml:space="preserve">
-    <value>Item options</value>
+    <value>항목 옵션</value>
     <comment>Accessible label for the ellipsis button that opens the item context menu</comment>
   </data>
   <data name="Show" xml:space="preserve">
-    <value>Show</value>
+    <value>표시</value>
     <comment>Button text for showing content</comment>
   </data>
   <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
+    <value>숨기기</value>
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>닫기</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>뒤로</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>다음</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>불러오는 중...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>예</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>아니요</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>확인</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>계속</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>확인</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>새로고침</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>이메일</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>비밀번호</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>Username</value>
+    <value>사용자 이름</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>이름</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>설명</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>제목</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>웹사이트</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>검색</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>An error occurred. Please try again.</value>
+    <value>오류가 발생했습니다. 다시 시도해 주세요.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
-    <value>An unknown error occurred. Please try again.</value>
+    <value>알 수 없는 오류가 발생했습니다. 다시 시도하세요.</value>
     <comment>Generic unknown error message</comment>
   </data>
   <data name="VaultTooLargeError" xml:space="preserve">
-    <value>The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.</value>
+    <value>보관함 크기가 너무 커서 서버에서 수용할 수 없습니다. 일부 항목이나 첨부 파일을 삭제하여 크기를 줄인 후 다시 시도해 주세요.</value>
     <comment>Shown when the server rejects a vault upload with HTTP 413 because the encrypted vault exceeds the configured upload size limit</comment>
   </data>
   <data name="VaultSaveError" xml:space="preserve">
-    <value>Failed to save changes to the vault. Please try again.</value>
+    <value>보관함의 변경 사항을 저장하지 못했습니다. 다시 시도해 주세요.</value>
     <comment>Generic error shown when a vault save / sync to the server fails for an unexpected reason</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Please correct the errors below.</value>
+    <value>아래 오류를 수정한 후 다시 시도하세요.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>This field is required.</value>
+    <value>필수 입력 항목입니다.</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Please enter a valid email address.</value>
+    <value>올바른 이메일 주소를 입력하세요.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>비밀번호가 일치하지 않습니다.</value>
     <comment>Password confirmation mismatch error</comment>
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Success</value>
+    <value>성공</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
+    <value>경고</value>
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>오류</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <value>정보</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>If loading seems stuck, you can click the button below to refresh the page.</value>
+    <value>로딩이 멈춘 것처럼 보이면 아래 버튼을 클릭하여 페이지를 새로고침할 수 있습니다.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>새 비밀번호는 10자 이상이어야 합니다.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>새 비밀번호가 일치하지 않습니다.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>비밀번호는 10자 이상이어야 합니다.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>비밀번호가 일치하지 않습니다.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>이용약관에 동의해야 합니다.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>비밀 키는 필수입니다.</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>사용자 이름을 입력해야 합니다</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>비밀번호는 필수입니다.</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
   <data name="Or" xml:space="preserve">
-    <value>or</value>
+    <value>또는</value>
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>보관함 잠금</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>홈</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>메모</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>보관함 데이터 동기화</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
-    <value>Syncing changes...</value>
+    <value>변경 사항을 동기화하는 중...</value>
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>보관함을 불러오는 중...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
   <data name="EmailFormatHtml" xml:space="preserve">
@@ -365,27 +365,27 @@
     <comment>Email format switcher: HTML view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatPlain" xml:space="preserve">
-    <value>Text</value>
+    <value>텍스트</value>
     <comment>Email format switcher: plain text view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSource" xml:space="preserve">
-    <value>Source</value>
+    <value>소스</value>
     <comment>Email format switcher: raw HTML source view button. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailFormatSwitchTitle" xml:space="preserve">
-    <value>Switch email format</value>
+    <value>이메일 형식 전환</value>
     <comment>Tooltip for the cycle button that switches between HTML / Text / Source views. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>항목:</value>
     <comment>Label for the credential/item row in the email header. Shared between email modal and email page.</comment>
   </data>
   <data name="EmailItemNone" xml:space="preserve">
-    <value>None</value>
+    <value>없음</value>
     <comment>Shown next to the Item label when an email is not linked to any credential. Shared between email modal and email page.</comment>
   </data>
   <data name="ItemTypeLabel" xml:space="preserve">
-    <value>Item Type</value>
+    <value>항목 유형</value>
     <comment>Inline label on the item type picker</comment>
   </data>
 </root>

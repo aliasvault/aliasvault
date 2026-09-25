@@ -1,92 +1,92 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"error" = "오류";
+"cancel" = "취소";
+"back" = "뒤로";
+"next" = "다음";
+"edit" = "수정";
+"website" = "웹사이트";
+"username" = "사용자 이름";
+"title" = "제목";
+"unknown_error" = "알 수 없는 오류가 발생했습니다";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"open_aliasvault" = "Open AliasVault";
-"untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link to credential?";
-"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
-"link_url_prompt_link_action" = "Link and fill";
-"link_url_prompt_skip_action" = "Just fill";
-"linking_url" = "Linking...";
-"select_item" = "Select Item";
-"select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"loading_items" = "항목을 불러오는 중...";
+"no_items_found" = "항목을 찾을 수 없음";
+"no_items_match" = "검색과 일치하는 기존 항목이 없습니다";
+"create_new_item" = "새 항목 생성";
+"open_aliasvault" = "AliasVault 열기";
+"untitled_credential" = "이 로그인 정보";
+"link_url_prompt_title" = "로그인 정보에 연결하시겠습니까?";
+"link_url_prompt_message" = "다음에 AliasVault가 이 앱 또는 웹사이트를 인식할 수 있도록 {{name}}에 \"{{url}}\"(을)를 추가하시겠습니까?";
+"link_url_prompt_link_action" = "연결 및 채우기";
+"link_url_prompt_skip_action" = "채우기만";
+"linking_url" = "연결 중...";
+"select_item" = "항목 선택";
+"select_text_to_insert" = "삽입할 텍스트 선택";
+"choose_username" = "사용자 이름 선택";
+"select_text_to_insert_message" = "포커스된 입력 필드에 삽입할 텍스트를 선택하세요";
+"choose_username_message" = "이 웹사이트에 로그인하려면 사용자 이름 또는 이메일 주소가 필요할 수 있습니다";
+"username_prefix" = "사용자 이름:";
+"email_prefix" = "이메일:";
+"password" = "비밀번호";
+"items_load_error" = "항목을 불러오지 못했습니다. 업데이트를 확인하려면 AliasVault 앱을 여세요.";
+"no_item_selected" = "선택된 항목이 없습니다.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"copy_totp_code" = "Copy TOTP Code";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
-"totp_code_copied" = "TOTP code copied";
-"totp_code" = "TOTP Code";
+"copy_username" = "사용자 이름 복사";
+"copy_password" = "비밀번호 복사";
+"copy_email" = "이메일 복사";
+"copy_totp_code" = "TOTP 코드 복사";
+"view_details" = "세부 정보 보기";
+"username_copied" = "사용자 이름을 복사했습니다";
+"password_copied" = "비밀번호를 복사했습니다";
+"email_copied" = "이메일을 복사했습니다";
+"totp_code_copied" = "TOTP 코드를 복사했습니다";
+"totp_code" = "TOTP 코드";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "항목 검색...";
 
 /* Passkey registration */
-"create_passkey_title" = "Create New Passkey";
-"create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
-"create_passkey_button_confirm" = "Create Passkey";
+"create_passkey_title" = "새 패스키 생성";
+"create_passkey_subtitle" = "이 웹사이트의 새 패스키를 등록하세요. 보관함에 안전하게 저장되며 AliasVault를 사용하는 모든 기기에 자동으로 동기화됩니다.";
+"create_passkey_button_confirm" = "패스키 생성";
 
 /* Passkey provider */
-"passkey" = "Passkey";
-"loading_passkeys" = "Loading passkeys...";
-"no_passkeys_found" = "No passkeys found";
-"no_passkeys_match" = "No existing passkeys match your search";
-"select_passkey" = "Select Passkey";
-"passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
+"passkey" = "패스키";
+"loading_passkeys" = "패스키를 불러오는 중...";
+"no_passkeys_found" = "패스키를 찾을 수 없음";
+"no_passkeys_match" = "검색과 일치하는 기존 패스키가 없습니다";
+"select_passkey" = "패스키 선택";
+"passkeys_load_error" = "패스키를 불러오지 못했습니다. 업데이트를 확인하려면 AliasVault 앱을 여세요.";
 
 /* Passkey replacement */
-"create_new_passkey" = "Create New Passkey";
-"select_passkey_to_replace" = "Or, replace an existing passkey";
-"replace_passkey" = "Replace Passkey";
-"replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
-"create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+"create_new_passkey" = "새 패스키 생성";
+"select_passkey_to_replace" = "또는 기존 패스키 대체";
+"replace_passkey" = "패스키 대체";
+"replace_passkey_explanation" = "기존 패스키가 새 패스키로 대체됩니다. 이전 패스키는 덮어써지며 더 이상 접근할 수 없게 되니 유의하세요. 대신 별도의 패스키를 만들려면 이전 화면으로 돌아가세요.";
+"create_passkey_explanation" = "새 패스키를 생성하여 보관함에 저장합니다. AliasVault를 사용하는 모든 기기에 자동으로 동기화됩니다.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "또는 기존 항목에 패스키 추가";
+"add_passkey" = "패스키 추가";
+"merge_passkey_explanation" = "기존 항목에 패스키를 추가합니다. 비밀번호 및 기타 데이터는 유지됩니다.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "보관함 잠금 해제";
+"enter_pin_to_unlock_vault" = "보관함을 잠금 해제하려면 PIN을 입력하세요";
+"pin_locked_max_attempts" = "시도 횟수 초과로 PIN이 잠겼습니다";
+"pin_incorrect_attempts_remaining" = "잘못된 PIN입니다. 남은 시도 횟수: %d회";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
-"attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
-"max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
+"enter_password_to_unlock" = "마스터 비밀번호 입력";
+"unlock" = "잠금 해제";
+"incorrect_password" = "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.";
+"attempts_warning" = "잘못된 비밀번호입니다. 비밀번호를 %d회 더 잘못 입력하면 로그아웃됩니다.";
+"max_attempts_reached" = "잠금 해제 시도 횟수를 초과했습니다. 보안을 위해 로그아웃되었습니다.";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "PIN 설정";
+"pin_setup_subtitle" = "보관함을 잠금 해제할 PIN을 선택하세요";
+"pin_confirm_title" = "PIN 확인";
+"pin_confirm_subtitle" = "확인을 위해 PIN을 다시 입력하세요";
+"pin_mismatch" = "PIN이 일치하지 않습니다. 다시 시도하세요.";

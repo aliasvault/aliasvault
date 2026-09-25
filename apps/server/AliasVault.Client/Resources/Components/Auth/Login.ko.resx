@@ -60,109 +60,109 @@
   </resheader>
   <!-- Page titles -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Log in to AliasVault</value>
+    <value>AliasVault 로그인</value>
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>2단계 인증</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
-    <value>Recovery code verification</value>
+    <value>복구 코드 인증</value>
     <comment>Title for recovery code step</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>Your username or email</value>
+    <value>사용자 이름 또는 이메일</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>비밀번호</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="AuthenticatorCodeLabel" xml:space="preserve">
-    <value>Authenticator code</value>
+    <value>인증기 코드</value>
     <comment>Label for 2FA code input field</comment>
   </data>
   <data name="RecoveryCodeLabel" xml:space="preserve">
-    <value>Recovery Code</value>
+    <value>복구 코드</value>
     <comment>Label for recovery code input field</comment>
   </data>
   <data name="RememberMeLabel" xml:space="preserve">
-    <value>Remember me</value>
+    <value>로그인 상태 유지</value>
     <comment>Label for remember me checkbox</comment>
   </data>
   <data name="RememberMachineLabel" xml:space="preserve">
-    <value>Remember this machine</value>
+    <value>이 기기 기억하기</value>
     <comment>Label for remember machine checkbox</comment>
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Log in</value>
+    <value>로그인</value>
     <comment>Login button text</comment>
   </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
-    <value>Lost Password?</value>
+    <value>비밀번호를 잊으셨나요?</value>
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>새 보관함 만들기</value>
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Log in with a recovery code instead.</value>
+    <value>대신 복구 코드로 로그인</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Log in with an authenticator code instead.</value>
+    <value>대신 인증기 코드로 로그인</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
-    <value>Log in using Mobile App</value>
+    <value>모바일 앱으로 로그인</value>
     <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>Your login is protected with an authenticator app. Enter your authenticator code below.</value>
+    <value>로그인이 인증기 앱으로 보호되어 있습니다. 아래에 인증기 코드를 입력하세요.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>You have requested to log in with a recovery code. A recovery code is a one-time code that can be used to log in to your account. Note that if you don't manually disable 2FA after login, you will be asked for an authenticator code again at the next login.</value>
+    <value>복구 코드로 로그인을 요청하셨습니다. 복구 코드는 계정에 로그인하는 데 사용할 수 있는 1회용 코드입니다. 로그인 후 2단계 인증을 직접 비활성화하지 않으면 다음 로그인 시 다시 인증기 코드를 입력해야 합니다.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
-    <value>No account yet?</value>
+    <value>아직 계정이 없으신가요?</value>
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
-    <value>Don't have access to your authenticator device?</value>
+    <value>인증기 기기를 사용할 수 없으신가요?</value>
     <comment>Question text about not having access to authenticator</comment>
   </data>
   <data name="RegainedAccessText" xml:space="preserve">
-    <value>Regained access to your authenticator device?</value>
+    <value>인증기 기기에 다시 접근할 수 있게 되셨나요?</value>
     <comment>Question text about regaining access to authenticator</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Logging in...</value>
+    <value>로그인 중...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>Verifying 2FA code...</value>
+    <value>2단계 인증 코드 확인 중...</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
-    <value>Verifying recovery code...</value>
+    <value>복구 코드 확인 중...</value>
     <comment>Loading message during recovery code verification</comment>
   </data>
   <!-- Error messages -->
   <data name="LoginErrorMessage" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>로그인 요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.</value>
     <comment>Generic login error message</comment>
   </data>
   <data name="LoginRequestErrorMessage" xml:space="preserve">
-    <value>An error occurred while processing the login request.</value>
+    <value>로그인 요청을 처리하는 중 오류가 발생했습니다.</value>
     <comment>Login request processing error message</comment>
   </data>
   <!-- Placeholders -->

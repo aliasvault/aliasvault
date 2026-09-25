@@ -21,59 +21,59 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>보관함</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>이메일</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>General settings</value>
+    <value>일반 설정</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>보안 설정</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="StorageInsightsNav">
-    <value>Storage insights</value>
+    <value>저장 공간 분석</value>
     <comment>Navigation link for vault storage insights page</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Import / Export</value>
+    <value>가져오기 / 내보내기</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>Extensions &amp; Apps</value>
+    <value>확장 프로그램 및 앱</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Switch to light mode</value>
+    <value>라이트 모드로 전환</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Switch to dark mode</value>
+    <value>다크 모드로 전환</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Log out</value>
+    <value>로그아웃</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
   <data name="OpenMenuLabel">
-    <value>Open menu</value>
+    <value>메뉴 열기</value>
     <comment>Screen reader label for mobile menu button</comment>
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>NEW</value>
+    <value>신규</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">
-    <value>BETA</value>
+    <value>베타</value>
     <comment>Label indicating beta version of the application</comment>
   </data>
 </root>

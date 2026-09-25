@@ -21,110 +21,110 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>Welcome to AliasVault</value>
+    <value>AliasVault에 오신 것을 환영합니다</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>How AliasVault Works</value>
+    <value>AliasVault 작동 원리</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
-    <value>Tips</value>
+    <value>팁</value>
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>시작하기</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
-    <value>Tutorial</value>
+    <value>튜토리얼</value>
     <comment>Default tutorial step title</comment>
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>보관함이 성공적으로 생성되었습니다! 가입하는 각 서비스마다 고유한 에일리어스를 만들어 온라인 개인정보를 보호하세요. AliasVault의 작동 원리를 알아보고 첫 번째 보안 에일리어스를 만들어 보겠습니다.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>새로운 서비스에 가입할 때:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>AliasVault가 안전한 개인 이메일 주소와 함께 무작위 신원 정보를 생성합니다</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>이 정보를 사용하여 서비스에 가입하세요</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>수신된 이메일은 이 앱에 표시되며 브라우저에서 열어볼 수 있습니다</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>실제 이메일 주소와 기타 개인정보는 안전하게 비공개로 유지됩니다</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>마스터 비밀번호를 안전하게 보관하세요</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>마스터 비밀번호는 보관함을 복호화하는 데 필요합니다. 타인과 절대 공유하지 마시고 안전한 위치에 보관하세요. 경고: 마스터 비밀번호를 분실하면 당사 팀을 포함해 그 누구도 데이터를 복구할 수 없습니다.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>보안 설정에서 2단계 인증 활성화</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>2단계 인증은 계정에 추가 보안 계층을 제공합니다. 암호화된 보관함에 접근하기 전에 인증기 앱의 코드를 입력하거나 복구 코드를 제공해야 합니다.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>브라우저 확장 프로그램 및 모바일 앱</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>AliasVault 브라우저 확장 프로그램과 모바일 앱을 설치하여 브라우저와 스마트폰에서 직접 에일리어스를 생성하고 양식을 자동으로 완성하세요.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>시작할 준비가 되셨나요?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>이제 AliasVault의 작동 방식을 알았으니, 첫 번째 보안 신원 정보를 만들어 보세요!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>첫 번째 신원 정보 만들기</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>계속</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>시작하기</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>튜토리얼 완료 중...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>출시 예정</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(예정)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>

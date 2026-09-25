@@ -21,193 +21,193 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Add Item</value>
+    <value>항목 추가</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Edit Item</value>
+    <value>항목 수정</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>아래에서 새 항목을 생성하세요.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>아래에서 기존 항목을 수정하세요.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>항목 보기</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>항목 수정</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
-    <value>Add new item</value>
+    <value>새 항목 추가</value>
     <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Item</value>
+    <value>항목</value>
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>로그인 정보</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">
-    <value>Alias</value>
+    <value>에일리어스</value>
     <comment>Header for the alias information section</comment>
   </data>
   <data name="NotesSectionHeader">
-    <value>Notes</value>
+    <value>메모</value>
     <comment>Header for the notes section</comment>
   </data>
   <data name="AttachmentsSectionHeader">
-    <value>Attachments</value>
+    <value>첨부 파일</value>
     <comment>Header for the attachments section</comment>
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>이름</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
-    <value>Website URL</value>
+    <value>웹사이트 URL</value>
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>이메일</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>사용자 이름</value>
     <comment>Label for username input</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>비밀번호</value>
     <comment>Label for password input</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First Name</value>
+    <value>이름</value>
     <comment>Label for first name input</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last Name</value>
+    <value>성</value>
     <comment>Label for last name input</comment>
   </data>
   <data name="NickNameLabel">
-    <value>Nick Name</value>
+    <value>닉네임</value>
     <comment>Label for nick name input</comment>
   </data>
   <data name="GenderLabel">
-    <value>Gender</value>
+    <value>성별</value>
     <comment>Label for gender input</comment>
   </data>
   <data name="BirthDateLabel">
-    <value>Birth Date</value>
+    <value>생년월일</value>
     <comment>Label for birth date input</comment>
   </data>
   <data name="NotesLabel">
-    <value>Notes</value>
+    <value>메모</value>
     <comment>Label for notes input</comment>
   </data>
   <!-- Placeholders -->
   <data name="ServiceNamePlaceholder">
-    <value>E.g. Facebook</value>
+    <value>예: Facebook</value>
     <comment>Placeholder text for service name input</comment>
   </data>
   <!-- Button text -->
   <data name="SaveItemButton">
-    <value>Save Item</value>
+    <value>항목 저장</value>
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
-    <value>Cancel</value>
+    <value>취소</value>
     <comment>Button text for canceling the operation</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="SavingVaultMessage">
-    <value>Saving vault...</value>
+    <value>보관함 저장 중...</value>
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>이 항목은 (더 이상) 존재하지 않습니다. 다시 시도하세요.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>항목을 저장하는 중 오류가 발생했습니다. 다시 시도하세요.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
   <data name="ItemUpdatedSuccess">
-    <value>Item updated successfully.</value>
+    <value>항목이 성공적으로 업데이트되었습니다.</value>
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>Item created successfully.</value>
+    <value>항목이 성공적으로 생성되었습니다.</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
   <data name="PasskeySectionHeader">
-    <value>Passkey</value>
+    <value>패스키</value>
     <comment>Section header for passkey</comment>
   </data>
   <data name="PasskeyLabel">
-    <value>Passkey</value>
+    <value>패스키</value>
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>사이트</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>이름</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>패스키는 웹사이트의 요청 시 브라우저 확장 프로그램이나 모바일 앱을 통해 생성됩니다. 웹 앱에서는 직접 수정하거나 생성할 수 없습니다. 이 패스키를 삭제하려면 아래의 삭제 버튼을 사용하세요. 패스키를 변경하거나 새로 생성하려면 해당 웹사이트를 방문하여 안내를 따르세요.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
-    <value>Delete passkey</value>
+    <value>패스키 삭제</value>
     <comment>Button to delete passkey</comment>
   </data>
   <data name="PasskeyMarkedForDeletion">
-    <value>Passkey marked for deletion</value>
+    <value>패스키가 삭제 대상으로 지정됨</value>
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>이 항목을 저장할 때 패스키가 삭제됩니다.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
-    <value>Undo</value>
+    <value>실행 취소</value>
     <comment>Button to undo passkey deletion</comment>
   </data>
   <!-- Card section fields -->
   <data name="CardDetailsSectionHeader">
-    <value>Card Details</value>
+    <value>카드 상세 정보</value>
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
-    <value>Cardholder Name</value>
+    <value>카드 소유자 이름</value>
     <comment>Label for cardholder name input</comment>
   </data>
   <data name="CardNumberLabel">
-    <value>Card Number</value>
+    <value>카드 번호</value>
     <comment>Label for card number input</comment>
   </data>
   <data name="ExpiryMonthLabel">
-    <value>Expiry Month</value>
+    <value>만료 월</value>
     <comment>Label for expiry month input</comment>
   </data>
   <data name="ExpiryYearLabel">
-    <value>Expiry Year</value>
+    <value>만료 연도</value>
     <comment>Label for expiry year input</comment>
   </data>
   <data name="CardCvvLabel">
@@ -220,15 +220,15 @@
   </data>
   <!-- Custom fields section -->
   <data name="CustomFieldsSectionHeader">
-    <value>Custom Fields</value>
+    <value>맞춤 필드</value>
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>필드 제거</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>이메일 추가</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>

@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Active Sessions</value>
+    <value>활성 세션</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <value>현재 계정이 로그인되어 있거나 활성 세션이 있는 기기 목록입니다. 여기에서 원하는 세션을 로그아웃할 수 있습니다.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
-    <value>No active sessions found.</value>
+    <value>활성 세션을 찾을 수 없습니다.</value>
     <comment>Message when no active sessions are available</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>기기</value>
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Last active</value>
+    <value>마지막 활동</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
-    <value>Expires</value>
+    <value>만료</value>
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
-    <value>Action</value>
+    <value>작업</value>
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>Revoke</value>
+    <value>해제</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Session revoked successfully.</value>
+    <value>세션이 성공적으로 해제되었습니다.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>Failed to revoke session.</value>
+    <value>세션을 해제하지 못했습니다.</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Failed to revoke session: {0}.</value>
+    <value>세션을 해제하지 못했습니다: {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>

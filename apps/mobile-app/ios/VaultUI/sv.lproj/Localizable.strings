@@ -13,13 +13,13 @@
 "no_items_found" = "Inga objekt hittades";
 "no_items_match" = "Inga befintliga objekt matchar din sökning";
 "create_new_item" = "Skapa nytt objekt";
-"open_aliasvault" = "Open AliasVault";
-"untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link to credential?";
-"link_url_prompt_message" = "Add \"{{url}}\" to {{name}} so AliasVault recognises this app or website next time?";
-"link_url_prompt_link_action" = "Link and fill";
-"link_url_prompt_skip_action" = "Just fill";
-"linking_url" = "Linking...";
+"open_aliasvault" = "Öppna AliasVault";
+"untitled_credential" = "den här posten";
+"link_url_prompt_title" = "Länka till post?";
+"link_url_prompt_message" = "Lägg till \"{{url}}\" till {{name}} så AliasVault känner igen denna app eller webbplats nästa gång?";
+"link_url_prompt_link_action" = "Länka och fyll";
+"link_url_prompt_skip_action" = "Endast fyll";
+"linking_url" = "Länkar...";
 "select_item" = "Välj Objekt";
 "select_text_to_insert" = "Välj text att infoga";
 "choose_username" = "Välj användarnamn";
@@ -40,7 +40,7 @@
 "username_copied" = "Användarnamn kopierat";
 "password_copied" = "Lösenord kopierat";
 "email_copied" = "E-postadress kopierad";
-"totp_code_copied" = "TOTP code copied";
+"totp_code_copied" = "TOTP-kod kopierad";
 "totp_code" = "TOTP-kod";
 
 /* Search bar */

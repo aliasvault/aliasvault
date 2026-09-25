@@ -20,119 +20,119 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>항목 보기</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>항목 보기</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Edit</value>
+    <value>수정</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>항목 수정</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
-    <value>Delete</value>
+    <value>삭제</value>
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>항목 삭제</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>로그인 정보</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>아래에서 이 항목에 대해 생성된 세부 정보를 확인하고 복사할 수 있습니다. 표시된 주소로 수신된 모든 이메일은 이 페이지에 자동으로 표시됩니다.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>아래에서 이 항목의 저장된 로그인 정보를 확인하고 복사할 수 있습니다.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>이메일</value>
     <comment>Label for email field</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>사용자 이름</value>
     <comment>Label for username field</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>비밀번호</value>
     <comment>Label for password field</comment>
   </data>
   <data name="AliasSection">
-    <value>Alias</value>
+    <value>에일리어스</value>
     <comment>Section header for alias information</comment>
   </data>
   <data name="FullNameLabel">
-    <value>Full name</value>
+    <value>전체 이름</value>
     <comment>Label for full name field</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First name</value>
+    <value>이름</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last name</value>
+    <value>성</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="BirthdateLabel">
-    <value>Birthdate</value>
+    <value>생년월일</value>
     <comment>Label for birthdate field</comment>
   </data>
   <data name="NicknameLabel">
-    <value>Nickname</value>
+    <value>닉네임</value>
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>항목 보기</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>이 항목은 (더 이상) 존재하지 않습니다. 다시 시도하세요.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
-    <value>Passkey</value>
+    <value>패스키</value>
     <comment>Section header for passkey</comment>
   </data>
   <data name="PasskeyLabel">
-    <value>Passkey</value>
+    <value>패스키</value>
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>사이트</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>이름</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>패스키는 웹사이트의 요청 시 브라우저 확장 프로그램이나 모바일 앱을 통해 생성됩니다. 웹 앱에서는 직접 수정하거나 생성할 수 없습니다. 이 패스키를 삭제하려면 이 항목을 수정한 후 패스키를 삭제하세요. 패스키를 변경하거나 새로 생성하려면 해당 웹사이트를 방문하여 안내를 따르세요.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
-    <value>Untitled</value>
+    <value>제목 없음</value>
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
-    <value>Notes</value>
+    <value>메모</value>
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>카드 상세 정보</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>맞춤 필드</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>

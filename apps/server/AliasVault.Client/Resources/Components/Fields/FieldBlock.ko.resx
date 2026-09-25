@@ -60,53 +60,53 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value>사용자 이름</value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Password</value>
+    <value>비밀번호</value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>Email</value>
+    <value>이메일</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
-    <value>Website</value>
+    <value>웹사이트</value>
     <comment>Label for URL field</comment>
   </data>
   <!-- Alias Field Labels -->
   <data name="FieldLabel_alias_first_name" xml:space="preserve">
-    <value>First Name</value>
+    <value>이름</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="FieldLabel_alias_last_name" xml:space="preserve">
-    <value>Last Name</value>
+    <value>성</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
-    <value>Gender</value>
+    <value>성별</value>
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>생년월일</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
   <data name="FieldLabel_card_number" xml:space="preserve">
-    <value>Card Number</value>
+    <value>카드 번호</value>
     <comment>Label for card number field</comment>
   </data>
   <data name="FieldLabel_card_cardholder_name" xml:space="preserve">
-    <value>Cardholder Name</value>
+    <value>카드 소유자 이름</value>
     <comment>Label for cardholder name field</comment>
   </data>
   <data name="FieldLabel_card_expiry_month" xml:space="preserve">
-    <value>Expiry Month</value>
+    <value>만료 월</value>
     <comment>Label for expiry month field</comment>
   </data>
   <data name="FieldLabel_card_expiry_year" xml:space="preserve">
-    <value>Expiry Year</value>
+    <value>만료 연도</value>
     <comment>Label for expiry year field</comment>
   </data>
   <data name="FieldLabel_card_cvv" xml:space="preserve">
@@ -119,12 +119,12 @@
   </data>
   <!-- Notes Field Labels -->
   <data name="FieldLabel_notes_content" xml:space="preserve">
-    <value>Notes</value>
+    <value>메모</value>
     <comment>Label for notes content field</comment>
   </data>
   <!-- History -->
   <data name="ViewHistory" xml:space="preserve">
-    <value>View history</value>
+    <value>기록 보기</value>
     <comment>Tooltip for history icon button</comment>
   </data>
 </root>

@@ -60,240 +60,240 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>1Password 보관함에서 비밀번호 가져오기</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export'.</value>
+    <value>1Password 보관함을 가져오려면 먼저 내보내야 합니다. 1Password 8 데스크톱 앱(Windows / MacOS / Linux)에서 1Password 계정에 로그인한 후 '파일' 메뉴로 이동하여 '내보내기'를 선택하면 됩니다.</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Import passwords from your Bitwarden vault</value>
+    <value>Bitwarden 보관함에서 비밀번호 가져오기</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault'.</value>
+    <value>Bitwarden 보관함을 가져오려면 먼저 내보내야 합니다. Bitwarden 계정에 로그인한 후 '도구' 메뉴로 이동하여 '보관함 내보내기'를 선택하면 됩니다.</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Import passwords from your LastPass vault</value>
+    <value>LastPass 보관함에서 비밀번호 가져오기</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your LastPass vault, you need to export it as a CSV file. You can do this by logging into your LastPass account, going to 'Advanced Options' in the left sidebar and selecting 'Export' > 'LastPass CSV File'.</value>
+    <value>LastPass 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. LastPass 계정에 로그인한 후 왼쪽 사이드바의 '고급 옵션'으로 이동하여 '내보내기' > 'LastPass CSV 파일'을 선택하면 됩니다.</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Import passwords from your Chrome Password Manager</value>
+    <value>Chrome 비밀번호 관리자에서 비밀번호 가져오기</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Chrome Password Manager, you need to export it as a CSV file. You can do this by logging into your Chrome browser, going to the 'Settings' menu > 'Password and AutoFill' > 'Google Password Manager'. Then click on 'Export passwords'.</value>
+    <value>Chrome 비밀번호 관리자의 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Chrome 브라우저에 로그인한 후 '설정' 메뉴 > '자동 완성 및 비밀번호' > 'Google 비밀번호 관리자'로 이동하여 '비밀번호 내보내기'를 클릭하면 됩니다.</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Import passwords from KeePass</value>
+    <value>KeePass에서 비밀번호 가져오기</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePass vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>KeePass 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '파일' 메뉴로 이동하여 '내보내기'(CSV)를 선택하면 됩니다.</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Import credentials using a template CSV format</value>
+    <value>템플릿 CSV 형식을 사용하여 로그인 정보 가져오기</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Is the password manager you are using not supported? You can always import your credentials into AliasVault using a generic CSV template format instead.</value>
+    <value>사용 중인 비밀번호 관리자가 지원되지 않나요? 대신 범용 CSV 템플릿 형식을 사용하여 언제든지 로그인 정보를 AliasVault로 가져올 수 있습니다.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Download the AliasVault Import CSV</value>
+    <value>AliasVault 가져오기 CSV 다운로드</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Open it in a spreadsheet program (Microsoft Excel, Google Sheets, etc.)</value>
+    <value>스프레드시트 프로그램(Microsoft Excel, Google 스프레드시트 등)에서 열기</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fill in your credentials (replace the example data)</value>
+    <value>로그인 정보 입력 (예시 데이터 대체)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
-    <value>Save as CSV format and upload it below</value>
+    <value>CSV 형식으로 저장한 후 아래에 업로드</value>
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Failed to download CSV template. Please try again.</value>
+    <value>CSV 템플릿을 다운로드하지 못했습니다. 다시 시도하세요.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Import passwords from your Firefox Password Manager</value>
+    <value>Firefox 비밀번호 관리자에서 비밀번호 가져오기</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.</value>
+    <value>Firefox 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Firefox 브라우저를 열고 메뉴 > '비밀번호'로 이동한 다음, 오른쪽 상단의 메뉴 아이콘을 클릭하고 '비밀번호 내보내기'를 선택하면 됩니다.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Import passwords from your Dashlane account</value>
+    <value>Dashlane 계정에서 비밀번호 가져오기</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dashlane passwords, you need to export it as a CSV file. You can do this by logging into your Dashlane account, going to the 'Account' > 'Settings' menu and selecting 'Export to CSV'.</value>
+    <value>Dashlane 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Dashlane 계정에 로그인한 후 '계정' > '설정' 메뉴로 이동하여 'CSV로 내보내기'를 선택하면 됩니다.</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Note: the .zip file you download will contain a "credentials.csv" file. You need to unzip the archive first, and then upload the "credentials.csv" CSV file below.</value>
+    <value>참고: 다운로드한 .zip 파일에는 "credentials.csv" 파일이 들어 있습니다. 먼저 아카이브 압축을 푼 다음, 아래에 "credentials.csv" CSV 파일을 업로드해야 합니다.</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Import passwords from KeePassXC</value>
+    <value>KeePassXC에서 비밀번호 가져오기</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
+    <value>KeePassXC 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '데이터베이스' 메뉴로 이동하여 '내보내기'(CSV 파일)를 선택하면 됩니다.</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>NordPass에서 비밀번호 가져오기</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>NordPass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. NordPass 앱 또는 웹 보관함을 열고 '설정' > '항목 내보내기'로 이동하여 CSV 형식을 선택하면 됩니다.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Import passwords from Proton Pass</value>
+    <value>Proton Pass에서 비밀번호 가져오기</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass vault, you need to export it. You can do this in the Proton Pass browser extension by going to 'Settings' > 'Export'.</value>
+    <value>Proton Pass 보관함을 가져오려면 먼저 내보내야 합니다. Proton Pass 브라우저 확장 프로그램에서 '설정' > '내보내기'로 이동하여 내보낼 수 있습니다.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Import passwords from Strongbox</value>
+    <value>Strongbox에서 비밀번호 가져오기</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).</value>
+    <value>Strongbox 보관함을 가져오려면 먼저 CSV 파일로 내보내야 합니다. '파일' 메뉴로 이동하여 '데이터베이스 내보내기'(CSV로)를 선택하면 됩니다.</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault CSV/AVUX/AVEX -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import from AliasVault backup</value>
+    <value>AliasVault 백업에서 가져오기</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>Import your previously created AliasVault backup.</value>
+    <value>이전에 생성한 AliasVault 백업을 가져옵니다.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <data name="AliasVaultSupportedFormatsInfo" xml:space="preserve">
-    <value>Supports .avex (encrypted), .avux (unencrypted) and CSV (basic) formats.</value>
+    <value>.avex(암호화됨), .avux(암호화되지 않음) 및 CSV(기본) 형식을 지원합니다.</value>
     <comment>Supported formats information for AliasVault imports</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Import passwords from Dropbox Passwords</value>
+    <value>Dropbox Passwords에서 비밀번호 가져오기</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dropbox Passwords, you need to export them as a CSV file. You can do this by opening Dropbox Passwords, going to 'Account' > 'Export' (to .CSV).</value>
+    <value>Dropbox Passwords의 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Dropbox Passwords를 열고 '계정' > '내보내기'(.CSV로)를 선택하면 됩니다.</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- RoboForm -->
   <data name="RoboformDescription" xml:space="preserve">
-    <value>Import passwords from RoboForm</value>
+    <value>RoboForm에서 비밀번호 가져오기</value>
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
-    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <value>RoboForm 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. RoboForm을 열고 'RoboForm' 메뉴 > '옵션' > '계정 및 데이터' > '내보내기'로 이동하여 CSV 형식을 선택하면 됩니다.</value>
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Microsoft Edge 비밀번호 관리자에서 비밀번호 가져오기</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Microsoft Edge 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. 메뉴 > 설정 > 비밀번호 및 자동 완성 > Microsoft 비밀번호 관리자 > ... > 비밀번호 내보내기로 이동하면 됩니다.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Enpass에서 비밀번호 가져오기</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Enpass 비밀번호를 가져오려면 먼저 CSV 파일로 내보내야 합니다. Enpass를 열고 '메뉴' > '파일' > '내보내기'로 이동하여 'CSV 파일(.csv)'을 선택하면 됩니다.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>파일을 내보낸 후 아래에 업로드할 수 있습니다.</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>

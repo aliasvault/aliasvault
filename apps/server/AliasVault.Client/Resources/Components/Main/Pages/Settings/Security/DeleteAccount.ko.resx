@@ -60,80 +60,80 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>계정 삭제</value>
     <comment>Page title for the delete account page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>보안 설정</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDeleteAccount" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>계정 삭제</value>
     <comment>Breadcrumb text for delete account</comment>
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</value>
+    <value>경고: 이 작업은 영구적이며 취소할 수 없습니다. 귀하의 모든 데이터가 영구적으로 삭제됩니다.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Final warning: Enter your password to permanently delete your account.</value>
+    <value>최종 경고: 계정을 영구적으로 삭제하려면 비밀번호를 입력하세요.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
   <data name="PleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>참고:</value>
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>All encrypted vaults which includes all of your credentials will be permanently deleted</value>
+    <value>모든 로그인 정보가 포함된 암호화된 모든 보관함이 영구적으로 삭제됩니다.</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Your email aliases will be orphaned and cannot be claimed by other users</value>
+    <value>귀하의 이메일 에일리어스는 연결이 끊어지며, 다른 사용자가 소유권을 가질 수 없습니다.</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
-    <value>Your account cannot be recovered after deletion</value>
+    <value>삭제된 계정은 복구할 수 없습니다.</value>
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immmediately and permanently.</value>
+    <value>계정 삭제는 되돌릴 수 없으며 취소할 수 없습니다. 아래 버튼을 누르면 계정이 즉시 영구적으로 삭제됩니다.</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
   <data name="ConfirmUsernameLabel" xml:space="preserve">
-    <value>Confirm your username</value>
+    <value>사용자 이름 확인</value>
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password</value>
+    <value>비밀번호를 입력하세요</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
   <data name="ContinueWithAccountDeletion" xml:space="preserve">
-    <value>Continue with Account Deletion</value>
+    <value>계정 삭제 계속 진행</value>
     <comment>Button text to continue with account deletion</comment>
   </data>
   <data name="DeleteMyAccount" xml:space="preserve">
-    <value>Delete My Account</value>
+    <value>내 계정 삭제</value>
     <comment>Button text to delete account</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="DeletingAccountMessage" xml:space="preserve">
-    <value>Deleting account...</value>
+    <value>계정 삭제 중...</value>
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>사용자 이름을 입력해야 합니다</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your current username. Please try again.</value>
+    <value>입력한 사용자 이름이 현재 사용자 이름과 일치하지 않습니다. 다시 시도하세요.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
-    <value>An error occurred while processing the request.</value>
+    <value>요청을 처리하는 동안 오류가 발생했습니다.</value>
     <comment>Generic error message for request processing</comment>
   </data>
 </root>

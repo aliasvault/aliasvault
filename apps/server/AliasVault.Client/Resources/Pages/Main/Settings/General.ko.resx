@@ -21,144 +21,144 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>General settings</value>
+    <value>일반 설정</value>
     <comment>Page title for general settings</comment>
   </data>
   <data name="PageDescription">
-    <value>Configure general AliasVault settings.</value>
+    <value>AliasVault의 일반 설정을 구성합니다.</value>
     <comment>Page description for general settings</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>General settings</value>
+    <value>일반 설정</value>
     <comment>Breadcrumb title for general settings</comment>
   </data>
   <!-- Email Settings Section -->
   <data name="EmailSettingsTitle">
-    <value>Email Settings</value>
+    <value>이메일 설정</value>
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>Default email domain</value>
+    <value>기본 이메일 도메인</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Set the default email domain that will be used when creating new credentials.</value>
+    <value>새 계정 정보를 생성할 때 사용할 기본 이메일 도메인을 설정합니다.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Note: Email received on private domains are end-to-end encrypted and can only be read by you, while email received on public domains can be read by anyone that knows the receiving email address.</value>
+    <value>참고: 개인 도메인으로 수신된 이메일은 종단간 암호화(E2EE)되어 본인만 읽을 수 있지만, 공개 도메인으로 수신된 이메일은 수신 이메일 주소를 아는 사람이라면 누구나 읽을 수 있습니다.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
-    <value>Learn more about the difference</value>
+    <value>차이점에 대해 자세히 알아보기</value>
     <comment>Link to documentation for default email domain setting</comment>
   </data>
   <data name="PrivateDomainsLabel">
-    <value>Private Domains</value>
+    <value>개인 도메인</value>
     <comment>Label for private domains group</comment>
   </data>
   <data name="PrivateDomainsDisabledLabel">
-    <value>No private email domains configured</value>
+    <value>구성된 개인 이메일 도메인이 없습니다</value>
     <comment>Label for private domains group when no private email domains are configured</comment>
   </data>
   <data name="PublicDomainsLabel">
-    <value>Public Domains</value>
+    <value>공개 도메인</value>
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Auto refresh emails content when new ones arrive</value>
+    <value>새 이메일이 도착하면 이메일 콘텐츠 자동 새로고침</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Identity Generator Settings</value>
+    <value>신원 정보 생성기 설정</value>
     <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Language</value>
+    <value>언어</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Set the default language that will be used when generating new identities.</value>
+    <value>새 신원 정보를 생성할 때 사용할 기본 언어를 설정합니다.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>성별</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Set the default gender preference for generating new identities.</value>
+    <value>새 신원 정보를 생성할 때 선호하는 기본 성별을 설정합니다.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
-    <value>Random</value>
+    <value>무작위</value>
     <comment>Random gender option</comment>
   </data>
   <data name="MaleOption">
-    <value>Male</value>
+    <value>남성</value>
     <comment>Male gender option</comment>
   </data>
   <data name="FemaleOption">
-    <value>Female</value>
+    <value>여성</value>
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
-    <value>Age range</value>
+    <value>연령대</value>
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>새 신원 정보를 생성할 때 기본 연령대를 설정합니다. 생성된 신원 정보에 할당되는 생년월일에 영향을 줍니다.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
-    <value>Clipboard Settings</value>
+    <value>클립보드 설정</value>
     <comment>Title for clipboard settings section</comment>
   </data>
   <data name="ClipboardClearSecondsLabel">
-    <value>Auto-clear clipboard after copying</value>
+    <value>복사 후 클립보드 자동 삭제</value>
     <comment>Label for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearSecondsDescription">
-    <value>Automatically clear clipboard contents after copying passwords or other sensitive data.</value>
+    <value>비밀번호나 기타 민감한 데이터를 복사한 후 클립보드 내용을 자동으로 삭제합니다.</value>
     <comment>Description for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearDisabledOption">
-    <value>Disabled</value>
+    <value>비활성화됨</value>
     <comment>Option to disable clipboard clearing</comment>
   </data>
   <data name="ClipboardClear5SecondsOption">
-    <value>5 seconds</value>
+    <value>5초</value>
     <comment>Option to clear clipboard after 5 seconds</comment>
   </data>
   <data name="ClipboardClear10SecondsOption">
-    <value>10 seconds</value>
+    <value>10초</value>
     <comment>Option to clear clipboard after 10 seconds</comment>
   </data>
   <data name="ClipboardClear15SecondsOption">
-    <value>15 seconds</value>
+    <value>15초</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Note: clearing the clipboard in the web app is only possible when the tab is active. If the tab loses focus, the clipboard will be cleared when it comes back into focus.</value>
+    <value>참고: 웹 앱에서 클립보드를 삭제하는 기능은 탭이 활성화되어 있을 때만 가능합니다. 탭이 포커스를 잃으면 다시 포커스를 얻었을 때 클립보드가 삭제됩니다.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
   <data name="PasswordSettingsTitle">
-    <value>Password Settings</value>
+    <value>비밀번호 설정</value>
     <comment>Title for password settings section</comment>
   </data>
   <!-- App Language Settings Section -->
   <data name="AppLanguageTitle">
-    <value>Application Language</value>
+    <value>애플리케이션 언어</value>
     <comment>Title for app language settings section</comment>
   </data>
   <data name="AppLanguageLabel">
-    <value>Language</value>
+    <value>언어</value>
     <comment>Label for app language setting</comment>
   </data>
   <data name="AppLanguageDescription">
-    <value>Set the language for the application interface.</value>
+    <value>애플리케이션 인터페이스의 언어를 설정합니다.</value>
     <comment>Description for app language setting</comment>
   </data>
 </root>

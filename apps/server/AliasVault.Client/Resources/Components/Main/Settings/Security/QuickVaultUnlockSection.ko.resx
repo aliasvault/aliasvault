@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>패스키 잠금 해제</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>마스터 비밀번호가 패스키 PRF로 암호화되어 로컬에 저장됩니다. AliasVault 페이지 또는 탭을 새로고침할 때 패스키로 보관함을 잠금 해제할 수 있습니다. 패스키 잠금 해제를 비활성화하려면 아래 버튼을 클릭하세요. 마스터 비밀번호로도 계속 보관함을 잠금 해제할 수 있습니다.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>패스키 잠금 해제 비활성화</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>기본적으로 AliasVault 페이지나 탭을 새로고침하면 마스터 비밀번호를 다시 입력해야 합니다. 패스키를 사용하면 보관함을 즉시 잠금 해제할 수 있습니다. 이 기능을 활성화하면 마스터 비밀번호가 패스키의 PRF 확장을 사용하여 로컬에서 암호화됩니다. 참고: 패스키는 기능을 활성화한 현재 기기 및 브라우저에서만 작동합니다.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>이 기능은 현재 AliasVault 브라우저 확장 프로그램 및 iOS 앱에서 지원됩니다. Android 지원은 곧 제공될 예정입니다. 문제가 발생하면 언제든지 이 기능을 비활성화할 수 있습니다.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>패스키 잠금 해제 활성화</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>패스키 잠금 해제가 성공적으로 활성화되었습니다. 다음에 보관함이 잠기면 생성한 패스키로 잠금을 해제할 수 있습니다.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>패스키 잠금 해제가 성공적으로 비활성화되었습니다.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>현재 브라우저는 WebAuthn PRF 확장을 지원하지 않습니다. 다른 브라우저에서 다시 시도하세요.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>빠른 보관함 잠금 해제를 활성화하는 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>

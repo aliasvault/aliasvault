@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Recovery codes</value>
+    <value>복구 코드</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>The recovery codes below are used to access your account in case you lose access to your authenticator device. Make a photo or write them down and store them in a secure location. Do not share them with anyone.</value>
+    <value>아래의 복구 코드는 인증기 기기를 분실했을 때 계정에 접근하는 데 사용됩니다. 사진을 찍거나 메모하여 안전한 장소에 보관하세요. 타인과 공유해서는 안 됩니다.</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">
-    <value>Store these recovery codes in a safe place.</value>
+    <value>이 복구 코드를 안전한 장소에 보관하세요.</value>
     <comment>Warning title about storing codes</comment>
   </data>
   <data name="WarningDescription" xml:space="preserve">
-    <value>If you lose your device and don't have the recovery codes you will lose access to your account. These codes are only shown once!</value>
+    <value>기기를 분실하고 복구 코드가 없는 경우 계정에 접근할 수 없게 됩니다. 이 코드는 한 번만 표시됩니다!</value>
     <comment>Warning description about recovery codes</comment>
   </data>
 </root>

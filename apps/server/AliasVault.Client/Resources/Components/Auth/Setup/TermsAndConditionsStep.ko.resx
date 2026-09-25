@@ -21,32 +21,32 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Please read and agree to the following terms and conditions before proceeding.</value>
+    <value>계속 진행하기 전에 다음 이용약관을 읽고 동의해 주세요.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>이용약관</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.
+    <value>AliasVault는 온라인 보안을 강화하고 개인정보를 보호하도록 설계되었습니다. AliasVault를 사용하면 다양한 온라인 계정에 대해 고유한 신원 정보와 이메일 에일리어스를 생성하여 개인정보를 직접 관리하고 명의 도용 위험을 줄일 수 있습니다.
 
-By using AliasVault, you agree to the following terms:
+AliasVault를 사용함으로써 귀하는 다음 약관에 동의하게 됩니다:
 
-1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.
+1. 사기, 명의 도용 또는 실제 인물 사칭을 포함하되 이에 국한되지 않는 일체의 불법적인 목적으로 AliasVault를 사용하지 않습니다.
 
-2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.
+2. 귀하는 본인의 계정 및 AliasVault를 통해 생성된 모든 에일리어스의 비밀을 유지할 책임이 있습니다.
 
-3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.
+3. AliasVault는 본 약관의 오용 또는 위반이 의심되는 경우 귀하의 계정을 해지할 수 있는 권리를 보유합니다.
 
-4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk.</value>
+4. 귀하는 AliasVault가 개인정보 보호를 강화하지만 어떤 시스템도 완벽하게 안전할 수는 없으며, 귀하 자신의 책임 하에 본 서비스를 사용함을 이해합니다.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>I have read and agree to the Terms and Conditions</value>
+    <value>이용약관을 읽었으며 이에 동의합니다</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>
