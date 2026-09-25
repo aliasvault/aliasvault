@@ -11,6 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "compile": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
   },
   "dependencies": {
     "@aliasvault/client": "file:../../core/client",
