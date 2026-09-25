@@ -83,19 +83,22 @@ https://github.com/aliasvault/aliasvault | AGPLv3
 <script>
   var translations = {};
   function getCurrentLanguage() { return localStorage.getItem('AppLanguage') || 'en'; }
+  async function fetchTranslations(lang) {
+    var response = await fetch('/locales/' + lang + '.json');
+    if (!response.ok) { throw new Error('No loading screen translations for ' + lang); }
+    return response.json();
+  }
   async function loadTranslations() {
     var lang = getCurrentLanguage();
     try {
-      var response = await fetch('/locales/' + lang + '.json');
-      if (response.ok) {
-        translations = await response.json();
-      } else {
-        var fallbackResponse = await fetch('/locales/en.json');
-        translations = await fallbackResponse.json();
-      }
+      translations = await fetchTranslations(lang);
     } catch (error) {
-      console.warn('Failed to load localization files, using fallback strings:', error);
-      translations = {};
+      try {
+        translations = lang === 'en' ? {} : await fetchTranslations('en');
+      } catch (fallbackError) {
+        console.warn('Failed to load localization files, using fallback strings:', fallbackError);
+        translations = {};
+      }
     }
   }
   function getTranslation(path) {
