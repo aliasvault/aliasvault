@@ -3,8 +3,10 @@ import React, { createContext, useContext, useMemo, useCallback, useEffect, useS
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/context/AuthContext';
+import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { vaultStateEvents } from '@/events/VaultStateEvents';
+import { vaultStore } from '@/vault/VaultStore';
 
 type AppContextType = {
   isLoggedIn: boolean;
@@ -25,6 +27,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuth();
   const webApi = useWebApi();
+  const { clearDatabase } = useDb();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const isLoggingOutRef = useRef(false);
   const { t } = useTranslation();
@@ -83,12 +86,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     initializeAuth();
   }, [initializeAuth]);
 
-  // Reflect logouts from other tabs.
+  /*
+   * Reflect a logout from this tab or another one.
+   */
   useEffect(() => {
     return vaultStateEvents.onLoggedOut(() => {
+      clearDatabase();
+      void vaultStore.lockVault();
       setIsLoggedIn(false);
     });
-  }, []);
+  }, [clearDatabase]);
 
   const contextValue = useMemo(() => ({
     isInitialized: auth.isInitialized,
