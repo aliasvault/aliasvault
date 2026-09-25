@@ -39,7 +39,7 @@ export class SpamOkClient {
   }
 
   /**
-   * The mails in a mailbox, or null when the request failed.
+   * The mails in a mailbox, newest first, or null when the request failed.
    * @param emailPrefix - the local part of the address
    */
   public async getMailbox(emailPrefix: string): Promise<MailboxEmail[] | null> {
@@ -48,7 +48,7 @@ export class SpamOkClient {
       return null;
     }
     const mailbox = await response.json() as { mails?: MailboxEmail[] };
-    return mailbox.mails ?? [];
+    return [...(mailbox.mails ?? [])].sort((a, b) => new Date(b.dateSystem).getTime() - new Date(a.dateSystem).getTime());
   }
 
   /**

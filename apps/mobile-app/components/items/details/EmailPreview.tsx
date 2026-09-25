@@ -161,20 +161,12 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
         if (isPublic) {
           // For public domains (SpamOK), use the SpamOK API directly
           const emailPrefix = email.split('@')[0];
-          const response = await spamOk.request('GET', `EmailBox/${emailPrefix}`);
-
-          if (!response.ok) {
-            markPollFailed(`The mailbox request returned HTTP ${response.status}`);
+          const allMails = await spamOk.getMailbox(emailPrefix);
+          if (!allMails) {
+            markPollFailed('The mailbox request failed');
             setError(t('items.emailLoadError'));
             return;
           }
-
-          const data = await response.json();
-
-          // Store all emails, sorted by date
-          const allMails = data?.mails
-            ?.sort((a: MailboxEmail, b: MailboxEmail) =>
-              new Date(b.dateSystem).getTime() - new Date(a.dateSystem).getTime()) ?? [];
 
           if (loading && allMails.length > 0) {
             setLastEmailId(allMails[0].id);

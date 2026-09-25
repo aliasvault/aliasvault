@@ -1,6 +1,8 @@
 import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
 import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
+import { sanitizeEmailHtml } from '@aliasvault/client/email/EmailHtmlSanitizer';
 import { decodeEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
+import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,7 +14,6 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
-import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -156,7 +157,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to decode email source'));
   }, [viewMode, sourceText, sourceBytes]);
 
-  const sanitizedHtmlBody = useMemo(() => htmlBody ? ConversionUtility.sanitizeAndPrepareEmailHtml(htmlBody) : null, [htmlBody]);
+  const sanitizedHtmlBody = useMemo(() => htmlBody ? sanitizeEmailHtml(htmlBody) : null, [htmlBody]);
 
   const formatLabels = useMemo<Record<'html' | 'plain' | 'source', string>>(() => ({
     html: t('emails.formatHtml'),
@@ -199,25 +200,6 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   }, [id, fromPath]);
 
   /**
-   * Trigger a browser download for raw attachment bytes.
-   */
-  const triggerAttachmentDownload = (bytes: Uint8Array, mimeType: string | null, filename: string): void => {
-    const blob = new Blob([bytes], { type: mimeType ?? 'application/octet-stream' });
-
-    // Create download link and trigger download
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  };
-
-  /**
    * Handle downloading an attachment contained in the message source.
    */
   const handleDownloadParsedAttachment = async (attachment: ParsedEmailAttachment, index: number): Promise<void> => {
@@ -234,7 +216,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
 
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
       const bytes = await getEmailAttachmentBytes(webApi, email, encryptionKeys, sourceBytes, index, attachment.detached ? attachment.partIndex : null);
-      triggerAttachmentDownload(bytes, attachment.mimeType, attachment.filename);
+      downloadBytes(attachment.filename, bytes, attachment.mimeType);
     } catch (err) {
       logFailure('[Email] Downloading the attachment failed', err);
       setError(err instanceof Error ? err.message : 'Failed to download attachment');

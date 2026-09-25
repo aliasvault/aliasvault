@@ -1,3 +1,4 @@
+import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +8,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailBody } from '@/hooks/useEmailBody';
 import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, spamOk } from '@/utils/EmailViewModel';
-import { downloadBytes } from '@/utils/FileDownload';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 

@@ -1,3 +1,4 @@
+import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,23 +27,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId })
    */
   const downloadAttachment = (attachment: Attachment): void => {
     try {
-      // Convert Uint8Array or number[] to Uint8Array
-      const byteArray = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
-
-      // Create blob and download
-      const blob = new Blob([byteArray as BlobPart]);
-      const url = URL.createObjectURL(blob);
-
-      // Create temporary download link
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.Filename;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadBytes(attachment.Filename, attachment.Blob ?? []);
     } catch (error) {
       logFailure('Error downloading attachment', error);
     }
