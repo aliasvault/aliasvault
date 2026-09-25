@@ -31,11 +31,16 @@ export default {
       },
       animation: {
         'spin-ccw': 'spin-ccw 1s linear infinite',
+        'drop-slot': 'drop-slot 150ms ease-out',
       },
       keyframes: {
         'spin-ccw': {
           'from': { transform: 'rotate(0deg)' },
           'to': { transform: 'rotate(-360deg)' },
+        },
+        'drop-slot': {
+          'from': { opacity: '0', transform: 'scaleY(0.6)' },
+          'to': { opacity: '1', transform: 'scaleY(1)' },
         },
       },
     },
