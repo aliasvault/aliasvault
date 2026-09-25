@@ -30,7 +30,7 @@
     "loginWithMobile": "Se connecter à l'aide de l'application mobile",
     "unlockWithMobile": "Déverrouiller en utilisant l'application mobile",
     "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre-fort.",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Lorsque l'application le demande, saisissez ce numéro.",
     "passwordAttemptsWarning": "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de {{remainingAttempts}} fois.",
     "maxAttemptsReached": "Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité."
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "Le chargement du coffre a pris trop de temps. Veuillez fermer et rouvrir l'extension et réessayer, ou redémarrer votre navigateur si le problème persiste.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "Une erreur s'est produite lors du chargement de votre coffre. Veuillez copier les détails de l'erreur ci-dessous et contacter le support pour obtenir de l'aide.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "La demande de connexion a été refusée sur votre appareil mobile."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
@@ -290,26 +290,26 @@
       "required": "Ce champ est requis"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Choisir une icône",
+      "currentLogo": "Icône actuelle",
+      "builtinLogos": "Bibliothèque des icônes",
+      "fetchFromWebsite": "Récupérer l'icône depuis le site web",
+      "refetchFromWebsite": "(Re)récupérer l'icône depuis le site web",
+      "sourceFavicon": "Depuis {{domain}}",
+      "sourceBuiltin": "Icône intégrée",
+      "sourceCustom": "Icône personnalisée",
+      "sourceNone": "Pas d'icône",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
+        "Shopping": "Achats",
+        "Bank": "Banque",
         "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Social": "Réseaux",
+        "Work": "Travail",
+        "Game": "Jeux",
+        "Media": "Médias",
+        "Travel": "Voyages",
+        "Health": "Santé",
+        "Dev": "Développement"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "Gérer les paramètres de sécurité de votre compte et de votre coffre-fort.",
       "changePassword": {
         "title": "Modifier le mot de passe",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Changer votre mot de passe principal déconnectera vos autres appareils et vous demandera de vous reconnecter avec le nouveau mot de passe.",
         "currentPassword": "Mot de passe actuel",
         "newPassword": "Nouveau mot de passe",
         "confirmNewPassword": "Confirmez votre nouveau mot de passe",
         "passwordsDoNotMatch": "Les nouveaux mots de passe ne correspondent pas",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "Le mot de passe doit comporter au moins {{minLength}} caractères.",
         "success": "Mot de passe modifié avec succès"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "Nouveautés",
     "whatsNewDescription": "Une mise à niveau est nécessaire pour prendre en charge les modifications suivantes :",
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Après cette mise à jour, vos autres applications AliasVault auront besoin de la version {{version}} ou plus récente. Les anciennes applications et extensions de navigateur se déconnecteront et demanderont à être mises à jour avant de pouvoir ouvrir à nouveau votre coffre.",
+    "successTitle": "Coffre-fort mis à jour",
+    "successOtherDevices": "Votre coffre est prêt à être utilisé. Assurez-vous de mettre à jour l'application AliasVault sur vos autres appareils également.",
     "alerts": {
       "unableToGetVersionInfo": "Impossible d'obtenir les informations de version. Veuillez réessayer.",
       "selfHostedServer": "Serveur auto-hébergé",
