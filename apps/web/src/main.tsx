@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom/client';
 
 import App from '@/App';
 import { loadAppConfig } from '@/config/AppConfig';
-import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CapabilityProvider } from '@/context/CapabilityContext';
 import { ConfirmModalProvider } from '@/context/ConfirmModalContext';
@@ -26,15 +25,13 @@ const renderApp = (): void => {
         <DbProvider>
           <WebApiProvider>
             <AuthProvider>
-              <AppProvider>
-                <LoadingProvider>
-                  <ConfirmModalProvider>
-                    <CapabilityProvider>
-                      <App />
-                    </CapabilityProvider>
-                  </ConfirmModalProvider>
-                </LoadingProvider>
-              </AppProvider>
+              <LoadingProvider>
+                <ConfirmModalProvider>
+                  <CapabilityProvider>
+                    <App />
+                  </CapabilityProvider>
+                </ConfirmModalProvider>
+              </LoadingProvider>
             </AuthProvider>
           </WebApiProvider>
         </DbProvider>

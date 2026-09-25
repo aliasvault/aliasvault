@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import SecuritySection, { type SectionHandle } from '@/components/settings/security/SecuritySection';
 import Button from '@/components/shared/Button';
-import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { WebAuthnNotSupportedError, WebAuthnService } from '@/utils/WebAuthnService';
 
@@ -14,7 +14,7 @@ import { WebAuthnNotSupportedError, WebAuthnService } from '@/utils/WebAuthnServ
  */
 const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
   const { t } = useTranslation();
-  const app = useApp();
+  const auth = useAuth();
   const notifications = useNotifications();
   const [isLoading, setIsLoading] = useState(true);
   const [enabled, setEnabled] = useState(false);
@@ -33,7 +33,7 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
    */
   const enable = async (): Promise<void> => {
     try {
-      await WebAuthnService.enable(app.username ?? '');
+      await WebAuthnService.enable(auth.username ?? '');
       notifications.addSuccessMessage(t(`${tk}.SuccessEnabledMessage`), true);
     } catch (error) {
       if (error instanceof WebAuthnNotSupportedError) {

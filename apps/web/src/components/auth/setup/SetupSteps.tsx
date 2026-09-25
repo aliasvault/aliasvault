@@ -7,7 +7,7 @@ import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDis
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import EditFormRow from '@/components/forms/EditFormRow';
 import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
-import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { RegistrationService } from '@/services/RegistrationService';
@@ -272,7 +272,7 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
  */
 export const CreatingStep: React.FC<{ username: string; password: string; onDone: () => void }> = ({ username, password, onDone }) => {
   const { t } = useTranslation();
-  const app = useApp();
+  const auth = useAuth();
   const webApi = useWebApi();
   const notifications = useNotifications();
   const [isLoading, setIsLoading] = useState(true);
@@ -289,7 +289,7 @@ export const CreatingStep: React.FC<{ username: string; password: string; onDone
      */
     const completeSetup = async (): Promise<void> => {
       try {
-        await RegistrationService.register(webApi, username, password, app.setAuthTokens);
+        await RegistrationService.register(webApi, username, password, auth.setAuthTokens);
         onDone();
       } catch (error) {
         console.error('Registration failed:', error);
@@ -298,7 +298,7 @@ export const CreatingStep: React.FC<{ username: string; password: string; onDone
       }
     };
     void completeSetup();
-  }, [app.setAuthTokens, notifications, onDone, password, t, username, webApi]);
+  }, [auth.setAuthTokens, notifications, onDone, password, t, username, webApi]);
 
   return (
     <div className="w-full mx-auto">

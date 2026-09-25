@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
+import { vaultStore } from '@/vault/VaultStore';
 
 type EmailDomainFieldProps = {
   id: string;
@@ -21,7 +22,7 @@ type EmailDomainFieldProps = {
  */
 const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange, error = null, required = false, onRemove, defaultToEmailMode = false, onGenerateAlias }) => {
   const { t } = useTranslation();
-  const dbContext = useDb();
+  const { sqliteClient } = useDb();
   const [privateDomains, setPrivateDomains] = useState<string[]>([]);
   const [publicDomains, setPublicDomains] = useState<string[]>([]);
   const [hiddenPrivateDomains, setHiddenPrivateDomains] = useState<string[]>([]);
@@ -37,7 +38,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
 
   useEffect(() => {
     let cancelled = false;
-    void dbContext.getVaultMetadata().then((metadata) => {
+    void vaultStore.getVaultMetadata().then((metadata) => {
       if (cancelled) {
         return;
       }
@@ -49,7 +50,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
     return (): void => {
       cancelled = true;
     };
-  }, [dbContext]);
+  }, [sqliteClient]);
 
   /*
    * Derive the local part, domain and mode from the value. After a toggle the user's mode choice is kept; on load

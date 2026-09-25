@@ -6,11 +6,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useWebApi } from '@/context/WebApiContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { useIdentityGenerator } from '@/hooks/useIdentityGenerator';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { useSaveItem } from '@/hooks/useSaveItem';
 import { createNewItemEdit, type ItemEdit, setFieldValue } from '@/models/ItemEdit';
+import { generateIdentity } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
@@ -39,7 +40,7 @@ const CreateNewIdentityWidget: React.FC = () => {
   const dbContext = useDb();
   const { showLoading, hideLoading } = useLoading();
   const notifications = useNotifications();
-  const { generateIdentity } = useIdentityGenerator();
+  const webApi = useWebApi();
   const { saveItem } = useSaveItem();
   const [isCreating, setIsCreating] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -97,7 +98,7 @@ const CreateNewIdentityWidget: React.FC = () => {
       if (serviceUrl !== DEFAULT_SERVICE_URL) {
         edit = setFieldValue(edit, 'login.url', serviceUrl);
       }
-      const identity = await generateIdentity();
+      const identity = dbContext.sqliteClient ? await generateIdentity(dbContext.sqliteClient, webApi) : null;
       if (identity) {
         edit = setFieldValue(edit, 'login.username', identity.username);
         edit = setFieldValue(edit, 'login.password', identity.password);

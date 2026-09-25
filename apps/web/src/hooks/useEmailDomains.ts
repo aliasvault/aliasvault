@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useDb } from '@/context/DbContext';
+import { vaultStore } from '@/vault/VaultStore';
 
 /**
  * Domain checks: which addresses AliasVault or SpamOK can receive mail for.
@@ -25,14 +26,14 @@ const endsWithDomain = (email: string, domains: string[]): boolean => {
  * The email domains this instance serves, from the vault metadata the sync recorded.
  */
 export function useEmailDomains(): EmailDomainChecks {
-  const dbContext = useDb();
+  const { sqliteClient } = useDb();
   const [publicDomains, setPublicDomains] = useState<string[]>([]);
   const [privateDomains, setPrivateDomains] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    void dbContext.getVaultMetadata().then((metadata) => {
+    void vaultStore.getVaultMetadata().then((metadata) => {
       if (cancelled) {
         return;
       }
@@ -43,7 +44,7 @@ export function useEmailDomains(): EmailDomainChecks {
     return (): void => {
       cancelled = true;
     };
-  }, [dbContext]);
+  }, [sqliteClient]);
 
   const isSpamOkDomain = useCallback((email: string): boolean => endsWithDomain(email, publicDomains), [publicDomains]);
   const isAliasVaultDomain = useCallback((email: string): boolean => endsWithDomain(email, privateDomains), [privateDomains]);

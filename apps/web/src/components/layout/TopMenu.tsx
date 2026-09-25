@@ -6,7 +6,7 @@ import CreateNewIdentityWidget from '@/components/layout/CreateNewIdentityWidget
 import DbLockButton from '@/components/layout/DbLockButton';
 import DbStatusIndicator from '@/components/layout/DbStatusIndicator';
 import SearchWidget from '@/components/layout/SearchWidget';
-import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -26,7 +26,7 @@ const DROPDOWN_LINK = 'block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-g
 const TopMenu: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { username } = useApp();
+  const { username } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);

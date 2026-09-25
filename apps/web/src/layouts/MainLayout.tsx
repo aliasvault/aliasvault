@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
 import ClipboardCountdownBar from '@/components/layout/ClipboardCountdownBar';
 import Footer from '@/components/layout/Footer';
 import TopMenu from '@/components/layout/TopMenu';
-import { useApp } from '@/context/AppContext';
+import ConfirmModal from '@/components/shared/ConfirmModal';
+import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useVaultSync } from '@/hooks/useVaultSync';
 import { setLocalPreference } from '@/utils/LocalPreferences';
@@ -19,8 +21,9 @@ import { vaultStore } from '@/vault/VaultStore';
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable } = useDb();
+  const { isInitialized, isLoggedIn } = useAuth();
+  const { t } = useTranslation();
+  const { dbInitialized, dbAvailable, syncError, clearSyncError } = useDb();
   const { syncVault } = useVaultSync();
   const [isReady, setIsReady] = useState(false);
   const hasSynced = useRef(false);
@@ -71,7 +74,7 @@ const MainLayout: React.FC = () => {
        */
       onManifestMigrationRequired: () => navigate('/sync', { replace: true }),
       /**
-       * A failed background sync is not fatal; the local vault stays usable.
+       * A failed background sync is not fatal; the local vault stays usable and the sync error dialog shows why.
        */
       onError: (error) => console.error('Background vault sync error:', error),
     });
@@ -94,6 +97,9 @@ const MainLayout: React.FC = () => {
         </div>
       </div>
       <Footer />
+      {syncError && (
+        <ConfirmModal title={t('sharedResources.Error')} message={syncError} confirmText={t('sharedResources.Close')} onClose={() => void clearSyncError()} />
+      )}
     </>
   );
 };
