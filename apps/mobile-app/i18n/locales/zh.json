@@ -36,6 +36,7 @@
       "unknownError": "发生未知错误。",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "vaultTooLarge": "密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。",
+      "vaultSyncTimeout": "密码库同步超时。这可能是由于密码库过大或网络连接速度较慢造成的。请重试。",
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。"
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "确认登录请求",
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
-        "confirmMessage": "您即将使用您的账户在远程设备上登录。该设备将拥有对您密码库的完全访问权限。请仅在您信任该设备的情况下继续。",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "远程设备已成功登录。",
         "requestExpired": "此登录请求已过期，请生成新的二维码。"
       }
@@ -587,6 +591,29 @@
       "itemRestored": "项目已还原",
       "itemDeleted": "项目已永久删除",
       "allItemsDeleted": "所有项目均已永久删除"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "新功能",
     "whatsNewDescription": "需要升级才能支持以下更改：",
     "noDescriptionAvailable": "此版本无可用说明。",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "正在准备升级…",
-      "vaultAlreadyUpToDate": "当前密码库数据已是最新",
       "applyingDatabaseMigrations": "正在迁移应用数据库……",
       "applyingMigration": "正在迁移 {{current}} / {{total}}……",
       "committingChanges": "正在提交更改…"
