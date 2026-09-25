@@ -14,7 +14,7 @@ import type { VaultVersion } from "../types/VaultVersion";
  * local SQLite is re-materialized from COMPLETE_SCHEMA_SQL on every vault pull, so schema changes
  * ship through the full schema only: no individual migration scripts and no version entries here.
  * 
- * TODO: delete this once all active users have migrated to 2.0.0+
+ * LEGACY: remove once every active account has migrated to 2.0.0+.
  */
 export const VAULT_VERSIONS: VaultVersion[] = [
   {

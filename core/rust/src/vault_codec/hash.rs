@@ -15,6 +15,7 @@
 use sha2::{Digest, Sha256};
 
 use crate::encoding::{hex_decode, hex_encode_lower, uuid_from_bytes};
+use crate::error::{VaultError, VaultResult};
 
 /// A UUIDv8 derived from a string: the first 16 bytes of its sha256, version and variant bits set.
 pub fn derived_uuid(material: &str) -> String {
@@ -71,12 +72,13 @@ pub fn content_hash(value: &serde_json::Value) -> String {
 }
 
 /// Per-manifest salted blob hash `sha256(salt_bytes ‖ plaintext_bytes)`, lowercase hex.
-pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> String {
-    let salt_bytes = hex_decode(manifest_salt).unwrap_or_default();
+/// A missing or malformed salt is an error, since hashing without it would break the per-manifest separation.
+pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> VaultResult<String> {
+    let salt_bytes = hex_decode(manifest_salt).filter(|salt| !salt.is_empty()).ok_or_else(|| VaultError::General("manifest salt is missing or not valid hex".to_string()))?;
     let mut hasher = Sha256::new();
     hasher.update(&salt_bytes);
     hasher.update(bytes);
-    hex_encode_lower(&hasher.finalize())
+    Ok(hex_encode_lower(&hasher.finalize()))
 }
 
 #[cfg(test)]
@@ -115,7 +117,7 @@ mod tests {
     #[test]
     fn salted_hash_is_stable() {
         // Pinned vector: salt "00ff", bytes [1,2,3].
-        let h = salted_blob_hash(&[1, 2, 3], "00ff");
+        let h = salted_blob_hash(&[1, 2, 3], "00ff").unwrap();
         // sha256(00 ff 01 02 03)
         assert_eq!(h, sha256_hex(&[0x00, 0xff, 0x01, 0x02, 0x03]));
         assert_eq!(h.len(), 64);

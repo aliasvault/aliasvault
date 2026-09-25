@@ -42,7 +42,7 @@ const FAVICON_ID_NAMESPACE: &str = "aliasvault:logo:v1";
 /// collide). `source` is matched case-insensitively (callers already normalize to a lowercase
 /// hostname or lowercase hex digest; this makes it robust anyway).
 pub fn logo_id_for(manifest_id: &str, kind: &str, source: &str) -> String {
-    super::hash::derived_uuid(&format!("{}\n{}\n{}", namespace_for_kind(kind), manifest_id, source.to_lowercase()))
+    super::hash::derived_uuid(&format!("{}\n{}\n{}", namespace_for_kind(kind), id_key(manifest_id), source.to_lowercase()))
 }
 
 /// The derivation namespace for a kind. Unknown kinds get one derived from their own name, so a newer

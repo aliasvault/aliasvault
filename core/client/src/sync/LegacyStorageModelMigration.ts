@@ -1,7 +1,7 @@
 /**
  * Legacy storage model migration specific logic.
  *
- * TODO: these methods and file can be deleted later once all users have migrated from sqlite-blob to manifest-v1.
+ * LEGACY: remove once every account has migrated from sqlite-blob to manifest-v1. Deletes as a whole file.
  */
 
 import { ServerUpdateRequiredError } from '../api/errors/ServerUpdateRequiredError';

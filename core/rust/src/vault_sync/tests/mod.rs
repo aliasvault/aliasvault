@@ -124,6 +124,26 @@ fn fresh_client_pulls_and_materializes_the_server_vault() {
 }
 
 #[test]
+fn unknown_storage_format_is_refused_not_read_as_legacy() {
+    let vek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&vek);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    let server_db = test_host::open_schema_db(&host.schema_sql);
+    insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
+    let (status, mut vault) = snapshot_of(&server_db, &vek, 7, &vault_codec::generate_manifest_salt());
+    vault["storageFormat"] = json!(2);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+
+    assert_eq!(result["success"], false, "{}", result);
+    assert_eq!(result["errorKey"], "vaultVersionIncompatible", "an app too old for the format is told to update");
+    assert!(item_names(&host.local).is_empty(), "nothing is materialized");
+    assert!(host.requests_to("Vault").iter().all(|r| r.method == "GET"), "no legacy migration push");
+}
+
+#[test]
 fn clean_client_in_sync_does_nothing() {
     let vek = crypto::generate_key_base64();
     let mut host = TestHost::new(&vek);

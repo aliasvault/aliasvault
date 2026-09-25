@@ -59,7 +59,20 @@ pub(crate) struct PulledVault {
 
 /// `GET v2/Vault`.
 pub(crate) async fn fetch_snapshot(ctx: &Ctx) -> SyncResult<GetResponse> {
-    http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, http::VAULT_ENDPOINT, true).await)
+    let snapshot = http::with_outdated_server_guard(http::get::<GetResponse>(&ctx.host, http::VAULT_ENDPOINT, true).await)?;
+    ensure_known_storage_format(&snapshot)?;
+    Ok(snapshot)
+}
+
+/// The `storageFormat` a manifest-v1 snapshot declares.
+const STORAGE_FORMAT_MANIFEST: i32 = 1;
+
+/// Refuse a snapshot in a storage format newer than this build knows, instead of reading it as legacy (0 or absent).
+fn ensure_known_storage_format(snapshot: &GetResponse) -> SyncResult<()> {
+    match snapshot.storage_format {
+        None | Some(0) | Some(STORAGE_FORMAT_MANIFEST) => Ok(()),
+        Some(format) => Err(SyncError::VaultVersionIncompatible(format!("vault has storage format {}, this app reads up to {}; update the app", format, STORAGE_FORMAT_MANIFEST))),
+    }
 }
 
 pub(crate) fn email_routing_of(snapshot: &GetResponse) -> EmailRoutingDto {

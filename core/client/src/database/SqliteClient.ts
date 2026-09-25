@@ -404,8 +404,8 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Get the current database version from the migrations history.
    *
-   * TODO: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); delete once all users
-   * have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
+   * LEGACY: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); remove once every account
+   * has migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns The database version information
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
@@ -461,8 +461,8 @@ export class SqliteClient implements ISyncDatabaseClient {
   /**
    * Get the latest available database version.
    *
-   * TODO: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); delete once all users
-   * have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
+   * LEGACY: part of the sqlite-blob upgrade chain (frozen up to 2.0.0); remove once every account
+   * has migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns The latest VaultVersion
    */
   public async getLatestDatabaseVersion(): Promise<VaultVersion> {
@@ -475,8 +475,8 @@ export class SqliteClient implements ISyncDatabaseClient {
    * Whether the vault still has to walk the sqlite-blob upgrade chain (VAULT_VERSIONS, frozen at 2.0.0) via the /upgrade
    * page before it is eligible for anything else.
    *
-   * TODO: this is the legacy sqlite-blob migration path, which we will stop supporting later; delete once all
-   * users have migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
+   * LEGACY: the sqlite-blob migration path, which will stop being supported later; remove once every
+   * account has migrated. New schema changes ship via requiresSchemaMigration / migrateVaultToCurrentSchema instead.
    * @returns True if there are pending migrations
    */
   public async requiresLegacySqliteBlobMigration(): Promise<boolean> {
@@ -500,7 +500,7 @@ export class SqliteClient implements ISyncDatabaseClient {
     if (await this.requiresLegacySqliteBlobMigration()) {
       /*
        * Still on the sqlite-blob upgrade chain: that upgrade has to run first, so the migration is not applicable yet.
-       * TODO: delete once all users have migrated.
+       * LEGACY: remove once every account has migrated.
        */
       return false;
     }

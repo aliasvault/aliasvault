@@ -29,6 +29,7 @@ pub struct Manifest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// Tables mapped to arrays of row objects. Blob columns replaced with `{ "__blobRef", "__blobKind" }`.
+    #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
     /// Unknown top-level keys from a newer writer, carried through the local vault in [`CodecOverflow`].
     #[serde(flatten)]
@@ -43,6 +44,7 @@ pub struct DataBucket {
     pub schema_version: u32,
     pub manifest_id: String,
     pub category: String,
+    #[serde(default)]
     pub tables: HashMap<String, Vec<CodecRecord>>,
     #[serde(flatten)]
     pub extra: HashMap<String, serde_json::Value>,
@@ -229,8 +231,8 @@ pub struct CanonicalizeInput {
     pub tables: Vec<CodecTableData>,
     pub canonicalized_at: String,
     pub manifests: Vec<ManifestSpec>,
-    /// For legacy sqlite-blob migration: the manifest that unstamped rows are stamped with.
-    /// TODO: delete this field once the migration is complete.
+    /// LEGACY: for the sqlite-blob migration, the manifest that unstamped rows are stamped with. Remove once every
+    /// account has migrated to manifest-v1.
     #[serde(default)]
     pub stamp_unstamped_into: Option<String>,
 }

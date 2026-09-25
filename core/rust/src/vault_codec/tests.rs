@@ -121,7 +121,7 @@ fn canonicalize_from_sqlite_extracts_blob_columns_and_hashes() {
     assert_eq!(out.first().blobs.len(), 1);
     let (hash, entry) = out.first().blobs.iter().next().unwrap();
     assert_eq!(entry.kind, "favicon");
-    assert_eq!(hash, &hash::salted_blob_hash(&favicon, "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"));
+    assert_eq!(hash, &hash::salted_blob_hash(&favicon, "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff").unwrap());
 
     let logos = &out.first().manifest.tables["Logos"][0];
     let cell = &logos["FileData"];
@@ -285,6 +285,19 @@ fn forward_compat_unknown_manifest_fields_preserved() {
     assert!(manifest.extra.contains_key("futureField"));
     let reser = serde_json::to_value(&manifest).unwrap();
     assert_eq!(reser["futureField"], json!({ "nested": true }));
+}
+
+#[test]
+fn logo_id_ignores_manifest_id_casing() {
+    let id = scoped_assets::logo_id_for("6bdd3e29-3add-4c3f-8d63-6ada1e74c8c6", LOGO_KIND_FAVICON, "github.com");
+    assert_eq!(id, scoped_assets::logo_id_for("6BDD3E29-3ADD-4C3F-8D63-6ADA1E74C8C6", LOGO_KIND_FAVICON, "GitHub.com"));
+}
+
+#[test]
+fn salted_blob_hash_refuses_a_missing_or_malformed_salt() {
+    assert!(hash::salted_blob_hash(&[1, 2, 3], "").is_err());
+    assert!(hash::salted_blob_hash(&[1, 2, 3], "not-hex").is_err());
+    assert!(hash::salted_blob_hash(&[1, 2, 3], "abc").is_err());
 }
 
 #[test]

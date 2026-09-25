@@ -70,8 +70,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
         normalize_id_spelling(bucket_tables);
     }
 
-    // Legacy migration: stamp unstamped rows with the manifest if specified by the caller.
-    // TODO: delete this once the migration is complete.
+    // LEGACY: stamp unstamped rows with the manifest named by the sqlite-blob migration. Remove with that migration.
     if let Some(stamp_into) = input.stamp_unstamped_into.as_deref() {
         stamp_unstamped_rows(&mut all_tables, stamp_into);
     }
@@ -106,7 +105,7 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
     let mut manifest_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
     for (name, records) in all_tables {
         // Manifest table: extract any blob column into the content-addressed map.
-        let out_rows = extract_table_blobs(&name, records, &writing_manifest_salt, &mut blobs);
+        let out_rows = extract_table_blobs(&name, records, &writing_manifest_salt, &mut blobs)?;
         manifest_tables.insert(name, out_rows);
     }
 
@@ -136,10 +135,10 @@ pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<Canonic
             .tables
             .into_iter()
             .map(|(name, records)| {
-                let out_rows = extract_table_blobs(&name, records, &partition.manifest_salt, &mut partition_blobs);
-                (name, out_rows)
+                let out_rows = extract_table_blobs(&name, records, &partition.manifest_salt, &mut partition_blobs)?;
+                Ok((name, out_rows))
             })
-            .collect();
+            .collect::<VaultResult<_>>()?;
         let partition_extra = overflow.manifest_extra(&partition.manifest_id);
         manifests.push(CanonicalizedManifest {
             manifest: Manifest {
@@ -230,8 +229,7 @@ fn owning_manifest(row: &CodecRecord, manifest_ids: &[String]) -> Option<String>
     manifest_ids.iter().find(|id| ids_equal(id, stamp)).cloned()
 }
 
-/// For legacy sqlite-blob migration: the manifest that unstamped rows are stamped with.
-/// TODO: delete this function once the migration is complete.
+/// LEGACY: only the sqlite-blob migration stamps unstamped rows. Remove once every account has migrated to manifest-v1.
 ///
 /// Stamp every unstamped row of a manifest-scoped table with `manifest_id`. A row that already names a
 /// manifest keeps it, so a vault that has been converted once pays nothing on later runs.
@@ -268,12 +266,12 @@ fn is_unstamped(row: &CodecRecord) -> bool {
 }
 
 /// Extract `table`'s blob column (if it owns one) into `blobs`, returning the rewritten rows.
-fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> Vec<CodecRecord> {
-    let Some(spec) = blob_spec_for(table) else { return records };
+fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &str, blobs: &mut HashMap<String, BlobEntry>) -> VaultResult<Vec<CodecRecord>> {
+    let Some(spec) = blob_spec_for(table) else { return Ok(records) };
     let mut out_rows: Vec<CodecRecord> = Vec::with_capacity(records.len());
     for mut row in records {
         let known_hash = row.remove(spec.hash_column);
-        let mut cell = extract_blob_cell(row.get(spec.column), manifest_salt, spec.kind, blobs);
+        let mut cell = extract_blob_cell(row.get(spec.column), manifest_salt, spec.kind, blobs)?;
         if cell.is_null() && !is_deleted(&row) {
             if let Some(hash) = known_hash.as_ref().and_then(Value::as_str).filter(|hash| !hash.is_empty()) {
                 cell = blob_ref(hash, spec.kind);
@@ -282,7 +280,7 @@ fn extract_table_blobs(table: &str, records: Vec<CodecRecord>, manifest_salt: &s
         row.insert(spec.column.to_string(), cell);
         out_rows.push(row);
     }
-    out_rows
+    Ok(out_rows)
 }
 
 /// Extract a blob column cell: if it holds non-empty `{ "__b64" }` bytes, hash + register them and
@@ -292,24 +290,24 @@ fn extract_blob_cell(
     manifest_salt: &str,
     kind: &str,
     blobs: &mut HashMap<String, BlobEntry>,
-) -> serde_json::Value {
+) -> VaultResult<serde_json::Value> {
     let b64 = match cell.and_then(inline_b64) {
         Some(s) => s,
-        None => return serde_json::Value::Null,
+        None => return Ok(serde_json::Value::Null),
     };
 
     let bytes = match crate::encoding::base64_decode(b64) {
         Ok(b) if !b.is_empty() => b,
-        _ => return serde_json::Value::Null,
+        _ => return Ok(serde_json::Value::Null),
     };
 
-    let hash = salted_blob_hash(&bytes, manifest_salt);
+    let hash = salted_blob_hash(&bytes, manifest_salt)?;
     blobs.entry(hash.clone()).or_insert_with(|| BlobEntry {
         kind: kind.to_string(),
         bytes_base64: b64.to_string(),
     });
 
-    blob_ref(&hash, kind)
+    Ok(blob_ref(&hash, kind))
 }
 
 /// Re-attach overflow columns.

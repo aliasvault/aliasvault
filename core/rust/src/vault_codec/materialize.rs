@@ -11,8 +11,8 @@
 //! so it lives inside the vault DB itself and `canonicalize_from_sqlite` re-merges it from the
 //! ordinary table read, this client's next push never drops the data, and no platform has to wire
 //! (or remember) a separate persistence channel. Unknown top-level keys of a manifest or bucket ride in
-//! the same overflow. A manifest or bucket written at a newer major format version is refused and reqiures
-/// updating the app to read it.
+//! the same overflow. A manifest or bucket written at a newer major format version is refused and requires
+//! updating the app to read it.
 
 use std::collections::{HashMap, HashSet};
 

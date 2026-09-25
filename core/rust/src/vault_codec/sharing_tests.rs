@@ -518,8 +518,8 @@ fn split_hashes_blobs_with_per_manifest_salts() {
     // Shared blob map: shared attachment + both logo copies, hashed with the SHARED salt.
     assert_eq!(shared.blobs.len(), 3);
     let logo_bytes = [0xAAu8, 0xBB];
-    let expected_personal_hash = hash::salted_blob_hash(&logo_bytes, SALT_PERSONAL);
-    let expected_shared_hash = hash::salted_blob_hash(&logo_bytes, SALT_SHARED);
+    let expected_personal_hash = hash::salted_blob_hash(&logo_bytes, SALT_PERSONAL).unwrap();
+    let expected_shared_hash = hash::salted_blob_hash(&logo_bytes, SALT_SHARED).unwrap();
     assert!(out.first().blobs.contains_key(&expected_personal_hash), "github favicon hashed with the personal salt in personal manifest");
     assert!(shared.blobs.contains_key(&expected_shared_hash), "github favicon hashed with shared salt in shared manifest");
     assert_ne!(expected_personal_hash, expected_shared_hash);

@@ -13,12 +13,12 @@ use super::state::{self, Ctx};
 use super::types::GetResponse;
 use super::{engine, keys};
 
-/// The `storageFormat` a manifest-v1 snapshot declares; 0 (or absent) is a sqlite blob.
-const STORAGE_FORMAT_MANIFEST: i32 = 1;
+/// The `storageFormat` of a legacy sqlite-blob snapshot; an absent value means the same.
+const STORAGE_FORMAT_SQLITE_BLOB: i32 = 0;
 
 /// Whether a snapshot is still on the legacy sqlite-blob format.
 pub(crate) fn is_legacy_sqlite_blob_snapshot(snapshot: &GetResponse) -> bool {
-    snapshot.storage_format != Some(STORAGE_FORMAT_MANIFEST)
+    matches!(snapshot.storage_format, None | Some(STORAGE_FORMAT_SQLITE_BLOB))
 }
 
 /// Take a legacy snapshot apart for local storage: the blob passes through untouched, the manifest-v1 fingerprints
