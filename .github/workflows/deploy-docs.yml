@@ -24,6 +24,8 @@ concurrency:
 jobs:
   deploy:
     name: Deploy docs to production
+    # Only run on the upstream repo; forks have no deploy credentials.
+    if: github.repository == 'aliasvault/aliasvault'
     runs-on: ubuntu-latest
     environment:
       name: docs-production

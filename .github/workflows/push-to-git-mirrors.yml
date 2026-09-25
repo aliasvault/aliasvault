@@ -13,6 +13,8 @@ concurrency:
 jobs:
   mirrors:
     name: Push to mirrors
+    # Only run on the upstream repo; forks have no mirror credentials.
+    if: github.repository == 'aliasvault/aliasvault'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout full history
