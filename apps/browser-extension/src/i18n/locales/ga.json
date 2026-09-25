@@ -30,7 +30,7 @@
     "loginWithMobile": "Logáil isteach ag baint úsáide as Aip Soghluaiste",
     "unlockWithMobile": "Díghlasáil ag baint úsáide as Aip Soghluaiste",
     "scanQrCode": "Scan an cód QR seo le d’aip shoghluaiste AliasVault chun logáil isteach agus do chruinneog a dhíghlasáil.",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Nuair a iarrann an aip é, cuir an uimhir seo isteach.",
     "passwordAttemptsWarning": "Focal faire mícheart. Logálfar amach thú má chuireann tú isteach an pasfhocal mícheart {{remainingAttempts}} níos mó uaireanta.",
     "maxAttemptsReached": "Theip ar an iomarca iarrachtaí díghlasála. Logáladh amach thú ar chúiseanna slándála."
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "Thóg sé an iomarca ama an stór a luchtú. Dún agus athoscail an síneadh agus déan iarracht arís, le do thoil, nó athsheol do bhrabhsálaí má mhaireann an fhadhb.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "Tharla earráid agus do stór á luchtú. Cóipeáil sonraí na hearráide thíos le do thoil agus déan teagmháil leis an tacaíocht chun cabhair a fháil.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
       "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "Diúltaíodh don iarratas logála isteach ar do ghléas soghluaiste."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
@@ -290,26 +290,26 @@
       "required": "Tá an réimse seo riachtanach"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Roghnaigh deilbhín",
+      "currentLogo": "Deilbhín reatha",
+      "builtinLogos": "Leabharlann deilbhíní",
+      "fetchFromWebsite": "Faigh deilbhín ón suíomh gréasáin",
+      "refetchFromWebsite": "Faigh an deilbhín ón suíomh gréasáin arís",
+      "sourceFavicon": "Ó {{domain}}",
+      "sourceBuiltin": "Deilbhín ionsuite",
+      "sourceCustom": "Deilbhín saincheaptha",
+      "sourceNone": "Gan deilbhín",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Shopping": "Siopadóireacht",
+        "Bank": "Baincéireacht",
+        "Mail": "Post",
+        "Social": "Sóisialta",
+        "Work": "Obair",
+        "Game": "Cluichí",
+        "Media": "Meáin",
+        "Travel": "Taisteal",
+        "Health": "Sláinte",
+        "Dev": "Forbairt"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "Bainistigh do shocruithe slándála chuntais agus cruinneacháin.",
       "changePassword": {
         "title": "Athraigh Pasfhocal",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Má athraíonn tú do phríomhfhocal faire, logálfar amach thú ó do ghléasanna eile agus beidh ort logáil isteach arís leis an bhfocal faire nua.",
         "currentPassword": "Pasfhocal Reatha",
         "newPassword": "Pasfhocal Nua",
         "confirmNewPassword": "Deimhnigh Pasfhocal Nua",
         "passwordsDoNotMatch": "Ní hionann na pasfhocail nua",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "Caithfidh an focal faire a bheith ar a laghad {{minLength}} carachtar ar fad.",
         "success": "Athraíodh an focal faire go rathúil"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "Cad atá Nua",
     "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
     "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Tar éis an uasghrádaithe seo, beidh leagan {{version}} nó leagan níos déanaí ag teastáil ó do chuid aipeanna AliasVault eile. Logálfar aipeanna agus síntí brabhsálaí níos sine amach agus iarrfar ort iad a uasghrádú sula mbeidh siad in ann do stór a oscailt arís.",
+    "successTitle": "Uasghrádaíodh an cruinneachán",
+    "successOtherDevices": "Tá do stór sábháilte réidh le húsáid. Bí cinnte an aip AliasVault a nuashonrú ar do ghléasanna eile chomh maith.",
     "alerts": {
       "unableToGetVersionInfo": "Ní féidir faisnéis leagain a fháil. Déan iarracht arís.",
       "selfHostedServer": "Freastalaí Féinóstáilte",
