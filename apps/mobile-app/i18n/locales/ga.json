@@ -36,6 +36,7 @@
       "unknownError": "Tharla earráid anaithnid.",
       "unknownErrorTryAgain": "Tharla earráid anaithnid. Déan iarracht arís.",
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
+      "vaultSyncTimeout": "Chuaigh an t-am isteach ar shioncrónú an tseomra cruinneacháin. Is féidir leis seo tarlú nuair a bhíonn an seomra cruinneacháin mór nó nuair a bhíonn an nasc idirlín mall. Déan iarracht arís.",
       "serverVersionTooOld": "Ní mór an freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an ghné seo a úsáid. Téigh i dteagmháil le riarthóir an fhreastalaí más gá duit cabhair."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Deimhnigh Iarratas Logála Isteach",
         "confirmSubtitle": "Athfhíordheimhnigh chun logáil isteach ar ghléas eile a cheadú.",
-        "confirmMessage": "Tá tú ar tí logáil isteach ar ghléas iargúlta le do chuntas. Beidh rochtain iomlán ag an ngléas eile seo ar do chruinneachán. Ná lean ar aghaidh ach amháin má tá muinín agat as an ngléas seo.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Tá an gléas cianda logáilte isteach go rathúil.",
         "requestExpired": "Tá an t-iarratas logála isteach seo imithe in éag. Gin cód QR nua le do thoil."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Mír athchóirithe",
       "itemDeleted": "Mír scriosta go buan",
       "allItemsDeleted": "Gach earra scriosta go buan"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Cad atá Nua",
     "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
     "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Uasghrádú á ullmhú...",
-      "vaultAlreadyUpToDate": "Tá an Vault cothrom le dáta cheana féin",
       "applyingDatabaseMigrations": "Ag cur imirce bunachar sonraí i bhfeidhm...",
       "applyingMigration": "Ag cur imirce {{current}} de {{total}} i bhfeidhm...",
       "committingChanges": "Ag déanamh athruithe..."
