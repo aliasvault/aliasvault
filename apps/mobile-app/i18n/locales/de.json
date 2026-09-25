@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Anmeldeanfrage bestätigen",
         "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Ein anderes Gerät bittet um Anmeldung an deinem Konto. Es erhält vollen Zugriff auf deinen Tresor. Nur fortfahren, wenn du diese Anmeldung selbst gestartet hast.",
+        "selectCode": "Tippen die angezeigte Nummer auf dem anderen Gerät ein",
+        "openedFromLink": "Fahre nur fort, wenn Du diesen QR-Code mit Deiner eigenen Kamera gescannt hast. Wenn Du hier durch Tippen auf einen Link oder einen Knopf gelandet bist, lehnen die Anfrage ab.",
+        "codeMismatch": "Die Nummer stimmt nicht überein. Die Anmeldeanfrage wurde abgelehnt.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
         "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Alle Elemente endgültig gelöscht"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Symbol auswählen",
+      "currentLogo": "Aktuelles Symbol",
+      "builtinLogos": "Symbolbibliothek",
+      "fetchFromWebsite": "Symbol von Webseite abrufen",
+      "refetchFromWebsite": "Symbol von Webseite (erneut) abrufen",
+      "sourceFavicon": "Von {{domain}}",
+      "sourceBuiltin": "Eingebautes Symbol",
+      "sourceCustom": "Benutzerdefiniertes Symbol",
+      "sourceNone": "Kein Symbol",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Shopping": "Einkaufen",
+        "Bank": "Finanzen",
+        "Mail": "E-Mail",
+        "Social": "Soziale Medien",
+        "Work": "Arbeit",
+        "Game": "Spiele",
+        "Media": "Medien",
+        "Travel": "Reisen",
+        "Health": "Gesundheit",
+        "Dev": "Entwicklung"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Neu in dieser Version",
     "whatsNewDescription": "Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen:",
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Nach diesem Upgrade benötigen Deine anderen AliasVault-Apps Version {{version}} oder neuer. Ältere Apps und Browser-Erweiterungen melden sich ab und bitten um Aktualisierung, bevor sie Deinen Tresor wieder öffnen können.",
+    "successTitle": "Tresor aktualisiert",
+    "successOtherDevices": "Dein Tresor ist einsatzbereit. Bitte aktualisiere auch die AliasVault-App auf deinen anderen Geräten.",
     "status": {
       "preparingUpgrade": "Aktualisierung wird vorbereitet...",
       "applyingDatabaseMigrations": "Datenbankmigration wird durchgeführt...",
