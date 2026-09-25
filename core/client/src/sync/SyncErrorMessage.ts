@@ -1,7 +1,6 @@
-import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { hasSyncError, type SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
+import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '../api/errors/AppErrorCodes';
 
-import type { TFunction } from 'i18next';
+import { hasSyncError, type SyncErrorDetail } from './VaultSync';
 
 /**
  * The stored sync error, tolerating the plain string an older build left behind.
@@ -23,7 +22,7 @@ export function toSyncErrorDetail(value: unknown): SyncErrorDetail | null {
  * @param detail - the sync outcome
  * @param t - the renderer's translation function
  */
-export function syncErrorMessage(detail: SyncErrorDetail, t: TFunction): string | undefined {
+export function syncErrorMessage(detail: SyncErrorDetail, t: (key: string) => string): string | undefined {
   if (detail.errorKey) {
     return t('common.errors.' + detail.errorKey);
   }

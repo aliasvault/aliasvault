@@ -1,5 +1,6 @@
 import EncryptionUtility, { type DecryptedEmail } from '@aliasvault/client/crypto/EncryptionUtility';
-import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
+import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
+import { decodeEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -226,20 +227,13 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         return;
       }
 
-      let detachedBody: Uint8Array | undefined;
-      if (attachment.detached && attachment.partIndex !== null) {
-        if (!dbContext?.sqliteClient || !email) {
-          setError('Database context or email not available');
-          return;
-        }
-
-        const encryptedPart = await webApi.downloadBlob(`Email/${id}/parts/${attachment.partIndex}`);
-        const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
-
-        detachedBody = await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys);
+      if (!dbContext?.sqliteClient || !email) {
+        setError('Database context or email not available');
+        return;
       }
 
-      const bytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
+      const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
+      const bytes = await getEmailAttachmentBytes(webApi, email, encryptionKeys, sourceBytes, index, attachment.detached ? attachment.partIndex : null);
       triggerAttachmentDownload(bytes, attachment.mimeType, attachment.filename);
     } catch (err) {
       logFailure('[Email] Downloading the attachment failed', err);

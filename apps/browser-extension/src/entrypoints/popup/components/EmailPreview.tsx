@@ -1,4 +1,5 @@
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
+import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
 import React, { useState, useEffect, useRef } from 'react';
@@ -15,6 +16,9 @@ import { logExpected } from '@/utils/Diagnostics';
 import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
+
+/** Client for the SpamOK mailboxes of the public email domains. */
+const spamOk = new SpamOkClient('av-chrome', AppInfo.VERSION);
 
 type EmailPreviewProps = {
   email: string;
@@ -120,12 +124,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         if (isPublic) {
           // For public domains (SpamOK), use the SpamOK API directly
           const emailPrefix = email.split('@')[0];
-          const response = await fetch(`https://api.spamok.com/v2/EmailBox/${emailPrefix}`, {
-            headers: {
-              'X-Asdasd-Platform-Id': 'av-chrome',
-              'X-Asdasd-Platform-Version': AppInfo.VERSION,
-            }
-          });
+          const response = await spamOk.request('GET', `EmailBox/${emailPrefix}`);
 
           if (!response.ok) {
             markPollFailed(`The mailbox request returned HTTP ${response.status}`);

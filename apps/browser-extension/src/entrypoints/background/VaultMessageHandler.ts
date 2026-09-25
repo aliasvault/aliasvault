@@ -8,7 +8,7 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
-import { manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { isSameItem, manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
@@ -30,7 +30,6 @@ import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorSta
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { logExpected, logFailure } from '@/utils/Diagnostics';
-import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';

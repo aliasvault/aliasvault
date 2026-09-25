@@ -1,4 +1,4 @@
-import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -31,7 +31,7 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { logFailure } from '@/utils/Diagnostics';
-import { isSameItem, itemRoute } from '@/utils/ItemRoute';
+import { itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

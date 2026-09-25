@@ -6,7 +6,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailBody } from '@/hooks/useEmailBody';
-import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, spamOkRequest } from '@/utils/EmailViewModel';
+import { type EmailAttachmentViewModel, type EmailViewModel, getAttachmentBytes, spamOk } from '@/utils/EmailViewModel';
 import { downloadBytes } from '@/utils/FileDownload';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -43,7 +43,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
 
     try {
       if (email.isSpamOk) {
-        const response = await spamOkRequest('DELETE', `Email/${email.toLocal}/${email.id}`);
+        const response = await spamOk.request('DELETE', `Email/${email.toLocal}/${email.id}`);
         if (!response.ok) {
           notifications.addErrorMessage(`${t('components.main.email.emailPreview.EmailDeleteFailed')}: ${await response.text()}`, true);
           return;

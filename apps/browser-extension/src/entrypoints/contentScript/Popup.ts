@@ -1,4 +1,4 @@
-import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { generateTotpCode, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
 import { ItemTypeIconSvgs } from '@aliasvault/models/icons';
@@ -6,7 +6,6 @@ import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
-import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';

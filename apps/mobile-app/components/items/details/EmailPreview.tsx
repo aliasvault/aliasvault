@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
+import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
@@ -17,6 +18,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+/** Client for the SpamOK mailboxes of the public email domains. */
+const spamOk = new SpamOkClient('av-mobile', AppInfo.VERSION);
 
 type EmailPreviewProps = {
   email: string | undefined;
@@ -157,12 +161,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
         if (isPublic) {
           // For public domains (SpamOK), use the SpamOK API directly
           const emailPrefix = email.split('@')[0];
-          const response = await fetch(`https://api.spamok.com/v2/EmailBox/${emailPrefix}`, {
-            headers: {
-              'X-Asdasd-Platform-Id': 'av-mobile',
-              'X-Asdasd-Platform-Version': AppInfo.VERSION,
-            }
-          });
+          const response = await spamOk.request('GET', `EmailBox/${emailPrefix}`);
 
           if (!response.ok) {
             markPollFailed(`The mailbox request returned HTTP ${response.status}`);

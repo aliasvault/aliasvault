@@ -1,11 +1,11 @@
 import { generatePassword } from '@aliasvault/client/rust/RustCore';
+import { lengthToSlider, SLIDER_MAX, SLIDER_MIN, sliderToLength } from '@aliasvault/client/utilities/PasswordLengthSlider';
 import { MAX_WORD_COUNT, MIN_WORD_COUNT } from '@aliasvault/models/defaults';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PasswordSettingsPopup from '@/components/settings/PasswordSettingsPopup';
 import { useDb } from '@/context/DbContext';
-import { lengthToSlider, SLIDER_MAX, SLIDER_MIN, sliderToLength } from '@/utils/PasswordLengthSlider';
 
 import type { PasswordSettings } from '@aliasvault/models/vault';
 

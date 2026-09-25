@@ -1,4 +1,4 @@
-import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { extractDomain, filterItems, AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@aliasvault/models/vault';
@@ -18,7 +18,6 @@ import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedi
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { logFailure } from '@/utils/Diagnostics';
-import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';

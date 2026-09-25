@@ -1,3 +1,4 @@
+import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +7,6 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { syncErrorMessage } from '@/utils/SyncError';
 
 /**
  * Minimum time (ms) an in-flight indicator stays visible once it has appeared.

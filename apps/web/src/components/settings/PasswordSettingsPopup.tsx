@@ -1,3 +1,4 @@
+import { lengthToSlider, SLIDER_MAX, SLIDER_MIN, sliderToLength } from '@aliasvault/client/utilities/PasswordLengthSlider';
 import { getLanguageInfo, MAX_WORD_COUNT, MIN_WORD_COUNT, resolveDefaultLanguage } from '@aliasvault/models/defaults';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { usePasswordConfig } from '@/hooks/usePasswordConfig';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
-import { lengthToSlider, SLIDER_MAX, SLIDER_MIN, sliderToLength } from '@/utils/PasswordLengthSlider';
 
 import type { PasswordSettings } from '@aliasvault/models/vault';
 

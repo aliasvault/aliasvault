@@ -1,6 +1,7 @@
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { syncErrorMessage, toSyncErrorDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration } from '@aliasvault/client/sync/VaultManifestMigration';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -9,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
 
 import { markOwnUnlockKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';

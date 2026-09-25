@@ -10,7 +10,7 @@ import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailDomains } from '@/hooks/useEmailDomains';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
-import { type EmailViewModel, loadAliasVaultEmail, loadSpamOkEmail, loadSpamOkMailbox } from '@/utils/EmailViewModel';
+import { type EmailViewModel, loadAliasVaultEmail, loadSpamOkEmail, spamOk } from '@/utils/EmailViewModel';
 
 import type { MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
 
@@ -65,7 +65,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
     }
     try {
       if (isSpamOk) {
-        const mails = await loadSpamOkMailbox(emailPrefix);
+        const mails = await spamOk.getMailbox(emailPrefix);
         if (mails) {
           setMailboxEmails(mails);
         }

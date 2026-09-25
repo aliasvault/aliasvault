@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 
-import { decodeEmailSource, extractEmailAttachment, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
+import { getEmailAttachmentBytes } from '@aliasvault/client/email/EmailAttachments';
+import { decodeEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
 import { Ionicons } from '@expo/vector-icons';
 import { Paths } from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
@@ -185,14 +186,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
         return;
       }
 
-      let detachedBody: Uint8Array | undefined;
-      if (attachment.detached && attachment.partIndex !== null) {
-        const encryptedPart = await webApi.downloadBlob(`Email/${id}/parts/${attachment.partIndex}`);
-        const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
-        detachedBody = await EncryptionUtility.decryptAttachment(encryptedPart, email, encryptionKeys);
-      }
-
-      const decryptedBytes = await extractEmailAttachment(sourceBytes, index, detachedBody);
+      const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
+      const decryptedBytes = await getEmailAttachmentBytes(webApi, email, encryptionKeys, sourceBytes, index, attachment.detached ? attachment.partIndex : null);
 
       const tempFile = getFileForFilename(Paths.cache, attachment.filename);
       if (tempFile.exists) {
