@@ -525,7 +525,6 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         var items = await context.Items
             .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
             .Include(x => x.Logo)
-            .Include(x => x.Folder)
             .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
             .Include(x => x.Attachments.Where(a => !a.IsDeleted))
             .Include(x => x.TotpCodes.Where(t => !t.IsDeleted))
@@ -556,7 +555,6 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             HasAttachment = x.Attachments != null && x.Attachments.Any(a => !a.IsDeleted),
             HasTotp = x.TotpCodes != null && x.TotpCodes.Any(t => !t.IsDeleted),
             FolderId = x.FolderId,
-            FolderName = x.Folder?.Name,
         }).ToList();
 
         _cachedList = list;

@@ -40,15 +40,6 @@
             }
         </div>
         <div class="text-gray-500 dark:text-gray-400 break-words w-full text-sm truncate" title="@GetDisplayText()">@GetDisplayText()</div>
-        @if (ShowFolderPath && !string.IsNullOrEmpty(Obj.FolderName))
-        {
-            <div class="text-gray-400 dark:text-gray-500 text-xs mt-1 flex items-center gap-1">
-                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
-                </svg>
-                <span class="truncate max-w-[100px]">@Obj.FolderName</span>
-            </div>
-        }
     </div>
 </div>
 
@@ -58,12 +49,6 @@
     /// </summary>
     [Parameter]
     public required ItemListEntry Obj { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether to show the folder path (used when searching).
-    /// </summary>
-    [Parameter]
-    public bool ShowFolderPath { get; set; }
 
     /// <summary>
     /// Gets or sets the callback raised after the item was mutated via the context menu (duplicated or deleted).
