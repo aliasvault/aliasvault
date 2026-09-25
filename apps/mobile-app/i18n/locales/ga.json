@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Deimhnigh Iarratas Logála Isteach",
         "confirmSubtitle": "Athfhíordheimhnigh chun logáil isteach ar ghléas eile a cheadú.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Tá gléas eile ag iarraidh logáil isteach le do chuntas. Gheobhaidh sé rochtain iomlán ar do stór. Ná lean ar aghaidh ach amháin má chuir tú féin tús leis an logáil isteach seo.",
+        "selectCode": "Tapáil an uimhir a thaispeántar ar an ngléas eile",
+        "openedFromLink": "Ná lean ar aghaidh ach má tá an cód QR seo scanta agat le do cheamara féin. Má tháinig tú anseo trí chliceáil ar nasc nó ar chnaipe, diúltaigh dó.",
+        "codeMismatch": "Ní hionann na huimhreacha. Diúltaíodh don iarratas logála isteach.",
         "successDescription": "Tá an gléas cianda logáilte isteach go rathúil.",
         "requestExpired": "Tá an t-iarratas logála isteach seo imithe in éag. Gin cód QR nua le do thoil."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Gach earra scriosta go buan"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Roghnaigh deilbhín",
+      "currentLogo": "Deilbhín reatha",
+      "builtinLogos": "Leabharlann deilbhíní",
+      "fetchFromWebsite": "Faigh deilbhín ón suíomh gréasáin",
+      "refetchFromWebsite": "Faigh an deilbhín ón suíomh gréasáin arís",
+      "sourceFavicon": "Ó {{domain}}",
+      "sourceBuiltin": "Deilbhín ionsuite",
+      "sourceCustom": "Deilbhín saincheaptha",
+      "sourceNone": "Gan deilbhín",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Shopping": "Siopadóireacht",
+        "Bank": "Baincéireacht",
+        "Mail": "Post",
+        "Social": "Sóisialta",
+        "Work": "Obair",
+        "Game": "Cluichí",
+        "Media": "Meáin",
+        "Travel": "Taisteal",
+        "Health": "Sláinte",
+        "Dev": "Forbairt"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Cad atá Nua",
     "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
     "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Tar éis an uasghrádaithe seo, beidh leagan {{version}} nó leagan níos déanaí ag teastáil ó do chuid aipeanna AliasVault eile. Logálfar aipeanna agus síntí brabhsálaí níos sine amach agus iarrfar ort iad a uasghrádú sula mbeidh siad in ann do stór a oscailt arís.",
+    "successTitle": "Uasghrádaíodh an cruinneachán",
+    "successOtherDevices": "Tá do stór sábháilte réidh le húsáid. Bí cinnte an aip AliasVault a nuashonrú ar do ghléasanna eile chomh maith.",
     "status": {
       "preparingUpgrade": "Uasghrádú á ullmhú...",
       "applyingDatabaseMigrations": "Ag cur imirce bunachar sonraí i bhfeidhm...",
