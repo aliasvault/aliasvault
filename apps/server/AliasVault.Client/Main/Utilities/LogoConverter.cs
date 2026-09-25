@@ -9,12 +9,35 @@ namespace AliasVault.Client.Main.Utilities;
 
 using System;
 using System.Text;
+using AliasClientDb;
+using AliasClientDb.Models;
 
 /// <summary>
-/// Converts raw logo bytes into a data URI suitable for use as an img src value.
+/// Converts an item's logo into a data URI suitable for use as an img src value.
 /// </summary>
 public static class LogoConverter
 {
+    /// <summary>
+    /// Converts a logo row into a data URI: a built-in logo is drawn from the shared catalog, any other from its bytes.
+    /// </summary>
+    /// <param name="logo">The logo row, or null when the item has none.</param>
+    /// <returns>A data URI string, or null when there is nothing to draw.</returns>
+    public static string? ToDataUri(Logo? logo)
+    {
+        if (logo is null)
+        {
+            return null;
+        }
+
+        if (logo.Kind == Logo.KindBuiltin)
+        {
+            var svg = AppIcons.GetSvg(logo.Source);
+            return svg is null ? null : $"data:image/svg+xml;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(svg))}";
+        }
+
+        return ToDataUri(logo.FileData);
+    }
+
     /// <summary>
     /// Converts the given logo bytes into a data URI. Returns null for null/empty input.
     /// </summary>

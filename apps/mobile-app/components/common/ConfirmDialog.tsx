@@ -138,7 +138,7 @@ export const ConfirmDialog: React.FC<IConfirmDialogProps> = ({
       baseStyle.push({ backgroundColor: colors.destructive } as ViewStyle);
     } else if (button.style === 'cancel') {
       baseStyle.push({
-        backgroundColor: colors.accentBackground,
+        backgroundColor: colors.modalSurfaceRaised,
         borderColor: colors.accentBorder,
         borderWidth: 1,
       } as ViewStyle);

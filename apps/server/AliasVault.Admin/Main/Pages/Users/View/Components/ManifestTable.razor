@@ -1,0 +1,149 @@
+@using AliasVault.RazorComponents.Tables
+
+<SortableTable Columns="@_manifestTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+    @foreach (var entry in SortedRevisions)
+    {
+        <SortableTableRow>
+            <SortableTableColumn IsPrimary="true">@entry.RevisionNumber</SortableTableColumn>
+            <SortableTableColumn>@entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+            <SortableTableColumn>@DescribeFormat(entry)</SortableTableColumn>
+            <SortableTableColumn>@StatisticsService.FormatBytes(entry.SizeBytes)</SortableTableColumn>
+            <SortableTableColumn>@DescribeBlobs(entry)</SortableTableColumn>
+            <SortableTableColumn>@entry.CredentialsCount</SortableTableColumn>
+            <SortableTableColumn>@entry.EmailClaimsCount</SortableTableColumn>
+            <SortableTableColumn>@(entry.Client ?? "-")</SortableTableColumn>
+            <SortableTableColumn>
+                @if (entry.IsCurrent)
+                {
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Current</span>
+                }
+            </SortableTableColumn>
+            <SortableTableColumn>
+                @if (!entry.HasContent)
+                {
+                    <span class="text-sm text-gray-500 dark:text-gray-400">Not written yet</span>
+                }
+                else if (IsPreMigration(entry))
+                {
+                    @if (AllowRevertToLegacy)
+                    {
+                        <Button Color="danger" OnClick="() => RevertToLegacyAsync(entry)">Revert to legacy</Button>
+                    }
+                }
+                else if (!entry.IsCurrent)
+                {
+                    <Button OnClick="() => MakeCurrentAsync(entry)">Restore</Button>
+                }
+            </SortableTableColumn>
+        </SortableTableRow>
+    }
+</SortableTable>
+
+@code {
+    /// <summary>
+    /// Gets or sets the manifest revisions to display: the current revision per manifest plus its history revisions.
+    /// </summary>
+    [Parameter]
+    public List<ManifestRevisionRow> Revisions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets whether a pre-migration revision may offer the revert action. False when the user takes part in
+    /// vault sharing, which the revert would break.
+    /// </summary>
+    [Parameter]
+    public bool AllowRevertToLegacy { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event callback to make a history revision the current one.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ManifestRevisionRow> OnMakeCurrent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event callback to revert the user to a pre-migration revision and the legacy storage format.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ManifestRevisionRow> OnRevertToLegacy { get; set; }
+
+    private string SortColumn { get; set; } = "RevisionNumber";
+    private SortDirection SortDirection { get; set; } = SortDirection.Descending;
+
+    private readonly List<TableColumn> _manifestTableColumns = [
+        new TableColumn { Title = "Revision", PropertyName = "RevisionNumber" },
+        new TableColumn { Title = "Written (UTC)", PropertyName = "UpdatedAt" },
+        new TableColumn { Title = "Format", PropertyName = "StorageFormat" },
+        new TableColumn { Title = "Manifest", PropertyName = "SizeBytes" },
+        new TableColumn { Title = "Blobs referenced", PropertyName = "BlobBytes" },
+        new TableColumn { Title = "Credentials", PropertyName = "CredentialsCount" },
+        new TableColumn { Title = "Aliases", PropertyName = "EmailClaimsCount" },
+        new TableColumn { Title = "Client", PropertyName = "Client" },
+        new TableColumn { Title = "Status", Sortable = false },
+        new TableColumn { Title = "Actions", Sortable = false },
+    ];
+
+    private IEnumerable<ManifestRevisionRow> SortedRevisions => SortList(Revisions, SortColumn, SortDirection);
+
+    private void HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        StateHasChanged();
+    }
+
+    private static IEnumerable<ManifestRevisionRow> SortList(List<ManifestRevisionRow> revisions, string sortColumn, SortDirection sortDirection)
+    {
+        return sortColumn switch
+        {
+            "UpdatedAt" => SortableTable.SortListByProperty(revisions, v => v.UpdatedAt, sortDirection),
+            "StorageFormat" => SortableTable.SortListByProperty(revisions, v => v.StorageFormat, sortDirection),
+            "SizeBytes" => SortableTable.SortListByProperty(revisions, v => v.SizeBytes, sortDirection),
+            "BlobBytes" => SortableTable.SortListByProperty(revisions, v => v.BlobBytes, sortDirection),
+            "RevisionNumber" => SortableTable.SortListByProperty(revisions, v => v.RevisionNumber, sortDirection),
+            "CredentialsCount" => SortableTable.SortListByProperty(revisions, v => v.CredentialsCount, sortDirection),
+            "EmailClaimsCount" => SortableTable.SortListByProperty(revisions, v => v.EmailClaimsCount, sortDirection),
+            "Client" => SortableTable.SortListByProperty(revisions, v => v.Client, sortDirection),
+            _ => revisions
+        };
+    }
+
+    /// <summary>
+    /// Describes the storage format a revision was written in, with the db version for legacy revisions.
+    /// </summary>
+    private static string DescribeFormat(ManifestRevisionRow entry)
+    {
+        if (!entry.IsLegacy)
+        {
+            return entry.StorageFormat;
+        }
+
+        return string.IsNullOrEmpty(entry.Version) ? entry.StorageFormat : $"{entry.StorageFormat} ({entry.Version})";
+    }
+
+    /// <summary>
+    /// Describes the blob objects a revision references. Blobs are shared between revisions, so this is usage, not
+    /// storage that adds up across the rows.
+    /// </summary>
+    private static string DescribeBlobs(ManifestRevisionRow entry)
+    {
+        return entry.BlobCount == 0 ? "-" : $"{entry.BlobCount} · {StatisticsService.FormatBytes(entry.BlobBytes)}";
+    }
+
+    /// <summary>
+    /// Whether this revision predates the migration of a manifest that is now on the current storage format. Making
+    /// such a revision current is not a restore but a revert, which takes the whole account back to the legacy format.
+    /// </summary>
+    private bool IsPreMigration(ManifestRevisionRow entry)
+    {
+        return !entry.IsCurrent && entry.IsLegacy && entry.HasContent && Revisions.Any(x => x.ManifestId == entry.ManifestId && x.IsCurrent && !x.IsLegacy);
+    }
+
+    private async Task MakeCurrentAsync(ManifestRevisionRow entry)
+    {
+        await OnMakeCurrent.InvokeAsync(entry);
+    }
+
+    private async Task RevertToLegacyAsync(ManifestRevisionRow entry)
+    {
+        await OnRevertToLegacy.InvokeAsync(entry);
+    }
+}

@@ -1,14 +1,21 @@
+import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import SqliteClient from '@aliasvault/client/database/SqliteClient';
+import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
+import { vaultRequiresManifestMigration } from '@aliasvault/client/sync/VaultManifestMigration';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import EncryptionUtility from '@/utils/EncryptionUtility';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import SqliteClient from '@/utils/SqliteClient';
-import { getItemWithFallback } from '@/utils/StorageUtility';
-import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
+import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage, toSyncErrorDetail } from '@/utils/SyncError';
 
-import { markOwnEncryptionKey, vaultStateEvents } from '@/events/VaultStateEvents';
+import { markOwnUnlockKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';
+
+import type { SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 
 import { storage } from '#imports';
 
@@ -37,13 +44,12 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, code: AppErrorCo
 }
 
 /**
- * Vault metadata including the server revision.
+ * Vault metadata: the email domain lists the server published on the last sync.
  */
 type VaultMetadata = {
   publicEmailDomains: string[];
   privateEmailDomains: string[];
   hiddenPrivateEmailDomains: string[];
-  serverRevision: number;
 };
 
 type DbContextType = {
@@ -56,9 +62,11 @@ type DbContextType = {
    */
   getIsOffline: () => boolean;
   /**
-   * True if local vault has changes not yet synced to server.
+   * True if the local vault has user-initiated changes not yet synced to the server. Changes from silent
+   * scopes (e.g. item usage statistics) sync just the same but are not reported here, so the UI stays quiet
+   * about data the user never asked to save.
    */
-  isDirty: boolean;
+  hasUnsyncedUserChanges: boolean;
   /**
    * True if a background sync (download) is in progress.
    */
@@ -67,10 +75,6 @@ type DbContextType = {
    * True if an upload to server is in progress.
    */
   isUploading: boolean;
-  /**
-   * Current server revision number.
-   */
-  serverRevision: number;
   setIsOffline: (offline: boolean) => Promise<void>;
   /**
    * Set the syncing (download) state.
@@ -87,26 +91,23 @@ type DbContextType = {
    */
   shouldSuppressEmailErrors: () => boolean;
   /**
-   * Load a decrypted vault into memory (SQLite client).
-   */
-  loadDatabase: (decryptedVaultBase64: string) => Promise<SqliteClient>;
-  /**
    * Load the stored (encrypted) vault from background storage into memory.
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
    */
   loadStoredDatabase: () => Promise<SqliteClient | null>;
-  storeEncryptionKey: (derivedKey: string) => Promise<void>;
-  storeEncryptionKeyDerivationParams: (params: EncryptionKeyDerivationParams) => Promise<void>;
+  storeUnlockKey: (unlockKey: string) => Promise<void>;
+  storeUnlockKeyDerivationParams: (params: UnlockKeyDerivationParams) => Promise<void>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   /**
-   * Refresh sync state (isDirty, serverRevision) from storage.
+   * Refresh sync state (isDirty) from storage.
    */
   refreshSyncState: () => Promise<void>;
-  hasPendingMigrations: () => Promise<boolean>;
+  requiresLegacySqliteBlobMigration: () => Promise<boolean>;
+  requiresManifestMigration: () => Promise<boolean>;
   /**
-   * Last sync error message persisted by the background sync. Surfaced as a popup
-   * alert. Null when no error is pending. Updated reactively via storage.watch so
+   * Last sync error persisted by the background sync, translated here so it follows the display language.
+   * Surfaced as a popup alert. Null when no error is pending. Updated reactively via storage.watch so
    * background-initiated sync failures show up immediately while popup is open.
    */
   syncError: string | null;
@@ -122,6 +123,8 @@ const DbContext = createContext<DbContextType | undefined>(undefined);
  * DbProvider to provide the SQLite client to the app that components can use to make database queries.
  */
 export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
+
   /**
    * SQLite client.
    */
@@ -145,9 +148,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const isOfflineRef = useRef(false);
 
   /**
-   * Dirty state - true if local vault has unsynced changes.
+   * Dirty state - true if the local vault has unsynced changes the user expects to get feedback on.
    */
-  const [isDirty, setIsDirty] = useState(false);
+  const [hasUnsyncedUserChanges, setHasUnsyncedUserChanges] = useState(false);
 
   /**
    * Syncing state - true if a background sync (download) is in progress.
@@ -160,15 +163,16 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isUploading, setIsUploading] = useState(false);
 
   /**
-   * Server revision number.
+   * Last sync error written by the background sync, as the key and code it reported. Driven by storage so
+   * background-only syncs (e.g. follow-up syncs after pending mutations) reach the user.
    */
-  const [serverRevision, setServerRevision] = useState(0);
+  const [syncErrorDetail, setSyncErrorDetail] = useState<SyncErrorDetail | null>(null);
 
   /**
-   * Last sync error written by the background sync. Driven by storage so background-only
-   * syncs (e.g. follow-up syncs after pending mutations) reach the user.
+   * The stored sync error in the current display language. Translated on read, so switching language
+   * re-renders the message instead of leaving the one the background happened to write.
    */
-  const [syncError, setSyncError] = useState<string | null>(null);
+  const syncError = useMemo(() => syncErrorDetail ? syncErrorMessage(syncErrorDetail, t) ?? null : null, [syncErrorDetail, t]);
 
   /**
    * Check if email errors should be suppressed.
@@ -176,8 +180,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * as the server may not know about newly created items/aliases yet.
    */
   const shouldSuppressEmailErrors = useCallback(() => {
-    return isDirty || isSyncing;
-  }, [isDirty, isSyncing]);
+    return hasUnsyncedUserChanges || isSyncing;
+  }, [hasUnsyncedUserChanges, isSyncing]);
 
   /**
    * Set the offline mode state and persist it to local storage.
@@ -186,7 +190,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const setIsOffline = useCallback(async (offline: boolean) => {
     isOfflineRef.current = offline;
     setIsOfflineState(offline);
-    await storage.setItem('local:isOfflineMode', offline);
+    await storage.setItem(StorageKeys.IS_OFFLINE_MODE, offline);
   }, []);
 
   /**
@@ -197,17 +201,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
      * Load the offline mode and sync state from local storage.
      */
     const loadSyncState = async (): Promise<void> => {
-      const [offlineMode, dirty, revision, lastError] = await Promise.all([
-        storage.getItem('local:isOfflineMode') as Promise<boolean | null>,
-        storage.getItem('local:isDirty') as Promise<boolean | null>,
-        storage.getItem('local:serverRevision') as Promise<number | null>,
-        storage.getItem('local:lastSyncError') as Promise<string | null>
+      const [offlineMode, pendingUserChanges, lastError] = await Promise.all([
+        storage.getItem(StorageKeys.IS_OFFLINE_MODE) as Promise<boolean | null>,
+        hasUnsyncedUserChangesInStorage(),
+        storage.getItem(StorageKeys.LAST_SYNC_ERROR)
       ]);
       isOfflineRef.current = offlineMode ?? false;
       setIsOfflineState(offlineMode ?? false);
-      setIsDirty(dirty ?? false);
-      setServerRevision(revision ?? 0);
-      setSyncError(lastError ?? null);
+      setHasUnsyncedUserChanges(pendingUserChanges);
+      setSyncErrorDetail(toSyncErrorDetail(lastError));
     };
     loadSyncState();
   }, []);
@@ -217,8 +219,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * even when the failing sync wasn't triggered by anything in the popup itself.
    */
   useEffect(() => {
-    const unwatch = storage.watch<string | null>('local:lastSyncError', (newValue) => {
-      setSyncError(newValue ?? null);
+    const unwatch = storage.watch(StorageKeys.LAST_SYNC_ERROR, (newValue) => {
+      setSyncErrorDetail(toSyncErrorDetail(newValue));
     });
     return (): void => {
       unwatch();
@@ -226,11 +228,22 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
+   * Drive the sync/upload indicators from the background sync itself. The background announces what it is doing as
+   * soon as its status call tells it, so the popup never has to make a status call of its own to pick an indicator.
+   */
+  useEffect(() => {
+    return onMessage('VAULT_SYNC_PHASE', ({ data }) => {
+      setIsSyncing(data.phase === 'pull');
+      setIsUploading(data.phase === 'push');
+    });
+  }, []);
+
+  /**
    * Dismiss the current sync error from both React state and persisted storage.
    */
   const clearSyncError = useCallback(async (): Promise<void> => {
-    setSyncError(null);
-    await storage.removeItem('local:lastSyncError');
+    setSyncErrorDetail(null);
+    await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }, []);
 
   // Reflect locks from other windows.
@@ -240,20 +253,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       setSqliteClient(null);
       setDbAvailable(false);
     });
-  }, []);
-
-  /**
-   * Load a decrypted vault into memory (SQLite client).
-   */
-  const loadDatabase = useCallback(async (decryptedVaultBase64: string) => {
-    const client = new SqliteClient();
-    await client.initializeFromBase64(decryptedVaultBase64);
-
-    setSqliteClient(client);
-    setDbInitialized(true);
-    setDbAvailable(true);
-
-    return client;
   }, []);
 
   /**
@@ -292,9 +291,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes(AppErrorCode.VAULT_LOCKED)) {
         // Vault is locked which is expected when the popup is opened after auto-lock timeout or browser restart.
-        console.info('Vault is locked; popup will prompt for unlock');
       } else {
-        console.error('Error retrieving vault from background:', error);
+        logFailure('Error retrieving vault from background', error);
       }
       setDbInitialized(true);
       setDbAvailable(false);
@@ -309,10 +307,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
     try {
       // Use fallback for keys migrated from session: to local: in v0.26.0
-      const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains');
-      const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains');
-      const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>('local:hiddenPrivateEmailDomains');
-      const revision = await storage.getItem('local:serverRevision') as number | null;
+      const publicEmailDomains = await storage.getItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
+      const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
+      const hiddenPrivateEmailDomains = await storage.getItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS);
 
       if (!publicEmailDomains && !privateEmailDomains) {
         return null;
@@ -322,10 +319,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         publicEmailDomains: publicEmailDomains ?? [],
         privateEmailDomains: privateEmailDomains ?? [],
         hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
-        serverRevision: revision ?? 0,
       };
     } catch (error) {
-      console.error('Error getting vault metadata from local storage:', error);
+      logFailure('Error getting vault metadata from local storage', error);
       return null;
     }
   }, []);
@@ -334,22 +330,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Refresh sync state from storage (called after background updates it).
    */
   const refreshSyncState = useCallback(async (): Promise<void> => {
-    const [dirty, revision] = await Promise.all([
-      storage.getItem('local:isDirty') as Promise<boolean | null>,
-      storage.getItem('local:serverRevision') as Promise<number | null>
-    ]);
-    setIsDirty(dirty ?? false);
-    setServerRevision(revision ?? 0);
+    setHasUnsyncedUserChanges(await hasUnsyncedUserChangesInStorage());
   }, []);
 
   /**
    * Check if there are pending migrations.
    */
-  const hasPendingMigrations = useCallback(async () => {
+  const requiresLegacySqliteBlobMigration = useCallback(async () => {
     if (!sqliteClient) {
       return false;
     }
-    return await sqliteClient.hasPendingMigrations();
+    return await sqliteClient.requiresLegacySqliteBlobMigration();
+  }, [sqliteClient]);
+
+  /**
+   * Check if the vault still has to be migrated to the current storage model.
+   */
+  const requiresManifestMigration = useCallback(async () => {
+    if (!sqliteClient) {
+      return false;
+    }
+    return await vaultRequiresManifestMigration(sqliteClient);
   }, [sqliteClient]);
 
   /**
@@ -363,22 +364,23 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [dbInitialized, loadStoredDatabase]);
 
   /**
-   * Store encryption key in background worker.
+   * Store the unlock key (the password-derived KEK) in the background worker. It is the one secret the session
+   * holds; the vault encryption key is derived from it and the cached key chain.
    */
-  const storeEncryptionKey = useCallback(async (encryptionKey: string) : Promise<void> => {
+  const storeUnlockKey = useCallback(async (unlockKey: string) : Promise<void> => {
     /*
      * Mark as our own write BEFORE sending, so the cross-window watcher
      * ignores the storage event triggered by this same flow.
      */
-    markOwnEncryptionKey(encryptionKey);
-    await sendMessage('STORE_ENCRYPTION_KEY', encryptionKey);
+    markOwnUnlockKey(unlockKey);
+    await sendMessage('STORE_UNLOCK_KEY', unlockKey);
   }, []);
 
   /**
    * Store encryption key derivation params in background worker.
    */
-  const storeEncryptionKeyDerivationParams = useCallback(async (params: EncryptionKeyDerivationParams) : Promise<void> => {
-    await sendMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', params);
+  const storeUnlockKeyDerivationParams = useCallback(async (params: UnlockKeyDerivationParams) : Promise<void> => {
+    await sendMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', params);
   }, []);
 
   /**
@@ -402,25 +404,24 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     dbAvailable,
     isOffline,
     getIsOffline,
-    isDirty,
+    hasUnsyncedUserChanges,
     isSyncing,
     isUploading,
-    serverRevision,
     setIsOffline,
     setIsSyncing,
     setIsUploading,
     shouldSuppressEmailErrors,
-    loadDatabase,
     loadStoredDatabase,
-    storeEncryptionKey,
-    storeEncryptionKeyDerivationParams,
+    storeUnlockKey,
+    storeUnlockKeyDerivationParams,
     clearDatabase,
     getVaultMetadata,
     refreshSyncState,
-    hasPendingMigrations,
+    requiresLegacySqliteBlobMigration,
+    requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeUnlockKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

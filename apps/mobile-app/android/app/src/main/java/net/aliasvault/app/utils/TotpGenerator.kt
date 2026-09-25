@@ -13,6 +13,17 @@ object TotpGenerator {
     private const val TAG = "TotpGenerator"
     private const val DEFAULT_PERIOD = 30
     private const val DEFAULT_DIGITS = 6
+    private const val DEFAULT_ALGORITHM = "SHA1"
+
+    /**
+     * Map a TOTP algorithm name to its JCA Mac name. An unrecognized name falls back to
+     * HmacSHA1, which is what RFC 6238 assumes.
+     */
+    private fun macName(algorithm: String): String = when (algorithm.uppercase()) {
+        "SHA256" -> "HmacSHA256"
+        "SHA512" -> "HmacSHA512"
+        else -> "HmacSHA1"
+    }
 
     /**
      * Generate the current TOTP code for a Base32-encoded secret.
@@ -23,20 +34,23 @@ object TotpGenerator {
         timeSeconds: Long = System.currentTimeMillis() / 1000L,
         period: Int = DEFAULT_PERIOD,
         digits: Int = DEFAULT_DIGITS,
+        algorithm: String = DEFAULT_ALGORITHM,
     ): String? {
         val secretBytes = base32Decode(secret) ?: return null
         if (secretBytes.isEmpty()) return null
 
-        val counter = timeSeconds / period
-        return generateHotp(secretBytes, counter, digits)
+        // A zero or negative period would divide by zero; treat it as the standard step.
+        val step = if (period > 0) period else DEFAULT_PERIOD
+        val counter = timeSeconds / step
+        return generateHotp(secretBytes, counter, digits, algorithm)
     }
 
-    private fun generateHotp(secret: ByteArray, counter: Long, digits: Int): String? {
+    private fun generateHotp(secret: ByteArray, counter: Long, digits: Int, algorithm: String): String? {
         return try {
             val counterBytes = ByteBuffer.allocate(Long.SIZE_BYTES).putLong(counter).array()
 
-            val mac = Mac.getInstance("HmacSHA1")
-            mac.init(SecretKeySpec(secret, "HmacSHA1"))
+            val mac = Mac.getInstance(macName(algorithm))
+            mac.init(SecretKeySpec(secret, macName(algorithm)))
             val hash = mac.doFinal(counterBytes)
 
             // Dynamic truncation per RFC 4226

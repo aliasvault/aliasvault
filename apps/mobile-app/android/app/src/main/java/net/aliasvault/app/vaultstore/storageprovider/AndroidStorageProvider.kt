@@ -10,18 +10,10 @@ import java.io.File
 class AndroidStorageProvider(private val context: Context) : StorageProvider {
     private var defaultAutoLockTimeout = 3600 // 1 hour default
 
+    override fun getAppContext(): Context = context
+
     override fun getEncryptedDatabaseFile(): File {
         return File(context.filesDir, "encrypted_database.db")
-    }
-
-    /**
-     * Get a random temporary file path.
-     * @return The random temporary file path as a string
-     */
-    override fun getRandomTempFilePath(): String {
-        val tempFile = File(context.cacheDir, "temp_db_${System.nanoTime()}_${java.util.UUID.randomUUID()}.sqlite")
-        tempFile.deleteOnExit()
-        return tempFile.absolutePath
     }
 
     override fun setEncryptedDatabaseFile(encryptedData: String) {
@@ -51,6 +43,22 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     override fun getKeyDerivationParams(): String {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         return sharedPreferences.getString("key_derivation_params", "") ?: ""
+    }
+
+    override fun getAccountKeyChain(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("account_key_chain", null)
+    }
+
+    override fun setAccountKeyChain(chainJson: String?) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (chainJson == null) {
+                remove("account_key_chain")
+            } else {
+                putString("account_key_chain", chainJson)
+            }
+        }
     }
 
     override fun setAuthMethods(authMethods: String) {
@@ -151,6 +159,18 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         }
     }
 
+    override fun setCapabilities(json: String) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("capabilities", json)
+        }
+    }
+
+    override fun getCapabilities(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("capabilities", null)
+    }
+
     // region Sync State
 
     override fun setIsDirty(isDirty: Boolean) {
@@ -163,6 +183,22 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     override fun getIsDirty(): Boolean {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("is_dirty", false)
+    }
+
+    override fun getDirtyScopes(): List<String> {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet("dirty_scopes", emptySet())?.toList() ?: emptyList()
+    }
+
+    override fun setDirtyScopes(scopes: List<String>) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (scopes.isEmpty()) {
+                remove("dirty_scopes")
+            } else {
+                putStringSet("dirty_scopes", scopes.toSet())
+            }
+        }
     }
 
     override fun getMutationSequence(): Int {
@@ -193,6 +229,7 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         sharedPreferences.edit {
             remove("is_dirty")
+            remove("dirty_scopes")
             remove("mutation_sequence")
             remove("is_syncing")
         }
@@ -200,7 +237,36 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
 
     // endregion
 
-    override fun getCacheDir(): File {
-        return context.cacheDir
+    // region Sync engine state
+
+    override fun getSyncEngineState(key: String): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        return sharedPreferences.getString(key, null)
     }
+
+    override fun setSyncEngineState(key: String, json: String?) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (json == null) remove(key) else putString(key, json)
+        }
+    }
+
+    override fun clearSyncEngineState() {
+        val sharedPreferences = context.getSharedPreferences("aliasvault_sync_state", Context.MODE_PRIVATE)
+        sharedPreferences.edit { clear() }
+    }
+
+    // endregion
+
+    // region Sync logs
+
+    override fun getSyncLogs(): String? {
+        return context.getSharedPreferences("aliasvault_sync_logs", Context.MODE_PRIVATE).getString("logs", null)
+    }
+
+    override fun setSyncLogs(json: String) {
+        context.getSharedPreferences("aliasvault_sync_logs", Context.MODE_PRIVATE).edit { putString("logs", json) }
+    }
+
+    // endregion
 }

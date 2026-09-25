@@ -14,7 +14,7 @@ using AliasClientDb.Abstracts;
 /// Tag entity for flexible categorization of items.
 /// Tags are flat (non-hierarchical) labels that can be applied to multiple items.
 /// </summary>
-public class Tag : SyncableEntity
+public class Tag : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the tag ID.

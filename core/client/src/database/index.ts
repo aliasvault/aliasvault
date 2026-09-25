@@ -1,0 +1,25 @@
+// Base
+export { BaseRepository, type IDatabaseClient, type ISyncDatabaseClient, type SqliteBindValue } from './BaseRepository';
+export { asyncRepository, runAsync, runSync, syncRepository, type AsyncRepository, type DbOp, type SyncRepository } from './DbOp';
+
+// Mappers
+export { FieldMapper, type FieldRow } from './mappers/FieldMapper';
+export { ItemMapper, type ItemRow, type TagRow } from './mappers/ItemMapper';
+export { PasskeyMapper, type PasskeyRow, type PasskeyWithItemRow, type PasskeyWithItem } from './mappers/PasskeyMapper';
+
+// Queries
+export {
+  ItemQueries,
+  FieldValueQueries,
+  FieldDefinitionQueries,
+  FieldHistoryQueries
+} from './queries/ItemQueries';
+
+// Repositories
+export { ItemRepository } from './repositories/ItemRepository';
+export { PasskeyRepository } from './repositories/PasskeyRepository';
+export { FolderRepository, type Folder, type FolderRef } from './repositories/FolderRepository';
+export { SettingsRepository } from './repositories/SettingsRepository';
+export { EncryptionKeyRepository } from './repositories/EncryptionKeyRepository';
+export { LogoRepository } from './repositories/LogoRepository';
+export { ItemStatsRepository, type ItemUsageAction } from './repositories/ItemStatsRepository';

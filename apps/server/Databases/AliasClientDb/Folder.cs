@@ -8,18 +8,16 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// Folder entity for hierarchical organization of items.
 /// </summary>
-public class Folder : SyncableEntity
+public class Folder : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the folder ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -37,7 +35,6 @@ public class Folder : SyncableEntity
     /// <summary>
     /// Gets or sets the parent folder object.
     /// </summary>
-    [ForeignKey("ParentFolderId")]
     public virtual Folder? ParentFolder { get; set; }
 
     /// <summary>

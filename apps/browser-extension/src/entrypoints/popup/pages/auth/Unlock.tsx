@@ -1,3 +1,9 @@
+import { hasErrorCode, getErrorMessage, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -17,9 +23,8 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
-import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import {
@@ -31,9 +36,6 @@ import {
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
-import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@/utils/types/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
@@ -56,7 +58,7 @@ const Unlock: React.FC = () => {
   const { setHeaderButtons } = useHeaderButtons();
 
   const webApi = useWebApi();
-  const srpUtil = new SrpUtility(webApi);
+  const srpUtil = new SrpLoginService(webApi);
 
   // Unlock mode state
   const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');
@@ -270,30 +272,30 @@ const Unlock: React.FC = () => {
     }
 
     try {
-      let passwordHashBase64: string;
+      let unlockKey: string;
 
       if (statusResult.online) {
         // Online mode: get encryption params from server for key derivation
         const loginResponse = await srpUtil.initiateLogin(authContext.username!);
 
         // Derive key from password using user's encryption settings
-        const credentials = await SrpAuthService.prepareCredentials(
-          password,
-          loginResponse.salt,
-          loginResponse.encryptionType,
-          loginResponse.encryptionSettings
-        );
-        passwordHashBase64 = credentials.passwordHashBase64;
-
+        const credentials = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
         // Store encryption params for future offline unlock
-        await dbContext.storeEncryptionKeyDerivationParams({
+        await dbContext.storeUnlockKeyDerivationParams({
           salt: loginResponse.salt,
           encryptionType: loginResponse.encryptionType,
           encryptionSettings: loginResponse.encryptionSettings,
         });
+
+        /*
+         * Fetch the account key chain, check the unlock key opens it and cache it as-is. Throws an unlock-key-rejected
+         * (E-206) error on a wrong password.
+         */
+        unlockKey = credentials.passwordHashBase64;
+        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
       } else {
         // Offline mode: use stored encryption params to derive key
-        const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS');
+        const storedParams = await sendMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS');
 
         if (!storedParams) {
           // No stored params - can't unlock offline without having logged in before
@@ -303,20 +305,21 @@ const Unlock: React.FC = () => {
         }
 
         // Derive key from password using stored encryption settings
-        const credentials = await SrpAuthService.prepareCredentials(
-          password,
-          storedParams.salt,
-          storedParams.encryptionType,
-          storedParams.encryptionSettings
-        );
-        passwordHashBase64 = credentials.passwordHashBase64;
+        const credentials = await SrpAuthService.prepareCredentials(password, storedParams.salt, storedParams.encryptionSettings);
+
+        /*
+         * Offline: check the unlock key opens the locally cached account key chain. Throws an unlock-key-rejected
+         * (E-206) error on a wrong password.
+         */
+        unlockKey = credentials.passwordHashBase64;
+        await VaultKeyService.verifyUnlockKey(unlockKey);
 
         // Set offline mode
         await dbContext.setIsOffline(true);
       }
 
-      // Store the encryption key in session storage.
-      await dbContext.storeEncryptionKey(passwordHashBase64);
+      // Store the unlock key in session storage.
+      await dbContext.storeUnlockKey(unlockKey);
 
       /*
        * Load the stored vault from background (decrypts using stored encryption key).
@@ -329,7 +332,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;
@@ -358,9 +361,7 @@ const Unlock: React.FC = () => {
         // Check if it's a version incompatibility error
         await app.logout(err.message);
       } else if (hasErrorCode(err)) {
-        // Check if it's a decryption failure (E-203): this means wrong password
-        const errorCode = extractErrorCode(getErrorMessage(err, ''));
-        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
           await handlePasswordFailedAttempt();
         } else {
           // Other error codes, show the formatted message as-is
@@ -369,7 +370,7 @@ const Unlock: React.FC = () => {
       } else {
         await handlePasswordFailedAttempt();
       }
-      console.error('Unlock error:', err);
+      logFailure('Unlock error', err);
     } finally {
       hideLoading();
     }
@@ -420,8 +421,8 @@ const Unlock: React.FC = () => {
     showLoading();
 
     try {
-      // Unlock with PIN - this derives the encryption key from the PIN
-      const passwordHashBase64 = await unlockWithPin(pinToUse);
+      const unlockKey = await unlockWithPin(pinToUse);
+      await VaultKeyService.verifyUnlockKey(unlockKey);
 
       // Check if we're online or offline (for offline mode flag)
       const statusResult = await checkStatus();
@@ -429,8 +430,8 @@ const Unlock: React.FC = () => {
         await dbContext.setIsOffline(true);
       }
 
-      // Store the encryption key in session storage
-      await dbContext.storeEncryptionKey(passwordHashBase64);
+      // Store the unlock key in session storage
+      await dbContext.storeUnlockKey(unlockKey);
 
       /*
        * Always unlock from local vault first.
@@ -448,7 +449,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;
@@ -483,20 +484,18 @@ const Unlock: React.FC = () => {
         setError(t('settings.unlockMethod.invalidPinFormat'));
         setPin('');
       } else if (hasErrorCode(err)) {
-        // Check if it's a decryption failure, this means wrong PIN
-        const errorCode = extractErrorCode(getErrorMessage(err, ''));
-        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
-          // Decryption failed during PIN unlock = wrong PIN, treat as incorrect PIN
-          console.error('PIN unlock failed (decryption error):', err);
+        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
+          // The key the PIN restored does not unlock the vault, treat as incorrect PIN
+          logExpected('[Unlock] The entered PIN did not decrypt the vault', err);
           setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining: 3 }));
         } else {
           // Other error codes: show the formatted message as-is
-          console.error('PIN unlock failed:', err);
+          logFailure('PIN unlock failed', err);
           setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
         }
         setPin('');
       } else {
-        console.error('PIN unlock failed:', err);
+        logFailure('PIN unlock failed', err);
         setError(t('common.errors.unknownErrorTryAgain'));
         setPin('');
       }
@@ -550,7 +549,7 @@ const Unlock: React.FC = () => {
       await webApi.revokeTokens();
       await authContext.clearAuthUserInitiated();
     } catch (error) {
-      console.error('Error during logout:', error);
+      logFailure('Error during logout', error);
     }
   };
 
@@ -560,6 +559,12 @@ const Unlock: React.FC = () => {
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading();
     try {
+      // Check if the approval belongs to the same account as the current session.
+      if (authContext.username && result.username.toLowerCase() !== authContext.username.toLowerCase()) {
+        setError(t('common.apiErrors.USERNAME_MISMATCH'));
+        return;
+      }
+
       /*
        * Revoke the old refresh token (from existing logged in session) before setting new ones
        * that we get from the mobile login request.
@@ -569,9 +574,14 @@ const Unlock: React.FC = () => {
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
-      // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(result.decryptionKey);
-      await dbContext.storeEncryptionKeyDerivationParams({
+      /*
+       * The mobile device sends the password-derived key (the KEK).
+       */
+      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+
+      // Store the unlock key and derivation params
+      await dbContext.storeUnlockKey(result.unlockKey);
+      await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,
         encryptionSettings: result.encryptionSettings,
@@ -593,7 +603,7 @@ const Unlock: React.FC = () => {
       }
 
       // Check if there are pending migrations
-      if (await sqliteClient.hasPendingMigrations()) {
+      if (await sqliteClient.requiresLegacySqliteBlobMigration()) {
         navigate('/upgrade', { replace: true });
         hideLoading();
         return;
@@ -627,7 +637,7 @@ const Unlock: React.FC = () => {
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }
-      console.error('Mobile unlock error:', err);
+      logFailure('Mobile unlock error', err);
     } finally {
       hideLoading();
     }

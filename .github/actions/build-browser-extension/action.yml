@@ -33,18 +33,22 @@ runs:
       shell: bash
       run: cargo install wasm-pack --locked
 
+    - name: Install clang (compiles SQLite for wasm32)
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y clang
+
     - name: Build core libraries
       shell: bash
       run: |
         cd ./core
         chmod +x build-and-distribute.sh
-        ./build-and-distribute.sh
+        ./build-and-distribute.sh --browser-extension
 
     - name: Verify core library distribution
       shell: bash
       run: |
         # Verify critical rust WASM files exist
-        if [ ! -f "apps/browser-extension/src/utils/dist/core/rust/aliasvault_core_bg.wasm" ]; then
+        if [ ! -f "core/client/wasm/aliasvault_core_bg.wasm" ]; then
           echo "Error: Rust WASM files not found in browser extension"
           exit 1
         fi

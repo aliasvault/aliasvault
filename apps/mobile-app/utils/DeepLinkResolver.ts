@@ -1,3 +1,7 @@
+import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
+
+import { MobileLoginScanHandoff } from '@/utils/MobileLoginScanHandoff';
+
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 declare const __DEV__: boolean;
@@ -28,18 +32,14 @@ export async function resolveOpenAction(
 
   switch (action) {
     case 'mobile-unlock': {
-      const requestId = rest[0];
-      if (!requestId) {
-        return null;
+      // This is what the system camera opens after reading a mobile login QR code.
+      // Note: this link could also be opened from a different app or website, so the confirmation screen warns about potential phishing attempts.
+      const request = MobileLoginProtocol.parseQrPayload(`${MobileLoginProtocol.QR_PREFIX}${rest.join('/')}?pk=${queryParams.pk ?? ''}`);
+      if (!request) {
+        return { path: '/(tabs)/settings/qr-scanner' };
       }
-      const params: Record<string, string> = {};
-      if (queryParams.pk) {
-        params.pk = queryParams.pk;
-      }
-      return {
-        path: `/(tabs)/settings/mobile-unlock/${requestId}`,
-        params: Object.keys(params).length > 0 ? params : undefined,
-      };
+      MobileLoginScanHandoff.set(request, 'link');
+      return { path: '/(tabs)/settings/mobile-unlock/confirm' };
     }
 
     case '__debug__':
@@ -71,7 +71,7 @@ export function openActionRequiresVaultUnlock(actionSegments: string[]): boolean
  * Parse a deep-link URL and resolve into a post-unlock navigation target.
  *
  * - `aliasvault://open/<action>/...` → `resolveOpenAction`
- * - any other path (e.g. `aliasvault://items/abc`) → that route directly
+ * - any other path (e.g. `aliasvault://items/<manifestId>/<id>`) → that route directly
  *
  * Used by the root layout's cold-boot interceptor. The caller is responsible
  * for routing through /initialize before navigating to the returned target.

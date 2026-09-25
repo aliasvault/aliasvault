@@ -16,6 +16,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { expect } from './fixtures';
+import { completeVaultUpgrade } from './helpers';
 import { FieldSelectors, ButtonSelectors } from './selectors';
 import {
   waitForVaultReady,
@@ -140,7 +141,14 @@ export class TestClient {
     await this.popup.fill('input[type="text"]', username);
     await this.popup.fill('input[type="password"]', password);
     await this.popup.click('button:has-text("Log in")');
-    await this.popup.getByRole('button', { name: 'Vault' }).waitFor({ state: 'visible', timeout: Timeouts.LONG });
+    return this.completeVaultUpgrade();
+  }
+
+  /**
+   * Clear the vault upgrade gate, if the popup landed on it, and wait for the vault to be ready.
+   */
+  async completeVaultUpgrade(timeout: number = Timeouts.LONG): Promise<this> {
+    await completeVaultUpgrade(this.popup, timeout);
     return this;
   }
 
@@ -168,8 +176,7 @@ export class TestClient {
    */
   async submitLogin(): Promise<this> {
     await this.popup.click('button:has-text("Log in")');
-    await this.popup.getByRole('button', { name: 'Vault' }).waitFor({ state: 'visible', timeout: Timeouts.LONG });
-    return this;
+    return this.completeVaultUpgrade();
   }
 
   /**
@@ -463,8 +470,8 @@ export class TestClient {
   async unlockVault(password: string): Promise<this> {
     await this.popup.fill('input#password', password);
     await this.popup.click('button[type="submit"]:has-text("Unlock")');
-    await waitForVaultReady(this.popup, Timeouts.LONG);
-    return this;
+    // Unlocking routes to the upgrade gate too, whenever the local vault still owes a migration.
+    return this.completeVaultUpgrade();
   }
 
   /**

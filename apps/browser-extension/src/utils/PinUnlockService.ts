@@ -1,14 +1,17 @@
-import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
-import { browser } from 'wxt/browser';
+import { argon2DeriveKey } from '@aliasvault/client/rust/RustCore';
+import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 
-import { storage } from '#imports';
+import { PIN_STORAGE_KEYS, StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
+
+import { browser, storage } from '#imports';
 
 /**
  * PinUnlockService - Handles PIN-based vault unlock
  *
  * This service allows users to set a 6-8 digit PIN to unlock their vault instead
- * of entering their full master password. The vault encryption key is encrypted
- * with a key derived from the PIN and stored locally.
+ * of entering their full master password. The unlock key (the password-derived KEK)
+ * is encrypted with a key derived from the PIN and stored locally.
  *
  * Security features:
  * - 4 failed attempts maximum before requiring full password
@@ -28,11 +31,6 @@ import { storage } from '#imports';
  * use full master password unlock.
  */
 
-const PIN_ENABLED_KEY = 'local:aliasvault_pin_enabled';
-const PIN_ENCRYPTED_KEY_KEY = 'local:aliasvault_pin_encrypted_key';
-const PIN_SALT_KEY = 'local:aliasvault_pin_salt';
-const PIN_LENGTH_KEY = 'local:aliasvault_pin_length';
-const PIN_FAILED_ATTEMPTS_KEY = 'local:aliasvault_pin_failed_attempts';
 const MAX_PIN_ATTEMPTS = 4;
 
 /**
@@ -100,7 +98,7 @@ export class EncryptionKeyNotAvailableError extends Error {
  */
 export async function isPinEnabled(): Promise<boolean> {
   try {
-    const result = await storage.getItem(PIN_ENABLED_KEY) as boolean | null;
+    const result = await storage.getItem(StorageKeys.PIN_ENABLED) as boolean | null;
     return result === true;
   } catch {
     return false;
@@ -112,7 +110,7 @@ export async function isPinEnabled(): Promise<boolean> {
  */
 export async function getPinLength(): Promise<number | null> {
   try {
-    const result = await storage.getItem(PIN_LENGTH_KEY) as number | null;
+    const result = await storage.getItem(StorageKeys.PIN_LENGTH) as number | null;
     return result || null;
   } catch {
     return null;
@@ -132,7 +130,7 @@ export function isValidPin(pin: string): boolean {
  */
 export async function getFailedAttempts(): Promise<number> {
   try {
-    const result = await storage.getItem(PIN_FAILED_ATTEMPTS_KEY) as number | null;
+    const result = await storage.getItem(StorageKeys.PIN_FAILED_ATTEMPTS) as number | null;
     return result || 0;
   } catch {
     return 0;
@@ -149,12 +147,12 @@ export async function isPinLocked(): Promise<boolean> {
 
 /**
  * Setup PIN unlock
- * Encrypts the vault encryption key with the PIN and stores it
+ * Encrypts the unlock key with the PIN and stores it
  *
  * @param pin - The PIN to set (6-8 digits)
- * @param vaultEncryptionKey - The base64-encoded vault encryption key to protect
+ * @param unlockKey - The base64-encoded unlock key to protect
  */
-export async function setupPin(pin: string, vaultEncryptionKey: string): Promise<void> {
+export async function setupPin(pin: string, unlockKey: string): Promise<void> {
   if (!isValidPin(pin)) {
     throw new InvalidPinFormatError();
   }
@@ -162,33 +160,33 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
   try {
     // Generate random salt
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const saltBase64 = arrayBufferToBase64(salt.buffer);
+    const saltBase64 = bytesToBase64(salt);
 
     // Derive key from PIN using Argon2id
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Encrypt the vault encryption key
+    // Encrypt the unlock key
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encryptedKey = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       pinKey,
-      new TextEncoder().encode(vaultEncryptionKey)
+      new TextEncoder().encode(unlockKey)
     );
 
     // Combine IV + encrypted data
     const combined = new Uint8Array(iv.length + encryptedKey.byteLength);
     combined.set(iv, 0);
     combined.set(new Uint8Array(encryptedKey), iv.length);
-    const encryptedKeyBase64 = arrayBufferToBase64(combined.buffer);
+    const encryptedKeyBase64 = bytesToBase64(combined);
 
     /* Store encrypted key, salt, PIN length, and enable flag */
     await Promise.all([
-      storage.setItem(PIN_ENABLED_KEY, true),
-      storage.setItem(PIN_ENCRYPTED_KEY_KEY, encryptedKeyBase64),
-      storage.setItem(PIN_SALT_KEY, saltBase64),
-      storage.setItem(PIN_LENGTH_KEY, pin.length),
-      storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0)
+      storage.setItem(StorageKeys.PIN_ENABLED, true),
+      storage.setItem(StorageKeys.PIN_ENCRYPTED_KEY, encryptedKeyBase64),
+      storage.setItem(StorageKeys.PIN_SALT, saltBase64),
+      storage.setItem(StorageKeys.PIN_LENGTH, pin.length),
+      storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0)
     ]);
 
   } catch (error: unknown) {
@@ -197,17 +195,17 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
       throw error;
     }
     /* Log internal errors and throw generic error for user */
-    console.error('[PinUnlockService] Failed to setup PIN:', error);
+    logFailure('[PinUnlockService] Failed to setup PIN', error);
     throw error;
   }
 }
 
 /**
  * Unlock with PIN
- * Returns the decrypted vault encryption key
+ * Returns the decrypted unlock key (the password-derived KEK)
  *
  * @param pin - The PIN to use for unlocking
- * @returns The decrypted vault encryption key (base64)
+ * @returns The decrypted unlock key (base64), which opens the account key chain
  */
 export async function unlockWithPin(pin: string): Promise<string> {
   if (!isValidPin(pin)) {
@@ -222,8 +220,8 @@ export async function unlockWithPin(pin: string): Promise<string> {
   try {
     /* Get stored data */
     const [encryptedKeyBase64, saltBase64] = await Promise.all([
-      storage.getItem(PIN_ENCRYPTED_KEY_KEY) as Promise<string | null>,
-      storage.getItem(PIN_SALT_KEY) as Promise<string | null>
+      storage.getItem(StorageKeys.PIN_ENCRYPTED_KEY) as Promise<string | null>,
+      storage.getItem(StorageKeys.PIN_SALT) as Promise<string | null>
     ]);
 
     if (!encryptedKeyBase64 || !saltBase64) {
@@ -231,33 +229,33 @@ export async function unlockWithPin(pin: string): Promise<string> {
     }
 
     // Decode encrypted package
-    const combined = new Uint8Array(base64ToArrayBuffer(encryptedKeyBase64));
+    const combined = base64ToBytes(encryptedKeyBase64);
     const iv = combined.slice(0, 12);
     const encryptedData = combined.slice(12);
 
     // Derive key from PIN with extension ID pepper
-    const salt = new Uint8Array(base64ToArrayBuffer(saltBase64));
+    const salt = base64ToBytes(saltBase64);
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Decrypt the vault encryption key
+    // Decrypt the unlock key
     const decryptedData = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
       pinKey,
       encryptedData
     );
 
-    const vaultEncryptionKey = new TextDecoder().decode(decryptedData);
+    const unlockKey = new TextDecoder().decode(decryptedData);
 
     /* Reset failed attempts on success */
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
 
-    return vaultEncryptionKey;
+    return unlockKey;
   } catch {
     /* Increment failed attempts */
     const currentAttempts = await getFailedAttempts();
     const newAttempts = currentAttempts + 1;
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, newAttempts);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, newAttempts);
 
     /*
      * If max attempts reached, disable PIN and clear ALL stored data for security.
@@ -273,19 +271,14 @@ export async function unlockWithPin(pin: string): Promise<string> {
 }
 
 /**
- * Disable PIN unlock and remove all stored (encrypted) data.
+ * Disable PIN unlock and remove all stored (encrypted) data. Logout does not depend on this: the same keys are
+ * part of `vaultDataStorageKeys()`, so every logout path clears them in the background.
  */
 export async function removeAndDisablePin(): Promise<void> {
   try {
-    await Promise.all([
-      storage.removeItem(PIN_ENABLED_KEY),
-      storage.removeItem(PIN_ENCRYPTED_KEY_KEY),
-      storage.removeItem(PIN_SALT_KEY),
-      storage.removeItem(PIN_LENGTH_KEY),
-      storage.removeItem(PIN_FAILED_ATTEMPTS_KEY)
-    ]);
+    await storage.removeItems([...PIN_STORAGE_KEYS]);
   } catch (error) {
-    console.error('[PinUnlockService] Failed to disable PIN:', error);
+    logFailure('[PinUnlockService] Failed to disable PIN', error);
     throw error;
   }
 }
@@ -296,9 +289,9 @@ export async function removeAndDisablePin(): Promise<void> {
  */
 export async function resetFailedAttempts(): Promise<void> {
   try {
-    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
+    await storage.setItem(StorageKeys.PIN_FAILED_ATTEMPTS, 0);
   } catch (error) {
-    console.error('[PinUnlockService] Failed to reset failed attempts:', error);
+    logFailure('[PinUnlockService] Failed to reset failed attempts', error);
   }
 }
 
@@ -344,68 +337,31 @@ async function assembleSaltWithPepper(randomSalt: Uint8Array): Promise<Uint8Arra
 }
 
 /**
+ * Argon2id cost parameters for PIN key derivation.
+ */
+const PIN_ARGON2_SETTINGS = '{"MemorySize":65536,"Iterations":3,"DegreeOfParallelism":1}';
+
+/**
  * Derive encryption key from PIN using Argon2id
- *
- * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks
- * significantly more expensive. This is especially important for PINs which
- * have lower entropy than passwords.
- *
- * The salt parameter should be the COMBINED salt (random salt + extension pepper)
- * created by assembleSaltWithPepper().
- *
- * Parameters chosen for security:
- * - Memory: 65536 KB (64 MB) - makes GPU attacks much harder
- * - Iterations: 3 - standard for Argon2id
- * - Parallelism: 1 - suitable for browser environment
- * - Output: 32 bytes for AES-256-GCM
  */
 async function derivePinKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
-  // Convert salt to base64 string (required by argon2-browser)
-  const saltBase64 = arrayBufferToBase64(salt.buffer as ArrayBuffer);
+  /*
+   * The salt is hashed as the characters of this base64 string, not as the bytes it decodes to.
+   * Every PIN ever set was derived that way, so decoding here would lock users out of their vault.
+   */
+  const saltBase64 = bytesToBase64(salt);
 
-  // Derive key using Argon2id
-  const hash = await argon2.hash({
-    pass: pin,
-    salt: saltBase64,
-    time: 3,
-    mem: 65536,
-    parallelism: 1,
-    hashLen: 32,
-    type: 2,
-  });
+  // Derive key using Argon2id, stating the PIN cost parameters instead of the account's
+  const hash = await argon2DeriveKey(pin, saltBase64, PIN_ARGON2_SETTINGS);
 
   // Import the derived key into WebCrypto API
   const pinKey = await crypto.subtle.importKey(
     'raw',
-    hash.hash,
+    hash,
     { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt', 'decrypt']
   );
 
   return pinKey;
-}
-
-/**
- * Convert ArrayBuffer to base64 string
- */
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-/**
- * Convert base64 string to ArrayBuffer
- */
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
 }

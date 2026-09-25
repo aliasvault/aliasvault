@@ -4,14 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 
 type VaultSyncOptions = {
   onSuccess?: (hasNewVault: boolean) => void;
   onError?: (error: string) => void;
   onStatus?: (message: string) => void;
   onOffline?: () => void;
-  onUpgradeRequired?: () => void;
+  onLegacySqliteBlobUpgradeRequired?: () => void;
+  onManifestMigrationRequired?: () => void;
 }
 
 /**
@@ -36,7 +39,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
   const dbContext = useDb();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
-    const { onSuccess, onError, onStatus, onOffline, onUpgradeRequired } = options;
+    const { onSuccess, onError, onStatus, onOffline, onLegacySqliteBlobUpgradeRequired, onManifestMigrationRequired } = options;
 
     try {
       // Check if user is logged in first
@@ -49,44 +52,13 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       onStatus?.(t('common.checkingVaultUpdates'));
 
       /*
-       * Quick check if sync is needed, this tells us if server has newer vault
-       * or if we have local changes to upload, so we can show the appropriate indicator in UI.
+       * Delegate to the background script for the full sync orchestration.
        */
-      const statusCheck = await sendMessage('CHECK_SYNC_STATUS');
-
-      // Handle logout requirement from status check
-      if (statusCheck.requiresLogout) {
-        const errorMessage = statusCheck.errorKey ? t('common.errors.' + statusCheck.errorKey) : undefined;
-        await app.logout(errorMessage);
-        return false;
-      }
-
-      /*
-       * If the lightweight status check already determined the server is unreachable, skip the full
-       * sync to prevent blocking the UI more than necessary.
-       */
-      if (statusCheck.isOffline) {
-        await dbContext.setIsOffline(true);
-        onStatus?.(t('common.offlineMode'));
-        onOffline?.();
-        onSuccess?.(false);
-        return true;
-      }
-
-      // Show appropriate indicator based on what sync will do
-      if (statusCheck.hasNewerVault) {
-        dbContext.setIsSyncing(true);
-      } else if (statusCheck.hasDirtyChanges && !statusCheck.isOffline) {
-        dbContext.setIsUploading(true);
-      }
-
-      // Delegate to background script for full sync orchestration
-      const result = await sendMessage('FULL_VAULT_SYNC');
+      const result = await sendMessage('FULL_VAULT_SYNC', {});
 
       // Handle logout requirement
       if (result.requiresLogout) {
-        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error;
-        await app.logout(errorMessage);
+        await app.logout(syncErrorMessage(result, t));
         return false;
       }
 
@@ -104,16 +76,23 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         await dbContext.setIsOffline(false);
       }
 
-      // Handle upgrade requirement
-      if (result.upgradeRequired) {
-        onUpgradeRequired?.();
+      // Handle upgrade requirement (sqlite-blob upgrade chain, needs the user to confirm)
+      if (result.sqliteBlobUpgradeRequired) {
+        onLegacySqliteBlobUpgradeRequired?.();
+        return false;
+      }
+
+      /*
+       * Handle the manifest migration.
+       */
+      if (result.manifestMigrationRequired) {
+        onManifestMigrationRequired?.();
         return false;
       }
 
       // Handle errors
       if (!result.success) {
-        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error ?? t('common.errors.unknownError');
-        onError?.(errorMessage);
+        onError?.(syncErrorMessage(result, t) ?? t('common.errors.unknownError'));
         return false;
       }
 
@@ -130,15 +109,9 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
-      console.error('Vault sync error:', err);
+      logFailure('Vault sync error', err);
       onError?.(errorMessage);
       return false;
-    } finally {
-      /*
-       * Always clear syncing/uploading states when done including on failure.
-       */
-      dbContext.setIsSyncing(false);
-      dbContext.setIsUploading(false);
     }
   }, [app, dbContext, t]);
 

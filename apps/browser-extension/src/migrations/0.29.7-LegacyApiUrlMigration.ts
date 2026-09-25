@@ -1,4 +1,7 @@
-import { AppInfo } from '@/utils/AppInfo';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import { storage } from '#imports';
 
@@ -19,16 +22,16 @@ const LEGACY_CLIENT_URL = 'https://app.aliasvault.net';
  */
 export async function migrateLegacyApiUrl(): Promise<void> {
   try {
-    const apiUrl = await storage.getItem('local:apiUrl') as string | null;
+    const apiUrl = await storage.getItem(StorageKeys.API_URL) as string | null;
     if (apiUrl === LEGACY_API_URL) {
-      await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
+      await storage.setItem(StorageKeys.API_URL, AppInfo.DEFAULT_API_URL);
     }
 
-    const clientUrl = await storage.getItem('local:clientUrl') as string | null;
+    const clientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string | null;
     if (clientUrl === LEGACY_CLIENT_URL) {
-      await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
+      await storage.setItem(StorageKeys.CLIENT_URL, AppInfo.DEFAULT_CLIENT_URL);
     }
   } catch (error) {
-    console.error('Failed to migrate legacy API URL:', error);
+    logFailure('Failed to migrate legacy API URL', error);
   }
 }

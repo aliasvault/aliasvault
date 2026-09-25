@@ -105,7 +105,7 @@ class UnlockCoordinator(
                 override fun onSuccess(result: String) {
                     try {
                         // Biometric authentication successful, unlock vault
-                        vaultStore.storeEncryptionKeyInMemory(result)
+                        vaultStore.storeUnlockKeyInMemory(result)
                         vaultStore.unlockVault()
 
                         // Notify success
@@ -121,7 +121,7 @@ class UnlockCoordinator(
                 }
 
                 override fun onError(e: Exception) {
-                    Log.e(TAG, "Failed to retrieve encryption key", e)
+                    Log.e(TAG, "Failed to retrieve unlock key", e)
                     activity.runOnUiThread {
                         handleBiometricKeystoreError(e)
                     }
@@ -136,11 +136,11 @@ class UnlockCoordinator(
     fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
         when (resultCode) {
             PinUnlockActivity.RESULT_SUCCESS -> {
-                // PIN unlock successful - get encryption key and unlock vault
-                val encryptionKey = data?.getStringExtra(PinUnlockActivity.EXTRA_ENCRYPTION_KEY)
-                if (encryptionKey != null) {
+                // PIN unlock successful - get unlock key and unlock vault
+                val unlockKey = data?.getStringExtra(PinUnlockActivity.EXTRA_UNLOCK_KEY)
+                if (unlockKey != null) {
                     try {
-                        vaultStore.storeEncryptionKeyInMemory(encryptionKey)
+                        vaultStore.storeUnlockKeyInMemory(unlockKey)
                         vaultStore.unlockVault()
                         onUnlocked()
                     } catch (e: Exception) {
@@ -148,7 +148,7 @@ class UnlockCoordinator(
                         onError(getUnlockErrorMessage(e))
                     }
                 } else {
-                    Log.e(TAG, "No encryption key returned from PIN unlock")
+                    Log.e(TAG, "No unlock key returned from PIN unlock")
                     onError("Failed to unlock vault")
                 }
             }
@@ -177,10 +177,10 @@ class UnlockCoordinator(
     fun handlePasswordUnlockResult(resultCode: Int, data: Intent?) {
         when (resultCode) {
             PasswordUnlockActivity.RESULT_SUCCESS -> {
-                val encryptionKey = data?.getStringExtra(PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY)
-                if (encryptionKey != null) {
+                val unlockKey = data?.getStringExtra(PasswordUnlockActivity.EXTRA_UNLOCK_KEY)
+                if (unlockKey != null) {
                     try {
-                        vaultStore.storeEncryptionKeyInMemory(encryptionKey)
+                        vaultStore.storeUnlockKeyInMemory(unlockKey)
                         vaultStore.unlockVault()
                         onUnlocked()
                     } catch (e: Exception) {
@@ -188,7 +188,7 @@ class UnlockCoordinator(
                         onError(getUnlockErrorMessage(e))
                     }
                 } else {
-                    Log.e(TAG, "No encryption key returned from password unlock")
+                    Log.e(TAG, "No unlock key returned from password unlock")
                     onError("Failed to unlock vault")
                 }
             }
@@ -215,6 +215,8 @@ class UnlockCoordinator(
         val errorMessage = when (e) {
             is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
             is AppError.VaultDecryptFailed,
+            is AppError.UnlockKeyRejected,
+            is AppError.KeyChainUnreadable,
             is AppError.DatabaseOpenFailed,
             is AppError.DatabaseBackupFailed,
             -> "Failed to decrypt vault"
@@ -249,6 +251,8 @@ class UnlockCoordinator(
         return when (e) {
             is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
             is AppError.VaultDecryptFailed,
+            is AppError.UnlockKeyRejected,
+            is AppError.KeyChainUnreadable,
             is AppError.DatabaseOpenFailed,
             is AppError.DatabaseBackupFailed,
             -> "Failed to decrypt vault"

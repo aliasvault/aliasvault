@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 
 import { createTestUser, type TestUser } from '../helpers/test-api';
 
+import { completeVaultUpgrade } from './helpers';
 import { waitForPopupReady as waitForPopupReadyState, Timeouts } from './waits';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -162,13 +163,14 @@ export async function openPopup(
 /**
  * Helper to wait for post-login state (vault is visible).
  *
- * This confirms the user has successfully logged in and the vault UI is ready.
+ * This confirms the user has successfully logged in and the vault UI is ready. Test accounts start
+ * out on a legacy sqlite-blob vault, so this also clears the upgrade gate the popup lands on.
  *
  * @param popup - The popup page
  * @param timeout - Maximum time to wait in milliseconds (default: 30000)
  */
 export async function waitForLoggedIn(popup: Page, timeout: number = 30000): Promise<void> {
-  await popup.getByRole('button', { name: 'Vault' }).waitFor({ state: 'visible', timeout });
+  await completeVaultUpgrade(popup, timeout);
 }
 
 /**

@@ -4,8 +4,26 @@ import { gunzipSync, strFromU8 } from 'fflate';
 import AesGcmCrypto from 'react-native-aes-gcm-crypto';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import type { EncryptionKey } from '@/utils/dist/core/models/vault';
-import type { Email, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import type { EncryptionKey } from '@aliasvault/models/vault';
+import type { Email, EmailDecryptionKey, MailboxEmail } from '@aliasvault/models/webapi';
+import { parseEmailSource, type ParsedEmailAttachment } from '@aliasvault/client/rust/RustCore';
+
+/**
+ * An email after decryption: the metadata fields decrypted in place, and the bodies and attachments the Rust
+ * parser derived from the raw RFC 822 source.
+ */
+export type DecryptedEmail = {
+  /** The email with its metadata fields decrypted. */
+  email: Email;
+  /** The html body parsed out of the source, null when the message has no html part. */
+  htmlBody: string | null;
+  /** The plain text body parsed out of the source, null when the message has no text part. */
+  textBody: string | null;
+  /** The attachments contained in the source, in the index order `extractEmailAttachment` expects. */
+  attachments: ParsedEmailAttachment[];
+  /** The decrypted source bytes. */
+  sourceBytes: Uint8Array | null;
+};
 
 /**
  * Utility class for encryption operations including:
@@ -280,26 +298,41 @@ class EncryptionUtility {
   }
 
   /**
-   * Decrypts an individual email based on the provided public/private key pairs.
+   * Finds the decryption key of an email's symmetric key that one of the locally held keypairs can open. An email
+   * carries one decryption key per manifest keypair the caller holds; it names its public key by index into the
+   * publicKeys table the API sends once per response.
+   */
+  private static resolveEmailDecryptionKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): { encryptionKey: EncryptionKey, encryptedSymmetricKey: string } {
+    for (const decryptionKey of decryptionKeys) {
+      const publicKey = publicKeys[decryptionKey.keyIndex];
+      const key = publicKey ? encryptionKeys.find(k => k.PublicKey === publicKey) : undefined;
+      if (key) {
+        return { encryptionKey: key, encryptedSymmetricKey: decryptionKey.encryptedSymmetricKey };
+      }
+    }
+
+    throw new Error('Encryption key not found');
+  }
+
+  /**
+   * Decrypts the symmetric key an email's contents are encrypted with, as base64.
+   */
+  private static async resolveEmailSymmetricKey(decryptionKeys: EmailDecryptionKey[], publicKeys: string[], encryptionKeys: EncryptionKey[]): Promise<string> {
+    const match = EncryptionUtility.resolveEmailDecryptionKey(decryptionKeys, publicKeys, encryptionKeys);
+    const privateKey = await EncryptionUtility.getPrivateKeyObject(match.encryptionKey);
+    const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(match.encryptedSymmetricKey, privateKey);
+    return Buffer.from(symmetricKey).toString('base64');
+  }
+
+  /**
+   * Decrypts an individual email based on the provided public/private key pairs and parses its source.
    */
   public static async decryptEmail(
     email: Email,
     encryptionKeys: EncryptionKey[]
-  ): Promise<Email> {
+  ): Promise<DecryptedEmail> {
     try {
-      const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-      if (!encryptionKey) {
-        throw new Error('Encryption key not found');
-      }
-
-      // Decrypt symmetric key with asymmetric private key
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        email.encryptedSymmetricKey,
-        privateKey
-      );
-      const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
 
       // Create a new object to avoid mutating the original
       const decryptedEmail = { ...email };
@@ -310,46 +343,45 @@ class EncryptionUtility {
       decryptedEmail.fromDomain = await EncryptionUtility.symmetricDecrypt(email.fromDomain, symmetricKeyBase64);
       decryptedEmail.fromLocal = await EncryptionUtility.symmetricDecrypt(email.fromLocal, symmetricKeyBase64);
 
-      if (email.messageHtml) {
-        decryptedEmail.messageHtml = await EncryptionUtility.symmetricDecrypt(email.messageHtml, symmetricKeyBase64);
-      }
-      if (email.messagePlain) {
-        decryptedEmail.messagePlain = await EncryptionUtility.symmetricDecrypt(email.messagePlain, symmetricKeyBase64);
-      }
-      if (email.messageSource) {
-        // The raw source is optionally gzip compressed before encryption by 0.31+ API.
-        decryptedEmail.messageSource = await EncryptionUtility.symmetricDecryptMaybeCompressed(email.messageSource, symmetricKeyBase64);
+      const sourceBytes = email.messageSource ? await EncryptionUtility.symmetricDecryptBytes(Uint8Array.from(atob(email.messageSource), c => c.charCodeAt(0)), symmetricKeyBase64) : null;
+      decryptedEmail.messageSource = '';
+
+      let htmlBody: string | null = null;
+      let textBody: string | null = null;
+      let attachments: ParsedEmailAttachment[] = [];
+      if (sourceBytes) {
+        try {
+          const parsed = await parseEmailSource(sourceBytes);
+          htmlBody = parsed.htmlBody;
+          textBody = parsed.textBody;
+          attachments = parsed.attachments;
+        } catch (err) {
+          // A parse failure costs the bodies, not the email: the raw source view renders without the parser.
+          console.warn(`[Email] Could not parse the source of email ${email.id}:`, err);
+        }
       }
 
-      return decryptedEmail;
+      return { email: decryptedEmail, htmlBody, textBody, attachments, sourceBytes };
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
     }
   }
 
   /**
-   * Decrypts a list of emails based on the provided public/private key pairs.
+   * Decrypts a list of emails based on the provided public/private key pairs. The publicKeys table is the one the
+   * API sent alongside the emails; each email's decryption keys reference it by index.
+   *
+   * Emails that cannot be decrypted are skipped rather than failing the batch, so one unreadable record cannot
+   * break the whole list view.
    */
   public static async decryptEmailList(
     emails: MailboxEmail[],
+    publicKeys: string[],
     encryptionKeys: EncryptionKey[]
   ): Promise<MailboxEmail[]> {
-    return Promise.all(emails.map(async email => {
+    const results = await Promise.all(emails.map(async email => {
       try {
-        const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-        if (!encryptionKey) {
-          throw new Error('Encryption key not found');
-        }
-
-        // Decrypt symmetric key with asymmetric private key
-        const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
-        const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-          email.encryptedSymmetricKey,
-          privateKey
-        );
-
-        const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
+        const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, publicKeys, encryptionKeys);
 
         // Create a new object to avoid mutating the original
         const decryptedEmail = { ...email };
@@ -366,9 +398,12 @@ class EncryptionUtility {
 
         return decryptedEmail;
       } catch (err) {
-        throw new Error(err instanceof Error ? err.message : 'Failed to decrypt email');
+        console.warn(`[Email] Skipping email ${email.id}, it could not be decrypted:`, err);
+        return null;
       }
     }));
+
+    return results.filter((email): email is MailboxEmail => email !== null);
   }
 
   /**
@@ -380,40 +415,13 @@ class EncryptionUtility {
     encryptionKeys: EncryptionKey[]
   ): Promise<Uint8Array> {
     try {
-      const encryptionKey = encryptionKeys.find(key => key.PublicKey === email.encryptionKey);
-
-      if (!encryptionKey) {
-        throw new Error('Encryption key not found');
-      }
-
-      // Decrypt the symmetric key using private key (returns raw bytes)
-      const privateKey = await EncryptionUtility.getPrivateKeyObject(encryptionKey);
-      const symmetricKey = await EncryptionUtility.decryptWithPrivateKeyObject(
-        email.encryptedSymmetricKey,
-        privateKey
-      );
-
-      // Convert symmetric key to base64 string if symmetricDecrypt expects it
-      const symmetricKeyBase64 = Buffer.from(symmetricKey).toString('base64');
+      const symmetricKeyBase64 = await EncryptionUtility.resolveEmailSymmetricKey(email.decryptionKeys, email.publicKeys, encryptionKeys);
 
       // Decrypt the attachment using raw bytes
       return await EncryptionUtility.symmetricDecryptBytes(encryptedBytes, symmetricKeyBase64);
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Failed to decrypt attachment');
     }
-  }
-
-  /**
-   * Computes a SHA-256 hash of a string and returns the first 16 characters of the hex digest.
-   * Used for verifying public key integrity in mobile login QR codes.
-   */
-  public static async computeSha256Hash(data: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const dataBytes = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex.substring(0, 16);
   }
 }
 

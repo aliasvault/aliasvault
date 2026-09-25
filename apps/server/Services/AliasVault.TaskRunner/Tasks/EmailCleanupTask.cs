@@ -67,19 +67,20 @@ public class EmailCleanupTask : IMaintenanceTask
             }
         }
 
-        // Now handle per-user age limits
+        // Now handle per-user age limits. The email age limit is stored on the user's personal group.
         var usersWithAgeLimits = await dbContext.AliasVaultUsers
-            .Where(u => u.MaxEmailAgeDays > 0)
-            .Select(u => new { u.Id, u.UserName, u.MaxEmailAgeDays })
+            .Where(u => u.PersonalGroup.MaxEmailAgeDays > 0)
+            .Select(u => new { u.Id, u.UserName, u.PersonalGroup.MaxEmailAgeDays })
             .ToListAsync(cancellationToken);
 
         foreach (var user in usersWithAgeLimits)
         {
             var userCutoffDate = DateTime.UtcNow.AddDays(-user.MaxEmailAgeDays);
 
-            // Get all email addresses for this user
-            var userAddresses = await dbContext.UserEmailClaims
-                .Where(c => c.UserId == user.Id)
+            // Get all email addresses this user's vault still carries.
+            var userAddresses = await dbContext.EmailClaims
+                .Where(c => c.Links.Any(l => l.State != EmailClaimLinkState.Removed
+                    && dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == l.VaultManifest.OwnerGroupId)))
                 .Select(c => c.Address)
                 .ToListAsync(cancellationToken);
 
@@ -102,11 +103,6 @@ public class EmailCleanupTask : IMaintenanceTask
             }
         }
 
-        if (totalEmailsDeleted > 0)
-        {
-            _logger.LogInformation(
-                "Total emails deleted by age cleanup: {TotalEmails}",
-                totalEmailsDeleted);
-        }
+        _logger.LogInformation("Total emails deleted by age cleanup: {TotalEmails}", totalEmailsDeleted);
     }
 }

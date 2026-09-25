@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, Modal, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 
-import type { ItemType } from '@/utils/dist/core/models/vault';
-import { ItemTypes } from '@/utils/dist/core/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
+import { ItemTypes } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

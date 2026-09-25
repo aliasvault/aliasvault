@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Databases\AliasServerDb\AliasServerDb.csproj" />
+    <ProjectReference Include="..\..\Shared\AliasVault.Shared.Server\AliasVault.Shared.Server.csproj" />
     <ProjectReference Include="..\..\Utilities\AliasVault.Logging\AliasVault.Logging.csproj" />
     <ProjectReference Include="..\..\Utilities\Cryptography\AliasVault.Cryptography.Server\AliasVault.Cryptography.Server.csproj" />
   </ItemGroup>

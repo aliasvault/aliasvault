@@ -1,3 +1,7 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -25,14 +29,17 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount } from '@/utils/FolderUtils';
-import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@/utils/ItemFilters';
+import { devLog } from '@/utils/devLogger/DevLogger';
+import { logFailure } from '@/utils/Diagnostics';
+import { isSameItem, itemRoute } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import type { Item, ItemType } from '@aliasvault/models/vault';
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -97,8 +104,10 @@ const storeFilter = (filter: ItemFilterType): void => {
  */
 type FolderWithCount = {
   id: string;
+  manifestId: string;
   name: string;
   itemCount: number;
+  isShared: boolean;
 };
 
 /**
@@ -106,7 +115,7 @@ type FolderWithCount = {
  */
 const ItemsList: React.FC = () => {
   const { t } = useTranslation();
-  const { folderId: folderIdParam } = useParams<{ folderId?: string }>();
+  const { folderId: folderIdParam, manifestId: manifestIdParam } = useParams<{ folderId?: string; manifestId?: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const dbContext = useDb();
@@ -128,8 +137,8 @@ const ItemsList: React.FC = () => {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showDeleteFolderModal, setShowDeleteFolderModal] = useState(false);
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  const [deleteItem, setDeleteItem] = useState<ItemRef | null>(null);
+  const [highlightedItem, setHighlightedItem] = useState<ItemRef | null>(null);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
@@ -143,30 +152,46 @@ const ItemsList: React.FC = () => {
     LocalPreferencesService.getShowFolders().then(setShowFolders);
   }, []);
 
-  // Derive current folder from URL params
-  const currentFolderId = folderIdParam ?? null;
+  // Derive current folder from URL params: a folder is only named by its manifest and its id together
+  const currentFolderId = folderIdParam && manifestIdParam ? folderIdParam : null;
+  const currentManifestId = currentFolderId ? manifestIdParam ?? null : null;
+  const currentFolderRef = useMemo((): FolderRef | null => (currentFolderId && currentManifestId ? { Id: currentFolderId, ManifestId: currentManifestId } : null), [currentFolderId, currentManifestId]);
 
   // Get current folder name from database
   const currentFolderName = useMemo(() => {
     // folderRefreshKey is included in deps to force re-computation when folder is renamed
     void folderRefreshKey;
-    if (!currentFolderId || !dbContext?.sqliteClient) {
+    if (!currentFolderRef || !dbContext?.sqliteClient) {
       return null;
     }
     const folders = dbContext.sqliteClient.folders.getAll();
-    const folder = folders.find((f: { Id: string; Name: string }) => f.Id === currentFolderId);
+    const folder = folders.find((f: Folder) => f.Id === currentFolderRef.Id && f.ManifestId === currentFolderRef.ManifestId);
     return folder?.Name ?? null;
-  }, [currentFolderId, dbContext?.sqliteClient, folderRefreshKey]);
+  }, [currentFolderRef, dbContext?.sqliteClient, folderRefreshKey]);
+
+  // The folder being viewed, re-read when it changes
+  const currentFolder = useMemo(() => {
+    // folderRefreshKey is included in deps to force re-computation when the folder changes
+    void folderRefreshKey;
+    if (!currentFolderRef || !dbContext?.sqliteClient) {
+      return null;
+    }
+
+    return dbContext.sqliteClient.folders.getById(currentFolderRef);
+  }, [currentFolderRef, dbContext?.sqliteClient, folderRefreshKey]);
+
+  // A virtual folder (e.g. shared manifest) is not editable or deletable here.
+  const currentFolderIsVirtual = currentFolder !== null && multiManifestRendering.isVirtualFolder(currentFolder);
 
   // Get current folder's full path (for relative path computation in search results)
   const currentFolderPath = useMemo(() => {
-    if (!currentFolderId || !dbContext?.sqliteClient) {
+    if (!currentFolderRef || !dbContext?.sqliteClient) {
       return null;
     }
     const folders = dbContext.sqliteClient.folders.getAll();
-    const path = getFolderPath(currentFolderId, folders);
+    const path = getFolderPath(currentFolderRef, folders);
     return path.length > 0 ? path : null;
-  }, [currentFolderId, dbContext?.sqliteClient]);
+  }, [currentFolderRef, dbContext?.sqliteClient]);
 
   /**
    * Loading state with minimum duration for more fluid UX.
@@ -220,12 +245,13 @@ const ItemsList: React.FC = () => {
     params.set('type', type);
 
     // Pre-select the current folder if we're inside a folder
-    if (currentFolderId) {
-      params.set('folderId', currentFolderId);
+    if (currentFolderRef) {
+      params.set('folderId', currentFolderRef.Id);
+      params.set('folderManifestId', currentFolderRef.ManifestId);
     }
 
     navigate(`/items/add?${params.toString()}`);
-  }, [navigate, currentFolderId]);
+  }, [navigate, currentFolderRef]);
 
   /**
    * Handle add new folder.
@@ -240,31 +266,31 @@ const ItemsList: React.FC = () => {
    */
   const handleSaveFolder = useCallback(async (folderName: string) : Promise<void> => {
     if (!dbContext?.sqliteClient) {
-      console.error('[FOLDER DEBUG] No sqliteClient available');
+      devLog('[Folders] No sqliteClient available, skipping the folder save');
       return;
     }
 
     await executeVaultMutationAsync(async () => {
-      // Create folder in current location (currentFolderId = null means root)
-      await dbContext.sqliteClient!.folders.create(folderName, currentFolderId);
+      // Create folder in current location (no current folder means root)
+      await dbContext.sqliteClient!.folders.create(folderName, currentFolderRef);
     });
 
     // Refresh items to show the new folder
     const results = dbContext.sqliteClient!.items.getAll();
     setItems(results);
-  }, [dbContext, currentFolderId, executeVaultMutationAsync]);
+  }, [dbContext, currentFolderRef, executeVaultMutationAsync]);
 
   /**
    * Duplicate an item via the item context menu.
    */
-  const handleDuplicateItem = useCallback(async (itemId: string) : Promise<void> => {
+  const handleDuplicateItem = useCallback(async (source: ItemRef) : Promise<void> => {
     if (!dbContext?.sqliteClient) {
       return;
     }
 
-    let newItemId: string | null = null;
+    let newItem: ItemRef | null = null;
     await executeVaultMutationAsync(async () => {
-      newItemId = await dbContext.sqliteClient!.items.duplicate(itemId);
+      newItem = await dbContext.sqliteClient!.items.duplicate(source);
     });
 
     // Refresh items to show the new duplicate
@@ -272,7 +298,7 @@ const ItemsList: React.FC = () => {
     setItems(results);
 
     // Scroll to and briefly highlight the new duplicate so it's clear where it landed
-    setHighlightedItemId(newItemId);
+    setHighlightedItem(newItem);
   }, [dbContext, executeVaultMutationAsync]);
 
   /**
@@ -280,32 +306,32 @@ const ItemsList: React.FC = () => {
    * rendered, then clear the highlight after a short moment.
    */
   useEffect(() => {
-    if (!highlightedItemId) {
+    if (!highlightedItem) {
       return;
     }
 
     // Wait a frame so the re-rendered list contains the new item before scrolling.
     requestAnimationFrame(() => {
-      document.querySelector(`[data-item-id="${highlightedItemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector(`[data-item-key="${scopedKey(highlightedItem.ManifestId, highlightedItem.Id)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
-    const timer = setTimeout(() => setHighlightedItemId(null), 2000);
+    const timer = setTimeout(() => setHighlightedItem(null), 2000);
     return (): void => clearTimeout(timer);
-  }, [highlightedItemId]);
+  }, [highlightedItem]);
 
   /**
    * Move an item to the trash after confirmation via the item context menu.
    */
   const handleConfirmDeleteItem = useCallback(async () : Promise<void> => {
-    if (!dbContext?.sqliteClient || !deleteItemId) {
+    if (!dbContext?.sqliteClient || !deleteItem) {
       return;
     }
 
-    const itemId = deleteItemId;
-    setDeleteItemId(null);
+    const target = deleteItem;
+    setDeleteItem(null);
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.items.trash(itemId);
+      await dbContext.sqliteClient!.items.trash(target);
     });
 
     // Refresh items to reflect the deletion
@@ -313,23 +339,21 @@ const ItemsList: React.FC = () => {
     setItems(results);
     const deletedCount = dbContext.sqliteClient!.items.getRecentlyDeletedCount();
     setRecentlyDeletedCount(deletedCount);
-  }, [dbContext, deleteItemId, executeVaultMutationAsync]);
+  }, [dbContext, deleteItem, executeVaultMutationAsync]);
 
   /**
    * Handle delete folder (keep items, move them to root).
    */
   const handleDeleteFolderOnly = useCallback(async () : Promise<void> => {
-    if (!dbContext?.sqliteClient || !currentFolderId) {
+    if (!dbContext?.sqliteClient || !currentFolderRef) {
       return;
     }
 
     // Get the current folder to determine parent before deletion
-    const allFolders = dbContext.sqliteClient.folders.getAll();
-    const currentFolder = allFolders.find(f => f.Id === currentFolderId);
-    const parentFolderId = currentFolder?.ParentFolderId ?? null;
+    const parentFolderId = dbContext.sqliteClient.folders.getById(currentFolderRef)?.ParentFolderId ?? null;
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.folders.delete(currentFolderId);
+      await dbContext.sqliteClient!.folders.delete(currentFolderRef);
     });
 
     // Refresh items list to reflect changes
@@ -340,27 +364,25 @@ const ItemsList: React.FC = () => {
 
     // Navigate to parent folder if it exists, otherwise root
     if (parentFolderId) {
-      navigate(`/items/folder/${parentFolderId}`);
+      navigate(`/items/folder/${currentFolderRef.ManifestId}/${parentFolderId}`);
     } else {
       navigate('/items');
     }
-  }, [dbContext, currentFolderId, executeVaultMutationAsync, navigate]);
+  }, [dbContext, currentFolderRef, executeVaultMutationAsync, navigate]);
 
   /**
    * Handle delete folder and all its contents.
    */
   const handleDeleteFolderAndContents = useCallback(async () : Promise<void> => {
-    if (!dbContext?.sqliteClient || !currentFolderId) {
+    if (!dbContext?.sqliteClient || !currentFolderRef) {
       return;
     }
 
     // Get the current folder to determine parent before deletion
-    const allFolders = dbContext.sqliteClient.folders.getAll();
-    const currentFolder = allFolders.find(f => f.Id === currentFolderId);
-    const parentFolderId = currentFolder?.ParentFolderId ?? null;
+    const parentFolderId = dbContext.sqliteClient.folders.getById(currentFolderRef)?.ParentFolderId ?? null;
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.folders.deleteWithContents(currentFolderId);
+      await dbContext.sqliteClient!.folders.deleteWithContents(currentFolderRef);
     });
 
     // Refresh items list to reflect changes
@@ -371,22 +393,22 @@ const ItemsList: React.FC = () => {
 
     // Navigate to parent folder if it exists, otherwise root
     if (parentFolderId) {
-      navigate(`/items/folder/${parentFolderId}`);
+      navigate(`/items/folder/${currentFolderRef.ManifestId}/${parentFolderId}`);
     } else {
       navigate('/items');
     }
-  }, [dbContext, currentFolderId, executeVaultMutationAsync, navigate]);
+  }, [dbContext, currentFolderRef, executeVaultMutationAsync, navigate]);
 
   /**
    * Handle edit/rename folder.
    */
   const handleEditFolder = useCallback(async (newName: string) : Promise<void> => {
-    if (!dbContext?.sqliteClient || !currentFolderId) {
+    if (!dbContext?.sqliteClient || !currentFolderRef) {
       return;
     }
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.folders.update(currentFolderId, newName);
+      await dbContext.sqliteClient!.folders.update(currentFolderRef, newName);
     });
 
     // Trigger re-computation of currentFolderName
@@ -394,7 +416,7 @@ const ItemsList: React.FC = () => {
 
     // Close modal
     setShowEditFolderModal(false);
-  }, [dbContext, currentFolderId, executeVaultMutationAsync]);
+  }, [dbContext, currentFolderRef, executeVaultMutationAsync]);
 
   /**
    * Retrieve latest vault and refresh the items list.
@@ -423,11 +445,11 @@ const ItemsList: React.FC = () => {
          * On error.
          */
         onError: async (error) => {
-          console.error('Error syncing vault:', error);
+          logFailure('Error syncing vault', error);
         },
       });
     } catch (err) {
-      console.error('Error refreshing items:', err);
+      logFailure('Error refreshing items', err);
       await app.logout('Error while syncing vault, please re-authenticate.');
     }
   }, [dbContext, app, syncVault]);
@@ -462,13 +484,12 @@ const ItemsList: React.FC = () => {
 
   // Set back button title for folder view
   useEffect(() => {
-    if (folderIdParam && dbContext?.sqliteClient) {
-      const allFolders = dbContext.sqliteClient.folders.getAll();
-      const currentFolder = allFolders.find(f => f.Id === folderIdParam);
+    if (currentFolderRef && dbContext?.sqliteClient) {
+      const currentFolder = dbContext.sqliteClient.folders.getById(currentFolderRef);
 
       if (currentFolder && currentFolder.ParentFolderId) {
-        // Has parent folder - show parent folder name
-        const parentFolder = allFolders.find(f => f.Id === currentFolder.ParentFolderId);
+        // Has parent folder - show parent folder name, looked up inside the same manifest
+        const parentFolder = dbContext.sqliteClient.folders.getById({ Id: currentFolder.ParentFolderId, ManifestId: currentFolderRef.ManifestId });
         if (parentFolder) {
           setBackButtonTitle(parentFolder.Name);
         } else {
@@ -484,7 +505,7 @@ const ItemsList: React.FC = () => {
     }
 
     return (): void => setBackButtonTitle(null);
-  }, [folderIdParam, dbContext?.sqliteClient, setBackButtonTitle, t]);
+  }, [currentFolderRef, dbContext?.sqliteClient, setBackButtonTitle, t]);
 
   /**
    * Load items list on mount and on sqlite client change.
@@ -549,9 +570,9 @@ const ItemsList: React.FC = () => {
    * Navigate into a folder via URL, preserving the active filter so the folder view
    * shows the same subset reflected in the folder pill's badge count.
    */
-  const handleFolderClick = useCallback((folderId: string, _folderName: string) => {
+  const handleFolderClick = useCallback((folder: FolderRef) => {
     setSearchTerm(''); // Clear search when entering folder
-    navigate(`/items/folder/${folderId}?filter=${encodeURIComponent(filterType)}`);
+    navigate(`/items/folder/${folder.ManifestId}/${folder.Id}?filter=${encodeURIComponent(filterType)}`);
   }, [navigate, filterType]);
 
   /**
@@ -575,9 +596,9 @@ const ItemsList: React.FC = () => {
 
     // Filter folders based on current location
     const relevantFolders = allFolders.filter((folder: Folder) => {
-      if (currentFolderId) {
-        // Inside a folder: show only direct children
-        return folder.ParentFolderId === currentFolderId;
+      if (currentFolderRef) {
+        // Inside a folder: show only direct children, which live in the folder's own manifest
+        return folder.ParentFolderId === currentFolderRef.Id && folder.ManifestId === currentFolderRef.ManifestId;
       } else {
         /*
          * At root: show only root-level folders
@@ -592,33 +613,37 @@ const ItemsList: React.FC = () => {
     const directFolderCounts = new Map<string, number>();
     filteredForCounts.forEach((item: Item) => {
       if (item.FolderId) {
-        directFolderCounts.set(item.FolderId, (directFolderCounts.get(item.FolderId) || 0) + 1);
+        const key = scopedKey(item.ManifestId, item.FolderId);
+        directFolderCounts.set(key, (directFolderCounts.get(key) || 0) + 1);
       }
     });
 
     /**
      * Recursively count items in a folder and all its subfolders.
-     * @param folderId - The folder ID to count items for
+     * @param folder - The folder to count items for
      * @returns Total count of items in this folder and all descendant folders
      */
-    const getRecursiveItemCountLocal = (folderId: string): number => {
+    const getRecursiveItemCountLocal = (folder: FolderRef): number => {
       // Start with direct items in this folder
-      let count = directFolderCounts.get(folderId) || 0;
+      let count = directFolderCounts.get(scopedKey(folder.ManifestId, folder.Id)) || 0;
 
       // Add counts from all child folders recursively
-      const childFolderIds = getDescendantFolderIds(folderId, allFolders);
+      const childFolderIds = getDescendantFolderIds(folder, allFolders);
       for (const childId of childFolderIds) {
-        count += directFolderCounts.get(childId) || 0;
+        count += directFolderCounts.get(scopedKey(folder.ManifestId, childId)) || 0;
       }
 
       return count;
     };
 
     // Build result with recursive counts
+    const personalManifestId = dbContext.sqliteClient.getPersonalManifestId();
     const result = relevantFolders.map((folder: Folder) => ({
       id: folder.Id,
+      manifestId: folder.ManifestId,
       name: folder.Name,
-      itemCount: getRecursiveItemCountLocal(folder.Id)
+      itemCount: getRecursiveItemCountLocal(folder),
+      isShared: isSharedFolder(folder, personalManifestId)
     })).sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
 
     return result;
@@ -630,18 +655,18 @@ const ItemsList: React.FC = () => {
   const filteredItems = ((): Item[] => {
     // Filter by current folder (if in folder view)
     let folderScoped: Item[];
-    if (currentFolderId !== null) {
+    if (currentFolderRef !== null) {
       if (searchTerm) {
         // When searching inside a folder, include items in subfolders too
         const allFolders = dbContext?.sqliteClient?.folders.getAll() || [];
-        const childFolderIds = getDescendantFolderIds(currentFolderId, allFolders);
-        const allFolderIds = [currentFolderId, ...childFolderIds];
+        const childFolderIds = getDescendantFolderIds(currentFolderRef, allFolders);
+        const allFolderIds = [currentFolderRef.Id, ...childFolderIds];
         folderScoped = items.filter((item: Item) =>
-          item.FolderId !== null && item.FolderId !== undefined && allFolderIds.includes(item.FolderId)
+          item.ManifestId === currentFolderRef.ManifestId && item.FolderId !== null && item.FolderId !== undefined && allFolderIds.includes(item.FolderId)
         );
       } else {
         // When not searching, only show direct items (not items in subfolders)
-        folderScoped = items.filter((item: Item) => item.FolderId === currentFolderId);
+        folderScoped = items.filter((item: Item) => isItemInFolder(item, currentFolderRef));
       }
     } else if (!searchTerm && showFolders) {
       /*
@@ -687,28 +712,28 @@ const ItemsList: React.FC = () => {
    * Used for the delete folder modal to show accurate count.
    */
   const totalItemCountInFolderTree = useMemo(() => {
-    if (!currentFolderId || !dbContext?.sqliteClient) {
+    if (!currentFolderRef || !dbContext?.sqliteClient) {
       return filteredItems.length;
     }
 
     const allFolders = dbContext.sqliteClient.folders.getAll();
-    return getRecursiveItemCount(currentFolderId, items, allFolders);
-  }, [currentFolderId, items, dbContext?.sqliteClient, filteredItems.length]);
+    return getRecursiveItemCount(currentFolderRef, items, allFolders);
+  }, [currentFolderRef, items, dbContext?.sqliteClient, filteredItems.length]);
 
   /**
    * Check if the current folder can have subfolders (not at max depth).
    * At root level (currentFolderId = null), we can always create folders.
    */
   const canCreateSubfolder = useMemo(() => {
-    if (!currentFolderId) {
+    if (!currentFolderRef) {
       return true; // Root level, always allowed
     }
     if (!dbContext?.sqliteClient) {
       return false;
     }
     const allFolders = dbContext.sqliteClient.folders.getAll();
-    return canHaveSubfolders(currentFolderId, allFolders);
-  }, [currentFolderId, dbContext?.sqliteClient]);
+    return canHaveSubfolders(currentFolderRef, allFolders);
+  }, [currentFolderRef, dbContext?.sqliteClient]);
 
   /**
    * Check if all items are in folders (no items at root level but items exist in folders).
@@ -724,7 +749,7 @@ const ItemsList: React.FC = () => {
     if (!item) {
       return;
     }
-    const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
+    const url = searchTerm ? `${itemRoute(item)}?returnSearch=${encodeURIComponent(searchTerm)}` : itemRoute(item);
     navigate(url);
   }, [sortedItems, searchTerm, navigate]);
 
@@ -736,7 +761,7 @@ const ItemsList: React.FC = () => {
     if (!folder) {
       return;
     }
-    handleFolderClick(folder.id, folder.name);
+    handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId });
   }, [folders, handleFolderClick]);
 
   /**
@@ -750,24 +775,22 @@ const ItemsList: React.FC = () => {
    * Go up one folder (ArrowLeft).
    */
   const handleGoBack = useCallback((): void => {
-    if (!currentFolderId || !dbContext?.sqliteClient) {
+    if (!currentFolderRef || !dbContext?.sqliteClient) {
       return;
     }
-    const allFolders = dbContext.sqliteClient.folders.getAll();
-    const current = allFolders.find((f: Folder) => f.Id === currentFolderId);
-    const parentFolderId = current?.ParentFolderId ?? null;
+    const parentFolderId = dbContext.sqliteClient.folders.getById(currentFolderRef)?.ParentFolderId ?? null;
     if (parentFolderId) {
-      navigate(`/items/folder/${parentFolderId}`);
+      navigate(`/items/folder/${currentFolderRef.ManifestId}/${parentFolderId}`);
     } else {
       navigate('/items');
     }
-  }, [currentFolderId, dbContext, navigate]);
+  }, [currentFolderRef, dbContext, navigate]);
 
   const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId } = useListKeyboardNav({
     folderCount: folders.length,
     itemCount: sortedItems.length,
     searchInputRef,
-    resetKey: currentFolderId,
+    resetKey: currentFolderRef ? scopedKey(currentFolderRef.ManifestId, currentFolderRef.Id) : null,
     onActivateFolder: handleActivateFolder,
     onActivateItem: handleActivateItem,
     onGoBack: handleGoBack,
@@ -785,7 +808,7 @@ const ItemsList: React.FC = () => {
   return (
     <div>
       {/* Breadcrumb navigation - only show when inside a folder */}
-      <FolderBreadcrumb folderId={currentFolderId} />
+      <FolderBreadcrumb folder={currentFolderRef} />
 
       <div className="flex justify-between items-center gap-2 mb-4">
         <div className="min-w-0 flex-1 flex items-center gap-2">
@@ -806,8 +829,8 @@ const ItemsList: React.FC = () => {
             }}
             onSelectRecentlyDeleted={() => navigate('/items/deleted')}
           />
-          {/* Edit and Delete buttons when inside a folder */}
-          {currentFolderId && (
+          {/* Edit and Delete buttons, only for a folder the vault actually stores */}
+          {currentFolderId && !currentFolderIsVirtual && (
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => setShowEditFolderModal(true)}
@@ -986,11 +1009,12 @@ const ItemsList: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 mb-4" role="listbox" aria-label={t('items.title')}>
               {folders.map((folder, index) => (
                 <FolderPill
-                  key={folder.id}
+                  key={scopedKey(folder.manifestId, folder.id)}
                   folder={folder}
-                  onClick={() => handleFolderClick(folder.id, folder.name)}
+                  onClick={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId })}
                   isActive={activeKind === 'folder' && activeIndex === index}
                   optionId={folderIdFor(index)}
+                  isShared={folder.isShared}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1023,11 +1047,12 @@ const ItemsList: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 mb-4" role="listbox" aria-label={t('items.title')}>
               {folders.map((folder, index) => (
                 <FolderPill
-                  key={folder.id}
+                  key={scopedKey(folder.manifestId, folder.id)}
                   folder={folder}
-                  onClick={() => handleFolderClick(folder.id, folder.name)}
+                  onClick={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId })}
                   isActive={activeKind === 'folder' && activeIndex === index}
                   optionId={folderIdFor(index)}
+                  isShared={folder.isShared}
                 />
               ))}
               {canCreateSubfolder && (
@@ -1063,16 +1088,16 @@ const ItemsList: React.FC = () => {
             <ul id="items-list" role="listbox" className="space-y-2">
               {sortedItems.map((item, index) => (
                 <ItemCard
-                  key={item.Id}
+                  key={scopedKey(item.ManifestId, item.Id)}
                   item={item}
                   showFolderPath={!!searchTerm && !!item.FolderPath}
                   searchTerm={searchTerm}
                   currentFolderPath={currentFolderPath}
                   isActive={activeKind === 'item' && activeIndex === index}
                   optionId={itemIdFor(index)}
-                  isHighlighted={item.Id === highlightedItemId}
+                  isHighlighted={highlightedItem !== null && isSameItem(item, highlightedItem)}
                   onDuplicate={handleDuplicateItem}
-                  onDelete={setDeleteItemId}
+                  onDelete={setDeleteItem}
                 />
               ))}
             </ul>
@@ -1122,8 +1147,8 @@ const ItemsList: React.FC = () => {
 
       {/* Delete Item Confirmation Modal */}
       <ConfirmDeleteModal
-        isOpen={deleteItemId !== null}
-        onClose={() => setDeleteItemId(null)}
+        isOpen={deleteItem !== null}
+        onClose={() => setDeleteItem(null)}
         onConfirm={handleConfirmDeleteItem}
         title={t('items.deleteItemTitle')}
         message={t('items.deleteItemConfirm')}

@@ -8,21 +8,23 @@ public struct VaultConstants {
     public static let userDefaultsSuite = "group.net.aliasvault.autofill"
 
     public static let vaultMetadataKey = "aliasvault_vault_metadata"
-    public static let encryptionKeyKey = "aliasvault_encryption_key"
+    public static let unlockKeyKey = "aliasvault_encryption_key"
     public static let encryptedDbFileName = "encrypted_db.sqlite"
     public static let authMethodsKey = "aliasvault_auth_methods"
     public static let autoLockTimeoutKey = "aliasvault_auto_lock_timeout"
-    public static let encryptionKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
+    public static let unlockKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
+    public static let accountKeyChainKey = "aliasvault_account_key_chain"
     public static let usernameKey = "aliasvault_username"
     public static let offlineModeKey = "aliasvault_offline_mode"
     public static let pinEnabledKey = "aliasvault_pin_enabled"
     public static let serverVersionKey = "aliasvault_server_version"
+    public static let capabilitiesKey = "aliasvault_capabilities"
     public static let autofillCopyTotpOnFillKey = "aliasvault_autofill_copy_totp_on_fill"
-
-    // Sync state keys (for offline sync and race detection)
     public static let isDirtyKey = "aliasvault_is_dirty"
     public static let mutationSequenceKey = "aliasvault_mutation_sequence"
     public static let isSyncingKey = "aliasvault_is_syncing"
+    public static let dirtyScopesKey = "aliasvault_dirty_scopes"
+    public static let syncLogsKey = "aliasvault_sync_logs"
 
     public static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds
 

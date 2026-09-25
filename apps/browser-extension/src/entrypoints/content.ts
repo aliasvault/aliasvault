@@ -3,6 +3,8 @@
  */
 
 import '@/entrypoints/contentScript/style.css';
+import { setPlatform } from '@aliasvault/client/platform';
+
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
@@ -11,8 +13,9 @@ import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAu
 
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
 import { DEFAULT_POPUP_TYPE, isPopupType, popupTypeForFieldType, POPUP_TYPES, type PopupType } from '@/utils/autofill/PopupTypes';
-import { devLog } from '@/utils/DevLogger';
-import type { Item } from '@/utils/dist/core/models/vault';
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { devLog } from '@/utils/devLogger/DevLogger';
+import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { LoginDetector } from '@/utils/loginDetector';
@@ -21,8 +24,14 @@ import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { getDeepActiveElement, getDeepElementById, getDeepEventTarget } from '@/utils/ShadowDom';
 
 import { t } from '@/i18n/StandaloneI18n';
+import { extensionPlatform } from '@/platform/ExtensionPlatform';
+
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { Item } from '@aliasvault/models/vault';
 
 import { defineContentScript, createShadowRootUi, storage } from '#imports';
+
+setPlatform(extensionPlatform);
 
 /** Global login detector instance */
 let loginDetector: LoginDetector | null = null;
@@ -68,17 +77,16 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
       password: login.password,
       url: login.url,
       domain: login.domain,
-      faviconUrl: login.faviconUrl,
     });
 
     if (!response.success) {
-      console.error('[AliasVault] Failed to save login:', response.error);
+      logFailure('[AliasVault] Failed to save login', response.error);
     }
 
     // Clear the last autofilled state after save
     await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
-    console.error('[AliasVault] Error saving login:', error);
+    logFailure('[AliasVault] Error saving login', error);
   }
 }
 
@@ -89,13 +97,13 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
 async function handleNeverSaveForDomain(domain: string): Promise<void> {
   // Store the blocked domain in local storage
   try {
-    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
     if (!blockedDomains.includes(domain)) {
       blockedDomains.push(domain);
-      await storage.setItem('local:loginSaveBlockedDomains', blockedDomains);
+      await storage.setItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS, blockedDomains);
     }
   } catch (error) {
-    console.error('[AliasVault] Error saving blocked domain:', error);
+    logFailure('[AliasVault] Error saving blocked domain', error);
   }
 }
 
@@ -109,24 +117,25 @@ async function handleSavePromptDismiss(): Promise<void> {
 
 /**
  * Handle adding URL to an existing credential.
- * @param itemId - The ID of the credential to add the URL to.
+ * @param item - The credential to add the URL to, named by its manifest and id.
  * @param url - The URL to add.
  */
-async function handleAddUrlToCredential(itemId: string, url: string): Promise<void> {
+async function handleAddUrlToCredential(item: ItemRef, url: string): Promise<void> {
   try {
     const response = await sendMessage('ADD_URL_TO_CREDENTIAL', {
-      itemId,
+      itemId: item.Id,
+      manifestId: item.ManifestId,
       url,
     });
 
     if (!response.success) {
-      console.error('[AliasVault] Failed to add URL to credential:', response.error);
+      logFailure('[AliasVault] Failed to add URL to credential', response.error);
     }
 
     // Clear the last autofilled state after successful add
     await sendMessage('CLEAR_LAST_AUTOFILLED');
   } catch (error) {
-    console.error('[AliasVault] Error adding URL to credential:', error);
+    logFailure('[AliasVault] Error adding URL to credential', error);
   }
 }
 
@@ -150,7 +159,7 @@ async function isLoginSaveEnabled(): Promise<boolean> {
  */
 async function isDomainBlocked(domain: string): Promise<boolean> {
   try {
-    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    const blockedDomains = await storage.getItem(StorageKeys.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] ?? [];
     return blockedDomains.includes(domain);
   } catch {
     return false;
@@ -213,6 +222,9 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
+        return;
+      }
     } catch {
       return;
     }
@@ -227,7 +239,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
       name: 'aliasvault-save-prompt',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
+      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
       /**
        * Mount handler for early save prompt restore.
        */
@@ -271,7 +283,7 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
 
     ui.mount();
   } catch (error) {
-    console.error('[AliasVault] Error in early save prompt restore:', error);
+    logFailure('[AliasVault] Error in early save prompt restore', error);
   }
 }
 
@@ -303,6 +315,9 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
         return;
       }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
+        return;
+      }
     } catch {
       return;
     }
@@ -331,7 +346,7 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       );
     }
   } catch (error) {
-    console.error('[AliasVault] Error restoring persisted save prompt:', error);
+    logFailure('[AliasVault] Error restoring persisted save prompt', error);
   }
 }
 
@@ -358,6 +373,9 @@ function initializeLoginDetector(container: HTMLElement): void {
     try {
       const authStatus = await sendMessage('CHECK_AUTH_STATUS');
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+        return;
+      }
+      if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
         return;
       }
     } catch {
@@ -407,6 +425,7 @@ function initializeLoginDetector(container: HTMLElement): void {
          */
         const linkCheck = await sendMessage('IS_URL_LINKED_TO_CREDENTIAL', {
           itemId: lastAutofilledResponse.credential.itemId,
+          manifestId: lastAutofilledResponse.credential.manifestId,
           url: login.url,
         });
 
@@ -469,7 +488,7 @@ export default defineContentScript({
       name: 'aliasvault-ui',
       position: 'inline',
       anchor: 'body',
-      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
+      mode: await storage.getItem(StorageKeys.E2E_TEST_MODE) === true ? 'open' : 'closed',
       /**
        * Handle mount.
        */
@@ -554,10 +573,9 @@ export default defineContentScript({
 
             /*
              * Honour av-suppress-save: skip the popup (and the icon) when there is no stored entry
-             * that would actually fill this specific field — credentials for the credentials popup,
-             * TOTP-enabled credentials for the TOTP popup — so we don't invite the user to
-             * "create new" on pages where storing isn't desired by default (e.g. AliasVault's own
-             * login / unlock / Enable 2FA forms).
+             * that would actually fill this specific field. TOTP-enabled credentials for the TOTP 
+             * popup so we don't invite the user to create new TOTP codes on pages where storing 
+             * isn't desired by default (e.g. AliasVault's own login / unlock / Enable 2FA forms).
              */
             if (isAvSuppressSave(inputElement) && !await hasMatchForCurrentUrl(popupType)) {
               devLog('[Autofill] focusin skipped: av-suppress-save active and no matching vault items');
@@ -818,7 +836,10 @@ export default defineContentScript({
               return;
             }
 
-            if (authStatus.hasPendingMigrations) {
+            /*
+             * Check if the vault requires a migration, if so, show a popup to the user.
+             */
+            if (authStatus.requiresLegacySqliteBlobMigration || authStatus.requiresManifestMigration) {
               // Show upgrade required popup
               await createUpgradeRequiredPopup(inputElement, container, await t('content.vaultUpgradeRequired'));
               return;
@@ -840,7 +861,7 @@ export default defineContentScript({
             }
             // If disabled, don't show any popup (user can rely on clipboard auto-copy for TOTP)
           } catch (error) {
-            console.error('[AliasVault] Error checking vault status:', error);
+            logFailure('[AliasVault] Error checking vault status', error);
             // Fall back to normal autofill popup if check fails
             POPUP_RUNTIME[DEFAULT_POPUP_TYPE].open(inputElement, container);
           }

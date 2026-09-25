@@ -53,6 +53,16 @@ export enum AuthEventType {
   Register = 30,
 
   /**
+   * Represents creation of a shared manifest.
+   */
+  SharedVaultCreation = 50,
+
+  /**
+   * Represents deletion of a shared manifest, confirmed with the master password.
+   */
+  SharedVaultDeletion = 51,
+
+  /**
    * Represents a user account deletion event.
    */
   AccountDeletion = 99,

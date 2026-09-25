@@ -1,3 +1,4 @@
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +9,7 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   isPinEnabled,
@@ -17,8 +19,6 @@ import {
   isPinLocked,
   InvalidPinFormatError
 } from '@/utils/PinUnlockService';
-
-import { storage } from '#imports';
 
 /**
  * Vault unlock method settings page component.
@@ -51,7 +51,7 @@ const VaultUnlockSettings: React.FC = () => {
       setIsLocked(locked);
       setIsInitialLoading(false);
     } catch (err: unknown) {
-      console.error('Failed to load PIN settings:', err);
+      logFailure('Failed to load PIN settings', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       setIsInitialLoading(false);
     }
@@ -115,19 +115,16 @@ const VaultUnlockSettings: React.FC = () => {
 
     try {
       showLoading();
+      const unlockKey = await VaultKeyService.getSessionUnlockKey();
 
-      /* Get the encryption key from session storage */
-      const encryptionKeyResponse = await storage.getItem('session:encryptionKey') as string | undefined;
-      const encryptionKey = encryptionKeyResponse as string;
-
-      if (!encryptionKey) {
+      if (!unlockKey) {
         setError(t('common.errors.unknownErrorTryAgain'));
         hideLoading();
         return;
       }
 
-      /* Setup PIN with the encryption key */
-      await setupPin(newPin, encryptionKey);
+      /* Setup PIN with the unlock key */
+      await setupPin(newPin, unlockKey);
 
       /*
        * Mark PIN as the last-used unlock method so the unlock screen defaults to
@@ -143,7 +140,7 @@ const VaultUnlockSettings: React.FC = () => {
       setSuccess(t('settings.unlockMethod.enableSuccess'));
       hideLoading();
     } catch (err: unknown) {
-      console.error('Failed to enable PIN:', err);
+      logFailure('Failed to enable PIN', err);
 
       if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
@@ -169,7 +166,7 @@ const VaultUnlockSettings: React.FC = () => {
       setIsLocked(false);
       hideLoading();
     } catch (err: unknown) {
-      console.error('Failed to disable PIN:', err);
+      logFailure('Failed to disable PIN', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       hideLoading();
     }

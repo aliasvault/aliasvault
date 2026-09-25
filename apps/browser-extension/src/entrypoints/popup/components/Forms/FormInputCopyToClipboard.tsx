@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ClipboardCopyService } from '@/entrypoints/popup/utils/ClipboardCopyService';
 
+import { logExpected } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
@@ -14,6 +15,9 @@ type FormInputCopyToClipboardProps = {
   value: string;
   type?: 'text' | 'password';
   labelSuffix?: React.ReactNode;
+  /** The item this field belongs to. Copying it counts as a use; omit where the value has no item. */
+  itemId?: string;
+  manifestId?: string;
 }
 
 const clipboardService = new ClipboardCopyService();
@@ -63,7 +67,9 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
   label,
   value,
   type = 'text',
-  labelSuffix
+  labelSuffix,
+  itemId,
+  manifestId
 }) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -89,6 +95,13 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
       // Notify background script that clipboard was copied
       await sendMessage('CLIPBOARD_COPIED');
 
+      // Record the use against the item this field belongs to, where one is known.
+      if (itemId && manifestId) {
+        sendMessage('RECORD_ITEM_USAGE', { itemId, manifestId, action: 'copy' }).catch(() => {
+          // Ignore errors
+        });
+      }
+
       // Reset copied state after 2 seconds
       setTimeout(() => {
         if (clipboardService.getCopiedId() === id) {
@@ -96,7 +109,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
         }
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy text:', err);
+      logExpected('[Clipboard] Copying the value failed', err);
     }
   };
 

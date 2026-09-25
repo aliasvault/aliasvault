@@ -1,0 +1,41 @@
+/**
+ * Centralized utility for formatting Date values consistently across the client application.
+ * All dates are stored in UTC with the format: "yyyy-MM-dd HH:mm:ss.fff" (23 characters).
+ * This format ensures:
+ * - SQLite native support for date functions
+ * - No timezone ambiguity (all dates are UTC)
+ * - Consistent precision with milliseconds for accurate sorting/comparison
+ * - Readable space separator instead of 'T'
+ * - Lexicographic sorting works correctly
+ */
+
+/**
+ * Formats a Date to the standard format string: "yyyy-MM-dd HH:mm:ss.fff" (23 characters).
+ * @param date - The Date to format
+ * @returns Formatted date-time string in format "yyyy-MM-dd HH:mm:ss.fff"
+ */
+export function toStandardFormat(date: Date): string {
+  return date.toISOString()
+    .replace('T', ' ')
+    .replace('Z', '')
+    .substring(0, 23);
+}
+
+/**
+ * Formats the current UTC time to the standard format string.
+ * @returns Formatted current UTC date-time string
+ */
+export function now(): string {
+  return toStandardFormat(new Date());
+}
+
+/**
+ * Formats a date-time returned by the API (UTC by default) for display in the user's own locale and timezone.
+ * @param value - The date-time string as returned by the API
+ * @returns The date-time formatted for the current locale, or the raw value when it cannot be parsed
+ */
+export function toLocalDisplayFormat(value: string): string {
+  const normalized = /^\d{4}-\d{2}-\d{2}[T ][\d:.]+$/.test(value) ? `${value.replace(' ', 'T')}Z` : value;
+  const date = new Date(normalized);
+  return isNaN(date.getTime()) ? value : date.toLocaleString();
+}

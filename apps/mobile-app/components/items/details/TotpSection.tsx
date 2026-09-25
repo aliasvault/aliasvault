@@ -6,7 +6,7 @@ import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item, TotpCode } from '@/utils/dist/core/models/vault';
+import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -91,7 +91,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
       }
 
       try {
-        const codes = await dbContext.sqliteClient.settings.getTotpCodesForItem(item.Id);
+        const codes = await dbContext.sqliteClient.items.getTotpCodesForItem(item);
         setTotpCodes(codes);
       } catch (error) {
         console.error('Error loading TOTP codes:', error);
@@ -114,7 +114,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
       const results = await Promise.all(
         totpCodes.map(async (code) => ({
           id: code.Id,
-          value: await generateTotpCode(code.SecretKey),
+          value: await generateTotpCode(code.SecretKey, code),
         }))
       );
       if (cancelled) return;

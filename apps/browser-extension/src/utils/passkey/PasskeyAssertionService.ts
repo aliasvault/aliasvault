@@ -4,8 +4,6 @@
  * Shared helper that turns a stored passkey into a WebAuthn assertion response.
  */
 
-import type { SqliteClient } from '@/utils/SqliteClient';
-
 import { PasskeyAuthenticator } from './PasskeyAuthenticator';
 import { PasskeyHelper } from './PasskeyHelper';
 
@@ -15,6 +13,7 @@ import type {
   StoredPasskeyRecord,
   WebAuthnPublicKeyGetPayload
 } from './types';
+import type { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 
 /**
  * A pending `get` request, narrowed to the fields needed to build an assertion.
@@ -80,15 +79,17 @@ function extractPrfInputs(
  * @param sqliteClient - An initialized client for the unlocked vault.
  * @param request - The pending `get` request (origin + publicKey challenge).
  * @param passkeyId - The vault ID (GUID) of the passkey the user selected.
+ * @param manifestId - The manifest that passkey belongs to.
  * @returns The assertion response ready to hand back to the relying party.
  * @throws If the passkey does not exist in the vault.
  */
 export async function buildPasskeyAssertion(
   sqliteClient: SqliteClient,
   request: PasskeyAssertionRequest,
-  passkeyId: string
+  passkeyId: string,
+  manifestId: string
 ): Promise<PasskeyGetCredentialResponse> {
-  const storedPasskey = sqliteClient.passkeys.getById(passkeyId);
+  const storedPasskey = sqliteClient.passkeys.getById(passkeyId, manifestId);
   if (!storedPasskey) {
     throw new Error(`Passkey not found for id ${passkeyId}`);
   }

@@ -3,8 +3,11 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createVaultSqliteClient, handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
+import { extractDomain } from '@aliasvault/client/rust/RustCore';
 
+import { createVaultSqliteClient, handleGetEncryptionKey, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
@@ -22,7 +25,6 @@ import type {
   MatchingPasskeysResponse,
   WebAuthnAssertionResponse
 } from '@/utils/passkey/types';
-import { extractDomain } from '@/utils/RustCore';
 
 import { browser } from '#imports';
 
@@ -95,6 +97,10 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
       focused: true
     });
 
+    if (!popup) {
+      throw new Error('Failed to open the passkey popup window');
+    }
+
     // Wait for response from popup
     return new Promise((resolve, reject) => {
       pendingRequests.set(requestId, { resolve, reject, windowId: popup.id });
@@ -153,6 +159,10 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
       height: 600,
       focused: true
     });
+
+    if (!popup) {
+      throw new Error('Failed to open the passkey popup window');
+    }
 
     // Wait for response from popup
     return new Promise((resolve, reject) => {
@@ -216,10 +226,11 @@ export async function handleGetMatchingPasskeys(
     }
 
     const options: ConditionalPasskeyOption[] = passkeys.map((pk) => {
-      const item = sqliteClient.items.getById(pk.ItemId);
+      const item = sqliteClient.items.getById({ Id: pk.ItemId, ManifestId: pk.ManifestId });
       return {
         id: pk.Id,
         itemId: pk.ItemId,
+        manifestId: pk.ManifestId,
         serviceName: pk.ServiceName ?? pk.DisplayName,
         username: pk.Username ?? '',
         logo: item?.Logo ? Array.from(item.Logo) : null
@@ -228,7 +239,7 @@ export async function handleGetMatchingPasskeys(
 
     return { success: true, locked: false, passkeys: options };
   } catch (error) {
-    console.error('Error getting matching passkeys:', error);
+    logFailure('Error getting matching passkeys', error);
     return { success: false, locked: false, passkeys: [] };
   }
 }
@@ -237,16 +248,23 @@ export async function handleGetMatchingPasskeys(
  * Build a WebAuthn assertion for a passkey the user picked in the inline dropdown.
  */
 export async function handleWebAuthnGetAssertion(
-  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }
+  data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload }
 ): Promise<WebAuthnAssertionResponse> {
-  const { passkeyId, origin, publicKey } = data;
+  const { passkeyId, manifestId, origin, publicKey } = data;
 
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId);
+    const credential = await buildPasskeyAssertion(sqliteClient, { origin, publicKey }, passkeyId, manifestId);
+
+    // Signing an assertion is a use of the item the passkey hangs off.
+    const itemId = sqliteClient.passkeys.getById(passkeyId, manifestId)?.ItemId;
+    if (itemId) {
+      void handleRecordItemUsage({ itemId, manifestId, action: 'passkey' });
+    }
+
     return { success: true, credential };
   } catch (error) {
-    console.error('Error building passkey assertion:', error);
+    logFailure('Error building passkey assertion', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

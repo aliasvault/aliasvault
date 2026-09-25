@@ -25,20 +25,20 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 self.handleCancel()
             },
             serviceUrl: serviceUrl,
-            urlLinker: { itemId, url in
+            urlLinker: { credential, url in
                 /*
-                 * Step 1 — Append the URL/app identifier to the chosen credential's
+                 * Step 1: append the URL/app identifier to the chosen credential's
                  * `login.url` multi-value field.
                  */
                 do {
-                    try vaultStore.appendUrl(toItemId: itemId, url: url)
+                    try vaultStore.appendUrl(toItemId: credential.id, manifestId: credential.manifestId, url: url)
                 } catch {
                     print("[Autofill] Failed to append URL to credential: \(error)")
                     return
                 }
 
                 /*
-                 * Step 2 — Push the change to the server (skipped if offline, client will retry later).
+                 * Step 2: push the change to the server (skipped if offline, client will retry later).
                  */
                 let webApiService = WebApiService()
                 do {
@@ -48,7 +48,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 }
 
                 /*
-                 * Step 3 — Refresh the iOS credential identity store with the
+                 * Step 3: refresh the iOS credential identity store with the
                  * new URL.
                  */
                 do {
@@ -57,6 +57,13 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                     print("[Autofill] Refreshed iOS credential identity cache (\(credentials.count) credentials)")
                 } catch {
                     print("[Autofill] Failed to refresh iOS credential identity cache: \(error)")
+                }
+            },
+            usageRecorder: { credential in
+                do {
+                    try vaultStore.recordItemUsage(itemId: credential.id, manifestId: credential.manifestId, action: .autofill)
+                } catch {
+                    print("[Autofill] Failed to record credential usage: \(error)")
                 }
             }
         )
@@ -116,7 +123,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
             let credentials = try vaultStore.getAllAutofillCredentials()
 
             if let matchingCredential = credentials.first(where: { credential in
-                return credential.id.uuidString == request.credentialIdentity.recordIdentifier
+                return credential.id.uuidString.lowercased() == request.credentialIdentity.recordIdentifier?.lowercased()
             }) {
                 // Ensure minimum duration before completing
                 let elapsed = Date().timeIntervalSince(startTime)
@@ -128,7 +135,14 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 // copy-on-fill setting enabled (default), put the current
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
-                TotpClipboard.copyCodeIfEnabled(secret: matchingCredential.totpSecret)
+                TotpClipboard.copyCodeIfEnabled(totp: matchingCredential.totp)
+
+                // Recorded before the request completes: the host may tear the extension down right after.
+                do {
+                    try vaultStore.recordItemUsage(itemId: matchingCredential.id, manifestId: matchingCredential.manifestId, action: .autofill)
+                } catch {
+                    print("[Autofill] Failed to record credential usage: \(error)")
+                }
 
                 // Use the identifier that matches the credential identity
                 let identifier = request.credentialIdentity.user

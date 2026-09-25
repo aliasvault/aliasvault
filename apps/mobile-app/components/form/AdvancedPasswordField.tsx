@@ -4,11 +4,11 @@ import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useC
 import { useTranslation } from 'react-i18next';
 import { View, TextInput, TextInputProps, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
+import type { PasswordSettings } from '@aliasvault/models/vault';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
-import * as PasswordGenerator from '@/utils/PasswordGeneratorUtility';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -90,7 +90,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
     const loadSettings = async () => {
       try {
         if (dbContext.sqliteClient) {
-          const settings = await dbContext.sqliteClient.getPasswordSettings();
+          const settings = await dbContext.sqliteClient.settings.getPasswordSettings();
           setCurrentSettings(settings);
           if (!hasSetInitialLength.current) {
             setSliderValue(lengthToSlider(settings.Length));
@@ -131,7 +131,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
    */
   const generatePassword = useCallback(async (settings: PasswordSettings): Promise<string> => {
     try {
-      return await PasswordGenerator.generatePassword(settings);
+      return await RustCore.generatePassword(settings);
     } catch (error) {
       console.error('Error generating password:', error);
       return '';

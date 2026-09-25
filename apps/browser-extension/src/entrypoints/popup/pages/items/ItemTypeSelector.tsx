@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import type { ItemType } from '@/utils/dist/core/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type option configuration.

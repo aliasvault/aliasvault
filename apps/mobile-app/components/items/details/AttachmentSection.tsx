@@ -1,11 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Directory, File, Paths } from 'expo-file-system';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Directory, Paths } from 'expo-file-system';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 
-import type { Item, Attachment } from '@/utils/dist/core/models/vault';
-import emitter from '@/utils/EventEmitter';
+import type { Item, Attachment } from '@aliasvault/models/vault';
+import { getFileForFilename } from '@/utils/FileUtility';
 
 import { useAttachmentViewer } from '@/hooks/useAttachmentViewer';
 import { useColors } from '@/hooks/useColorScheme';
@@ -23,7 +23,8 @@ type AttachmentSectionProps = {
  * Attachment section component.
  */
 export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): React.ReactNode => {
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachments, setAttachments] = useState<Omit<Attachment, 'Blob'>[]>([]);
+  const blobsRef = useRef(new Map<string, Attachment['Blob']>());
   const colors = useColors();
   const dbContext = useDb();
   const { t } = useTranslation();
@@ -33,63 +34,54 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
   /**
    * Handle attachment action - preview or download.
    */
-  const handleAttachment = async (attachment: Attachment): Promise<void> => {
+  const handleAttachment = async (attachment: Omit<Attachment, 'Blob'>): Promise<void> => {
     try {
-      // Sanitize filename
-      const sanitizedFilename = attachment.Filename.replace(/[/\\]/g, '_');
       const downloadsDir = new Directory(Paths.document, 'Downloads');
       if (!downloadsDir.exists) {
         downloadsDir.create({ intermediates: true });
       }
 
-      const file = new File(downloadsDir, sanitizedFilename);
+      const file = getFileForFilename(downloadsDir, attachment.Filename);
       if (file.exists) {
         file.delete();
       }
       file.create();
 
-      if (typeof attachment.Blob === 'string') {
-        file.write(attachment.Blob, { encoding: 'base64' });
+      const blob = blobsRef.current.get(attachment.Id);
+      if (typeof blob === 'string') {
+        file.write(blob, { encoding: 'base64' });
       } else {
-        file.write(attachment.Blob as unknown as Uint8Array);
+        file.write((blob ?? new Uint8Array(0)) as unknown as Uint8Array);
       }
 
-      await openAttachment({ filePath: file.uri, fileName: sanitizedFilename });
+      await openAttachment({ filePath: file.uri, fileName: attachment.Filename });
     } catch (error) {
       console.error('Error handling attachment:', error);
       showAlert('Error', 'Failed to process attachment');
     }
   };
 
-  /**
-   * Load the attachments.
-   */
-  const loadAttachments = useCallback(async (): Promise<void> => {
-    if (!dbContext?.sqliteClient) {
-      return;
-    }
-
-    try {
-      const attachmentList = await dbContext.sqliteClient.settings.getAttachmentsForItem(item.Id);
-      setAttachments(attachmentList);
-    } catch (error) {
-      console.error('Error loading attachments:', error);
-    }
-  }, [item.Id, dbContext?.sqliteClient]);
-
-  useEffect((): (() => void) => {
-    loadAttachments();
-
-    const itemChangedSub = emitter.addListener('credentialChanged', async (changedId: string) => {
-      if (changedId === item.Id) {
-        await loadAttachments();
+  useEffect(() => {
+    /**
+     * Load the attachments.
+     */
+    const loadAttachments = async (): Promise<void> => {
+      if (!dbContext?.sqliteClient) {
+        return;
       }
-    });
 
-    return () => {
-      itemChangedSub.remove();
+      try {
+        const attachmentList = await dbContext.sqliteClient.items.getAttachmentsForItem({ Id: item.Id, ManifestId: item.ManifestId });
+        blobsRef.current = new Map(attachmentList.map(attachment => [attachment.Id, attachment.Blob]));
+        setAttachments(attachmentList.map(({ Blob: _blob, ...attachment }) => attachment));
+      } catch (error) {
+        console.error('Error loading attachments:', error);
+      }
     };
-  }, [item.Id, dbContext?.sqliteClient, loadAttachments]);
+
+    // The details screen hands over a fresh item after every edit, which reloads the attachments too.
+    loadAttachments();
+  }, [item, dbContext?.sqliteClient]);
 
   if (attachments.length === 0) {
     return null;

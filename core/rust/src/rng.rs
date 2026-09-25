@@ -1,7 +1,12 @@
-//! Shared RNG helpers used by the generator modules (password, identity).
+//! Randomness: the one OS entropy entry point and the seedable RNG the generator modules use.
 
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
+
+/// Fill a buffer from the operating system's CSPRNG.
+pub(crate) fn fill_random(dest: &mut [u8]) {
+    getrandom::fill(dest).expect("the OS CSPRNG is unavailable");
+}
 
 /// Build the RNG used for generation.
 ///
@@ -13,20 +18,13 @@ pub(crate) fn make_rng(seed: Option<&str>) -> StdRng {
     }
 
     let mut bytes = [0u8; 32];
-    rand::rng().fill_bytes(&mut bytes);
+    fill_random(&mut bytes);
     StdRng::from_seed(bytes)
 }
 
 /// Parse a 64-character hex string into a 32-byte seed, or `None` if it is malformed.
 fn parse_seed_hex(hex: &str) -> Option<[u8; 32]> {
-    if hex.len() != 64 {
-        return None;
-    }
-    let mut bytes = [0u8; 32];
-    for (i, byte) in bytes.iter_mut().enumerate() {
-        *byte = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16).ok()?;
-    }
-    Some(bytes)
+    crate::encoding::hex_decode(hex)?.try_into().ok()
 }
 
 /// Get an unbiased random index in `0..max` using rejection sampling over the given CSPRNG.
@@ -85,5 +83,12 @@ mod tests {
             assert!(unbiased_index(&mut rng, big) < big);
             assert!(unbiased_index(&mut rng, usize::MAX) < usize::MAX);
         }
+    }
+
+    #[test]
+    fn seed_must_be_exactly_32_bytes_of_hex() {
+        assert!(parse_seed_hex(&"ab".repeat(32)).is_some());
+        assert!(parse_seed_hex(&"ab".repeat(31)).is_none());
+        assert!(parse_seed_hex(&"zz".repeat(32)).is_none());
     }
 }

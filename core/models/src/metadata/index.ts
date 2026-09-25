@@ -4,4 +4,4 @@
  * optimal vault sync possible.
  */
 export * from './VaultMetadata';
-export * from './EncryptionKeyDerivationParams';
+export * from './UnlockKeyDerivationParams';

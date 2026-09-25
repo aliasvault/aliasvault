@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using AliasVault.Admin.Main.Pages.Dashboard.Components
 @inherits MainBase
 
@@ -7,15 +7,8 @@
 <PageHeader
     BreadcrumbItems="@BreadcrumbItems"
     Title="AliasVault Admin"
-    Description="Welcome to the AliasVault admin dashboard. Below you can find statistics about recent activity on this server.">
+    Description="Welcome to the AliasVault admin dashboard. Below you can find the most recent activity, status and statistics for this server.">
     <CustomActions>
-        <a href="recent-usage-stats" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-200">
-            <svg class="w-4 h-4 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-            </svg>
-            <span class="inline ml-2">Recent Usage (72h)</span>
-        </a>
         <a href="all-time-stats" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-200">
             <svg class="w-4 h-4 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
@@ -28,7 +21,8 @@
 
 <div class="px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <ActiveUsersChart @ref="_activeUsersChart" />
+        <RecentActiveUsersCard @ref="_recentActiveUsersCard" />
+        <ServiceStatusCard @ref="_serviceStatusCard" />
         <ActiveUsersCard @ref="_activeUsersCard" />
         <RegistrationStatisticsCard @ref="_registrationStatisticsCard" />
         <EmailStatisticsCard @ref="_emailStatisticsCard" />
@@ -37,7 +31,8 @@
 </div>
 
 @code {
-    private ActiveUsersChart? _activeUsersChart;
+    private ServiceStatusCard? _serviceStatusCard;
+    private RecentActiveUsersCard? _recentActiveUsersCard;
     private ActiveUsersCard? _activeUsersCard;
     private RegistrationStatisticsCard? _registrationStatisticsCard;
     private EmailStatisticsCard? _emailStatisticsCard;
@@ -51,7 +46,7 @@
         // Check if 2FA is enabled. If not, show a one-time warning on the dashboard.
         if (!UserService.User().TwoFactorEnabled)
         {
-            GlobalNotificationService.AddWarningMessage("Two-factor authentication is not enabled. It is recommended to enable it in Account Settings for better security.", true);
+            GlobalNotificationService.AddWarningMessage("Two-factor authentication is not enabled for this admin account. It is recommended to enable it in Account Settings for better security.", true);
         }
     }
 
@@ -71,14 +66,16 @@
     /// </summary>
     private async Task RefreshData()
     {
-        if (_activeUsersChart != null &&
+        if (_serviceStatusCard != null &&
+            _recentActiveUsersCard != null &&
             _activeUsersCard != null &&
             _registrationStatisticsCard != null &&
             _emailStatisticsCard != null &&
             _emailClaimsCard != null)
         {
             await Task.WhenAll(
-                _activeUsersChart.RefreshData(),
+                _serviceStatusCard.RefreshData(),
+                _recentActiveUsersCard.RefreshData(),
                 _activeUsersCard.RefreshData(),
                 _registrationStatisticsCard.RefreshData(),
                 _emailStatisticsCard.RefreshData(),

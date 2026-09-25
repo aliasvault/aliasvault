@@ -1,4 +1,3 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,16 +7,14 @@ import {
   View,
 } from 'react-native';
 
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { FolderIcon } from '@/components/folders/FolderIcon';
 import { FolderSelectorModal } from '@/components/folders/FolderSelectorModal';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useColors } from '@/hooks/useColorScheme';
+import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 
-type Folder = {
-  Id: string;
-  Name: string;
-  ParentFolderId: string | null;
-  Weight: number;
-};
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 export interface ItemNameFieldRef {
   focus: () => void;
@@ -27,26 +24,25 @@ interface IItemNameFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   folders: Folder[];
-  selectedFolderId: string | null | undefined;
-  onFolderChange: (folderId: string | null) => void;
+  selectedFolder: FolderRef | null | undefined;
+  onFolderChange: (folder: FolderRef | null) => void;
+  logoSlot?: React.ReactNode;
 }
 
 /**
- * ItemNameField component
- *
- * An item name input field with an integrated folder selection button.
- * The folder button appears inside the input when folders are available,
- * matching the browser extension's design pattern.
+ * An item name input field with an integrated logo button on the left and folder selection button on the right.
  */
 export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>(({
   value,
   onChangeText,
   folders,
-  selectedFolderId,
+  selectedFolder: selectedFolderRef,
   onFolderChange,
+  logoSlot,
 }, ref) => {
   const { t } = useTranslation();
   const colors = useColors();
+  const personalManifestId = usePersonalManifestId();
   const inputRef = useRef<TextInput>(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -60,7 +56,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
   }));
 
   const hasFolders = folders.length > 0;
-  const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+  const selectedFolder = selectedFolderRef ? folders.find(f => f.Id === selectedFolderRef.Id && f.ManifestId === selectedFolderRef.ManifestId) : undefined;
 
   const styles = StyleSheet.create({
     container: {
@@ -70,6 +66,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       borderWidth: 1,
       flexDirection: 'row',
       alignItems: 'center',
+      overflow: 'hidden',
     },
     folderButton: {
       alignItems: 'center',
@@ -113,6 +110,7 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
         {t('items.itemName')} <Text style={styles.requiredAsterisk}>*</Text>
       </Text>
       <View style={styles.container}>
+        {logoSlot}
         <TextInput
           ref={inputRef}
           style={styles.input}
@@ -125,12 +123,12 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
             style={styles.folderButton}
             onPress={() => setShowModal(true)}
           >
-            <MaterialIcons
-              name="folder"
+            <FolderIcon
+              isShared={selectedFolder !== undefined && isSharedFolder(selectedFolder, personalManifestId)}
               size={18}
-              color={selectedFolderId ? colors.tint : colors.textMuted}
+              color={selectedFolderRef ? colors.tint : colors.textMuted}
             />
-            {selectedFolderId && selectedFolder && (
+            {selectedFolder && (
               <Text style={styles.folderButtonText} numberOfLines={1}>
                 {selectedFolder.Name}
               </Text>
@@ -142,7 +140,8 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
       {/* Folder selector modal with tree view */}
       <FolderSelectorModal
         folders={folders}
-        selectedFolderId={selectedFolderId}
+        selectedFolder={selectedFolderRef}
+        personalManifestId={personalManifestId}
         onFolderChange={onFolderChange}
         isOpen={showModal}
         onClose={() => setShowModal(false)}

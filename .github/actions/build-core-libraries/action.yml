@@ -23,6 +23,10 @@ runs:
       shell: bash
       run: cargo install wasm-pack --locked
 
+    - name: Install clang (compiles SQLite for wasm32)
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y clang
+
     - name: Build and distribute core libraries
       shell: bash
       working-directory: ${{ inputs.working-directory }}
@@ -31,34 +35,37 @@ runs:
         chmod +x build-and-distribute.sh
         ./build-and-distribute.sh
 
+    - name: Fail on stale generated files
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # The build above which (re)builds both Git committed files as well as non-committed files, should not result in any changes to the files listed below.
+        # If there are Git changes, it means a source edit was committed without running the generators which could lead to inconsistencies.
+        GATED_PATHS=(
+          "core/rust/src/vault_model/generated.rs"
+          "core/rust/src/password_generator/defaults.rs"
+          "apps/server/Databases/AliasClientDb/Models"
+          "apps/mobile-app/ios/VaultModels"
+          "apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models"
+        )
+        CHANGES=$(git status --porcelain -- "${GATED_PATHS[@]}")
+        if [ -n "$CHANGES" ]; then
+          echo "$CHANGES"
+          git --no-pager diff -- "${GATED_PATHS[@]}"
+          echo ""
+          echo "Error: the generated files listed above are stale relative to their sources."
+          echo "Run 'core/build-and-distribute.sh' (or 'core/models/build.sh') locally and commit the result."
+          exit 1
+        fi
+        echo "Generated files are in sync with their sources."
+
     - name: Verify core library distribution
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
-        # Check if files exist and were recently modified
-        TARGET_DIRS=(
-          "apps/browser-extension/src/utils/dist/core/models"
-          "apps/browser-extension/src/utils/dist/core/vault"
-          "apps/browser-extension/src/utils/dist/core/rust"
-          "apps/mobile-app/utils/dist/core/models"
-          "apps/mobile-app/utils/dist/core/vault"
-        )
-
-        for dir in "${TARGET_DIRS[@]}"; do
-          if [ ! -d "$dir" ]; then
-            echo "Warning: Directory $dir does not exist (may be expected for some builds)"
-            continue
-          fi
-
-          # Check if files were modified in the last 10 minutes
-          find "$dir" -type f -mmin -10 | grep -q . || {
-            echo "Warning: Files in $dir were not recently modified"
-          }
-        done
-
         # Verify critical rust WASM files exist
-        if [ ! -f "apps/browser-extension/src/utils/dist/core/rust/aliasvault_core_bg.wasm" ]; then
-          echo "Error: Rust WASM files not found in browser extension"
+        if [ ! -f "core/client/wasm/aliasvault_core_bg.wasm" ]; then
+          echo "Error: Rust WASM files not found in core/client/wasm"
           exit 1
         fi
 

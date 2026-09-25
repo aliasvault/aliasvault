@@ -249,8 +249,11 @@ private struct AutofillCredentialCardWithSelection: View {
         AutofillCredentialCard(credential: credential, action: {
             if isChoosingTextToInsert {
                 // Generate TOTP code if available
-                if let secret = credential.totpSecret {
-                    totpCode = TotpGenerator.generateCode(secret: secret)
+                if let totp = credential.totp {
+                    totpCode = TotpGenerator.generateCode(secret: totp.secretKey,
+                                                          period: totp.period,
+                                                          digits: totp.digits,
+                                                          algorithm: totp.algorithm)
                 }
                 showSelectionSheet = true
             } else {
@@ -261,7 +264,7 @@ private struct AutofillCredentialCardWithSelection: View {
                 // copy-on-fill setting enabled (default), put the current
                 // TOTP code on the clipboard so they can paste it into the
                 // 2FA field after the autofill completes.
-                TotpClipboard.copyCodeIfEnabled(secret: credential.totpSecret)
+                TotpClipboard.copyCodeIfEnabled(totp: credential.totp)
 
                 // Fill both username and password immediately for normal autofill
                 onSelect(identifier, credential.password ?? "")
@@ -306,7 +309,7 @@ private struct AutofillCredentialCardWithSelection: View {
 /// State for the "do you want to link this URL/app to the credential?" alert.
 /// Held on the view-model while the alert is visible.
 public struct PendingLinkSelection {
-    public let credentialId: UUID
+    public let credential: AutofillCredential
     public let credentialName: String
     public let username: String
     public let password: String
@@ -328,24 +331,30 @@ public class CredentialProviderViewModel: ObservableObject {
     private let selectionHandler: (String, String) -> Void
     private let cancelHandler: () -> Void
 
-    /// Optional async handler that, given an item ID and the requesting service URL,
-    /// appends the URL to that item's `login.url` field and syncs the vault.
+    /// Optional async handler that, given a credential and the requesting service URL,
+    /// appends the URL to that credential's `login.url` field and syncs the vault.
     /// When nil, the link-prompt flow is disabled and selection always falls through
     /// directly to `selectionHandler`.
-    private let urlLinker: ((UUID, String) async -> Void)?
+    private let urlLinker: ((AutofillCredential, String) async -> Void)?
+
+    /// Optional handler called with the credential right before a fill is handed to the host, so the
+    /// vault can record the use.
+    private let usageRecorder: ((AutofillCredential) -> Void)?
 
     public init(
         loader: @escaping () async throws -> [AutofillCredential],
         selectionHandler: @escaping (String, String) -> Void,
         cancelHandler: @escaping () -> Void,
         serviceUrl: String? = nil,
-        urlLinker: ((UUID, String) async -> Void)? = nil
+        urlLinker: ((AutofillCredential, String) async -> Void)? = nil,
+        usageRecorder: ((AutofillCredential) -> Void)? = nil
     ) {
         self.loader = loader
         self.selectionHandler = selectionHandler
         self.cancelHandler = cancelHandler
         self.serviceUrl = serviceUrl
         self.urlLinker = urlLinker
+        self.usageRecorder = usageRecorder
         if let url = serviceUrl {
             self.searchText = url
         }
@@ -400,7 +409,7 @@ public class CredentialProviderViewModel: ObservableObject {
               let serviceUrl = serviceUrl,
               !serviceUrl.isEmpty,
               urlLinker != nil else {
-            selectionHandler(username, password)
+            complete(credential: credential, username: username, password: password)
             return
         }
 
@@ -413,12 +422,12 @@ public class CredentialProviderViewModel: ObservableObject {
             AutofillUrlNormalizer.comparisonKey(existing) == serviceKey
         }
         if alreadyLinked {
-            selectionHandler(username, password)
+            complete(credential: credential, username: username, password: password)
             return
         }
 
         pendingLinkSelection = PendingLinkSelection(
-            credentialId: credential.id,
+            credential: credential,
             credentialName: credential.serviceName ?? "",
             username: username,
             password: password
@@ -438,9 +447,9 @@ public class CredentialProviderViewModel: ObservableObject {
         isLinkingUrl = true
 
         Task { @MainActor in
-            await urlLinker(pending.credentialId, serviceUrl)
+            await urlLinker(pending.credential, serviceUrl)
             isLinkingUrl = false
-            selectionHandler(pending.username, pending.password)
+            complete(credential: pending.credential, username: pending.username, password: pending.password)
         }
     }
 
@@ -451,7 +460,13 @@ public class CredentialProviderViewModel: ObservableObject {
             return
         }
         pendingLinkSelection = nil
-        selectionHandler(pending.username, pending.password)
+        complete(credential: pending.credential, username: pending.username, password: pending.password)
+    }
+
+    /// Complete a fill: record the use of the credential, then hand the values to the host.
+    private func complete(credential: AutofillCredential, username: String, password: String) {
+        usageRecorder?(credential)
+        selectionHandler(username, password)
     }
 
     func handleSelection(username: String, password: String) {
@@ -472,8 +487,9 @@ extension AutofillCredential {
     static var preview: AutofillCredential {
         AutofillCredential(
             id: UUID(),
+            manifestId: "preview",
             serviceName: "Example Service",
-            serviceUrl: "https://example.com",
+            serviceUrls: ["https://example.com"],
             logo: nil,
             username: "johndoe",
             email: "john@example.com",
@@ -493,8 +509,9 @@ public class PreviewCredentialProviderViewModel: CredentialProviderViewModel {
             .preview,
             AutofillCredential(
                 id: UUID(),
+                manifestId: "preview",
                 serviceName: "Another Service",
-                serviceUrl: "https://another.com",
+                serviceUrls: ["https://another.com"],
                 logo: nil,
                 username: "anotheruser",
                 email: "another@example.com",

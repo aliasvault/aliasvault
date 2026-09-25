@@ -1,5 +1,4 @@
 import Foundation
-import SQLite
 import VaultModels
 import VaultUtils
 
@@ -25,17 +24,10 @@ extension VaultStore {
     }
 
     /**
-     * Get all passkeys for an item (new model)
+     * Get all passkeys for an item.
      */
-    public func getPasskeys(forItemId itemId: UUID) throws -> [Passkey] {
-        return try passkeyRepository.getByItemId(itemId.uuidString.uppercased())
-    }
-
-    /**
-     * Get all passkeys for a credential (legacy alias for backwards compatibility)
-     */
-    public func getPasskeys(forCredentialId credentialId: UUID) throws -> [Passkey] {
-        return try getPasskeys(forItemId: credentialId)
+    public func getPasskeys(forItemId itemId: UUID, manifestId: String) throws -> [Passkey] {
+        return try passkeyRepository.getByItemId(itemId.uuidString.lowercased(), manifestId: manifestId)
     }
 
     /**
@@ -104,28 +96,19 @@ extension VaultStore {
     }
 
     /**
-     * Insert a new passkey into the database
-     */
-    public func insertPasskey(_ passkey: Passkey) throws {
-        try passkeyRepository.create(passkey)
-    }
-
-    /**
      * Replace an existing passkey with a new one
-     * This deletes the old passkey and creates a new one with the same item
+     * This deletes the old passkey and creates a new one with the same item, in the same manifest
      */
-    public func replacePasskey(oldPasskeyId: UUID, newPasskey: Passkey, displayName: String, logo: Data? = nil) throws {
+    public func replacePasskey(oldPasskeyId: UUID, manifestId: String, newPasskey: Passkey, displayName: String, logo: Data? = nil) throws {
         // Get the old passkey to find its item
-        guard let oldPasskey = try passkeyRepository.getById(oldPasskeyId.uuidString.uppercased()) else {
+        guard let oldPasskey = try passkeyRepository.getById(oldPasskeyId.uuidString.lowercased(), manifestId: manifestId) else {
             throw VaultStoreError.passkeyNotFound
         }
 
-        let itemId = oldPasskey.parentItemId
-
-        // Create the new passkey with the same item ID
+        // Create the new passkey with the same item ID, in the same manifest
         let updatedPasskey = Passkey(
             id: newPasskey.id,
-            parentItemId: itemId,  // Use the old item ID
+            parentItemId: oldPasskey.parentItemId,
             rpId: newPasskey.rpId,
             userHandle: newPasskey.userHandle,
             userName: newPasskey.userName,
@@ -135,12 +118,14 @@ extension VaultStore {
             displayName: displayName,
             createdAt: Date(),
             updatedAt: Date(),
-            isDeleted: false
+            isDeleted: false,
+            manifestId: manifestId
         )
 
         // Replace the passkey (handles logo update in same transaction)
         try passkeyRepository.replace(
-            oldPasskeyId: oldPasskeyId.uuidString.uppercased(),
+            oldPasskeyId: oldPasskeyId.uuidString.lowercased(),
+            manifestId: manifestId,
             with: updatedPasskey,
             displayName: displayName,
             logo: logo
@@ -150,18 +135,20 @@ extension VaultStore {
     /**
      * Add a passkey to an existing Item (merge passkey into existing credential).
      * @param itemId The UUID of the existing Item to add the passkey to.
+     * @param manifestId The manifest the item belongs to.
      * @param passkey The passkey to add.
      * @param logo Optional logo to update/add.
      */
     public func addPasskeyToExistingItem(
         itemId: UUID,
+        manifestId: String,
         passkey: Passkey,
         logo: Data? = nil
     ) throws {
-        // Create the passkey with the existing item ID
+        // Create the passkey with the existing item ID, in that item's manifest
         let passkeyWithItemId = Passkey(
             id: passkey.id,
-            parentItemId: itemId,  // Link to the existing item
+            parentItemId: itemId,
             rpId: passkey.rpId,
             userHandle: passkey.userHandle,
             userName: passkey.userName,
@@ -171,11 +158,13 @@ extension VaultStore {
             displayName: passkey.displayName,
             createdAt: Date(),
             updatedAt: Date(),
-            isDeleted: false
+            isDeleted: false,
+            manifestId: manifestId
         )
 
         try passkeyRepository.addPasskeyToExistingItem(
             itemId: itemId,
+            manifestId: manifestId,
             passkey: passkeyWithItemId,
             logo: logo
         )
@@ -188,6 +177,5 @@ extension VaultStore {
 public enum VaultStoreError: Error {
     case vaultNotUnlocked
     case passkeyNotFound
-    case itemNotFound
     case databaseError(String)
 }

@@ -6,12 +6,14 @@ import VaultUtils
 public struct PasskeyRow {
     public let id: String
     public let itemId: String
+    public let manifestId: String
     public let rpId: String
     public let userHandle: Data?
     public let publicKey: String
     public let privateKey: String
     public let prfKey: Data?
     public let displayName: String
+    public let additionalData: Data?
     public let createdAt: String
     public let updatedAt: String
     public let isDeleted: Int64
@@ -20,6 +22,7 @@ public struct PasskeyRow {
     public init?(from row: [String: Any]) {
         guard let id = row["Id"] as? String,
               let itemId = row["ItemId"] as? String,
+              let manifestId = row["ManifestId"] as? String,
               let rpId = row["RpId"] as? String,
               let publicKey = row["PublicKey"] as? String,
               let privateKey = row["PrivateKey"] as? String,
@@ -32,6 +35,7 @@ public struct PasskeyRow {
 
         self.id = id
         self.itemId = itemId
+        self.manifestId = manifestId
         self.rpId = rpId
         self.publicKey = publicKey
         self.privateKey = privateKey
@@ -51,6 +55,12 @@ public struct PasskeyRow {
             self.prfKey = Data(base64Encoded: prfKeyBase64, options: .ignoreUnknownCharacters)
         } else {
             self.prfKey = nil
+        }
+
+        if let additionalDataBase64 = row["AdditionalData"] as? String {
+            self.additionalData = Data(base64Encoded: additionalDataBase64, options: .ignoreUnknownCharacters)
+        } else {
+            self.additionalData = nil
         }
     }
 }
@@ -129,7 +139,9 @@ public struct PasskeyMapper {
             displayName: row.displayName,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            isDeleted: row.isDeleted == 1
+            isDeleted: row.isDeleted == 1,
+            manifestId: row.manifestId,
+            additionalData: row.additionalData
         )
     }
 

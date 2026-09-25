@@ -125,6 +125,21 @@ public static class SecretReader
     }
 
     /// <summary>
+    /// Gets the per-instance salt used to bucket sender hosts for abuse detection. This value is optional and can be left empty to disable.
+    /// </summary>
+    /// <returns>The salt, or an empty string when it has not been configured.</returns>
+    public static string GetAbuseMetricsSalt()
+    {
+        if (IsRunningInContainer())
+        {
+            var secretsFilePath = Path.Combine(GetSecretsPath(), "abuse_metrics_salt");
+            return File.Exists(secretsFilePath) ? File.ReadAllText(secretsFilePath).Trim() : string.Empty;
+        }
+
+        return Environment.GetEnvironmentVariable("ABUSE_METRICS_SALT") ?? string.Empty;
+    }
+
+    /// <summary>
     /// Reads a secret from a file in the container secrets directory.
     /// </summary>
     /// <param name="filePath">The path to the secret file.</param>

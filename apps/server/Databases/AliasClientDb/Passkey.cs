@@ -8,19 +8,23 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// The Passkey class that stores WebAuthn/FIDO2 passkey information.
 /// </summary>
-public class Passkey : SyncableEntity
+public class Passkey : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the WebAuthn credential ID for passkeys created outside AliasVault. When null, the credential ID is the bytes of Id.
+    /// </summary>
+    [MaxLength(1023)]
+    public byte[]? CredentialId { get; set; }
 
     /// <summary>
     /// Gets or sets the relying party identifier.
@@ -70,6 +74,5 @@ public class Passkey : SyncableEntity
     /// <summary>
     /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 }

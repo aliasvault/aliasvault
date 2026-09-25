@@ -1,0 +1,40 @@
+//-----------------------------------------------------------------------
+// <copyright file="MailboxBulkResponse.cs" company="aliasvault">
+// Copyright (c) aliasvault. All rights reserved.
+// Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
+// </copyright>
+//-----------------------------------------------------------------------
+
+namespace AliasVault.Shared.Models.WebApi.V2.Email;
+
+/// <summary>
+/// Represents the bulk mailbox response.
+/// </summary>
+public class MailboxBulkResponse
+{
+    /// <summary>
+    /// Gets or sets requested page number.
+    /// </summary>
+    public int CurrentPage { get; set; }
+
+    /// <summary>
+    /// Gets or sets requested page size.
+    /// </summary>
+    public int PageSize { get; set; }
+
+    /// <summary>
+    /// Gets or sets total number of emails.
+    /// </summary>
+    public int TotalRecords { get; set; }
+
+    /// <summary>
+    /// Gets or sets the public keys referenced by the decryption keys of the returned emails, sent once for the whole
+    /// response. A decryption key's <see cref="EmailDecryptionKeyApiModel.KeyIndex"/> is its position in this list.
+    /// </summary>
+    public List<string> PublicKeys { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the list of mailbox email API models.
+    /// </summary>
+    public List<MailboxEmailApiModel> Mails { get; set; } = [];
+}

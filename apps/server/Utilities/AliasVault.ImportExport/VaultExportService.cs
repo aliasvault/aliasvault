@@ -146,6 +146,9 @@ public static class VaultExportService
             Id = totpCode.Id,
             Name = totpCode.Name,
             SecretKey = totpCode.SecretKey,
+            Algorithm = totpCode.Algorithm,
+            Digits = totpCode.Digits,
+            Period = totpCode.Period,
         };
     }
 
@@ -205,7 +208,7 @@ public static class VaultExportService
     {
         return new AvuxItemTag
         {
-            Id = itemTag.Id,
+            Id = Guid.NewGuid(),
             ItemId = itemTag.ItemId,
             TagId = itemTag.TagId,
         };

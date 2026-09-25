@@ -371,7 +371,17 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
             return [];
         }
 
-        var base64Ciphertext = Convert.ToBase64String(cipherBytes);
+        return await SymmetricDecryptBase64ToBytes(Convert.ToBase64String(cipherBytes), encryptionKey);
+    }
+
+    /// <summary>
+    /// Symmetrically decrypts a base64 ciphertext (IV | ciphertext | tag) into raw bytes using the provided encryption key.
+    /// </summary>
+    /// <param name="base64Ciphertext">Cipher text to decrypt.</param>
+    /// <param name="encryptionKey">Encryption key to use as base64.</param>
+    /// <returns>Decrypted bytes.</returns>
+    public async Task<byte[]> SymmetricDecryptBase64ToBytes(string base64Ciphertext, string encryptionKey)
+    {
         return await jsRuntime.InvokeAsync<byte[]>("cryptoInterop.decryptBytes", base64Ciphertext, encryptionKey);
     }
 
@@ -627,6 +637,21 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
                 Error = $"JavaScript error: {ex.Message}",
             };
         }
+    }
+
+    /// <summary>
+    /// Gets the complete SQL schema of the current client data model, which a materialized vault is created from.
+    /// </summary>
+    /// <returns>The COMPLETE_SCHEMA_SQL script.</returns>
+    public async Task<string> GetCompleteSchemaSqlAsync()
+    {
+        if (_vaultSqlInteropModule == null)
+        {
+            await InitializeAsync();
+        }
+
+        var vaultGenerator = await _vaultSqlInteropModule!.InvokeAsync<IJSObjectReference>(_VAULT_SQL_GENERATOR_FACTORY_FUNCTION);
+        return await vaultGenerator.InvokeAsync<string>("getCompleteSchemaSql");
     }
 
     /// <summary>

@@ -9,7 +9,10 @@ namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
 using AliasVault.Api.Headers;
+using AliasVault.Api.Models;
 using AliasVault.Cryptography.Client;
+using AliasVault.Shared.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SecureRemotePassword;
 
@@ -29,51 +32,98 @@ public static class AuthHelper
     public static readonly string CachePrefixFakeData = "FakeData_";
 
     /// <summary>
+    /// Gets the SRP identity to use for a user, falling back to the lowercase username for accounts that were created
+    /// before SRP identities existed (pre-0.26.0). TODO: remove this fallback in a future version.
+    /// </summary>
+    /// <param name="user">The user to resolve the SRP identity for.</param>
+    /// <returns>The SRP identity to use for all SRP operations for this user.</returns>
+    public static string GetSrpIdentity(AliasVaultUser user) => ResolveSrpIdentity(user.SrpIdentity, user.UserName!);
+
+    /// <summary>
+    /// Resolves an SRP identity, falling back to the lowercase username when no identity is available.
+    /// </summary>
+    /// <param name="srpIdentity">The SRP identity, if known.</param>
+    /// <param name="username">The username to fall back to.</param>
+    /// <returns>The SRP identity to use for all SRP operations.</returns>
+    public static string ResolveSrpIdentity(string? srpIdentity, string username) => string.IsNullOrEmpty(srpIdentity) ? username.ToLowerInvariant() : srpIdentity;
+
+    /// <summary>
     /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
+    /// <param name="context">Database context, used to resolve the user's current SRP credentials.</param>
     /// <param name="user">The user object.</param>
     /// <param name="clientEphemeral">The client ephemeral value.</param>
     /// <param name="clientSessionProof">The client session proof.</param>
-    /// <returns>Tuple with the SrpSession (null if validation failed) and whether an active SRP session existed.</returns>
-    public static (SrpSession? Session, bool ActiveSessionFound) ValidateSrpSession(IMemoryCache cache, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
+    /// <returns>The validation outcome, carrying the unlock method whose secret was proven.</returns>
+    public static async Task<SrpValidationResult> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
     {
-        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
-        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+        var srpIdentity = GetSrpIdentity(user);
 
         if (!cache.TryGetValue(CachePrefixEphemeral + srpIdentity, out var serverSecretEphemeral) || serverSecretEphemeral is not string)
         {
-            // No login was initiated for this user, or the server ephemeral has expired. Return false to indicate that no active session was found.
-            return (null, false);
+            // No login was initiated for this user, or the server ephemeral has expired.
+            return new SrpValidationResult(null, false, null);
         }
 
         // Retrieve latest vault of user which contains the current salt and verifier.
-        var latestVaultEncryptionSettings = GetUserLatestVaultEncryptionSettings(user);
+        var credentials = await GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
         // Use SrpIdentity for the SRP session derivation. This is the fixed identity that was used
         // when the verifier was originally created, ensuring username changes don't break authentication.
         var serverSession = Srp.DeriveSessionServer(
             serverSecretEphemeral.ToString() ?? string.Empty,
             clientEphemeral,
-            latestVaultEncryptionSettings.Salt,
+            credentials.Salt,
             srpIdentity,
-            latestVaultEncryptionSettings.Verifier,
+            credentials.Verifier,
             clientSessionProof);
 
         // If validation failed, serverSession will be null here.
-        return (serverSession, true);
+        return new SrpValidationResult(serverSession, true, credentials.UnlockKeyId);
     }
 
     /// <summary>
-    /// Get the user's latest vault which contains the current salt and verifier.
+    /// Get the user's current SRP salt/verifier and key derivation settings.
     /// </summary>
+    /// <param name="context">Database context.</param>
     /// <param name="user">User object.</param>
-    /// <returns>Tuple with salt, verifier, encryption type and encryption settings.</returns>
-    public static (string Salt, string Verifier, string EncryptionType, string EncryptionSettings) GetUserLatestVaultEncryptionSettings(AliasVaultUser user)
+    /// <returns>The credentials the user authenticates with, and the unlock key they came from.</returns>
+    public static async Task<UserSrpCredentials> GetUserLatestVaultEncryptionSettingsAsync(AliasServerDbContext context, AliasVaultUser user)
     {
-        // Retrieve latest vault of user which contains the encryption settings.
-        var latestVault = user.Vaults.OrderByDescending(x => x.RevisionNumber).Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings }).First();
-        return (latestVault.Salt, latestVault.Verifier, latestVault.EncryptionType, latestVault.EncryptionSettings);
+        // Get the user's current SRP salt/verifier and key derivation settings for the account-key KEK/VEK model.
+        var passwordKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == user.Id && x.Type == UnlockMethodType.Password);
+        if (passwordKey is not null)
+        {
+            return VaultKeyMetadata.Parse(passwordKey.Metadata).RequireSrpCredentials() with { UnlockKeyId = passwordKey.Id };
+        }
+
+        // Get the user's current SRP salt/verifier and key derivation settings for the legacy model.
+        var latestVault = await context.VaultManifests
+            .Where(m => m.OwnerGroupId == user.PersonalGroupId)
+            .Select(x => new { x.Salt, x.Verifier, x.EncryptionType, x.EncryptionSettings })
+            .FirstAsync();
+
+        // The SRP columns are null once a user moved to the unlock-key model, which the branch above already covers.
+        return new UserSrpCredentials(latestVault.Salt ?? string.Empty, latestVault.Verifier ?? string.Empty, latestVault.EncryptionType ?? string.Empty, latestVault.EncryptionSettings ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Records that an unlock method was successfully used to authenticate, for usage statistics across the
+    /// unlock methods a user has enrolled.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="unlockKeyId">The unlock key that was proven, as returned by <see cref="ValidateSrpSessionAsync"/>.</param>
+    /// <param name="now">The timestamp to record.</param>
+    /// <returns>Task.</returns>
+    public static async Task TouchUnlockKeyLastUsedAsync(AliasServerDbContext context, Guid? unlockKeyId, DateTime now)
+    {
+        if (unlockKeyId is null)
+        {
+            return;
+        }
+
+        await context.UserUnlockKeys.Where(x => x.Id == unlockKeyId.Value).ExecuteUpdateAsync(s => s.SetProperty(x => x.LastUsedAt, now));
     }
 
     /// <summary>

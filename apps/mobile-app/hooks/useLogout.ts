@@ -26,7 +26,7 @@ type UseLogoutReturn = {
 /**
  * Hook for handling logout across the app.
  * Provides consistent logout behavior with:
- * - Warning about unsynced changes (isDirty check)
+ * - Warning about unsynced changes the user made (silent scopes should not trigger this warning)
  * - Confirmation dialog for user-initiated logout
  * - Token revocation
  * - Complete auth and vault data clearance
@@ -45,7 +45,7 @@ type UseLogoutReturn = {
 export function useLogout(): UseLogoutReturn {
   const { t } = useTranslation();
   const { clearAuthUserInitiated } = useAuth();
-  const { isDirty } = useDb();
+  const { hasUnsyncedUserChanges } = useDb();
   const { showConfirm } = useDialog();
   const webApi = useWebApi();
 
@@ -77,7 +77,7 @@ export function useLogout(): UseLogoutReturn {
    * Shows warning if there are unsynced changes, otherwise shows normal confirmation.
    */
   const logoutUserInitiated = useCallback(async (): Promise<void> => {
-    if (isDirty) {
+    if (hasUnsyncedUserChanges) {
       // Show warning about unsynced changes
       showConfirm(
         t('logout.unsyncedChangesTitle'),
@@ -96,7 +96,7 @@ export function useLogout(): UseLogoutReturn {
         { confirmStyle: 'destructive' }
       );
     }
-  }, [isDirty, showConfirm, t, performLogout]);
+  }, [hasUnsyncedUserChanges, showConfirm, t, performLogout]);
 
   return {
     logoutUserInitiated,

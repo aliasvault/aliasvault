@@ -6,10 +6,14 @@ import { useAuth } from '@/context/AuthContext';
 
 import { ThemedText } from '../themed/ThemedText';
 
+type AvatarProps = {
+  size?: number;
+};
+
 /**
  * Avatar component that displays the first letter of the username.
  */
-export function Avatar(): React.ReactNode {
+export function Avatar({ size = 40 }: AvatarProps): React.ReactNode {
   const colors = useColors();
   const { username } = useAuth();
 
@@ -17,16 +21,16 @@ export function Avatar(): React.ReactNode {
     avatar: {
       alignItems: 'center',
       backgroundColor: colors.primary + 80,
-      borderRadius: 20,
-      height: 40,
+      borderRadius: size / 2,
+      height: size,
       justifyContent: 'center',
-      marginRight: 12,
-      width: 40,
+      width: size,
     },
     avatarText: {
       color: colors.primarySurfaceText,
-      fontSize: 18,
+      fontSize: size * 0.45,
       fontWeight: '600',
+      lineHeight: size * 0.6,
     },
   });
 

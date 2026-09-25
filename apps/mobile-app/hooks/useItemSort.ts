@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item } from '@/utils/dist/core/models/vault';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Sort order options with their translation keys.
@@ -101,7 +101,7 @@ export function useItemSort(initialSortOrder: CredentialSortOrder = 'NewestFirst
  * @param sortOrder - The sort order to apply
  * @returns Memoized sorted items array
  */
-export function useSortedItems(filteredItems: Item[], sortOrder: CredentialSortOrder): Item[] {
+export function useSortedItems<T extends Item>(filteredItems: T[], sortOrder: CredentialSortOrder): T[] {
   return useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {

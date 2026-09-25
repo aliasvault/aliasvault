@@ -1,0 +1,147 @@
+//! Format constants for the manifest-v1 storage layout.
+//!
+//! The datamodel registry data (tables, keys, bucket layout, blob columns, sentinels) lives in
+//! [`crate::vault_model`], generated from the TypeScript source of truth in
+//! core/models/src/vault/VaultTableRegistry.ts; this module adds the codec-owned accessors on top.
+
+use crate::vault_model::names::ID_COL;
+use crate::vault_model::{ids_equal, BlobColumn, BLOB_COLUMNS, BUCKET_TABLES, MANIFEST_ID_COL, OVERFLOW_TABLE, PERSONAL_TABLES, SKIP_TABLES, SYNCABLE_TABLES, UNSTAMPED_SCOPE_SENTINEL};
+
+/// Manifest / data bucket format version; bump only for a change older clients cannot carry without the built-in overflow.
+pub const SCHEMA_VERSION: u32 = 1;
+
+/// True when this build can read a manifest or data bucket written at `schema_version`.
+pub fn is_readable_schema_version(schema_version: u32) -> bool {
+    (1..=SCHEMA_VERSION).contains(&schema_version)
+}
+
+/// Refuse a manifest or data bucket written at a format version this build cannot read.
+pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> crate::error::VaultResult<()> {
+    if is_readable_schema_version(schema_version) {
+        return Ok(());
+    }
+    Err(crate::error::VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
+}
+
+/// One identity component of a row, as a string: a GUID lowercased, any other string as-is,
+/// anything else canonical JSON.
+pub fn identity_part(value: &serde_json::Value) -> String {
+    match value.as_str() {
+        Some(text) if is_guid(text) => text.to_ascii_lowercase(),
+        Some(text) => text.to_string(),
+        None => value.to_string(),
+    }
+}
+
+/// True when a column names a row rather than holding content.
+pub fn is_id_column(column: &str) -> bool {
+    column.ends_with(ID_COL)
+}
+
+/// True when `text` has the exact shape of a GUID (8-4-4-4-12 hex).
+pub(crate) fn is_guid(text: &str) -> bool {
+    text.len() == 36
+        && text.as_bytes().iter().enumerate().all(|(index, byte)| match index {
+            8 | 13 | 18 | 23 => *byte == b'-',
+            _ => byte.is_ascii_hexdigit(),
+        })
+}
+
+// ---------------------------------------------------------------------------
+// Accessor methods
+// ---------------------------------------------------------------------------
+
+/// The blob column of a table, if it owns one.
+pub fn blob_spec_for(table_name: &str) -> Option<&'static BlobColumn> {
+    BLOB_COLUMNS.iter().find(|spec| spec.table == table_name)
+}
+
+/// True when a table must never be serialized into / inserted from the manifest.
+pub fn is_skip_table(table_name: &str) -> bool {
+    SKIP_TABLES.contains(&table_name)
+}
+
+/// True when a table lives only in the local vault DB: a skip-table or the codec overflow carrier.
+pub fn is_local_only_table(table_name: &str) -> bool {
+    is_skip_table(table_name) || table_name == OVERFLOW_TABLE
+}
+
+/// The data-bucket category a table belongs to, if it is bucketed out of the manifest.
+pub fn bucket_category_for(table_name: &str) -> Option<&'static str> {
+    BUCKET_TABLES.iter().find(|(t, _)| *t == table_name).map(|(_, c)| *c)
+}
+
+/// All distinct bucket categories, in declaration order. Lets the codec always emit a stable set of
+/// buckets even when a bucket's tables are empty.
+pub fn bucket_categories() -> Vec<&'static str> {
+    let mut out: Vec<&'static str> = Vec::new();
+    for (_, category) in BUCKET_TABLES {
+        if !out.contains(category) {
+            out.push(category);
+        }
+    }
+    out
+}
+
+/// The tables that make up a bucket category, in declaration order. Empty if the category is unknown.
+pub fn tables_for_category(category: &str) -> Vec<&'static str> {
+    BUCKET_TABLES.iter().filter(|(_, c)| *c == category).map(|(t, _)| *t).collect()
+}
+
+/// True when a `ManifestId` value names no manifest.
+pub fn is_unstamped_scope(scope: Option<&str>) -> bool {
+    match scope {
+        None => true,
+        Some(value) => value.is_empty() || ids_equal(value, UNSTAMPED_SCOPE_SENTINEL),
+    }
+}
+
+/// True when a table is personal-only (see [`PERSONAL_TABLES`]): never part of a shared manifest.
+pub fn is_personal_table(table_name: &str) -> bool {
+    PERSONAL_TABLES.contains(&table_name)
+}
+
+/// True when a table syncs in a data bucket (see [`BUCKET_TABLES`]) rather than inside the manifest.
+pub fn is_bucketed_table(table_name: &str) -> bool {
+    bucket_category_for(table_name).is_some()
+}
+
+/// Get the primary key columns for a table.
+pub(crate) fn primary_key_columns_for(table_name: &str) -> &'static [&'static str] {
+    SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.primary_key_columns).unwrap_or(&[ID_COL])
+}
+
+/// True when `table_name`'s rows are namespaced per manifest.
+pub fn is_manifest_scoped(table_name: &str) -> bool {
+    SYNCABLE_TABLES.iter().any(|t| t.name == table_name && t.manifest_scoped)
+}
+
+/// Every manifest-scoped table, in registry order.
+pub fn manifest_scoped_tables() -> Vec<&'static str> {
+    SYNCABLE_TABLES.iter().filter(|t| t.manifest_scoped).map(|t| t.name).collect()
+}
+
+/// The columns that together identify one row of `table_name`.
+pub(crate) fn identity_columns_for(table_name: &str) -> Vec<&'static str> {
+    SYNCABLE_TABLES.iter().find(|t| t.name == table_name).map(|t| t.identity_columns()).unwrap_or_else(|| vec![ID_COL])
+}
+
+/// Stable string key identifying `row` within `table_name`: the identity parts joined by `\u{1f}`, a
+/// null or absent column skipped. See also `vault_merge::get_key`, whose empty-part rule the merge relies on.
+pub fn row_identity(table_name: &str, row: &super::manifest::CodecRecord) -> Option<String> {
+    let mut columns = identity_columns_for(table_name);
+    if !columns.contains(&MANIFEST_ID_COL) && row.get(MANIFEST_ID_COL).filter(|value| !value.is_null()).is_some() {
+        columns.insert(0, MANIFEST_ID_COL);
+    }
+    // A row missing any primary key column cannot be addressed at all.
+    for column in primary_key_columns_for(table_name) {
+        row.get(*column)?;
+    }
+    Some(
+        columns
+            .iter()
+            .filter_map(|column| row.get(*column).filter(|v| !v.is_null()).map(identity_part))
+            .collect::<Vec<_>>()
+            .join("\u{1f}"),
+    )
+}

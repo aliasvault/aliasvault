@@ -46,9 +46,9 @@ enum class PinSetupStep {
 sealed class PinResult {
     /**
      * PIN processing succeeded.
-     * @property encryptionKey The encryption key (returned for unlock mode, null for setup mode).
+     * @property unlockKey The unlock key (returned for unlock mode, null for setup mode).
      */
-    data class Success(val encryptionKey: String?) : PinResult()
+    data class Success(val unlockKey: String?) : PinResult()
 
     /**
      * PIN processing failed with an error.

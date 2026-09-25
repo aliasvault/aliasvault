@@ -11,19 +11,30 @@ public enum AppError: Error {
     // Network/connectivity errors
     case serverUnavailable(statusCode: Int)
     case networkError(underlyingError: Error)
-    case timeout
+    case serverError(message: String)
 
     // Version/compatibility errors
     case clientVersionNotSupported
     case serverVersionNotSupported
     case vaultVersionIncompatible
+    case serverUpdateRequired
 
     // Vault status errors
     case vaultMergeRequired
     case vaultOutdated
+    case syncVaultFetchFailed(message: String)
 
     // Decryption errors
+    /// The locally stored vault does not decrypt with the session key.
     case vaultDecryptFailed
+    /// The unlock key does not open the account key (wrong password or PIN).
+    case unlockKeyRejected
+    /// The account key opened, the vault encryption key under it did not.
+    case keyChainUnreadable(message: String)
+    /// The session key does not open the key chain the server holds; only a re-login recovers.
+    case keyOutOfSync
+    /// A server manifest or bucket fails its hash check or does not decrypt.
+    case serverVaultDecryptFailed(message: String)
     case base64DecodeFailed
     case databaseTempWriteFailed
     case databaseOpenFailed
@@ -41,7 +52,11 @@ public enum AppError: Error {
 
     // Storage errors
     case encryptionKeyNotFound
+    case storageReadFailed(message: String)
+    case storageWriteFailed(message: String)
+    case databaseInitFailed(message: String)
     case vaultStoreFailed(message: String)
+    case manifestNotRecorded
 
     // Merge errors
     case vaultMergeFailed(message: String)
@@ -54,12 +69,21 @@ public enum AppError: Error {
     /// exceeds the configured MAX_UPLOAD_SIZE_MB limit on the server.
     case vaultTooLarge
 
+    /// A vault transfer exceeded its request timeout (large vault or slow connection).
+    case vaultSyncTimeout
+
     // Retry errors
     case maxRetriesReached
+    case migrationCheckFailed(message: String)
 
     // Generic errors
     case unknownError(message: String)
     case parseError(message: String)
+
+    // Sync engine failures that name their cause in the message
+    case syncResponseInvalid(message: String)
+    case syncCodecFailed(message: String)
+    case syncEngineFailed(message: String)
 
     /// Get the error code string for React Native bridge
     ///
@@ -86,18 +110,22 @@ public enum AppError: Error {
             return "E-201"
         case .networkError:
             return "E-202"
-        case .timeout:
-            return "E-203"
+        case .serverError:
+            return "E-204"
         case .clientVersionNotSupported:
             return "E-301"
         case .serverVersionNotSupported:
             return "E-302"
         case .vaultVersionIncompatible:
             return "E-303"
+        case .serverUpdateRequired:
+            return "E-304"
         case .vaultMergeRequired:
             return "E-401"
         case .vaultOutdated:
             return "E-402"
+        case .syncVaultFetchFailed:
+            return "E-404"
         case .vaultDecryptFailed:
             return "E-501"
         case .encryptionKeyNotFound:
@@ -130,8 +158,24 @@ public enum AppError: Error {
             return "E-515"
         case .biometricLockout:
             return "E-516"
+        case .unlockKeyRejected:
+            return "E-517"
+        case .keyChainUnreadable:
+            return "E-518"
+        case .keyOutOfSync:
+            return "E-519"
+        case .serverVaultDecryptFailed:
+            return "E-520"
+        case .storageReadFailed:
+            return "E-601"
+        case .storageWriteFailed:
+            return "E-602"
+        case .databaseInitFailed:
+            return "E-603"
         case .vaultStoreFailed:
             return "E-604"
+        case .manifestNotRecorded:
+            return "E-605"
         case .vaultMergeFailed:
             return "E-701"
         case .mergeUploadFailed:
@@ -140,12 +184,22 @@ public enum AppError: Error {
             return "E-801"
         case .vaultTooLarge:
             return "E-804"
+        case .vaultSyncTimeout:
+            return "E-805"
         case .maxRetriesReached:
             return "E-901"
+        case .migrationCheckFailed:
+            return "E-903"
         case .unknownError:
             return "E-001"
         case .parseError:
             return "E-002"
+        case .syncResponseInvalid:
+            return "E-003"
+        case .syncCodecFailed:
+            return "E-004"
+        case .syncEngineFailed:
+            return "E-005"
         }
     }
 
@@ -162,20 +216,32 @@ public enum AppError: Error {
             return "Server unavailable (status: \(statusCode))"
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
-        case .timeout:
-            return "Request timeout"
+        case .serverError(let message):
+            return "Server error: \(message)"
         case .clientVersionNotSupported:
             return "Client version not supported"
         case .serverVersionNotSupported:
             return "Server version not supported"
         case .vaultVersionIncompatible:
             return "Vault version incompatible"
+        case .serverUpdateRequired:
+            return "Server update required"
         case .vaultMergeRequired:
             return "Vault merge required"
         case .vaultOutdated:
             return "Vault outdated"
+        case .syncVaultFetchFailed(let message):
+            return "Server vault could not be assembled: \(message)"
         case .vaultDecryptFailed:
             return "Failed to decrypt vault"
+        case .unlockKeyRejected:
+            return "The unlock key does not open the account key"
+        case .keyChainUnreadable(let message):
+            return "The account key does not open the vault encryption key: \(message)"
+        case .keyOutOfSync:
+            return "Vault encryption key out of sync with the server; log in again"
+        case .serverVaultDecryptFailed(let message):
+            return "Server vault could not be opened: \(message)"
         case .encryptionKeyNotFound:
             return "Encryption key not available"
         case .base64DecodeFailed:
@@ -206,8 +272,16 @@ public enum AppError: Error {
             return "No biometrics enrolled on device"
         case .biometricLockout:
             return "Biometric authentication locked out"
+        case .storageReadFailed(let message):
+            return "Storage read failed: \(message)"
+        case .storageWriteFailed(let message):
+            return "Storage write failed: \(message)"
+        case .databaseInitFailed(let message):
+            return "Database init failed: \(message)"
         case .vaultStoreFailed(let message):
             return "Failed to store vault: \(message)"
+        case .manifestNotRecorded:
+            return "No personal manifest recorded yet; sync once before writing"
         case .vaultMergeFailed(let message):
             return "Vault merge failed: \(message)"
         case .mergeUploadFailed(let message):
@@ -216,12 +290,22 @@ public enum AppError: Error {
             return "Vault upload failed: \(message)"
         case .vaultTooLarge:
             return "Vault too large for server"
+        case .vaultSyncTimeout:
+            return "Vault sync timed out"
         case .maxRetriesReached:
             return "Max sync retries reached"
+        case .migrationCheckFailed(let message):
+            return "Migration check failed: \(message)"
         case .unknownError(let message):
             return "Unknown error: \(message)"
         case .parseError(let message):
             return "Parse error: \(message)"
+        case .syncResponseInvalid(let message):
+            return "Invalid server response: \(message)"
+        case .syncCodecFailed(let message):
+            return "Vault codec failed: \(message)"
+        case .syncEngineFailed(let message):
+            return "Sync engine failed: \(message)"
         }
     }
 
@@ -245,10 +329,10 @@ public enum AppError: Error {
         }
     }
 
-    /// Check if this is a network error (offline mode).
+    /// Check if this is a network error (offline mode). A timeout is not: the sync engine reports it as a failed sync.
     public var isNetworkError: Bool {
         switch self {
-        case .serverUnavailable, .networkError, .timeout:
+        case .serverUnavailable, .networkError:
             return true
         default:
             return false

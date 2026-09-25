@@ -58,12 +58,11 @@ export default function AutofillOpenAppScreen(): React.ReactNode {
   }, [router, decodedAppInfo]);
 
   /**
-   * Navigate to the existing add-edit-page deep-link target with the
-   * URL pre-populated, mirroring the previous behaviour.
+   * Navigate to the add item page with the URL pre-populated.
    */
   const handleCreateNew = useCallback(() => {
     router.replace(
-      `/(tabs)/items/add-edit-page?itemUrl=${encodeURIComponent(decodedAppInfo)}`
+      `/(tabs)/items/add-page?itemUrl=${encodeURIComponent(decodedAppInfo)}`
     );
   }, [router, decodedAppInfo]);
 

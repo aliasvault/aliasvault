@@ -5,7 +5,7 @@ import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import PasswordConfigForm from '@/entrypoints/popup/components/Forms/PasswordConfigForm';
 import { usePasswordConfig } from '@/entrypoints/popup/hooks/usePasswordConfig';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 interface IPasswordConfigDialogProps {
   isOpen: boolean;

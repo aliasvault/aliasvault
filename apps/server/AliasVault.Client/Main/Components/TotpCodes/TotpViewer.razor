@@ -36,7 +36,7 @@
                         <div class="flex items-center gap-2">
                             <div class="flex flex-col items-end">
                                 <div class="totp-code text-lg font-bold cursor-pointer text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors" @onclick="() => CopyToClipboard(totpCode)">
-                                    @GetTotpCode(totpCode.SecretKey)
+                                    @GetTotpCode(totpCode)
                                 </div>
                                 <div class="text-xs">
                                     @if (IsCopied(totpCode.Id.ToString()))
@@ -45,12 +45,12 @@
                                     }
                                     else
                                     {
-                                        <span class="text-gray-500 dark:text-gray-400">@GetRemainingSeconds()s</span>
+                                        <span class="text-gray-500 dark:text-gray-400">@GetRemainingSeconds(totpCode.Period)s</span>
                                     }
                                 </div>
                             </div>
                             <div class="w-1.5 h-8 bg-gray-200 rounded-full dark:bg-gray-600">
-                                <div class="bg-blue-600 rounded-full transition-all" style="height: @(GetRemainingPercentage())%; width: 100%"></div>
+                                <div class="bg-blue-600 rounded-full transition-all" style="height: @(GetRemainingPercentage(totpCode.Period))%; width: 100%"></div>
                             </div>
                         </div>
                     </div>
@@ -72,9 +72,9 @@
     public required ICollection<TotpCode> TotpCodeList { get; set; }
 
     /// <summary>
-    /// The dictionary of current cached TOTP codes.
+    /// The current cached TOTP codes.
     /// </summary>
-    private readonly Dictionary<string, string> _currentCodes = new();
+    private readonly Dictionary<Guid, string> _currentCodes = new();
 
     private bool IsLoading { get; set; } = true;
     private Timer? _refreshTimer;
@@ -91,9 +91,9 @@
         await base.OnInitializedAsync();
 
         // Generate initial codes
-        foreach (var code in TotpCodeList.Select(t => t.SecretKey))
+        foreach (var totpCode in TotpCodeList)
         {
-            _currentCodes[code] = TotpGenerator.GenerateTotpCode(code);
+            _currentCodes[totpCode.Id] = GenerateCode(totpCode);
         }
 
         // Start a timer to refresh the TOTP codes every second
@@ -106,8 +106,9 @@
     /// Gets the remaining seconds for the TOTP code.
     /// </summary>
     /// <returns>The remaining seconds.</returns>
-    private static int GetRemainingSeconds(int step = 30)
+    private static int GetRemainingSeconds(int step)
     {
+        step = TotpParameters.NormalizePeriod(step);
         var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         return step - (int)(unixTimestamp % step);
     }
@@ -115,12 +116,24 @@
     /// <summary>
     /// Gets the remaining percentage for the TOTP code.
     /// </summary>
+    /// <param name="step">The time step in seconds the code uses.</param>
     /// <returns>The remaining percentage.</returns>
-    private static int GetRemainingPercentage()
+    private static int GetRemainingPercentage(int step)
     {
-        var remaining = GetRemainingSeconds();
+        step = TotpParameters.NormalizePeriod(step);
+        var remaining = GetRemainingSeconds(step);
         // Invert the percentage so it counts down instead of up
-        return (int)(((30.0 - remaining) / 30.0) * 100);
+        return (int)(((step - (double)remaining) / step) * 100);
+    }
+
+    /// <summary>
+    /// Generates the current code for a TOTP entry using its stored parameters.
+    /// </summary>
+    /// <param name="totpCode">The TOTP code entry.</param>
+    /// <returns>The generated code.</returns>
+    private static string GenerateCode(TotpCode totpCode)
+    {
+        return TotpGenerator.GenerateTotpCode(totpCode.SecretKey, totpCode.Digits, totpCode.Period, totpCode.Algorithm);
     }
 
     /// <summary>
@@ -128,13 +141,9 @@
     /// </summary>
     private async Task RefreshCodesAsync()
     {
-        foreach (var code in TotpCodeList.Select(t => t.SecretKey))
+        foreach (var totpCode in TotpCodeList)
         {
-            var newCode = TotpGenerator.GenerateTotpCode(code);
-            if (!_currentCodes.ContainsKey(code) || _currentCodes[code] != newCode)
-            {
-                _currentCodes[code] = newCode;
-            }
+            _currentCodes[totpCode.Id] = GenerateCode(totpCode);
         }
 
         // Always update the UI to refresh the progress bar
@@ -144,40 +153,41 @@
     /// <summary>
     /// Gets the raw TOTP code for a given secret key from the cached current codes dictionary.
     /// </summary>
-    /// <param name="secretKey">The secret key to get the code for.</param>
+    /// <param name="totpCode">The TOTP code entry to get the code for.</param>
     /// <returns>The raw TOTP code without formatting.</returns>
-    private string GetRawTotpCode(string secretKey)
+    private string GetRawTotpCode(TotpCode totpCode)
     {
-        if (_currentCodes.TryGetValue(secretKey, out var code))
+        if (_currentCodes.TryGetValue(totpCode.Id, out var code))
         {
             return code;
         }
 
-        var newCode = TotpGenerator.GenerateTotpCode(secretKey);
-        _currentCodes[secretKey] = newCode;
+        var newCode = GenerateCode(totpCode);
+        _currentCodes[totpCode.Id] = newCode;
         return newCode;
     }
 
     /// <summary>
     /// Gets the formatted TOTP code for a given secret key from the cached current codes dictionary.
     /// </summary>
-    /// <param name="secretKey">The secret key to get the code for.</param>
+    /// <param name="totpCode">The TOTP code entry to get the code for.</param>
     /// <returns>The formatted TOTP code.</returns>
-    private string GetTotpCode(string secretKey)
+    private string GetTotpCode(TotpCode totpCode)
     {
-        return FormatTotpCode(GetRawTotpCode(secretKey));
+        return FormatTotpCode(GetRawTotpCode(totpCode));
     }
 
     /// <summary>
-    /// Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
+    /// Formats a TOTP code with a space in the middle for better readability, e.g. "XXX XXX" or "XXXX XXXX".
     /// </summary>
     /// <param name="code">The raw TOTP code.</param>
     /// <returns>The formatted TOTP code.</returns>
     private static string FormatTotpCode(string code)
     {
-        if (code.Length == 6)
+        if (code.Length % 2 == 0)
         {
-            return $"{code[..3]} {code[3..]}";
+            var half = code.Length / 2;
+            return $"{code[..half]} {code[half..]}";
         }
 
         return code;
@@ -189,7 +199,7 @@
     /// <param name="totpCode">The TOTP code to copy.</param>
     private async Task CopyToClipboard(TotpCode totpCode)
     {
-        var code = GetRawTotpCode(totpCode.SecretKey);
+        var code = GetRawTotpCode(totpCode);
         await JsInteropService.CopyToClipboard(code);
         ClipboardCopyService.SetCopied(totpCode.Id.ToString());
         StateHasChanged();

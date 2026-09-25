@@ -1,10 +1,12 @@
+import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 import React, { createContext, useContext, useMemo, useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
+import { logExpected } from '@/utils/Diagnostics';
+
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 type AppContextType = {
@@ -45,10 +47,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       isLoggingOutRef.current = true;
       await webApi.revokeTokens();
-      // Use forced logout to preserve orphaned vault
+      // Use forced logout, which keeps the username for the login prefill
       await auth.clearAuthForced(errorMessage);
     } catch (error) {
-      console.error('Error during logout:', error);
+      logExpected('[Auth] Logout did not complete cleanly', error);
     } finally {
       isLoggingOutRef.current = false;
       setIsLoggedIn(false);

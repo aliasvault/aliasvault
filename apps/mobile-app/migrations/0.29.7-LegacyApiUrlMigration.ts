@@ -1,4 +1,4 @@
-import { AppInfo } from '@/utils/AppInfo';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 

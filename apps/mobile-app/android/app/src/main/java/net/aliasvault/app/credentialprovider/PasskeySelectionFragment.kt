@@ -63,7 +63,7 @@ class PasskeySelectionFragment : Fragment() {
                 val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
 
                 displayNameView.text = itemInfo.serviceName ?: viewModel.rpId
-                subtitleView.text = itemInfo.accountLabel ?: itemInfo.url ?: viewModel.rpId
+                subtitleView.text = itemInfo.accountLabel ?: itemInfo.urls.firstOrNull() ?: viewModel.rpId
 
                 itemView.setOnClickListener {
                     viewModel.onMergeSelected(itemInfo)

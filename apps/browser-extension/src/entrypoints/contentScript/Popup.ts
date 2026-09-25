@@ -1,20 +1,24 @@
-import * as OTPAuth from 'otpauth';
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
+import { generateTotpCode, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
+import { ItemTypeIconSvgs } from '@aliasvault/models/icons';
+import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models/vault';
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
-import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
+import { isSameItem } from '@/utils/ItemRoute';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
-import { SqliteClient } from '@/utils/SqliteClient';
 
 import { t } from '@/i18n/StandaloneI18n';
 
 import { getCurrentAutofillFrameUrl } from './AutofillFrameUrl';
 import { completeConditionalWithPasskey, getConditionalPasskeyOptions, hasPendingConditionalRequest } from './ConditionalPasskey';
+
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * The input element the autofill popup was most recently shown for. Used as a fallback fill
@@ -85,29 +89,15 @@ function cleanupTotpInterval(): void {
 }
 
 /**
- * Generate TOTP code from secret key
+ * Generate a TOTP code from a secret and its stored parameters, formatted with a space in the middle.
  */
-function generateTotpCode(secretKey: string): string {
-  try {
-    const totp = new OTPAuth.TOTP({
-      secret: secretKey,
-      algorithm: 'SHA1',
-      digits: 6,
-      period: 30
-    });
-    const code = totp.generate();
-    // Format as "XXX XXX" with space in middle
-    return `${code.slice(0, 3)} ${code.slice(3)}`;
-  } catch {
+function formatTotpCodeForSecret(secret: TotpSecret): string {
+  const code = generateTotpCode(secret.SecretKey, secret);
+  if (!code) {
     return '--- ---';
   }
-}
-
-/**
- * Get remaining seconds until next TOTP code
- */
-function getTotpRemainingSeconds(): number {
-  return 30 - (Math.floor(Date.now() / 1000) % 30);
+  const half = code.length % 2 === 0 ? code.length / 2 : 3;
+  return `${code.slice(0, half)} ${code.slice(half)}`;
 }
 
 /**
@@ -173,7 +163,7 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
     });
 
     if (response.success) {
-      await createAutofillPopup(input, response.items, container, response.recentlySelectedId);
+      await createAutofillPopup(input, response.items, container, response.recentlySelected);
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
@@ -229,7 +219,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
     });
 
     if (response.success) {
-      await createTotpPopup(input, response.items, container, response.recentlySelectedId);
+      await createTotpPopup(input, response.items, container, response.recentlySelected);
     } else {
       // Check if the user has dismissed the vault locked popup (only for auto-show, not manual clicks)
       if (!forceShow) {
@@ -250,7 +240,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
  * Create TOTP autofill popup showing items with 2FA codes.
  * Matches the styling of the regular autofill popup.
  */
-async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
+async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
   const searchPlaceholder = await t('content.searchVault');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
@@ -269,7 +259,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
     items = [];
   }
 
-  updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
+  updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelected);
 
   // Add divider
   const divider = document.createElement('div');
@@ -299,7 +289,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
 
     if (searchTerm === '') {
       // If search is empty, show the initially URL-filtered items
-      updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
+      updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelected);
     } else {
       // Search in TOTP items only
       const response = await sendMessage('SEARCH_ITEMS_WITH_TOTP', {
@@ -311,7 +301,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
         updateTotpPopupContent(response.items, credentialList, input, rootContainer, noTotpItemsText);
       } else {
         // On error, fallback to showing initial filtered items
-        updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelectedId);
+        updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText, recentlySelected);
       }
     }
   });
@@ -433,7 +423,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
  * @param rootContainer - The root container element.
  * @param noMatchesText - Text to show when no items match.
  */
-function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null) : void {
+function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : void {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -458,8 +448,7 @@ function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, inp
 
   // Fetch TOTP secrets and create items with live codes
   (async (): Promise<void> => {
-    const itemIds = items.map(item => item.Id);
-    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { itemIds });
+    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { items: items.map(item => ({ Id: item.Id, ManifestId: item.ManifestId })) });
 
     const secrets = secretsResponse.success && secretsResponse.secrets ? secretsResponse.secrets : {};
     const hasSecrets = Object.keys(secrets).length > 0;
@@ -468,8 +457,8 @@ function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, inp
     const codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }> = new Map();
 
     items.forEach(item => {
-      const secret = secrets[item.Id];
-      const isRecentlySelected = recentlySelectedId != null && item.Id === recentlySelectedId;
+      const secret = secrets[scopedKey(item.ManifestId, item.Id)];
+      const isRecentlySelected = recentlySelected != null && isSameItem(item, recentlySelected);
       const itemElement = createTotpItem(item, secret, input, rootContainer, hasSecrets ? codeElements : undefined, isRecentlySelected);
       itemList!.appendChild(itemElement);
     });
@@ -520,17 +509,15 @@ function createPieSlicePath(cx: number, cy: number, r: number, fraction: number)
  */
 function updateTotpCodes(
   codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
-  secrets: Record<string, string>
+  secrets: Record<string, TotpSecret>
 ): void {
-  const remainingSeconds = getTotpRemainingSeconds();
-  const fraction = remainingSeconds / 30;
-
-  codeElements.forEach((elements, itemId) => {
-    const secret = secrets[itemId];
+  codeElements.forEach((elements, itemKey) => {
+    const secret = secrets[itemKey];
     if (secret) {
-      elements.codeSpan.textContent = generateTotpCode(secret);
+      elements.codeSpan.textContent = formatTotpCodeForSecret(secret);
     }
-    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, fraction));
+    // Each code counts down over its own period, so the pie is computed per item rather than once.
+    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret?.Period)));
   });
 }
 
@@ -541,7 +528,7 @@ function updateTotpCodes(
  */
 function createTotpItem(
   item: Item,
-  secret: string | undefined,
+  secret: TotpSecret | undefined,
   input: HTMLInputElement,
   rootContainer: HTMLElement,
   codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
@@ -588,11 +575,10 @@ function createTotpItem(
 
   // TOTP code span - show generated code or static placeholder
   const codeSpan = document.createElement('span');
-  codeSpan.textContent = secret ? generateTotpCode(secret) : '000 000';
+  codeSpan.textContent = secret ? formatTotpCodeForSecret(secret) : '000 000';
 
   // Pie chart countdown - blue pie that shrinks clockwise from top
-  const remainingSeconds = getTotpRemainingSeconds();
-  const fraction = secret ? remainingSeconds / 30 : 1; // Static shows full pie
+  const fraction = secret ? getTotpRemainingSeconds(secret) / normalizeTotpPeriod(secret.Period) : 1; // Static shows full pie
 
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
@@ -617,15 +603,15 @@ function createTotpItem(
 
   // Store references for live updates (only if secret exists and codeElements provided)
   if (secret && codeElements) {
-    codeElements.set(item.Id, { codeSpan, pieChart });
+    codeElements.set(scopedKey(item.ManifestId, item.Id), { codeSpan, pieChart });
   }
 
   itemElement.appendChild(itemInfo);
-  itemElement.appendChild(createPopoutIcon(item.Id, rootContainer));
+  itemElement.appendChild(createPopoutIcon(item, rootContainer));
 
   // Handle click to fill TOTP code
   addReliableClickHandler(itemInfo, async () => {
-    await fillTotpCode(item.Id, input);
+    await fillTotpCode(item, input);
     removeExistingPopup(rootContainer);
   });
 
@@ -745,7 +731,7 @@ export function createLoadingPopup(input: HTMLInputElement, message: string, roo
  * @param itemList - The item list element.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export async function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null) : Promise<void> {
+export async function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
   if (!itemList) {
     itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
@@ -758,7 +744,7 @@ export async function updatePopupContent(items: Item[], itemList: HTMLElement | 
   itemList.innerHTML = '';
 
   // Add items using the shared function
-  const itemElements = createItemList(items, input, rootContainer, noMatchesText, recentlySelectedId);
+  const itemElements = createItemList(items, input, rootContainer, noMatchesText, recentlySelected);
   itemElements.forEach(element => itemList.appendChild(element));
 }
 
@@ -830,7 +816,7 @@ function hasFillableLoginField(item: Item): boolean {
 /**
  * Create auto-fill popup
  */
-export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelectedId?: string | null) : Promise<void> {
+export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
   // Remember the input so a credential created in the full popup window can be filled back here.
   lastAutofillInput = input;
 
@@ -864,7 +850,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   // Drop entries that have nothing to fill (no username/email/password) - they're not useful matches.
   items = items.filter(hasFillableLoginField);
 
-  await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText, recentlySelectedId);
+  await updatePopupContent(items, credentialList, input, rootContainer, noMatchesText, recentlySelected);
 
   // Add divider
   const divider = document.createElement('div');
@@ -934,7 +920,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   // Handle search input.
   let searchTimeout: NodeJS.Timeout | null = null;
   searchInput.addEventListener('input', async () => {
-    await handleSearchInput(searchInput, items, rootContainer, searchTimeout, credentialList, input, noMatchesText, recentlySelectedId);
+    await handleSearchInput(searchInput, items, rootContainer, searchTimeout, credentialList, input, noMatchesText, recentlySelected);
   });
 
   // Close button
@@ -1211,7 +1197,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
  * @param input - The input field that triggered the popup
  * @param noMatchesText - Text to show when no matches found
  */
-async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string, recentlySelectedId?: string | null) : Promise<void> {
+async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string, recentlySelected?: ItemRef | null) : Promise<void> {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
@@ -1220,7 +1206,7 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
 
   if (searchTerm === '') {
     // If search is empty, show the initially URL-filtered items with the recently-used star restored
-    await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelectedId);
+    await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelected);
   } else {
     // Search in full vault with search term
     const response = await sendMessage('GET_SEARCH_ITEMS', {
@@ -1233,7 +1219,7 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
       await updatePopupContent(fillableItems, itemList, input, rootContainer, noMatchesText);
     } else {
       // On error, fallback to showing initial filtered items
-      await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelectedId);
+      await updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText, recentlySelected);
     }
   }
 }
@@ -1284,7 +1270,7 @@ function createLogoContainer(logo: Uint8Array | number[] | undefined): HTMLEleme
 /**
  * Build popout icon shown at the trailing edge of a row, which opens the underlying item in the full extension popup.
  */
-function createPopoutIcon(itemId: string, rootContainer: HTMLElement): HTMLElement {
+function createPopoutIcon(item: ItemRef, rootContainer: HTMLElement): HTMLElement {
   const popoutIcon = document.createElement('div');
   popoutIcon.className = 'av-popout-icon';
   popoutIcon.innerHTML = `
@@ -1297,7 +1283,7 @@ function createPopoutIcon(itemId: string, rootContainer: HTMLElement): HTMLEleme
 
   addReliableClickHandler(popoutIcon, (e) => {
     e.stopPropagation(); // Don't trigger the row's primary action.
-    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId });
+    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id, manifestId: item.ManifestId });
     removeExistingPopup(rootContainer);
   });
 
@@ -1372,14 +1358,14 @@ async function createPasskeySection(rootContainer: HTMLElement): Promise<{ list:
     itemElement.appendChild(itemInfo);
 
     // Popout icon opens the underlying credential in the full extension popup.
-    itemElement.appendChild(createPopoutIcon(option.itemId, rootContainer));
+    itemElement.appendChild(createPopoutIcon({ Id: option.itemId, ManifestId: option.manifestId }, rootContainer));
 
     addReliableClickHandler(itemInfo, () => {
       // Explicit user action - keep the vault from auto-locking mid-assertion.
       sendMessage('RESET_AUTO_LOCK_TIMER').catch(() => {
         // Ignore: background may be asleep.
       });
-      void completeConditionalWithPasskey(option.id);
+      void completeConditionalWithPasskey(option.id, option.manifestId);
       removeExistingPopup(rootContainer);
     });
 
@@ -1410,7 +1396,7 @@ function createViewSwitchPill(label: string): HTMLButtonElement {
  * @param items - The items to display.
  * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelectedId?: string | null): HTMLElement[] {
+function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string, recentlySelected?: ItemRef | null): HTMLElement[] {
   const elements: HTMLElement[] = [];
 
   if (items.length > 0) {
@@ -1441,7 +1427,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       serviceNameContainer.appendChild(serviceNameText);
 
       // Add "recently used" indicator if this item was the last autofill on this site
-      if (recentlySelectedId != null && item.Id === recentlySelectedId) {
+      if (recentlySelected != null && isSameItem(item, recentlySelected)) {
         serviceNameContainer.appendChild(createRecentlySelectedIcon());
       }
       
@@ -1479,7 +1465,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       itemInfo.appendChild(itemTextContainer);
 
       itemElement.appendChild(itemInfo);
-      itemElement.appendChild(createPopoutIcon(item.Id, rootContainer));
+      itemElement.appendChild(createPopoutIcon(item, rootContainer));
 
       // Update click handler to only trigger on itemInfo with security validation
       addReliableClickHandler(itemInfo, () => {

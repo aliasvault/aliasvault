@@ -74,6 +74,11 @@ public enum AuthFailureReason
     MobileLoginRateLimitExceeded = 11,
 
     /// <summary>
+    /// Indicates that the mobile login request was declined on the mobile device.
+    /// </summary>
+    MobileLoginDeclined = 12,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,
@@ -89,6 +94,16 @@ public enum AuthFailureReason
 [Index(nameof(Username), nameof(IsSuccess), nameof(Timestamp), IsDescending = new[] { false, false, true }, Name = "IX_Username_IsSuccess_Timestamp")]
 public class AuthLog
 {
+    /// <summary>
+    /// Maximum stored length of <see cref="RequestPath"/>.
+    /// </summary>
+    public const int RequestPathMaxLength = 255;
+
+    /// <summary>
+    /// Maximum stored length of <see cref="Client"/>.
+    /// </summary>
+    public const int ClientMaxLength = 100;
+
     /// <summary>
     /// Gets or sets the unique identifier for the authentication log entry.
     /// </summary>
@@ -165,7 +180,7 @@ public class AuthLog
     /// <summary>
     /// Gets or sets the request path of the authentication event.
     /// </summary>
-    [MaxLength(100)]
+    [MaxLength(RequestPathMaxLength)]
     public string? RequestPath { get; set; }
 
     /// <summary>
@@ -176,6 +191,6 @@ public class AuthLog
     /// <summary>
     /// Gets or sets the client application name and version.
     /// </summary>
-    [MaxLength(100)]
+    [MaxLength(ClientMaxLength)]
     public string? Client { get; set; }
 }

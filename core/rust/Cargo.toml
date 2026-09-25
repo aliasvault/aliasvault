@@ -10,6 +10,10 @@ authors = ["AliasVault"]
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false
 
+# Applies to every profile passed via `wasm-pack --profile`, i.e. the browser extension build
+[package.metadata.wasm-pack.profile.custom]
+wasm-opt = false
+
 [lib]
 crate-type = ["lib", "cdylib", "staticlib"]
 name = "aliasvault_core"
@@ -21,9 +25,7 @@ uniffi = ["dep:uniffi"]
 # Feature for UniFFI CLI bindgen tool (only for generating bindings, not for library)
 uniffi-cli = ["uniffi/cli"]
 # Feature for WASM builds (browser extension)
-wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook"]
-# Feature for C FFI exports (.NET P/Invoke)
-ffi = []
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook", "dep:js-sys"]
 
 [dependencies]
 # Serialization - core dependency for JSON handling
@@ -48,21 +50,38 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 # Argon2 password hashing
 argon2 = "0.5"
 
+# AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
+aes-gcm = "0.10"
+rsa = "0.9"
+rand_core06 = { package = "rand_core", version = "0.6", features = ["getrandom"] }
+
+# Wipes key material from memory on drop
+zeroize = { version = "1.8", features = ["derive"] }
+
+# gzip compression for the vault_codec packaged format
+flate2 = { version = "1.0", default-features = false, features = ["rust_backend"] }
+
+# base64 for vault_codec blob byte transport + ciphertext hashing
+base64 = "0.22"
+
 # UniFFI for Swift/Kotlin bindings (optional)
-# Note: Don't add "cli" feature here - it pulls in heavy bindgen dependencies
-# The uniffi-cli feature enables CLI separately for the uniffi-bindgen binary only
 uniffi = { version = "0.28", optional = true }
 
 # WASM bindings (optional)
 wasm-bindgen = { version = "0.2", optional = true }
 serde-wasm-bindgen = { version = "0.6", optional = true }
+js-sys = { version = "0.3", optional = true }
 console_error_panic_hook = { version = "0.1", optional = true }
 
-[dev-dependencies]
+# Parse emails from source
+mail-parser = { version = "0.11.6", features = ["full_encoding"] }
 
-# Build dependencies for UniFFI
-[build-dependencies]
-uniffi = { version = "0.28", features = ["build"] }
+# SQLite client which can be used by all host apps for uniform access
+rusqlite = { version = "0.40", features = ["bundled", "serialize"] }
+
+# rsa 0.9 pulls rand 0.8 / getrandom 0.2, which only builds for wasm32-unknown-unknown with its "js" feature.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom02 = { package = "getrandom", version = "0.2", features = ["js"] }
 
 # Binary for generating Swift/Kotlin bindings
 # This binary requires uniffi-cli feature which includes the heavy bindgen dependencies
@@ -77,10 +96,20 @@ opt-level = 0
 debug = false
 incremental = true
 
-# Release profile - optimized for size
+# Release profile - optimized for size (web app WASM, fetched on page load)
 [profile.release]
 opt-level = "z"
 lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = "symbols"
+
+# Browser extension profile - optimized for speed as the WASM ships inside the one time extension download
+[profile.extension]
+inherits = "release"
+opt-level = 3
+
+# Mobile profile - optimized for speed as increased bundle size is less relevant as its a one time download
+[profile.mobile]
+inherits = "release"
+opt-level = 3

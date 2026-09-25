@@ -67,7 +67,7 @@ export const DeleteFolderModal: React.FC<IDeleteFolderModalProps> = ({
   const styles = StyleSheet.create({
     cancelButton: {
       alignItems: 'center',
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,

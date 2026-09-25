@@ -64,7 +64,7 @@ public static class IpAddressUtility
 
     /// <summary>
     /// Extracts the raw, non-anonymized IP address from the HttpContext for transient, request-time use only
-    /// (e.g. matching against the IP blocklist). The returned value is intentionally NOT anonymized and must
+    /// (e.g. matching against the IP blocklist). The returned value is intentionally not anonymized and must
     /// never be persisted. Use GetAnonymizedIpFromContext for persistence/logging instead.
     /// </summary>
     /// <param name="httpContext">HttpContext to extract the IP address from.</param>

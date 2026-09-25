@@ -17,12 +17,11 @@ cd "$SCRIPT_DIR"
 # Output directories
 DIST_DIR="$SCRIPT_DIR/dist"
 WASM_DIR="$DIST_DIR/wasm"
-DOTNET_DIR="$DIST_DIR/dotnet"
 IOS_DIR="$DIST_DIR/ios"
 ANDROID_DIR="$DIST_DIR/android"
 
 # Target directories in consumer apps
-BROWSER_EXT_DIST="$SCRIPT_DIR/../../apps/browser-extension/src/utils/dist/core/rust"
+BROWSER_EXT_DIST="$SCRIPT_DIR/../client/wasm"
 BLAZOR_CLIENT_DIST="$SCRIPT_DIR/../../apps/server/AliasVault.Client/wwwroot/wasm"
 IOS_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/ios/RustCoreFramework/RustCore"
 ANDROID_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/android/app/src/main/jniLibs"
@@ -64,16 +63,9 @@ compute_source_checksum() {
     fi
 }
 
-# Cargo profile this invocation produces. The incremental checksum embeds it so a
-# debug (--fast) build never satisfies a later release build: sources are identical,
-# but the distributed artifacts are not, and they share one output path.
-current_cargo_profile() {
-    if $FAST_MODE; then
-        echo "debug"
-    else
-        echo "release"
-    fi
-}
+# Cargo profile the mobile builds produce: the speed-optimized `mobile` profile (see Cargo.toml), while
+# only the web app WASM keeps the size-optimized `release`.
+MOBILE_CARGO_PROFILE="mobile"
 
 echo -e "${YELLOW}Checking prerequisites...${NC}"
 check_tool "rustc" "Visit https://rustup.rs"
@@ -85,24 +77,26 @@ echo -e "  Rust version: ${GREEN}$RUST_VERSION${NC}"
 
 # Build mode selection
 BUILD_ALL=false
-BUILD_BROWSER=false
-BUILD_DOTNET=false
+BROWSER_TARGET=""  # "web" or "browser-extension": both write core/client/wasm, so one per run
 BUILD_IOS=false
 BUILD_ANDROID=false
-FAST_MODE=false
 INCREMENTAL=false
 FORCE_BUILD=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --browser)
-            BUILD_BROWSER=true
+        --web|--browser-extension)
+            if [ -n "$BROWSER_TARGET" ] && [ "$BROWSER_TARGET" != "${1#--}" ]; then
+                echo -e "${RED}Error: --web and --browser-extension share one output directory, build one at a time${NC}"
+                exit 1
+            fi
+            BROWSER_TARGET="${1#--}"
             shift
             ;;
-        --dotnet)
-            BUILD_DOTNET=true
-            shift
+        --browser)
+            echo -e "${RED}Error: --browser was split into --web (size-optimized) and --browser-extension (speed-optimized)${NC}"
+            exit 1
             ;;
         --ios)
             BUILD_IOS=true
@@ -113,15 +107,9 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --all)
-            BUILD_BROWSER=true
-            BUILD_DOTNET=true
+            BROWSER_TARGET="${BROWSER_TARGET:-web}"
             BUILD_IOS=true
             BUILD_ANDROID=true
-            shift
-            ;;
-        --fast|--dev)
-            FAST_MODE=true
-            echo -e "${YELLOW}Fast/dev mode enabled${NC}"
             shift
             ;;
         --incremental)
@@ -136,19 +124,18 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Target options:"
-            echo "  --browser     Build WASM for browser extension and Blazor WASM client"
-            echo "  --dotnet      Build native library for .NET server-side use (macOS/Linux/Windows)"
-            echo "  --ios         Build for iOS (device + simulator arm64) with Swift bindings"
-            echo "  --android     Build for Android (arm64-v8a, armeabi-v7a, x86_64) with Kotlin bindings"
-=            echo "  --all         Build all targets"
+            echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
+            echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
+            echo "  --ios                Build for iOS (device + simulator arm64) with Swift bindings"
+            echo "  --android            Build for Android (arm64-v8a, armeabi-v7a, x86_64) with Kotlin bindings"
+            echo "  --all                Build all targets (WASM as --web)"
             echo ""
             echo "Speed options:"
-            echo "  --fast, --dev Faster builds (for development)"
-            echo "  --incremental Skip build if sources unchanged (for Xcode build phases)"
-            echo "  --force       Force rebuild even with --incremental"
+            echo "  --incremental        Skip build if sources unchanged (for Xcode build phases)"
+            echo "  --force              Force rebuild even with --incremental"
             echo ""
             echo "Other options:"
-            echo "  --help        Show this help message"
+            echo "  --help               Show this help message"
             echo ""
             exit 0
             ;;
@@ -160,23 +147,28 @@ while [[ $# -gt 0 ]]; do
 done
 
 # If no targets specified, show help
-if ! $BUILD_BROWSER && ! $BUILD_DOTNET && ! $BUILD_IOS && ! $BUILD_ANDROID; then
+if [ -z "$BROWSER_TARGET" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
     echo "No target specified. Use --help for usage."
     echo ""
     echo "Quick start:"
-    echo "  ./build.sh --browser    # Build for browser extension"
-    echo "  ./build.sh --dotnet     # Build for .NET"
+    echo "  ./build.sh --web                # Build for web app"
+    echo "  ./build.sh --browser-extension  # Build for browser extension"
     echo "  ./build.sh --ios        # Build for iOS"
     echo "  ./build.sh --android    # Build for Android"
     exit 0
 fi
 
 # ============================================
-# Browser Extension Build (WASM)
+# Browser Build (WASM): web app (size-optimized `release`) or browser extension (speed-optimized `extension`)
 # ============================================
 build_browser() {
+    local profile_args=(--release)
+    if [ "$BROWSER_TARGET" = "browser-extension" ]; then
+        profile_args=(--profile extension)
+    fi
+
     echo ""
-    echo -e "${BLUE}Building WASM for browser extension...${NC}"
+    echo -e "${BLUE}Building WASM for $BROWSER_TARGET (${profile_args[*]})...${NC}"
 
     local start_time=$(date +%s)
 
@@ -192,13 +184,24 @@ build_browser() {
         rustup target add wasm32-unknown-unknown
     fi
 
+    # SQLite is compiled for wasm32 with clang (sqlite-wasm-rs) and needs to work on MacOS too.
+    if [ "$(uname -s)" = "Darwin" ] && [ -z "${CC_wasm32_unknown_unknown:-}" ]; then
+        for llvm_prefix in /opt/homebrew/opt/llvm /usr/local/opt/llvm; do
+            if [ -x "$llvm_prefix/bin/clang" ]; then
+                export CC_wasm32_unknown_unknown="$llvm_prefix/bin/clang"
+                export AR_wasm32_unknown_unknown="$llvm_prefix/bin/llvm-ar"
+                break
+            fi
+        done
+        if [ -z "${CC_wasm32_unknown_unknown:-}" ]; then
+            echo -e "${RED}Error: an LLVM clang with the WebAssembly backend is required (brew install llvm)${NC}"
+            exit 1
+        fi
+    fi
+
     # Build with wasm-pack
     echo -e "  Running wasm-pack build..."
-    if $FAST_MODE; then
-        wasm-pack build --dev --target web --out-dir "$WASM_DIR" --features wasm
-    else
-        wasm-pack build --release --target web --out-dir "$WASM_DIR" --features wasm
-    fi
+    wasm-pack build "${profile_args[@]}" --target web --out-dir "$WASM_DIR" --features wasm
 
     local end_time=$(date +%s)
     local duration=$((end_time - start_time))
@@ -216,7 +219,7 @@ build_browser() {
 # ============================================
 distribute_browser() {
     echo ""
-    echo -e "${BLUE}Distributing to browser extension...${NC}"
+    echo -e "${BLUE}Distributing to the client core package (core/client/wasm)...${NC}"
 
     if [ -d "$WASM_DIR" ] && [ -n "$(ls -A "$WASM_DIR" 2>/dev/null)" ]; then
         rm -rf "$BROWSER_EXT_DIST"
@@ -234,7 +237,8 @@ Auto-generated from `/core/rust`. Do not edit manually.
 
 ```bash
 cd /core/rust
-./build.sh --browser
+./build.sh --web                # web app (size-optimized)
+./build.sh --browser-extension  # browser extension (speed-optimized)
 ```
 README_EOF
 
@@ -252,85 +256,6 @@ README_EOF
         echo -e "${GREEN}Distributed to: $BLAZOR_CLIENT_DIST${NC}"
         ls -lh "$BLAZOR_CLIENT_DIST/"
     fi
-}
-
-# ============================================
-# .NET Build (Native Library with FFI)
-# ============================================
-build_dotnet() {
-    echo ""
-    echo -e "${BLUE}Building native library for .NET...${NC}"
-
-    local start_time=$(date +%s)
-
-    # Detect current platform
-    local os_name
-    local arch_name
-    local lib_name
-    local target_dir
-
-    case "$(uname -s)" in
-        Darwin)
-            os_name="macos"
-            lib_name="libaliasvault_core.dylib"
-            ;;
-        Linux)
-            os_name="linux"
-            lib_name="libaliasvault_core.so"
-            ;;
-        MINGW*|MSYS*|CYGWIN*)
-            os_name="windows"
-            lib_name="aliasvault_core.dll"
-            ;;
-        *)
-            echo -e "${RED}Unsupported OS: $(uname -s)${NC}"
-            exit 1
-            ;;
-    esac
-
-    case "$(uname -m)" in
-        x86_64|amd64)
-            arch_name="x64"
-            ;;
-        arm64|aarch64)
-            arch_name="arm64"
-            ;;
-        *)
-            arch_name="$(uname -m)"
-            ;;
-    esac
-
-    target_dir="$DOTNET_DIR/${os_name}-${arch_name}"
-    mkdir -p "$target_dir"
-
-    echo -e "  Platform: ${YELLOW}${os_name}-${arch_name}${NC}"
-
-    # Build with cargo
-    echo -e "  Running cargo build..."
-    if $FAST_MODE; then
-        cargo build --features ffi
-        local cargo_target="target/debug"
-    else
-        cargo build --release --features ffi
-        local cargo_target="target/release"
-    fi
-
-    # Copy the library
-    if [ -f "$cargo_target/$lib_name" ]; then
-        cp "$cargo_target/$lib_name" "$target_dir/"
-        local lib_size
-        lib_size=$(ls -lh "$target_dir/$lib_name" | awk '{print $5}')
-        echo -e "${GREEN}Native library built! ${NC}"
-        echo -e "  Output: ${YELLOW}$target_dir/$lib_name${NC}"
-        echo -e "  Size: ${YELLOW}$lib_size${NC}"
-    else
-        echo -e "${RED}Build failed: $lib_name not found${NC}"
-        exit 1
-    fi
-
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    echo -e "${GREEN}.NET build complete! (${duration}s)${NC}"
 }
 
 # ============================================
@@ -352,7 +277,7 @@ build_ios() {
     # Incremental build check
     local checksum_file="$IOS_APP_DIST/.rust-core-checksum"
     local current_checksum=""
-    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")"
 
     if $INCREMENTAL && [ "$FORCE_BUILD" = false ] && [ -f "$checksum_file" ] && [ -f "$IOS_APP_DIST/lib/device/libaliasvault_core.a" ]; then
         local stored_checksum=$(cat "$checksum_file" 2>/dev/null || echo "")
@@ -378,14 +303,8 @@ build_ios() {
     mkdir -p "$IOS_DIR/simulator"
     mkdir -p "$IOS_DIR/swift"
 
-    local cargo_profile
-    if $FAST_MODE; then
-        cargo_profile="debug"
-        cargo_flags=""
-    else
-        cargo_profile="release"
-        cargo_flags="--release"
-    fi
+    local cargo_profile="$MOBILE_CARGO_PROFILE"
+    local cargo_flags="--profile $cargo_profile"
 
     # Build for iOS device (arm64)
     # Note: Use only 'uniffi' feature for library builds (not uniffi-cli which includes heavy bindgen deps)
@@ -402,11 +321,9 @@ build_ios() {
 
     # Strip debug symbols from static libraries to reduce size
     # Note: -S strips debug symbols but keeps the symbol table needed for linking
-    if ! $FAST_MODE; then
-        echo -e "  Stripping debug symbols from libraries..."
-        strip -S "$IOS_DIR/device/libaliasvault_core.a" 2>/dev/null || true
-        strip -S "$IOS_DIR/simulator/libaliasvault_core.a" 2>/dev/null || true
-    fi
+    echo -e "  Stripping debug symbols from libraries..."
+    strip -S "$IOS_DIR/device/libaliasvault_core.a" 2>/dev/null || true
+    strip -S "$IOS_DIR/simulator/libaliasvault_core.a" 2>/dev/null || true
 
     # Generate Swift bindings using UniFFI
     # Note: Use uniffi-cli feature here since we need the bindgen CLI tool
@@ -414,6 +331,7 @@ build_ios() {
     cargo run $cargo_flags --features uniffi-cli --bin uniffi-bindgen -- generate \
         --library "target/aarch64-apple-ios/$cargo_profile/libaliasvault_core.a" \
         --language swift \
+        --no-format \
         --out-dir "$IOS_DIR/swift"
 
     local end_time=$(date +%s)
@@ -479,7 +397,7 @@ EOF
 
     # Save checksum for incremental builds
     local current_checksum=""
-    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")"
     echo "$current_checksum" > "$IOS_APP_DIST/.rust-core-checksum"
 
     # Create README
@@ -527,7 +445,7 @@ build_android() {
     # Incremental build check
     local checksum_file="$ANDROID_APP_DIST/.rust-core-checksum"
     local current_checksum=""
-    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")"
 
     if $INCREMENTAL && [ "$FORCE_BUILD" = false ] && [ -f "$checksum_file" ] && [ -f "$ANDROID_APP_DIST/arm64-v8a/libaliasvault_core.so" ]; then
         local stored_checksum=$(cat "$checksum_file" 2>/dev/null || echo "")
@@ -575,14 +493,8 @@ build_android() {
     mkdir -p "$ANDROID_DIR/x86_64"
     mkdir -p "$ANDROID_DIR/kotlin"
 
-    local cargo_profile
-    if $FAST_MODE; then
-        cargo_profile="debug"
-        cargo_flags=""
-    else
-        cargo_profile="release"
-        cargo_flags="--release"
-    fi
+    local cargo_profile="$MOBILE_CARGO_PROFILE"
+    local cargo_flags="--profile $cargo_profile"
 
     # Set up Android toolchain
     local host_tag
@@ -625,14 +537,12 @@ build_android() {
 
     # Strip debug symbols from shared libraries using NDK strip
     # This removes debug info while keeping symbols needed for JNI
-    if ! $FAST_MODE; then
-        echo -e "  Stripping debug symbols from libraries..."
-        local llvm_strip="$toolchain/bin/llvm-strip"
-        if [ -x "$llvm_strip" ]; then
-            "$llvm_strip" --strip-debug "$ANDROID_DIR/arm64-v8a/libaliasvault_core.so" 2>/dev/null || true
-            "$llvm_strip" --strip-debug "$ANDROID_DIR/armeabi-v7a/libaliasvault_core.so" 2>/dev/null || true
-            "$llvm_strip" --strip-debug "$ANDROID_DIR/x86_64/libaliasvault_core.so" 2>/dev/null || true
-        fi
+    echo -e "  Stripping debug symbols from libraries..."
+    local llvm_strip="$toolchain/bin/llvm-strip"
+    if [ -x "$llvm_strip" ]; then
+        "$llvm_strip" --strip-debug "$ANDROID_DIR/arm64-v8a/libaliasvault_core.so" 2>/dev/null || true
+        "$llvm_strip" --strip-debug "$ANDROID_DIR/armeabi-v7a/libaliasvault_core.so" 2>/dev/null || true
+        "$llvm_strip" --strip-debug "$ANDROID_DIR/x86_64/libaliasvault_core.so" 2>/dev/null || true
     fi
 
     # Generate Kotlin bindings using UniFFI
@@ -665,6 +575,7 @@ build_android() {
     cargo run --features uniffi-cli --bin uniffi-bindgen -- generate \
         --library "target/debug/$native_lib_name" \
         --language kotlin \
+        --no-format \
         --out-dir "$ANDROID_DIR/kotlin"
 
     local end_time=$(date +%s)
@@ -719,7 +630,7 @@ distribute_android() {
 
     # Save checksum for incremental builds
     local current_checksum=""
-    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")-$(current_cargo_profile)"
+    current_checksum="$(compute_source_checksum "$SCRIPT_DIR/src")"
     echo "$current_checksum" > "$ANDROID_APP_DIST/.rust-core-checksum"
 
     echo -e "${GREEN}Distributed to: $ANDROID_APP_DIST${NC}"
@@ -730,16 +641,9 @@ distribute_android() {
 # ============================================
 TOTAL_START=$(date +%s)
 
-if $BUILD_BROWSER; then
+if [ -n "$BROWSER_TARGET" ]; then
     build_browser
     distribute_browser
-fi
-
-if $BUILD_DOTNET; then
-    build_dotnet
-    # Note: dotnet native libs are built to dist/dotnet/ but not distributed
-    # Blazor WASM uses the WASM module via JS interop instead
-    echo -e "${YELLOW}Note: Native library built to dist/dotnet/ (for server-side .NET use)${NC}"
 fi
 
 if $BUILD_IOS; then

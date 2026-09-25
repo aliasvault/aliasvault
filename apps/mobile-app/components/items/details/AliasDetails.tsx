@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
-import { IdentityHelperUtils } from '@/utils/dist/core/models/identity';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
+import { IdentityHelperUtils } from '@aliasvault/models/identity';
+import type { Item } from '@aliasvault/models/vault';
+import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 import FormInputCopyToClipboard from '@/components/form/FormInputCopyToClipboard';
 import { ThemedText } from '@/components/themed/ThemedText';

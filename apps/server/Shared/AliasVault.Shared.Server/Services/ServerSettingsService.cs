@@ -134,6 +134,16 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.AuthLogRetentionDays = authDays;
         }
 
+        if (int.TryParse(settings.GetValueOrDefault("UnlockKeyHistoryRetentionDays"), out var unlockKeyHistoryDays))
+        {
+            model.UnlockKeyHistoryRetentionDays = unlockKeyHistoryDays;
+        }
+
+        if (int.TryParse(settings.GetValueOrDefault("UnreferencedBlobGraceHours"), out var unreferencedBlobHours))
+        {
+            model.UnreferencedBlobGraceHours = unreferencedBlobHours;
+        }
+
         if (int.TryParse(settings.GetValueOrDefault("EmailRetentionDays"), out var emailDays))
         {
             model.EmailRetentionDays = emailDays;
@@ -220,17 +230,30 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
     {
         await SetSettingAsync("GeneralLogRetentionDays", model.GeneralLogRetentionDays.ToString());
         await SetSettingAsync("AuthLogRetentionDays", model.AuthLogRetentionDays.ToString());
+        await SetSettingAsync("UnlockKeyHistoryRetentionDays", model.UnlockKeyHistoryRetentionDays.ToString());
+        await SetSettingAsync("UnreferencedBlobGraceHours", model.UnreferencedBlobGraceHours.ToString());
         await SetSettingAsync("EmailRetentionDays", model.EmailRetentionDays.ToString());
         await SetSettingAsync("DisabledEmailRetentionDays", model.DisabledEmailRetentionDays.ToString());
         await SetSettingAsync("MaxEmailsPerUser", model.MaxEmailsPerUser.ToString());
         await SetSettingAsync("MarkUserInactiveAfterDays", model.MarkUserInactiveAfterDays.ToString());
         await SetSettingAsync("MaxEmailsPerInactiveUser", model.MaxEmailsPerInactiveUser.ToString());
-        await SetSettingAsync("MaintenanceTime", model.MaintenanceTime.ToString("HH:mm", CultureInfo.InvariantCulture));
-        await SetSettingAsync("TaskRunnerDays", string.Join(",", model.TaskRunnerDays));
+        await SaveMaintenanceScheduleAsync(model.MaintenanceTime, model.TaskRunnerDays);
         await SetSettingAsync("RefreshTokenLifetimeShort", model.RefreshTokenLifetimeShort.ToString());
         await SetSettingAsync("RefreshTokenLifetimeLong", model.RefreshTokenLifetimeLong.ToString());
         await SetSettingAsync("MaxRegistrationsPerIpPer24Hours", model.MaxRegistrationsPerIpPer24Hours.ToString());
         await SetSettingAsync("MaxMobileLoginRequestsPerIpPerMinute", model.MaxMobileLoginRequestsPerIpPerMinute.ToString());
         await SetSettingAsync("MobileLoginLogRetentionDays", model.MobileLoginLogRetentionDays.ToString());
+    }
+
+    /// <summary>
+    /// Saves the maintenance schedule settings async.
+    /// </summary>
+    /// <param name="maintenanceTime">The time of day at which maintenance tasks run.</param>
+    /// <param name="taskRunnerDays">The days of the week (1 = Monday) on which maintenance tasks run.</param>
+    /// <returns>A task.</returns>
+    public async Task SaveMaintenanceScheduleAsync(TimeOnly maintenanceTime, IEnumerable<int> taskRunnerDays)
+    {
+        await SetSettingAsync("MaintenanceTime", maintenanceTime.ToString("HH:mm", CultureInfo.InvariantCulture));
+        await SetSettingAsync("TaskRunnerDays", string.Join(",", taskRunnerDays));
     }
 }

@@ -6,7 +6,7 @@
  * even when the rest of the app stays disabled. A second flag,
  * `av-suppress-save="true"`, can be combined with `av-enable` to keep autofill
  * available for matching credentials while hiding the "save this login" and
- * "create new" affordances — useful on pages where storing the credential
+ * "create new" affordances. Useful on pages where storing the credential
  * shouldn't be encouraged (e.g. AliasVault's own login form).
  */
 

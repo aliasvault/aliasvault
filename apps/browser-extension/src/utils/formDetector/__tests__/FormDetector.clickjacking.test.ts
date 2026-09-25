@@ -34,7 +34,7 @@ describe('FormDetector - Clickjacking Protection', () => {
     // User clicks, but actually focuses the hidden field (clickjacking)
     const formDetector = new FormDetector(document, hiddenEmailField);
 
-    // Should NOT detect form because clicked element is invisible
+    // Should not detect form because clicked element is invisible
     expect(formDetector.containsLoginForm()).toBe(false);
   });
 
@@ -119,7 +119,7 @@ describe('FormDetector - Clickjacking Protection', () => {
     // Email field is visible (opacity: 1) when clicked
     const formDetector = new FormDetector(document, emailField);
 
-    // Should detect form because clicked element IS visible
+    // Should detect form because clicked element is visible
     expect(formDetector.containsLoginForm()).toBe(true);
   });
 
@@ -151,7 +151,7 @@ describe('FormDetector - Clickjacking Protection', () => {
   });
 
   it('should REJECT opacity:0 field WITHOUT transition (pure clickjacking)', () => {
-    // Attacker's form: opacity:0 but NO transition (permanent invisibility)
+    // Attacker's form: opacity:0 but no transition (permanent invisibility)
     const document = createDocument(`
       <form>
         <input

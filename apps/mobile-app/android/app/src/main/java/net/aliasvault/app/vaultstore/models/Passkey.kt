@@ -22,6 +22,12 @@ data class Passkey(
     val parentItemId: UUID,
 
     /**
+     * The manifest the passkey and its item belong to. Null on a passkey not yet written: the INSERT stamps
+     * it from the item.
+     */
+    val manifestId: String?,
+
+    /**
      * Relying party identifier (domain).
      */
     val rpId: String,
@@ -57,6 +63,11 @@ data class Passkey(
     val displayName: String,
 
     /**
+     * Opaque extra data, not written by any client today.
+     */
+    val additionalData: ByteArray? = null,
+
+    /**
      * The creation date of the passkey.
      */
     val createdAt: Date,
@@ -79,6 +90,7 @@ data class Passkey(
 
         if (id != other.id) return false
         if (parentItemId != other.parentItemId) return false
+        if (manifestId != other.manifestId) return false
         if (rpId != other.rpId) return false
         if (userHandle != null) {
             if (other.userHandle == null) return false
@@ -92,6 +104,10 @@ data class Passkey(
             if (!prfKey.contentEquals(other.prfKey)) return false
         } else if (other.prfKey != null) return false
         if (displayName != other.displayName) return false
+        if (additionalData != null) {
+            if (other.additionalData == null) return false
+            if (!additionalData.contentEquals(other.additionalData)) return false
+        } else if (other.additionalData != null) return false
         if (createdAt != other.createdAt) return false
         if (updatedAt != other.updatedAt) return false
         if (isDeleted != other.isDeleted) return false
@@ -102,6 +118,7 @@ data class Passkey(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + parentItemId.hashCode()
+        result = 31 * result + (manifestId?.hashCode() ?: 0)
         result = 31 * result + rpId.hashCode()
         result = 31 * result + (userHandle?.contentHashCode() ?: 0)
         result = 31 * result + (userName?.hashCode() ?: 0)
@@ -109,6 +126,7 @@ data class Passkey(
         result = 31 * result + privateKey.contentHashCode()
         result = 31 * result + (prfKey?.contentHashCode() ?: 0)
         result = 31 * result + displayName.hashCode()
+        result = 31 * result + (additionalData?.contentHashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
         result = 31 * result + updatedAt.hashCode()
         result = 31 * result + isDeleted.hashCode()

@@ -1,8 +1,10 @@
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
+import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
@@ -13,10 +15,14 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+
+import { storage } from '#imports';
 
 /**
  * Emails list page.
@@ -44,6 +50,17 @@ const EmailsList: React.FC = () => {
   const PAGE_SIZE = 50;
 
   /**
+   * The addresses whose mailbox this vault may ask for: aliases on a server-hosted domain that are still switched on.
+   * A deleted or switched-off alias has no enabled claim link on the server, so its mail stays hidden, and addresses
+   * on domains the server does not host are never sent to it in the first place.
+   */
+  const getMailboxAddresses = useCallback(async () : Promise<string[]> => {
+    const routableAddresses = dbContext.sqliteClient?.items.getRoutableEmailAddresses() ?? [];
+    const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS) ?? [];
+    return routableAddresses.filter(address => privateEmailDomains.some(domain => address.toLowerCase().endsWith(`@${domain.toLowerCase()}`)));
+  }, [dbContext?.sqliteClient]);
+
+  /**
    * Loads emails from the web API.
    */
   const loadEmails = useCallback(async (reset: boolean = true) : Promise<void> => {
@@ -62,8 +79,8 @@ const EmailsList: React.FC = () => {
         return;
       }
 
-      // Get unique email addresses from all credentials.
-      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
+      // Get the addresses this vault has enabled claims for.
+      const emailAddresses = await getMailboxAddresses();
 
       try {
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -73,10 +90,10 @@ const EmailsList: React.FC = () => {
         });
 
         // Decrypt emails locally using private key associated with the email address.
-        const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
 
         // Decrypt emails locally using public/private key pairs.
-        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+        const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
         if (reset) {
           setEmails(decryptedEmails);
@@ -84,7 +101,7 @@ const EmailsList: React.FC = () => {
           setTotalRecords(data.totalRecords);
         }
       } catch (error) {
-        console.error(error);
+        logFailure('[Emails] Loading the mailbox failed', error);
         throw new Error(t('common.errors.unknownError'));
       }
     } catch (err) {
@@ -93,7 +110,7 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE]);
+  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t, PAGE_SIZE, getMailboxAddresses]);
 
   /**
    * Loads more emails (next page).
@@ -107,7 +124,7 @@ const EmailsList: React.FC = () => {
       setIsLoadingMore(true);
       setError(null);
 
-      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
+      const emailAddresses = await getMailboxAddresses();
       const nextPage = currentPage + 1;
 
       const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
@@ -117,8 +134,8 @@ const EmailsList: React.FC = () => {
       });
 
       // Decrypt emails locally
-      const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
-      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
+      const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
+      const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
 
       // Append to existing emails
       setEmails((prevEmails) => [...prevEmails, ...decryptedEmails]);
@@ -126,11 +143,11 @@ const EmailsList: React.FC = () => {
       setTotalRecords(data.totalRecords);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-      console.error('Failed to load more emails:', err);
+      logFailure('Failed to load more emails', err);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
+  }, [isLoadingMore, dbContext?.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t, getMailboxAddresses]);
 
   useEffect(() => {
     loadEmails();
@@ -254,8 +271,9 @@ const EmailsList: React.FC = () => {
               <div className="text-gray-900 dark:text-white mb-1 font-bold">
                 {email.subject}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {formatEmailDate(email.dateSystem)}
+              <div className="flex items-center gap-1.5 flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
+                {email.hasAttachments && <AttachmentIcon className="w-4 h-4" />}
+                <span>{formatEmailDate(email.dateSystem)}</span>
               </div>
             </div>
             <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">

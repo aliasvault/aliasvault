@@ -38,7 +38,7 @@ else
 
     /// <summary>
     /// Gets or sets the pre-computed data URI for the logo, used directly as the &lt;img src&gt; value.
-    /// Callers with raw bytes should run them through <see cref="LogoConverter.ToDataUri"/> first.
+    /// Callers with a logo row should run it through <see cref="LogoConverter.ToDataUri(Logo?)"/> first.
     /// </summary>
     [Parameter]
     public string? LogoDataUri { get; set; }

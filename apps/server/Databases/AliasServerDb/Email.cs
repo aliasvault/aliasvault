@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="Email.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -7,8 +7,6 @@
 
 namespace AliasServerDb;
 
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -27,23 +25,10 @@ public class Email
     public int Id { get; set; }
 
     /// <summary>
-    /// Gets or sets encryption key foreign key.
+    /// Gets or sets the encrypted copies of the symmetric key the email contents are encrypted with, one per
+    /// manifest that had claimed the alias at delivery time.
     /// </summary>
-    [StringLength(255)]
-    public Guid UserEncryptionKeyId { get; set; }
-
-    /// <summary>
-    /// Gets or sets foreign key to the UserEncryptionKey object which contains the public key used for encrypting
-    /// the symmetric encryption key.
-    /// </summary>
-    [ForeignKey("UserEncryptionKeyId")]
-    public virtual UserEncryptionKey EncryptionKey { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the encrypted symmetric key which was used to encrypt the email message.
-    /// This key is encrypted with the public key of the user.
-    /// </summary>
-    public string EncryptedSymmetricKey { get; set; } = null!;
+    public virtual List<EmailDecryptionKey> DecryptionKeys { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the subject of the email.
@@ -91,12 +76,12 @@ public class Email
     public DateTime DateSystem { get; set; }
 
     /// <summary>
-    /// Gets or sets the HTML content of the email message.
+    /// Gets or sets the HTML content of the email message. No longer served by the v2 API and no longer filled in since 0.31.0 in favor of MessageSource. TODO: remove this column in a future version.
     /// </summary>
     public string? MessageHtml { get; set; }
 
     /// <summary>
-    /// Gets or sets the plain text content of the email message.
+    /// Gets or sets the plain text content of the email message. No longer served by the v2 API and no longer filled in since 0.31.0 in favor of MessageSource. TODO: remove this column in a future version.
     /// </summary>
     public string? MessagePlain { get; set; }
 
@@ -106,9 +91,22 @@ public class Email
     public string? MessagePreview { get; set; }
 
     /// <summary>
-    /// Gets or sets the source of the email message.
+    /// Gets or sets the source of the email message. Only set on legacy rows; newer rows store the
+    /// source in <see cref="MessageSourceBytes"/> instead.
     /// </summary>
-    public string MessageSource { get; set; } = null!;
+    public string? MessageSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the gzip-compressed and encrypted raw RFC 822 source of the email message. The single authoritative
+    /// body copy for emails stored in the source-only format; clients detect the compression via the gzip magic bytes (0x1f 0x8b) after decrypt.
+    /// </summary>
+    public byte[]? MessageSourceBytes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of attachments contained in the email message. Stamped at ingest so list
+    /// views can show an attachment indicator without parsing the encrypted source.
+    /// </summary>
+    public int AttachmentCount { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the email is visible.
@@ -121,7 +119,15 @@ public class Email
     public bool PushNotificationSent { get; set; }
 
     /// <summary>
-    /// Gets or sets the collection of email attachments.
+    /// Gets or sets the collection of email attachments. Only populated for legacy emails: no longer written since
+    /// 0.31.0, as attachments are carried inline in the message source. See <see cref="EmailAttachment"/> for the
+    /// conditions under which this table can be dropped.
     /// </summary>
     public virtual List<EmailAttachment> Attachments { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the attachment bodies that were detached from <see cref="MessageSourceBytes"/> at ingest.
+    /// Clients can fetch these individually, only when the user actually opens an attachment.
+    /// </summary>
+    public virtual List<EmailPart> Parts { get; set; } = [];
 }

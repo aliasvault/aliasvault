@@ -1,501 +1,315 @@
-//! Vault merge logic using Last-Write-Wins (LWW) strategy.
+//! Vault merge: Last-Write-Wins over manifest JSON + data buckets, rows in, rows out.
 //!
-//! This module provides the core merge functionality that works on JSON table data.
-//! It generates SQL statements that clients can execute directly on their local database.
+//! This is the merge for the manifest-v1 storage format (used since 0.31.0+). It runs one layer above any concrete
+//! materialization (SQLite or otherwise): both sides arrive in canonical form and the output is
+//! the merged canonical form, which the platform then materializes once.
+//!
+//! Each manifest is merged independently (the server manifest set is the universe), so a broken
+//! manifest can never affect another manifest's rows, and blob columns carry `__blobRef` markers
+//! rather than bytes, so no byte payload ever crosses the merge.
 
-mod types;
+use std::collections::{BTreeSet, HashMap, HashSet};
 
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::error::VaultResult;
-use types::SYNCABLE_TABLES;
-pub use types::SYNCABLE_TABLE_NAMES;
+use crate::timestamp::updated_at;
+use crate::vault_model::{id_key, TableConfig, SYNCABLE_TABLES};
+use crate::vault_codec::{bucket_categories, ensure_readable_schema_version, identity_part, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
 
-/// A record is a map of column names to JSON values.
-pub type Record = HashMap<String, serde_json::Value>;
-
-/// Data for a single table.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TableData {
-    /// Table name
-    pub name: String,
-    /// All records in this table
-    pub records: Vec<Record>,
-}
-
-/// Input for the merge operation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MergeInput {
-    /// Tables from the local database
-    pub local_tables: Vec<TableData>,
-    /// Tables from the server database
-    pub server_tables: Vec<TableData>,
-}
-
-/// A SQL statement with its parameter values.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SqlStatement {
-    /// The SQL query with ? placeholders
-    pub sql: String,
-    /// Parameter values in order
-    pub params: Vec<serde_json::Value>,
-}
+mod item_deletes;
+#[cfg(test)]
+mod tests;
 
 /// Statistics about what was merged.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 pub struct MergeStats {
-    /// Number of tables processed
     pub tables_processed: u32,
-    /// Records where local version was kept
     pub records_from_local: u32,
-    /// Records where server version was used (updates)
     pub records_from_server: u32,
-    /// Records that only existed locally (created offline)
     pub records_created_locally: u32,
-    /// Number of conflicts resolved (both had the record)
     pub conflicts: u32,
-    /// Records inserted from server (server-only records)
     pub records_inserted: u32,
 }
 
-/// Output of the merge operation.
+impl MergeStats {
+    /// Add another manifest's counters to these, for a whole-vault total.
+    pub fn add(&mut self, other: &MergeStats) {
+        self.tables_processed += other.tables_processed;
+        self.records_from_local += other.records_from_local;
+        self.records_from_server += other.records_from_server;
+        self.records_created_locally += other.records_created_locally;
+        self.conflicts += other.conflicts;
+        self.records_inserted += other.records_inserted;
+    }
+}
+
+/// Input of the canonical merge. The server side is the base (kept on ties); the local side is the
+/// incoming set produced by `canonicalize_from_sqlite`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MergeOutput {
-    /// Whether the merge was successful
-    pub success: bool,
-    /// SQL statements to execute on the local database (in order)
-    pub statements: Vec<SqlStatement>,
-    /// Overall statistics
+#[serde(rename_all = "camelCase")]
+pub struct CanonicalMergeInput {
+    pub server_manifests: Vec<Manifest>,
+    pub server_buckets: Vec<DataBucket>,
+    #[serde(default)]
+    pub contentless_server_manifest_ids: Vec<String>,
+    pub local_manifests: Vec<Manifest>,
+    pub local_buckets: Vec<DataBucket>,
+    pub schema_columns: HashMap<String, Vec<String>>,
+}
+
+/// One manifest's merged result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CanonicalManifestMerge {
+    pub manifest_id: String,
+    pub manifest: Manifest,
+    pub buckets: Vec<DataBucket>,
     pub stats: MergeStats,
 }
 
-/// Main entry point: merge local and server vault data.
-///
-/// # Arguments
-/// * `input` - MergeInput containing local and server table data
-///
-/// # Returns
-/// MergeOutput with SQL statements to execute on local database
-pub fn merge_vaults(input: MergeInput) -> VaultResult<MergeOutput> {
-    let mut total_stats = MergeStats::default();
-    let mut statements: Vec<SqlStatement> = Vec::new();
+/// Output of the canonical merge.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CanonicalMergeOutput {
+    pub manifests: Vec<CanonicalManifestMerge>,
+    pub dropped_local_manifest_ids: Vec<String>,
+}
 
-    // Create lookup maps for quick access
-    let local_map: HashMap<&str, &TableData> = input
-        .local_tables
-        .iter()
-        .map(|t| (t.name.as_str(), t))
-        .collect();
+/// Merge the local canonical vault onto the server canonical vault (the base), per manifest.
+pub fn merge_canonical(input: CanonicalMergeInput) -> VaultResult<CanonicalMergeOutput> {
+    let CanonicalMergeInput { server_manifests, server_buckets, contentless_server_manifest_ids, local_manifests, local_buckets, schema_columns } = input;
 
-    let server_map: HashMap<&str, &TableData> = input
-        .server_tables
-        .iter()
-        .map(|t| (t.name.as_str(), t))
-        .collect();
-
-    // Process each syncable table
-    for table_config in SYNCABLE_TABLES {
-        let table_name = table_config.name;
-
-        let local_data = local_map.get(table_name);
-        let server_data = server_map.get(table_name);
-
-        // Skip if table doesn't exist in either database
-        let (local_records, server_records) = match (local_data, server_data) {
-            (Some(l), Some(s)) => (&l.records, &s.records),
-            (Some(l), None) => {
-                // Table only in local - nothing to merge
-                total_stats.records_created_locally += l.records.len() as u32;
-                continue;
-            }
-            (None, Some(s)) => {
-                // Table only in server - insert all
-                for record in &s.records {
-                    if let Some(stmt) = generate_insert_sql(table_name, record) {
-                        statements.push(stmt);
-                        total_stats.records_inserted += 1;
-                    }
-                }
-                total_stats.tables_processed += 1;
-                continue;
-            }
-            (None, None) => continue,
-        };
-
-        // Merge the table and generate SQL statements
-        let table_statements = if table_config.uses_composite_key() {
-            merge_table_by_composite_key(
-                table_name,
-                local_records,
-                server_records,
-                table_config.composite_key_columns,
-                &mut total_stats,
-            )
-        } else {
-            merge_table_by_id(table_name, local_records, server_records, &mut total_stats)
-        };
-
-        statements.extend(table_statements);
-        total_stats.tables_processed += 1;
+    for manifest in &server_manifests {
+        ensure_readable_schema_version(manifest.schema_version, &format!("server manifest {}", manifest.manifest_id))?;
+    }
+    for bucket in &server_buckets {
+        ensure_readable_schema_version(bucket.schema_version, &format!("\"{}\" server bucket of manifest {}", bucket.category, bucket.manifest_id))?;
     }
 
-    Ok(MergeOutput {
-        success: true,
-        statements,
-        stats: total_stats,
-    })
+    let mut local_by_id: HashMap<String, Manifest> = local_manifests.into_iter().map(|m| (id_key(&m.manifest_id), m)).collect();
+    let mut local_buckets_by_id = group_buckets(local_buckets);
+    let mut server_buckets_by_id = group_buckets(server_buckets);
+
+    let mut manifests: Vec<CanonicalManifestMerge> = Vec::new();
+    for server_manifest in server_manifests {
+        let key = id_key(&server_manifest.manifest_id);
+        let local = local_by_id.remove(&key);
+        let local_buckets = local_buckets_by_id.remove(&key).unwrap_or_default();
+        let server_buckets = server_buckets_by_id.remove(&key).unwrap_or_default();
+        manifests.push(merge_manifest_pair(server_manifest, server_buckets, local, local_buckets, &schema_columns));
+    }
+
+    // A contentless server manifest has no base; the local counterpart passes through whole.
+    for manifest_id in contentless_server_manifest_ids {
+        let key = id_key(&manifest_id);
+        if let Some(local) = local_by_id.remove(&key) {
+            manifests.push(pass_through(local, local_buckets_by_id.remove(&key).unwrap_or_default()));
+        }
+    }
+
+    let mut dropped_local_manifest_ids: Vec<String> = local_by_id.into_values().map(|m| m.manifest_id).collect();
+    dropped_local_manifest_ids.sort();
+
+    Ok(CanonicalMergeOutput { manifests, dropped_local_manifest_ids })
 }
 
-/// Merge a JSON string input and return JSON string output.
-/// Convenience function for FFI.
-pub fn merge_vaults_json(input_json: &str) -> VaultResult<String> {
-    let input: MergeInput = serde_json::from_str(input_json)?;
-    let output = merge_vaults(input)?;
-    let output_json = serde_json::to_string(&output)?;
-    Ok(output_json)
+/// Group buckets by their manifest id (lowercased).
+fn group_buckets(buckets: Vec<DataBucket>) -> HashMap<String, Vec<DataBucket>> {
+    let mut grouped: HashMap<String, Vec<DataBucket>> = HashMap::new();
+    for bucket in buckets {
+        grouped.entry(id_key(&bucket.manifest_id)).or_default().push(bucket);
+    }
+    grouped
 }
 
-/// Merge table records by Id (standard merge).
-/// Returns SQL statements to apply to local database.
-fn merge_table_by_id(
-    table_name: &str,
-    local_records: &[Record],
-    server_records: &[Record],
+/// Merge one manifest: LWW over the flattened table view of both sides, then split the bucketed
+/// tables back out. The merged `Manifest` is the server one with only its tables replaced.
+fn merge_manifest_pair(
+    server: Manifest,
+    server_buckets: Vec<DataBucket>,
+    local: Option<Manifest>,
+    local_buckets: Vec<DataBucket>,
+    schema_columns: &HashMap<String, Vec<String>>,
+) -> CanonicalManifestMerge {
+    let manifest_id = server.manifest_id.clone();
+    let mut stats = MergeStats::default();
+
+    // A bucket of a category this build does not know cannot be flattened without losing its
+    // category; the server's ride through as-is and the local ones are dropped with the rest of
+    // the local carrier, exactly as the base-wins rule treats every unknown table.
+    let server_bucket_extras: HashMap<String, HashMap<String, serde_json::Value>> = server_buckets.iter().map(|bucket| (bucket.category.clone(), bucket.extra.clone())).collect();
+    let (server_bucket_tables, unknown_server_buckets) = split_known_buckets(server_buckets);
+    let (local_bucket_tables, _) = split_known_buckets(local_buckets);
+
+    let mut base_tables = server.tables.clone();
+    base_tables.extend(server_bucket_tables);
+    let mut incoming_tables = local.map(|m| m.tables).unwrap_or_default();
+    incoming_tables.extend(local_bucket_tables);
+
+    // An item is deleted as a unit including any child rows.
+    item_deletes::resolve_item_deletes(&mut base_tables, &mut incoming_tables);
+
+    let table_names: BTreeSet<String> = base_tables.keys().chain(incoming_tables.keys()).cloned().collect();
+
+    let mut merged: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+    for name in table_names {
+        let base_entry = base_tables.remove(&name);
+        let base_carried_table = base_entry.is_some();
+        let base_rows = base_entry.unwrap_or_default();
+        let incoming_rows = incoming_tables.remove(&name).unwrap_or_default();
+        let merged_rows = match SYNCABLE_TABLES.iter().find(|t| t.name == name) {
+            Some(config) => {
+                stats.tables_processed += 1;
+                merge_rows(config, base_rows, incoming_rows, schema_columns, &mut stats)
+            }
+            // Not a syncable table (a skip table, or one from a newer writer): the base wins as-is.
+            None => base_rows,
+        };
+        /*
+         * A table the base carried stays in the output even when it merged to nothing, so the merged
+         * manifest keeps the base's shape.
+         */
+        if base_carried_table || !merged_rows.is_empty() {
+            merged.insert(name, merged_rows);
+        }
+    }
+
+    // A union of concurrently added multi-value rows can leave two rows at the same ValueIndex, and a
+    // delete that won can leave the other side's children under a tombstoned item; re-normalizing the
+    // output renumbers the first and drops the second, so a merged manifest is normalized like any other.
+    crate::vault_codec::normalize::normalize_row_shapes(&mut merged);
+
+    let mut buckets = unknown_server_buckets;
+    for category in bucket_categories() {
+        let mut bucket_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+        for table in tables_for_category(category) {
+            if let Some(rows) = merged.remove(table) {
+                bucket_tables.insert(table.to_string(), rows);
+            }
+        }
+        if !bucket_tables.is_empty() {
+            // A merged bucket keeps the server's extra top-level keys.
+            let extra = server_bucket_extras.get(category).cloned().unwrap_or_default();
+            buckets.push(DataBucket { extra, ..DataBucket::new(manifest_id.clone(), category.to_string(), bucket_tables) });
+        }
+    }
+
+    let manifest = Manifest { tables: merged, ..server };
+    CanonicalManifestMerge { manifest_id, manifest, buckets, stats }
+}
+
+/// Split buckets into the flattened rows of the tables this build buckets itself, and leftover
+/// buckets holding every other table (a newer writer's), kept under their served category.
+fn split_known_buckets(buckets: Vec<DataBucket>) -> (HashMap<String, Vec<CodecRecord>>, Vec<DataBucket>) {
+    let mut tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+    let mut unknown: Vec<DataBucket> = Vec::new();
+    for bucket in buckets {
+        let mut unknown_tables: HashMap<String, Vec<CodecRecord>> = HashMap::new();
+        for (name, rows) in bucket.tables {
+            if is_bucketed_table(&name) {
+                tables.entry(name).or_default().extend(rows);
+            } else {
+                unknown_tables.insert(name, rows);
+            }
+        }
+        if !unknown_tables.is_empty() {
+            unknown.push(DataBucket::new(bucket.manifest_id, bucket.category, unknown_tables));
+        }
+    }
+    (tables, unknown)
+}
+
+/// A contentless server manifest's local counterpart passes through whole: every row is an
+/// offline-kept row.
+fn pass_through(local: Manifest, local_buckets: Vec<DataBucket>) -> CanonicalManifestMerge {
+    let mut stats = MergeStats::default();
+    let row_count = |tables: &HashMap<String, Vec<CodecRecord>>| tables.values().map(|rows| rows.len() as u32).sum::<u32>();
+    stats.records_inserted = row_count(&local.tables) + local_buckets.iter().map(|b| row_count(&b.tables)).sum::<u32>();
+
+    CanonicalManifestMerge { manifest_id: local.manifest_id.clone(), manifest: local.clone(), buckets: local_buckets, stats }
+}
+
+/// LWW one table, rows out: base rows in order (replaced where the incoming row is strictly
+/// newer), then incoming-only rows in first-occurrence order.
+fn merge_rows(
+    config: &TableConfig,
+    base_rows: Vec<CodecRecord>,
+    incoming_rows: Vec<CodecRecord>,
+    schema_columns: &HashMap<String, Vec<String>>,
     stats: &mut MergeStats,
-) -> Vec<SqlStatement> {
-    let mut statements: Vec<SqlStatement> = Vec::new();
+) -> Vec<CodecRecord> {
+    let identity_columns = config.identity_columns();
+    // Rows arrive normalized to the wire shape here, so a canonical-only key may rely on stripped
+    // derived ids (see the FieldValues registry comment).
+    let match_columns: &[&str] = if config.canonical_key_columns.is_empty() { &identity_columns } else { config.canonical_key_columns };
+    let known_columns: Option<HashSet<&str>> = schema_columns.get(config.name).map(|cols| cols.iter().map(String::as_str).collect());
 
-    // Create map of server records by Id
-    let mut server_map: HashMap<String, &Record> = HashMap::new();
-    for record in server_records {
-        if let Some(id) = get_record_id(record) {
-            server_map.insert(id, record);
+    // Winner per match key among incoming rows; on duplicates the latest UpdatedAt wins.
+    let mut incoming_map: HashMap<String, &CodecRecord> = HashMap::new();
+    for record in &incoming_rows {
+        let key = get_key(record, match_columns);
+        match incoming_map.get(&key) {
+            Some(existing) if updated_at(record) <= updated_at(existing) => {}
+            _ => {
+                incoming_map.insert(key, record);
+            }
         }
     }
 
-    // Process local records
-    for local_record in local_records {
-        let local_id = match get_record_id(local_record) {
-            Some(id) => id,
-            None => continue,
-        };
-
-        if let Some(server_record) = server_map.get(&local_id) {
-            // Record exists in both - compare UpdatedAt for LWW
-            let local_ts = get_updated_at(local_record);
-            let server_ts = get_updated_at(server_record);
-
-            match (server_ts, local_ts) {
-                (Some(s_ts), Some(l_ts)) if s_ts > l_ts => {
-                    // Server wins - generate UPDATE
-                    stats.conflicts += 1;
-                    stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id) {
-                        statements.push(stmt);
+    let mut merged: Vec<CodecRecord> = Vec::with_capacity(base_rows.len());
+    for base_record in base_rows {
+        let key = get_key(&base_record, match_columns);
+        match incoming_map.remove(&key) {
+            Some(incoming) => {
+                let (incoming_ts, base_ts) = (updated_at(incoming), updated_at(&base_record));
+                match (incoming_ts, base_ts) {
+                    (Some(i_ts), Some(b_ts)) if i_ts > b_ts => {
+                        stats.conflicts += 1;
+                        stats.records_from_server += 1;
+                        merged.push(overlay_winner(incoming.clone(), &base_record, &identity_columns, known_columns.as_ref()));
+                    }
+                    _ => {
+                        stats.records_from_local += 1;
+                        merged.push(base_record);
                     }
                 }
-                _ => {
-                    // Local wins - no action needed
-                    stats.records_from_local += 1;
-                }
             }
-            server_map.remove(&local_id);
-        } else {
-            // Only in local (created offline) - no action needed
-            stats.records_created_locally += 1;
-        }
-    }
-
-    // Server-only records - generate INSERTs
-    for server_record in server_map.values() {
-        stats.records_inserted += 1;
-        if let Some(stmt) = generate_insert_sql(table_name, server_record) {
-            statements.push(stmt);
-        }
-    }
-
-    statements
-}
-
-/// Merge table by composite key.
-/// Returns SQL statements to apply to local database.
-fn merge_table_by_composite_key(
-    table_name: &str,
-    local_records: &[Record],
-    server_records: &[Record],
-    key_columns: &[&str],
-    stats: &mut MergeStats,
-) -> Vec<SqlStatement> {
-    let mut statements: Vec<SqlStatement> = Vec::new();
-
-    // Create map of server records by composite key
-    let mut server_map: HashMap<String, &Record> = HashMap::new();
-    for record in server_records {
-        let key = get_composite_key(record, key_columns);
-        // Keep the one with latest UpdatedAt if duplicate keys
-        if let Some(existing) = server_map.get(&key) {
-            if get_updated_at(record) > get_updated_at(existing) {
-                server_map.insert(key, record);
+            None => {
+                stats.records_created_locally += 1;
+                merged.push(base_record);
             }
-        } else {
-            server_map.insert(key, record);
         }
     }
 
-    // Process local records
-    for local_record in local_records {
-        let composite_key = get_composite_key(local_record, key_columns);
-
-        let local_id = match get_record_id(local_record) {
-            Some(id) => id,
-            None => continue,
-        };
-
-        if let Some(server_record) = server_map.get(&composite_key) {
-            // Record exists in both - compare UpdatedAt
-            let local_ts = get_updated_at(local_record);
-            let server_ts = get_updated_at(server_record);
-
-            match (server_ts, local_ts) {
-                (Some(s_ts), Some(l_ts)) if s_ts > l_ts => {
-                    // Server wins - update with server data but keep local Id
-                    stats.conflicts += 1;
-                    stats.records_from_server += 1;
-                    if let Some(stmt) = generate_update_sql(table_name, server_record, &local_id) {
-                        statements.push(stmt);
-                    }
-                }
-                _ => {
-                    // Local wins - no action needed
-                    stats.records_from_local += 1;
-                }
-            }
-            server_map.remove(&composite_key);
-        } else {
-            // Only in local - no action needed
-            stats.records_created_locally += 1;
+    for record in &incoming_rows {
+        if let Some(winner) = incoming_map.remove(&get_key(record, match_columns)) {
+            stats.records_inserted += 1;
+            merged.push(winner.clone());
         }
     }
 
-    // Server-only records (by composite key) - generate INSERTs
-    for (_key, server_record) in &server_map {
-        stats.records_inserted += 1;
-        if let Some(stmt) = generate_insert_sql(table_name, server_record) {
-            statements.push(stmt);
+    merged
+}
+
+/// A winning incoming row.
+fn overlay_winner(mut winner: CodecRecord, base: &CodecRecord, identity_columns: &[&str], known_columns: Option<&HashSet<&str>>) -> CodecRecord {
+    for (column, value) in base {
+        let base_wins = identity_columns.contains(&column.as_str()) || known_columns.is_some_and(|known| !known.contains(column.as_str()));
+        if base_wins {
+            winner.insert(column.clone(), value.clone());
         }
     }
-
-    statements
+    winner
 }
 
-/// Get the Id field from a record.
-fn get_record_id(record: &Record) -> Option<String> {
-    record.get("Id").and_then(|v| v.as_str()).map(String::from)
-}
-
-/// Get the UpdatedAt timestamp from a record.
-/// Handles both RFC3339 format (2025-12-11T06:50:10.674Z) and
-/// SQLite format (2025-12-11 06:50:10.674).
-fn get_updated_at(record: &Record) -> Option<DateTime<Utc>> {
-    record
-        .get("UpdatedAt")
-        .and_then(|v| v.as_str())
-        .and_then(|s| {
-            // Try RFC3339 first
-            DateTime::parse_from_rfc3339(s)
-                .map(|dt| dt.with_timezone(&Utc))
-                .ok()
-                .or_else(|| {
-                    // Try SQLite format: "YYYY-MM-DD HH:MM:SS.mmm"
-                    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S%.f")
-                        .ok()
-                        .map(|naive| naive.and_utc())
-                })
-        })
-}
-
-/// Generate composite key from specified columns.
-/// Concatenates column values with ":" separator.
-fn get_composite_key(record: &Record, key_columns: &[&str]) -> String {
-    key_columns
-        .iter()
-        .map(|col| {
-            record
-                .get(*col)
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-        })
-        .collect::<Vec<_>>()
-        .join(":")
-}
-
-/// Generate an INSERT SQL statement for a record.
-/// Uses INSERT OR REPLACE to handle potential conflicts.
-fn generate_insert_sql(table_name: &str, record: &Record) -> Option<SqlStatement> {
-    if record.is_empty() {
-        return None;
-    }
-
-    // Sort column names for consistent ordering
-    let mut columns: Vec<&String> = record.keys().collect();
-    columns.sort();
-
-    let column_list = columns.iter().map(|c| c.as_str()).collect::<Vec<_>>().join(", ");
-    let placeholders = columns.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
-    let params: Vec<serde_json::Value> = columns.iter().map(|c| record[*c].clone()).collect();
-
-    let sql = format!(
-        "INSERT OR REPLACE INTO {} ({}) VALUES ({})",
-        table_name, column_list, placeholders
-    );
-
-    Some(SqlStatement { sql, params })
-}
-
-/// Generate an UPDATE SQL statement for a record.
-/// Updates all columns except Id, which is used in the WHERE clause.
-fn generate_update_sql(table_name: &str, record: &Record, id: &str) -> Option<SqlStatement> {
-    if record.is_empty() {
-        return None;
-    }
-
-    // Sort column names for consistent ordering, excluding Id
-    let mut columns: Vec<&String> = record.keys().filter(|c| *c != "Id").collect();
-    columns.sort();
-
-    if columns.is_empty() {
-        return None;
-    }
-
-    let set_clause = columns
-        .iter()
-        .map(|c| format!("{} = ?", c))
-        .collect::<Vec<_>>()
-        .join(", ");
-
-    let mut params: Vec<serde_json::Value> = columns.iter().map(|c| record[*c].clone()).collect();
-    params.push(serde_json::json!(id)); // Add Id for WHERE clause
-
-    let sql = format!("UPDATE {} SET {} WHERE Id = ?", table_name, set_clause);
-
-    Some(SqlStatement { sql, params })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn make_record(id: &str, updated_at: &str) -> Record {
-        let mut record = HashMap::new();
-        record.insert("Id".to_string(), serde_json::json!(id));
-        record.insert("UpdatedAt".to_string(), serde_json::json!(updated_at));
-        record.insert("Name".to_string(), serde_json::json!(format!("Record {}", id)));
-        record
-    }
-
-    #[test]
-    fn test_local_wins_when_newer() {
-        let local = vec![make_record("1", "2024-01-02T00:00:00Z")];
-        let server = vec![make_record("1", "2024-01-01T00:00:00Z")];
-        let mut stats = MergeStats::default();
-
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
-
-        assert_eq!(stats.records_from_local, 1);
-        assert_eq!(stats.records_from_server, 0);
-        assert!(statements.is_empty()); // No SQL needed when local wins
-    }
-
-    #[test]
-    fn test_server_wins_when_newer() {
-        let local = vec![make_record("1", "2024-01-01T00:00:00Z")];
-        let server = vec![make_record("1", "2024-01-02T00:00:00Z")];
-        let mut stats = MergeStats::default();
-
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
-
-        assert_eq!(stats.records_from_server, 1);
-        assert_eq!(stats.conflicts, 1);
-        assert_eq!(statements.len(), 1);
-        assert!(statements[0].sql.starts_with("UPDATE Test SET"));
-    }
-
-    #[test]
-    fn test_server_only_record_inserted() {
-        let local: Vec<Record> = vec![];
-        let server = vec![make_record("1", "2024-01-01T00:00:00Z")];
-        let mut stats = MergeStats::default();
-
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
-
-        assert_eq!(stats.records_inserted, 1);
-        assert_eq!(statements.len(), 1);
-        assert!(statements[0].sql.starts_with("INSERT OR REPLACE INTO Test"));
-    }
-
-    #[test]
-    fn test_local_only_record_kept() {
-        let local = vec![make_record("1", "2024-01-01T00:00:00Z")];
-        let server: Vec<Record> = vec![];
-        let mut stats = MergeStats::default();
-
-        let statements = merge_table_by_id("Test", &local, &server, &mut stats);
-
-        assert_eq!(stats.records_created_locally, 1);
-        assert!(statements.is_empty()); // No SQL needed
-    }
-
-    #[test]
-    fn test_merge_vaults_json() {
-        let input = MergeInput {
-            local_tables: vec![TableData {
-                name: "Items".to_string(),
-                records: vec![make_record("1", "2024-01-01T00:00:00Z")],
-            }],
-            server_tables: vec![TableData {
-                name: "Items".to_string(),
-                records: vec![make_record("1", "2024-01-02T00:00:00Z")],
-            }],
-        };
-
-        let input_json = serde_json::to_string(&input).unwrap();
-        let output_json = merge_vaults_json(&input_json).unwrap();
-        let output: MergeOutput = serde_json::from_str(&output_json).unwrap();
-
-        assert!(output.success);
-        assert_eq!(output.stats.conflicts, 1);
-        // Should have one UPDATE statement
-        assert_eq!(output.statements.len(), 1);
-        assert!(output.statements[0].sql.starts_with("UPDATE Items SET"));
-    }
-
-    #[test]
-    fn test_generate_insert_sql() {
-        let record = make_record("test-id", "2024-01-01T00:00:00Z");
-        let stmt = generate_insert_sql("Items", &record).unwrap();
-
-        assert!(stmt.sql.contains("INSERT OR REPLACE INTO Items"));
-        assert!(stmt.sql.contains("Id"));
-        assert!(stmt.sql.contains("Name"));
-        assert!(stmt.sql.contains("UpdatedAt"));
-        assert_eq!(stmt.params.len(), 3);
-    }
-
-    #[test]
-    fn test_generate_update_sql() {
-        let record = make_record("test-id", "2024-01-01T00:00:00Z");
-        let stmt = generate_update_sql("Items", &record, "test-id").unwrap();
-
-        assert!(stmt.sql.starts_with("UPDATE Items SET"));
-        assert!(stmt.sql.contains("WHERE Id = ?"));
-        // Should not include Id in SET clause
-        assert!(!stmt.sql.contains("Id = ?,")); // Id only at end for WHERE
-        // Params: Name, UpdatedAt (sorted), then Id for WHERE
-        assert_eq!(stmt.params.len(), 3);
-        // Last param should be the Id
-        assert_eq!(stmt.params[2], serde_json::json!("test-id"));
-    }
+/// Stable string key over `columns`. A column the record does not carry contributes an empty part,
+/// so a row missing one still matches its counterpart rather than dropping out of the merge; that is
+/// why this is not `vault_codec::row_identity`, which skips absent parts. Ids compare
+/// case-insensitively (see [`identity_part`]), everything else exactly as spelled.
+fn get_key(record: &CodecRecord, columns: &[&str]) -> String {
+    let parts: Vec<String> = columns.iter().map(|column| record.get(*column).filter(|v| !v.is_null()).map(identity_part).unwrap_or_default()).collect();
+    parts.join(":")
 }

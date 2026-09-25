@@ -1,12 +1,10 @@
 import { Buffer } from 'buffer';
 
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
-
-import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@/utils/dist/core/models/webapi';
-import { SrpUtility } from '@/utils/SrpUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -20,6 +18,8 @@ import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@aliasvault/models/webapi';
 
 /**
  * Delete account screen.
@@ -166,7 +166,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
       const currentPasswordHashString = Buffer.from(currentPasswordHashBase64, 'base64').toString('hex').toUpperCase();
 
       // Derive the SRP client proof to authenticate the deletion with the server.
-      const clientProof = await SrpUtility.deriveClientProof(
+      const clientProof = await SrpAuthService.deriveClientProof(
         currentSalt,
         srpIdentity,
         currentPasswordHashString,

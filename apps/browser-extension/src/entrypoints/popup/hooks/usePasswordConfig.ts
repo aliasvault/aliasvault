@@ -1,7 +1,9 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import * as RustCore from '@/utils/RustCore';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
  * Value returned by {@link usePasswordConfig}.
@@ -42,7 +44,7 @@ export function usePasswordConfig(
       const password = await RustCore.generatePassword(currentSettings, currentSeed);
       setPreviewPassword(password);
     } catch (error) {
-      console.error('Error generating preview password:', error);
+      logFailure('Error generating preview password', error);
       setPreviewPassword('');
     }
   }, []);

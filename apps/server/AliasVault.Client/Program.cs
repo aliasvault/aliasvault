@@ -11,6 +11,7 @@ using AliasVault.Client.Main.Services;
 using AliasVault.Client.Providers;
 using AliasVault.Client.Services.Crypto;
 using AliasVault.Client.Services.JsInterop.RustCore;
+using AliasVault.Client.Services.VaultSync;
 using AliasVault.RazorComponents.Services;
 using AliasVault.Shared.Core;
 using Blazored.LocalStorage;
@@ -81,6 +82,9 @@ builder.Services.AddScoped(sp =>
     // Add client header.
     httpClient.DefaultRequestHeaders.Add("X-AliasVault-Client", "web-" + AppInfo.GetFullVersion());
 
+    // Increase default timeout as vault snapshot and blob transfers can carry several MB per request.
+    httpClient.Timeout = TimeSpan.FromSeconds(90);
+
     return httpClient;
 });
 builder.Services.AddTransient<AliasVaultApiHandlerService>();
@@ -103,6 +107,9 @@ builder.Services.AddScoped<QuickCreateStateService>();
 builder.Services.AddScoped<LanguageService>();
 builder.Services.AddScoped<RustCoreService>();
 builder.Services.AddScoped<AvexCryptoService>();
+builder.Services.AddScoped<VaultKeyService>();
+builder.Services.AddScoped<VaultSyncState>();
+builder.Services.AddScoped<VaultSyncService>();
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();

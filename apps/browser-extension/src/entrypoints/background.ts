@@ -2,22 +2,28 @@
  * Background script entry point - handles messages from the content script
  */
 
+import '@/platform/ClientServices';
+
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
-import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
+import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGeneratePassword, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleCheckSyncStatus, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleGetRecentlySelected } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVault, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
+import type { IExtensionMessageProtocol } from "@/utils/messaging/ExtensionMessaging";
 import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
 import { isRpIdAllowedForHost, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { runStartupMigrations } from '@/migrations';
+
+import type { ExtensionMessage, GetReturnType, MaybePromise, Message } from '@webext-core/messaging';
 
 import { defineBackground, browser } from '#imports';
 
@@ -81,6 +87,39 @@ function withTrustedWebAuthnSender<T, U>(
   }
 
   return handle(senderContext);
+}
+
+/**
+ * True when the message comes from one of the extension's own pages (popup, expanded tab, passkey window),
+ * false for content scripts running inside web pages. Sensitive operations must never be serviceable from a content-script context.
+ */
+function isTrustedExtensionSender(sender: WebAuthnMessageSender): boolean {
+  const senderOrigin = typeof sender.origin === 'string' && sender.origin !== 'null' ? sender.origin : undefined;
+  const senderUrl = senderOrigin ?? sender.url ?? sender.tab?.url;
+  if (!senderUrl) {
+    return false;
+  }
+
+  try {
+    return new URL(senderUrl).origin === new URL(browser.runtime.getURL('')).origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Register a handler that only the extension's own pages may call; a message from a content script is rejected.
+ */
+function onExtensionPageMessage<TType extends keyof IExtensionMessageProtocol>(
+  type: TType,
+  handler: (message: Message<IExtensionMessageProtocol, TType> & ExtensionMessage) => MaybePromise<GetReturnType<IExtensionMessageProtocol[TType]>>
+): void {
+  onMessage(type, (message) => {
+    if (!isTrustedExtensionSender(message.sender)) {
+      throw new Error(`${type} is only available to extension pages`);
+    }
+    return handler(message);
+  });
 }
 
 /**
@@ -153,12 +192,12 @@ function handleValidatedGetMatchingPasskeys(
  * The trusted origin is embedded in the signed client data.
  */
 function handleValidatedWebAuthnGetAssertion(
-  data: { passkeyId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
+  data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
   sender: WebAuthnMessageSender
 ): Promise<WebAuthnAssertionResponse> | WebAuthnAssertionResponse {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => typeof data?.passkeyId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    (ctx) => typeof data?.passkeyId === 'string' && typeof data?.manifestId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
     (ctx) => handleWebAuthnGetAssertion({ ...data, origin: ctx.origin }),
     { success: false, error: 'Invalid request' }
   );
@@ -207,32 +246,26 @@ export default defineBackground({
           sendMessage('OPEN_AUTOFILL_POPUP', { elementIdentifier }, tab.id);
         }
       } catch (error) {
-        console.error('Error handling show-autofill-popup command:', error);
+        logFailure('Error handling show-autofill-popup command', error);
       }
     });
 
     /*
      * Listen for messages via @webext-core/messaging.
      */
-    onMessage('PING', () => true);
+    onExtensionPageMessage('PING', () => true);
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
-    onMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
-    onMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', () => handleGetEncryptionKeyDerivationParams());
-    onMessage('GET_VAULT', () => handleGetVault());
+    onExtensionPageMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
+    onExtensionPageMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
+    onExtensionPageMessage('GET_VAULT', () => handleGetVault());
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
-    onMessage('GET_DEFAULT_EMAIL_DOMAIN', () => handleGetDefaultEmailDomain());
-    onMessage('GET_DEFAULT_IDENTITY_SETTINGS', () => handleGetDefaultIdentitySettings());
-    onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
-    onMessage('GENERATE_PASSWORD', ({ data }) => handleGeneratePassword(data.settings));
-
-    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data));
-    onMessage('STORE_ENCRYPTION_KEY', async ({ data }) => {
-      const result = await handleStoreEncryptionKey(data);
+    onExtensionPageMessage('STORE_UNLOCK_KEY', async ({ data }) => {
+      const result = await handleStoreUnlockKey(data);
       /*
-       * Storing the encryption key means the vault just became unlocked; let content scripts
+       * Storing the unlock key means the vault just became unlocked; let content scripts
        * re-query any conditional passkey requests they parked while the vault was locked.
        */
       if (result.success) {
@@ -240,30 +273,30 @@ export default defineBackground({
       }
       return result;
     });
-    onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data));
+    onExtensionPageMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
 
-    onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
-    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
-    onMessage('GET_SYNC_STATE', () => handleGetSyncState());
-    onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data));
-    onMessage('GET_SERVER_REVISION', () => handleGetServerRevision());
+    onExtensionPageMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
+    onExtensionPageMessage('GET_SYNC_STATE', () => handleGetSyncState());
 
-    onMessage('UPLOAD_VAULT', () => handleUploadVault());
-    onMessage('SYNC_VAULT', () => handleSyncVault());
-    onMessage('CHECK_SYNC_STATUS', () => handleCheckSyncStatus());
-    onMessage('FULL_VAULT_SYNC', () => handleFullVaultSync());
-    onMessage('LOCK_VAULT', () => handleLockVault());
-    onMessage('CLEAR_SESSION', () => handleClearSession());
-    onMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
+    onExtensionPageMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));
+    onExtensionPageMessage('GET_VAULT_MIGRATION_STATUS', () => handleGetVaultMigrationStatus());
+    onExtensionPageMessage('MIGRATE_VAULT_MANIFEST', () => handleMigrateVaultManifest());
+    onExtensionPageMessage('GROUP_CREATE_VAULT', ({ data }) => handleGroupCreateVault(data));
+    onExtensionPageMessage('GROUP_UPDATE_VAULT', ({ data }) => handleGroupUpdateVault(data));
+    onExtensionPageMessage('GROUP_INVITE_MEMBER', ({ data }) => handleGroupInviteMember(data));
+    onExtensionPageMessage('GROUP_REVOKE_ACCESS', ({ data }) => handleGroupRevokeAccess(data));
+    onExtensionPageMessage('LOCK_VAULT', () => handleLockVault());
+    onExtensionPageMessage('CLEAR_SESSION', () => handleClearSession());
+    onExtensionPageMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
 
     onMessage('OPEN_POPUP', () => handleOpenPopup());
     onMessage('OPEN_POPUP_WITH_ITEM', ({ data }) => handlePopupWithItem(data));
     onMessage('OPEN_POPUP_CREATE_CREDENTIAL', ({ data, sender }) => handleOpenPopupCreateCredential(data, sender));
-    onMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
+    onExtensionPageMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
 
-    onMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
-    onMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
-    onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
+    onExtensionPageMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
+    onExtensionPageMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
+    onExtensionPageMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
 
     // Remember login save messages
     onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data));
@@ -271,7 +304,6 @@ export default defineBackground({
     onMessage('ADD_URL_TO_CREDENTIAL', ({ data }) => handleAddUrlToCredential(data));
     onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data }) => handleIsUrlLinkedToCredential(data));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
-    onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data));
 
     // TOTP autofill messages
     onMessage('GET_ITEMS_WITH_TOTP', ({ data }) => handleGetItemsWithTotp(data));
@@ -279,9 +311,11 @@ export default defineBackground({
     onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data));
     onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data));
 
+    // Record item usage (last used + counts) into the Stats data bucket
+    onMessage('RECORD_ITEM_USAGE', ({ data }) => handleRecordItemUsage(data));
+
     // Track recently selected items for autofill prioritization
     onMessage('SET_RECENTLY_SELECTED', ({ data }) => handleSetRecentlySelected(data));
-    onMessage('GET_RECENTLY_SELECTED', ({ data }) => handleGetRecentlySelected(data));
 
     // Remember login save state (for surviving page navigation)
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
@@ -294,24 +328,19 @@ export default defineBackground({
     onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
-    onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
-    onMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
-    onMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
+    onExtensionPageMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
+    onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
+    onExtensionPageMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 
     // Clipboard management messages
     onMessage('CLIPBOARD_COPIED', () => handleClipboardCopied());
-    onMessage('CANCEL_CLIPBOARD_CLEAR', () => handleCancelClipboardClear());
-    onMessage('GET_CLIPBOARD_CLEAR_TIMEOUT', () => handleGetClipboardClearTimeout());
-    onMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data));
-    onMessage('GET_CLIPBOARD_COUNTDOWN_STATE', () => handleGetClipboardCountdownState());
+    onExtensionPageMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', ({ data }) => handleSetClipboardClearTimeout(data));
+    onExtensionPageMessage('GET_CLIPBOARD_COUNTDOWN_STATE', () => handleGetClipboardCountdownState());
 
     // Auto-lock management messages
     onMessage('RESET_AUTO_LOCK_TIMER', () => handleResetAutoLockTimer());
-    onMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data));
-    onMessage('POPUP_HEARTBEAT', () => handlePopupHeartbeat());
-
-    // Handle clipboard copied from context menu
-    onMessage('CLIPBOARD_COPIED_FROM_CONTEXT', () => handleClipboardCopied());
+    onExtensionPageMessage('SET_AUTO_LOCK_TIMEOUT', ({ data }) => handleSetAutoLockTimeout(data));
+    onExtensionPageMessage('POPUP_HEARTBEAT', () => handlePopupHeartbeat());
 
     // Passkey/WebAuthn settings
     onMessage('GET_WEBAUTHN_SETTINGS', ({ data }) => handleGetWebAuthnSettings(data));
@@ -325,8 +354,8 @@ export default defineBackground({
     onMessage('GET_MATCHING_PASSKEYS', ({ data, sender }) => handleValidatedGetMatchingPasskeys(data, sender));
 
     // Passkey popup request/response flow
-    onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
-    onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
+    onExtensionPageMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
+    onExtensionPageMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
 
     /*
      * Async setup (context menus, alarm restoration) runs in a fire-and-forget
@@ -340,7 +369,7 @@ export default defineBackground({
          */
         await runStartupMigrations();
       } catch (error) {
-        console.error('Error running startup migrations:', error);
+        logFailure('Error running startup migrations', error);
       }
 
       try {
@@ -349,7 +378,7 @@ export default defineBackground({
           await setupContextMenus();
         }
       } catch (error) {
-        console.error('Error setting up context menus:', error);
+        logFailure('Error setting up context menus', error);
       }
 
       try {
@@ -360,7 +389,7 @@ export default defineBackground({
          */
         await initializeAutoLockAlarm();
       } catch (error) {
-        console.error('Error initializing auto-lock alarm:', error);
+        logFailure('Error initializing auto-lock alarm', error);
       }
     })();
   }

@@ -8,204 +8,89 @@
 namespace AliasVault.WorkerStatus;
 
 using AliasVault.WorkerStatus.Database;
-using AliasVault.WorkerStatus.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
-/// StatusWorker class for monitoring and controlling the status of individual worker services through a database.
+/// Periodically writes a heartbeat record for the service to the database for tracking status in the admin UI.
 /// </summary>
 public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbContext> createDbContext, GlobalServiceStatus globalServiceStatus) : BackgroundService
 {
-    private IWorkerStatusDbContext _dbContext = null!;
-
     /// <summary>
-    /// Worker service execution method.
+    /// Interval between two heartbeats in milliseconds.
     /// </summary>
-    /// <param name="stoppingToken">CancellationToken.</param>
-    /// <returns>Task.</returns>
+    private const int _heartbeatIntervalInMs = 5000;
+
+    /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
-        {
-            using var initDbContext = createDbContext();
-            _dbContext = initDbContext;
-            await GetOrCreateInitialStatusRecordAsync();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to initialize service status record for {ServiceName}", globalServiceStatus.ServiceName);
-        }
-
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var dbContext = createDbContext();
-            _dbContext = dbContext;
-
             try
             {
-                var statusEntry = await GetServiceStatus();
-
-                switch (statusEntry.CurrentStatus.ToStatusEnum())
-                {
-                    case Status.Started:
-                        // Ensure that all workers are running, if not, revert to "Starting" CurrentStatus.
-                        await HandleStartedStatus(statusEntry);
-                        break;
-                    case Status.Starting:
-                        await HandleStartingStatus(statusEntry);
-                        break;
-                    case Status.Stopping:
-                        await HandleStoppingStatus(statusEntry);
-                        break;
-                    case Status.Stopped:
-                        logger.LogInformation("Service is (soft) stopped.");
-                        break;
-                }
-
-                await Task.Delay(5000, stoppingToken);
-            }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-            {
-                // Genuine host shutdown, exit the loop gracefully.
-                break;
+                await WriteHeartbeatAsync(globalServiceStatus.AreAllWorkersRunning() ? Status.Started : Status.Starting);
             }
             catch (Exception e)
             {
-                // Any other exception including database cancellations/timeouts should not break the loop but instead log the error
-                // and let the restart logic below retry the worker.
-                logger.LogError(e, "StatusWorker exception");
-                await Task.Delay(5000, stoppingToken);
+                // A failed heartbeat (database timeout, cancellation, ...) is logged and retried on the next interval.
+                logger.LogError(e, "Failed to write heartbeat for {ServiceName}", globalServiceStatus.ServiceName);
+            }
+
+            try
+            {
+                await Task.Delay(_heartbeatIntervalInMs, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
         }
 
         try
         {
-            using var dbContext = createDbContext();
-            _dbContext = dbContext;
-            await SetServiceStatus(await GetServiceStatus(), "Stopped");
+            await WriteHeartbeatAsync(Status.Stopped);
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to set service status to Stopped during shutdown");
+            logger.LogError(e, "Failed to set service status to Stopped during shutdown for {ServiceName}", globalServiceStatus.ServiceName);
         }
     }
 
     /// <summary>
-    /// Handles the Started status.
+    /// Writes the given status and the current time to the heartbeat record of the service.
     /// </summary>
-    /// <param name="statusEntry">The WorkerServiceStatus entry.</param>
-    /// <returns>Task.</returns>
-    private async Task HandleStartedStatus(WorkerServiceStatus statusEntry)
+    /// <param name="status">The status to record.</param>
+    private async Task WriteHeartbeatAsync(Status status)
     {
-        if (!globalServiceStatus.AreAllWorkersRunning())
-        {
-            await SetServiceStatus(statusEntry, Status.Starting.ToString());
-            logger.LogInformation("Status was set to Started but not all workers are running (yet). Reverting to Starting.");
-        }
-    }
+        using var dbContext = createDbContext();
+        var entry = await GetOrCreateStatusRecordAsync(dbContext);
 
-    /// <summary>
-    /// Handles the Starting status.
-    /// </summary>
-    /// <param name="statusEntry">The WorkerServiceStatus entry.</param>
-    /// <returns>Task.</returns>
-    private async Task HandleStartingStatus(WorkerServiceStatus statusEntry)
-    {
-        if (globalServiceStatus.AreAllWorkersRunning())
+        var newStatus = status.ToString();
+        if (entry.CurrentStatus != newStatus)
         {
-            await SetServiceStatus(statusEntry, Status.Started.ToString());
-            logger.LogInformation("All workers started.");
+            logger.LogInformation("Service {ServiceName} status changed from {OldStatus} to {NewStatus}", globalServiceStatus.ServiceName, entry.CurrentStatus, newStatus);
+            entry.CurrentStatus = newStatus;
         }
-        else
-        {
-            logger.LogInformation("Waiting for all workers to start.");
-        }
-    }
-
-    /// <summary>
-    /// Handles the Stopping status.
-    /// </summary>
-    /// <param name="statusEntry">The WorkerServiceStatus entry.</param>
-    /// <returns>Task.</returns>
-    private async Task HandleStoppingStatus(WorkerServiceStatus statusEntry)
-    {
-        if (globalServiceStatus.AreAllWorkersStopped())
-        {
-            await SetServiceStatus(statusEntry, Status.Stopped.ToString());
-            logger.LogInformation("All workers stopped.");
-        }
-        else
-        {
-            logger.LogInformation("Waiting for all workers to stop.");
-        }
-    }
-
-    /// <summary>
-    /// Gets the current status record of the service from database.
-    /// </summary>
-    /// <returns>New current status.</returns>
-    private async Task<WorkerServiceStatus> GetServiceStatus()
-    {
-        var entry = await GetOrCreateInitialStatusRecordAsync();
-
-        if (!string.IsNullOrEmpty(entry.DesiredStatus) && entry.CurrentStatus != entry.DesiredStatus)
-        {
-            entry.CurrentStatus = entry.DesiredStatus.ToStatusEnum() switch
-            {
-                Status.Started => Status.Starting.ToString(),
-                Status.Stopped => Status.Stopping.ToString(),
-                _ => entry.CurrentStatus,
-            };
-        }
-
-        globalServiceStatus.Status = entry.CurrentStatus;
-        globalServiceStatus.CurrentStatus = entry.CurrentStatus;
 
         entry.Heartbeat = DateTime.UtcNow;
-        await _dbContext.SaveChangesAsync();
-
-        return entry;
+        await dbContext.SaveChangesAsync();
     }
 
     /// <summary>
-    /// Updates the status of the service.
+    /// Retrieves the status record of the service or creates it if it does not exist.
+    /// Also removes any duplicate records for the same service name.
     /// </summary>
-    /// <param name="statusEntry">The WorkerServiceStatus entry to update.</param>
-    /// <param name="newStatus">The new status.</param>
-    /// <returns>New current status.</returns>
-    private async Task SetServiceStatus(WorkerServiceStatus statusEntry, string newStatus = "")
+    /// <param name="dbContext">The database context to use.</param>
+    private async Task<WorkerServiceStatus> GetOrCreateStatusRecordAsync(IWorkerStatusDbContext dbContext)
     {
-        if (!string.IsNullOrEmpty(newStatus) && statusEntry.CurrentStatus != newStatus)
-        {
-            statusEntry.CurrentStatus = newStatus;
-        }
-
-        var status = statusEntry.CurrentStatus;
-        globalServiceStatus.Status = status;
-        globalServiceStatus.CurrentStatus = status;
-
-        statusEntry.Heartbeat = DateTime.UtcNow;
-        await _dbContext.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Retrieves status record or creates an initial status record if it does not exist.
-    /// Also cleans up any duplicate records for the same service name.
-    /// </summary>
-    private async Task<WorkerServiceStatus> GetOrCreateInitialStatusRecordAsync()
-    {
-        var entries = _dbContext.WorkerServiceStatuses
-            .Where(x => x.ServiceName == globalServiceStatus.ServiceName)
-            .OrderBy(x => x.Id)
-            .ToList();
+        var entries = dbContext.WorkerServiceStatuses.Where(x => x.ServiceName == globalServiceStatus.ServiceName).OrderBy(x => x.Id).ToList();
 
         if (entries.Count > 1)
         {
             // Keep the first (oldest) record and remove duplicates.
             var duplicates = entries.Skip(1).ToList();
-            _dbContext.WorkerServiceStatuses.RemoveRange(duplicates);
-            await _dbContext.SaveChangesAsync();
+            dbContext.WorkerServiceStatuses.RemoveRange(duplicates);
+            await dbContext.SaveChangesAsync();
             logger.LogInformation("Removed {Count} duplicate status records for service {ServiceName}", duplicates.Count, globalServiceStatus.ServiceName);
         }
 
@@ -217,14 +102,13 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
         var entry = new WorkerServiceStatus
         {
             ServiceName = globalServiceStatus.ServiceName,
-            CurrentStatus = Status.Stopped.ToString(),
-            DesiredStatus = Status.Started.ToString(),
+            CurrentStatus = Status.Starting.ToString(),
             Heartbeat = DateTime.UtcNow,
         };
-        _dbContext.WorkerServiceStatuses.Add(entry);
-        await _dbContext.SaveChangesAsync();
+        dbContext.WorkerServiceStatuses.Add(entry);
+        await dbContext.SaveChangesAsync();
 
-        logger.LogInformation("Created initial status record for service {ServiceName} with CurrentStatus={CurrentStatus}, DesiredStatus={DesiredStatus}", globalServiceStatus.ServiceName, entry.CurrentStatus, entry.DesiredStatus);
+        logger.LogInformation("Created initial status record for service {ServiceName}", globalServiceStatus.ServiceName);
 
         return entry;
     }

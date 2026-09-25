@@ -14,7 +14,7 @@ protocol CredentialProviderDelegate: AnyObject {
 
 protocol PasskeyProviderDelegate: AnyObject {
     func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController
-    func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String)
+    func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String, vaultStore: VaultStore)
 }
 
 /**
@@ -239,10 +239,10 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 guard let self = self else { return }
 
                 // Attempt to unlock with PIN
-                let encryptionKeyBase64 = try vaultStore.unlockWithPin(pin)
+                let unlockKeyBase64 = try vaultStore.unlockWithPin(pin)
 
-                // Store the encryption key and unlock
-                try vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+                // Open the session with the unlock key and unlock
+                try vaultStore.storeUnlockKey(base64Key: unlockKeyBase64)
                 try vaultStore.unlockVault()
 
                 // Process the credential request
@@ -592,7 +592,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 title = NSLocalizedString("version_not_supported_title", comment: "Update Required")
                 message = NSLocalizedString("version_not_supported_message", comment: "Your app version is no longer supported. Please update to the latest version.")
 
-            case .serverVersionNotSupported:
+            case .serverVersionNotSupported, .serverUpdateRequired:
                 title = NSLocalizedString("server_version_not_supported_title", comment: "Server Update Required")
                 message = NSLocalizedString("server_version_not_supported_message", comment: "The server version is outdated. Please contact your administrator to update the server.")
 
@@ -600,7 +600,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 title = NSLocalizedString("server_unavailable_title", comment: "Server Unavailable")
                 message = NSLocalizedString("server_unavailable_message", comment: "The server is currently unavailable. Please try again later.")
 
-            case .networkError, .timeout:
+            case .networkError, .vaultSyncTimeout:
                 title = NSLocalizedString("network_error_title", comment: "Network Error")
                 message = NSLocalizedString("network_error_message", comment: "A network error occurred. Please check your connection and try again.")
 

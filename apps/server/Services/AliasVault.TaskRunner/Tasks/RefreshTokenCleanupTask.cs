@@ -44,9 +44,6 @@ public class RefreshTokenCleanupTask : IMaintenanceTask
             .Where(x => x.ExpireDate < cutoffDate)
             .ExecuteDeleteAsync(cancellationToken);
 
-        if (deletedCount > 0)
-        {
-            _logger.LogInformation("Deleted {Count} expired refresh tokens", deletedCount);
-        }
+        _logger.LogInformation("Deleted {Count} expired refresh tokens", deletedCount);
     }
 }

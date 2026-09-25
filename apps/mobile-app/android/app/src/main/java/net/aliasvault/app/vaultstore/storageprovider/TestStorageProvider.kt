@@ -1,5 +1,6 @@
 package net.aliasvault.app.vaultstore.storageprovider
 
+import android.content.Context
 import java.io.File
 
 /**
@@ -11,25 +12,24 @@ class TestStorageProvider : StorageProvider {
     private val tempFile = File.createTempFile("encrypted_database", ".db")
     private var tempMetadata = String()
     private var tempKeyDerivationParams = String()
+    private var tempAccountKeyChain: String? = null
     private var tempAuthMethods = "[]"
     private var tempAutoLockTimeout = defaultAutoLockTimeout
     private var username: String? = null
     private var offlineMode: Boolean = false
     private var serverVersion: String? = null
+    private var capabilities: String? = null
     private var isDirty: Boolean = false
+    private var dirtyScopes: List<String> = emptyList()
     private var mutationSequence: Int = 0
     private var isSyncing: Boolean = false
+
+    override fun getAppContext(): Context? = null
 
     override fun getEncryptedDatabaseFile(): File = tempFile
 
     override fun setEncryptedDatabaseFile(encryptedData: String) {
         tempFile.writeText(encryptedData)
-    }
-
-    override fun getRandomTempFilePath(): String {
-        val tempFile = File.createTempFile("temp_db", ".sqlite")
-        tempFile.deleteOnExit()
-        return tempFile.absolutePath
     }
 
     override fun setMetadata(metadata: String) {
@@ -46,6 +46,14 @@ class TestStorageProvider : StorageProvider {
 
     override fun getKeyDerivationParams(): String {
         return tempKeyDerivationParams
+    }
+
+    override fun getAccountKeyChain(): String? {
+        return tempAccountKeyChain
+    }
+
+    override fun setAccountKeyChain(chainJson: String?) {
+        tempAccountKeyChain = chainJson
     }
 
     override fun setAuthMethods(authMethods: String) {
@@ -68,6 +76,7 @@ class TestStorageProvider : StorageProvider {
         tempFile.delete()
         tempMetadata = ""
         tempKeyDerivationParams = ""
+        tempAccountKeyChain = null
         tempAuthMethods = "[]"
         tempAutoLockTimeout = defaultAutoLockTimeout
     }
@@ -104,6 +113,14 @@ class TestStorageProvider : StorageProvider {
         serverVersion = null
     }
 
+    override fun setCapabilities(json: String) {
+        capabilities = json
+    }
+
+    override fun getCapabilities(): String? {
+        return capabilities
+    }
+
     // region Sync State
 
     override fun setIsDirty(isDirty: Boolean) {
@@ -112,6 +129,14 @@ class TestStorageProvider : StorageProvider {
 
     override fun getIsDirty(): Boolean {
         return isDirty
+    }
+
+    override fun getDirtyScopes(): List<String> {
+        return dirtyScopes
+    }
+
+    override fun setDirtyScopes(scopes: List<String>) {
+        dirtyScopes = scopes
     }
 
     override fun getMutationSequence(): Int {
@@ -132,13 +157,40 @@ class TestStorageProvider : StorageProvider {
 
     override fun clearSyncState() {
         isDirty = false
+        dirtyScopes = emptyList()
         mutationSequence = 0
         isSyncing = false
     }
 
     // endregion
 
-    override fun getCacheDir(): File {
-        return File(System.getProperty("java.io.tmpdir") ?: "/tmp")
+    // region Sync engine state
+
+    private val syncEngineState = mutableMapOf<String, String>()
+
+    override fun getSyncEngineState(key: String): String? {
+        return syncEngineState[key]
     }
+
+    override fun setSyncEngineState(key: String, json: String?) {
+        if (json == null) syncEngineState.remove(key) else syncEngineState[key] = json
+    }
+
+    override fun clearSyncEngineState() {
+        syncEngineState.clear()
+    }
+
+    // endregion
+
+    // region Sync logs
+
+    private var syncLogs: String? = null
+
+    override fun getSyncLogs(): String? = syncLogs
+
+    override fun setSyncLogs(json: String) {
+        syncLogs = json
+    }
+
+    // endregion
 }

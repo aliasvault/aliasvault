@@ -1,9 +1,10 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import type { MailboxEmail } from '@/utils/dist/core/models/webapi';
+import type { DisplayItem } from '@/utils/DisplayItem';
+import type { MailboxEmail } from '@aliasvault/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
@@ -27,7 +28,7 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   const { t } = useTranslation();
   const navigate = useNavigationDebounce();
   const dbContext = useDb();
-  const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
+  const [associatedItem, setAssociatedItem] = useState<DisplayItem | null>(null);
 
   /**
    * Load the associated item for this email.
@@ -42,7 +43,8 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
       }
 
       const emailAddress = `${email.toLocal}@${email.toDomain}`;
-      const item = await dbContext.sqliteClient.items.getByEmail(emailAddress);
+      const match: { Id: string; ManifestId?: string } | null = await dbContext.sqliteClient.items.findIdByEmail(emailAddress);
+      const item = match?.ManifestId ? await dbContext.sqliteClient.items.getById({ Id: match.Id, ManifestId: match.ManifestId }) : null;
       setAssociatedItem(item);
     };
 
@@ -84,6 +86,10 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    attachmentIcon: {
+      marginRight: 2,
+      opacity: 0.6,
+    },
     emailCard: {
       backgroundColor: colors.accentBackground,
       borderRadius: 8,
@@ -108,6 +114,11 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginBottom: 8,
+    },
+    emailMeta: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexShrink: 0,
     },
     emailPreview: {
       color: colors.text,
@@ -144,9 +155,14 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
         <ThemedText style={styles.emailSubject} numberOfLines={1}>
           {email.subject}
         </ThemedText>
-        <ThemedText style={styles.emailDate}>
-          {formatEmailDate(email.dateSystem)}
-        </ThemedText>
+        <View style={styles.emailMeta}>
+          {email.hasAttachments && (
+            <MaterialIcons name="attach-file" size={14} color={colors.textMuted} style={styles.attachmentIcon} />
+          )}
+          <ThemedText style={styles.emailDate}>
+            {formatEmailDate(email.dateSystem)}
+          </ThemedText>
+        </View>
       </View>
       <ThemedText style={styles.emailPreview} numberOfLines={2}>
         {email.messagePreview}

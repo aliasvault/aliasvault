@@ -14,7 +14,7 @@
 //!   that were popular around the generated birth year. Used by de, it and ro.
 
 /// First names that were popular for births within `[start_year, end_year]`.
-pub struct DecadeNames {
+pub(crate) struct DecadeNames {
     /// First birth year covered by this list (inclusive).
     pub start_year: i32,
     /// Last birth year covered by this list (inclusive).
@@ -30,7 +30,7 @@ impl DecadeNames {
 }
 
 /// All embedded name lists for one language.
-pub struct LanguageDictionary {
+pub(crate) struct LanguageDictionary {
     /// Two-letter ISO 639-1 language code.
     pub code: &'static str,
     firstnames_male: &'static str,
@@ -106,7 +106,7 @@ macro_rules! decade_language {
 
 /// The registry of bundled language dictionaries. The order here is the order returned
 /// by the language list APIs. English is the fallback for unknown codes.
-pub static DICTIONARIES: &[LanguageDictionary] = &[
+pub(crate) static DICTIONARIES: &[LanguageDictionary] = &[
     flat_language!("da"),
     decade_language!(
         "de",
@@ -150,7 +150,7 @@ pub static DICTIONARIES: &[LanguageDictionary] = &[
 
 /// Resolve a language code (case-insensitive) to its dictionary, falling back to
 /// English for any unknown or empty code.
-pub fn resolve(code: &str) -> &'static LanguageDictionary {
+pub(crate) fn resolve(code: &str) -> &'static LanguageDictionary {
     DICTIONARIES
         .iter()
         .find(|d| d.code.eq_ignore_ascii_case(code))
@@ -163,7 +163,7 @@ pub fn resolve(code: &str) -> &'static LanguageDictionary {
 }
 
 /// List the codes of all bundled languages, in registry order.
-pub fn available_codes() -> Vec<&'static str> {
+pub(crate) fn available_codes() -> Vec<&'static str> {
     DICTIONARIES.iter().map(|d| d.code).collect()
 }
 

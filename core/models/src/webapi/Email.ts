@@ -1,13 +1,7 @@
-import { EmailAttachment } from "./EmailAttachment";
+import type { EmailDecryptionKey } from "./EmailDecryptionKey";
 
 export type Email = {
-    /** The body of the email message */
-    messageHtml: string;
-
-    /** The plain text body of the email message */
-    messagePlain: string;
-
-    /** The raw RFC 822 source of the email message */
+    /** The raw RFC 822 source of the email message (ciphertext, base64)  */
     messageSource: string;
 
     /** The ID of the email */
@@ -40,15 +34,9 @@ export type Email = {
     /** The number of seconds ago the email was received */
     secondsAgo: number;
 
-    /**
-     * The encrypted symmetric key which was used to encrypt the email message.
-     * This key is encrypted with the public key of the user.
-     */
-    encryptedSymmetricKey: string;
+    /** The encrypted copies of the email's symmetric key the caller can decrypt, one per manifest keypair the caller holds */
+    decryptionKeys: EmailDecryptionKey[];
 
-    /** The public key of the user used to encrypt the symmetric key */
-    encryptionKey: string;
-
-    /** The attachments of the email */
-    attachments: EmailAttachment[];
+    /** The public keys referenced by this email's decryption keys, indexed by EmailDecryptionKey.keyIndex */
+    publicKeys: string[];
 }

@@ -1,0 +1,50 @@
+/**
+ * A value bound to or read from a SQLite statement.
+ */
+export type SqliteValue = string | number | null | Uint8Array;
+
+/**
+ * A row as the engine returns it: column name to value. Byte columns come back as Uint8Array.
+ */
+export type SqliteRow = Record<string, SqliteValue>;
+
+/**
+ * One open SQLite database. Every call is synchronous: the repositories drive the database
+ * step by step, which only a synchronous engine can do without turning every read into a promise.
+ */
+export interface ISqliteDatabase {
+  /**
+   * Run a statement that returns no rows and report how many rows it changed.
+   */
+  run(sql: string, params?: SqliteValue[]): number;
+
+  /**
+   * Run a statement and return its rows.
+   */
+  query<T = SqliteRow>(sql: string, params?: SqliteValue[]): T[];
+
+  /**
+   * Run one or more statements separated by semicolons, without parameters.
+   */
+  exec(sql: string): void;
+
+  /**
+   * The database as SQLite file bytes.
+   */
+  export(): Uint8Array;
+
+  /**
+   * Close the database and free its memory.
+   */
+  close(): void;
+}
+
+/**
+ * The SQLite engine a host provides. The database is designed to be opened in memory only.
+ */
+export interface ISqliteEngine {
+  /**
+   * Open a database in memory, from the given SQLite file bytes or empty when omitted.
+   */
+  open(bytes?: Uint8Array): Promise<ISqliteDatabase>;
+}

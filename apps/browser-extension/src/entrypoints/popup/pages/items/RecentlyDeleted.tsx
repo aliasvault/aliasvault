@@ -1,3 +1,5 @@
+import { TRASH_RETENTION_DAYS } from '@aliasvault/client/constants/Vault';
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -10,11 +12,11 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { TRASH_RETENTION_DAYS } from '@/utils/constants/vault';
-import type { Item } from '@/utils/dist/core/models/vault';
-import type { ItemFilterType } from '@/utils/ItemFilters';
-
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Calculate days remaining until permanent deletion.
@@ -40,7 +42,7 @@ const RecentlyDeleted: React.FC = () => {
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons } = useHeaderButtons();
   const [items, setItems] = useState<Item[]>([]);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ItemRef | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showConfirmEmptyAll, setShowConfirmEmptyAll] = useState(false);
 
@@ -62,13 +64,13 @@ const RecentlyDeleted: React.FC = () => {
   /**
    * Restore an item from Recently Deleted.
    */
-  const handleRestore = useCallback(async (itemId: string) => {
+  const handleRestore = useCallback(async (item: ItemRef) => {
     if (!dbContext?.sqliteClient) {
       return;
     }
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.items.restore(itemId);
+      await dbContext.sqliteClient!.items.restore(item);
     });
 
     loadItems();
@@ -78,18 +80,18 @@ const RecentlyDeleted: React.FC = () => {
    * Permanently delete an item.
    */
   const handlePermanentDelete = useCallback(async () => {
-    if (!dbContext?.sqliteClient || !selectedItemId) {
+    if (!dbContext?.sqliteClient || !selectedItem) {
       return;
     }
 
     await executeVaultMutationAsync(async () => {
-      await dbContext.sqliteClient!.items.permanentlyDelete(selectedItemId);
+      await dbContext.sqliteClient!.items.permanentlyDelete(selectedItem);
     });
 
     loadItems();
     setShowConfirmDelete(false);
-    setSelectedItemId(null);
-  }, [dbContext?.sqliteClient, executeVaultMutationAsync, loadItems, selectedItemId]);
+    setSelectedItem(null);
+  }, [dbContext?.sqliteClient, executeVaultMutationAsync, loadItems, selectedItem]);
 
   /**
    * Empty all items from Recently Deleted (permanent delete all).
@@ -101,7 +103,7 @@ const RecentlyDeleted: React.FC = () => {
 
     await executeVaultMutationAsync(async () => {
       for (const item of items) {
-        await dbContext.sqliteClient!.items.permanentlyDelete(item.Id);
+        await dbContext.sqliteClient!.items.permanentlyDelete(item);
       }
     });
 
@@ -136,7 +138,7 @@ const RecentlyDeleted: React.FC = () => {
    */
   const handleCloseDeleteModal = useCallback(() => {
     setShowConfirmDelete(false);
-    setSelectedItemId(null);
+    setSelectedItem(null);
   }, []);
 
   if (isLoading) {
@@ -188,7 +190,7 @@ const RecentlyDeleted: React.FC = () => {
               const daysRemaining = deletedAt ? getDaysRemaining(deletedAt) : TRASH_RETENTION_DAYS;
 
               return (
-                <li key={item.Id} className="relative">
+                <li key={scopedKey(item.ManifestId, item.Id)} className="relative">
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       {/* Item card content (simplified) */}
@@ -211,14 +213,14 @@ const RecentlyDeleted: React.FC = () => {
                       {/* Action buttons */}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleRestore(item.Id)}
+                          onClick={() => handleRestore(item)}
                           className="px-3 py-1 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
                         >
                           {t('recentlyDeleted.restore')}
                         </button>
                         <button
                           onClick={() => {
-                            setSelectedItemId(item.Id);
+                            setSelectedItem({ Id: item.Id, ManifestId: item.ManifestId });
                             setShowConfirmDelete(true);
                           }}
                           className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50"
@@ -237,7 +239,7 @@ const RecentlyDeleted: React.FC = () => {
 
       {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
-        isOpen={showConfirmDelete && !!selectedItemId}
+        isOpen={showConfirmDelete && !!selectedItem}
         onClose={handleCloseDeleteModal}
         onConfirm={handlePermanentDelete}
         title={t('recentlyDeleted.confirmDeleteTitle')}

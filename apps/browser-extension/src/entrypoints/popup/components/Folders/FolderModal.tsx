@@ -1,9 +1,10 @@
+import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
-import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+import { logFailure } from '@/utils/Diagnostics';
 
 type FolderModalProps = {
   isOpen: boolean;
@@ -59,7 +60,7 @@ const FolderModal: React.FC<FolderModalProps> = ({
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }
-      console.error('Error saving folder:', err);
+      logFailure('Error saving folder', err);
     } finally {
       setIsSubmitting(false);
     }

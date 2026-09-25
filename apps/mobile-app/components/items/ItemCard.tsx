@@ -16,13 +16,15 @@ import { generateTotpCode } from '@/utils/TotpUtility';
 import { useColors } from '@/hooks/useColorScheme';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
+import type { DisplayItem } from '@/utils/DisplayItem';
+import { itemEditRoute, itemRoute } from '@/utils/ItemRoute';
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 
 type ItemCardProps = {
-  item: Item;
-  onItemDelete?: (itemId: string) => Promise<void>;
-  onItemDuplicate?: (itemId: string) => Promise<void>;
+  item: DisplayItem;
+  onItemDelete?: (item: ItemRef) => Promise<void>;
+  onItemDuplicate?: (item: ItemRef) => Promise<void>;
   showFolderPath?: boolean;
   isHighlighted?: boolean;
 };
@@ -41,7 +43,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
    * Get the display text for an item, showing username by default,
    * falling back to email only if username is null/undefined/empty
    */
-  const getItemDisplayText = (itm: Item): string => {
+  const getItemDisplayText = (itm: DisplayItem): string => {
     // Show username if available
     const username = getFieldValue(itm, FieldKey.LoginUsername);
     if (username) {
@@ -62,7 +64,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   /**
    * Get the item name, trimming it to maximum length so it doesn't overflow the UI.
    */
-  const getItemName = (itm: Item): string => {
+  const getItemName = (itm: DisplayItem): string => {
     const returnValue = itm.Name || t('items.untitled');
 
     // Trim the return value to max. 33 characters.
@@ -95,15 +97,12 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
       case t('items.contextMenu.edit'):
         navigate(() => {
           Keyboard.dismiss();
-          router.push({
-            pathname: '/(tabs)/items/add-edit',
-            params: { id: item.Id }
-          });
+          router.push(itemEditRoute(item));
         });
         break;
       case t('items.contextMenu.duplicate'):
         if (onItemDuplicate) {
-          await onItemDuplicate(item.Id);
+          await onItemDuplicate({ Id: item.Id, ManifestId: item.ManifestId });
         }
         break;
       case t('items.contextMenu.delete'):
@@ -114,7 +113,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
           t('common.delete'),
           async () => {
             if (onItemDelete) {
-              await onItemDelete(item.Id);
+              await onItemDelete({ Id: item.Id, ManifestId: item.ManifestId });
             }
           },
           { confirmStyle: 'destructive' }
@@ -169,10 +168,10 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
         {
           if (dbContext?.sqliteClient) {
             try {
-              const totpCodes = await dbContext.sqliteClient.settings.getTotpCodesForItem(item.Id);
+              const totpCodes = await dbContext.sqliteClient.items.getTotpCodesForItem(item);
               const activeTotp = totpCodes.find(tc => !tc.IsDeleted);
               if (activeTotp) {
-                const code = await generateTotpCode(activeTotp.SecretKey);
+                const code = await generateTotpCode(activeTotp.SecretKey, activeTotp);
                 if (code) {
                   await copyToClipboard(code);
                   if (Platform.OS === 'ios') {
@@ -341,7 +340,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
           onPress={() => {
             navigate(() => {
               Keyboard.dismiss();
-              router.push(`/(tabs)/items/${item.Id}`);
+              router.push(itemRoute(item));
             });
           }}
           onLongPress={() => {

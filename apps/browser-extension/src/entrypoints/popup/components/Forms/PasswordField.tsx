@@ -1,13 +1,15 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@/utils/dist/core/models/defaults';
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
-import * as RustCore from '@/utils/RustCore';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 interface IPasswordFieldProps {
   id: string;
@@ -79,7 +81,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
           setIsLoaded(true);
         }
       } catch (error) {
-        console.error('Error loading password settings:', error);
+        logFailure('Error loading password settings', error);
       }
     };
     void loadSettings();
@@ -91,7 +93,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
       onChange(password);
       setShowPassword(true);
     } catch (error) {
-      console.error('Error generating password:', error);
+      logFailure('Error generating password', error);
     }
   }, [onChange, setShowPassword]);
 

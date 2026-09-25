@@ -8,14 +8,32 @@ import VaultUtils
 public class WebApiService {
     private let vaultStore = VaultStore.shared
 
+    /// Timeout of an ordinary API call, in seconds.
+    private static let defaultRequestTimeout: TimeInterval = 8
+
+    /// Upper bound on an ordinary API call, in seconds.
+    private static let defaultResourceTimeout: TimeInterval = 120
+
+    /// Timeout of a vault transfer, in seconds. A vault moves far more data than a status call, so the sync engine marks those requests as large.
+    private static let vaultTransferTimeout: TimeInterval = 180
+
     /**
      * URLSession configured with explicit timeouts to avoid blocking the main thread for too long
      * when the server is not responding in a suitable time.
      */
     private lazy var urlSession: URLSession = {
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 8
-        config.timeoutIntervalForResource = 120
+        config.timeoutIntervalForRequest = Self.defaultRequestTimeout
+        config.timeoutIntervalForResource = Self.defaultResourceTimeout
+        config.waitsForConnectivity = false
+        return URLSession(configuration: config)
+    }()
+
+    /// URLSession for the requests that carry vault ciphertext.
+    private lazy var vaultTransferSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = Self.vaultTransferTimeout
+        config.timeoutIntervalForResource = Self.vaultTransferTimeout
         config.waitsForConnectivity = false
         return URLSession(configuration: config)
     }()
@@ -26,8 +44,8 @@ public class WebApiService {
     private let refreshTokenKey = "refreshToken"
     private let customProxyHeadersKey = "customProxyHeaders"
 
-    // Default API URL
-    private let defaultApiUrl = "https://app.aliasvault.com/api"
+    // Default API URL, shared by every client (generated from the models package).
+    private let defaultApiUrl = AppInfo.defaultApiUrl
 
     /// Shared UserDefaults for communication between main app and extension
     private let userDefaults = UserDefaults(suiteName: VaultConstants.userDefaultsSuite)!
@@ -101,12 +119,30 @@ public class WebApiService {
     }
 
     /**
-     * Get the base URL with /v1/ appended
+     * Get the API root URL without a trailing slash
+     */
+    private func getRootUrl() -> String {
+        let apiUrl = getApiUrl()
+        return apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
+    }
+
+    /**
+     * Get the base URL with /v2/ appended
      */
     private func getBaseUrl() -> String {
-        let apiUrl = getApiUrl()
-        let trimmedUrl = apiUrl.hasSuffix("/") ? String(apiUrl.dropLast()) : apiUrl
-        return "\(trimmedUrl)/v1/"
+        return "\(getRootUrl())/v2/"
+    }
+
+    /**
+     * Turn an endpoint into a full URL. If the endpoint starts with "v1/" or "v2/" etc, 
+     * resolve it against the API root, otherwise resolve it against the base URL.
+     */
+    private func resolveUrl(_ endpoint: String) -> String {
+        let path = endpoint.drop(while: { $0 == "/" })
+        if path.range(of: "^v[0-9]+/", options: .regularExpression) != nil {
+            return "\(getRootUrl())/\(path)"
+        }
+        return "\(getBaseUrl())\(path)"
     }
 
     // MARK: - Token Management
@@ -146,14 +182,16 @@ public class WebApiService {
     // MARK: - HTTP Request Execution
 
     /**
-     * Execute a WebAPI request with support for authentication and token refresh
+     * Execute a WebAPI request with support for authentication and token refresh.
+     * Pass largeTransfer for a request that carries vault ciphertext, which gets the longer transfer timeout.
      */
     public func executeRequest(
         method: String,
         endpoint: String,
         body: String?,
         headers: [String: String],
-        requiresAuth: Bool
+        requiresAuth: Bool,
+        largeTransfer: Bool = false
     ) async throws -> WebApiResponse {
         var requestHeaders = headers
 
@@ -170,7 +208,8 @@ public class WebApiService {
             method: method,
             endpoint: endpoint,
             body: body,
-            headers: requestHeaders
+            headers: requestHeaders,
+            largeTransfer: largeTransfer
         )
 
         // Handle 401 Unauthorized - attempt token refresh
@@ -186,7 +225,8 @@ public class WebApiService {
                     method: method,
                     endpoint: endpoint,
                     body: body,
-                    headers: retryHeaders
+                    headers: retryHeaders,
+                    largeTransfer: largeTransfer
                 )
 
                 return retryResponse
@@ -207,10 +247,10 @@ public class WebApiService {
         method: String,
         endpoint: String,
         body: String?,
-        headers: [String: String]
+        headers: [String: String],
+        largeTransfer: Bool = false
     ) async throws -> WebApiResponse {
-        let baseUrl = getBaseUrl()
-        let urlString = "\(baseUrl)\(endpoint)"
+        let urlString = resolveUrl(endpoint)
 
         guard let url = URL(string: urlString) else {
             throw NSError(
@@ -240,7 +280,8 @@ public class WebApiService {
         }
 
         // Execute the request
-        let (data, urlResponse) = try await urlSession.data(for: request)
+        let session = largeTransfer ? vaultTransferSession : urlSession
+        let (data, urlResponse) = try await session.data(for: request)
 
         guard let httpResponse = urlResponse as? HTTPURLResponse else {
             throw NSError(
@@ -279,7 +320,7 @@ public class WebApiService {
     }
 
     /**
-     * Refresh the access token using the refresh token
+     * Refresh the access token using the refresh token.
      */
     private func refreshAccessToken() async throws -> String? {
         guard let refreshToken = getRefreshToken() else {
@@ -307,34 +348,33 @@ public class WebApiService {
         ]
         headers["X-AliasVault-Client"] = getClientVersionHeader()
 
-        do {
-            let response = try await executeRawRequest(
-                method: "POST",
-                endpoint: "Auth/refresh",
-                body: jsonString,
-                headers: headers
-            )
+        let response = try await executeRawRequest(
+            method: "POST",
+            endpoint: "Auth/refresh",
+            body: jsonString,
+            headers: headers
+        )
 
-            guard response.statusCode == 200 else {
-                return nil
-            }
-
-            // Parse the response JSON
-            guard let data = response.body.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let newToken = json["token"] as? String,
-                  let newRefreshToken = json["refreshToken"] as? String else {
-                return nil
-            }
-
-            // Update stored tokens
-            try setAuthTokens(accessToken: newToken, refreshToken: newRefreshToken)
-
-            return newToken
-        } catch {
-            print("WebApiService: Token refresh failed: \(error)")
+        if response.statusCode == 401 || response.statusCode == 403 {
             return nil
         }
+        guard response.statusCode == 200 else {
+            print("WebApiService: Token refresh failed with status \(response.statusCode), treating the server as unreachable")
+            throw URLError(.badServerResponse)
+        }
+
+        // Parse the response JSON
+        guard let data = response.body.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let newToken = json["token"] as? String,
+              let newRefreshToken = json["refreshToken"] as? String else {
+            return nil
+        }
+
+        // Update stored tokens
+        try setAuthTokens(accessToken: newToken, refreshToken: newRefreshToken)
+
+        return newToken
     }
 
     // MARK: - Helper Methods

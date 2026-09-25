@@ -1,3 +1,6 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -8,13 +11,15 @@ import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useApiUrl } from '@/entrypoints/popup/utils/ApiUrlUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import { AppInfo } from '@/utils/AppInfo';
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { browser, storage } from "#imports";
@@ -26,6 +31,7 @@ const Settings: React.FC = () => {
   const { t } = useTranslation();
   const app = useApp();
   const auth = useAuth();
+  const hasCapability = useCapabilities();
   const webApi = useWebApi();
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
@@ -38,7 +44,7 @@ const Settings: React.FC = () => {
    * Open the client tab.
    */
   const openClientTab = async () : Promise<void> => {
-    const settingClientUrl = await storage.getItem('local:clientUrl') as string | undefined;
+    const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string | undefined;
     let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
     if (settingClientUrl && settingClientUrl.length > 0) {
       clientUrl = settingClientUrl;
@@ -83,7 +89,7 @@ const Settings: React.FC = () => {
      * Load the last known server version (persisted on each status check) so it can be
      * shown next to the app version. Useful for self-hosted troubleshooting.
      */
-    const storedServerVersion = await storage.getItem('local:serverVersion') as string | undefined;
+    const storedServerVersion = await storage.getItem(StorageKeys.SERVER_VERSION) as string | undefined;
     setServerVersion(storedServerVersion ?? null);
 
     setIsInitialLoading(false);
@@ -144,7 +150,7 @@ const Settings: React.FC = () => {
       await webApi.revokeTokens();
       await auth.clearAuthUserInitiated();
     } catch (error) {
-      console.error('Error during logout:', error);
+      logFailure('Error during logout', error);
     }
   };
 
@@ -156,6 +162,13 @@ const Settings: React.FC = () => {
 
     // Navigate to unlock page
     navigate('/unlock');
+  };
+
+  /**
+   * Navigate to family sharing settings.
+   */
+  const navigateToFamilySharingSettings = () : void => {
+    navigate('/settings/family-sharing');
   };
 
   /**
@@ -191,6 +204,13 @@ const Settings: React.FC = () => {
    */
   const navigateToUnlockMethodSettings = () : void => {
     navigate('/settings/unlock-method');
+  };
+
+  /**
+   * Navigate to security settings.
+   */
+  const navigateToSecuritySettings = () : void => {
+    navigate('/settings/security');
   };
 
   /**
@@ -312,6 +332,47 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Family Sharing Section */}
+        {hasCapability(CapabilityKeys.VaultSharing) && (
+          <section>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <button
+                onClick={navigateToFamilySharingSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{familySharingText.title}</span>
+                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 uppercase tracking-wide">
+                    {familySharingText.beta}
+                  </span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Settings Navigation Section */}
         <section>
@@ -590,6 +651,29 @@ const Settings: React.FC = () => {
                     />
                   </svg>
                   <span className="text-gray-900 dark:text-white text-left">{t('settings.contextMenuSettings')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Security Settings */}
+              <button
+                id="security-settings-button"
+                onClick={navigateToSecuritySettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.securitySettings.title')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"

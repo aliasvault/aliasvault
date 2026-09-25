@@ -15,12 +15,11 @@ using AliasClientDb.Abstracts;
 /// FieldValue entity that stores encrypted field values.
 /// Supports both system fields (with FieldKey) and custom fields (with FieldDefinitionId).
 /// </summary>
-public class FieldValue : SyncableEntity
+public class FieldValue : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the field value ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -32,7 +31,6 @@ public class FieldValue : SyncableEntity
     /// <summary>
     /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 
     /// <summary>
@@ -67,4 +65,15 @@ public class FieldValue : SyncableEntity
     /// Gets or sets the weight for sorting field values in the UI.
     /// </summary>
     public int Weight { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or sets the position of this value within its field. Always 0 for single-value fields;
+    /// values of a multi-value field are numbered 0..n.
+    /// </summary>
+    public int ValueIndex { get; set; } = 0;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this field value should be considered disabled (e.g. applies to email aliases).
+    /// </summary>
+    public bool IsDisabled { get; set; }
 }

@@ -1,5 +1,6 @@
 //! Favicon handling and source selection.
 
+use crate::credential_matcher::domain::{is_web_scheme, split_url};
 use crate::credential_matcher::extract_domain_with_port;
 
 /// The URL to fetch a favicon from, paired with the `Logos.Source` key it is stored under.
@@ -19,11 +20,9 @@ pub fn favicon_source_key(url: &str) -> String {
 
     // Only the web schemes have a favicon to fetch. `androidapp://`, `otpauth://` and `mailto:`
     // name something that is not a website at all.
-    let scheme = url_scheme(trimmed);
-    if let Some(scheme) = &scheme {
-        if scheme != "http" && scheme != "https" {
-            return String::new();
-        }
+    let (scheme, _, _) = split_url(trimmed);
+    if scheme.is_some_and(|scheme| !is_web_scheme(scheme)) {
+        return String::new();
     }
 
     let host = extract_domain_with_port(trimmed);
@@ -38,7 +37,7 @@ pub fn favicon_source_key(url: &str) -> String {
     }
 
     match &host.port {
-        Some(port) if !is_default_port(trimmed, port) => host.with_port(),
+        Some(port) if !is_default_port(scheme, port) => host.with_port(),
         _ => host.domain,
     }
 }
@@ -54,27 +53,17 @@ pub fn select_favicon_target(urls: &[String]) -> Option<FaviconTarget> {
             return None;
         }
 
-        Some(FaviconTarget {
-            url: canonical_fetch_url(trimmed),
-            source,
-        })
+        Some(FaviconTarget { url: canonical_fetch_url(trimmed), source })
     })
 }
 
-/// Canonicalize the URL for fetching a favicon from, including trimming and lowercasing.
+/// Canonicalize the URL for fetching a favicon from: lowercased scheme and host, https when scheme-less.
 fn canonical_fetch_url(url: &str) -> String {
-    let (scheme, rest) = match url.find("://") {
-        Some(index)
-            if url[..index].eq_ignore_ascii_case("http")
-                || url[..index].eq_ignore_ascii_case("https") =>
-        {
-            (url[..index].to_ascii_lowercase(), &url[index + 3..])
-        }
-        _ => ("https".to_string(), url),
+    let (scheme, authority, path) = split_url(url);
+    let scheme = match scheme {
+        Some(scheme) if is_web_scheme(scheme) => scheme.to_ascii_lowercase(),
+        _ => "https".to_string(),
     };
-
-    let authority_end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
-    let (authority, path) = rest.split_at(authority_end);
 
     let (userinfo, host) = match authority.rfind('@') {
         Some(index) => authority.split_at(index + 1),
@@ -82,28 +71,6 @@ fn canonical_fetch_url(url: &str) -> String {
     };
 
     format!("{}://{}{}{}", scheme, userinfo, host.to_ascii_lowercase(), path)
-}
-
-/// The lowercased scheme a URL is written with, or `None` when it carries none.
-fn url_scheme(url: &str) -> Option<String> {
-    let index = url.find(':')?;
-    let (scheme, rest) = (&url[..index], &url[index + 1..]);
-
-    if !scheme.starts_with(|c: char| c.is_ascii_alphabetic())
-        || !scheme
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
-    {
-        return None;
-    }
-
-    let port_end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
-    let port = &rest[..port_end];
-    if !port.is_empty() && port.chars().all(|c| c.is_ascii_digit()) {
-        return None;
-    }
-
-    Some(scheme.to_ascii_lowercase())
 }
 
 /// Whether a scheme-less host is shaped like a public hostname, meaning its last label could be a TLD.
@@ -115,10 +82,9 @@ fn looks_like_public_host(host: &str) -> bool {
     }
 }
 
-/// Whether a port is the default for the URL's scheme. Scheme-less URLs are treated as
-/// https.
-fn is_default_port(url: &str, port: &str) -> bool {
-    if url.to_ascii_lowercase().starts_with("http://") {
+/// Whether a port is the default for the scheme. Scheme-less URLs are treated as https.
+fn is_default_port(scheme: Option<&str>, port: &str) -> bool {
+    if scheme.is_some_and(|scheme| scheme.eq_ignore_ascii_case("http")) {
         port == "80"
     } else {
         port == "443"

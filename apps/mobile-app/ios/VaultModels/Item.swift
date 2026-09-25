@@ -3,6 +3,7 @@ import Foundation
 /// Item type representing vault entries in the new field-based data model.
 public struct Item: Codable, Hashable, Equatable {
     public let id: UUID
+    public let manifestId: String
     public let name: String?
     public let itemType: String
     public let logo: Data?
@@ -17,6 +18,7 @@ public struct Item: Codable, Hashable, Equatable {
 
     public init(
         id: UUID,
+        manifestId: String,
         name: String?,
         itemType: String,
         logo: Data?,
@@ -30,6 +32,7 @@ public struct Item: Codable, Hashable, Equatable {
         updatedAt: Date
     ) {
         self.id = id
+        self.manifestId = manifestId
         self.name = name
         self.itemType = itemType
         self.logo = logo
@@ -63,12 +66,7 @@ public struct Item: Codable, Hashable, Equatable {
         return fields.filter { $0.fieldKey == fieldKey }.map { $0.value }
     }
 
-    /// Get the URL field value (login.url).
-    public var url: String? {
-        return getFieldValue(FieldKey.loginUrl)
-    }
-
-    /// Get all URL field values (login.url) for multi-URL support.
+    /// Get all URL field values (login.url).
     public var urls: [String] {
         return getFieldValues(FieldKey.loginUrl)
     }

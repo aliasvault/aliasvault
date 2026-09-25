@@ -2,9 +2,9 @@ import React, { createContext, useContext, useState, useMemo, useCallback } from
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
 
@@ -39,9 +39,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * @returns boolean indicating whether the user is logged in.
    */
   const initializeAuth = useCallback(async () : Promise<boolean> => {
-    const accessToken = await storage.getItem('local:accessToken') as string;
-    const refreshToken = await storage.getItem('local:refreshToken') as string;
-    const username = await storage.getItem('local:username') as string;
+    const accessToken = await storage.getItem(StorageKeys.ACCESS_TOKEN) as string;
+    const refreshToken = await storage.getItem(StorageKeys.REFRESH_TOKEN) as string;
+    const username = await storage.getItem(StorageKeys.USERNAME) as string;
     setIsInitialized(true);
     if (accessToken && refreshToken && username) {
       setUsername(username);
@@ -55,9 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Set auth tokens in browser local storage as part of the login process. After db is initialized, the login method should be called as well.
    */
   const setAuthTokens = useCallback(async (username: string, accessToken: string, refreshToken: string) : Promise<void> => {
-    await storage.setItem('local:username', username);
-    await storage.setItem('local:accessToken', accessToken);
-    await storage.setItem('local:refreshToken', refreshToken);
+    await storage.setItem(StorageKeys.USERNAME, username);
+    await storage.setItem(StorageKeys.ACCESS_TOKEN, accessToken);
+    await storage.setItem(StorageKeys.REFRESH_TOKEN, refreshToken);
 
     // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
     await LocalPreferencesService.setVaultLockedDismissUntil(0);
@@ -68,27 +68,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Clear authentication data and tokens from storage (forced logout).
    * This is called when the server forces a logout (401, token revocation, password change).
-   * Preserves the encrypted vault + metadata for recovery on next login.
-   * Keeps username for login page prefill and vault ownership verification.
+   * Clears the encrypted vault and everything derived from it; the next login pulls a fresh one.
+   * Keeps username for login page prefill, and the local preferences.
    *
    * This is the base logout function. clearAuthUserInitiated builds on top of this.
    *
    * @param errorMessage Optional error message to display on the login page
    */
   const clearAuthForced = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // Clear session data (tokens + ephemeral data) - vault data is preserved for recovery
+    // Clear session data: tokens, ephemeral data and the vault itself
     await sendMessage('CLEAR_SESSION');
 
     // Clear in-memory database reference
     dbContext?.clearDatabase();
-
-    // Clear PIN unlock data (if any)
-    try {
-      await removeAndDisablePin();
-    } catch (error) {
-      console.error('Failed to remove PIN data:', error);
-      // Non-fatal error - continue with logout
-    }
 
     // Set global message that will be shown on the login page
     if (errorMessage) {
@@ -100,16 +92,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Clear authentication data and tokens from storage (user-initiated logout).
    * This is called when the user explicitly clicks the logout button.
    *
-   * Builds on clearAuthForced by also clearing vault data and username.
+   * Builds on clearAuthForced by also clearing the username and the local preferences.
    *
    * @param errorMessage Optional error message to display on the login page
    */
   const clearAuthUserInitiated = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // First, perform the base forced logout (clears session, in-memory db, PIN)
-    await clearAuthForced(errorMessage);
-
-    // Additionally clear vault data and username (forced logout preserves these for recovery)
+    // Clear local vault data explicitly.
     await sendMessage('CLEAR_VAULT_DATA');
+
+    // Run the parent forced logout which clears everything else.
+    await clearAuthForced(errorMessage);
 
     setUsername(null);
   }, [clearAuthForced]);

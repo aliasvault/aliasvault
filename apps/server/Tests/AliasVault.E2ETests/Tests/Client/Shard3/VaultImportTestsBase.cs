@@ -94,7 +94,7 @@ public abstract class VaultImportTestsBase : ClientPlaywrightTest
             Assert.That(pageContent, Does.Contain("Secret PIN"), "Hidden custom field label should be preserved");
             Assert.That(pageContent, Does.Contain("Recovery Notes"), "Multiline custom field label should be preserved");
 
-            // The multiline (TextArea) value renders as page text and should round-trip verbatim.
+            // The multiline (TextArea) value renders as page text and should round-trip as-is.
             Assert.That(pageContent, Does.Contain("Recovery line one"), "Multiline custom field value should be preserved");
             Assert.That(pageContent, Does.Contain("Recovery line two"), "Multiline custom field value should be preserved");
         });

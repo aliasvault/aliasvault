@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="EmailEncryption.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -15,12 +15,12 @@ using AliasServerDb;
 public static class EmailEncryption
 {
     /// <summary>
-    /// Encrypt the email contents with the user's public key.
+    /// Encrypt the email contents with a fresh symmetric key, encrypted once per recipient manifest's delivery key.
     /// </summary>
     /// <param name="email">The plain text email object to encrypt.</param>
-    /// <param name="userEncryptionKey">The user public encryption key to use for the encryption.</param>
+    /// <param name="deliveryKeys">The delivery keys of every manifest that claims the alias; each gets its own encrypted copy of the same symmetric key.</param>
     /// <returns>Email object with all sensitive fields encrypted.</returns>
-    public static Email EncryptEmail(Email email, UserEncryptionKey userEncryptionKey)
+    public static Email EncryptEmail(Email email, IReadOnlyCollection<VaultManifestDeliveryKey> deliveryKeys)
     {
         // Generate symmetric key for email encryption.
         var symmetricKey = Encryption.GenerateRandomSymmetricKey();
@@ -41,7 +41,16 @@ public static class EmailEncryption
             email.MessagePreview = Encryption.SymmetricEncrypt(email.MessagePreview, symmetricKey);
         }
 
-        email.MessageSource = Encryption.SymmetricEncrypt(email.MessageSource, symmetricKey);
+        if (email.MessageSource is not null)
+        {
+            email.MessageSource = Encryption.SymmetricEncrypt(email.MessageSource, symmetricKey);
+        }
+
+        if (email.MessageSourceBytes is not null)
+        {
+            email.MessageSourceBytes = Encryption.SymmetricEncrypt(email.MessageSourceBytes, symmetricKey);
+        }
+
         email.Subject = Encryption.SymmetricEncrypt(email.Subject, symmetricKey);
         email.From = Encryption.SymmetricEncrypt(email.From, symmetricKey);
         email.FromLocal = Encryption.SymmetricEncrypt(email.FromLocal, symmetricKey);
@@ -53,9 +62,17 @@ public static class EmailEncryption
             attachment.Bytes = Encryption.SymmetricEncrypt(attachment.Bytes, symmetricKey);
         }
 
-        // Encrypt the symmetric key with the user's public key.
-        email.EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, userEncryptionKey.PublicKey);
-        email.UserEncryptionKeyId = userEncryptionKey.Id;
+        // Encrypt the attachment bodies that were detached from the source with the same symmetric key.
+        foreach (var part in email.Parts)
+        {
+            part.Bytes = Encryption.SymmetricEncrypt(part.Bytes, symmetricKey);
+        }
+
+        // Encrypt the same symmetric key once per recipient manifest's delivery key.
+        foreach (var deliveryKey in deliveryKeys)
+        {
+            email.DecryptionKeys.Add(new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, deliveryKey.PublicKey) });
+        }
 
         return email;
     }
@@ -68,8 +85,26 @@ public static class EmailEncryption
     /// <returns>Email object with all sensitive fields decrypted.</returns>
     public static Email DecryptEmail(Email email, string userPrivateKey)
     {
-        // Decrypt symmetric key using private key.
-        var symmetricKey = Encryption.DecryptSymmetricKeyWithRsa(email.EncryptedSymmetricKey, userPrivateKey);
+        // Decrypt the symmetric key belonging to this private key; with multiple decryption keys the
+        // matching one is found by simply trying each.
+        byte[]? symmetricKey = null;
+        foreach (var decryptionKey in email.DecryptionKeys)
+        {
+            try
+            {
+                symmetricKey = Encryption.DecryptSymmetricKeyWithRsa(decryptionKey.EncryptedSymmetricKey, userPrivateKey);
+                break;
+            }
+            catch (System.Security.Cryptography.CryptographicException)
+            {
+                // The key belongs to another manifest; try the next one.
+            }
+        }
+
+        if (symmetricKey is null)
+        {
+            throw new InvalidOperationException("The email carries no decryption key that the provided private key can open.");
+        }
 
         // Encrypt all email contents with the symmetric key.
         if (email.MessageHtml is not null)
@@ -87,11 +122,27 @@ public static class EmailEncryption
             email.MessagePreview = Encryption.SymmetricDecrypt(email.MessagePreview, symmetricKey);
         }
 
-        email.MessageSource = Encryption.SymmetricDecrypt(email.MessageSource, symmetricKey);
+        if (email.MessageSource is not null)
+        {
+            email.MessageSource = Encryption.SymmetricDecrypt(email.MessageSource, symmetricKey);
+        }
+
+        if (email.MessageSourceBytes is not null)
+        {
+            // Note: the decrypted bytes are the gzip-compressed source; callers must gunzip to get the raw MIME.
+            email.MessageSourceBytes = Encryption.SymmetricDecrypt(email.MessageSourceBytes, symmetricKey);
+        }
+
         email.Subject = Encryption.SymmetricDecrypt(email.Subject, symmetricKey);
         email.From = Encryption.SymmetricDecrypt(email.From, symmetricKey);
         email.FromLocal = Encryption.SymmetricDecrypt(email.FromLocal, symmetricKey);
         email.FromDomain = Encryption.SymmetricDecrypt(email.FromDomain, symmetricKey);
+
+        // Decrypt the attachment bodies that were detached from the source.
+        foreach (var part in email.Parts)
+        {
+            part.Bytes = Encryption.SymmetricDecrypt(part.Bytes, symmetricKey);
+        }
 
         return email;
     }

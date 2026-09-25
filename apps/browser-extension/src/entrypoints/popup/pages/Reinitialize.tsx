@@ -4,10 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { useNavigation } from '@/entrypoints/popup/context/NavigationContext';
 import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { NavigationStateService } from '@/utils/NavigationStateService';
 
@@ -23,11 +25,12 @@ const Reinitialize: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const { syncVault } = useVaultSync();
   const { getCurrentTabInfo } = useCurrentTabInfo();
+  const { seedNavigationStack } = useNavigation();
   const hasInitialized = useRef(false);
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable, refreshSyncState, hasPendingMigrations } = useDb();
+  const { dbInitialized, dbAvailable, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
@@ -78,20 +81,19 @@ const Reinitialize: React.FC = () => {
         const shouldUseFreshMatch = hasTabChanged || isOnDefaultIndexPage;
 
         if (!shouldUseFreshMatch) {
-          // Restore user's navigation since they navigated away from auto-matched page
-          if (savedHistory && savedHistory.length > 1) {
-            // Navigate to the base route first
-            const firstEntry = savedHistory[0];
-            const firstPath = firstEntry.pathname + (firstEntry.search || '');
-            navigate(firstPath, { replace: true });
-            // Then navigate to the final destination with search params
-            const finalPath = lastPage + (lastHistoryEntry?.search || '');
-            navigate(finalPath, { replace: false });
-          } else {
-            // Simple navigation for non-nested routes
-            const fullPath = lastPage + (lastHistoryEntry?.search || '');
-            navigate(fullPath, { replace: true });
-          }
+          /*
+           * Restore the user's navigation since they navigated away from the auto-matched page. The full
+           * stack is replayed, not just its first and last page, so the back button walks the same trail
+           * the user took (e.g. items > folder > item) instead of dropping them back on the index.
+           */
+          const entries = savedHistory && savedHistory.length > 0 && lastHistoryEntry?.pathname === lastPage
+            ? savedHistory
+            : [{ pathname: lastPage, search: lastHistoryEntry?.search ?? '', hash: '' }];
+
+          seedNavigationStack(entries);
+          entries.forEach((entry, index) => {
+            navigate(entry.pathname + (entry.search || ''), { replace: index === 0 });
+          });
           return;
         }
       }
@@ -110,12 +112,12 @@ const Reinitialize: React.FC = () => {
 
     // Navigate to the items index: any current-site match is shown as a suggestion there.
     navigateToIndex();
-  }, [navigate, getCurrentTabInfo, navigateToIndex]);
+  }, [navigate, getCurrentTabInfo, navigateToIndex, seedNavigationStack]);
 
   /**
    * Run sync in background. If server has newer vault, useVaultSync will:
    * 1. Download and merge (if needed)
-   * 2. Call dbContext.loadDatabase() which updates sqliteClient
+   * 2. Call dbContext.loadStoredDatabase() which updates sqliteClient
    * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
    *
    * Note: onSuccess triggers refreshSyncState to ensure any UI components
@@ -136,9 +138,15 @@ const Reinitialize: React.FC = () => {
         await refreshSyncState();
       },
       /**
-       * Handle upgrade required - redirect to upgrade page.
+       * Handle sqlite-blob legacy upgrade.
        */
-      onUpgradeRequired: () => {
+      onLegacySqliteBlobUpgradeRequired: () => {
+        navigate('/upgrade', { replace: true });
+      },
+      /**
+       * Handle the manifest migration, which the same gate serves.
+       */
+      onManifestMigrationRequired: () => {
         navigate('/upgrade', { replace: true });
       },
       /**
@@ -146,7 +154,7 @@ const Reinitialize: React.FC = () => {
        * @param error Error message
        */
       onError: (error) => {
-        console.error('Background vault sync error:', error);
+        logFailure('Background vault sync error', error);
       }
     });
   }, [syncVault, refreshSyncState, navigate]);
@@ -180,9 +188,8 @@ const Reinitialize: React.FC = () => {
         return;
       }
 
-      // Check for pending migrations before navigating
-      if (await hasPendingMigrations()) {
-        setIsInitialLoading(false);
+      // Check if the vault requires a migration. If so, navigate to the upgrade page.
+      if (await requiresLegacySqliteBlobMigration() || await requiresManifestMigration()) {
         navigate('/upgrade', { replace: true });
         return;
       }
@@ -210,7 +217,7 @@ const Reinitialize: React.FC = () => {
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, location.key, navigate, setIsInitialLoading, restoreLastPage, hasPendingMigrations, runBackgroundSync]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, location.key, navigate, setIsInitialLoading, restoreLastPage, requiresLegacySqliteBlobMigration, requiresManifestMigration, runBackgroundSync]);
 
   // This component doesn't render anything visible, it only handles initialization logic.
   return null;

@@ -31,4 +31,11 @@ public static class FileHelper
         // Return the size in kilobytes as int (rounded up)
         return (int)Math.Ceiling(kilobytes);
     }
+
+    /// <summary>
+    /// Calculate the size of a raw byte payload in kilobytes.
+    /// </summary>
+    /// <param name="byteCount">Length of the payload in bytes.</param>
+    /// <returns>Length in kilobytes.</returns>
+    public static int BytesToKilobytes(int byteCount) => (int)Math.Ceiling(byteCount / 1024.0);
 }

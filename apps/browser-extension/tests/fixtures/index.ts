@@ -41,6 +41,7 @@ export {
   getUsernameValue,
   getPasswordValue,
   getNotesValue,
+  completeVaultUpgrade,
 } from './helpers';
 
 // Field selectors and constants

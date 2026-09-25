@@ -17,7 +17,7 @@ interface IServiceUrlNoticeProps {
 
 /**
  * A dismissable notice that appears when a service URL is provided via deep link.
- * Clicking the notice navigates to the add-edit page with the service URL.
+ * Clicking the notice navigates to the add item page with the service URL.
  */
 export function ServiceUrlNotice({ serviceUrl, onDismiss }: IServiceUrlNoticeProps): React.ReactNode {
   const router = useRouter();
@@ -26,11 +26,11 @@ export function ServiceUrlNotice({ serviceUrl, onDismiss }: IServiceUrlNoticePro
   const serviceName = extractServiceNameFromUrl(serviceUrl);
 
   /**
-   * Handle press on the notice to navigate to add-edit page
+   * Handle press on the notice to navigate to the add item page
    */
   const handlePress = (): void => {
     router.push({
-      pathname: '/(tabs)/items/add-edit',
+      pathname: '/(tabs)/items/add',
       params: { serviceUrl }
     });
   };

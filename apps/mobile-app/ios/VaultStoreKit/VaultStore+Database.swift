@@ -1,5 +1,5 @@
 import Foundation
-import SQLite
+import RustCoreFramework
 import VaultUtils
 
 /// Extension for the VaultStore class to handle database management
@@ -23,7 +23,7 @@ extension VaultStore {
         }
     }
 
-    /// Unlock the vault - decrypt the database and setup the database with the decrypted data
+    /// Unlock the vault - decrypt the database and setup the database connection.
     public func unlockVault() throws {
         guard let encryptedDbBase64 = getEncryptedDatabase() else {
             throw AppError.encryptionKeyNotFound
@@ -34,8 +34,8 @@ extension VaultStore {
         }
 
         do {
-            let decryptedDbBase64 = try decrypt(data: encryptedDbData)
-            try setupDatabaseWithDecryptedData(decryptedDbBase64)
+            let decrypted = try decrypt(data: encryptedDbData)
+            try setupDatabaseWithDecryptedData(decrypted)
         } catch let vaultError as AppError {
             // Pass through AppError types
             throw vaultError
@@ -58,62 +58,38 @@ extension VaultStore {
         return containerURL.appendingPathComponent(VaultConstants.encryptedDbFileName)
     }
 
-    /// Setup the database with the decrypted data
-    private func setupDatabaseWithDecryptedData(_ decryptedDbBase64: Data) throws {
-        // Step 1: Decode base64
-        guard let decryptedDbData = Data(base64Encoded: decryptedDbBase64, options: .ignoreUnknownCharacters) else {
-            throw AppError.base64DecodeFailed
+    /// The bytes every SQLite database file begins with.
+    private static let sqliteHeader = Data("SQLite format 3\0".utf8)
+
+    /// Setup the database connection with the decrypted data.
+    private func setupDatabaseWithDecryptedData(_ decrypted: Data) throws {
+        // Step 1: Take the SQLite bytes as-is, or decode the legacy base64 text.
+        let decryptedDbData: Data
+        if decrypted.starts(with: Self.sqliteHeader) {
+            decryptedDbData = decrypted
+        } else {
+            guard let decoded = Data(base64Encoded: decrypted, options: .ignoreUnknownCharacters) else {
+                throw AppError.base64DecodeFailed
+            }
+            decryptedDbData = decoded
         }
 
-        // Step 2: Clean up any existing connection
+        // Step 2: Open the bytes in the Rust core's memory directly without persisting to the filesystem.
         self.dbConnection = nil
-
-        // Step 3: Write decrypted data to temp file
-        let tempDbPath = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
+        let opened: SqliteMemoryDatabase
         do {
-            try decryptedDbData.write(to: tempDbPath)
+            opened = try SqliteMemoryDatabase.fromBytes(bytes: decryptedDbData)
+            _ = try opened.queryValues(sql: "SELECT count(*) FROM sqlite_master", params: [])
         } catch {
-            throw AppError.databaseTempWriteFailed
-        }
-
-        // Step 4: Open source database from temp file
-        let sourceConnection: Connection
-        do {
-            sourceConnection = try Connection(tempDbPath.path)
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
             throw AppError.databaseOpenFailed
         }
 
-        // Step 5: Create in-memory database connection
+        // Step 3: Set pragmas
         do {
-            self.dbConnection = try Connection(":memory:")
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw AppError.databaseMemoryFailed
-        }
-
-        // Step 6: Use SQLite backup API to copy entire database with full schema preservation
-        // This preserves foreign keys, indexes, triggers, views, and all other schema objects
-        do {
-            let backup = try sourceConnection.backup(usingConnection: self.dbConnection!)
-            try backup.step()
-            backup.finish()
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw AppError.databaseBackupFailed
-        }
-
-        // Clean up temp file
-        try? FileManager.default.removeItem(at: tempDbPath)
-
-        // Step 7: Set pragmas
-        do {
-            try self.dbConnection?.execute("PRAGMA journal_mode = WAL")
-            try self.dbConnection?.execute("PRAGMA synchronous = NORMAL")
-            try self.dbConnection?.execute("PRAGMA foreign_keys = ON")
+            try opened.executeBatch(sql: "PRAGMA foreign_keys = ON")
         } catch {
             throw AppError.databasePragmaFailed
         }
+        self.dbConnection = opened
     }
 }

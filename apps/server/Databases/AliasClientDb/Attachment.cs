@@ -8,18 +8,16 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// Attachment entity.
 /// </summary>
-public class Attachment : SyncableEntity
+public class Attachment : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the attachment primary key.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -29,9 +27,15 @@ public class Attachment : SyncableEntity
     public string Filename { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the file blob.
+    /// Gets or sets the file bytes; null once the attachment is deleted, or while they are not loaded (see <see cref="BlobHash"/>).
     /// </summary>
-    public byte[] Blob { get; set; } = null!;
+    public byte[]? Blob { get; set; }
+
+    /// <summary>
+    /// Gets or sets the hash of the blob holding the file bytes. Local only: set while <see cref="Blob"/> is null, which means the bytes are not loaded by this client yet (lazy-loading).
+    /// </summary>
+    [StringLength(64)]
+    public string? BlobHash { get; set; }
 
     /// <summary>
     /// Gets or sets the item foreign key.
@@ -41,6 +45,5 @@ public class Attachment : SyncableEntity
     /// <summary>
     /// Gets or sets the item navigation property.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 }

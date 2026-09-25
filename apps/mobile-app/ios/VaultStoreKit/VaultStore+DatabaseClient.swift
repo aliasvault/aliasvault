@@ -1,9 +1,13 @@
 import Foundation
-import SQLite
 
 /// Extension to make VaultStore conform to DatabaseClient protocol.
 /// This allows VaultStore to be used with the repository pattern.
 extension VaultStore: DatabaseClient {
+    /// The id of the user's personal manifest, or nil before the first pull recorded one.
+    public func personalManifestId() -> String? {
+        return getPersonalManifestId()
+    }
+
     /// The ItemRepository instance for this VaultStore.
     public var itemRepository: ItemRepository {
         return ItemRepository(client: self)
@@ -17,5 +21,10 @@ extension VaultStore: DatabaseClient {
     /// The TotpRepository instance for this VaultStore.
     public var totpRepository: TotpRepository {
         return TotpRepository(client: self)
+    }
+
+    /// The ItemStatsRepository instance for this VaultStore.
+    public var itemStatsRepository: ItemStatsRepository {
+        return ItemStatsRepository(client: self)
     }
 }

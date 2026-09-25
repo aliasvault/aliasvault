@@ -9,8 +9,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 
-import type { FieldType, SystemFieldDefinition } from '@/utils/dist/core/models/vault';
-import { FieldCategories } from '@/utils/dist/core/models/vault';
+import type { FieldType, SystemFieldDefinition } from '@aliasvault/models/vault';
+import { FieldCategories } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -137,7 +137,7 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       marginLeft: 8,
     },
     menuContainer: {
-      backgroundColor: colors.background,
+      backgroundColor: colors.modalSurface,
       borderColor: colors.accentBorder,
       borderRadius: 12,
       borderWidth: 1,

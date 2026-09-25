@@ -5,8 +5,7 @@ set -u  # Treat unset variables as errors
 
 # Build mode selection
 BUILD_ALL=false
-BUILD_BROWSER=false
-BUILD_DOTNET=false
+BROWSER_TARGET=""  # "web" or "browser-extension": both write core/client/wasm, so one per run
 BUILD_IOS=false
 BUILD_ANDROID=false
 BUILD_COMMON=true  # Always build TypeScript utils, models, and vault
@@ -14,13 +13,17 @@ BUILD_COMMON=true  # Always build TypeScript utils, models, and vault
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --browser)
-            BUILD_BROWSER=true
+        --web|--browser-extension)
+            if [ -n "$BROWSER_TARGET" ] && [ "$BROWSER_TARGET" != "${1#--}" ]; then
+                echo "Error: --web and --browser-extension share one output directory, build one at a time"
+                exit 1
+            fi
+            BROWSER_TARGET="${1#--}"
             shift
             ;;
-        --dotnet)
-            BUILD_DOTNET=true
-            shift
+        --browser)
+            echo "Error: --browser was split into --web (size-optimized) and --browser-extension (speed-optimized)"
+            exit 1
             ;;
         --ios)
             BUILD_IOS=true
@@ -31,8 +34,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --all)
-            BUILD_BROWSER=true
-            BUILD_DOTNET=true
+            BROWSER_TARGET="${BROWSER_TARGET:-web}"
             BUILD_ANDROID=true
             # Note: iOS excluded from --all as it requires macOS/Xcode (use --ios explicitly)
             shift
@@ -41,14 +43,13 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Target options:"
-            echo "  --browser     Build WASM for browser extension and Blazor WASM client"
-            echo "  --dotnet      Build native library for .NET server-side use"
-            echo "  --ios         Build for iOS with Swift bindings"
-            echo "  --android     Build for Android with Kotlin bindings"
-            echo "  --all         Build cross-platform targets (browser, dotnet, android)"
+            echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
+            echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
+            echo "  --ios                Build for iOS with Swift bindings"
+            echo "  --android            Build for Android with Kotlin bindings"
+            echo "  --all                Build cross-platform targets (web, android)"
             echo ""
             echo "Notes:"
-            echo "  - TypeScript utilities, models, and vault are always built"
             echo "  - iOS requires macOS/Xcode, use --ios explicitly (not included in --all)"
             echo "  - If no target is specified, cross-platform targets are built"
             echo ""
@@ -63,10 +64,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # If no targets specified, build cross-platform targets (iOS excluded - requires macOS)
-if ! $BUILD_BROWSER && ! $BUILD_DOTNET && ! $BUILD_IOS && ! $BUILD_ANDROID; then
+if [ -z "$BROWSER_TARGET" ] && ! $BUILD_IOS && ! $BUILD_ANDROID; then
     echo "No target specified, building cross-platform targets..."
-    BUILD_BROWSER=true
-    BUILD_DOTNET=true
+    BROWSER_TARGET="web"
     BUILD_ANDROID=true
 fi
 
@@ -78,7 +78,7 @@ chmod +x ./rust/build.sh
 echo "🚀 Starting build process for selected modules..."
 echo ""
 
-# Always build common components (TypeScript utilities, models, vault)
+# Always build common components (TypeScript models, vault)
 if $BUILD_COMMON; then
     echo "📦 Building common components..."
 
@@ -96,7 +96,7 @@ if $BUILD_COMMON; then
 fi
 
 # Rust core build (required when any platform target is specified)
-if $BUILD_BROWSER || $BUILD_DOTNET || $BUILD_IOS || $BUILD_ANDROID; then
+if [ -n "$BROWSER_TARGET" ] || $BUILD_IOS || $BUILD_ANDROID; then
     cd ./rust
 
     if ! command -v rustc &> /dev/null; then
@@ -104,8 +104,7 @@ if $BUILD_BROWSER || $BUILD_DOTNET || $BUILD_IOS || $BUILD_ANDROID; then
         echo "   Install Rust from https://rustup.rs"
         echo ""
         echo "   Requested targets require Rust:"
-        $BUILD_BROWSER && echo "     - Browser/WASM"
-        $BUILD_DOTNET && echo "     - .NET"
+        [ -n "$BROWSER_TARGET" ] && echo "     - Browser/WASM ($BROWSER_TARGET)"
         $BUILD_IOS && echo "     - iOS"
         $BUILD_ANDROID && echo "     - Android"
         exit 1
@@ -123,14 +122,9 @@ if $BUILD_BROWSER || $BUILD_DOTNET || $BUILD_IOS || $BUILD_ANDROID; then
         ./build.sh --ios
     fi
 
-    if $BUILD_BROWSER; then
-        echo "  → Building for Browser/WASM..."
-        ./build.sh --browser
-    fi
-
-    if $BUILD_DOTNET; then
-        echo "  → Building for .NET..."
-        ./build.sh --dotnet
+    if [ -n "$BROWSER_TARGET" ]; then
+        echo "  → Building for Browser/WASM ($BROWSER_TARGET)..."
+        ./build.sh --"$BROWSER_TARGET"
     fi
 
     echo "✅ Rust core built"

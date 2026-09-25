@@ -11,6 +11,14 @@ using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Represents an email attachment.
+/// <para>
+/// DEPRECATED: no longer written since 0.31.0 and no longer served by the v2 API. Attachments live inline in the
+/// message source for both storage formats, so these rows are a duplicate copy of bytes the clients already parse
+/// out of <see cref="Email.MessageSourceBytes"/> (source-only format) or <see cref="Email.MessageSource"/> (legacy).
+/// </para>
+/// <para>
+/// TODO: drop this table once all clients are upgraded.
+/// </para>
 /// </summary>
 [Index(nameof(EmailId))]
 public class EmailAttachment

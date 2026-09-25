@@ -22,7 +22,7 @@ export default function ItemsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
-        name="folder/[id]"
+        name="folder/[manifestId]/[id]"
         options={{
           title: t('items.folders.folder'),
           headerBackTitle: t('items.title'),
@@ -30,7 +30,7 @@ export default function ItemsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
-        name="add-edit"
+        name="add"
         options={{
           title: t('items.addItem'),
           presentation: Platform.OS === 'ios' ? 'modal' : 'card',
@@ -38,7 +38,7 @@ export default function ItemsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
-        name="add-edit-page"
+        name="add-page"
         options={{
           title: t('items.addItem'),
           ...defaultHeaderOptions,
@@ -75,9 +75,24 @@ export default function ItemsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
-        name="[id]"
+        name="[manifestId]/[id]/index"
         options={{
           title: t('items.itemDetails'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="[manifestId]/[id]/edit"
+        options={{
+          title: t('items.editItem'),
+          presentation: Platform.OS === 'ios' ? 'modal' : 'card',
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="[manifestId]/[id]/edit-page"
+        options={{
+          title: t('items.editItem'),
           ...defaultHeaderOptions,
         }}
       />

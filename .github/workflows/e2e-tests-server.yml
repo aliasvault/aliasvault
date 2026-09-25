@@ -95,11 +95,14 @@ jobs:
       - name: Install wasm-pack
         run: cargo install wasm-pack --locked
 
+      - name: Install clang (compiles SQLite for wasm32)
+        run: sudo apt-get update && sudo apt-get install -y clang
+
       - name: Build core libraries
         run: |
           cd ./core
           chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --browser
+          ./build-and-distribute.sh --web
 
       - name: Install dependencies
         working-directory: apps/server

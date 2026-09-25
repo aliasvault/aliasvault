@@ -9,7 +9,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { usePasswordConfig } from '@/entrypoints/popup/hooks/usePasswordConfig';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 interface IPasswordSettingsModalProps {
   isOpen: boolean;

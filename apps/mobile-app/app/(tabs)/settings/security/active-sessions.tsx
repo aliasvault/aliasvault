@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { RefreshToken } from '@/utils/dist/core/models/webapi';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -15,6 +14,8 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+import type { RefreshToken } from '@aliasvault/models/webapi';
 /**
  * Active sessions screen.
  */

@@ -34,6 +34,21 @@ public sealed class TotpCodeEdit
     public string SecretKey { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the HMAC algorithm of the TOTP code: SHA1, SHA256 or SHA512.
+    /// </summary>
+    public string Algorithm { get; set; } = TotpCode.AlgorithmSha1;
+
+    /// <summary>
+    /// Gets or sets the number of digits in the generated code.
+    /// </summary>
+    public int Digits { get; set; } = TotpCode.DefaultDigits;
+
+    /// <summary>
+    /// Gets or sets the time step in seconds a code stays valid for.
+    /// </summary>
+    public int Period { get; set; } = TotpCode.DefaultPeriod;
+
+    /// <summary>
     /// Gets or sets the created at date of the TOTP code.
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -59,6 +74,9 @@ public sealed class TotpCodeEdit
             Id = Id,
             Name = Name ?? string.Empty,
             SecretKey = SecretKey,
+            Algorithm = Algorithm,
+            Digits = Digits,
+            Period = Period,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsDeleted = IsDeleted,

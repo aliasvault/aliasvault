@@ -10,7 +10,6 @@ lerna-debug.log*
 node_modules
 .output
 dist
-!src/utils/dist
 stats.html
 stats-*.json
 .wxt
@@ -24,6 +23,9 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Local dev-log channel filter (see src/utils/devLogger/devlog.local.example.ts)
+src/utils/devLogger/devlog.local.ts
 
 # Test related output files
 playwright-report

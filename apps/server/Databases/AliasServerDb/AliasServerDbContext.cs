@@ -7,6 +7,7 @@
 
 namespace AliasServerDb;
 
+using AliasVault.Shared.Models.Enums;
 using AliasVault.WorkerStatus.Database;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -48,29 +49,10 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<AliasVaultUser> AliasVaultUsers { get; set; }
 
     /// <summary>
-    /// Gets or sets the AliasVaultRoles DbSet.
-    /// </summary>
-    public DbSet<AliasVaultRole> AliasVaultRoles { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserRoles DbSet.
-    /// </summary>
-    public DbSet<IdentityUserRole<string>> UserRoles { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserClaims DbSet.
+    /// Gets or sets the UserClaims DbSet. Not written by AliasVault itself, but ASP.NET Identity reads it
+    /// whenever it materializes a ClaimsPrincipal, so the table must exist.
     /// </summary>
     public DbSet<IdentityUserClaim<string>> UserClaims { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UserLogin DbSet.
-    /// </summary>
-    public DbSet<IdentityUserLogin<string>> UserLogin { get; set; }
-
-    /// <summary>
-    /// Gets or sets the RoleClaims DbSet.
-    /// </summary>
-    public DbSet<IdentityRoleClaim<string>> RoleClaims { get; set; }
 
     /// <summary>
     /// Gets or sets the UserTokens DbSet.
@@ -88,14 +70,16 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<AdminUser> AdminUsers { get; set; }
 
     /// <summary>
-    /// Gets or sets the AdminRoles DbSet.
+    /// Gets or sets the VaultManifests DbSet. Exactly one row per logical manifest, holding its current revision.
+    /// Superseded revisions live in <see cref="VaultManifestsHistory"/>.
     /// </summary>
-    public DbSet<AdminRole> AdminRoles { get; set; }
+    public DbSet<VaultManifest> VaultManifests { get; set; }
 
     /// <summary>
-    /// Gets or sets the Vaults DbSet.
+    /// Gets or sets the VaultManifestsHistory DbSet. Superseded manifest revisions kept for backup/rollback,
+    /// pruned by the retention policy.
     /// </summary>
-    public DbSet<Vault> Vaults { get; set; }
+    public DbSet<VaultManifestsHistory> VaultManifestsHistory { get; set; }
 
     /// <summary>
     /// Gets or sets the Emails DbSet.
@@ -103,19 +87,59 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<Email> Emails { get; set; }
 
     /// <summary>
-    /// Gets or sets the EmailAttachments DbSet.
+    /// Gets or sets the EmailAttachments DbSet. Deprecated and read-only since 0.31.0, see <see cref="EmailAttachment"/>.
     /// </summary>
     public DbSet<EmailAttachment> EmailAttachments { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserEmailClaims DbSet.
+    /// Gets or sets the EmailClaims DbSet.
     /// </summary>
-    public DbSet<UserEmailClaim> UserEmailClaims { get; set; }
+    public DbSet<EmailClaim> EmailClaims { get; set; }
 
     /// <summary>
-    /// Gets or sets the UserEncryptionKeys DbSet.
+    /// Gets or sets the EmailClaimLinks DbSet.
     /// </summary>
-    public DbSet<UserEncryptionKey> UserEncryptionKeys { get; set; }
+    public DbSet<EmailClaimLink> EmailClaimLinks { get; set; }
+
+    /// <summary>
+    /// Gets or sets the EmailDecryptionKeys DbSet.
+    /// </summary>
+    public DbSet<EmailDecryptionKey> EmailDecryptionKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the EmailParts DbSet.
+    /// </summary>
+    public DbSet<EmailPart> EmailParts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Groups DbSet.
+    /// </summary>
+    public DbSet<Group> Groups { get; set; }
+
+    /// <summary>
+    /// Gets or sets the GroupMembers DbSet.
+    /// </summary>
+    public DbSet<GroupMember> GroupMembers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the GroupInvitations DbSet.
+    /// </summary>
+    public DbSet<GroupInvitation> GroupInvitations { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ClientActions DbSet.
+    /// </summary>
+    public DbSet<ClientAction> ClientActions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultManifestShareDetails DbSet.
+    /// </summary>
+    public DbSet<VaultManifestShareDetails> VaultManifestShareDetails { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultManifestDeliveryKeys DbSet.
+    /// </summary>
+    public DbSet<VaultManifestDeliveryKey> VaultManifestDeliveryKeys { get; set; }
 
     /// <summary>
     /// Gets or sets the Logs DbSet.
@@ -148,9 +172,55 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
 
     /// <summary>
+    /// Gets or sets the VaultDataBuckets DbSet. These represent separately-syncable per-manifest, per-kind sync buckets. Separate from the manifest blob itself.
+    /// </summary>
+    public DbSet<VaultDataBucket> VaultDataBuckets { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultDataBucketsHistory DbSet. Superseded bucket revisions kept for backup/rollback,
+    /// pruned by the bucket retention policy.
+    /// </summary>
+    public DbSet<VaultDataBucketsHistory> VaultDataBucketsHistory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultBlobObjects DbSet. These represent encrypted blobs referenced by one or more vault revisions.
+    /// </summary>
+    public DbSet<VaultBlobObject> VaultBlobObjects { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultBlobReferences DbSet. These represent references from vaults to encrypted blobs.
+    /// </summary>
+    public DbSet<VaultBlobReference> VaultBlobReferences { get; set; }
+
+    /// <summary>
     /// Gets or sets the RateLimits DbSet.
     /// </summary>
     public DbSet<RateLimit> RateLimits { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CapabilityRules DbSet.
+    /// </summary>
+    public DbSet<CapabilityRule> CapabilityRules { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UserUnlockKeys DbSet.
+    /// </summary>
+    public DbSet<UserUnlockKey> UserUnlockKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UserUnlockKeysHistory DbSet.
+    /// </summary>
+    public DbSet<UserUnlockKeysHistory> UserUnlockKeysHistory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UserGrantKeys DbSet.
+    /// </summary>
+    public DbSet<UserGrantKey> UserGrantKeys { get; set; }
+
+    /// <summary>
+    /// Gets or sets the VaultManifestAccessKeys DbSet.
+    /// </summary>
+    public DbSet<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; }
 
     /// <summary>
     /// Sets up the connection string if it is not already configured.
@@ -205,29 +275,16 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             }
         }
 
-        // Configure AspNetIdentity tables manually.
-        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
-        {
-            entity.HasKey(r => new { r.UserId, r.RoleId });
-            entity.ToTable("UserRoles");
-        });
-
+        /*
+         * Configure the AspNetIdentity tables manually. Only the tables that ASP.NET Identity actually
+         * touches in AliasVault are mapped: UserClaims (read on every ClaimsPrincipal creation) and
+         * UserTokens (2FA authenticator keys and recovery codes). Roles, role claims and external
+         * logins are not used, so those tables are intentionally absent.
+         */
         modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
         {
             entity.HasKey(c => c.Id);
             entity.ToTable("UserClaims");
-        });
-
-        modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
-        {
-            entity.HasKey(l => new { l.LoginProvider, l.ProviderKey });
-            entity.ToTable("UserLogins");
-        });
-
-        modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
-        {
-            entity.HasKey(rc => rc.Id);
-            entity.ToTable("RoleClaims");
         });
 
         modelBuilder.Entity<IdentityUserToken<string>>(entity =>
@@ -254,48 +311,338 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             builder.HasIndex(e => e.Application);
         });
 
-        // Configure Vault - AliasVaultUser relationship
-        modelBuilder.Entity<Vault>()
-            .HasOne(l => l.User)
-            .WithMany(c => c.Vaults)
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        /*
+         * Configure the user's personal group reference.
+         */
+        modelBuilder.Entity<AliasVaultUser>(builder =>
+        {
+            builder.HasOne(e => e.PersonalGroup)
+                .WithOne()
+                .HasForeignKey<AliasVaultUser>(e => e.PersonalGroupId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        // Configure UserEmailClaim - AliasVaultUser relationship
-        // Note: when a user is deleted the email claims user FK's should be set to NULL
-        // so the claims themselves are preserved to prevent re-use of the email address.
-        modelBuilder.Entity<UserEmailClaim>()
-            .HasOne(e => e.User)
-            .WithMany(u => u.EmailClaims)
-            .HasForeignKey(e => e.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
+            builder.HasIndex(e => e.PersonalGroupId).IsUnique().HasDatabaseName("UX_AliasVaultUsers_PersonalGroupId");
+        });
 
-        // Configure Email - UserEncryptionKey relationship
-        modelBuilder.Entity<Email>()
-            .HasOne(l => l.EncryptionKey)
-            .WithMany(c => c.Emails)
-            .HasForeignKey(l => l.UserEncryptionKeyId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Group>(builder =>
+        {
+            builder.Property(e => e.AnonymizedEmailAliasSenderCounts)
+                .HasDefaultValueSql("array_fill(0, ARRAY[64])");
+            builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(20);
+        });
 
-        // Configure UserEncryptionKey - AliasVaultUser relationship
-        modelBuilder.Entity<UserEncryptionKey>()
-            .HasOne(l => l.User)
-            .WithMany(c => c.EncryptionKeys)
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Configure GroupMember, who may be granted access to the group's shared manifests.
+        modelBuilder.Entity<GroupMember>(builder =>
+        {
+            builder.HasOne(e => e.Group)
+                .WithMany(g => g.Members)
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Deleting a user removes their memberships everywhere, of their own group and other possibly joined groups.
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.UserId);
+            builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
+        });
+
+        // Configure GroupInvitation, an offer to join a group.
+        modelBuilder.Entity<GroupInvitation>(builder =>
+        {
+            builder.HasOne(e => e.Group)
+                .WithMany()
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Inviter)
+                .WithMany()
+                .HasForeignKey(e => e.InviterUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Invitee)
+                .WithMany()
+                .HasForeignKey(e => e.InviteeUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.VaultManifestId, e.InviteeUserId }).IsUnique().HasFilter("\"State\" = 'Pending'").HasDatabaseName("UX_GroupInvitations_Manifest_Invitee_Pending");
+            builder.Property(e => e.State).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Role).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+
+            // Losing the keypair the vault key was encrypted to leaves an invitation nobody could ever decrypt.
+            builder.HasOne(e => e.UserGrantKey)
+                .WithMany()
+                .HasForeignKey(e => e.UserGrantKeyId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure ClientAction, a work the server needs a client to carry out on its behalf.
+        modelBuilder.Entity<ClientAction>(builder =>
+        {
+            builder.HasOne(e => e.TargetUser)
+                .WithMany()
+                .HasForeignKey(e => e.TargetUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.TargetGroup)
+                .WithMany()
+                .HasForeignKey(e => e.TargetGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(e => e.Type).HasConversion<string>().HasMaxLength(50);
+            builder.Property(e => e.Payload).HasColumnType("jsonb");
+        });
+
+        // Configure VaultManifest: one row per logical manifest (current revision), keyed by ManifestId.
+        modelBuilder.Entity<VaultManifest>(builder =>
+        {
+            builder.HasKey(e => e.ManifestId);
+
+            builder.HasOne(e => e.OwnerGroup)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.OwnerGroupId);
+
+            builder.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure VaultManifestsHistory - superseded revisions, composite key (ManifestId, RevisionNumber).
+        modelBuilder.Entity<VaultManifestsHistory>(builder =>
+        {
+            builder.ToTable("VaultManifestsHistory");
+            builder.HasKey(e => new { e.ManifestId, e.RevisionNumber });
+            builder.HasOne(e => e.Manifest)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure VaultManifestAccessKey: a per-(holder, manifest) encrypted-VEK access path (AccountKey row or grant).
+        modelBuilder.Entity<VaultManifestAccessKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany(u => u.VaultManifestAccessKeys)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // One access path per (holder, type, manifest) per VEK version: a rotation adds a row rather than
+            // replacing one, so the retired VEK stays retrievable for the history revisions it encrypted.
+            builder.HasIndex(e => new { e.UserId, e.Type, e.VaultManifestId, e.KeyVersion }).IsUnique().HasDatabaseName("UX_VaultManifestAccessKeys_UserId_Type_Manifest_Version");
+            builder.HasIndex(e => e.VaultManifestId).HasDatabaseName("IX_VaultManifestAccessKeys_VaultManifestId");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => ManifestKeyTypes.ToToken(v), v => ManifestKeyTypes.Parse(v));
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+            builder.HasOne(e => e.UserGrantKey)
+                .WithMany()
+                .HasForeignKey(e => e.UserGrantKeyId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure CapabilityRule.
+        modelBuilder.Entity<CapabilityRule>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(e => e.Group)
+                .WithMany()
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(e => e.Kind).HasConversion<string>().HasMaxLength(20);
+            builder.Property(e => e.Tier).HasConversion<string>().HasMaxLength(20);
+        });
+
+        // Configure UserUnlockKey: one row per enrolled unlock method, each encrypting the user's Account Key.
+        modelBuilder.Entity<UserUnlockKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Label is part of the key so a user can enroll several methods of one type (two hardware keys, say)
+            // while methods that must stay single, the password above all, keep it empty and so stay unique per type.
+            builder.HasIndex(e => new { e.UserId, e.Type, e.Label }).IsUnique().HasDatabaseName("UX_UserUnlockKeys_UserId_Type_Label");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserUnlockKeysHistory: superseded unlock keys, retained briefly so a password change can be reverted.
+        modelBuilder.Entity<UserUnlockKeysHistory>(builder =>
+        {
+            builder.ToTable("UserUnlockKeysHistory");
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => new { e.UserId, e.Type, e.ArchivedAt }).HasDatabaseName("IX_UserUnlockKeysHistory_UserId_Type_ArchivedAt");
+            builder.HasIndex(e => e.ArchivedAt).HasDatabaseName("IX_UserUnlockKeysHistory_ArchivedAt");
+            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Type).HasConversion(v => UnlockMethodTypes.ToToken(v), v => UnlockMethodTypes.Parse(v));
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure UserGrantKey: the account-level keypair for grant encryption; one primary per user.
+        modelBuilder.Entity<UserGrantKey>(builder =>
+        {
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_UserGrantKeys_User_Primary");
+            builder.Property(e => e.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        /*
+         * Configure EmailClaimLink - the claim's ownership references.
+         */
+        modelBuilder.Entity<EmailClaimLink>(builder =>
+        {
+            builder.HasKey(l => new { l.EmailClaimId, l.VaultManifestId });
+
+            // Stored as its name rather than an ordinal: every query here reads "is this link still Removed", which
+            // is worth being able to answer from a raw SQL prompt without a lookup table in your head.
+            builder.Property(l => l.State).HasConversion<string>().HasMaxLength(20);
+
+            builder.HasOne(l => l.EmailClaim)
+                .WithMany(c => c.Links)
+                .HasForeignKey(l => l.EmailClaimId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(l => l.VaultManifest)
+                .WithMany()
+                .HasForeignKey(l => l.VaultManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(l => new { l.VaultManifestId, l.EmailClaimId });
+            builder.HasIndex(l => l.EmailClaimId).HasFilter("\"State\" <> 'Removed'").HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live");
+        });
+
+        /*
+         * Configure EmailDecryptionKey - one encrypted symmetric key per (email, delivery key).
+         */
+        modelBuilder.Entity<EmailDecryptionKey>(builder =>
+        {
+            builder.HasKey(d => new { d.EmailId, d.VaultManifestDeliveryKeyId });
+
+            builder.HasOne(d => d.Email)
+                .WithMany(e => e.DecryptionKeys)
+                .HasForeignKey(d => d.EmailId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(d => d.VaultManifestDeliveryKey)
+                .WithMany(k => k.DecryptionKeys)
+                .HasForeignKey(d => d.VaultManifestDeliveryKeyId)
+                .HasConstraintName("FK_EmailDecryptionKeys_VaultManifestDeliveryKeys_DeliveryKeyId")
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // The mailbox queries filter emails by the set of keys the caller holds.
+            builder.HasIndex(d => new { d.VaultManifestDeliveryKeyId, d.EmailId });
+        });
+
+        modelBuilder.Entity<VaultManifestShareDetails>(builder =>
+        {
+            // The details are removed with the shared manifest they describe.
+            builder.HasOne(d => d.VaultManifest)
+                .WithOne()
+                .HasForeignKey<VaultManifestShareDetails>(d => d.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VaultManifestDeliveryKey>(builder =>
+        {
+            // A key is removed with its manifest: for a folder that is the folder's delivery keys, for a
+            // personal manifest the user's personal keys (personal manifests only disappear with the account).
+            builder.HasOne(k => k.VaultManifest)
+                .WithMany()
+                .HasForeignKey(k => k.VaultManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Delivery resolves the primary key for a manifest on every inbound mail, so index the lookup.
+            builder.HasIndex(k => new { k.VaultManifestId, k.IsPrimary });
+
+            // One active delivery key per manifest.
+            builder.HasIndex(k => k.VaultManifestId).IsUnique().HasFilter("\"IsPrimary\"").HasDatabaseName("UX_VaultManifestDeliveryKeys_Manifest_Primary");
+            builder.Property(k => k.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
 
         // Configure MobileLoginRequest - AliasVaultUser relationship
-        modelBuilder.Entity<MobileLoginRequest>()
-            .HasOne(m => m.User)
-            .WithMany()
-            .HasForeignKey(m => m.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MobileLoginRequest>(builder =>
+        {
+            builder.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure RateLimit - AliasVaultUser relationship
+            builder.Property(m => m.Algorithm).HasConversion(v => VaultKeyAlgorithms.ToToken(v), v => VaultKeyAlgorithms.Parse(v));
+        });
+
+        // Configure VaultDataBucket.
+        modelBuilder.Entity<VaultDataBucket>(builder =>
+        {
+            builder.HasKey(e => new { e.ManifestId, e.Category });
+            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            builder.HasOne(e => e.Manifest)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultDataBucketsHistory - superseded bucket revisions, pruned by the bucket retention policy.
+        modelBuilder.Entity<VaultDataBucketsHistory>(builder =>
+        {
+            builder.HasKey(e => new { e.ManifestId, e.Category, e.RevisionNumber });
+            builder.Property(e => e.Category).HasConversion<string>().HasMaxLength(50);
+            builder.HasOne(e => e.Bucket)
+                .WithMany()
+                .HasForeignKey(e => new { e.ManifestId, e.Category })
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultBlobObject - composite key (ManifestId, Hash). Cascades with the manifest.
+        modelBuilder.Entity<VaultBlobObject>(builder =>
+        {
+            builder.HasKey(e => new { e.ManifestId, e.Hash });
+            builder.HasOne(e => e.Manifest)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure VaultBlobReference - composite key (ManifestId, RevisionNumber, BlobHash). Cascades with the
+        // manifest; retention deletes references of pruned history revisions explicitly.
+        modelBuilder.Entity<VaultBlobReference>(builder =>
+        {
+            builder.HasKey(e => new { e.ManifestId, e.RevisionNumber, e.BlobHash });
+            builder.HasOne(e => e.Manifest)
+                .WithMany()
+                .HasForeignKey(e => e.ManifestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure RateLimit - Group relationship: quotas are charged to the group that owns the content.
         modelBuilder.Entity<RateLimit>()
-            .HasOne(r => r.User)
+            .HasOne(r => r.Group)
             .WithMany()
-            .HasForeignKey(r => r.UserId)
+            .HasForeignKey(r => r.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

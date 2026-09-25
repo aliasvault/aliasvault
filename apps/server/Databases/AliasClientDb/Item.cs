@@ -8,19 +8,17 @@
 namespace AliasClientDb;
 
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasClientDb.Abstracts;
 
 /// <summary>
 /// Item entity (renamed from Credential).
 /// Represents a vault item that can be of various types (Login, CreditCard, Identity, etc.).
 /// </summary>
-public class Item : SyncableEntity
+public class Item : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the item ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -44,7 +42,6 @@ public class Item : SyncableEntity
     /// <summary>
     /// Gets or sets the logo object.
     /// </summary>
-    [ForeignKey("LogoId")]
     public virtual Logo? Logo { get; set; }
 
     /// <summary>
@@ -56,6 +53,15 @@ public class Item : SyncableEntity
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the timestamp when this item was archived.
+    /// When null, the item is active. When set, the item is hidden from the main item list and from
+    /// autofill suggestions, but is otherwise untouched: it keeps its fields, attachments and email
+    /// aliases, is never auto-pruned, and can be unarchived at any time.
+    /// Archiving is independent of <see cref="DeletedAt"/>, an archived item can still be deleted.
+    /// </summary>
+    public DateTime? ArchivedAt { get; set; }
+
+    /// <summary>
     /// Gets or sets the folder ID foreign key.
     /// </summary>
     public Guid? FolderId { get; set; }
@@ -63,7 +69,6 @@ public class Item : SyncableEntity
     /// <summary>
     /// Gets or sets the folder object.
     /// </summary>
-    [ForeignKey("FolderId")]
     public virtual Folder? Folder { get; set; }
 
     /// <summary>

@@ -7,6 +7,7 @@
 
 namespace AliasVault.IntegrationTests.SmtpServer;
 
+using System.IO.Compression;
 using System.Net.Sockets;
 using System.Text;
 using AliasServerDb;
@@ -47,6 +48,11 @@ public class SmtpServerTests
     private TestHostBuilder _testHostBuilder;
 
     /// <summary>
+    /// The personal group of the seeded test user, which owns the anonymized sender counts.
+    /// </summary>
+    private Guid _personalGroupId;
+
+    /// <summary>
     /// Setup logic for every test.
     /// </summary>
     /// <returns>Task.</returns>
@@ -58,54 +64,17 @@ public class SmtpServerTests
 
         await _testHost.StartAsync();
 
-        // Create an AliasVault user, public key and an email claim.
+        // Create an AliasVault user with personal group, manifest and primary delivery key (public key).
         var dbContext = _testHostBuilder.GetDbContext();
-        var user = new AliasVaultUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.tld",
-        };
-        dbContext.AliasVaultUsers.Add(user);
-        await dbContext.SaveChangesAsync();
+        var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld", PublicKey);
+        _personalGroupId = testUser.PersonalGroup.Id;
 
-        // Create email claims.
-        var emailClaim = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "claimed@example.tld",
-            AddressLocal = "claimed",
-            AddressDomain = "example.tld",
-        };
-        dbContext.UserEmailClaims.Add(emailClaim);
-
-        var emailClaim2 = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "claimed.cc@example.tld",
-            AddressLocal = "claimed.cc",
-            AddressDomain = "example.tld",
-        };
-        dbContext.UserEmailClaims.Add(emailClaim2);
+        // Create email claims linked to the user's personal manifest so delivery can resolve the primary delivery key.
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "claimed@example.tld"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "claimed.cc@example.tld"));
 
         // Create disabled email claim.
-        var emailClaimDisabled = new UserEmailClaim
-        {
-            UserId = user.Id,
-            Address = "disabled@example.tld",
-            AddressLocal = "disabled",
-            AddressDomain = "example.tld",
-            Disabled = true,
-        };
-        dbContext.UserEmailClaims.Add(emailClaimDisabled);
-
-        // Create public key.
-        var encryptionKey = new UserEncryptionKey
-        {
-            UserId = user.Id,
-            PublicKey = PublicKey,
-            IsPrimary = true,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, "disabled@example.tld", disabled: true));
 
         await dbContext.SaveChangesAsync();
     }
@@ -215,10 +184,14 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
-        // Test non-encrypted field.
-        Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
+        // Test non-encrypted fields.
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
+            Assert.That(processedEmail.AttachmentCount, Is.Zero);
+        });
 
         // Decrypt the email and then check all individual fields.
         processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
@@ -229,9 +202,161 @@ public class SmtpServerTests
             Assert.That(processedEmail.FromLocal, Is.EqualTo("sender"));
             Assert.That(processedEmail.FromDomain, Is.EqualTo("example.com"));
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email plain."));
-            Assert.That(processedEmail.MessagePlain, Is.EqualTo("This is a test email plain."));
-            Assert.That(processedEmail.MessageHtml, Is.Null);
+            Assert.That(processedEmail.MessagePlain, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
         });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify the original body is present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.That(messageSource, Does.Contain(textBody));
+    }
+
+    /// <summary>
+    /// An alias contributes its sender bucket exactly once, on the first email it receives.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountedOncePerAlias()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "First"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "Second"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var claim = await dbContext.EmailClaims.FirstAsync(c => c.Address == "claimed@example.tld");
+        var expectedBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+        var deliveredCount = await dbContext.Emails.CountAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(2), "both emails should still be delivered");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts, Has.Length.EqualTo(AnonymizedSenderBucket.BucketCount));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(1), "the second email must not count again");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[expectedBucket], Is.EqualTo(1));
+            Assert.That(claim.AnonymizedSenderCounted, Is.True, "the alias should be latched after its first email");
+        });
+    }
+
+    /// <summary>
+    /// Aliases contacted first by different services spread across different buckets, which is what keeps ordinary
+    /// use distinguishable from a run of signups all pointed at one target.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountsSpreadAcrossDistinctSenders()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("noreply@other-service.org", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var firstBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+        var secondBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "other-service.org");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstBucket, Is.Not.EqualTo(secondBucket), "test domains must not collide, or the assertions below prove nothing");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[firstBucket], Is.EqualTo(1));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[secondBucket], Is.EqualTo(1));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Max(), Is.EqualTo(1), "two services must not read as concentration");
+        });
+    }
+
+    /// <summary>
+    /// Aliases all first contacted from the same host pile into a single bucket. This is the shape the counts
+    /// exists to surface: many aliases, one destination.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountsConcentrateOnSingleSender()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("signup@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("noreply@example.com", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+        var expectedBucket = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com");
+
+        Assert.Multiple(() =>
+        {
+            // Different local parts, one host: the local part must play no role in where the bucket lands.
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Sum(x => x), Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[expectedBucket], Is.EqualTo(2));
+            Assert.That(group.AnonymizedEmailAliasSenderCounts.Count(x => x > 0), Is.EqualTo(1), "one host must occupy exactly one bucket");
+        });
+    }
+
+    /// <summary>
+    /// A failure while recording the counts must never affect delivery. The sender's bucket is pre-saturated
+    /// here so the increment overflows the column: before this was swallowed the error escaped as a 550 for mail
+    /// that had already been stored, which is exactly what gets an alias onto a sender's suppression list.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderCountFailureDoesNotRejectEmail()
+    {
+        var setupContext = await _testHostBuilder.GetDbContextAsync();
+        var position = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com") + 1;
+        await setupContext.Database.ExecuteSqlAsync($"UPDATE \"Groups\" SET \"AnonymizedEmailAliasSenderCounts\"[{position}] = {int.MaxValue} WHERE \"Id\" = {_personalGroupId}");
+
+        Assert.DoesNotThrowAsync(async () => await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "Overflow")));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var deliveredCount = await dbContext.Emails.CountAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(1), "the email must be stored even though the count write failed");
+            Assert.That(group.AnonymizedEmailAliasSenderCounts[position - 1], Is.EqualTo(int.MaxValue), "the count is simply lost, which is the cheaper failure");
+        });
+    }
+
+    /// <summary>
+    /// Assert that out-of-range writes to the anonymized sender counts do not corrupt the counts.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task AnonymizedSenderBucketOutOfRangeDoesNotCorruptCounts()
+    {
+        var setupContext = await _testHostBuilder.GetDbContextAsync();
+        var position = AnonymizedSenderBucket.Compute(TestHostBuilder.IntegrationAbuseMetricsSalt, "example.com") + 1;
+        await setupContext.Database.ExecuteSqlAsync($"UPDATE \"Groups\" SET \"AnonymizedEmailAliasSenderCounts\" = array_fill(0, ARRAY[1]) WHERE \"Id\" = {_personalGroupId}");
+
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        Assert.DoesNotThrowAsync(async () => await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed.cc@example.tld", "Two")));
+
+        // Assert
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var deliveredCount = await dbContext.Emails.CountAsync();
+        var nullCount = await dbContext.Database.SqlQuery<int>($"SELECT COALESCE(array_position(\"AnonymizedEmailAliasSenderCounts\", NULL), 0) AS \"Value\" FROM \"Groups\" WHERE \"Id\" = {_personalGroupId}").FirstAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(deliveredCount, Is.EqualTo(2), "both emails must be delivered despite the unwritable bucket");
+            Assert.That(nullCount, Is.Zero, "an out-of-range should be ignored instead of corrupting the bucket itself");
+        });
+    }
+
+    /// <summary>
+    /// Every recipient group is charged once per delivered email. The counter drives quota enforcement and is now
+    /// incremented by a statement rather than through the change tracker, so it needs coverage proving it still
+    /// counts at all; it had none before.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task EmailsReceivedCounterIncrementsPerDelivery()
+    {
+        await SendMessageToSmtpServer(BuildSimpleMessage("sender@example.com", "claimed@example.tld", "One"));
+        await SendMessageToSmtpServer(BuildSimpleMessage("other@example.com", "claimed.cc@example.tld", "Two"));
+
+        var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var group = await dbContext.Groups.FirstAsync(g => g.Id == _personalGroupId);
+
+        Assert.That(group.EmailsReceived, Is.EqualTo(2), "each delivered email must charge the recipient group exactly once");
     }
 
     /// <summary>
@@ -251,7 +376,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -263,8 +388,14 @@ public class SmtpServerTests
             Assert.That(processedEmail, Is.Not.Null);
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email html."));
             Assert.That(processedEmail.MessagePlain, Is.Null);
-            Assert.That(processedEmail.MessageHtml, Is.EqualTo(htmlBody));
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
         });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify the original html body is present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.That(messageSource, Does.Contain(htmlBody));
     }
 
     /// <summary>
@@ -285,7 +416,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Test non-encrypted field.
         Assert.That(processedEmail.To, Is.EqualTo("claimed@example.tld"));
@@ -296,8 +427,91 @@ public class SmtpServerTests
         {
             Assert.That(processedEmail, Is.Not.Null);
             Assert.That(processedEmail.MessagePreview, Is.EqualTo("This is a test email multipart."));
-            Assert.That(processedEmail.MessagePlain, Is.EqualTo("This is a test email multipart."));
-            Assert.That(processedEmail.MessageHtml, Is.EqualTo(htmlBody));
+            Assert.That(processedEmail.MessagePlain, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageHtml, Is.Null, "Parsed bodies should no longer be persisted; only the gzipped raw source is stored.");
+            Assert.That(processedEmail.MessageSource, Is.Null, "The legacy text source column should no longer be populated.");
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
+
+        // The decrypted source is still gzip-compressed; gunzip it and verify both original bodies are present.
+        var messageSource = Encoding.UTF8.GetString(Gunzip(processedEmail.MessageSourceBytes!));
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Contain(textBody));
+            Assert.That(messageSource, Does.Contain(htmlBody));
+        });
+    }
+
+    /// <summary>
+    /// Full roundtrip test for the source-only email storage format: ingest a multipart email (html + plain +
+    /// attachment), decrypt the stored row with the test private key, gunzip the source bytes and verify the raw
+    /// RFC 822 message contains all original content.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task MultipartEmailSourceRoundtrip()
+    {
+        // Arrange
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email source roundtrip.";
+        const string textBody = "This is a test email roundtrip plain.";
+        const string htmlBody = "<html><body><h1>This is a test email roundtrip html.</h1></body></html>";
+        var attachmentData = Encoding.UTF8.GetBytes("This is a roundtrip attachment.");
+        var bodyBuilder = new BodyBuilder { TextBody = textBody, HtmlBody = htmlBody };
+        bodyBuilder.Attachments.Add("attachment.txt", attachmentData, ContentType.Parse("text/plain"));
+        message.Body = bodyBuilder.ToMessageBody();
+        await SendMessageToSmtpServer(message);
+
+        // Retrieve the stored email and verify the unencrypted metadata written at ingest.
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
+        var encryptedSourceBytes = processedEmail.MessageSourceBytes;
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(encryptedSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
+
+        // Decrypt the email; the decrypted source bytes must differ from the stored (encrypted) bytes.
+        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        var decryptedSourceBytes = processedEmail.MessageSourceBytes!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(decryptedSourceBytes, Is.Not.EqualTo(encryptedSourceBytes), "Email source bytes are not encrypted at rest. Check email encryption logic.");
+            Assert.That(decryptedSourceBytes[0], Is.EqualTo(0x1f), "Decrypted source should still be gzip-compressed (gzip magic byte 1).");
+            Assert.That(decryptedSourceBytes[1], Is.EqualTo(0x8b), "Decrypted source should still be gzip-compressed (gzip magic byte 2).");
+        });
+
+        // Gunzip the decrypted source and verify the raw MIME message contains all original content.
+        var sourceBytes = Gunzip(decryptedSourceBytes);
+        var messageSource = Encoding.UTF8.GetString(sourceBytes);
+        var crlfSeparatorIndex = messageSource.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+        var headerSeparatorIndex = crlfSeparatorIndex != -1 ? crlfSeparatorIndex : messageSource.IndexOf("\n\n", StringComparison.Ordinal);
+        Assert.That(headerSeparatorIndex, Is.GreaterThan(0), "Gunzipped source should contain an RFC 822 header/body separator.");
+        var headerBlock = messageSource[..headerSeparatorIndex];
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Match("^[A-Za-z][A-Za-z0-9-]*: "), "Gunzipped source should start with the RFC 822 header block.");
+            Assert.That(headerBlock, Does.Contain("From: Test Sender <sender@example.com>"));
+            Assert.That(headerBlock, Does.Contain("To: Test Recipient <claimed@example.tld>"));
+            Assert.That(headerBlock, Does.Contain("Subject: Test Email source roundtrip."));
+            Assert.That(messageSource, Does.Contain(textBody));
+            Assert.That(messageSource, Does.Contain(htmlBody));
+            Assert.That(messageSource, Does.Contain("This is a roundtrip attachment.").Or.Contain(Convert.ToBase64String(attachmentData)), "Raw MIME should contain the attachment payload (literal or base64-encoded).");
+        });
+
+        // Parse the raw MIME and verify the attachment payload decodes back to the original bytes.
+        using var sourceStream = new MemoryStream(sourceBytes);
+        var parsedMessage = await MimeMessage.LoadAsync(sourceStream);
+        var parsedAttachment = parsedMessage.Attachments.OfType<MimePart>().Single();
+        Assert.That(parsedAttachment.Content, Is.Not.Null, "Parsed attachment has no content. Check the stored raw source.");
+        using var decodedAttachment = new MemoryStream();
+        await parsedAttachment.Content!.DecodeToAsync(decodedAttachment);
+        Assert.Multiple(() =>
+        {
+            Assert.That(parsedAttachment.FileName, Is.EqualTo("attachment.txt"));
+            Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData));
         });
     }
 
@@ -319,7 +533,7 @@ public class SmtpServerTests
         await SendMessageToSmtpServer(message);
 
         // Check if the email is in the database.
-        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.DecryptionKeys).FirstAsync();
 
         // Decrypt the email and verify the accented characters survived into the preview.
         processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
@@ -409,7 +623,8 @@ public class SmtpServerTests
     }
 
     /// <summary>
-    /// Tests sending a single email in plain format to the SMTP server to check if it is processed correctly.
+    /// Tests sending a single email with an attachment to the SMTP server to check if it is processed correctly.
+    /// In the source-only storage format no separate attachment rows are created; only the attachment count is stamped.
     /// </summary>
     /// <returns>Task.</returns>
     [Test]
@@ -431,10 +646,182 @@ public class SmtpServerTests
 
         await SendMessageToSmtpServer(message);
 
-        // Check that attachment is in the database and the bytes are encrypted.
-        Assert.That(await _testHostBuilder.GetDbContext().EmailAttachments.CountAsync(), Is.EqualTo(1));
-        var attachment = await _testHostBuilder.GetDbContext().EmailAttachments.FirstAsync();
-        Assert.That(attachment.Bytes, Is.Not.EqualTo(attachmentData), "Email attachment bytes are not encrypted. Check email encryption logic.");
+        // Check that no separate attachment rows are created and the attachment count is stamped on the email row.
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.FirstAsync();
+        var attachmentRowCount = await _testHostBuilder.GetDbContext().EmailAttachments.CountAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(attachmentRowCount, Is.Zero, "No EmailAttachments rows should be created; attachments live inside the stored raw source.");
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(processedEmail.MessageSourceBytes, Is.Not.Null, "The gzipped raw source should be stored in MessageSourceBytes.");
+        });
+    }
+
+    /// <summary>
+    /// Tests that a sizeable attachment is detached from the message source at ingest.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task LargeAttachmentIsDetachedFromSource()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email with large attachment";
+
+        // Random bytes well over the 64 KB detach floor, so the payload cannot compress away either.
+        var attachmentData = new byte[128 * 1024];
+        Random.Shared.NextBytes(attachmentData);
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a large attachment." };
+        bodyBuilder.Attachments.Add("large.bin", attachmentData, ContentType.Parse("application/octet-stream"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.DecryptionKeys).FirstAsync();
+        var storedPart = processedEmail.Parts.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+            Assert.That(storedPart.PartIndex, Is.Zero);
+            Assert.That(storedPart.Bytes, Is.Not.Empty);
+        });
+
+        // The whole point of detaching: the source a client downloads to read the mail no longer carries the payload.
+        Assert.That(processedEmail.MessageSourceBytes!.Length, Is.LessThan(attachmentData.Length / 4), "The stored source should no longer carry the attachment payload.");
+
+        processedEmail = EmailEncryption.DecryptEmail(processedEmail, PrivateKey);
+        var sourceBytes = Gunzip(processedEmail.MessageSourceBytes!);
+        var messageSource = Encoding.UTF8.GetString(sourceBytes);
+        Assert.Multiple(() =>
+        {
+            Assert.That(messageSource, Does.Contain("X-AliasVault-Part: 0"), "The detached attachment should advertise the index its body is stored under.");
+            Assert.That(messageSource, Does.Contain($"X-AliasVault-Detached-Length: {attachmentData.Length}"), "The detached attachment should advertise its decoded size.");
+            Assert.That(messageSource, Does.Contain("filename=large.bin"), "The attachment headers must stay in the source so clients can still list it.");
+        });
+
+        // The skeleton has to remain a parseable MIME message with the attachment present but empty.
+        using var sourceStream = new MemoryStream(sourceBytes);
+        var parsedMessage = await MimeMessage.LoadAsync(sourceStream);
+        var parsedAttachment = parsedMessage.Attachments.OfType<MimePart>().Single();
+        using var emptyBody = new MemoryStream();
+        await parsedAttachment.Content!.DecodeToAsync(emptyBody);
+        Assert.Multiple(() =>
+        {
+            Assert.That(parsedAttachment.FileName, Is.EqualTo("large.bin"));
+            Assert.That(emptyBody.ToArray(), Is.Empty, "The detached attachment should have an empty body in the source.");
+        });
+
+        // Splicing the stored part back where its body was must reproduce the original file byte for byte.
+        var detachedBody = Gunzip(processedEmail.Parts.Single().Bytes);
+        var spliced = SpliceDetachedPart(sourceBytes, detachedBody);
+        using var splicedStream = new MemoryStream(spliced);
+        var splicedMessage = await MimeMessage.LoadAsync(splicedStream);
+        using var decodedAttachment = new MemoryStream();
+        await splicedMessage.Attachments.OfType<MimePart>().Single().Content!.DecodeToAsync(decodedAttachment);
+        Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData), "The spliced attachment should decode to the original bytes.");
+    }
+
+    /// <summary>
+    /// Tests that every recipient of a multi-recipient email gets a usable copy of a detached attachment.
+    /// Detaching lifts the body out of the shared MimeMessage, so doing it per recipient rather than once up
+    /// front would leave every copy after the first with an empty part.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task DetachedAttachmentIsStoredForEveryRecipient()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Cc.Add(new MailboxAddress("Test Recipient 2", "claimed.cc@example.tld"));
+        message.Subject = "Test Email with large attachment for multiple recipients";
+
+        var attachmentData = new byte[128 * 1024];
+        Random.Shared.NextBytes(attachmentData);
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a large attachment." };
+        bodyBuilder.Attachments.Add("large.bin", attachmentData, ContentType.Parse("application/octet-stream"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var emails = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).Include(x => x.DecryptionKeys).ToListAsync();
+        Assert.That(emails, Has.Count.EqualTo(2));
+
+        foreach (var email in emails)
+        {
+            var decrypted = EmailEncryption.DecryptEmail(email, PrivateKey);
+            var detachedBody = Gunzip(decrypted.Parts.Single().Bytes);
+            var spliced = SpliceDetachedPart(Gunzip(decrypted.MessageSourceBytes!), detachedBody);
+
+            using var splicedStream = new MemoryStream(spliced);
+            var splicedMessage = await MimeMessage.LoadAsync(splicedStream);
+            using var decodedAttachment = new MemoryStream();
+            await splicedMessage.Attachments.OfType<MimePart>().Single().Content!.DecodeToAsync(decodedAttachment);
+
+            Assert.That(decodedAttachment.ToArray(), Is.EqualTo(attachmentData), $"Recipient {email.To} did not get a usable copy of the detached attachment.");
+        }
+    }
+
+    /// <summary>
+    /// Tests that an attachment below the detach floor is left inline: detaching it would cost an extra round
+    /// trip on download for a saving too small to matter.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task SmallAttachmentStaysInsideSource()
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", "sender@example.com"));
+        message.To.Add(new MailboxAddress("Test Recipient", "claimed@example.tld"));
+        message.Subject = "Test Email with small attachment";
+
+        var bodyBuilder = new BodyBuilder { TextBody = "This is a test email with a small attachment." };
+        bodyBuilder.Attachments.Add("small.txt", Encoding.UTF8.GetBytes("This is a small attachment."), ContentType.Parse("text/plain"));
+        message.Body = bodyBuilder.ToMessageBody();
+
+        await SendMessageToSmtpServer(message);
+
+        var processedEmail = await _testHostBuilder.GetDbContext().Emails.Include(x => x.Parts).FirstAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(processedEmail.Parts, Is.Empty, "An attachment below the detach floor should stay inside the source.");
+            Assert.That(processedEmail.AttachmentCount, Is.EqualTo(1));
+        });
+    }
+
+    /// <summary>
+    /// Splices a detached part body back into the empty body of the attachment it was lifted out of, mirroring
+    /// what the Rust core does client-side.
+    /// </summary>
+    /// <param name="skeleton">The raw MIME source with the attachment body removed.</param>
+    /// <param name="body">The transfer-encoded attachment body to splice back in.</param>
+    /// <returns>The reassembled raw MIME source.</returns>
+    private static byte[] SpliceDetachedPart(byte[] skeleton, byte[] body)
+    {
+        // The detached part's body sits between the blank line that ends its headers and the next boundary.
+        var text = Encoding.ASCII.GetString(skeleton);
+        var headerIndex = text.IndexOf("X-AliasVault-Detached-Length:", StringComparison.Ordinal);
+        Assert.That(headerIndex, Is.GreaterThan(0), "Skeleton does not contain a detached part.");
+
+        var separator = text.IndexOf("\r\n\r\n", headerIndex, StringComparison.Ordinal);
+        var separatorLength = 4;
+        if (separator == -1)
+        {
+            separator = text.IndexOf("\n\n", headerIndex, StringComparison.Ordinal);
+            separatorLength = 2;
+        }
+
+        Assert.That(separator, Is.GreaterThan(0), "Detached part has no header/body separator.");
+        var bodyStart = separator + separatorLength;
+
+        var spliced = new byte[skeleton.Length + body.Length];
+        Array.Copy(skeleton, 0, spliced, 0, bodyStart);
+        Array.Copy(body, 0, spliced, bodyStart, body.Length);
+        Array.Copy(skeleton, bodyStart, spliced, bodyStart + body.Length, skeleton.Length - bodyStart);
+        return spliced;
     }
 
     /// <summary>
@@ -473,6 +860,23 @@ public class SmtpServerTests
         }
     }
 
+    /// <summary>
+    /// Build a minimal plain-text message for delivery tests.
+    /// </summary>
+    /// <param name="from">The sender address.</param>
+    /// <param name="to">The recipient address.</param>
+    /// <param name="subject">The subject line.</param>
+    /// <returns>The message.</returns>
+    private static MimeMessage BuildSimpleMessage(string from, string to, string subject)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Test Sender", from));
+        message.To.Add(new MailboxAddress("Test Recipient", to));
+        message.Subject = subject;
+        message.Body = new BodyBuilder { TextBody = "Body of " + subject }.ToMessageBody();
+        return message;
+    }
+
     private static async Task<TcpClient> ConnectRawSmtpClient()
     {
         var client = new TcpClient();
@@ -508,5 +912,19 @@ public class SmtpServerTests
         var buffer = new byte[512];
         var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length));
         return Encoding.ASCII.GetString(buffer, 0, bytesRead).Trim();
+    }
+
+    /// <summary>
+    /// Decompresses gzip-compressed bytes, as required to read the raw MIME source from a decrypted MessageSourceBytes value.
+    /// </summary>
+    /// <param name="gzippedBytes">The gzip-compressed bytes, starting with the gzip magic bytes 0x1f 0x8b.</param>
+    /// <returns>The decompressed bytes.</returns>
+    private static byte[] Gunzip(byte[] gzippedBytes)
+    {
+        using var input = new MemoryStream(gzippedBytes);
+        using var gzip = new GZipStream(input, CompressionMode.Decompress);
+        using var output = new MemoryStream();
+        gzip.CopyTo(output);
+        return output.ToArray();
     }
 }

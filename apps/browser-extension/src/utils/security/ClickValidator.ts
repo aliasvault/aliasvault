@@ -1,3 +1,4 @@
+import { logFailure } from '@/utils/Diagnostics';
 /**
  * ClickValidator - Simplified click validation system for content script security
  *
@@ -41,7 +42,7 @@ export class ClickValidator {
       return true;
 
     } catch (error) {
-      console.error('[AliasVault Security] Click validation error:', error);
+      logFailure('[AliasVault Security] Click validation error', error);
       return false;
     }
   }

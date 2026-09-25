@@ -44,7 +44,7 @@ import net.aliasvault.app.vaultstore.VaultStore
  * // Setup mode
  * val intent = Intent(context, PinUnlockActivity::class.java)
  * intent.putExtra(PinUnlockActivity.EXTRA_MODE, PinUnlockActivity.MODE_SETUP)
- * intent.putExtra(PinUnlockActivity.EXTRA_SETUP_ENCRYPTION_KEY, encryptionKey)
+ * intent.putExtra(PinUnlockActivity.EXTRA_SETUP_UNLOCK_KEY, unlockKey)
  * startActivityForResult(intent, REQUEST_CODE)
  * ```
  */
@@ -60,14 +60,14 @@ class PinUnlockActivity : AppCompatActivity() {
         /** Result code when PIN was disabled due to max attempts. */
         const val RESULT_PIN_DISABLED = 100
 
-        /** Intent extra key for the encryption key (returned in unlock mode). */
-        const val EXTRA_ENCRYPTION_KEY = "encryption_key"
+        /** Intent extra key for the unlock key, the password-derived KEK (returned in unlock mode). */
+        const val EXTRA_UNLOCK_KEY = "unlock_key"
 
         /** Intent extra key for the mode (unlock or setup). */
         const val EXTRA_MODE = "mode"
 
-        /** Intent extra key for the encryption key to use during setup. */
-        const val EXTRA_SETUP_ENCRYPTION_KEY = "setup_encryption_key"
+        /** Intent extra key for the unlock key (the password-derived KEK) the PIN protects during setup. */
+        const val EXTRA_SETUP_UNLOCK_KEY = "setup_unlock_key"
 
         /** Intent extra key for custom title (optional). */
         const val EXTRA_CUSTOM_TITLE = "custom_title"
@@ -97,7 +97,7 @@ class PinUnlockActivity : AppCompatActivity() {
 
     // State
     private var configuration: PinConfiguration? = null
-    private var setupEncryptionKey: String? = null
+    private var setupUnlockKey: String? = null
     private var currentPin: String = ""
     private var isProcessing: Boolean = false
 
@@ -118,12 +118,12 @@ class PinUnlockActivity : AppCompatActivity() {
         )
         viewModel = PinViewModel(this, vaultStore)
 
-        // Get mode and encryption key from intent
+        // Get mode and unlock key from intent
         val mode = when (intent.getStringExtra(EXTRA_MODE)) {
             MODE_SETUP -> PinMode.SETUP
             else -> PinMode.UNLOCK
         }
-        setupEncryptionKey = intent.getStringExtra(EXTRA_SETUP_ENCRYPTION_KEY)
+        setupUnlockKey = intent.getStringExtra(EXTRA_SETUP_UNLOCK_KEY)
         val customTitle = intent.getStringExtra(EXTRA_CUSTOM_TITLE)
         val customSubtitle = intent.getStringExtra(EXTRA_CUSTOM_SUBTITLE)
 
@@ -427,7 +427,7 @@ class PinUnlockActivity : AppCompatActivity() {
                 delay(50)
 
                 // Process the PIN
-                val result = viewModel.processPin(currentPin, config, setupEncryptionKey)
+                val result = viewModel.processPin(currentPin, config, setupUnlockKey)
 
                 // Handle result
                 handlePinResult(result)
@@ -451,8 +451,8 @@ class PinUnlockActivity : AppCompatActivity() {
 
                 // Success - return result
                 val resultIntent = Intent()
-                result.encryptionKey?.let {
-                    resultIntent.putExtra(EXTRA_ENCRYPTION_KEY, it)
+                result.unlockKey?.let {
+                    resultIntent.putExtra(EXTRA_UNLOCK_KEY, it)
                 }
                 setResult(RESULT_SUCCESS, resultIntent)
                 finish()

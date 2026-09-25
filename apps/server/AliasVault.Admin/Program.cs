@@ -105,7 +105,6 @@ builder.Services.AddIdentityCore<AdminUser>(options =>
         options.Lockout.MaxFailedAccessAttempts = 10;
         options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
     })
-    .AddRoles<AdminRole>()
     .AddEntityFrameworkStores<AliasServerDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -180,7 +179,6 @@ using (var scope = app.Services.CreateScope())
         await db.WaitForDatabaseReadyAsync(logger);
     }
 
-    await StartupTasks.CreateRolesIfNotExist(scope.ServiceProvider);
     await StartupTasks.SetAdminUser(scope.ServiceProvider);
 }
 

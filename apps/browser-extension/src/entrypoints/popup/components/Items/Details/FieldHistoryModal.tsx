@@ -1,3 +1,4 @@
+import { FieldTypes } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,13 +7,15 @@ import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/F
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import type { FieldHistory, FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { FieldHistory, FieldType } from '@aliasvault/models/vault';
 
 type FieldHistoryModalProps = {
   isOpen: boolean;
   onClose: () => void;
   itemId: string;
+  manifestId: string;
   fieldKey: string;
   fieldLabel: string;
   fieldType: FieldType;
@@ -29,6 +32,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
   isOpen,
   onClose,
   itemId,
+  manifestId,
   fieldKey,
   fieldLabel,
   fieldType,
@@ -54,14 +58,14 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
 
     try {
       setLoading(true);
-      const historyRecords = dbContext.sqliteClient.items.getFieldHistory(itemId, fieldKey);
+      const historyRecords = dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: manifestId }, fieldKey);
       setHistory(historyRecords);
     } catch (error) {
-      console.error('Error loading field history:', error);
+      logFailure('Error loading field history', error);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId, fieldKey]);
+  }, [dbContext?.sqliteClient, itemId, manifestId, fieldKey]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -110,13 +114,13 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
     try {
       // Use vault mutation to delete and sync in background
       await executeVaultMutationAsync(async () => {
-        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId);
+        await dbContext.sqliteClient!.items.deleteFieldHistory(historyId, manifestId);
       });
       // Reload history after deletion
       loadHistory();
       setConfirmDeleteId(null);
     } catch (error) {
-      console.error('Error deleting field history:', error);
+      logFailure('Error deleting field history', error);
     }
   };
 

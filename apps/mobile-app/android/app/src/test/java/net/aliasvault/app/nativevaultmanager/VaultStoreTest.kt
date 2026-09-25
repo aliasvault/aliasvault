@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 @Config(sdk = [28], manifest = Config.NONE)
 class VaultStoreTest {
     private lateinit var vaultStore: VaultStore
-    private val testEncryptionKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
+    private val testUnlockKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
 
     @Before
     fun setup() {
@@ -29,7 +29,7 @@ class VaultStoreTest {
         // Initialize the VaultStore instance with a mock file provider that
         // is only used for testing purposes
         vaultStore = VaultStore(TestStorageProvider(), TestKeystoreProvider())
-        vaultStore.storeEncryptionKey(testEncryptionKeyBase64)
+        vaultStore.storeUnlockKey(testUnlockKeyBase64)
         vaultStore.storeEncryptedDatabase(encryptedDb)
 
         val metadata = """
@@ -79,7 +79,7 @@ class VaultStoreTest {
 
         // Verify all expected properties
         assertEquals("Gmail Test Account", gmailItem.name)
-        assertEquals("https://google.com", gmailItem.url)
+        assertEquals(listOf("https://google.com"), gmailItem.urls)
         assertEquals("test.user@gmail.com", gmailItem.username)
         assertEquals("Test", gmailItem.firstName)
         assertEquals("User", gmailItem.lastName)
@@ -93,7 +93,8 @@ class VaultStoreTest {
 
     @Test
     fun testDatabaseWriteOperation() {
-        // Create a test setting
+        // Create a test setting. Settings are keyed by (ManifestId, Key).
+        val testManifestId = "00000000-0000-0000-0000-000000000001"
         val testKey = "test_setting_key"
         val testValue = "test_setting_value"
 
@@ -101,16 +102,16 @@ class VaultStoreTest {
         vaultStore.beginTransaction()
         try {
             // Insert the setting using raw SQL with parameters
-            val insertSql = "INSERT INTO Settings (Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?)"
+            val insertSql = "INSERT INTO Settings (ManifestId, Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?)"
             val insertResult = vaultStore.executeUpdate(
                 insertSql,
-                arrayOf(testKey, testValue, "2025-01-01 00:00:00", "2025-01-01 00:00:00", 0),
+                arrayOf(testManifestId, testKey, testValue, "2025-01-01 00:00:00", "2025-01-01 00:00:00", 0),
             )
             assertTrue(insertResult > 0, "Setting insertion should succeed")
 
             // Verify the setting was inserted by querying it
-            val querySql = "SELECT Value FROM Settings WHERE Key = ?"
-            val results = vaultStore.executeQuery(querySql, arrayOf(testKey))
+            val querySql = "SELECT Value FROM Settings WHERE ManifestId = ? AND Key = ?"
+            val results = vaultStore.executeQuery(querySql, arrayOf(testManifestId, testKey))
 
             assertTrue(results.isNotEmpty(), "Should get a result (amount of updated rows)")
 
@@ -120,7 +121,7 @@ class VaultStoreTest {
             // Then, try to re-load the database and ensure the __EFMigrationsHistory table still exists.
             // This asserts that the database commit results in a properly exported and encrypted database file.
             vaultStore.clearCache()
-            vaultStore.storeEncryptionKey(testEncryptionKeyBase64)
+            vaultStore.storeUnlockKey(testUnlockKeyBase64)
             vaultStore.unlockVault()
 
             // Do a query

@@ -10,7 +10,9 @@ namespace AliasVault.IntegrationTests.TaskRunner;
 using AliasServerDb;
 using AliasVault.IntegrationTests.TaskRunner.Helpers;
 using AliasVault.Shared.Models.Enums;
+using AliasVault.TaskRunner.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 /// <summary>
@@ -52,6 +54,39 @@ public class TaskRunnerTests
     }
 
     /// <summary>
+    /// Tests that every maintenance task in the TaskRunner assembly is registered and leaves at least one entry in
+    /// the general logs after a run with default settings. A new task fails here until it is registered, logs a
+    /// summary on every run and is allowed to log to the database (see LoggingConfiguration). A task that should
+    /// stay silent on purpose can be added to the exclusion list below.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task EveryMaintenanceTaskWritesGeneralLog()
+    {
+        // Tasks that are deliberately allowed to run without leaving a general log entry.
+        // Currently none by design, hence empty list.
+        var silentTasks = new HashSet<Type>();
+
+        var taskTypes = typeof(IMaintenanceTask).Assembly.GetTypes()
+            .Where(t => typeof(IMaintenanceTask).IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false })
+            .ToList();
+        Assert.That(taskTypes, Is.Not.Empty, "No maintenance tasks were discovered.");
+
+        var registeredTypes = _testHost.Services.GetServices<IMaintenanceTask>().Select(t => t.GetType()).ToList();
+        Assert.That(registeredTypes, Is.EquivalentTo(taskTypes), "Every maintenance task must be registered exactly once in MaintenanceTaskRegistration.");
+
+        // Run against an empty database so all server settings are at their defaults.
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var loggedSources = await dbContext.Logs.Select(x => x.SourceContext).Distinct().ToListAsync();
+        var tasksWithoutLog = taskTypes.Where(t => !silentTasks.Contains(t) && !loggedSources.Contains(t.FullName!)).Select(t => t.Name).ToList();
+
+        Assert.That(tasksWithoutLog, Is.Empty, "These maintenance tasks left no general log entry after a run with default settings. Sources seen: " + string.Join(", ", loggedSources));
+    }
+
+    /// <summary>
     /// Tests the EmailCleanup task.
     /// </summary>
     /// <returns>Task.</returns>
@@ -65,6 +100,11 @@ public class TaskRunnerTests
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
         var emails = await dbContext.Emails.ToListAsync();
         Assert.That(emails, Has.Count.EqualTo(50));
+
+        // The seed contains one legacy-shaped email (text source + attachment row) per age group: the old one must
+        // be cleaned up together with its attachment row, the recent one must survive with its attachment row intact.
+        var attachmentCount = await dbContext.EmailAttachments.CountAsync();
+        Assert.That(attachmentCount, Is.EqualTo(1), "Only the recent legacy email's attachment row should remain after cleanup of old legacy rows.");
     }
 
     /// <summary>
@@ -99,6 +139,48 @@ public class TaskRunnerTests
         // Check auth logs
         var authLogs = await dbContext.AuthLogs.ToListAsync();
         Assert.That(authLogs, Has.Count.EqualTo(50), "Only recent auth logs should remain");
+    }
+
+    /// <summary>
+    /// Tests that the UnlockKeyHistoryCleanup task discards archived master password credentials once they fall
+    /// outside the retention window, while leaving the ones still inside it available for a revert.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task UnlockKeyHistoryCleanup()
+    {
+        // Arrange
+        await InitializeWithTestData();
+
+        // Assert
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var archivedKeys = await dbContext.UserUnlockKeysHistory.ToListAsync();
+
+        Assert.That(archivedKeys, Has.Count.EqualTo(1), "Only the archived credential inside the retention window should remain");
+        Assert.That(archivedKeys[0].Label, Is.EqualTo("recent"));
+    }
+
+    /// <summary>
+    /// Tests that the VaultBlobCleanup task deletes the encrypted blobs no vault revision references anymore, while
+    /// keeping the ones a current or history revision still holds and the ones a client has only just uploaded.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task VaultBlobCleanup()
+    {
+        // Arrange
+        await InitializeWithTestData();
+
+        // Assert
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+        var remainingBlobs = await dbContext.VaultBlobObjects.Select(x => x.Hash).ToListAsync();
+        var remainingReferences = await dbContext.VaultBlobReferences.Select(x => x.BlobHash).ToListAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(remainingBlobs, Is.EquivalentTo(new[] { "referenced-current", "referenced-history", "orphan-just-uploaded" }), "Only referenced blobs and blobs still inside the upload grace period should remain");
+            Assert.That(remainingReferences, Is.EquivalentTo(new[] { "referenced-current", "referenced-history" }), "The reference to a revision that no longer exists should be swept");
+        });
     }
 
     /// <summary>
@@ -542,20 +624,15 @@ public class TaskRunnerTests
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
         // Create test user
-        var user = new AliasVaultUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.tld",
-        };
-        dbContext.AliasVaultUsers.Add(user);
-        await dbContext.SaveChangesAsync();
+        var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld");
+        var user = testUser.User;
 
         // Create fulfilled-but-not-retrieved request that's old enough to be cleared (> 10 minutes)
         var staleRequest = new MobileLoginRequest
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "stale-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-15),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-12), // Fulfilled 12 minutes ago (exceeds 10 min timeout)
@@ -571,7 +648,7 @@ public class TaskRunnerTests
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "recent-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-6),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-5), // Fulfilled 5 minutes ago (under 10 min timeout)
@@ -587,7 +664,7 @@ public class TaskRunnerTests
         {
             Id = Guid.NewGuid().ToString(),
             ClientPublicKey = "completed-public-key",
-            EncryptedDecryptionKey = "encrypted-key-data",
+            EncryptedUnlockKey = "encrypted-key-data",
             UserId = user.Id,
             CreatedAt = DateTime.UtcNow.AddMinutes(-15),
             FulfilledAt = DateTime.UtcNow.AddMinutes(-12),
@@ -614,7 +691,7 @@ public class TaskRunnerTests
         {
             // Stale request should have sensitive data cleared
             Assert.That(staleAfterCleanup.ClientPublicKey, Is.Empty, "Stale request ClientPublicKey should be cleared");
-            Assert.That(staleAfterCleanup.EncryptedDecryptionKey, Is.Null, "Stale request EncryptedDecryptionKey should be cleared");
+            Assert.That(staleAfterCleanup.EncryptedUnlockKey, Is.Null, "Stale request EncryptedUnlockKey should be cleared");
             Assert.That(staleAfterCleanup.ClearedAt, Is.Not.Null, "Stale request ClearedAt should be set");
 
             // Metadata should be preserved for abuse tracking
@@ -628,7 +705,7 @@ public class TaskRunnerTests
         {
             // Recent request should still have sensitive data (not old enough)
             Assert.That(recentAfterCleanup.ClientPublicKey, Is.EqualTo("recent-public-key"), "Recent request should retain sensitive data");
-            Assert.That(recentAfterCleanup.EncryptedDecryptionKey, Is.Not.Null, "Recent request should retain encrypted key");
+            Assert.That(recentAfterCleanup.EncryptedUnlockKey, Is.Not.Null, "Recent request should retain encrypted key");
             Assert.That(recentAfterCleanup.ClearedAt, Is.Null, "Recent request should not be cleared yet");
         });
 
@@ -640,27 +717,25 @@ public class TaskRunnerTests
     /// Creates a base email with static required fields.
     /// </summary>
     /// <param name="to">The recipient email address.</param>
-    /// <param name="userEncryptionKey">The to be associated user encryption key.</param>
+    /// <param name="deliveryKey">The delivery key the email's decryption key references.</param>
     /// <param name="subject">The email subject.</param>
     /// <param name="date">The email date.</param>
     /// <returns>A new Email object with static fields pre-filled.</returns>
-    private static Email CreateTestEmail(string to, UserEncryptionKey userEncryptionKey, string subject, DateTime date)
+    private static Email CreateTestEmail(string to, VaultManifestDeliveryKey deliveryKey, string subject, DateTime date)
     {
         return new Email
         {
-            UserEncryptionKeyId = userEncryptionKey.Id,
+            DecryptionKeys = [new EmailDecryptionKey { VaultManifestDeliveryKeyId = deliveryKey.Id, EncryptedSymmetricKey = "n/a" }],
             From = "n/a",
             FromLocal = "n/a",
             FromDomain = "n/a",
             To = to,
             ToLocal = "n/a",
             ToDomain = "n/a",
-            MessageSource = "n/a",
-            MessagePlain = "n/a",
-            MessageHtml = "n/a",
+            MessageSourceBytes = [0x1f, 0x8b],
+            AttachmentCount = 0,
             MessagePreview = "n/a",
             Subject = subject,
-            EncryptedSymmetricKey = "n/a",
             Date = date,
             DateSystem = date,
         };
@@ -716,48 +791,22 @@ public class TaskRunnerTests
     /// <summary>
     /// Sets up test data for disabled email cleanup tests.
     /// </summary>
-    /// <returns>Task containing the test user and encryption key.</returns>
+    /// <returns>Task.</returns>
     private async Task SetupDisabledEmailCleanupTest()
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create test user
-        var user = new AliasVaultUser
-        {
-            UserName = "testuser",
-            Email = "testuser@example.tld",
-        };
-        dbContext.AliasVaultUsers.Add(user);
-        await dbContext.SaveChangesAsync();
+        // Create test user with personal group, manifest and primary delivery key.
+        var testUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "testuser", "testuser@example.tld");
+        var deliveryKey = testUser.DeliveryKey;
 
-        // Create encryption key for the user
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-        await dbContext.SaveChangesAsync();
-
-        // Create 5 aliases
-        var aliases = new List<UserEmailClaim>();
+        // Create 5 aliases, the first two disabled.
+        var aliases = new List<EmailClaim>();
         for (var i = 0; i < 5; i++)
         {
-            var alias = new UserEmailClaim
-            {
-                UserId = user.Id,
-                Address = $"alias{i}@example.tld",
-                AddressLocal = $"alias{i}",
-                AddressDomain = "example.tld",
-                Disabled = i < 2, // First two aliases are disabled
-                CreatedAt = DateTime.UtcNow.AddDays(-60),
-                UpdatedAt = DateTime.UtcNow.AddDays(-60),
-            };
+            var alias = TestUserSeeder.CreateEmailClaim(testUser.Manifest.ManifestId, $"alias{i}@example.tld", disabled: i < 2, createdAt: DateTime.UtcNow.AddDays(-60));
             aliases.Add(alias);
-            dbContext.UserEmailClaims.Add(alias);
+            dbContext.EmailClaims.Add(alias);
         }
 
         await dbContext.SaveChangesAsync();
@@ -766,12 +815,12 @@ public class TaskRunnerTests
         foreach (var alias in aliases)
         {
             // Add 50 random emails for enabled aliases
-            if (!alias.Disabled)
+            if (alias.Links.Any(l => l.State != EmailClaimLinkState.Removed))
             {
                 for (int i = 0; i < 50; i++)
                 {
                     var randomDate = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 60));
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Test Email {i}", randomDate));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Test Email {i}", randomDate));
                 }
             }
             else
@@ -781,35 +830,35 @@ public class TaskRunnerTests
                 var date50DaysAgo = DateTime.UtcNow.AddDays(-50);
                 for (int i = 0; i < 10; i++)
                 {
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Old Email {i}", date50DaysAgo));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Old Email {i}", date50DaysAgo));
                 }
 
                 // 10 emails from 40 days ago
                 var date40DaysAgo = DateTime.UtcNow.AddDays(-40);
                 for (int i = 0; i < 10; i++)
                 {
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Old Email {i}", date40DaysAgo));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Old Email {i}", date40DaysAgo));
                 }
 
                 // 10 emails from 30 days ago
                 var date30DaysAgo = DateTime.UtcNow.AddDays(-30);
                 for (int i = 0; i < 10; i++)
                 {
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Old Email {i}", date30DaysAgo));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Old Email {i}", date30DaysAgo));
                 }
 
                 // 10 emails from 20 days ago
                 var date20DaysAgo = DateTime.UtcNow.AddDays(-20);
                 for (int i = 0; i < 10; i++)
                 {
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Recent Email {i}", date20DaysAgo));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Recent Email {i}", date20DaysAgo));
                 }
 
                 // 10 emails from 10 days ago
                 var date10DaysAgo = DateTime.UtcNow.AddDays(-10);
                 for (int i = 0; i < 10; i++)
                 {
-                    dbContext.Emails.Add(CreateTestEmail(alias.Address, encryptionKey, $"Recent Email {i}", date10DaysAgo));
+                    dbContext.Emails.Add(CreateTestEmail(alias.Address, deliveryKey, $"Recent Email {i}", date10DaysAgo));
                 }
             }
         }
@@ -825,59 +874,31 @@ public class TaskRunnerTests
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create user1 with 5 email limit
-        var user1 = new AliasVaultUser
-        {
-            UserName = "user1",
-            Email = "user1@test.com",
-            MaxEmails = 5,
-        };
-        dbContext.AliasVaultUsers.Add(user1);
+        // Create user1 with 5 email limit (the limit lives on the user's personal group)
+        var user1 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user1", "user1@test.com", configureGroup: g => g.MaxEmails = 5);
 
         // Create user2 with 10 email limit
-        var user2 = new AliasVaultUser
-        {
-            UserName = "user2",
-            Email = "user2@test.com",
-            MaxEmails = 10,
-        };
-        dbContext.AliasVaultUsers.Add(user2);
+        var user2 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user2", "user2@test.com", configureGroup: g => g.MaxEmails = 10);
 
         // Create user3 with no limit (0 = unlimited)
-        var user3 = new AliasVaultUser
-        {
-            UserName = "user3",
-            Email = "user3@test.com",
-            MaxEmails = 0,
-        };
-        dbContext.AliasVaultUsers.Add(user3);
+        var user3 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user3", "user3@test.com", configureGroup: g => g.MaxEmails = 0);
 
-        await dbContext.SaveChangesAsync();
+        // The emails' decryption keys all reference user1's delivery key, mirroring the single encryption key used before.
+        var deliveryKey = user1.DeliveryKey;
 
-        // Create encryption key
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = user1.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-
-        // Create email claims for each user
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user1.Id, Address = "user1@test.com", AddressLocal = "user1", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user2.Id, Address = "user2@test.com", AddressLocal = "user2", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user3.Id, Address = "user3@test.com", AddressLocal = "user3", AddressDomain = "test.com" });
+        // Create email claims for each user, linked to their personal manifest
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user1.Manifest.ManifestId, "user1@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user2.Manifest.ManifestId, "user2@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user3.Manifest.ManifestId, "user3@test.com"));
 
         // Create 15 emails for each user (all will exceed user1 and user2 limits)
         for (int i = 0; i < 15; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i); // Different ages for realistic testing
 
-            dbContext.Emails.Add(CreateTestEmail("user1@test.com", encryptionKey, $"User1 Email {i}", dateCreated));
-            dbContext.Emails.Add(CreateTestEmail("user2@test.com", encryptionKey, $"User2 Email {i}", dateCreated));
-            dbContext.Emails.Add(CreateTestEmail("user3@test.com", encryptionKey, $"User3 Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("user1@test.com", deliveryKey, $"User1 Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("user2@test.com", deliveryKey, $"User2 Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("user3@test.com", deliveryKey, $"User3 Email {i}", dateCreated));
         }
 
         await dbContext.SaveChangesAsync();
@@ -891,50 +912,22 @@ public class TaskRunnerTests
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create user1 with 7 days age limit
-        var user1 = new AliasVaultUser
-        {
-            UserName = "user1",
-            Email = "user1@test.com",
-            MaxEmailAgeDays = 7,
-        };
-        dbContext.AliasVaultUsers.Add(user1);
+        // Create user1 with 7 days age limit (the limit lives on the user's personal group)
+        var user1 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user1", "user1@test.com", configureGroup: g => g.MaxEmailAgeDays = 7);
 
         // Create user2 with 30 days age limit
-        var user2 = new AliasVaultUser
-        {
-            UserName = "user2",
-            Email = "user2@test.com",
-            MaxEmailAgeDays = 30,
-        };
-        dbContext.AliasVaultUsers.Add(user2);
+        var user2 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user2", "user2@test.com", configureGroup: g => g.MaxEmailAgeDays = 30);
 
         // Create user3 with no age limit (0 = unlimited)
-        var user3 = new AliasVaultUser
-        {
-            UserName = "user3",
-            Email = "user3@test.com",
-            MaxEmailAgeDays = 0,
-        };
-        dbContext.AliasVaultUsers.Add(user3);
+        var user3 = await TestUserSeeder.CreateTestUserAsync(dbContext, "user3", "user3@test.com", configureGroup: g => g.MaxEmailAgeDays = 0);
 
-        await dbContext.SaveChangesAsync();
+        // The emails' decryption keys all reference user1's delivery key, mirroring the single encryption key used before.
+        var deliveryKey = user1.DeliveryKey;
 
-        // Create encryption key
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = user1.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-
-        // Create email claims for each user
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user1.Id, Address = "user1@test.com", AddressLocal = "user1", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user2.Id, Address = "user2@test.com", AddressLocal = "user2", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = user3.Id, Address = "user3@test.com", AddressLocal = "user3", AddressDomain = "test.com" });
+        // Create email claims for each user, linked to their personal manifest
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user1.Manifest.ManifestId, "user1@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user2.Manifest.ManifestId, "user2@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(user3.Manifest.ManifestId, "user3@test.com"));
 
         // Create emails with various ages for each user
         var testDates = new[]
@@ -951,9 +944,9 @@ public class TaskRunnerTests
 
         foreach (var date in testDates)
         {
-            dbContext.Emails.Add(CreateTestEmail("user1@test.com", encryptionKey, $"User1 Email {date:yyyy-MM-dd}", date));
-            dbContext.Emails.Add(CreateTestEmail("user2@test.com", encryptionKey, $"User2 Email {date:yyyy-MM-dd}", date));
-            dbContext.Emails.Add(CreateTestEmail("user3@test.com", encryptionKey, $"User3 Email {date:yyyy-MM-dd}", date));
+            dbContext.Emails.Add(CreateTestEmail("user1@test.com", deliveryKey, $"User1 Email {date:yyyy-MM-dd}", date));
+            dbContext.Emails.Add(CreateTestEmail("user2@test.com", deliveryKey, $"User2 Email {date:yyyy-MM-dd}", date));
+            dbContext.Emails.Add(CreateTestEmail("user3@test.com", deliveryKey, $"User3 Email {date:yyyy-MM-dd}", date));
         }
 
         await dbContext.SaveChangesAsync();
@@ -967,48 +960,26 @@ public class TaskRunnerTests
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create user with specific limit that overrides global
-        var userWithLimit = new AliasVaultUser
-        {
-            UserName = "userwithLimit",
-            Email = "userwithLimit@test.com",
-            MaxEmails = 5, // Lower than global limit
-        };
-        dbContext.AliasVaultUsers.Add(userWithLimit);
+        // Create user with specific limit that overrides global (lower than global limit, stored on the personal group)
+        var userWithLimit = await TestUserSeeder.CreateTestUserAsync(dbContext, "userwithLimit", "userwithLimit@test.com", configureGroup: g => g.MaxEmails = 5);
 
-        // Create user without specific limit (should use global)
-        var userWithoutLimit = new AliasVaultUser
-        {
-            UserName = "userwithoutLimit",
-            Email = "userwithoutLimit@test.com",
-            MaxEmails = 0, // Use global limit
-        };
-        dbContext.AliasVaultUsers.Add(userWithoutLimit);
+        // Create user without specific limit (0 = use global limit)
+        var userWithoutLimit = await TestUserSeeder.CreateTestUserAsync(dbContext, "userwithoutLimit", "userwithoutLimit@test.com", configureGroup: g => g.MaxEmails = 0);
 
-        await dbContext.SaveChangesAsync();
+        // The emails' decryption keys all reference the first user's delivery key, mirroring the single encryption key used before.
+        var deliveryKey = userWithLimit.DeliveryKey;
 
-        // Create encryption key
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = userWithLimit.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-
-        // Create email claims
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = userWithLimit.Id, Address = "userwithLimit@test.com", AddressLocal = "userwithLimit", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = userWithoutLimit.Id, Address = "userwithoutLimit@test.com", AddressLocal = "userwithoutLimit", AddressDomain = "test.com" });
+        // Create email claims, linked to each user's personal manifest
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(userWithLimit.Manifest.ManifestId, "userwithLimit@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(userWithoutLimit.Manifest.ManifestId, "userwithoutLimit@test.com"));
 
         // Create 25 emails for each user (both exceed their limits)
         for (int i = 0; i < 25; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i);
 
-            dbContext.Emails.Add(CreateTestEmail("userwithLimit@test.com", encryptionKey, $"Limited User Email {i}", dateCreated));
-            dbContext.Emails.Add(CreateTestEmail("userwithoutLimit@test.com", encryptionKey, $"Unlimited User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("userwithLimit@test.com", deliveryKey, $"Limited User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("userwithoutLimit@test.com", deliveryKey, $"Unlimited User Email {i}", dateCreated));
         }
 
         await dbContext.SaveChangesAsync();
@@ -1022,65 +993,40 @@ public class TaskRunnerTests
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create active user (recent activity)
-        var activeUser = new AliasVaultUser
+        // Create active user (recent activity, within 30 days)
+        var activeUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "activeuser", "activeuser@test.com", configureUser: u => u.LastActivityDate = DateTime.UtcNow.AddDays(-5));
+
+        // Create inactive user (no recent activity for 45 days)
+        var inactiveUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "inactiveuser", "inactiveuser@test.com", configureUser: u => u.LastActivityDate = DateTime.UtcNow.AddDays(-45));
+
+        // Create old user (never logged in, created 100 days ago)
+        var oldUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "olduser", "olduser@test.com", configureUser: u =>
         {
-            UserName = "activeuser",
-            Email = "activeuser@test.com",
-            LastActivityDate = DateTime.UtcNow.AddDays(-5), // Active within 30 days
-        };
-        dbContext.AliasVaultUsers.Add(activeUser);
+            u.LastActivityDate = null;
+            u.CreatedAt = DateTime.UtcNow.AddDays(-100);
+        });
 
-        // Create inactive user (no recent activity)
-        var inactiveUser = new AliasVaultUser
-        {
-            UserName = "inactiveuser",
-            Email = "inactiveuser@test.com",
-            LastActivityDate = DateTime.UtcNow.AddDays(-45), // Inactive for 45 days
-        };
-        dbContext.AliasVaultUsers.Add(inactiveUser);
+        // The emails' decryption keys all reference the active user's delivery key, mirroring the single encryption key used before.
+        var deliveryKey = activeUser.DeliveryKey;
 
-        // Create old user (very old, no activity)
-        var oldUser = new AliasVaultUser
-        {
-            UserName = "olduser",
-            Email = "olduser@test.com",
-            LastActivityDate = null, // Never logged in
-            CreatedAt = DateTime.UtcNow.AddDays(-100), // Created 100 days ago
-        };
-        dbContext.AliasVaultUsers.Add(oldUser);
-
-        await dbContext.SaveChangesAsync();
-
-        // Create encryption key
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = activeUser.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-
-        // Create email claims for each user
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = activeUser.Id, Address = "activeuser@test.com", AddressLocal = "activeuser", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = inactiveUser.Id, Address = "inactiveuser@test.com", AddressLocal = "inactiveuser", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = oldUser.Id, Address = "olduser@test.com", AddressLocal = "olduser", AddressDomain = "test.com" });
+        // Create email claims for each user, linked to their personal manifest
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(activeUser.Manifest.ManifestId, "activeuser@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(inactiveUser.Manifest.ManifestId, "inactiveuser@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(oldUser.Manifest.ManifestId, "olduser@test.com"));
 
         // Create emails for each user
         for (int i = 0; i < 10; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i);
-            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", encryptionKey, $"Active User Email {i}", dateCreated));
-            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", encryptionKey, $"Inactive User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", deliveryKey, $"Active User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", deliveryKey, $"Inactive User Email {i}", dateCreated));
         }
 
         // Create 15 emails for old user
         for (int i = 0; i < 15; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i);
-            dbContext.Emails.Add(CreateTestEmail("olduser@test.com", encryptionKey, $"Old User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("olduser@test.com", deliveryKey, $"Old User Email {i}", dateCreated));
         }
 
         await dbContext.SaveChangesAsync();
@@ -1094,53 +1040,31 @@ public class TaskRunnerTests
     {
         await using var dbContext = await _testHostBuilder.GetDbContextAsync();
 
-        // Create active user (recent activity)
-        var activeUser = new AliasVaultUser
-        {
-            UserName = "activeuser",
-            Email = "activeuser@test.com",
-            LastActivityDate = DateTime.UtcNow.AddDays(-5), // Active within 30 days
-        };
-        dbContext.AliasVaultUsers.Add(activeUser);
+        // Create active user (recent activity, within 30 days)
+        var activeUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "activeuser", "activeuser@test.com", configureUser: u => u.LastActivityDate = DateTime.UtcNow.AddDays(-5));
 
-        // Create inactive user (no recent activity)
-        var inactiveUser = new AliasVaultUser
-        {
-            UserName = "inactiveuser",
-            Email = "inactiveuser@test.com",
-            LastActivityDate = DateTime.UtcNow.AddDays(-45), // Inactive for 45 days
-        };
-        dbContext.AliasVaultUsers.Add(inactiveUser);
+        // Create inactive user (no recent activity for 45 days)
+        var inactiveUser = await TestUserSeeder.CreateTestUserAsync(dbContext, "inactiveuser", "inactiveuser@test.com", configureUser: u => u.LastActivityDate = DateTime.UtcNow.AddDays(-45));
 
-        await dbContext.SaveChangesAsync();
+        // The emails' decryption keys all reference the active user's delivery key, mirroring the single encryption key used before.
+        var deliveryKey = activeUser.DeliveryKey;
 
-        // Create encryption key
-        var encryptionKey = new UserEncryptionKey
-        {
-            Id = Guid.NewGuid(),
-            UserId = activeUser.Id,
-            PublicKey = "test-encryption-key",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-        dbContext.UserEncryptionKeys.Add(encryptionKey);
-
-        // Create email claims for each user
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = activeUser.Id, Address = "activeuser@test.com", AddressLocal = "activeuser", AddressDomain = "test.com" });
-        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = inactiveUser.Id, Address = "inactiveuser@test.com", AddressLocal = "inactiveuser", AddressDomain = "test.com" });
+        // Create email claims for each user, linked to their personal manifest
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(activeUser.Manifest.ManifestId, "activeuser@test.com"));
+        dbContext.EmailClaims.Add(TestUserSeeder.CreateEmailClaim(inactiveUser.Manifest.ManifestId, "inactiveuser@test.com"));
 
         // Create 20 emails for active user
         for (int i = 0; i < 20; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i);
-            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", encryptionKey, $"Active User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", deliveryKey, $"Active User Email {i}", dateCreated));
         }
 
         // Create 15 emails for inactive user (should be reduced to MaxEmailsPerInactiveUser)
         for (int i = 0; i < 15; i++)
         {
             var dateCreated = DateTime.UtcNow.AddDays(-i);
-            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", encryptionKey, $"Inactive User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", deliveryKey, $"Inactive User Email {i}", dateCreated));
         }
 
         await dbContext.SaveChangesAsync();

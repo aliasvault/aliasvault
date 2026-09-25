@@ -5,7 +5,7 @@
 //!
 //! Languages are keyed by a free-text code (case-insensitive). Adding a new language is a
 //! Rust-only change: drop the `<code>.diceware` file in this directory and add one entry to
-//! the `WORDLISTS` registry below — no changes are needed in the TypeScript model or the
+//! the `WORDLISTS` registry below; no changes are needed in the TypeScript model or the
 //! apps. Unknown codes fall back to English.
 
 /// The registry of bundled wordlists, as `(code, raw text)`. The code is the normalized two-letter

@@ -1,7 +1,7 @@
 import Foundation
 import CryptoKit
 import Security
-import SignalArgon2
+import RustCoreFramework
 import VaultModels
 import VaultUtils
 
@@ -14,6 +14,9 @@ extension VaultStore {
     private static let pinLengthKey = "pinLength"
     private static let pinFailedAttemptsKey = "pinFailedAttempts"
     private static let maxPinAttempts = 4
+
+    /// Argon2id cost parameters for PIN key derivation.
+    private static let pinArgon2Settings = "{\"MemorySize\":65536,\"Iterations\":3,\"DegreeOfParallelism\":1}"
 
     // MARK: - PIN Status Methods
 
@@ -50,8 +53,8 @@ extension VaultStore {
             throw AppError.biometricNotAvailable
         }
 
-        // Get vault encryption key from memory (vault must be unlocked)
-        let vaultEncryptionKey = try getEncryptionKey()
+        // Get the unlock key from memory (vault must be unlocked): the PIN protects the KEK, never the vault key
+        let unlockKey = try getUnlockKey()
 
         // Generate random salt
         var salt = Data(count: 16)
@@ -65,9 +68,9 @@ extension VaultStore {
         // Derive key from PIN + salt using Argon2id
         let pinKey = try derivePinKey(pin: pin, salt: salt)
 
-        // Encrypt the vault encryption key using AES-GCM
+        // Encrypt the unlock key using AES-GCM
         let symmetricKey = SymmetricKey(data: pinKey)
-        let sealedBox = try AES.GCM.seal(vaultEncryptionKey, using: symmetricKey)
+        let sealedBox = try AES.GCM.seal(unlockKey, using: symmetricKey)
         guard let encryptedData = sealedBox.combined else {
             throw NSError(domain: "VaultStore", code: 23, userInfo: [NSLocalizedDescriptionKey: "Failed to encrypt vault key"])
         }
@@ -89,10 +92,10 @@ extension VaultStore {
     // MARK: - PIN Unlock Methods
 
     /// Unlock with PIN
-    /// Returns the decrypted vault encryption key
+    /// Returns the decrypted unlock key (the password-derived KEK)
     ///
     /// - Parameter pin: The PIN to use for unlocking
-    /// - Returns: The decrypted vault encryption key (base64)
+    /// - Returns: The decrypted unlock key (base64), to open the session with
     /// - Throws: PinUnlockError with specific error type and metadata
     public func unlockWithPin(_ pin: String) throws -> String {
         do {
@@ -111,7 +114,7 @@ extension VaultStore {
             try storePinFailedAttemptsInKeychain(0)
             markSuccessfulAuth()
 
-            // Return the decrypted vault encryption key as base64
+            // Return the decrypted unlock key as base64.
             return decryptedKey.base64EncodedString()
         } catch {
             // Increment failed attempts
@@ -169,21 +172,11 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 28, userInfo: [NSLocalizedDescriptionKey: "Failed to convert PIN to data"])
         }
 
-        // Use SignalArgon2 to hash PIN via Argon2id
-        guard let derivedKeyTuple = try? Argon2.hash(
-            iterations: 3,
-            memoryInKiB: 65536, // 64 MB
-            threads: 1,
-            password: pinData,
-            salt: salt,
-            desiredLength: 32,
-            variant: .id,
-            version: .v13
-        ) else {
+        guard let derivedKey = try? RustCoreFramework.argon2DeriveKeyBytes(password: pinData, salt: salt, encryptionSettings: Self.pinArgon2Settings) else {
             throw NSError(domain: "VaultStore", code: 29, userInfo: [NSLocalizedDescriptionKey: "Argon2 PIN hashing failed"])
         }
 
-        return derivedKeyTuple.raw
+        return derivedKey
     }
 
     /// Store PIN encrypted data in keychain (without biometric protection)

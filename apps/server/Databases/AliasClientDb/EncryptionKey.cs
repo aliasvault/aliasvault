@@ -13,16 +13,16 @@ using AliasClientDb.Abstracts;
 /// <summary>
 /// The EncryptionKey entity.
 /// </summary>
-public class EncryptionKey : SyncableEntity
+public class EncryptionKey : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the encryption key primary key.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the public key.
+    /// Gets or sets the public key. The primary row's public half is published to the server (as a
+    /// manifest-scoped EncryptionKey) so the SMTP service can encrypt incoming mail without decrypting anything.
     /// </summary>
     [StringLength(2000)]
     public string PublicKey { get; set; } = null!;
@@ -34,7 +34,8 @@ public class EncryptionKey : SyncableEntity
     public string PrivateKey { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets a value indicating whether this public/private key is the primary key to use by default.
+    /// Gets or sets a value indicating whether this keypair is the active one within its scope. Rotation
+    /// demotes (never deletes) the previous primary so mail received before the rotation stays decryptable.
     /// </summary>
     public bool IsPrimary { get; set; }
 }

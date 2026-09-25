@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+
 import { AVAILABLE_LANGUAGES, getLanguageConfig, type ILanguageConfig } from '../../../i18n/config';
 
 import { storage } from '#imports';
@@ -49,7 +51,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
    */
   const changeLanguage = async (lng: string): Promise<void> => {
     await i18n.changeLanguage(lng);
-    await storage.setItem('local:language', lng);
+    await storage.setItem(StorageKeys.LANGUAGE, lng);
 
     setIsOpen(false);
 

@@ -4,10 +4,13 @@
  */
 
 import { getLogoMarkSvg } from '@/utils/constants/logo';
+import { logExpected, logFailure } from '@/utils/Diagnostics';
 import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 import { t } from '@/i18n/StandaloneI18n';
+
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
 /** Reference to the current save prompt element */
 let currentPrompt: HTMLElement | null = null;
@@ -400,7 +403,7 @@ export async function restoreSavePromptFromState(
 export async function restoreAddUrlPromptFromState(
   container: HTMLElement,
   state: SavePromptPersistedState,
-  onAddUrl: (itemId: string, url: string) => void,
+  onAddUrl: (item: ItemRef, url: string) => void,
   onDismiss: () => void
 ): Promise<void> {
   // Clear the persisted state now that we're restoring
@@ -412,7 +415,7 @@ export async function restoreAddUrlPromptFromState(
   const { login, remainingTimeMs: restoredRemainingTime, initialAutoDismissMs: restoredInitialMs, existingCredential } = state;
 
   if (!existingCredential) {
-    console.error('[AliasVault] Cannot restore Add URL prompt without existing credential');
+    logExpected('[AliasVault] Cannot restore the Add URL prompt, its credential is gone');
     return;
   }
 
@@ -736,7 +739,7 @@ async function persistSavePromptState(): Promise<void> {
   try {
     await sendMessage('STORE_SAVE_PROMPT_STATE', state);
   } catch (error) {
-    console.error('[AliasVault] Error persisting save prompt state:', error);
+    logFailure('[AliasVault] Error persisting save prompt state', error);
   }
 }
 
@@ -788,7 +791,7 @@ export async function getPersistedSavePromptState(): Promise<SavePromptPersisted
 
     return state;
   } catch (error) {
-    console.error('[AliasVault] Error reading persisted save prompt state:', error);
+    logFailure('[AliasVault] Error reading persisted save prompt state', error);
     return null;
   }
 }
@@ -800,7 +803,7 @@ export async function clearPersistedSavePromptState(): Promise<void> {
   try {
     await sendMessage('CLEAR_SAVE_PROMPT_STATE');
   } catch (error) {
-    console.error('[AliasVault] Error clearing persisted save prompt state:', error);
+    logFailure('[AliasVault] Error clearing persisted save prompt state', error);
   }
 }
 
@@ -932,8 +935,8 @@ async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: 
 function setupAddUrlEventListeners(
   prompt: HTMLElement,
   login: CapturedLogin,
-  existingCredential: { itemId: string; itemName: string },
-  onAddUrl: (itemId: string, url: string) => void,
+  existingCredential: { itemId: string; manifestId: string; itemName: string },
+  onAddUrl: (item: ItemRef, url: string) => void,
   onDismiss: () => void
 ): void {
   const addUrlBtn = prompt.querySelector('.av-save-prompt__btn--add-url');
@@ -942,7 +945,7 @@ function setupAddUrlEventListeners(
   addUrlBtn?.addEventListener('click', () => {
     const loginToUse = currentLogin || login;
     removeSavePrompt();
-    onAddUrl(existingCredential.itemId, loginToUse.url);
+    onAddUrl({ Id: existingCredential.itemId, ManifestId: existingCredential.manifestId }, loginToUse.url);
   });
 
   dismissBtn?.addEventListener('click', () => {

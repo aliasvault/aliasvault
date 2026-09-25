@@ -15,10 +15,8 @@ prepare_react_native_project!
 
 target 'AliasVault' do
   use_expo_modules!
-  pod 'SQLite.swift', '~> 0.14.0'
   pod 'SwiftLint', :configurations => ['Debug']
   pod 'Macaw', '~> 0.9.7'
-  pod 'SignalArgon2', '~> 1.3.2'
   pod 'ExpoModulesJSI', :path => '../node_modules/expo-modules-jsi/apple'
   pod 'ExpoModulesCore', :path => '../node_modules/expo-modules-core'
 
@@ -103,19 +101,13 @@ target 'AliasVault' do
 end
 
 target 'Autofill' do
-  pod 'SQLite.swift', '~> 0.14.0'
   pod 'Macaw', '~> 0.9.7'
-  pod 'SignalArgon2', '~> 1.3.2'
 end
 
 target 'VaultStoreKit' do
-  pod 'SQLite.swift', '~> 0.14.0'
-  pod 'SignalArgon2', '~> 1.3.2'
 end
 
 target 'VaultStoreKitTests' do
-  pod 'SQLite.swift', '~> 0.14.0'
-  pod 'SignalArgon2', '~> 1.3.2'
 end
 
 target 'VaultUI' do

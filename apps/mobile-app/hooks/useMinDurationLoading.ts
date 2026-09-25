@@ -12,7 +12,7 @@ export const useMinDurationLoading = (
   minDuration: number
 ): [boolean, (newState: boolean) => void] => {
   const [state, setState] = useState(initialState);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setStateWithMinDuration = useCallback(
     (newState: boolean) => {

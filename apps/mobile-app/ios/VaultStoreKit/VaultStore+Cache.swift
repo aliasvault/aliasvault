@@ -4,10 +4,10 @@ import VaultUtils
 
 /// Extension for the VaultStore class to handle cache management
 extension VaultStore {
-    /// Clear the memory - remove the encryption key and decrypted database from memory
+    /// Clear the memory - remove the unlock key and decrypted database from memory
     public func clearCache() {
-        print("Clearing cache - removing encryption key and decrypted database from memory")
-        self.encryptionKey = nil
+        print("Clearing cache - removing unlock key and decrypted database from memory")
+        self.unlockKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
     }
@@ -20,7 +20,7 @@ extension VaultStore {
         print("Clearing session - preserving vault data for recovery")
 
         // Clear in-memory data only
-        self.encryptionKey = nil
+        self.unlockKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
 
@@ -57,16 +57,19 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.vaultMetadataKey)
         self.userDefaults.removeObject(forKey: VaultConstants.authMethodsKey)
         self.userDefaults.removeObject(forKey: VaultConstants.autoLockTimeoutKey)
-        self.userDefaults.removeObject(forKey: VaultConstants.encryptionKeyDerivationParamsKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.unlockKeyDerivationParamsKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.accountKeyChainKey)
         self.userDefaults.removeObject(forKey: VaultConstants.usernameKey)
         self.userDefaults.removeObject(forKey: VaultConstants.offlineModeKey)
         self.userDefaults.removeObject(forKey: VaultConstants.pinEnabledKey)
         self.userDefaults.removeObject(forKey: VaultConstants.serverVersionKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.capabilitiesKey)
 
         // Clear sync state
         self.userDefaults.removeObject(forKey: VaultConstants.isDirtyKey)
         self.userDefaults.removeObject(forKey: VaultConstants.mutationSequenceKey)
         self.userDefaults.removeObject(forKey: VaultConstants.isSyncingKey)
+        VaultSyncEngine.clearPersistedState(in: self.userDefaults)
 
         // Clear WebApiService keys
         self.userDefaults.removeObject(forKey: "accessToken")
@@ -76,12 +79,18 @@ extension VaultStore {
         print("Cleared UserDefaults")
 
         // Clear the cache to remove all in-memory data
-        self.encryptionKey = nil
+        self.unlockKey = nil
         self.dbConnection = nil
         self.enabledAuthMethods = []
         self.autoLockTimeout = VaultConstants.defaultAutoLockTimeout
         self.keyDerivationParams = nil
         clearLastSuccessfulAuth()
+    }
+
+    /// Clear engine state.
+    public func clearSyncEngineState() {
+        VaultSyncEngine.clearPersistedState(in: self.userDefaults)
+        storeAccountKeyChain(nil)
     }
 
     /// Set the auto-lock timeout - the number of seconds after which the vault will be locked automatically

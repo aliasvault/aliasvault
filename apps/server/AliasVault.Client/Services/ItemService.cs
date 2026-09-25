@@ -110,7 +110,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             // Check if email is already taken
             try
             {
-                var response = await httpClient.PostAsync($"v1/Identity/CheckEmail/{email}", null);
+                var response = await httpClient.PostAsync(ApiRoute($"Identity/CheckEmail/{email}"), null);
                 var result = await response.Content.ReadFromJsonAsync<Dictionary<string, bool>>();
                 isEmailTaken = result?["isTaken"] ?? false;
             }
@@ -223,6 +223,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on attachments
         foreach (var attachment in item.Attachments)
         {
+            attachment.Id = attachment.Id == Guid.Empty ? Guid.NewGuid() : attachment.Id;
             attachment.ItemId = item.Id;
             SetInsertTimestamps(attachment, currentDateTime);
         }
@@ -230,6 +231,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on TOTP codes
         foreach (var totpCode in item.TotpCodes)
         {
+            totpCode.Id = totpCode.Id == Guid.Empty ? Guid.NewGuid() : totpCode.Id;
             totpCode.ItemId = item.Id;
             SetInsertTimestamps(totpCode, currentDateTime);
         }
@@ -237,6 +239,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // Set timestamps on passkeys
         foreach (var passkey in item.Passkeys)
         {
+            passkey.Id = passkey.Id == Guid.Empty ? Guid.NewGuid() : passkey.Id;
             passkey.ItemId = item.Id;
             SetInsertTimestamps(passkey, currentDateTime);
         }
@@ -426,6 +429,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 Id = Guid.NewGuid(),
                 Name = totpCode.Name,
                 SecretKey = totpCode.SecretKey,
+                Algorithm = totpCode.Algorithm,
+                Digits = totpCode.Digits,
+                Period = totpCode.Period,
                 ItemId = newItem.Id,
             };
             SetInsertTimestamps(newTotpCode, currentDateTime);
@@ -440,7 +446,6 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             var newItemTag = new ItemTag
             {
-                Id = Guid.NewGuid(),
                 ItemId = newItem.Id,
                 TagId = itemTag.TagId,
             };
@@ -488,21 +493,17 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     /// <returns>List of all items.</returns>
     public async Task<List<Item>> LoadAllAsync()
     {
-        var context = await dbService.GetDbContextAsync();
+        return await LoadAllAsync(manifestId: null);
+    }
 
-        var items = await context.Items
-            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
-                .ThenInclude(fv => fv.FieldDefinition)
-            .Include(x => x.Logo)
-            .Include(x => x.Attachments.Where(a => !a.IsDeleted))
-            .Include(x => x.TotpCodes.Where(t => !t.IsDeleted))
-            .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
-            .AsSplitQuery()
-            .Where(x => !x.IsDeleted)
-            .Where(x => x.DeletedAt == null) // Exclude items in trash
-            .ToListAsync();
-
-        return items;
+    /// <summary>
+    /// Load all active items of one manifest.
+    /// </summary>
+    /// <param name="manifestId">The manifest to read.</param>
+    /// <returns>List of the manifest's active items.</returns>
+    public async Task<List<Item>> LoadAllInManifestAsync(Guid manifestId)
+    {
+        return await LoadAllAsync(manifestId);
     }
 
     /// <summary>
@@ -531,6 +532,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             .AsSplitQuery()
             .Where(x => !x.IsDeleted)
             .Where(x => x.DeletedAt == null) // Exclude items in trash
+            .Where(x => x.ArchivedAt == null) // Exclude archived items
             .ToListAsync();
 
         // Map to ItemListEntry with proper boolean logic
@@ -538,7 +540,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         {
             Id = x.Id,
             ItemType = x.ItemType ?? AliasClientDb.Models.ItemType.Login,
-            LogoDataUri = LogoConverter.ToDataUri(x.Logo?.FileData),
+            LogoDataUri = LogoConverter.ToDataUri(x.Logo),
             Service = x.Name,
             Username = GetFieldValue(x, FieldKey.LoginUsername),
             Email = GetFieldValue(x, FieldKey.LoginEmail),
@@ -704,6 +706,48 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     }
 
     /// <summary>
+    /// Gets all archived items. Items that are also in the trash are excluded: those belong in
+    /// "Recently Deleted", which is the more urgent of the two states.
+    /// </summary>
+    /// <returns>List of archived items.</returns>
+    public async Task<List<Item>> GetArchivedAsync()
+    {
+        var context = await dbService.GetDbContextAsync();
+
+        var items = await context.Items
+            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
+                .ThenInclude(fv => fv.FieldDefinition)
+            .Include(x => x.Logo)
+            .AsSplitQuery()
+            .Where(x => !x.IsDeleted && x.DeletedAt == null && x.ArchivedAt != null)
+            .OrderByDescending(x => x.ArchivedAt)
+            .ToListAsync();
+
+        return items;
+    }
+
+    /// <summary>
+    /// Archives an item: it disappears from the main list and from autofill, but keeps all of its data
+    /// and its email aliases, and is never auto-pruned.
+    /// </summary>
+    /// <param name="id">Id of item to archive.</param>
+    /// <returns>Bool which indicates if archiving was successful.</returns>
+    public async Task<bool> ArchiveItemAsync(Guid id)
+    {
+        return await SetArchivedAtAsync(id, DateTime.UtcNow, x => x.ArchivedAt == null);
+    }
+
+    /// <summary>
+    /// Unarchives an item, returning it to the main list and to autofill.
+    /// </summary>
+    /// <param name="id">Id of item to unarchive.</param>
+    /// <returns>Bool which indicates if unarchiving was successful.</returns>
+    public async Task<bool> UnarchiveItemAsync(Guid id)
+    {
+        return await SetArchivedAtAsync(id, null, x => x.ArchivedAt != null);
+    }
+
+    /// <summary>
     /// Permanently deletes an item (sets IsDeleted = true).
     /// </summary>
     /// <param name="id">Id of item to permanently delete.</param>
@@ -745,7 +789,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachment.UpdatedAt = deleteDateTime;
 
             // Reclaim attachment bytes immediately. Tombstone row stays for sync.
-            attachment.Blob = Array.Empty<byte>();
+            attachment.Blob = null;
         }
 
         foreach (var totp in item.TotpCodes)
@@ -811,7 +855,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachment.UpdatedAt = deleteDateTime;
 
             // Reclaim attachment bytes immediately. Tombstone row stays for sync.
-            attachment.Blob = Array.Empty<byte>();
+            attachment.Blob = null;
         }
 
         foreach (var totp in item.TotpCodes)
@@ -869,9 +913,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         // doesn't redirect to /welcome.
         await dbService.Settings.SetTutorialDoneAsync(true);
 
-        // Reclaim free pages from the in-memory SQLite so the live session
-        // reflects the smaller size; the server-bound copy is also vacuumed
-        // by ExportSqliteToBase64Async during SaveDatabaseAsync.
+        // Reclaim free pages from the in-memory SQLite so the live session reflects the smaller size.
         await dbService.VacuumDatabaseAsync();
 
         // Save the database to server
@@ -1404,13 +1446,11 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
             attachmentToRemove.IsDeleted = true;
             attachmentToRemove.UpdatedAt = updateDateTime;
 
-            // Drop the blob bytes immediately. The tombstone row stays so the deletion
-            // syncs to other devices via LWW; an empty blob keeps the column non-null
-            // while reclaiming the storage on next save.
-            attachmentToRemove.Blob = Array.Empty<byte>();
+            // Drop the blob bytes immediately. The tombstone row stays so the deletion syncs to other devices via LWW.
+            attachmentToRemove.Blob = null;
         }
 
-        // Process attachments from the new item (excluding deleted ones - they're handled above)
+        // Process attachments from the new item (excluding deleted ones, which are handled above)
         foreach (var attachment in newItem.Attachments.Where(a => !a.IsDeleted))
         {
             if (attachment.Id != Guid.Empty)
@@ -1418,7 +1458,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 var existingAttachment = existingItem.Attachments.FirstOrDefault(a => a.Id == attachment.Id);
                 if (existingAttachment != null)
                 {
-                    context.Entry(existingAttachment).CurrentValues.SetValues(attachment);
+                    // Copy the editable columns only.
+                    existingAttachment.Filename = attachment.Filename;
+                    existingAttachment.Blob = attachment.Blob;
                     existingAttachment.UpdatedAt = updateDateTime;
                 }
             }
@@ -1468,7 +1510,12 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                 var existingTotpCode = existingItem.TotpCodes.FirstOrDefault(t => t.Id == totpCode.Id);
                 if (existingTotpCode != null)
                 {
-                    context.Entry(existingTotpCode).CurrentValues.SetValues(totpCode);
+                    // Copy the editable columns only.
+                    existingTotpCode.Name = totpCode.Name;
+                    existingTotpCode.SecretKey = totpCode.SecretKey;
+                    existingTotpCode.Algorithm = totpCode.Algorithm;
+                    existingTotpCode.Digits = totpCode.Digits;
+                    existingTotpCode.Period = totpCode.Period;
                     existingTotpCode.UpdatedAt = updateDateTime;
                 }
             }
@@ -1481,6 +1528,9 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
                     ItemId = existingItem.Id,
                     Name = totpCode.Name,
                     SecretKey = totpCode.SecretKey,
+                    Algorithm = totpCode.Algorithm,
+                    Digits = totpCode.Digits,
+                    Period = totpCode.Period,
                     CreatedAt = updateDateTime,
                     UpdatedAt = updateDateTime,
                     IsDeleted = false,
@@ -1786,5 +1836,58 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
 
         // Return the mapped language, or fall back to "en" if no match found
         return mappedLanguage ?? "en";
+    }
+
+    /// <summary>
+    /// Sets or clears an item's ArchivedAt timestamp.
+    /// </summary>
+    /// <param name="id">Id of the item to update.</param>
+    /// <param name="archivedAt">The new ArchivedAt value; null unarchives the item.</param>
+    /// <param name="precondition">Guard that the item must satisfy, so a no-op does not dirty the vault.</param>
+    /// <returns>Bool which indicates if the item was found and saved.</returns>
+    private async Task<bool> SetArchivedAtAsync(Guid id, DateTime? archivedAt, Func<Item, bool> precondition)
+    {
+        InvalidateListCache();
+        var context = await dbService.GetDbContextAsync();
+
+        var item = await context.Items.Where(x => x.Id == id && !x.IsDeleted).FirstOrDefaultAsync();
+        if (item == null || !precondition(item))
+        {
+            return false;
+        }
+
+        item.ArchivedAt = archivedAt;
+        item.UpdatedAt = DateTime.UtcNow;
+
+        return await dbService.SaveDatabaseAsync();
+    }
+
+    /// <summary>
+    /// Load all active items, optionally restricted to one manifest.
+    /// </summary>
+    /// <param name="manifestId">The manifest to read, or null for every manifest in the vault.</param>
+    /// <returns>List of active items.</returns>
+    private async Task<List<Item>> LoadAllAsync(Guid? manifestId)
+    {
+        var context = await dbService.GetDbContextAsync();
+
+        var query = context.Items
+            .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
+                .ThenInclude(fv => fv.FieldDefinition)
+            .Include(x => x.Logo)
+            .Include(x => x.Attachments.Where(a => !a.IsDeleted))
+            .Include(x => x.TotpCodes.Where(t => !t.IsDeleted))
+            .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
+            .AsSplitQuery()
+            .Where(x => !x.IsDeleted)
+            .Where(x => x.DeletedAt == null) // Exclude items in trash
+            .Where(x => x.ArchivedAt == null); // Exclude archived items
+
+        if (manifestId is not null)
+        {
+            query = query.Where(x => x.ManifestId == manifestId.Value);
+        }
+
+        return await query.ToListAsync();
     }
 }

@@ -5,8 +5,14 @@ export type Passkey = {
     /** The ID of the passkey */
     Id: string;
 
+    /** The WebAuthn credential ID (max 1023 bytes) for passkeys created outside AliasVault. When null, it is the bytes of Id. */
+    CredentialId?: Uint8Array | number[] | null;
+
     /** The item ID foreign key */
     ItemId: string;
+
+    /** The manifest this passkey belongs to. */
+    ManifestId: string;
 
     /** The relying party identifier */
     RpId: string;

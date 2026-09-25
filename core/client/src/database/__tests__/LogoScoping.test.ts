@@ -1,0 +1,69 @@
+import { describe, expect, it } from 'vitest';
+
+import { getPlatform } from '../../platform/ClientPlatform';
+import { LogoQueries } from '../queries/LogoQueries';
+
+import type { ISqliteDatabase, SqliteValue } from '../../platform/SqliteEngine';
+
+const PERSONAL = 'PERSONAL-MANIFEST';
+const SHARED = 'SHARED-MANIFEST';
+
+/**
+ * Build an in-memory vault holding the tables these queries touch, shaped like the real schema
+ * (composite (ManifestId, Id) keys, NOT NULL stamps).
+ * @returns The prepared database
+ */
+async function makeDb(): Promise<ISqliteDatabase> {
+  const db = await getPlatform().sqlite.open();
+  db.exec(`
+    CREATE TABLE Settings (ManifestId TEXT NOT NULL, "Key" TEXT NOT NULL, Value TEXT NULL, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (ManifestId, "Key"));
+    CREATE TABLE Folders (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Name TEXT, ParentFolderId TEXT, PRIMARY KEY (ManifestId, Id));
+    CREATE TABLE Logos (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, Kind TEXT NOT NULL DEFAULT 'favicon', Source TEXT NOT NULL, FileData BLOB, MimeType TEXT, Name TEXT, CreatedAt TEXT NOT NULL, UpdatedAt TEXT NOT NULL, IsDeleted INTEGER NOT NULL, PRIMARY KEY (ManifestId, Id));
+    CREATE UNIQUE INDEX IX_Logos_ManifestId_Kind_Source ON Logos (ManifestId, Kind, Source);
+    CREATE TABLE Items (ManifestId TEXT NOT NULL, Id TEXT NOT NULL, LogoId TEXT, FolderId TEXT, IsDeleted INTEGER NOT NULL, PRIMARY KEY (ManifestId, Id));
+    INSERT INTO Settings VALUES ('${PERSONAL}', 'CredentialsSortOrder', 'NewestFirst', 't', 't', 0);
+    INSERT INTO Folders VALUES ('${SHARED}', 'FOLDER-SHARED', 'Team', NULL), ('${PERSONAL}', 'FOLDER-MINE', 'Mine', NULL);
+  `);
+  return db;
+}
+
+/**
+ * Run a query and return its rows as plain objects.
+ * @param db - The database
+ * @param sql - The statement
+ * @param params - Bound parameters
+ * @returns The rows
+ */
+function rows(db: ISqliteDatabase, sql: string, params: SqliteValue[] = []): Record<string, unknown>[] {
+  return db.query<Record<string, unknown>>(sql, params);
+}
+
+describe('logo manifest scoping', () => {
+  it('GET_BEST_FOR_KEY prefers the copy that actually carries bytes', async () => {
+    const db = await makeDb();
+    db.run(`INSERT INTO Logos VALUES ('${SHARED}','L-SHARED','favicon','github.com',NULL,NULL,'empty','t','2026-01-02',0)`);
+    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','favicon','github.com',X'0102',NULL,'real','t','2026-01-01',0)`);
+    expect(rows(db, LogoQueries.GET_BEST_FOR_KEY, ['favicon', 'github.com'])[0].Name).toBe('real');
+  });
+
+  it('GET_BY_ID answers for an item whose logo lives in another manifest', async () => {
+    const db = await makeDb();
+    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','builtin','shopping',NULL,NULL,NULL,'t','t',0)`);
+    // Moved into the shared manifest by a restamp, still pointing at the personal logo row.
+    db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
+
+    /*
+     * The write path prefers the item's own manifest but still finds the logo row the item came with, so the
+     * built-in logo the user picked is kept instead of being replaced by the domain's favicon.
+     */
+    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL', SHARED])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
+  });
+
+  it('GET_ID_FOR_KEY will not hand one manifest another manifest row', async () => {
+    const db = await makeDb();
+    db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','custom','hash-abc',X'0102',NULL,NULL,'t','t',0)`);
+    expect(rows(db, LogoQueries.GET_ID_FOR_KEY, [SHARED, 'custom', 'hash-abc'])).toEqual([]);
+    // ...but the vault-wide probe still sees it, which is what lets the copy-on-use path find the bytes.
+    expect(rows(db, LogoQueries.FIND_ANY_ID_FOR_KEY, ['custom', 'hash-abc'])[0].Id).toBe('L-PERSONAL');
+  });
+});

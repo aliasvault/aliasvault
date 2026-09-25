@@ -209,12 +209,6 @@ dependencies {
     // Do NOT remove: it has no direct code reference here, so it can look unused.
     implementation("androidx.exifinterface:exifinterface:1.4.2")
 
-    // Add Argon2 library for password key derivation
-    implementation("com.lambdapioneer.argon2kt:argon2kt:1.6.0")
-
-    // Add modern SQLite library with VACUUM INTO and backup API support
-    implementation("com.github.requery:sqlite-android:3.49.0")
-
     // Add ZXing library for QR code scanning (F-Droid compatible)
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
@@ -364,11 +358,7 @@ task buildRustCore(type: Exec) {
     // Set up environment for cargo
     environment "PATH", "${System.getProperty('user.home')}/.cargo/bin:/usr/local/bin:/opt/homebrew/bin:${System.getenv('PATH')}"
 
-    // Determine build mode based on variant
-    def isRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
-    def buildArgs = isRelease ? ['./build-rust-core.sh', '--release'] : ['./build-rust-core.sh', '--debug']
-
-    commandLine buildArgs
+    commandLine './build-rust-core.sh'
 
     // Only log if there are actual changes
     ignoreExitValue = false

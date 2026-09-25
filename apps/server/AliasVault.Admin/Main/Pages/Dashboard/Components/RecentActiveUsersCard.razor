@@ -1,0 +1,99 @@
+@using AliasVault.RazorComponents.Tables
+@using AliasVault.RazorComponents.Utilities
+@inject NavigationManager NavigationManager
+
+<div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recently active users</h3>
+        <a href="users" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">View all users</a>
+    </div>
+    @if (IsLoading)
+    {
+        <LoadingIndicator />
+    }
+    else if (Users.Count == 0)
+    {
+        <p class="text-sm text-gray-500 dark:text-gray-400">No user activity has been recorded yet.</p>
+    }
+    else
+    {
+        <SortableTable Columns="@_tableColumns">
+            @foreach (var user in Users)
+            {
+                <SortableTableRow OnClick="@(() => NavigateToUser(user.User.UserId!))">
+                    <SortableTableColumn IsPrimary="true">
+                        <UserNameDisplay User="@user.User" AsLink="false" />
+                    </SortableTableColumn>
+                    <SortableTableColumn>@user.CredentialCount.ToString("N0")</SortableTableColumn>
+                    <SortableTableColumn>@user.EmailClaimCount.ToString("N0")</SortableTableColumn>
+                    <SortableTableColumn Title="@(user.LastActivityDate.ToString("yyyy-MM-dd HH:mm") + " UTC")">@RelativeTimeFormatter.Format(user.LastActivityDate)</SortableTableColumn>
+                </SortableTableRow>
+            }
+        </SortableTable>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Number of users shown on the card.
+    /// </summary>
+    private const int UserCount = 4;
+
+    private readonly List<TableColumn> _tableColumns = [
+        new TableColumn { Title = "Username", Sortable = false },
+        new TableColumn { Title = "# Credentials", Sortable = false },
+        new TableColumn { Title = "# Email aliases", Sortable = false },
+        new TableColumn { Title = "Last Activity", Sortable = false },
+    ];
+
+    private bool IsLoading { get; set; } = true;
+    private List<RecentUser> Users { get; set; } = [];
+
+    /// <summary>
+    /// Refreshes the data displayed on the card.
+    /// </summary>
+    public async Task RefreshData()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        var users = await dbContext.AliasVaultUsers
+            .Where(u => u.LastActivityDate != null)
+            .OrderByDescending(u => u.LastActivityDate)
+            .Take(UserCount)
+            .Select(u => new
+            {
+                u.Id,
+                u.UserName,
+                u.Blocked,
+                u.TwoFactorEnabled,
+                LastActivityDate = u.LastActivityDate!.Value,
+                CredentialCount = dbContext.VaultManifests.Where(m => m.OwnerGroupId == u.PersonalGroupId).Sum(m => m.CredentialsCount),
+                EmailClaimCount = dbContext.EmailClaimLinks.Count(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == u.PersonalGroupId),
+            })
+            .ToListAsync();
+
+        Users = users.Select(u => new RecentUser(
+            new UserDisplay { UserId = u.Id, UserName = u.UserName?.ToLower(), Blocked = u.Blocked, TwoFactorEnabled = u.TwoFactorEnabled },
+            u.CredentialCount,
+            u.EmailClaimCount,
+            u.LastActivityDate)).ToList();
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Navigates to the user detail page.
+    /// </summary>
+    private void NavigateToUser(string userId)
+    {
+        NavigationManager.NavigateTo($"users/{userId}");
+    }
+
+    /// <summary>
+    /// A user row on the card.
+    /// </summary>
+    private sealed record RecentUser(UserDisplay User, int CredentialCount, int EmailClaimCount, DateTime LastActivityDate);
+}

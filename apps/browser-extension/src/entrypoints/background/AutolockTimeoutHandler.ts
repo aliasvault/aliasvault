@@ -1,5 +1,7 @@
 import { handleLockVault } from '@/entrypoints/background/VaultMessageHandler';
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import type { Browser } from 'wxt/browser';
@@ -24,8 +26,8 @@ let shortTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
  */
 async function lockVaultDueToInactivity(): Promise<void> {
   // Check if vault is still unlocked before locking
-  const encryptionKey = await storage.getItem('session:encryptionKey') as string | null;
-  if (!encryptionKey) {
+  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
+  if (!unlockKey) {
     // Vault is already locked
     return;
   }
@@ -34,7 +36,7 @@ async function lockVaultDueToInactivity(): Promise<void> {
     await handleLockVault();
     console.info('[AUTO_LOCK] Vault locked due to inactivity');
   } catch (error) {
-    console.error('[AUTO_LOCK] Error locking vault:', error);
+    logFailure('[AUTO_LOCK] Error locking vault', error);
   }
 }
 
@@ -85,8 +87,8 @@ async function setAutoLockTimer(timeoutSeconds: number): Promise<void> {
  */
 export async function initializeAutoLockAlarm(): Promise<void> {
   // Check if vault is unlocked
-  const encryptionKey = await storage.getItem('session:encryptionKey') as string | null;
-  if (!encryptionKey) {
+  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
+  if (!unlockKey) {
     // Vault is locked, clear any existing alarm
     clearShortTimeoutTimer();
     await browser.alarms.clear(AUTO_LOCK_ALARM_NAME);
@@ -149,8 +151,8 @@ export async function handleResetAutoLockTimer(): Promise<void> {
   }
 
   // Check if vault is unlocked before setting timer
-  const encryptionKey = await storage.getItem('session:encryptionKey') as string | null;
-  if (!encryptionKey) {
+  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
+  if (!unlockKey) {
     // Vault is already locked, don't start timer
     clearShortTimeoutTimer();
     await browser.alarms.clear(AUTO_LOCK_ALARM_NAME);
@@ -174,8 +176,8 @@ export async function handlePopupHeartbeat(): Promise<void> {
   }
 
   // Check if vault is unlocked
-  const encryptionKey = await storage.getItem('session:encryptionKey') as string | null;
-  if (!encryptionKey) {
+  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
+  if (!unlockKey) {
     // Vault is already locked, don't extend timer
     return;
   }
@@ -200,8 +202,8 @@ export async function handleSetAutoLockTimeout(timeout: number): Promise<boolean
   }
 
   // Check if vault is unlocked before setting new timer
-  const encryptionKey = await storage.getItem('session:encryptionKey') as string | null;
-  if (!encryptionKey) {
+  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
+  if (!unlockKey) {
     // Vault is locked, don't start timer
     return true;
   }

@@ -75,20 +75,6 @@ jobs:
           chmod +x build-and-distribute.sh
           ./build-and-distribute.sh --ios
 
-      - name: Verify core library distribution
-        run: |
-          TARGET_DIRS=(
-            "utils/dist/core/models"
-            "utils/dist/core/vault"
-          )
-          for dir in "${TARGET_DIRS[@]}"; do
-            if [ ! -d "$dir" ]; then
-              echo "Error: Directory $dir does not exist"
-              exit 1
-            fi
-          done
-          echo "Core library distribution verified"
-
       - name: Install mobile app dependencies
         run: npm ci
 

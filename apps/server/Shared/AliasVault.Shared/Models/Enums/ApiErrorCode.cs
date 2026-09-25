@@ -155,6 +155,100 @@ public enum ApiErrorCode
     REGISTRATION_FAILED,
 
     /// <summary>
+    /// A vault key already exists for this user/key type.
+    /// </summary>
+    VAULT_KEY_ALREADY_EXISTS,
+
+    /// <summary>
+    /// The user has no vault key so the requested operation is unavailable; use the legacy v1 flow.
+    /// </summary>
+    VAULT_KEY_NOT_FOUND,
+
+    /// <summary>
+    /// The referenced shared manifest does not exist or is not owned by the caller.
+    /// </summary>
+    SHARED_MANIFEST_NOT_FOUND,
+
+    /// <summary>
+    /// The recipient has no usable public key to encrypt a shared manifest key for, or the referenced key is invalid.
+    /// </summary>
+    RECIPIENT_KEY_NOT_FOUND,
+
+    /// <summary>
+    /// The supplied algorithm is not valid for the requested operation.
+    /// </summary>
+    INVALID_ALGORITHM,
+
+    /// <summary>
+    /// The supplied manifest id is missing or malformed. Retrying the request unchanged cannot succeed.
+    /// </summary>
+    MANIFEST_ID_INVALID,
+
+    /// <summary>
+    /// The supplied manifest id is already in use by a different manifest. The client must generate a fresh id and retry.
+    /// </summary>
+    MANIFEST_ID_TAKEN,
+
+    /// <summary>
+    /// The referenced group does not exist, is not a shared group, or is not one the caller may administer.
+    /// </summary>
+    GROUP_NOT_FOUND,
+
+    /// <summary>
+    /// The group already holds as many shared manifests as it is entitled to, so no further one can be created.
+    /// </summary>
+    GROUP_MANIFEST_LIMIT_REACHED,
+
+    /// <summary>
+    /// The invitation does not exist, is not addressed to (or sent by) the caller, or was already answered.
+    /// </summary>
+    INVITATION_NOT_FOUND,
+
+    /// <summary>
+    /// There is already an open offer of access to this shared manifest for this member.
+    /// </summary>
+    INVITATION_ALREADY_EXISTS,
+
+    /// <summary>
+    /// The account access was offered to is not on the group's membership roster. Who belongs to a group is decided
+    /// outside the client, so this cannot be resolved by the caller.
+    /// </summary>
+    NOT_GROUP_MEMBER,
+
+    /// <summary>
+    /// The member already holds access to this shared manifest.
+    /// </summary>
+    ACCESS_ALREADY_GRANTED,
+
+    /// <summary>
+    /// An admin of the group cannot take away their own access to a shared manifest.
+    /// </summary>
+    CANNOT_REVOKE_OWN_ACCESS,
+
+    /// <summary>
+    /// The member is the last one who can open one of the group's shared manifests, so taking their access away would
+    /// leave that manifest unopenable. Somebody else has to be given access to it first.
+    /// </summary>
+    LAST_MANIFEST_GRANT_HOLDER,
+
+    /// <summary>
+    /// The account access was offered to has published no public key, so a shared manifest key cannot be encrypted for
+    /// it. That account has to finish upgrading its vault before it can be given access to anything.
+    /// </summary>
+    INVITE_RECIPIENT_NOT_READY,
+
+    /// <summary>
+    /// The shared manifest's key was rotated after the offer of access was made, so the key encrypted into the offer no
+    /// longer decrypts the manifest. The offer is closed and the inviter has to make a fresh one.
+    /// </summary>
+    INVITATION_KEY_OUTDATED,
+
+    /// <summary>
+    /// The client action does not exist, or is not addressed to the caller.
+    /// </summary>
+    CLIENT_ACTION_NOT_FOUND,
+
+    /// <summary>
     /// Mobile login request contains an invalid client public key.
     /// </summary>
     MOBILE_LOGIN_INVALID_PUBLIC_KEY,
@@ -163,4 +257,14 @@ public enum ApiErrorCode
     /// Too many mobile login requests were created from this client in a short period.
     /// </summary>
     MOBILE_LOGIN_RATE_LIMIT_EXCEEDED,
+
+    /// <summary>
+    /// The capability the request needs is not enabled for this account on this server.
+    /// </summary>
+    CAPABILITY_NOT_AVAILABLE,
+
+    /// <summary>
+    /// The supplied KEK derivation parameters are not within expected bounds.
+    /// </summary>
+    INVALID_ENCRYPTION_PARAMETERS,
 }

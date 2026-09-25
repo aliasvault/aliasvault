@@ -3,13 +3,17 @@ import { useTranslation } from 'react-i18next';
 
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
+import { itemRoute } from '@/utils/ItemRoute';
+
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
   attachments: Attachment[];
   onAttachmentsChange: (attachments: Attachment[]) => void;
   /** Item ID for edit mode - used to determine return path when opening expanded window */
   itemId?: string;
+  manifestId?: string;
 }
 
 /**
@@ -18,7 +22,8 @@ type AttachmentUploaderProps = {
 const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
   attachments,
   onAttachmentsChange,
-  itemId
+  itemId,
+  manifestId
 }) => {
   const { t } = useTranslation();
   const [statusMessage, setStatusMessage] = useState<string>('');
@@ -45,7 +50,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
         const byteArray = new Uint8Array(arrayBuffer);
 
         const attachment: Attachment = {
-          Id: crypto.randomUUID().toUpperCase(),
+          Id: crypto.randomUUID(),
           Filename: file.name,
           Blob: byteArray,
           ItemId: '', // Will be set when saving item
@@ -63,7 +68,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       // Clear status message after 3 seconds
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
-      console.error('Error uploading files:', error);
+      logFailure('Error uploading files', error);
       setStatusMessage(t('common.errors.unknownErrorTryAgain'));
       setTimeout(() => setStatusMessage(''), 3000);
     }
@@ -89,7 +94,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       setStatusMessage(t('attachmentUploader.deleteSuccess'));
       setTimeout(() => setStatusMessage(''), 3000);
     } catch (error) {
-      console.error('Error deleting attachment:', error);
+      logFailure('Error deleting attachment', error);
       setStatusMessage(t('common.errors.unknownErrorTryAgain'));
       setTimeout(() => setStatusMessage(''), 3000);
     }
@@ -112,7 +117,7 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const returnTo = itemId ? `/items/${itemId}` : '/items';
+                  const returnTo = itemId && manifestId ? itemRoute({ Id: itemId, ManifestId: manifestId }) : '/items';
                   PopoutUtility.openInNewPopup(undefined, returnTo);
                 }}
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"

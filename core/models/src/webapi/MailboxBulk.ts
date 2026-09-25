@@ -1,4 +1,4 @@
-import { MailboxEmail } from "./MailboxEmail";
+import type { MailboxEmail } from "./MailboxEmail";
 
 /**
  * Mailbox bulk request type.
@@ -13,9 +13,9 @@ export type MailboxBulkRequest = {
  * Mailbox bulk response type.
  */
 export type MailboxBulkResponse = {
-    addresses: string[];
     currentPage: number;
     pageSize: number;
     totalRecords: number;
+    publicKeys: string[];
     mails: MailboxEmail[];
 }

@@ -1,3 +1,4 @@
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Platform, Text } from 'react-native';
@@ -100,6 +101,14 @@ export default function SettingsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
+        name="family-sharing"
+        options={{
+          title: familySharingText.title,
+          headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
         name="security/index"
         options={{
           title: t('settings.securitySettings.title'),
@@ -135,12 +144,26 @@ export default function SettingsLayout(): React.ReactNode {
           ...defaultHeaderOptions,
         }}
       />
-      {/* Developer only screen. Note: not required to be translated. */}
+      {/* Developer only screens. Note: not required to be translated. */}
       <Stack.Screen
-        name="developer-tools"
+        name="developer-tools/index"
         options={{
           title: 'Developer tools',
           headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="developer-tools/app-review"
+        options={{
+          title: 'App review',
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="developer-tools/sync-logs"
+        options={{
+          title: 'Sync logs',
           ...defaultHeaderOptions,
         }}
       />
@@ -152,7 +175,7 @@ export default function SettingsLayout(): React.ReactNode {
         }}
       />
       <Stack.Screen
-        name="mobile-unlock/[id]"
+        name="mobile-unlock/confirm"
         options={{
           title: t('settings.qrScanner.mobileLogin.confirmTitle'),
           ...defaultHeaderOptions,

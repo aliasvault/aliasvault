@@ -1,11 +1,16 @@
 ﻿@page "/users/{Id}"
+@using AliasServerDb.Legacy
+@using AliasServerDb.Retention
 @using AliasVault.Admin.Main.Pages.Users.View.Components
 @using AliasVault.Admin.Main.Models
 @using AliasVault.Admin.Services
 @using AliasVault.Auth
+@using AliasVault.Shared.Models.Enums
+@using AliasVault.Shared.Server.Services
 @using Microsoft.EntityFrameworkCore
 @inherits MainBase
 @inject StatisticsService StatisticsService
+@inject ServerSettingsService SettingsService
 @inject ILogger<Index> Logger
 
 <LayoutPageTitle>User</LayoutPageTitle>
@@ -59,7 +64,6 @@ else
                                     </div>
                                     <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
                                         Changing a username is permanent and may affect the user's ability to log in.
-                                        This is typically used for account archival or when a user specifically requests a username change.
                                     </p>
                                 </div>
                                 <div class="space-y-3">
@@ -85,46 +89,18 @@ else
                         {
                             <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                                 <h4 class="text-lg font-semibold text-gray-900 dark:text-white text-center mb-3">Usage Statistics</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <div class="text-left">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalCredentials.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total Credentials</div>
-                                        @if (UserUsageStats.RecentCredentials72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentCredentials72h.ToString("N0") in last 72h)</div>
-                                        }
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Credentials</div>
                                     </div>
-                                    <div class="text-left">
-                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalActiveEmailClaims.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Active Email Claims</div>
-                                        @if (UserUsageStats.RecentEmailClaims72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentEmailClaims72h.ToString("N0") in last 72h)</div>
-                                        }
-                                        @if (UserUsageStats.TotalDisabledEmailClaims > 0)
-                                        {
-                                            <div class="text-xs text-center text-red-400 dark:text-red-300">(@UserUsageStats.TotalDisabledEmailClaims.ToString("N0") disabled)</div>
-                                        }
+                                    <div>
+                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.ActiveEmailClaims.ToString("N0")</div>
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Active email aliases</div>
                                     </div>
-                                    <div class="text-left">
+                                    <div>
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalReceivedEmails.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total Received Emails</div>
-                                        @if (UserUsageStats.RecentReceivedEmails72h > 0)
-                                        {
-                                            <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentReceivedEmails72h.ToString("N0") in last 72h)</div>
-                                        }
-                                        @if (UserUsageStats.TotalEmailsReceivedPersistent > UserUsageStats.TotalReceivedEmails)
-                                        {
-                                            <div class="text-xs text-center text-orange-500 dark:text-orange-400" title="Persistent counter (never decremented, even when emails deleted)">(@UserUsageStats.TotalEmailsReceivedPersistent.ToString("N0") all-time)</div>
-                                        }
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalEmailAttachments.ToString("N0")</div>
-                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Email Attachments</div>
-                                        @if (UserUsageStats.TotalEmailAttachmentStorageMB > 0)
-                                        {
-                                            <div class="text-xs text-center text-blue-500 dark:text-blue-400">@UserUsageStats.TotalEmailAttachmentStorageMB.ToString("N2") MB</div>
-                                        }
+                                        <div class="text-sm text-center text-gray-600 dark:text-gray-400">Emails received</div>
                                     </div>
                                 </div>
                             </div>
@@ -134,7 +110,7 @@ else
                             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <tbody>
                                     <tr class="">
-                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">Registered at</th>
+                                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">Registered at (UTC)</th>
                                         <td class="px-4 py-3">@User.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                     </tr>
                                     <tr>
@@ -185,12 +161,12 @@ else
                                                 <div class="flex flex-col space-y-2">
                                                     <div class="flex items-center space-x-2">
                                                         <span class="text-gray-700 dark:text-gray-300">
-                                                            <strong>Max Emails:</strong> @(User.MaxEmails == 0 ? "Unlimited" : User.MaxEmails.ToString("N0"))
+                                                            <strong>Max Emails:</strong> @(User.PersonalGroup.MaxEmails == 0 ? "Unlimited" : User.PersonalGroup.MaxEmails.ToString("N0"))
                                                         </span>
                                                     </div>
                                                     <div class="flex items-center space-x-2">
                                                         <span class="text-gray-700 dark:text-gray-300">
-                                                            <strong>Max Age:</strong> @(User.MaxEmailAgeDays == 0 ? "Unlimited" : User.MaxEmailAgeDays + " days")
+                                                            <strong>Max Age:</strong> @(User.PersonalGroup.MaxEmailAgeDays == 0 ? "Unlimited" : User.PersonalGroup.MaxEmailAgeDays + " days")
                                                         </span>
                                                     </div>
                                                     <div class="mt-2">
@@ -233,9 +209,60 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vaults (@VaultList.Count)</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vault storage</h3>
+                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                            A vault is stored as a manifest, one or more data buckets and optional blob objects (attachments).
+                        </p>
 
-                        <VaultTable VaultList="@VaultList" OnMakeCurrent="@MakeCurrentAsync" />
+                        <div class="mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.ManifestBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.ManifestRevisions.Count manifest revisions</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.BucketBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.BucketRevisions.Count bucket revisions</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.BlobBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">@StorageOverview.BlobCount.ToString("N0") blob objects</div>
+                                </div>
+                                <div>
+                                    <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@StatisticsService.FormatBytes(StorageOverview.TotalBytes)</div>
+                                    <div class="text-sm text-center text-gray-600 dark:text-gray-400">Total</div>
+                                </div>
+                            </div>
+                            @if (StorageOverview.UnreferencedBlobCount > 0)
+                            {
+                                <p class="mt-4 text-sm text-center text-gray-600 dark:text-gray-400">
+                                    @StorageOverview.UnreferencedBlobCount.ToString("N0") blob objects (@StatisticsService.FormatBytes(StorageOverview.UnreferencedBlobBytes))
+                                    are no longer referenced by any manifest revision and become reclaimable once the revisions that used them age out.
+                                </p>
+                            }
+                        </div>
+
+                        <h4 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Manifest revisions (@StorageOverview.ManifestRevisions.Count)</h4>
+                        <ManifestTable Revisions="@StorageOverview.ManifestRevisions" AllowRevertToLegacy="@(!TakesPartInSharing)" OnMakeCurrent="@MakeCurrentAsync" OnRevertToLegacy="@RevertToLegacyAsync" />
+
+                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Data bucket revisions</h4>
+                        <DataBucketTable Revisions="@StorageOverview.BucketRevisions" OnRestore="@RestoreBucketAsync" />
+
+                        <h4 class="mt-6 mb-2 text-lg font-semibold text-gray-900 dark:text-white">Blob objects (@StorageOverview.BlobCount.ToString("N0"))</h4>
+                        <BlobUsageTable Categories="@StorageOverview.BlobCategories" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div class="items-center">
+                    <div>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Previous master passwords (@PasswordHistoryList.Count)</h3>
+                        <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                            Allows to revert a password change in case of a failure. Historic records are automatically deleted after the configured Password Revert Window.
+                        </p>
+
+                        <PasswordHistoryTable PasswordHistoryList="@PasswordHistoryList" RetentionDays="@UnlockKeyHistoryRetentionDays" OnRevert="@RevertPasswordChangeAsync" />
                     </div>
                 </div>
             </div>
@@ -265,24 +292,9 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Related users (@RelatedUsersCount)</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email aliases (@EmailClaimsCount)</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Other user accounts that have authenticated from the same IP addresses or IP ranges as this user.
-                            This can help identify potential duplicate accounts or related users.
-                        </p>
-                        <RelatedUsersTable UserId="@Id" @ref="RelatedUsersTableRef" OnCountChanged="HandleCountChanged" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <div class="items-center">
-                    <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email claims (@EmailClaimsCount)</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Email claims represent the email addresses that the user has (historically) used. Whenever a user deletes an email alias
-                            the claim gets disabled and the server will reject all emails sent to that alias. A user can always re-enable
-                            the claim by using it again. Email claims are permanently tied to a user and cannot be transferred to another user.
+                            Every email address this user's vault has ever claimed.
                         </p>
                         <EmailClaimTable User="@User" @ref="EmailClaimTableRef" OnCountChanged="HandleCountChanged" />
                     </div>
@@ -303,7 +315,11 @@ else
     private AliasVaultUser? User { get; set; } = new();
     private int TwoFactorKeysCount { get; set; }
     private List<AliasVaultUserRefreshToken> RefreshTokenList { get; set; } = [];
-    private List<Vault> VaultList { get; set; } = [];
+    private VaultStorageOverview StorageOverview { get; set; } = new();
+    private List<UserUnlockKeysHistory> PasswordHistoryList { get; set; } = [];
+    private int UnlockKeyHistoryRetentionDays { get; set; }
+    private bool HasManifestAccessKeys { get; set; }
+    private bool TakesPartInSharing { get; set; }
     private List<AuthLog> AuthLogList { get; set; } = [];
     private UserUsageStatistics? UserUsageStats { get; set; }
     private bool IsEditingEmailLimits { get; set; }
@@ -312,10 +328,8 @@ else
     private bool IsEditingUsername { get; set; }
     private string NewUsername { get; set; } = string.Empty;
     private string UsernameValidationError { get; set; } = string.Empty;
-    private RelatedUsersTable? RelatedUsersTableRef { get; set; }
     private EmailClaimTable? EmailClaimTableRef { get; set; }
 
-    private int RelatedUsersCount => RelatedUsersTableRef?.GetRelatedUsersCount() ?? 0;
     private int EmailClaimsCount => EmailClaimTableRef?.GetTotalEmailClaimsCount() ?? 0;
 
     /// <inheritdoc />
@@ -354,9 +368,9 @@ else
         IsLoading = true;
         StateHasChanged();
 
-        // Load the aliases from the webapi via AliasService.
+        // Load the aliases from the webapi via AliasService. Eager-load the personal group as it holds the user's email limits.
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        User = await dbContext.AliasVaultUsers.FindAsync(Id);
+        User = await dbContext.AliasVaultUsers.Include(u => u.PersonalGroup).FirstOrDefaultAsync(u => u.Id == Id);
 
         // Get count of user authenticator tokens.
         TwoFactorKeysCount = await dbContext.UserTokens.CountAsync(x => x.UserId == User!.Id && x.Name == "AuthenticatorKey");
@@ -382,25 +396,20 @@ else
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
 
-        // Load all vaults for this user (do not load the actual file content for performance reasons).
-        VaultList = await dbContext.Vaults.Where(x => x.UserId == User.Id).Select(x => new Vault
-            {
-                Id = x.Id,
-                Version = x.Version,
-                RevisionNumber = x.RevisionNumber,
-                FileSize = x.FileSize,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-                Salt = x.Salt,
-                Verifier = x.Verifier,
-                VaultBlob = string.Empty,
-                EncryptionType = x.EncryptionType,
-                EncryptionSettings = x.EncryptionSettings,
-                CredentialsCount = x.CredentialsCount,
-                EmailClaimsCount = x.EmailClaimsCount,
-                Client = x.Client,
-            })
-            .OrderBy(x => x.UpdatedAt)
+        // Load the storage breakdown of the user's personal vault: manifest and bucket revisions plus blob usage.
+        StorageOverview = await VaultStorageQueries.GetPersonalVaultStorageAsync(dbContext, User.PersonalGroupId);
+
+        // Whether the user is on the key model where the vault manifest no longer carries the login credentials.
+        HasManifestAccessKeys = await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == User.Id);
+
+        // Whether this user can still be taken back to the legacy storage format, the escape hatch for a bad migration.
+        TakesPartInSharing = await TakesPartInSharingAsync(dbContext, User.Id);
+
+        // Load the archived master password credentials that are still inside the retention window.
+        UnlockKeyHistoryRetentionDays = (await SettingsService.GetAllSettingsAsync()).UnlockKeyHistoryRetentionDays;
+        PasswordHistoryList = await UnlockKeyHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.UserId == User.Id), UnlockKeyHistoryRetentionDays, DateTime.UtcNow)
+            .OrderByDescending(x => x.ArchivedAt)
             .ToListAsync();
 
         // Load recent auth logs for this user (last 3 records).
@@ -459,7 +468,7 @@ else
     }
 
     /// <summary>
-    /// This method disables two-factor authentication for the user. This will NOT remove the authenticator keys.
+    /// This method disables two-factor authentication for the user. This will not remove the authenticator keys.
     /// This means the admin can re-enable 2FA for the user without the user having to set up a new authenticator
     /// keys.
     /// </summary>
@@ -499,31 +508,63 @@ else
     }
 
     /// <summary>
-    /// Handles the action of making a vault the current one.
+    /// Handles the action of restoring a manifest history revision as the current one. The current revision is
+    /// archived into history first, then the chosen history revision's payload is copied onto the current row with a
+    /// new (higher) revision number so the monotonic revision sequence is preserved for client concurrency checks.
     /// </summary>
-    /// <param name="vault">The vault to make current.</param>
-    private async Task MakeCurrentAsync(Vault vault)
+    /// <param name="revision">The manifest revision to make current.</param>
+    private async Task MakeCurrentAsync(ManifestRevisionRow revision)
     {
+        if (revision.IsCurrent)
+        {
+            // Already the current revision; nothing to restore.
+            return;
+        }
+
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        var passwordNote = HasManifestAccessKeys
+            ? "• The user's master password is not affected; use \"Previous master passwords\" to revert a password change."
+            : "• If the user has changed their password recently, their password will be reverted to the one associated with this vault.";
         if (await ConfirmModalService.ShowConfirmation(
-                title: "Confirm Vault Restoration",
-                message: @"Are you sure you want to restore this specific vault and make it the active one?
+                title: "Confirm Manifest Restoration",
+                message: $@"Are you sure you want to restore this specific manifest revision and make it the active one?
 
 Important notes:
 • The next time the user logs in, they will load this vault version.
-• If the user has changed their password recently, their password will be reverted to the one associated with this vault.
+{passwordNote}
+• Data buckets and blob objects are not rolled back with it.
 • All active sessions will be revoked and the user will need to login again on all devices.
 
 Do you want to proceed with the restoration?")) {
-            // Load vault
-            var currentVault = await dbContext.Vaults.FindAsync(vault.Id);
-            if (currentVault == null)
+            // Load the current row and the full history revision (including its blob payload).
+            var currentVault = await dbContext.VaultManifests.FindAsync(revision.ManifestId);
+            var revisionToRestore = await dbContext.VaultManifestsHistory.FindAsync(revision.ManifestId, revision.RevisionNumber);
+            if (currentVault == null || revisionToRestore == null)
             {
                 return;
             }
 
-            // Update time to make this the current vault.
-            currentVault.RevisionNumber = VaultList.MaxBy(x => x.RevisionNumber)!.RevisionNumber + 1;
+            // Crossing storage formats leaves the account with a vault its keys cannot open, so it only ever happens
+            // through the deliberate revert action below.
+            if (currentVault.StorageFormat != revisionToRestore.StorageFormat)
+            {
+                GlobalNotificationService.AddErrorMessage("This revision is in a different vault storage format than the one the account is on and cannot be restored. Restoring it would leave the account unable to open its vault.", true);
+                return;
+            }
+
+            // Archive the current revision into history first, then copy the restored payload onto the current row
+            // with a new revision number one above the previous current.
+            var newRevisionNumber = currentVault.RevisionNumber + 1;
+            dbContext.VaultManifestsHistory.Add(VaultManifestsHistory.CreateFrom(currentVault));
+            currentVault.CopyPayloadFrom(revisionToRestore);
+            currentVault.RevisionNumber = newRevisionNumber;
+
+            // The restored revision moves out of history; re-key its blob references to the new revision number.
+            dbContext.VaultManifestsHistory.Remove(revisionToRestore);
+            await dbContext.VaultBlobReferences
+                .Where(r => r.ManifestId == currentVault.ManifestId && r.RevisionNumber == revision.RevisionNumber)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevisionNumber, newRevisionNumber));
 
             // Save it.
             await dbContext.SaveChangesAsync();
@@ -536,6 +577,94 @@ Do you want to proceed with the restoration?")) {
             // Reload the page.
             await RefreshData();
         }
+    }
+
+    /// <summary>
+    /// Whether the user holds any state that only exists on the current storage format because of vault sharing: a
+    /// grant on a shared manifest, a membership of a shared group, or an invitation encrypted to their account keypair.
+    /// Reverting such a user would delete the keypair all of that is encrypted to, so the revert is not offered.
+    /// </summary>
+    /// <param name="dbContext">The database context to query.</param>
+    /// <param name="userId">The user to check.</param>
+    /// <returns>True when the user takes part in vault sharing.</returns>
+    private static async Task<bool> TakesPartInSharingAsync(AliasServerDbContext dbContext, string userId)
+    {
+        return await dbContext.VaultManifestAccessKeys.AnyAsync(x => x.UserId == userId && x.Type == ManifestKeyType.GrantKey)
+            || await dbContext.GroupMembers.AnyAsync(x => x.UserId == userId && x.Group.Type != GroupType.Personal)
+            || await dbContext.GroupInvitations.AnyAsync(x => x.InviteeUserId == userId);
+    }
+
+    /// <summary>
+    /// Handles the action of putting the user back on the legacy storage format by making a pre-migration revision
+    /// current again. This is the escape hatch for a migration that went wrong: it tears down everything the
+    /// manifest format added so the account can be opened by a v1 client and migrate a second time.
+    /// </summary>
+    /// <param name="revision">The pre-migration revision to revert to.</param>
+    private async Task RevertToLegacyAsync(ManifestRevisionRow revision)
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        // Re-check against the database rather than trusting the state the page was rendered with.
+        if (await TakesPartInSharingAsync(dbContext, User!.Id))
+        {
+            GlobalNotificationService.AddErrorMessage("This user can no longer be reverted to the legacy vault storage format because it takes part in vault sharing.", true);
+            await RefreshData();
+            return;
+        }
+
+        if (!await ConfirmModalService.ShowConfirmation(
+                title: "Confirm Revert To Legacy Format",
+                message: $@"Are you sure you want to revert this user to the legacy sqlite-blob vault storage format, using revision {revision.RevisionNumber}?
+
+This is meant as a recovery step for a migration that went wrong. All migrated data and any updates done since the migration will be lost. It cannot be undone.
+
+Do you want to proceed with the revert?"))
+        {
+            return;
+        }
+
+        var newRevisionNumber = await LegacyVaultRollback.RevertAsync(DbContextFactory, User.Id, revision.ManifestId, revision.RevisionNumber);
+
+        Logger.LogWarning("Reverted user {UserName} ({UserId}) to the legacy vault storage format using revision {RevisionNumber}, now current at revision {NewRevisionNumber}. Account keys removed and all sessions revoked.",
+            User.UserName, User.Id, revision.RevisionNumber, newRevisionNumber);
+        GlobalNotificationService.AddSuccessMessage("User reverted to the legacy vault storage format. They can log in again with the master password that belonged to this vault revision.", true);
+
+        await RefreshData();
+    }
+
+    /// <summary>
+    /// Handles the action of restoring a data bucket history revision as the current one.
+    /// </summary>
+    /// <param name="revision">The bucket revision to make current.</param>
+    private async Task RestoreBucketAsync(BucketRevisionRow revision)
+    {
+        if (revision.IsCurrent)
+        {
+            // Already the current revision; nothing to restore.
+            return;
+        }
+
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        var currentBucket = await dbContext.VaultDataBuckets.FindAsync(revision.ManifestId, revision.Category);
+        var revisionToRestore = await dbContext.VaultDataBucketsHistory.FindAsync(revision.ManifestId, revision.Category, revision.RevisionNumber);
+        if (currentBucket == null || revisionToRestore == null)
+        {
+            return;
+        }
+
+        var newRevisionNumber = currentBucket.RevisionNumber + 1;
+        dbContext.VaultDataBucketsHistory.Add(VaultDataBucketsHistory.CreateFrom(currentBucket));
+        currentBucket.CopyPayloadFrom(revisionToRestore);
+        currentBucket.RevisionNumber = newRevisionNumber;
+        dbContext.VaultDataBucketsHistory.Remove(revisionToRestore);
+
+        await dbContext.SaveChangesAsync();
+
+        Logger.LogInformation("Restored the {Category} data bucket of user {UserName} ({UserId}) to revision {RevisionNumber}.",
+            revision.Category, User!.UserName, User.Id, newRevisionNumber);
+
+        await RefreshData();
     }
 
     /// <summary>
@@ -578,7 +707,62 @@ Do you want to proceed with the restoration?")) {
     }
 
     /// <summary>
-    /// This method will revoke all refresh tokens for the user which will log out all their devices.
+    /// Restore a previous master password credential to the user's current one.
+    /// </summary>
+    /// <param name="entry">The archived credential to restore.</param>
+    private async Task RevertPasswordChangeAsync(UserUnlockKeysHistory entry)
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        var now = DateTime.UtcNow;
+
+        // Re-read the row under the retention window to ensure it is still available.
+        var archived = await UnlockKeyHistoryPolicy
+            .WithinRetention(dbContext.UserUnlockKeysHistory.Where(x => x.Id == entry.Id && x.UserId == User!.Id), UnlockKeyHistoryRetentionDays, now)
+            .FirstOrDefaultAsync();
+
+        if (archived == null)
+        {
+            GlobalNotificationService.AddErrorMessage("This previous password is no longer available. It has passed the retention window and has been discarded.", true);
+            await RefreshData();
+            return;
+        }
+
+        var unlockKey = await dbContext.UserUnlockKeys.FirstOrDefaultAsync(x => x.UserId == User!.Id && x.Type == archived.Type);
+        if (unlockKey == null)
+        {
+            GlobalNotificationService.AddErrorMessage("This user no longer has an unlock method of this type to revert.", true);
+            return;
+        }
+
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var writeContext = await DbContextFactory.CreateDbContextAsync();
+            await using var transaction = await writeContext.Database.BeginTransactionAsync();
+
+            var target = await writeContext.UserUnlockKeys.FirstAsync(x => x.Id == unlockKey.Id);
+            var source = await writeContext.UserUnlockKeysHistory.FirstAsync(x => x.Id == archived.Id);
+
+            await writeContext.AliasVaultUsers.Where(x => x.Id == User!.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
+            await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == User!.Id).ExecuteDeleteAsync();
+
+            // Archive what is being replaced so the revert itself can be undone, then restore and consume the entry.
+            writeContext.UserUnlockKeysHistory.Add(UserUnlockKeysHistory.CreateFrom(target, now, "admin-revert"));
+            source.RestoreOnto(target, now);
+            writeContext.UserUnlockKeysHistory.Remove(source);
+
+            await writeContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+        });
+
+        Logger.LogWarning("Reverted master password for user {UserName} ({UserId}) to the credential archived at {ArchivedAt}. All sessions revoked.", User!.UserName, User.Id, archived.ArchivedAt);
+        GlobalNotificationService.AddSuccessMessage("Master password reverted. The user can log in again with the password they used before the change. All sessions have been revoked.", true);
+
+        await RefreshData();
+    }
+
+    /// <summary>
+    /// Revoke all refresh tokens for the user which will log out all their devices.
     /// </summary>
     private async Task RevokeAllTokens()
     {
@@ -599,8 +783,8 @@ Do you want to proceed with the restoration?")) {
     private void StartEditingEmailLimits()
     {
         IsEditingEmailLimits = true;
-        EditMaxEmails = User!.MaxEmails;
-        EditMaxEmailAgeDays = User.MaxEmailAgeDays;
+        EditMaxEmails = User!.PersonalGroup.MaxEmails;
+        EditMaxEmailAgeDays = User.PersonalGroup.MaxEmailAgeDays;
     }
 
     /// <summary>
@@ -619,12 +803,12 @@ Do you want to proceed with the restoration?")) {
     private async Task SaveEmailLimits()
     {
         await using var dbContext = await DbContextFactory.CreateDbContextAsync();
-        User = await dbContext.AliasVaultUsers.FindAsync(Id);
+        var personalGroup = await dbContext.Groups.FirstOrDefaultAsync(g => dbContext.AliasVaultUsers.Any(u => u.Id == Id && u.PersonalGroupId == g.Id));
 
-        if (User != null)
+        if (personalGroup != null)
         {
-            User.MaxEmails = EditMaxEmails;
-            User.MaxEmailAgeDays = EditMaxEmailAgeDays;
+            personalGroup.MaxEmails = EditMaxEmails;
+            personalGroup.MaxEmailAgeDays = EditMaxEmailAgeDays;
             await dbContext.SaveChangesAsync();
             IsEditingEmailLimits = false;
             await RefreshData();

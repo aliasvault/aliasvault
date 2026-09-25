@@ -132,11 +132,8 @@
 
         try
         {
-            // Get current username
-            var username = await GetUsernameAsync();
-
             // Verify the password using centralized service
-            var verificationResult = await AuthService.VerifyPasswordAsync(username, _passwordModel.Password);
+            var verificationResult = await AuthService.VerifyPasswordAsync(_passwordModel.Password);
 
             switch (verificationResult)
             {
@@ -144,7 +141,7 @@
                     GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultPasswordIncorrect"], true);
                     return;
 
-                case PasswordVerificationResult.ServerError:
+                case PasswordVerificationResult.VerificationError:
                     GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultErrorMessage"], true);
                     return;
 

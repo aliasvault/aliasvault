@@ -1,5 +1,6 @@
 import Foundation
-import SQLite
+import RustCoreFramework
+import UIKit
 import LocalAuthentication
 import CryptoKit
 import CommonCrypto
@@ -28,10 +29,30 @@ public class VaultStore {
     internal var autoLockTimeout: Int = VaultConstants.defaultAutoLockTimeout
 
     /// The database connection for the decrypted in-memory vault.
-    internal var dbConnection: Connection?
+    /// The live vault, held in the Rust core's memory. Nil while vault is locked.
+    internal var dbConnection: SqliteMemoryDatabase?
 
-    /// The encryption key for the vault.
-    internal var encryptionKey: Data?
+    /// The unlock key: the password-derived KEK. The one secret the unlocked session holds in memory, and the key the
+    /// unlock methods (keychain, PIN) protect. Every other key is derived from it and the cached account key chain.
+    internal var unlockKey: Data?
+
+    /// The encryption key for the vault, derived from the unlock key. Nil while the vault is locked.
+    internal var encryptionKey: Data? {
+        return sessionKeys?.vaultEncryptionKey
+    }
+
+    /// The account private key (JWK) of the unlocked session, derived from the unlock key.
+    internal var accountPrivateKey: String? {
+        return sessionKeys?.accountPrivateKey
+    }
+
+    /// What the unlock key opens in the cached account key chain.
+    private var sessionKeys: (vaultEncryptionKey: Data, accountPrivateKey: String?)? {
+        guard let unlockKey = unlockKey else {
+            return nil
+        }
+        return try? openAccountKeyChain(with: unlockKey)
+    }
 
     /// Last successful biometric/PIN auth operation.
     private var lastSuccessfulAuthAt: TimeInterval?
@@ -44,6 +65,9 @@ public class VaultStore {
 
     /// The key derivation parameters used to derive the encryption key from the password.
     internal var keyDerivationParams: String?
+
+    /// The sync operations on this store (the wrapper around the Rust sync engine).
+    internal lazy var sync = VaultSync(vaultStore: self)
 
     /// The timer for the auto-lock timeout.
     private var clearCacheTimer: Timer?
@@ -63,7 +87,7 @@ public class VaultStore {
 
     /// Whether the vault is currently unlocked
     public var isVaultUnlocked: Bool {
-        return encryptionKey != nil
+        return unlockKey != nil
     }
 
     // MARK: - Authentication Recency
@@ -120,7 +144,7 @@ public class VaultStore {
             self.autoLockTimeout = userDefaults.integer(forKey: VaultConstants.autoLockTimeoutKey)
         }
 
-        if let savedParams = userDefaults.string(forKey: VaultConstants.encryptionKeyDerivationParamsKey) {
+        if let savedParams = userDefaults.string(forKey: VaultConstants.unlockKeyDerivationParamsKey) {
             self.keyDerivationParams = savedParams
         }
     }

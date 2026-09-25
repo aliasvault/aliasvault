@@ -1,5 +1,7 @@
 import DOMPurify from 'dompurify';
 
+import { logExpected } from '@/utils/Diagnostics';
+
 /**
  * DOMPurify configuration for email viewing.
  * Allows safe HTML elements for email display while blocking XSS vectors.
@@ -56,7 +58,7 @@ class ConversionUtility {
     try {
       return DOMPurify.sanitize(html, EMAIL_SANITIZER_CONFIG);
     } catch (ex) {
-      console.error(`Error in sanitizeHtmlForEmailViewing: ${ex instanceof Error ? ex.message : String(ex)}`);
+      logExpected(`[Email] Sanitizing the email HTML failed: ${ex instanceof Error ? ex.message : String(ex)}`);
       // Return empty string on error to prevent potential XSS
       return '';
     }
@@ -121,20 +123,11 @@ class ConversionUtility {
       return doc.documentElement.outerHTML;
     } catch (ex) {
       // Log the exception
-      console.error(`Error in convertAnchorTagsToOpenInNewTab: ${ex instanceof Error ? ex.message : String(ex)}`);
+      logExpected(`[Email] Rewriting the email's links failed: ${ex instanceof Error ? ex.message : String(ex)}`);
 
       // Return the original HTML if an error occurs
       return html;
     }
-  }
-
-  /**
-   * Normalize a username by converting it to lowercase and trimming whitespace.
-   * @param username The username to normalize.
-   * @returns The normalized username.
-   */
-  public normalizeUsername(username: string): string {
-    return username.toLowerCase().trim();
   }
 }
 

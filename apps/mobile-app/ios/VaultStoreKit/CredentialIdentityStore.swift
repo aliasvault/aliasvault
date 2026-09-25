@@ -99,7 +99,7 @@ public class CredentialIdentityStore {
                 let identity = ASPasswordCredentialIdentity(
                     serviceIdentifier: ASCredentialServiceIdentifier(identifier: urlString, type: .URL),
                     user: identifier,
-                    recordIdentifier: credential.id.uuidString
+                    recordIdentifier: credential.id.uuidString.lowercased()
                 )
 
                 return identity
@@ -130,7 +130,7 @@ public class CredentialIdentityStore {
                 userName: userName,
                 credentialID: credentialId ?? Data(),  // WebAuthn credential ID (16-byte GUID)
                 userHandle: passkey.userHandle ?? Data(),
-                recordIdentifier: passkey.id.uuidString
+                recordIdentifier: passkey.id.uuidString.lowercased()
             )
         }
     }

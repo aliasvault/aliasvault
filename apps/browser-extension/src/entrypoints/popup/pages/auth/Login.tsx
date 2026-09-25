@@ -1,3 +1,12 @@
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
+import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
+import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -7,25 +16,24 @@ import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlo
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoginServerInfo from '@/entrypoints/popup/components/LoginServerInfo';
+import VaultErrorReport from '@/entrypoints/popup/components/VaultErrorReport';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
-import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
-import { AppInfo } from '@/utils/AppInfo';
-import { SrpAuthService } from '@/utils/auth/SrpAuthService';
-import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
-import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@/utils/types/errors/ClientUpgradeRequiredError';
+import { syncErrorMessage } from '@/utils/SyncError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
+
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { LoginResponse } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
 
@@ -58,121 +66,89 @@ const Login: React.FC = () => {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [clientUrl, setClientUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [vaultError, setVaultError] = useState<VaultProcessingError | null>(null);
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const webApi = useWebApi();
-  const srpUtil = new SrpUtility(webApi);
+  const srpUtil = new SrpLoginService(webApi);
 
   /**
-   * Helper to persist and load vault after successful authentication.
-   * Checks if local vault exists from forced logout and preserves it if more advanced.
-   * Also checks if the vault belongs to the same user - if different user, uses server vault.
+   * Pull the vault from the server.
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string): Promise<void> => {
-    // Check if there's existing vault data (from forced logout)
-    const existingVault = await storage.getItem('local:encryptedVault') as string | null;
-    const existingRevision = await storage.getItem('local:serverRevision') as number | null;
-    const storedUsername = await storage.getItem('local:username') as string | null;
-
-    let vaultToLoad = vaultResponse.vault.blob;
-
-    if (existingVault && existingRevision !== null) {
-      // Check if the existing vault belongs to a different user
-      const normalizedLoginUsername = loginUsername.toLowerCase().trim();
-      const normalizedStoredUsername = storedUsername?.toLowerCase().trim();
-
-      if (storedUsername && normalizedStoredUsername !== normalizedLoginUsername) {
-        // Different user
-        console.info(
-          `Existing vault belongs to different user (${storedUsername}), using server vault for ${loginUsername}`
-        );
-      } else {
-        // Same user (or no stored username)
-        try {
-          const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
-
-          // Check if existing vault is more advanced than server
-          if (existingRevision >= vaultResponse.vault.currentRevisionNumber) {
-            console.info(
-              `Existing vault is more advanced (rev ${existingRevision} >= ${vaultResponse.vault.currentRevisionNumber}), ` +
-              `preserving local vault and will upload to server`
-            );
-
-            // Update metadata and load existing vault
-            vaultToLoad = existingVault;
-            await sendMessage('STORE_VAULT_METADATA', {
-              publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-              privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-              hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-            });
-
-            await dbContext.loadDatabase(decryptedExisting);
-            return;
-          }
-
-          // Server is more advanced, fetch server vault
-          console.info(
-            `Server vault is more advanced (rev ${vaultResponse.vault.currentRevisionNumber} > ${existingRevision}), ` +
-            `using server vault`
-          );
-        } catch {
-          // Decryption failed, password changed or corrupt vault
-          console.info('Existing vault could not be decrypted (password changed), using server vault');
-        }
-      }
+  const pullAndLoadVault = async (): Promise<void> => {
+    const result = await sendMessage('FULL_VAULT_SYNC', { forcePull: true, reportErrorToPopup: false });
+    if (result.errorKey === 'clientVersionNotSupported') {
+      throw new ClientUpgradeRequiredError();
+    }
+    if (result.errorKey === 'serverVersionNotSupported') {
+      throw new ServerUpdateRequiredError();
+    }
+    if (!result.success) {
+      throw new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result, t) ?? t('common.errors.unknownError')));
     }
 
-    // Normal flow: persist server vault to local storage
-    await sendMessage('STORE_ENCRYPTED_VAULT', {
-      vaultBlob: vaultResponse.vault.blob,
-      serverRevision: vaultResponse.vault.currentRevisionNumber,
-    });
-
-    await sendMessage('STORE_VAULT_METADATA', {
-      publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-      hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-    });
-
-    // Decrypt and load the vault into memory
-    const decryptedVault = await EncryptionUtility.symmetricDecrypt(vaultToLoad, encryptionKey);
-    await dbContext.loadDatabase(decryptedVault);
+    await dbContext.loadStoredDatabase();
   };
 
   /**
-   * Handle successful authentication by storing tokens and initializing the database
+   * Show login attempt failure.
+   * @param context - what failed, for the console
+   * @param err - the error
+   */
+  const showLoginError = (context: string, err: unknown): void => {
+    logFailure(context, err);
+    if (err instanceof ClientUpgradeRequiredError) {
+      // Server refused this client version (HTTP 426).
+      setError(t('common.errors.clientVersionNotSupported'));
+    } else if (err instanceof ServerUpdateRequiredError) {
+      // Server does not support the v2 API, throw unsupported error.
+      setError(t('common.errors.serverVersionNotSupported'));
+    } else if (err instanceof VaultProcessingError) {
+      // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
+      setVaultError(err);
+    } else if (err instanceof ApiAuthError) {
+      // Show API authentication errors as-is.
+      setError(t('common.apiErrors.' + err.message));
+    } else if (hasErrorCode(err)) {
+      // Error contains an error code (E-XXX), show the formatted message.
+      setError(getErrorMessage(err, t('common.errors.serverError')));
+    } else {
+      setError(t('common.errors.serverError'));
+    }
+  };
+
+  /**
+   * Finish a password or mobile login: store the tokens and unlock key, then pull and load the vault.
+   * @param username - the normalized username
+   * @param token - the access token
+   * @param refreshToken - the refresh token
+   * @param unlockKey - the unlock key (KEK), base64
+   * @param derivationParams - how the unlock key is derived from the password
    */
   const handleSuccessfulAuth = async (
     username: string,
     token: string,
     refreshToken: string,
-    passwordHashBase64: string,
-    loginResponse: LoginResponse
+    unlockKey: string,
+    derivationParams: UnlockKeyDerivationParams
   ) : Promise<void> => {
-    // Try to get latest vault manually providing auth token.
-    const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-      'Authorization': `Bearer ${token}`
-    } });
-
-    // All is good. Store auth info which is required to make requests to the web API.
+    // Store auth info first; the vault fetch below makes an authenticated request via the stored access token.
     await app.setAuthTokens(username, token, refreshToken);
 
-    // Store the encryption key and derivation params separately
-    await dbContext.storeEncryptionKey(passwordHashBase64);
-    await dbContext.storeEncryptionKeyDerivationParams({
-      salt: loginResponse.salt,
-      encryptionType: loginResponse.encryptionType,
-      encryptionSettings: loginResponse.encryptionSettings
+    /*
+     * Fetch the account's key chain, check the unlock key opens it and cache it as-is; the vault encryption key is
+     * derived from the two on demand. Legacy accounts have no chain.
+     */
+    await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+
+    await dbContext.storeUnlockKeyDerivationParams({
+      salt: derivationParams.salt,
+      encryptionType: derivationParams.encryptionType,
+      encryptionSettings: derivationParams.encryptionSettings
     });
 
-    /*
-     * Persist and load the vault.
-     * If there was a forced logout, persistAndLoadVault checks existing vault data:
-     * - If different user → uses server vault
-     * - If local vault is more advanced → preserves it (will upload via sync in /reinitialize)
-     * - If server is more advanced → uses server vault
-     * - If password changed (can't decrypt) → uses server vault
-     */
-    await persistAndLoadVault(vaultResponseJson, passwordHashBase64, username);
+    // Store the unlock key as the session key, then pull and load the vault.
+    await dbContext.storeUnlockKey(unlockKey);
+    await pullAndLoadVault();
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
@@ -180,7 +156,7 @@ const Login: React.FC = () => {
     /*
      * Navigate to reinitialize page which will:
      * 1. Call syncVault() to check version compatibility
-     * 2. Handle pending migrations via onUpgradeRequired callback
+     * 2. Send the vault through /upgrade when either the legacy sqlite-blob chain or the manifest migration applies
      * 3. Navigate to appropriate page
      *
      * Other windows on /login or /unlock pick up the encryption-key storage
@@ -198,7 +174,7 @@ const Login: React.FC = () => {
      */
     const loadInitialData = async () : Promise<void> => {
       // Load client URL
-      const settingClientUrl = await storage.getItem('local:clientUrl') as string;
+      const settingClientUrl = await storage.getItem(StorageKeys.CLIENT_URL) as string;
       let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
       if (settingClientUrl && settingClientUrl.length > 0) {
         clientUrl = settingClientUrl;
@@ -232,7 +208,7 @@ const Login: React.FC = () => {
        */
       if (!usernamePrefillAttempted) {
         usernamePrefillAttempted = true;
-        const savedUsername = await storage.getItem('local:username') as string | null;
+        const savedUsername = await storage.getItem(StorageKeys.USERNAME) as string | null;
         if (savedUsername) {
           setCredentials(prev => ({ ...prev, username: savedUsername }));
         }
@@ -277,6 +253,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) : Promise<void> => {
     e.preventDefault();
     setError(null);
+    setVaultError(null);
 
     try {
       showLoading();
@@ -289,12 +266,7 @@ const Login: React.FC = () => {
       const loginResponse = await srpUtil.initiateLogin(normalizedUsername);
 
       // Derive key from password using Argon2id and prepare credentials
-      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(
-        credentials.password,
-        loginResponse.salt,
-        loginResponse.encryptionType,
-        loginResponse.encryptionSettings
-      );
+      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(credentials.password, loginResponse.salt, loginResponse.encryptionSettings);
 
       // Validate login with SRP protocol
       const validationResponse = await srpUtil.validateLogin(
@@ -345,18 +317,7 @@ const Login: React.FC = () => {
         loginResponse
       );
     } catch (err) {
-      // Show API authentication errors as-is.
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this client version (HTTP 426).
-        setError(t('common.errors.clientVersionNotSupported'));
-      } else if (err instanceof ApiAuthError) {
-        setError(t('common.apiErrors.' + err.message));
-      } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message as-is
-        setError(getErrorMessage(err, t('common.errors.serverError')));
-      } else {
-        setError(t('common.errors.serverError'));
-      }
+      showLoginError('Login error', err);
       hideLoading();
     }
   };
@@ -367,6 +328,7 @@ const Login: React.FC = () => {
   const handleTwoFactorSubmit = async (e: React.FormEvent) : Promise<void> => {
     e.preventDefault();
     setError(null);
+    setVaultError(null);
 
     try {
       showLoading();
@@ -414,19 +376,7 @@ const Login: React.FC = () => {
       setPasswordHashBase64(null);
       setLoginResponse(null);
     } catch (err) {
-      // Show API authentication errors as-is.
-      console.error('2FA error:', err);
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this client version (HTTP 426).
-        setError(t('common.errors.clientVersionNotSupported'));
-      } else if (err instanceof ApiAuthError) {
-        setError(t('common.apiErrors.' + err.message));
-      } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message as-is
-        setError(getErrorMessage(err, t('common.errors.serverError')));
-      } else {
-        setError(t('common.errors.serverError'));
-      }
+      showLoginError('2FA error', err);
       hideLoading();
     }
   };
@@ -439,40 +389,17 @@ const Login: React.FC = () => {
     try {
       // Clear global message if set
       app.clearGlobalMessage();
-
-      // Fetch vault from server with the new auth token
-      const vaultResponse = await webApi.authFetch<VaultResponse>('Vault', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${result.token}`,
-        },
-      });
-
-      // Store auth tokens and username
-      await app.setAuthTokens(result.username, result.token, result.refreshToken);
-
-      // Store the encryption key and derivation params
-      await dbContext.storeEncryptionKey(result.decryptionKey);
-      await dbContext.storeEncryptionKeyDerivationParams({
-        salt: result.salt,
-        encryptionType: result.encryptionType,
-        encryptionSettings: result.encryptionSettings,
-      });
-
-      // Persist and load the vault
-      await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
-
-      /*
-       * Navigate to reinitialize page which will:
-       * 1. Call syncVault() to check version compatibility
-       * 2. Handle pending migrations via onUpgradeRequired callback
-       * 3. Navigate to appropriate page
-       */
-      hideLoading();
       setIsInitialLoading(false);
-      navigate('/reinitialize', { replace: true });
+
+      // The mobile device sends the unlock key.
+      await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.unlockKey, result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+      if (err instanceof ServerUpdateRequiredError) {
+        // Server does not support the v2 API, throw unsupported error.
+        setError(t('common.errors.serverVersionNotSupported'));
+      } else {
+        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+      }
       hideLoading();
       throw err; // Re-throw to let modal show error
     }
@@ -498,6 +425,7 @@ const Login: React.FC = () => {
               {error}
             </div>
           )}
+          {vaultError && <VaultErrorReport error={vaultError} />}
           <div className="mb-6">
             <p className="text-gray-700 dark:text-gray-200 mb-4">
               {t('auth.twoFactorTitle')}
@@ -565,6 +493,7 @@ const Login: React.FC = () => {
               {error}
             </div>
           )}
+          {vaultError && <VaultErrorReport error={vaultError} />}
 
           <div className="mb-4">
             <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="username">

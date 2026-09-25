@@ -106,8 +106,11 @@ public struct AutofillCredentialCard: View {
             }
 
             if credential.hasTotp,
-               let secret = credential.totpSecret,
-               let code = TotpGenerator.generateCode(secret: secret),
+               let totp = credential.totp,
+               let code = TotpGenerator.generateCode(secret: totp.secretKey,
+                                                     period: totp.period,
+                                                     digits: totp.digits,
+                                                     algorithm: totp.algorithm),
                !code.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = code
@@ -125,7 +128,7 @@ public struct AutofillCredentialCard: View {
             }
 
             Button(action: {
-                if let url = URL(string: "aliasvault://items/\(credential.id.uuidString)") {
+                if let url = URL(string: "aliasvault://items/\(credential.manifestId)/\(credential.id.uuidString.lowercased())") {
                     UIApplication.shared.open(url)
                 }
             }, label: {
@@ -133,7 +136,7 @@ public struct AutofillCredentialCard: View {
             })
 
             Button(action: {
-                if let url = URL(string: "aliasvault://items/add-edit-page?id=\(credential.id.uuidString)") {
+                if let url = URL(string: "aliasvault://items/\(credential.manifestId)/\(credential.id.uuidString.lowercased())/edit-page") {
                     UIApplication.shared.open(url)
                 }
             }, label: {
@@ -189,8 +192,9 @@ public func truncateText(_ text: String?, limit: Int) -> String {
     AutofillCredentialCard(
         credential: AutofillCredential(
             id: UUID(),
+            manifestId: "preview",
             serviceName: "Example Service with a very long name bla bla bla",
-            serviceUrl: "https://example.com",
+            serviceUrls: ["https://example.com"],
             logo: nil,
             username: "usernameverylongverylongtextindeed",
             email: "john.doe@example.com",

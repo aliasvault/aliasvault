@@ -10,6 +10,11 @@ data class SyncState(
     val isDirty: Boolean = false,
 
     /**
+     * What the pending changes touched, so a caller can tell a change the user made from a silent one.
+     */
+    val dirtyScopes: List<String> = emptyList(),
+
+    /**
      * Counter that increments on each local mutation.
      * Used for race detection during sync operations.
      */

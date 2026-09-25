@@ -1,4 +1,5 @@
-import  * as OTPAuth from 'otpauth';
+import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
+import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import QRCode from 'qrcode';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
-import type { TotpCode } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { TotpCode } from '@aliasvault/models/vault';
 
 type TotpFormData = {
   name: string;
@@ -58,23 +61,27 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
   /**
    * Sanitizes the secret key by extracting it from a TOTP URI if needed
    */
-  const sanitizeSecretKey = (secretKeyInput: string, nameInput: string): { secretKey: string, name: string } => {
+  const sanitizeSecretKey = (secretKeyInput: string, nameInput: string): { secretKey: string, name: string, algorithm: string, digits: number, period: number } => {
     let secretKey = secretKeyInput.trim();
     let name = nameInput.trim();
+    let algorithm = TOTP_DEFAULT_ALGORITHM;
+    let digits = TOTP_DEFAULT_DIGITS;
+    let period = TOTP_DEFAULT_PERIOD;
 
     // Check if it's a TOTP URI
     if (secretKey.toLowerCase().startsWith('otpauth://totp/')) {
-      try {
-        const uri = OTPAuth.URI.parse(secretKey);
-        if (uri instanceof OTPAuth.TOTP) {
-          secretKey = uri.secret.base32;
-          // If name is empty, use the label from the URI
-          if (!name && uri.label) {
-            name = uri.label;
-          }
-        }
-      } catch {
+      const parsed = parseOtpAuthUri(secretKey);
+      if (!parsed) {
         throw new Error(t('totp.errors.invalidSecretKey'));
+      }
+      secretKey = parsed.secret;
+      // Keep the URI's parameters instead of silently regenerating codes with the defaults.
+      algorithm = parsed.algorithm;
+      digits = parsed.digits;
+      period = parsed.period;
+      // If name is empty, use the account from the URI label
+      if (!name && parsed.account) {
+        name = parsed.account;
       }
     }
 
@@ -87,7 +94,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
     }
 
     // Name is optional; keep it blank when none was provided or derived.
-    return { secretKey, name };
+    return { secretKey, name, algorithm, digits, period };
   };
 
   /**
@@ -147,13 +154,16 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
     try {
       // Sanitize the secret key
-      const { secretKey, name } = sanitizeSecretKey(formData.secretKey, formData.name);
+      const { secretKey, name, algorithm, digits, period } = sanitizeSecretKey(formData.secretKey, formData.name);
 
       // Create new TOTP code
       const newTotpCode: TotpCode = {
-        Id: crypto.randomUUID().toUpperCase(),
+        Id: crypto.randomUUID(),
         Name: name,
         SecretKey: secretKey,
+        Algorithm: algorithm,
+        Digits: digits,
+        Period: period,
         ItemId: '' // Will be set when saving the item
       };
 
@@ -285,7 +295,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       const issuer = itemDisplayName || 'AliasVault';
       const accountName = itemUsername || editingTotpCode.Name;
       const label = `${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}`;
-      const totpUri = `otpauth://totp/${label}?secret=${editingTotpCode.SecretKey}&issuer=${encodeURIComponent(issuer)}`;
+      const totpUri = buildOtpAuthUri(label, editingTotpCode.SecretKey, issuer, editingTotpCode);
 
       QRCode.toDataURL(totpUri, {
         width: 256,
@@ -296,7 +306,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
         }
       })
         .then(url => setQrCodeDataUrl(url))
-        .catch(err => console.error('Failed to generate QR code:', err));
+        .catch(err => logFailure('Failed to generate QR code', err));
     }
     setShowQrCode(!showQrCode);
   };

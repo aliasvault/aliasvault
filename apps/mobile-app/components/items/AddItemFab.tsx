@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Easing, Platform, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { ItemType } from '@/utils/dist/core/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 
 import { useColorScheme, useColors } from '@/hooks/useColorScheme';

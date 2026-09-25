@@ -7,6 +7,8 @@
 
 namespace AliasVault.Api.Headers;
 
+using Microsoft.AspNetCore.Http;
+
 /// <summary>
 /// Parsed components of the X-AliasVault-Client request header.
 ///
@@ -21,6 +23,13 @@ public sealed record ClientHeaderInfo(string ClientName, string? ClientVersion)
     /// Header name used by AliasVault clients to identify themselves.
     /// </summary>
     public const string HeaderName = "X-AliasVault-Client";
+
+    /// <summary>
+    /// Read the raw client header off a request.
+    /// </summary>
+    /// <param name="request">The incoming request.</param>
+    /// <returns>The raw header value, or null when the request did not carry one.</returns>
+    public static string? GetRawValue(HttpRequest request) => request.Headers[HeaderName].FirstOrDefault();
 
     /// <summary>
     /// Parse a raw X-AliasVault-Client header value into its components.

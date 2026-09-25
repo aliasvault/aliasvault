@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------
 // <copyright file="AliasVaultUser.cs" company="aliasvault">
 // Copyright (c) aliasvault. All rights reserved.
 // Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
@@ -15,11 +15,23 @@ using Microsoft.AspNetCore.Identity;
 public class AliasVaultUser : IdentityUser
 {
     /// <summary>
-    /// Gets or sets the SRP identity used for authentication. This is a fixed value (typically a random GUID)
-    /// that is used for all SRP operations, is set during registration, and never changes.
+    /// Gets or sets the SRP identity used for authentication. This is a fixed value that is used for all SRP operations,
+    /// is set during registration, and never changes. This field is nullable for backward compatibility with accounts
+    /// that were created before SRP identities existed (pre-0.26.0). TODO: remove this nullable in a future version.
     /// </summary>
     [System.ComponentModel.DataAnnotations.StringLength(255)]
     public string? SrpIdentity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's personal <see cref="Group"/>: the group that owns their personal vault and personal
+    /// email claims.
+    /// </summary>
+    public Guid PersonalGroupId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the user's personal group.
+    /// </summary>
+    public virtual Group PersonalGroup { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets created timestamp.
@@ -43,31 +55,9 @@ public class AliasVaultUser : IdentityUser
     public DateTime? BlockedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the user is marked as shadow-blocked.
-    /// </summary>
-    public bool ShadowBlocked { get; set; }
-
-    /// <summary>
-    /// Gets or sets the UTC timestamp when the user was shadow-blocked. Used to only hide emails received after the
-    /// block occurred. Null when the user has never been shadow-blocked (in which case all emails are hidden while
-    /// ShadowBlocked is true, as a conservative fallback).
-    /// </summary>
-    public DateTime? ShadowBlockedAt { get; set; }
-
-    /// <summary>
     /// Gets or sets updated timestamp.
     /// </summary>
     public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum number of emails for all of user's aliases. 0 means unlimited.
-    /// </summary>
-    public int MaxEmails { get; set; } = 0;
-
-    /// <summary>
-    /// Gets or sets the maximum age of emails in days. Emails older than this will be deleted. 0 means unlimited.
-    /// </summary>
-    public int MaxEmailAgeDays { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the date of the user's last activity (login, API call, etc.).
@@ -76,24 +66,8 @@ public class AliasVaultUser : IdentityUser
     public DateTime? LastActivityDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the total count of emails received by this user across all time.
-    /// This is a persistent counter that is incremented when emails are received and is never decremented,
-    /// even when emails are deleted. Used for abuse detection and usage statistics.
+    /// Gets or sets the collection of vault unlock keys (KEK/VEK model). Empty for users still on the legacy
+    /// model where the password-derived key encrypts the vault directly.
     /// </summary>
-    public int EmailsReceived { get; set; } = 0;
-
-    /// <summary>
-    /// Gets or sets the collection of vaults.
-    /// </summary>
-    public virtual ICollection<Vault> Vaults { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the collection of EmailClaims.
-    /// </summary>
-    public virtual ICollection<UserEmailClaim> EmailClaims { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the collection of EncryptionKeys.
-    /// </summary>
-    public virtual ICollection<UserEncryptionKey> EncryptionKeys { get; set; } = [];
+    public virtual ICollection<VaultManifestAccessKey> VaultManifestAccessKeys { get; set; } = [];
 }

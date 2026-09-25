@@ -1,9 +1,12 @@
-import { Gender, IdentityHelperUtils } from "@/utils/dist/core/models/identity";
-import type { Credential } from "@/utils/dist/core/models/vault";
+import { Gender, IdentityHelperUtils } from "@aliasvault/models/identity";
+
+import { logFailure } from '@/utils/Diagnostics';
 import { CombinedDateOptionPatterns, CombinedGenderOptionPatterns } from "@/utils/formDetector/FieldPatterns";
 import { type FormFields } from "@/utils/formDetector/types/FormFields";
 import { ClickValidator } from "@/utils/security/ClickValidator";
 import { composedContains } from "@/utils/ShadowDom";
+
+import type { Credential } from "@aliasvault/models/vault";
 /**
  * Class to fill the fields of a form with the given credential.
  */
@@ -103,7 +106,7 @@ export class FormFiller {
 
       return results;
     } catch (error) {
-      console.error('[AliasVault Security] Form security validation error:', error);
+      logFailure('[AliasVault Security] Form security validation error', error);
       // Fail safely - mark all fields as unsafe if validation fails
       this.getAllFormFields().forEach(field => results.set(field, false));
       return results;

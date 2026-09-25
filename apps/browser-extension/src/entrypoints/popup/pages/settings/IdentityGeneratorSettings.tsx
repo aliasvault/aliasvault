@@ -1,3 +1,5 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
+import { getLanguageInfo } from '@aliasvault/models/defaults';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -5,9 +7,6 @@ import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
-
-import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
-import * as RustCore from '@/utils/RustCore';
 
 /**
  * Identity Generator Settings page component.

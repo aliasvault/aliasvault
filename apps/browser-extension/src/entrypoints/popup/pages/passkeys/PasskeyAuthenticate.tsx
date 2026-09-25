@@ -1,3 +1,5 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { extractDomain } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -9,12 +11,12 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { buildPasskeyAssertion } from '@/utils/passkey/PasskeyAssertionService';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { PendingPasskeyGetRequest } from '@/utils/passkey/types';
-import { extractDomain } from '@/utils/RustCore';
 import { copyTotpToClipboardIfEnabled } from '@/utils/TotpClipboard';
 
 /**
@@ -28,7 +30,7 @@ const PasskeyAuthenticate: React.FC = () => {
   const [request, setRequest] = useState<PendingPasskeyGetRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availablePasskeys, setAvailablePasskeys] = useState<Array<{ id: string; itemId: string; displayName: string; rpId: string; serviceName?: string | null }>>([]);
+  const [availablePasskeys, setAvailablePasskeys] = useState<Array<{ id: string; itemId: string; manifestId: string; displayName: string; rpId: string; serviceName?: string | null }>>([]);
   const [showBypassDialog, setShowBypassDialog] = useState(false);
   const { isLocked } = useVaultLockRedirect();
   const firstPasskeyRef = useRef<HTMLDivElement>(null);
@@ -82,9 +84,10 @@ const PasskeyAuthenticate: React.FC = () => {
             }
 
             // Map to display format
-            setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; ItemId: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
+            setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; ItemId: string; ManifestId: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
               id: pk.Id,
               itemId: pk.ItemId,
+              manifestId: pk.ManifestId,
               displayName: pk.DisplayName,
               serviceName: pk.ServiceName,
               rpId: pk.RpId,
@@ -92,7 +95,7 @@ const PasskeyAuthenticate: React.FC = () => {
             })));
           }
         } catch (error) {
-          console.error('Failed to fetch request data:', error);
+          logFailure('Failed to fetch request data', error);
           setError(t('common.errors.unknownError'));
         }
       }
@@ -118,7 +121,7 @@ const PasskeyAuthenticate: React.FC = () => {
      */
     const handleKeyDown = (e: KeyboardEvent) : void => {
       if (e.key === 'Enter' && !loading && availablePasskeys.length > 0) {
-        handleUsePasskey(availablePasskeys[0].id);
+        handleUsePasskey(availablePasskeys[0]);
       }
     };
 
@@ -137,7 +140,7 @@ const PasskeyAuthenticate: React.FC = () => {
   /**
    * Handle passkey authentication
    */
-  const handleUsePasskey = async (passkeyId: string) : Promise<void> => {
+  const handleUsePasskey = async (selected: { id: string; itemId: string; manifestId: string }) : Promise<void> => {
     if (!request || !dbContext.sqliteClient) {
       return;
     }
@@ -147,15 +150,15 @@ const PasskeyAuthenticate: React.FC = () => {
 
     try {
       // Build the assertion from the selected passkey using the shared service.
-      const credential = await buildPasskeyAssertion(dbContext.sqliteClient, request, passkeyId);
+      const credential = await buildPasskeyAssertion(dbContext.sqliteClient, request, selected.id, selected.manifestId);
 
-      /*
-       * Copy the linked TOTP code to the clipboard (if any).
-       */
-      const selected = availablePasskeys.find((pk) => pk.id === passkeyId);
-      if (selected) {
-        await copyTotpToClipboardIfEnabled(selected.itemId);
-      }
+      // Signing an assertion is a use of the item the passkey hangs off.
+      sendMessage('RECORD_ITEM_USAGE', { itemId: selected.itemId, manifestId: selected.manifestId, action: 'passkey' }).catch(() => {
+        // Ignore errors
+      });
+
+      // Copy the linked TOTP code to the clipboard (if any).
+      await copyTotpToClipboardIfEnabled({ Id: selected.itemId, ManifestId: selected.manifestId });
 
       /*
        * Send response back
@@ -166,7 +169,7 @@ const PasskeyAuthenticate: React.FC = () => {
         credential
       });
     } catch (error) {
-      console.error('PasskeyAuthenticate: Error during authentication', error);
+      logFailure('PasskeyAuthenticate: Error during authentication', error);
       setLoading(false);
       setError(t('common.errors.unknownError'));
     }
@@ -269,14 +272,14 @@ const PasskeyAuthenticate: React.FC = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800">
                 {availablePasskeys.map((pk, index) => (
                   <div
-                    key={pk.id}
+                    key={scopedKey(pk.manifestId, pk.id)}
                     ref={index === 0 ? firstPasskeyRef : null}
                     tabIndex={0}
                     className="p-3 rounded-lg border cursor-pointer transition-colors bg-white border-gray-200 hover:bg-gray-100 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                    onClick={() => !loading && handleUsePasskey(pk.id)}
+                    onClick={() => !loading && handleUsePasskey(pk)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !loading) {
-                        handleUsePasskey(pk.id);
+                        handleUsePasskey(pk);
                       }
                     }}
                   >

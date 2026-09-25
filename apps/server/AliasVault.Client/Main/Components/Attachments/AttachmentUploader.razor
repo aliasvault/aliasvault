@@ -81,6 +81,13 @@
                 using var ms = new MemoryStream();
                 await file.OpenReadStream(MaxFileSize).CopyToAsync(ms);
 
+                // The vault stores no attachment without bytes.
+                if (ms.Length == 0)
+                {
+                    StatusMessage = $"Error uploading file: {file.Name} is empty.";
+                    continue;
+                }
+
                 var attachment = new Attachment
                 {
                     Filename = file.Name,

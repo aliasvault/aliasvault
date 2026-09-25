@@ -10,41 +10,41 @@ namespace AliasVault.Api.Services;
 using AliasServerDb;
 
 /// <summary>
-/// Rate limit resolver logic which determines the limits that apply to a given user.
+/// Rate limit resolver logic which determines the limits that apply to a given group.
 /// </summary>
 public static class RateLimitResolver
 {
     /// <summary>
-    /// Resolves the limits that apply to the given user. For each window the most specific scope wins
-    /// (per-user > per-tier > global); a winning MaxCount of 0 means unlimited.
+    /// Resolves the limits that apply to the given group. For each window the most specific scope wins
+    /// (per-group > per-tier > global); a winning MaxCount of 0 means unlimited.
     /// </summary>
     /// <param name="rules">The candidate rules.</param>
-    /// <param name="user">The user to resolve limits for.</param>
+    /// <param name="group">The group to resolve limits for: the quota subject everything is charged to.</param>
     /// <param name="limitType">The limit type to resolve.</param>
     /// <param name="now">The current UTC time, used to evaluate effective-from/until windows.</param>
     /// <returns>The limits that must all be satisfied. Empty means no limit applies.</returns>
-    public static IReadOnlyList<EffectiveRateLimit> Resolve(IEnumerable<RateLimit> rules, AliasVaultUser user, RateLimitType limitType, DateTime now)
+    public static IReadOnlyList<EffectiveRateLimit> Resolve(IEnumerable<RateLimit> rules, Group group, RateLimitType limitType, DateTime now)
     {
-        var tier = ResolveTier(user);
+        var tier = ResolveTier(group);
 
         var applicableRules = rules
             .Where(r => r.Enabled)
             .Where(r => r.LimitType == limitType)
             .Where(r => (r.EffectiveFrom is null || r.EffectiveFrom <= now) && (r.EffectiveUntil is null || r.EffectiveUntil >= now))
-            .Where(r => r.AppliesToAccountAgeMaxDays is null || user.CreatedAt > now.AddDays(-r.AppliesToAccountAgeMaxDays.Value));
+            .Where(r => r.AppliesToAccountAgeMaxDays is null || group.CreatedAt > now.AddDays(-r.AppliesToAccountAgeMaxDays.Value));
 
         var windows = new HashSet<int>();
-        var userMax = new Dictionary<int, int>();
+        var groupMax = new Dictionary<int, int>();
         var tierMax = new Dictionary<int, int>();
         var globalMax = new Dictionary<int, int>();
 
         foreach (var rule in applicableRules)
         {
-            if (rule.UserId is not null)
+            if (rule.GroupId is not null)
             {
-                if (rule.UserId == user.Id)
+                if (rule.GroupId == group.Id)
                 {
-                    Record(windows, userMax, rule.WindowSeconds, rule.MaxCount);
+                    Record(windows, groupMax, rule.WindowSeconds, rule.MaxCount);
                 }
             }
             else if (rule.Tier is not null)
@@ -64,17 +64,17 @@ public static class RateLimitResolver
         foreach (var window in windows)
         {
             int max;
-            if (userMax.TryGetValue(window, out var um))
+            if (groupMax.TryGetValue(window, out var grm))
             {
-                max = um;
+                max = grm;
             }
             else if (tierMax.TryGetValue(window, out var tm))
             {
                 max = tm;
             }
-            else if (globalMax.TryGetValue(window, out var gm))
+            else if (globalMax.TryGetValue(window, out var glm))
             {
-                max = gm;
+                max = glm;
             }
             else
             {
@@ -92,11 +92,11 @@ public static class RateLimitResolver
     }
 
     /// <summary>
-    /// Resolves the user's tier. Tiers are not implemented yet, so every user is <see cref="AccountTier.Free"/> by default.
+    /// Resolves the group's tier. Tiers are not implemented yet, so every group is <see cref="AccountTier.Free"/> by default.
     /// </summary>
-    /// <param name="user">The user to resolve the tier for.</param>
-    /// <returns>The account tier that applies to the user.</returns>
-    public static AccountTier ResolveTier(AliasVaultUser user) => AccountTier.Free;
+    /// <param name="group">The group to resolve the tier for.</param>
+    /// <returns>The account tier that applies to the group.</returns>
+    public static AccountTier ResolveTier(Group group) => AccountTier.Free;
 
     /// <summary>
     /// Records a candidate MaxCount for a scope+window. A concrete limit wins over unlimited (0), and between

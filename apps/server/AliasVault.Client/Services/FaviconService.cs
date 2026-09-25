@@ -16,7 +16,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AliasVault.Client.Services.JsInterop.RustCore;
-using AliasVault.Shared.Models.WebApi.Favicon;
+using AliasVault.Shared.Models.WebApi.V1.Favicon;
 
 /// <summary>
 /// Wraps calls to the server-side favicon API. Centralizes the single-URL and batched
@@ -54,8 +54,7 @@ public sealed class FaviconService(HttpClient httpClient)
     {
         try
         {
-            var apiReturn = await httpClient.GetFromJsonAsync<FaviconExtractModel>(
-                $"v1/Favicon/Extract?url={Uri.EscapeDataString(url)}");
+            var apiReturn = await httpClient.GetFromJsonAsync<FaviconExtractModel>(ApiRoute($"Favicon/Extract?url={Uri.EscapeDataString(url)}"));
             return apiReturn?.Image;
         }
         catch
@@ -115,7 +114,7 @@ public sealed class FaviconService(HttpClient httpClient)
             HttpResponseMessage response;
             try
             {
-                response = await httpClient.PostAsJsonAsync("v1/Favicon/ExtractBatch", request, cancellationToken);
+                response = await httpClient.PostAsJsonAsync(ApiRoute("Favicon/ExtractBatch"), request, cancellationToken);
             }
             catch
             {

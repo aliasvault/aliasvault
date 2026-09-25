@@ -1,8 +1,7 @@
 import Foundation
-import SQLite
 
-/// Type alias for SQLite bind values.
-public typealias SqliteBindValue = Binding?
+/// A query parameter: nil, String, Int, Int64, Double, Bool, Data, or a base64 string behind `av-base64-to-blob:`.
+public typealias SqliteBindValue = Any?
 
 /// Protocol for core database operations needed by repositories.
 /// Abstracts the SQLite database connection to allow for testing and flexibility.
@@ -19,14 +18,19 @@ public protocol DatabaseClient: AnyObject {
     ///   - query: The SQL query to execute
     ///   - params: The parameters to bind to the query
     /// - Returns: Number of rows affected
+    @discardableResult
     func executeUpdate(_ query: String, params: [SqliteBindValue]) throws -> Int
 
     /// Begin a database transaction.
     func beginTransaction() throws
 
     /// Commit a database transaction.
-    func commitTransaction() throws
+    /// - Parameter scope: What the mutation touched, so the next sync can push only that scope
+    func commitTransaction(scope: String) throws
 
     /// Rollback a database transaction.
     func rollbackTransaction() throws
+
+    /// The id of the user's personal manifest, or nil before the first pull recorded one.
+    func personalManifestId() -> String?
 }

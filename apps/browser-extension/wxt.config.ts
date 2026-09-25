@@ -1,5 +1,8 @@
-import { defineConfig } from 'wxt';
-import type { Plugin } from 'vite';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+
+import { defineConfig, type WxtUnimportOptions } from 'wxt';
+import type { FilterPattern, Plugin } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 /**
@@ -9,7 +12,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
  * encoding instead of UTF-8, corrupting bundled non-ASCII strings. Content
  * scripts are classic scripts, so we escape non-ASCII characters regardless of
  * bundler to keep extension JS portable.
- * 
+ *
  * @see https://github.com/aliasvault/aliasvault/issues/2162
  */
 function asciiOnlyJsPlugin(): Plugin {
@@ -21,13 +24,29 @@ function asciiOnlyJsPlugin(): Plugin {
           continue;
         }
 
-        file.code = file.code.replace(/[^\u0000-\u007f]/g, (ch) =>
+        file.code = file.code.replace(/[\u0080-\uFFFF]/g, (ch) =>
           `\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`
         );
       }
     },
   };
 }
+
+const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
+
+/*
+ * Exclude the shared core packages from auto-imports as this can lead to issues with the unimport plugin.
+ */
+const AUTO_IMPORTS: WxtUnimportOptions & { exclude: FilterPattern } = {
+  exclude: [/[\\/]node_modules[\\/]/, /[\\/]\.git[\\/]/, `${CORE_DIR}/**`],
+};
+
+/*
+ * README that is placed in the root of the Firefox sources archive. It is added after zipping because
+ * wxt keeps the path of every included file, and the archive root maps to the repository root which
+ * already has its own README.md.
+ */
+const SOURCES_README = path.resolve(import.meta.dirname, 'build-assets/firefox-sources/README.md');
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -78,8 +97,6 @@ export default defineConfig({
       web_accessible_resources: [{
         resources: [
           "webauthn.js",
-          "src/sql-wasm.wasm",
-          "src/argon2.wasm",
           "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
@@ -94,41 +111,69 @@ export default defineConfig({
     };
   },
   modules: ['@wxt-dev/module-react'],
+  imports: AUTO_IMPORTS,
   srcDir: 'src',
   outDir: 'dist',
   vite: () => ({
+    // Allow to serve files from the shared core directory
+    server: {
+      fs: {
+        allow: [path.resolve('.'), CORE_DIR],
+      },
+    },
+    optimizeDeps: {
+      entries: ['src/**/*.html', 'public/**/*.html'],
+      exclude: ['@aliasvault/client', '@aliasvault/models', '@aliasvault/vault'],
+    },
     plugins: [
       asciiOnlyJsPlugin(),
       viteStaticCopy({
         targets: [
           {
-            src: 'node_modules/argon2-browser/dist/argon2.wasm',
-            dest: 'src'
-          },
-          {
-            src: 'node_modules/sql.js/dist/sql-wasm.wasm',
-            dest: 'src'
-          },
-          {
-            src: 'src/utils/dist/core/rust/aliasvault_core_bg.wasm',
+            src: path.resolve(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm'),
             dest: 'src'
           }
         ]
       })
     ],
   }),
+  hooks: {
+    'zip:sources:done': (_wxt, zipPath): void => {
+      try {
+        execFileSync('zip', ['-jq', zipPath, SOURCES_README]);
+      } catch (error) {
+        throw new Error(`Could not add README.md to ${path.basename(zipPath)}, is the 'zip' command available? ${error}`);
+      }
+    },
+  },
   zip: {
-    includeSources: ['**/*'],
+    // Firefox source archive (zip) requires all the files the build needs locally inside the archive.
+    sourcesRoot: path.resolve(CORE_DIR, '..'),
+    includeSources: [
+      'apps/browser-extension/**/*',
+      'core/client/**/*',
+      'core/models/**/*',
+      'core/vault/**/*',
+      'core/scripts/**/*',
+      'core/rust/**/*',
+      'core/rust/.cargo/**/*',
+      'LICENSE.md',
+    ],
     excludeSources: [
-      'safari-xcode/build/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.wxt/**',
+      'core/rust/target/**',
+      'apps/browser-extension/build-assets/safari-xcode/build/**',
       '**/xcuserdata/**',
-      'playwright-report/**',
-      'test-results/**',
-      'tests/**',
-      'stats.html',
-      'stats-*.json',
+      'apps/browser-extension/playwright-report/**',
+      'apps/browser-extension/test-results/**',
+      'apps/browser-extension/tests/**',
+      'apps/browser-extension/build-assets/firefox-sources/**',
+      'apps/browser-extension/stats.html',
+      'apps/browser-extension/stats-*.json',
       '**/*.log',
-      'build-and-submit.sh'
+      'apps/browser-extension/build-and-submit.sh'
     ],
   },
 });

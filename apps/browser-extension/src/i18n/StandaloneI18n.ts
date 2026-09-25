@@ -3,6 +3,9 @@
  * This is used to translate strings in non-React contexts, such as the background and content scripts.
  */
 
+import { StorageKeys } from '@/utils/constants/storageKeys';
+import { logFailure } from '@/utils/Diagnostics';
+
 import {
   DEFAULT_LANGUAGE,
   LANGUAGE_CODES,
@@ -18,7 +21,7 @@ import { storage } from '#imports';
 export async function getCurrentLanguage(): Promise<string> {
   try {
     // Use extension storage API exclusively (reliable across all contexts)
-    const langFromStorage = await storage.getItem('local:language') as string;
+    const langFromStorage = await storage.getItem(StorageKeys.LANGUAGE) as string;
     if (langFromStorage && LANGUAGE_CODES.includes(langFromStorage)) {
       return langFromStorage;
     }
@@ -28,11 +31,11 @@ export async function getCurrentLanguage(): Promise<string> {
     const detectedLanguage = LANGUAGE_CODES.includes(browserLang) ? browserLang : DEFAULT_LANGUAGE;
 
     // Save the detected language to storage for future use
-    await storage.setItem('local:language', detectedLanguage);
+    await storage.setItem(StorageKeys.LANGUAGE, detectedLanguage);
 
     return detectedLanguage;
   } catch (error) {
-    console.error('Failed to get current language:', error);
+    logFailure('Failed to get current language', error);
     return DEFAULT_LANGUAGE;
   }
 }
@@ -72,7 +75,7 @@ export async function t(
     // Return fallback or key if no translation found
     return fallback || key;
   } catch (error) {
-    console.error('Translation error:', error);
+    logFailure('Translation error', error);
     return fallback || key;
   }
 }

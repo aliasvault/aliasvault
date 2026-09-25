@@ -30,20 +30,19 @@ public class TestHostBuilder : AbstractTestHostBuilder
         // Add specific services for the TestExceptionWorker.
         builder.ConfigureServices((context, services) =>
         {
-            // Add server settings service
             services.AddMemoryCache();
             services.AddSingleton<ServerSettingsService>();
-
-            // Add maintenance tasks
-            services.AddTransient<IMaintenanceTask, LogCleanupTask>();
-            services.AddTransient<IMaintenanceTask, EmailCleanupTask>();
-            services.AddTransient<IMaintenanceTask, EmailQuotaCleanupTask>();
-            services.AddTransient<IMaintenanceTask, DisabledEmailCleanupTask>();
-
-            // Add the TaskRunner worker
+            services.AddMaintenanceTasks();
             services.AddHostedService<TaskRunnerWorker>();
         });
 
         return builder.Build();
+    }
+
+    /// <inheritdoc />
+    protected override void AddIntegrationTestConfiguration(IDictionary<string, string?> settings)
+    {
+        // Match the log level of the TaskRunner service itself, the shared test appsettings.json defaults to Warning.
+        settings["Logging:LogLevel:AliasVault.TaskRunner"] = "Information";
     }
 }

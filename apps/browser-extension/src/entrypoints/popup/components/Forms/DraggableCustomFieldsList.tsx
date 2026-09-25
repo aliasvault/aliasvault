@@ -1,3 +1,4 @@
+import { FieldTypes } from '@aliasvault/models/vault';
 import {
   DndContext,
   closestCenter,
@@ -17,14 +18,13 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import type { FieldType } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
-
 import CustomFieldLabel from './CustomFieldLabel';
 import CustomFieldModal from './CustomFieldModal';
 import { FormInput } from './FormInput';
 import HiddenField from './HiddenField';
 import PasswordField from './PasswordField';
+
+import type { FieldType } from '@aliasvault/models/vault';
 
 /**
  * Custom field definition type

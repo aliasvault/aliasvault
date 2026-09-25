@@ -8,11 +8,15 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useColors } from '@/hooks/useColorScheme';
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import { getFileForFilename } from '@/utils/FileUtility';
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentUploaderProps = {
-  attachments: Attachment[];
-  onAttachmentsChange: (attachments: Attachment[]) => void;
+  /** The attachments without their bytes, which never go into the list. */
+  attachments: Omit<Attachment, 'Blob'>[];
+  onAttachmentsChange: (attachments: Omit<Attachment, 'Blob'>[]) => void;
+  /** Receives the bytes of each picked file. */
+  onAttachmentRead: (attachmentId: string, bytes: Uint8Array) => void;
 }
 
 /**
@@ -23,6 +27,7 @@ type AttachmentUploaderProps = {
 export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
   attachments,
   onAttachmentsChange,
+  onAttachmentRead,
 }) => {
   const { t } = useTranslation();
   const colors = useColors();
@@ -55,7 +60,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
              * try to copy it to a readable location
              */
             if (file.uri.startsWith('content://')) {
-              tempFile = new File(Paths.cache, file.name);
+              tempFile = getFileForFilename(Paths.cache, file.name);
               if (tempFile.exists) {
                 tempFile.delete();
               }
@@ -63,12 +68,12 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
               sourceFile = tempFile;
             }
 
-            const byteArray = await sourceFile.bytes();
+            const attachmentId = crypto.randomUUID();
+            onAttachmentRead(attachmentId, await sourceFile.bytes());
 
-            const attachment: Attachment = {
-              Id: crypto.randomUUID(),
+            const attachment: Omit<Attachment, 'Blob'> = {
+              Id: attachmentId,
               Filename: file.name,
-              Blob: byteArray,
               ItemId: '', // Will be set when saving item
               CreatedAt: new Date().toISOString(),
               UpdatedAt: new Date().toISOString(),
@@ -106,7 +111,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
    * Deletes an attachment immediately from the list (pending save).
    * The actual database deletion happens when the parent item is saved.
    */
-  const deleteAttachment = (attachmentToDelete: Attachment): void => {
+  const deleteAttachment = (attachmentToDelete: Omit<Attachment, 'Blob'>): void => {
     const updatedAttachments = attachments.filter(a => a.Id !== attachmentToDelete.Id);
     onAttachmentsChange(updatedAttachments);
   };

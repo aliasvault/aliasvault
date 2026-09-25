@@ -13,8 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
 /// <summary>
-/// Regression tests ensuring the StatusWorker recovers itself when a exception is thrown
-/// inside the worker logic.
+/// Regression tests ensuring the StatusWorker keeps heartbeating when an exception is thrown
+/// inside its database calls.
 /// </summary>
 [TestFixture]
 public class StatusWorkerResilienceTests
@@ -52,11 +52,11 @@ public class StatusWorkerResilienceTests
     }
 
     /// <summary>
-    /// Verifies that the StatusWorker recovers itself when a exception is thrown inside the worker logic.
+    /// Verifies that the StatusWorker reaches the Started state after transient database faults instead of getting stuck.
     /// </summary>
     /// <returns>Task.</returns>
     [Test]
-    public async Task ExceptionThrownInsideWorkerLogicDoesNotSoftStopService()
+    public async Task TransientDatabaseFaultDoesNotStopHeartbeat()
     {
         await _testHost.StartAsync();
 
@@ -78,6 +78,6 @@ public class StatusWorkerResilienceTests
             await Task.Delay(1000);
         }
 
-        Assert.That(currentStatus, Is.EqualTo("Started"), "Service should recover to Started after a exception is thrown inside the worker logic instead of remaining soft-stopped.");
+        Assert.That(currentStatus, Is.EqualTo("Started"), "Service should reach Started after transient database faults inside the StatusWorker.");
     }
 }

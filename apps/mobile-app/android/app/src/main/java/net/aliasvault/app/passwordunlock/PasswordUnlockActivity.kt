@@ -35,7 +35,7 @@ import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
  * This activity presents a password entry UI for vault unlocking.
  *
  * Result:
- * - RESULT_SUCCESS: Password verified, encryption key returned in EXTRA_ENCRYPTION_KEY
+ * - RESULT_SUCCESS: Password verified, unlock key returned in EXTRA_UNLOCK_KEY
  * - RESULT_CANCELLED: User cancelled
  */
 class PasswordUnlockActivity : AppCompatActivity() {
@@ -50,8 +50,8 @@ class PasswordUnlockActivity : AppCompatActivity() {
         /** Result code for max attempts reached - user has been logged out. */
         const val RESULT_MAX_ATTEMPTS_REACHED = Activity.RESULT_FIRST_USER + 1
 
-        /** Intent extra key for the encryption key (returned on success). */
-        const val EXTRA_ENCRYPTION_KEY = "encryption_key"
+        /** Intent extra key for the unlock key, the password-derived KEK (returned on success). */
+        const val EXTRA_UNLOCK_KEY = "unlock_key"
 
         /** Intent extra key for custom title (optional). */
         const val EXTRA_CUSTOM_TITLE = "custom_title"
@@ -267,15 +267,15 @@ class PasswordUnlockActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                val encryptionKey = withContext(Dispatchers.IO) {
+                val unlockKey = withContext(Dispatchers.IO) {
                     vaultStore.verifyPassword(password)
                 }
 
-                if (encryptionKey != null) {
-                    // Success - reset failed attempts counter and return encryption key
+                if (unlockKey != null) {
+                    // Success - reset failed attempts counter and return unlock key
                     resetFailedAttempts()
                     val resultIntent = Intent().apply {
-                        putExtra(EXTRA_ENCRYPTION_KEY, encryptionKey)
+                        putExtra(EXTRA_UNLOCK_KEY, unlockKey)
                     }
                     setResult(RESULT_SUCCESS, resultIntent)
                     finish()

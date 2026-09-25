@@ -1,4 +1,5 @@
 import Foundation
+import RustCoreFramework
 import VaultModels
 import VaultUtils
 
@@ -19,13 +20,27 @@ public class PasskeyRepository: BaseRepository {
         return PasskeyMapper.mapRow(row)
     }
 
+    /// Get a passkey by its ID inside one manifest.
+    /// - Parameters:
+    ///   - passkeyId: The passkey ID (UUID string)
+    ///   - manifestId: The manifest the passkey belongs to
+    /// - Returns: Passkey object or nil if not found
+    public func getById(_ passkeyId: String, manifestId: String) throws -> Passkey? {
+        let results = try client.executeQuery(PasskeyQueries.getByIdInManifest, params: [passkeyId, manifestId])
+        guard let row = results.first.flatMap({ PasskeyRow(from: $0) }) else {
+            return nil
+        }
+        return PasskeyMapper.mapRow(row)
+    }
+
     /// Get all passkeys for an item.
-    /// - Parameter itemId: The item ID (UUID string)
+    /// - Parameters:
+    ///   - itemId: The item ID (UUID string)
+    ///   - manifestId: The manifest the item belongs to
     /// - Returns: Array of Passkey objects
-    public func getByItemId(_ itemId: String) throws -> [Passkey] {
-        let results = try client.executeQuery(PasskeyQueries.getByItemId, params: [itemId])
-        let rows = results.compactMap { PasskeyRow(from: $0) }
-        return PasskeyMapper.mapRows(rows)
+    public func getByItemId(_ itemId: String, manifestId: String) throws -> [Passkey] {
+        let results = try client.executeQuery(PasskeyQueries.getByItemId, params: [itemId, manifestId])
+        return PasskeyMapper.mapRows(results.compactMap { PasskeyRow(from: $0) })
     }
 
     /// Get all passkeys for a relying party (rpId).
@@ -33,8 +48,7 @@ public class PasskeyRepository: BaseRepository {
     /// - Returns: Array of Passkey objects
     public func getByRpId(_ rpId: String) throws -> [Passkey] {
         let results = try client.executeQuery(PasskeyQueries.getByRpId, params: [rpId])
-        let rows = results.compactMap { PasskeyRow(from: $0) }
-        return PasskeyMapper.mapRows(rows)
+        return PasskeyMapper.mapRows(results.compactMap { PasskeyRow(from: $0) })
     }
 
     /// Get passkeys with item info for a specific rpId.
@@ -59,212 +73,86 @@ public class PasskeyRepository: BaseRepository {
         return mappedResults
     }
 
-    /// Get Items that match an rpId but don't have a passkey yet using legacy SQL LIKE matching.
-    /// Note: The public API now uses getAllItemsWithoutPasskey + Rust credential matcher for consistent cross-platform matching.
-    /// This method is kept for potential fallback scenarios.
-    /// - Parameters:
-    ///   - rpId: The relying party identifier (domain)
-    ///   - userName: Optional username to filter by
-    /// - Returns: Array of ItemWithCredentialInfoData objects
-    func getItemsWithoutPasskeyLegacy(forRpId rpId: String, userName: String? = nil) throws -> [ItemWithCredentialInfoData] {
-        let rpIdLower = rpId.lowercased()
-        let urlPattern1 = "%\(rpIdLower)%"
-        let urlPattern2 = "%\(rpIdLower.replacingOccurrences(of: "www.", with: ""))%"
-
-        let results = try client.executeQuery(PasskeyQueries.getItemsWithoutPasskeyForRpId, params: [urlPattern1, urlPattern2])
-
-        var items: [ItemWithCredentialInfoData] = []
-
-        for row in results {
-            guard let idString = row["Id"] as? String,
-                  let itemId = UUID(uuidString: idString) else {
-                continue
-            }
-
-            let serviceName = row["Name"] as? String
-            let url = row["Url"] as? String
-            let itemUsername = row["Username"] as? String
-            let itemEmail = row["Email"] as? String
-            let password = row["Password"] as? String
-            let hasPassword = password != nil && !password!.isEmpty
-
-            // Filter by username if provided
-            if let userName = userName, itemUsername != userName {
-                continue
-            }
-
-            let createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?? "") ?? Date.distantPast
-            let updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?? "") ?? Date.distantPast
-
-            items.append(ItemWithCredentialInfoData(
-                itemId: itemId,
-                serviceName: serviceName,
-                url: url,
-                username: itemUsername,
-                email: itemEmail,
-                hasPassword: hasPassword,
-                createdAt: createdAt,
-                updatedAt: updatedAt
-            ))
-        }
-
-        return items
-    }
-
-    /// Get ALL Login items that don't have a passkey yet (no URL filtering).
+    /// Get all Login items that don't have a passkey yet (no URL filtering).
     /// Used with RustItemMatcher for intelligent, cross-platform consistent filtering.
     /// - Returns: Array of ItemWithCredentialInfoData objects with all URLs
     public func getAllItemsWithoutPasskey() throws -> [ItemWithCredentialInfoData] {
         let results = try client.executeQuery(PasskeyQueries.getAllItemsWithoutPasskey, params: [])
 
-        var items: [ItemWithCredentialInfoData] = []
+        return results.compactMap { row -> ItemWithCredentialInfoData? in
+            let urls = (row["Urls"] as? String)?.components(separatedBy: ",").filter { !$0.isEmpty } ?? []
+            return mapItemWithCredentialInfo(row, urls: urls)
+        }
+    }
 
-        for row in results {
-            guard let idString = row["Id"] as? String,
-                  let itemId = UUID(uuidString: idString) else {
-                continue
-            }
-
-            let serviceName = row["Name"] as? String
-            let urlsString = row["Urls"] as? String
-            let urls = urlsString?.components(separatedBy: ",").filter { !$0.isEmpty } ?? []
-            let itemUsername = row["Username"] as? String
-            let itemEmail = row["Email"] as? String
-            let password = row["Password"] as? String
-            let hasPassword = password != nil && !password!.isEmpty
-
-            let createdAt = DateHelpers.parseDateString(row["CreatedAt"] as? String ?? "") ?? Date.distantPast
-            let updatedAt = DateHelpers.parseDateString(row["UpdatedAt"] as? String ?? "") ?? Date.distantPast
-
-            items.append(ItemWithCredentialInfoData(
-                itemId: itemId,
-                serviceName: serviceName,
-                urls: urls,
-                username: itemUsername,
-                email: itemEmail,
-                hasPassword: hasPassword,
-                createdAt: createdAt,
-                updatedAt: updatedAt
-            ))
+    /// Map one row of the without-passkey queries.
+    private func mapItemWithCredentialInfo(_ row: [String: Any], urls: [String]) -> ItemWithCredentialInfoData? {
+        guard let idString = row["Id"] as? String, let itemId = UUID(uuidString: idString), let manifestId = row["ManifestId"] as? String else {
+            return nil
         }
 
-        return items
+        let password = row["Password"] as? String
+        return ItemWithCredentialInfoData(
+            itemId: itemId,
+            serviceName: row["Name"] as? String,
+            urls: urls,
+            username: row["Username"] as? String,
+            email: row["Email"] as? String,
+            hasPassword: !(password ?? "").isEmpty,
+            createdAt: DateHelpers.parseDateString(row["CreatedAt"] as? String ?? "") ?? Date.distantPast,
+            updatedAt: DateHelpers.parseDateString(row["UpdatedAt"] as? String ?? "") ?? Date.distantPast,
+            manifestId: manifestId
+        )
     }
 
     // MARK: - Write Operations
 
-    /// Create a new passkey.
-    /// - Parameter passkey: The passkey to create
-    @discardableResult
-    public func create(_ passkey: Passkey) throws -> String {
-        return try withTransaction {
-            let passkeyId = passkey.id.uuidString.uppercased()
-            let now = self.now()
-
-            // Convert keys to string for storage
-            guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8),
-                  let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {
-                throw PasskeyRepositoryError.invalidKeyData
-            }
-
-            // Convert blob data to base64 with prefix for VaultStore+Query processing
-            let userHandleParam: SqliteBindValue = passkey.userHandle.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-            let prfKeyParam: SqliteBindValue = passkey.prfKey.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-
-            try client.executeUpdate(PasskeyQueries.insert, params: [
-                passkeyId,
-                passkey.parentItemId.uuidString.uppercased(),
-                passkey.rpId,
-                userHandleParam,
-                publicKeyString,
-                privateKeyString,
-                prfKeyParam,
-                passkey.displayName,
-                now,
-                now,
-                0
-            ])
-
-            return passkeyId
-        }
-    }
-
     /// Soft delete a passkey.
-    /// - Parameter passkeyId: The ID of the passkey to delete
+    /// - Parameters:
+    ///   - passkeyId: The ID of the passkey to delete
+    ///   - manifestId: The manifest the passkey belongs to
     /// - Returns: Number of rows affected
     @discardableResult
-    public func delete(_ passkeyId: String) throws -> Int {
+    public func delete(_ passkeyId: String, manifestId: String) throws -> Int {
         return try withTransaction {
-            let now = self.now()
-            return try client.executeUpdate(PasskeyQueries.softDelete, params: [now, passkeyId])
+            try client.executeUpdate(PasskeyQueries.softDelete, params: [self.now(), passkeyId, manifestId])
         }
     }
 
     /// Update a passkey's display name.
     /// - Parameters:
     ///   - passkeyId: The ID of the passkey to update
+    ///   - manifestId: The manifest the passkey belongs to
     ///   - displayName: The new display name
     /// - Returns: Number of rows affected
     @discardableResult
-    public func updateDisplayName(_ passkeyId: String, displayName: String) throws -> Int {
+    public func updateDisplayName(_ passkeyId: String, manifestId: String, displayName: String) throws -> Int {
         return try withTransaction {
-            let now = self.now()
-            return try client.executeUpdate(PasskeyQueries.updateDisplayName, params: [displayName, now, passkeyId])
+            try client.executeUpdate(PasskeyQueries.updateDisplayName, params: [displayName, self.now(), passkeyId, manifestId])
         }
     }
 
-    /// Replace an existing passkey with a new one, optionally updating the item's logo.
-    /// Deletes the old passkey and creates a new one linked to the same item.
+    /// Replace an existing passkey with a new one, optionally refreshing the item's logo.
+    /// Soft deletes the old passkey and creates a new one linked to the same item, in the same manifest.
     /// - Parameters:
     ///   - oldPasskeyId: The ID of the passkey to replace
+    ///   - manifestId: The manifest the old passkey and its item belong to
     ///   - newPasskey: The new passkey to create
     ///   - displayName: The display name for the new passkey
-    ///   - logo: Optional logo data to update
+    ///   - logo: Optional favicon bytes fetched for the passkey's rpId
     /// - Returns: The ID of the new passkey
     @discardableResult
-    public func replace(oldPasskeyId: String, with newPasskey: Passkey, displayName: String, logo: Data? = nil) throws -> String {
+    public func replace(oldPasskeyId: String, manifestId: String, with newPasskey: Passkey, displayName: String, logo: Data? = nil) throws -> String {
         return try withTransaction {
             let now = self.now()
+            let itemId = newPasskey.parentItemId.uuidString.lowercased()
 
-            // Update logo if provided
             if let logo = logo {
-                try updateItemLogoInternal(
-                    itemId: newPasskey.parentItemId.uuidString.uppercased(),
-                    logo: logo,
-                    rpId: newPasskey.rpId,
-                    now: now
-                )
+                try refreshItemLogo(itemId: itemId, manifestId: manifestId, rpId: newPasskey.rpId, logo: logo, now: now)
             }
 
-            // Delete the old passkey
-            try client.executeUpdate(PasskeyQueries.softDelete, params: [now, oldPasskeyId])
-
-            // Create the new passkey
-            let newPasskeyId = newPasskey.id.uuidString.uppercased()
-
-            guard let publicKeyString = String(data: newPasskey.publicKey, encoding: .utf8),
-                  let privateKeyString = String(data: newPasskey.privateKey, encoding: .utf8) else {
-                throw PasskeyRepositoryError.invalidKeyData
-            }
-
-            let userHandleParam: SqliteBindValue = newPasskey.userHandle.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-            let prfKeyParam: SqliteBindValue = newPasskey.prfKey.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-
-            try client.executeUpdate(PasskeyQueries.insert, params: [
-                newPasskeyId,
-                newPasskey.parentItemId.uuidString.uppercased(),
-                newPasskey.rpId,
-                userHandleParam,
-                publicKeyString,
-                privateKeyString,
-                prfKeyParam,
-                displayName,
-                now,
-                now,
-                0
-            ])
-
-            return newPasskeyId
+            try client.executeUpdate(PasskeyQueries.softDelete, params: [now, oldPasskeyId, manifestId])
+            return try insertPasskey(newPasskey, itemId: itemId, manifestId: manifestId, displayName: displayName, now: now)
         }
     }
 
@@ -277,288 +165,172 @@ public class PasskeyRepository: BaseRepository {
     ///   - userName: Optional username
     ///   - displayName: Display name for the item
     ///   - passkey: The passkey to create
-    ///   - logo: Optional logo data
+    ///   - logo: Optional favicon bytes fetched for the rpId
     /// - Returns: The created item ID
     @discardableResult
-    public func createItemWithPasskey(
-        rpId: String,
-        userName: String?,
-        displayName: String,
-        passkey: Passkey,
-        logo: Data? = nil
-    ) throws -> String {
+    public func createItemWithPasskey(rpId: String, userName: String?, displayName: String, passkey: Passkey, logo: Data? = nil) throws -> String {
         return try withTransaction {
-            let itemId = passkey.parentItemId.uuidString.uppercased()
+            let itemId = passkey.parentItemId.uuidString.lowercased()
             let now = self.now()
 
-            // Create or reuse logo if provided
-            var logoId: String?
-            if let logo = logo {
-                let source = rpId.lowercased().replacingOccurrences(of: "www.", with: "")
-                logoId = try getOrCreateLogo(source: source, logoData: logo, now: now)
-            }
+            // An item outside any folder lands in the write manifest, which is the scope its logo has to live in too.
+            let scope = try writeManifestId()
+            let logoId = try resolveLogoId(existingLogoId: nil, manifestId: scope, rpId: rpId, logo: logo, now: now)
 
-            // Create the Item
-            try client.executeUpdate(ItemQueries.insertItem, params: [
-                itemId,
-                displayName as SqliteBindValue,
-                ItemType.login,
-                logoId as SqliteBindValue,
-                nil, // FolderId
-                now,
-                now,
-                0
-            ])
+            try client.executeUpdate(ItemQueries.insertItem, params: [itemId, displayName as SqliteBindValue, ItemType.login, logoId as SqliteBindValue, nil, now, now, 0, scope])
 
-            // Create field values - login.url
-            let urlFieldId = generateId()
-            try client.executeUpdate(FieldValueQueries.insert, params: [
-                urlFieldId,
-                itemId,
-                nil, // FieldDefinitionId
-                FieldKey.loginUrl,
-                "https://\(rpId)",
-                0, // Weight
-                now,
-                now,
-                0
-            ])
-
-            // Create field values - login.username if provided
+            try insertSystemField(itemId: itemId, fieldKey: FieldKey.loginUrl, value: "https://\(rpId)", manifestId: scope, now: now)
             if let userName = userName, !userName.isEmpty {
-                let usernameFieldId = generateId()
-                try client.executeUpdate(FieldValueQueries.insert, params: [
-                    usernameFieldId,
-                    itemId,
-                    nil, // FieldDefinitionId
-                    FieldKey.loginUsername,
-                    userName,
-                    0, // Weight
-                    now,
-                    now,
-                    0
-                ])
+                try insertSystemField(itemId: itemId, fieldKey: FieldKey.loginUsername, value: userName, manifestId: scope, now: now)
             }
 
-            // Create the passkey
-            guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8),
-                  let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {
-                throw PasskeyRepositoryError.invalidKeyData
-            }
-
-            let userHandleParam: SqliteBindValue = passkey.userHandle.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-            let prfKeyParam: SqliteBindValue = passkey.prfKey.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-
-            try client.executeUpdate(PasskeyQueries.insert, params: [
-                passkey.id.uuidString.uppercased(),
-                itemId,
-                passkey.rpId,
-                userHandleParam,
-                publicKeyString,
-                privateKeyString,
-                prfKeyParam,
-                passkey.displayName,
-                now,
-                now,
-                0
-            ])
-
+            _ = try insertPasskey(passkey, itemId: itemId, manifestId: scope, displayName: passkey.displayName, now: now)
             return itemId
-        }
-    }
-
-    /// Update item logo.
-    /// Note: This only updates the logo, NOT the item name.
-    /// - Parameters:
-    ///   - itemId: The item ID
-    ///   - logo: The new logo data
-    ///   - rpId: The relying party ID for logo source
-    public func updateItemLogo(itemId: String, logo: Data, rpId: String) throws {
-        try withTransaction {
-            let now = self.now()
-            try updateItemLogoInternal(itemId: itemId, logo: logo, rpId: rpId, now: now)
-        }
-    }
-
-    /// Internal helper to update item logo without creating a transaction.
-    /// Used within larger transactions to avoid nested transaction issues.
-    /// Note: This only updates the logo, never the item name.
-    /// - Parameters:
-    ///   - itemId: The item ID
-    ///   - logo: The new logo data
-    ///   - rpId: The relying party ID for logo source (used when creating new logo)
-    ///   - now: The current timestamp
-    private func updateItemLogoInternal(
-        itemId: String,
-        logo: Data,
-        rpId: String,
-        now: String
-    ) throws {
-        // Get current logo ID from item
-        let itemResults = try client.executeQuery(LogoQueries.getLogoIdFromItem, params: [itemId])
-
-        let logoDataParam = "av-base64-to-blob:\(logo.base64EncodedString())"
-
-        if let existingLogoId = itemResults.first?["LogoId"] as? String {
-            // Update existing logo
-            try client.executeUpdate(LogoQueries.updateFileData, params: [
-                logoDataParam,
-                now,
-                existingLogoId
-            ])
-        } else {
-            // Create or reuse logo with unique source check
-            let source = rpId.lowercased().replacingOccurrences(of: "www.", with: "")
-            let newLogoId = try getOrCreateLogo(source: source, logoData: logo, now: now)
-
-            // Update item with new logo ID
-            try client.executeUpdate(LogoQueries.updateItemLogoId, params: [newLogoId, now, itemId])
         }
     }
 
     /// Add a passkey to an existing Item (merge passkey into existing credential).
     /// - Parameters:
     ///   - itemId: The UUID of the existing Item to add the passkey to
+    ///   - manifestId: The manifest the item belongs to
     ///   - passkey: The passkey to add
-    ///   - logo: Optional logo data to update/add
+    ///   - logo: Optional favicon bytes fetched for the passkey's rpId
     /// - Returns: The ID of the created passkey
     @discardableResult
-    public func addPasskeyToExistingItem(
-        itemId: UUID,
-        passkey: Passkey,
-        logo: Data? = nil
-    ) throws -> String {
+    public func addPasskeyToExistingItem(itemId: UUID, manifestId: String, passkey: Passkey, logo: Data? = nil) throws -> String {
         return try withTransaction {
-            let itemIdString = itemId.uuidString.uppercased()
+            let itemIdString = itemId.uuidString.lowercased()
             let now = self.now()
-
-            // Update logo if provided
             if let logo = logo {
-                try updateItemLogoInternal(
-                    itemId: itemIdString,
-                    logo: logo,
-                    rpId: passkey.rpId,
-                    now: now
-                )
+                try refreshItemLogo(itemId: itemIdString, manifestId: manifestId, rpId: passkey.rpId, logo: logo, now: now)
             }
 
-            // Create the passkey linked to the existing item
-            let passkeyId = passkey.id.uuidString.uppercased()
-
-            guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8),
-                  let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {
-                throw PasskeyRepositoryError.invalidKeyData
-            }
-
-            let userHandleParam: SqliteBindValue = passkey.userHandle.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-            let prfKeyParam: SqliteBindValue = passkey.prfKey.map { "av-base64-to-blob:\($0.base64EncodedString())" }
-
-            try client.executeUpdate(PasskeyQueries.insert, params: [
-                passkeyId,
-                itemIdString,
-                passkey.rpId,
-                userHandleParam,
-                publicKeyString,
-                privateKeyString,
-                prfKeyParam,
-                passkey.displayName,
-                now,
-                now,
-                0
-            ])
-
-            return passkeyId
+            return try insertPasskey(passkey, itemId: itemIdString, manifestId: manifestId, displayName: passkey.displayName, now: now)
         }
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Row Helpers
 
-    /// Get an existing logo ID for a source, or create a new logo if none exists.
-    /// This prevents UNIQUE constraint violations on Logos.Source.
-    /// - Parameters:
-    ///   - source: The normalized source domain (e.g., 'github.com')
-    ///   - logoData: The logo image data
-    ///   - now: The current timestamp for CreatedAt/UpdatedAt
-    /// - Returns: The logo ID (existing or newly created)
-    private func getOrCreateLogo(source: String, logoData: Data, now: String) throws -> String {
-        // Check if a logo for this source already exists
-        let existingLogos = try client.executeQuery(LogoQueries.getBySource, params: [source])
+    /// Base64 text the query bridge binds as a BLOB, or nil.
+    private func blobParam(_ data: Data?) -> SqliteBindValue {
+        return data.map { "av-base64-to-blob:\($0.base64EncodedString())" }
+    }
 
-        if let existingLogo = existingLogos.first,
-           let existingLogoId = existingLogo["Id"] as? String {
-            let isDeleted = (existingLogo["IsDeleted"] as? Int64) == 1
+    /// Insert one system field value for an item.
+    private func insertSystemField(itemId: String, fieldKey: String, value: String, manifestId: String, now: String) throws {
+        let weight = FieldValueQueries.defaultWeight(forFieldKey: fieldKey)
+        try client.executeUpdate(FieldValueQueries.insert, params: [generateId(), itemId, nil, fieldKey, value, weight, now, now, 0, manifestId])
+    }
 
-            // Sanity check: restore if soft-deleted
-            if isDeleted {
-                let logoDataParam = "av-base64-to-blob:\(logoData.base64EncodedString())"
-                try client.executeUpdate(LogoQueries.restore, params: [now, existingLogoId])
-                try client.executeUpdate(LogoQueries.updateFileData, params: [logoDataParam, now, existingLogoId])
-            }
-            return existingLogoId
+    /// Insert a passkey row linked to an item, stamped with the item's manifest.
+    /// - Returns: The passkey ID
+    private func insertPasskey(_ passkey: Passkey, itemId: String, manifestId: String, displayName: String, now: String) throws -> String {
+        let passkeyId = passkey.id.uuidString.lowercased()
+        guard let publicKeyString = String(data: passkey.publicKey, encoding: .utf8), let privateKeyString = String(data: passkey.privateKey, encoding: .utf8) else {
+            throw PasskeyRepositoryError.invalidKeyData
         }
 
-        // Create new logo entry
-        let logoId = generateId()
-        let logoDataParam = "av-base64-to-blob:\(logoData.base64EncodedString())"
-
-        try client.executeUpdate(LogoQueries.insert, params: [
-            logoId,
-            source,
-            logoDataParam,
-            "image/png",
-            nil,
+        try client.executeUpdate(PasskeyQueries.insert, params: [
+            passkeyId,
+            itemId,
+            manifestId,
+            passkey.rpId,
+            blobParam(passkey.userHandle),
+            publicKeyString,
+            privateKeyString,
+            blobParam(passkey.prfKey),
+            displayName,
+            blobParam(passkey.additionalData),
             now,
             now,
             0
         ])
 
+        return passkeyId
+    }
+
+    // MARK: - Logo Helpers
+
+    /// The natural key a logo row is addressed by, and the manifest it lives in.
+    private struct LogoKey {
+        let manifestId: String
+        let kind: String
+        let source: String
+    }
+
+    /// The image bytes and metadata written into a logo row.
+    private struct LogoImage {
+        let data: Data?
+        let mimeType: String?
+        let name: String?
+    }
+
+    /// The kind and key of an existing logo, or nil when it no longer exists.
+    private func getLogo(byId logoId: String) throws -> (kind: String, source: String)? {
+        guard let row = try client.executeQuery(LogoQueries.getById, params: [logoId]).first, let kind = row["Kind"] as? String, let source = row["Source"] as? String else {
+            return nil
+        }
+        return (kind, source)
+    }
+
+    /// Point an item at the favicon fetched for `rpId`, following the item-logo write rules in core/client
+    /// `ItemRepository.resolveLogoId`.
+    private func refreshItemLogo(itemId: String, manifestId: String, rpId: String, logo: Data, now: String) throws {
+        let rows = try client.executeQuery(LogoQueries.getLogoIdFromItem, params: [itemId, manifestId])
+        let existingLogoId = rows.first?["LogoId"] as? String
+
+        guard let logoId = try resolveLogoId(existingLogoId: existingLogoId, manifestId: manifestId, rpId: rpId, logo: logo, now: now), logoId != existingLogoId else {
+            return
+        }
+        try client.executeUpdate(LogoQueries.updateItemLogoId, params: [logoId, now, itemId, manifestId])
+    }
+
+    /// The logo id an item should carry after a favicon was fetched for `rpId` (core/client `ItemRepository.resolveLogoId`):
+    /// a built-in or uploaded logo the user chose is kept, a favicon already on file for this domain is reused, fresh
+    /// bytes go under the domain's own row, and without a derivable domain the logo is left as it is.
+    private func resolveLogoId(existingLogoId: String?, manifestId: String, rpId: String, logo: Data?, now: String) throws -> String? {
+        let existing = try existingLogoId.flatMap { try getLogo(byId: $0) }
+        if let existing = existing, existing.kind != "favicon" {
+            return try ensureInScope(LogoKey(manifestId: manifestId, kind: existing.kind, source: existing.source), now: now)
+        }
+
+        // The same URL string the item's login.url field is written with, which is what the TypeScript side derives the favicon target from.
+        let source = RustCoreFramework.faviconSourceKey(url: "https://\(rpId)")
+        if source.isEmpty {
+            return existingLogoId
+        }
+
+        let key = LogoKey(manifestId: manifestId, kind: "favicon", source: source)
+        if let existing = existing, existing.source == source {
+            return try ensureInScope(key, now: now)
+        }
+        if let logo = logo, !logo.isEmpty {
+            return try getOrCreateLogo(key, image: LogoImage(data: logo, mimeType: "image/x-icon", name: nil), now: now)
+        }
+        return try ensureInScope(key, now: now)
+    }
+
+    /// Get or create the logo for a key inside one manifest, refreshing its image data.
+    /// The row's stamp and the id derived for it come from the same manifest.
+    private func getOrCreateLogo(_ key: LogoKey, image: LogoImage, now: String) throws -> String {
+        let logoId = RustCoreFramework.vaultCodecLogoIdFor(manifestId: key.manifestId, kind: key.kind, source: key.source)
+        let params: [SqliteBindValue] = [logoId, key.kind, key.source, key.manifestId, blobParam(image.data), image.mimeType, image.name, now, now]
+        try client.executeUpdate(LogoQueries.upsert, params: params)
         return logoId
     }
-}
 
-/// Data class to hold Item info for Items without passkeys (internal VaultStoreKit type).
-/// Used for showing existing credentials that can have a passkey added.
-/// Note: VaultUI has its own ItemWithCredentialInfo type for UI usage.
-public struct ItemWithCredentialInfoData {
-    public let itemId: UUID
-    public let serviceName: String?
-    public let url: String?
-    /// All URLs associated with this item (supports multi-value URL fields)
-    public let urls: [String]
-    public let username: String?
-    public let email: String?
-    public let hasPassword: Bool
-    public let createdAt: Date
-    public let updatedAt: Date
+    /// The id this logo has inside the key's manifest, copying it in from another manifest when it is not there yet.
+    /// - Returns: The logo id inside this manifest, or nil when the vault holds no such logo at all
+    private func ensureInScope(_ key: LogoKey, now: String) throws -> String? {
+        let inScope = try client.executeQuery(LogoQueries.getIdForKey, params: [key.manifestId, key.kind, key.source])
+        if let logoId = inScope.first?["Id"] as? String {
+            return logoId
+        }
 
-    public init(itemId: UUID, serviceName: String?, url: String?, username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
-        self.itemId = itemId
-        self.serviceName = serviceName
-        self.url = url
-        self.urls = url.map { [$0] } ?? []
-        self.username = username
-        self.email = email
-        self.hasPassword = hasPassword
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
+        guard let origin = try client.executeQuery(LogoQueries.getBestForKey, params: [key.kind, key.source]).first else {
+            return nil
+        }
+        let data = (origin["FileData"] as? String).flatMap { Data(base64Encoded: $0) }
+        return try getOrCreateLogo(key, image: LogoImage(data: data, mimeType: origin["MimeType"] as? String, name: origin["Name"] as? String), now: now)
     }
-
-    public init(itemId: UUID, serviceName: String?, urls: [String], username: String?, email: String? = nil, hasPassword: Bool, createdAt: Date, updatedAt: Date) {
-        self.itemId = itemId
-        self.serviceName = serviceName
-        self.url = urls.first
-        self.urls = urls
-        self.username = username
-        self.email = email
-        self.hasPassword = hasPassword
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-    }
-}
-
-/// Errors that can occur in PasskeyRepository operations.
-public enum PasskeyRepositoryError: Error {
-    case invalidKeyData
-    case passkeyNotFound
-    case itemNotFound
 }

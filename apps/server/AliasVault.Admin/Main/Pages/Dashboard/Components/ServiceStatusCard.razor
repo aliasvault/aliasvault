@@ -1,0 +1,191 @@
+@using AliasVault.RazorComponents.Utilities
+@using AliasVault.Shared.Models.Enums
+@using AliasVault.WorkerStatus
+@using AliasVault.WorkerStatus.Database
+
+<div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Service status</h3>
+    </div>
+    @if (IsLoading)
+    {
+        <LoadingIndicator />
+    }
+    else
+    {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @foreach (var service in Services)
+            {
+                <div class="@service.TileClasses p-4 rounded-lg">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">@service.DisplayName</p>
+                    <div class="flex items-center gap-2">
+                        <span class="@service.DotClasses w-3 h-3 rounded-full"></span>
+                        <h4 class="text-2xl font-bold text-gray-900 dark:text-white">@service.Label</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400" title="@service.Description">Last heartbeat: @RelativeTimeFormatter.Format(service.LastHeartbeat)</p>
+                </div>
+            }
+        </div>
+        <a href="maintenance" class="@Maintenance.TileClasses block p-4 mt-4 rounded-lg hover:opacity-90 transition-opacity">
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last maintenance run</p>
+            <div class="flex items-center gap-2">
+                <span class="@Maintenance.DotClasses w-3 h-3 rounded-full"></span>
+                <h4 class="text-2xl font-bold text-gray-900 dark:text-white">@Maintenance.Label</h4>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400" title="@Maintenance.Tooltip">@Maintenance.Description</p>
+        </a>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// A service whose last heartbeat is older than this is reported as offline.
+    /// </summary>
+    private static readonly TimeSpan HeartbeatTimeout = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Interval at which the card polls the heartbeat records.
+    /// </summary>
+    private static readonly TimeSpan AutoRefreshInterval = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// A maintenance run that started longer ago than this is reported as overdue.
+    /// </summary>
+    private static readonly TimeSpan MaintenanceOverdueAfter = TimeSpan.FromHours(25);
+
+    /// <summary>
+    /// The monitored services keyed by the name they heartbeat under, with the name shown to the admin.
+    /// </summary>
+    private static readonly Dictionary<string, string> MonitoredServices = new()
+    {
+        { "AliasVault.SmtpService", "SMTP service" },
+        { "AliasVault.TaskRunner", "Task runner" },
+    };
+
+    private bool IsLoading { get; set; } = true;
+    private List<ServiceState> Services { get; set; } = [];
+    private MaintenanceState Maintenance { get; set; } = null!;
+    private CancellationTokenSource? _refreshCancellationTokenSource;
+
+    /// <summary>
+    /// Refreshes the data displayed on the card.
+    /// </summary>
+    public async Task RefreshData()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+        var entries = await dbContext.WorkerServiceStatuses.AsNoTracking().ToListAsync();
+        var lastJob = await dbContext.TaskRunnerJobs.AsNoTracking()
+            .Where(j => j.Status != TaskRunnerJobStatus.Pending)
+            .OrderByDescending(j => j.RunDate)
+            .ThenByDescending(j => j.StartTime)
+            .FirstOrDefaultAsync();
+
+        Services = MonitoredServices.Select(s => BuildState(s.Value, entries.Find(e => e.ServiceName == s.Key))).ToList();
+        Maintenance = BuildMaintenanceState(lastJob);
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            _refreshCancellationTokenSource = new CancellationTokenSource();
+            _ = RunPeriodicRefreshAsync(_refreshCancellationTokenSource.Token);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing)
+        {
+            _refreshCancellationTokenSource?.Cancel();
+            _refreshCancellationTokenSource?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Derives what to show for a service from its heartbeat record.
+    /// </summary>
+    private static ServiceState BuildState(string displayName, WorkerServiceStatus? entry)
+    {
+        if (entry is null)
+        {
+            return new ServiceState(displayName, "Unknown", "No heartbeat has been recorded for this service yet.", null, "bg-gray-50 dark:bg-gray-700/50", "bg-gray-400");
+        }
+
+        if (DateTime.UtcNow - entry.Heartbeat > HeartbeatTimeout)
+        {
+            return new ServiceState(displayName, "Offline", "The service has not sent a heartbeat recently.", entry.Heartbeat, "bg-red-50 dark:bg-red-900/30", "bg-red-500");
+        }
+
+        return entry.CurrentStatus switch
+        {
+            nameof(Status.Started) => new ServiceState(displayName, "Running", "All workers of the service are running.", entry.Heartbeat, "bg-green-50 dark:bg-green-900/30", "bg-green-500"),
+            nameof(Status.Starting) => new ServiceState(displayName, "Starting", "The service is alive but not all of its workers are running yet.", entry.Heartbeat, "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
+            nameof(Status.Stopped) => new ServiceState(displayName, "Stopped", "The service shut down.", entry.Heartbeat, "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
+            _ => new ServiceState(displayName, entry.CurrentStatus, "The service reported an unknown status.", entry.Heartbeat, "bg-gray-50 dark:bg-gray-700/50", "bg-gray-400"),
+        };
+    }
+
+    /// <summary>
+    /// Derives what to show for the last maintenance run. A run that is overdue or did not succeed is flagged.
+    /// </summary>
+    private static MaintenanceState BuildMaintenanceState(TaskRunnerJob? job)
+    {
+        if (job is null)
+        {
+            return new MaintenanceState("Never", "No maintenance run has been recorded yet.", null, "bg-red-50 dark:bg-red-900/30", "bg-red-500");
+        }
+
+        var startedAt = job.RunDate.Date + job.StartTime.ToTimeSpan();
+        var label = RelativeTimeFormatter.Format(startedAt);
+        var isOverdue = DateTime.UtcNow - startedAt > MaintenanceOverdueAfter;
+        var tooltip = $"Started at {startedAt:yyyy-MM-dd HH:mm} UTC";
+
+        return job.Status switch
+        {
+            TaskRunnerJobStatus.Error => new MaintenanceState(label, "The last run failed.", $"{tooltip}. {job.ErrorMessage}", "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
+            TaskRunnerJobStatus.Canceled => new MaintenanceState(label, "The last run was canceled.", $"{tooltip}. {job.ErrorMessage}", "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
+            TaskRunnerJobStatus.Running when isOverdue => new MaintenanceState(label, "Running (overdue).", tooltip, "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
+            TaskRunnerJobStatus.Running => new MaintenanceState(label, "A maintenance run is currently in progress.", tooltip, "bg-blue-50 dark:bg-blue-900/30", "bg-blue-500"),
+            _ when isOverdue => new MaintenanceState(label, "Maintenance has not run in the last 24 hours.", tooltip, "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
+            _ => new MaintenanceState(label, "The last run completed successfully.", tooltip, "bg-green-50 dark:bg-green-900/30", "bg-green-500"),
+        };
+    }
+
+    /// <summary>
+    /// Polls the heartbeat records until the card is disposed.
+    /// </summary>
+    private async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(AutoRefreshInterval, cancellationToken);
+                await RefreshData();
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// What the card shows for one service.
+    /// </summary>
+    private sealed record ServiceState(string DisplayName, string Label, string Description, DateTime? LastHeartbeat, string TileClasses, string DotClasses);
+
+    /// <summary>
+    /// What the card shows for the last maintenance run.
+    /// </summary>
+    private sealed record MaintenanceState(string Label, string Description, string? Tooltip, string TileClasses, string DotClasses);
+}

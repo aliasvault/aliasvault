@@ -1,11 +1,10 @@
+import { getFieldValue, getFieldValues } from '@aliasvault/models/vault';
 import { Ionicons } from '@expo/vector-icons';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { getFieldValue, getFieldValues } from '@/utils/dist/core/models/vault';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -17,6 +16,8 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * CSV record for Item objects (matching server ItemCsvRecord format).
@@ -124,7 +125,7 @@ export default function ImportExportScreen(): React.ReactNode {
      */
     for (const item of items) {
       // Get TOTP codes for this item
-      const totpCodes = await dbContext.sqliteClient?.settings.getTotpCodesForItem(item.Id) ?? [];
+      const totpCodes = await dbContext.sqliteClient?.items.getTotpCodesForItem(item) ?? [];
       const totpSecret = totpCodes.length > 0 ? totpCodes[0].SecretKey : '';
 
       /*
@@ -307,8 +308,12 @@ export default function ImportExportScreen(): React.ReactNode {
     try {
       const dateStr = new Date().toISOString().split('T')[0];
 
-      // Export as CSV
-      const items = await dbContext.sqliteClient?.items.getAll() ?? [];
+      // Export as CSV. Only personal manifest entries are exported.
+      const personalManifestId = await dbContext.sqliteClient?.getPersonalManifestId();
+      if (!personalManifestId) {
+        throw new Error('No personal manifest id is recorded; the vault has not been loaded yet.');
+      }
+      const items = await dbContext.sqliteClient?.items.getAllInManifest(personalManifestId) ?? [];
       const csvContent = await itemsToCsv(items);
 
       const filename = `aliasvault-export-${dateStr}.csv`;

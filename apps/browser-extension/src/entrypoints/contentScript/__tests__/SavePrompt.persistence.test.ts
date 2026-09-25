@@ -115,7 +115,6 @@ describe('SavePrompt persistence', () => {
       domain: 'example.com',
       timestamp: Date.now(),
       suggestedName: 'Example Site',
-      faviconUrl: 'https://example.com/favicon.ico',
     };
 
     // Set up callback mocks

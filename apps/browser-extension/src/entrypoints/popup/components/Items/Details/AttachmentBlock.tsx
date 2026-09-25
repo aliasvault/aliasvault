@@ -3,16 +3,19 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Attachment } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentBlockProps = {
   itemId: string;
+  manifestId: string;
 }
 
 /**
  * This component shows attachments for an item.
  */
-const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
+const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId }) => {
   const { t } = useTranslation();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,9 +27,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
   const downloadAttachment = (attachment: Attachment): void => {
     try {
       // Convert Uint8Array or number[] to Uint8Array
-      const byteArray = attachment.Blob instanceof Uint8Array
-        ? attachment.Blob
-        : new Uint8Array(attachment.Blob);
+      const byteArray = attachment.Blob instanceof Uint8Array ? attachment.Blob : new Uint8Array(attachment.Blob ?? []);
 
       // Create blob and download
       const blob = new Blob([byteArray as BlobPart]);
@@ -43,7 +44,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading attachment:', error);
+      logFailure('Error downloading attachment', error);
     }
   };
 
@@ -57,17 +58,17 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.settings.getAttachmentsForItem(itemId);
+        const attachmentList = dbContext.sqliteClient.items.getAttachmentsForItem({ Id: itemId, ManifestId: manifestId });
         setAttachments(attachmentList);
       } catch (error) {
-        console.error('Error loading attachments:', error);
+        logFailure('Error loading attachments', error);
       } finally {
         setLoading(false);
       }
     };
 
     loadAttachments();
-  }, [itemId, dbContext?.sqliteClient]);
+  }, [itemId, manifestId, dbContext?.sqliteClient]);
 
   if (loading) {
     return (

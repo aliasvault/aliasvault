@@ -90,6 +90,7 @@ builder.Services.AddScoped<IpBlockListService>();
 builder.Services.AddScoped<MobileLoginRateLimitService>();
 builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddScoped<RateLimitService>();
+builder.Services.AddScoped<CapabilityService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLogging(logging =>
@@ -100,7 +101,7 @@ builder.Services.AddLogging(logging =>
     logging.AddFilter("Microsoft.AspNetCore.Identity.UserManager", LogLevel.Error);
 });
 
-builder.Services.AddIdentity<AliasVaultUser, AliasVaultRole>(options =>
+builder.Services.AddIdentityCore<AliasVaultUser>(options =>
     {
         options.Password.RequireDigit = false;
         options.Password.RequireLowercase = false;
@@ -125,7 +126,7 @@ builder.Services.AddAuthentication(options =>
 {
     var jwtKey = SecretReader.GetJwtKey();
 
-    options.IncludeErrorDetails = true;
+    options.IncludeErrorDetails = builder.Environment.IsDevelopment();
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -221,8 +222,12 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var container = scope.ServiceProvider;
+    var migrationLogger = container.GetRequiredService<ILoggerFactory>().CreateLogger("AliasVault.DatabaseMigrations");
     await using var db = await container.GetRequiredService<IAliasServerDbContextFactory>().CreateDbContextAsync();
-    await db.Database.MigrateAsync();
+
+    // The API is responsible for database migrations and runtime should not be limited by a command timeout.
+    db.Database.SetCommandTimeout(0);
+    await db.MigrateWithLoggingAsync(migrationLogger);
 }
 
 await app.RunAsync();

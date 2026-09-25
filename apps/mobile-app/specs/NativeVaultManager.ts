@@ -11,11 +11,10 @@ export interface Spec extends TurboModule {
   getAccessToken(): Promise<string | null>;
   clearAuthTokens(): Promise<void>;
   revokeTokens(): Promise<void>;
-  // Custom proxy headers added to every outgoing API request
   setCustomProxyHeaders(headersJson: string): Promise<void>;
   getCustomProxyHeaders(): Promise<string>;
 
-  // WebAPI request execution
+  // WebAPI request execution against the v2 API base URL.
   executeWebApiRequest(method: string, endpoint: string, body: string | null, headers: string, requiresAuth: boolean): Promise<string>;
 
   // Vault state management
@@ -25,26 +24,39 @@ export interface Spec extends TurboModule {
   clearSession(): Promise<void>;  // Clears session only, preserves vault for potential RPO recovery
   clearVault(): Promise<void>;    // Clears everything including vault data
 
-  // Vault sync
-  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null }>;
+  // Rust core dispatch. The client core's Rust binding routes every call through here: `name` is the uniffi
+  // function name in camelCase, `argsJson` a JSON array of its positional arguments (bytes as base64), and the
+  // result is JSON text. Swift/Kotlin hold one case per function and no logic; see platform/NativeRustCore.ts.
+  rustCall(name: string, argsJson: string): Promise<string>;
+
+  // Vault sync.
+  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null; errorMessage: string | null; sqliteBlobUpgradeRequired: boolean; manifestMigrationRequired: boolean }>;
+  
+  getVaultMigrationStatus(): Promise<string>;
+  migrateVaultManifest(): Promise<{ success: boolean; pushed: boolean; error: string | null; errorMessage: string | null }>;
+
+  // A sharing operation of the sync engine.
+  runSharingOperation(operation: string, paramsJson: string): Promise<{ success: boolean; apiErrorCode: string | null; vaultUpgradeRequired: boolean; error: string | null; errorMessage: string | null }>;
 
   // Quick check if sync is needed
   checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;
 
+  // Logs of the recent sync engine runs, for the developer tools.
+  getVaultSyncLogs(): Promise<string>;
+
   // Sync state management
-  getSyncState(): Promise<{isDirty: boolean; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
+  getSyncState(): Promise<{isDirty: boolean; dirtyScopes: string[]; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
   clearEncryptedVaultForFreshDownload(): Promise<void>;
 
-  // Vault SQL operations
+  // Vault SQL operations. executeQuery returns BLOB columns as base64 behind an "av-blob-base64:" prefix.
   executeQuery(query: string, params: (string | number | null)[]): Promise<string[]>;
   executeUpdate(query: string, params:(string | number | null)[]): Promise<number>;
   executeRaw(query: string): Promise<void>;
   beginTransaction(): Promise<void>;
-  commitTransaction(): Promise<void>;
+  commitTransaction(scope: string): Promise<void>;
   rollbackTransaction(): Promise<void>;
-  // Persist the in-memory database to encrypted storage and mark as dirty
-  persistAndMarkDirty(): Promise<void>;
+  persistAndMarkDirty(scope: string): Promise<void>;
 
   // Cryptography operations
   deriveKeyFromPassword(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<string>;
@@ -52,11 +64,15 @@ export interface Spec extends TurboModule {
   // Database/encryption key operations
   storeMetadata(metadata: string): Promise<void>;
   setAuthMethods(authMethods: string[]): Promise<void>;
-  storeEncryptionKeyInMemory(base64EncryptionKey: string): Promise<void>;
+  storeUnlockKeyInMemory(base64UnlockKey: string): Promise<void>;
   clearEncryptionKeyFromMemory(): Promise<void>;
-  storeEncryptionKey(base64EncryptionKey: string): Promise<void>;
-  storeEncryptionKeyDerivationParams(keyDerivationParams: string): Promise<void>;
-  getEncryptionKeyDerivationParams(): Promise<string | null>;
+  storeUnlockKey(base64UnlockKey: string): Promise<void>;
+  storeUnlockKeyDerivationParams(keyDerivationParams: string): Promise<void>;
+  getUnlockKeyDerivationParams(): Promise<string | null>;
+  getAccountKeyChain(): Promise<string | null>;
+  resolveVaultKey(base64DerivedKey: string): Promise<string>;
+  getPersonalManifestId(): Promise<string | null>;
+  decryptInvitationName(encryptedName: string): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
   getEncryptedDatabase(): Promise<string | null>;
 
@@ -73,13 +89,10 @@ export interface Spec extends TurboModule {
   // Clipboard management
   copyToClipboardWithExpiration(text: string, expirationSeconds: number, localOnly: boolean): Promise<void>;
 
-  // TOTP code generation (RFC 6238, HMAC-SHA1, 6 digits, 30s period).
-  // Delegates to the platform-native TOTP generator so iOS, Android and the
-  // autofill extensions all share one implementation. Returns null when the
-  // secret is invalid.
-  generateTotpCode(secret: string): Promise<string | null>;
+  // TOTP code generation via native layer.
+  generateTotpCode(secret: string, algorithm: string, digits: number, period: number): Promise<string | null>;
 
-  // Battery optimization management
+  // Battery optimization management (Android only)
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;
 
@@ -97,8 +110,10 @@ export interface Spec extends TurboModule {
   getOfflineMode(): Promise<boolean>;
 
   // Server version management
-  isServerVersionGreaterThanOrEqualTo(targetVersion: string): Promise<boolean>;
   getServerVersion(): Promise<string | null>;
+
+  // The capabilities the server resolved for this account as a JSON object, or null when no sync stored any yet.
+  getCapabilities(): Promise<string | null>;
 
   // PIN unlock methods
   isPinEnabled(): Promise<boolean>;
@@ -125,7 +140,7 @@ export interface Spec extends TurboModule {
   showPasswordUnlock(title: string | null, subtitle: string | null, buttonText: string | null): Promise<boolean | null>;
 
   // Mobile login methods
-  encryptDecryptionKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
+  encryptUnlockKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
 
   // Re-authentication methods
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.
@@ -133,6 +148,9 @@ export interface Spec extends TurboModule {
   // buttonText: Optional custom text for the unlock/confirm button. If null/empty, defaults to "Unlock".
   // recentUnlockGraceSeconds: If > 0, skip the prompt when a successful biometric or PIN unlock happened within this many seconds ago. Pass 0 to always prompt.
   authenticateUser(title: string | null, subtitle: string | null, allowedMethods: string[] | null, buttonText: string | null, recentUnlockGraceSeconds: number): Promise<boolean>;
+
+  // Answer a server's SRP challenge with the available unlock key.
+  deriveSrpProof(salt: string, srpIdentity: string, serverEphemeral: string): Promise<{ clientPublicEphemeral: string; clientSessionProof: string }>;
 
   // QR code scanner
   // Scan a QR code and return the scanned data. Returns null if cancelled or failed.
@@ -148,52 +166,6 @@ export interface Spec extends TurboModule {
   requestAppReview(): Promise<boolean>;
   // The install date as a unix timestamp in milliseconds, or 0 when it cannot be determined.
   getAppInstallDate(): Promise<number>;
-
-  // Favicon URL handling and selection.
-  selectFaviconTarget(urls: string[]): Promise<string | null>;
-
-  // Password generator (uses the native Rust core, shared with the other AliasVault clients)
-  // Generate a password or passphrase from a JSON-serialized PasswordSettings object.
-  generatePassword(settingsJson: string): Promise<string>;
-  // List the bundled Diceware wordlist language codes (first is the default, English).
-  getDicewareLanguages(): Promise<string[]>;
-
-  // Identity generator (uses the native Rust core, shared with the other AliasVault clients)
-  // Generate a random identity from a JSON-serialized request
-  // (e.g. {"language":"en","gender":"random","ageRange":"21-25"}).
-  // Returns the identity as a JSON string with camelCase fields.
-  generateIdentity(requestJson: string): Promise<string>;
-  // Generate a username from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
-  generateIdentityUsername(inputJson: string): Promise<string>;
-  // Generate an email prefix from a JSON-serialized name input ({"firstName","lastName","birthDate"}).
-  generateIdentityEmailPrefix(inputJson: string): Promise<string>;
-  // Generate a random alphanumeric email prefix that is not based on any identity.
-  generateRandomEmailPrefix(length: number): Promise<string>;
-  // List the bundled identity dictionary language codes.
-  getIdentityLanguages(): Promise<string[]>;
-  // List the identity age range option values ("random" plus 5-year ranges).
-  getIdentityAgeRanges(): Promise<string[]>;
-
-  // SRP (Secure Remote Password) operations
-  // These methods use the native Rust SRP implementation for secure authentication.
-  // All hex values are uppercase strings.
-
-  // Generate a 32-byte random salt as uppercase hex string
-  srpGenerateSalt(): Promise<string>;
-
-  // Derive SRP private key: x = H(salt | H(identity | ":" | passwordHash))
-  // passwordHash should be uppercase hex string (from Argon2id derivation)
-  srpDerivePrivateKey(salt: string, identity: string, passwordHash: string): Promise<string>;
-
-  // Derive SRP verifier: v = g^x mod N (for registration)
-  srpDeriveVerifier(privateKey: string): Promise<string>;
-
-  // Generate client ephemeral key pair (public A and secret a)
-  srpGenerateEphemeral(): Promise<{public: string; secret: string}>;
-
-  // Derive client session from server response
-  // Returns proof (M1) and shared key (K) as uppercase hex strings
-  srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<{proof: string; key: string}>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');

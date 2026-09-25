@@ -5,9 +5,8 @@ import Foundation
 /// This replaces the legacy Credential model which was based on the old data structure.
 public struct AutofillCredential: Codable, Hashable, Equatable {
     public let id: UUID
+    public let manifestId: String
     public let serviceName: String?
-    public let serviceUrl: String?
-    /// All URLs associated with this credential (for multi-URL support)
     public let serviceUrls: [String]
     public let logo: Data?
     public let username: String?
@@ -15,36 +14,41 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     public let password: String?
     public let notes: String?
     public let passkey: Passkey?
-    public let totpSecret: String?
+    public let totp: TotpCode?
     public let createdAt: Date
     public let updatedAt: Date
 
+    /// The Base32 secret of the item's TOTP code, if it has one.
+    public var totpSecret: String? {
+        return totp?.secretKey
+    }
+
     public init(
         id: UUID,
+        manifestId: String,
         serviceName: String?,
-        serviceUrl: String?,
-        serviceUrls: [String] = [],
+        serviceUrls: [String],
         logo: Data?,
         username: String?,
         email: String?,
         password: String?,
         notes: String?,
         passkey: Passkey?,
-        totpSecret: String? = nil,
+        totp: TotpCode? = nil,
         createdAt: Date,
         updatedAt: Date
     ) {
         self.id = id
+        self.manifestId = manifestId
         self.serviceName = serviceName
-        self.serviceUrl = serviceUrl
-        self.serviceUrls = serviceUrls.isEmpty ? (serviceUrl.map { [$0] } ?? []) : serviceUrls
+        self.serviceUrls = serviceUrls
         self.logo = logo
         self.username = username
         self.email = email
         self.password = password
         self.notes = notes
         self.passkey = passkey
-        self.totpSecret = totpSecret
+        self.totp = totp
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -53,11 +57,11 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     /// - Parameters:
     ///   - item: The Item to convert from
     ///   - passkey: Optional passkey associated with this item
-    ///   - totpSecret: Optional TOTP secret key for this item
-    public init(from item: Item, passkey: Passkey? = nil, totpSecret: String? = nil) {
+    ///   - totp: Optional TOTP code for this item
+    public init(from item: Item, passkey: Passkey? = nil, totp: TotpCode? = nil) {
         self.id = item.id
+        self.manifestId = item.manifestId
         self.serviceName = item.name
-        self.serviceUrl = item.url
         self.serviceUrls = item.urls
         self.logo = item.logo
         self.username = item.username
@@ -65,7 +69,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         self.password = item.password
         self.notes = item.getFieldValue(FieldKey.notesContent)
         self.passkey = passkey
-        self.totpSecret = totpSecret
+        self.totp = totp
         self.createdAt = item.createdAt
         self.updatedAt = item.updatedAt
     }

@@ -262,9 +262,9 @@ get_browser_extension_package_json_version() {
     grep "\"version\": " "$REPO_ROOT/apps/browser-extension/package.json" | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
-# Function to extract version from browser extension AppInfo.ts
+# Function to extract version from browser extension ExtensionPlatform.ts
 get_browser_extension_ts_version() {
-    grep "public static readonly VERSION = " "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "export const EXTENSION_VERSION = " "$REPO_ROOT/apps/browser-extension/src/platform/ExtensionPlatform.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from mobile app
@@ -293,12 +293,17 @@ get_android_version() {
 
 # Function to extract version from Safari extension
 get_safari_version() {
-    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from Rust core Cargo.toml
 get_rust_core_version() {
     grep "^version = " "$REPO_ROOT/core/rust/Cargo.toml" | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2
+}
+
+# Function to extract version from core client package.json
+get_core_client_version() {
+    grep "\"version\": " "$REPO_ROOT/core/client/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 # Check current versions
@@ -312,6 +317,7 @@ ios_version=$(get_ios_version)
 android_version=$(get_android_version)
 safari_version=$(get_safari_version)
 rust_core_version=$(get_rust_core_version)
+core_client_version=$(get_core_client_version)
 
 # Create associative array of versions
 declare -A versions
@@ -325,19 +331,21 @@ versions["ios"]="$ios_version"
 versions["android"]="$android_version"
 versions["safari"]="$safari_version"
 versions["rust_core"]="$rust_core_version"
+versions["core_client"]="$core_client_version"
 
 # Create display names for output
 declare -A display_names
 display_names["server"]="Server"
 display_names["browser_wxt"]="Browser Extension (wxt.config.ts)"
 display_names["browser_package"]="Browser Extension (package.json)"
-display_names["browser_ts"]="Browser Extension (AppInfo.ts)"
+display_names["browser_ts"]="Browser Extension (ExtensionPlatform.ts)"
 display_names["mobile"]="Mobile App"
 display_names["mobile_ts"]="Mobile App (TS)"
 display_names["ios"]="iOS App"
 display_names["android"]="Android App"
 display_names["safari"]="Safari Extension"
 display_names["rust_core"]="Rust Core"
+display_names["core_client"]="Core Client (package.json)"
 
 # Function to normalize version by removing stage suffix
 normalize_version() {
@@ -499,7 +507,7 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -619,11 +627,11 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     echo -e "${BLUE}Updating docs package-lock.json version...${RESET}"
     sed -i '' '/"name": "aliasvault-docs"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/docs/package-lock.json"
 
-    # Update browser extension AppInfo.ts version
-    echo -e "${BLUE}Updating browser extension AppInfo.ts version...${RESET}"
-    update_version "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" \
-        "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
-        "public static readonly VERSION = '$display_version';"
+    # Update browser extension ExtensionPlatform.ts version
+    echo -e "${BLUE}Updating browser extension ExtensionPlatform.ts version...${RESET}"
+    update_version "$REPO_ROOT/apps/browser-extension/src/platform/ExtensionPlatform.ts" \
+        "export const EXTENSION_VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
+        "export const EXTENSION_VERSION = '$display_version';"
 
     # Update generic mobile app version
     echo -e "${BLUE}Updating mobile app version...${RESET}"
@@ -648,9 +656,29 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
 
     # Update Safari extension version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
     echo -e "${BLUE}Updating Safari extension version...${RESET}"
-    update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+    update_version "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
+
+    # Update core client package.json version (without suffix: npm requires plain semver
+    # and this package is consumed via a file: link, never published).
+    echo -e "${BLUE}Updating core client package.json version...${RESET}"
+    update_version "$REPO_ROOT/core/client/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+
+    # Update core client package-lock.json. The project version appears twice (the root
+    # object and the "" package entry), each on the line directly after a
+    # `"name": "@aliasvault/client"` line. Anchoring on that name leaves the dependency
+    # "version" lines untouched (same approach as the docs package-lock.json above).
+    echo -e "${BLUE}Updating core client package-lock.json version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/client/package-lock.json"
+
+    # The browser extension and mobile app link core/client via file:, which embeds the version into their lockfiles.
+    echo -e "${BLUE}Updating browser extension package-lock.json core client version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
+    echo -e "${BLUE}Updating mobile app package-lock.json core client version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/mobile-app/package-lock.json"
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
     echo -e "${BLUE}Updating Rust core version...${RESET}"
@@ -706,7 +734,7 @@ if [[ "$MARKETING_UPDATE" != true ]]; then
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -732,7 +760,7 @@ update_version "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" \
     "versionCode $new_android_build" \
     "Android App"
 
-update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+update_version "$REPO_ROOT/apps/browser-extension/build-assets/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_safari_build;" \
     "Safari Extension"

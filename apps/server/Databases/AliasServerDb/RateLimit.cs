@@ -14,14 +14,14 @@ using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// A rate-limit / quota rule used by the API to throttle different types of usage.
-/// - <see cref="UserId"/> set = per-user,
+/// - <see cref="GroupId"/> set = per-group,
 /// - <see cref="Tier"/> set = per-tier,
 /// - else global (most specific wins).
 /// - <see cref="WindowSeconds"/> 0 = global maximum (all-time). > 0 = max allowed within a rolling window.
 /// - <see cref="MaxCount"/> 0 = unlimited.
 /// </summary>
 [Index(nameof(LimitType), nameof(Enabled))]
-[Index(nameof(UserId))]
+[Index(nameof(GroupId))]
 [Index(nameof(Tier))]
 public class RateLimit
 {
@@ -37,19 +37,18 @@ public class RateLimit
     public RateLimitType LimitType { get; set; } = RateLimitType.AliasCreation;
 
     /// <summary>
-    /// Gets or sets the user this rule applies to (per-user override). Null for tier-level and global rules.
+    /// Gets or sets the group this rule applies to (per-group override). Null for tier-level and global rules.
     /// </summary>
-    [StringLength(255)]
-    public string? UserId { get; set; }
+    public Guid? GroupId { get; set; }
 
     /// <summary>
-    /// Gets or sets the navigation property to the user this rule applies to.
+    /// Gets or sets the navigation property to the group this rule applies to.
     /// </summary>
-    [ForeignKey(nameof(UserId))]
-    public virtual AliasVaultUser? User { get; set; }
+    [ForeignKey(nameof(GroupId))]
+    public virtual Group? Group { get; set; }
 
     /// <summary>
-    /// Gets or sets the account tier this rule applies to. Null for per-user and global rules.
+    /// Gets or sets the account tier this rule applies to. Null for per-group and global rules.
     /// </summary>
     public AccountTier? Tier { get; set; }
 
@@ -64,8 +63,9 @@ public class RateLimit
     public int MaxCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the account age (in days) below which the rule applies; null = applies regardless of age.
-    /// Used to restrict new accounts more tightly (the limit lifts once the account is older).
+    /// Gets or sets the group age (in days) below which the rule applies; null = applies regardless of age.
+    /// Used to restrict new accounts more tightly (the limit lifts once the group is older). A personal group is
+    /// created with its user, so for personal quotas this is the account age.
     /// </summary>
     public int? AppliesToAccountAgeMaxDays { get; set; }
 

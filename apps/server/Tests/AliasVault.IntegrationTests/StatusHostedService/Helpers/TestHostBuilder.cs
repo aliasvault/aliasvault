@@ -16,9 +16,8 @@ using Microsoft.Extensions.Hosting;
 /// against it. This primarily tests basic functionality of the hosted service such as starting, stopping and error
 /// handling.
 ///
-/// The StatusHostedService is a wrapper around the HostedService class that provides additional functionality for
-/// managing the status of the hosted service. This includes being able to start and stop the services from the
-/// AliasVault admin panel.
+/// The StatusHostedService is a wrapper around the HostedService class that keeps the wrapped service running and
+/// reports its liveness through the heartbeat record shown in the AliasVault admin panel.
 /// </summary>
 public class TestHostBuilder : AbstractTestHostBuilder
 {

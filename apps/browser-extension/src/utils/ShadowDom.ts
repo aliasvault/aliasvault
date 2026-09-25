@@ -2,7 +2,7 @@
  * Helpers for working with pages that render (part of) their content inside open shadow roots.
  */
 
-import { devLog } from '@/utils/DevLogger';
+import { devLog } from '@/utils/devLogger/DevLogger';
 
 /**
  * Upper bound on the number of shadow roots a single deep query descends into, to limit scans to

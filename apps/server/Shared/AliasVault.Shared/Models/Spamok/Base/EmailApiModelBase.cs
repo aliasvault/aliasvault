@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.Spamok.Base;
 
 /// <summary>
-/// Represents a mailbox email API model base.
+/// Represents a mailbox email API model base of the external api.spamok.com API.
 /// </summary>
 public abstract class EmailApiModelBase
 {

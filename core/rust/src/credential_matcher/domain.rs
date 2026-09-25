@@ -1,6 +1,7 @@
 //! Domain extraction and matching utilities.
 
 use std::collections::HashSet;
+use std::sync::LazyLock;
 
 /// Common top-level domains (TLDs) used for app package name detection.
 /// When a search string starts with one of these TLDs followed by a dot (e.g., "com.coolblue.app"),
@@ -19,6 +20,9 @@ static COMMON_TLDS: &[&str] = &[
     "app", "dev", "io", "ai", "tech", "shop", "store", "online", "site", "website",
     "blog", "news", "media", "tv", "video", "music", "pro", "info", "biz", "name",
 ];
+
+/// [`COMMON_TLDS`] as a set for constant-time lookup.
+static COMMON_TLD_SET: LazyLock<HashSet<&'static str>> = LazyLock::new(|| COMMON_TLDS.iter().copied().collect());
 
 /// Common two-level public TLDs for root domain extraction.
 static TWO_LEVEL_TLDS: &[&str] = &[
@@ -81,29 +85,54 @@ static TWO_LEVEL_TLDS: &[&str] = &[
     "ne.tz", "or.tz", "sc.tz", "tv.tz",
 ];
 
+/// [`TWO_LEVEL_TLDS`] as a set for constant-time lookup.
+static TWO_LEVEL_TLD_SET: LazyLock<HashSet<&'static str>> = LazyLock::new(|| TWO_LEVEL_TLDS.iter().copied().collect());
+
 /// Check if a string is likely an app package name (reversed domain).
 /// Package names start with TLD followed by dot (e.g., "com.example", "nl.app").
 pub fn is_app_package_name(text: &str) -> bool {
-    // Must contain a dot
-    if !text.contains('.') {
+    if !text.contains('.') || text.starts_with("http://") || text.starts_with("https://") {
         return false;
     }
 
-    // Must not have protocol
-    if text.starts_with("http://") || text.starts_with("https://") {
-        return false;
-    }
-
-    // Extract first part before first dot
+    // A first label that is a TLD indicates a reversed domain (package name).
     let first_part = text.split('.').next().unwrap_or("").to_lowercase();
+    COMMON_TLD_SET.contains(first_part.as_str())
+}
 
-    // Check if first part is a common TLD - indicates reversed domain (package name)
-    let tld_set: HashSet<&str> = COMMON_TLDS.iter().copied().collect();
-    tld_set.contains(first_part.as_str())
+/// Split a URL into its scheme, authority (host and port) and the path/query/fragment remainder.
+///
+/// The scheme is returned as written; use [`is_web_scheme`] to test it. A host followed by a
+/// numeric port ("example.com:8080") is not mistaken for a scheme.
+pub(crate) fn split_url(url: &str) -> (Option<&str>, &str, &str) {
+    let (scheme, after_scheme) = match url.split_once(':') {
+        Some((scheme, rest)) if is_scheme(scheme) && !is_port(rest) => (Some(scheme), rest.strip_prefix("//").unwrap_or(rest)),
+        _ => (None, url),
+    };
+
+    let authority_end = after_scheme.find(['/', '?', '#']).unwrap_or(after_scheme.len());
+    let (authority, rest) = after_scheme.split_at(authority_end);
+    (scheme, authority, rest)
+}
+
+/// Whether the text is `http` or `https`, in any casing.
+pub(crate) fn is_web_scheme(scheme: &str) -> bool {
+    scheme.eq_ignore_ascii_case("http") || scheme.eq_ignore_ascii_case("https")
+}
+
+/// Whether the text is shaped like a URL scheme (RFC 3986: a letter, then letters, digits, `+`, `-` or `.`).
+fn is_scheme(text: &str) -> bool {
+    text.starts_with(|c: char| c.is_ascii_alphabetic()) && text.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.'))
+}
+
+/// Whether the text after a colon is a bare port number, up to the first path, query or fragment.
+fn is_port(rest: &str) -> bool {
+    let port = &rest[..rest.find(['/', '?', '#']).unwrap_or(rest.len())];
+    !port.is_empty() && port.chars().all(|c| c.is_ascii_digit())
 }
 
 /// Result of domain extraction containing both the domain and optional port.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct DomainWithPort {
     pub domain: String,
     pub port: Option<String>,
@@ -122,103 +151,41 @@ impl DomainWithPort {
 /// Extract domain and port from URL, handling both full URLs and partial domains.
 /// Returns DomainWithPort with empty domain if not a valid URL/domain.
 pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
-    if url.is_empty() {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
-    }
+    let lowered = url.trim().to_lowercase();
+    let (scheme, authority, _) = split_url(&lowered);
 
-    let mut domain = url.to_lowercase();
-
-    // Check if it has a protocol - this is important for allowing single-word hostnames
-    // like "http://plex" or "https://nas" which are common in self-hosted/homelab setups
-    let has_protocol = domain.starts_with("http://") || domain.starts_with("https://");
-
-    // If no protocol and starts with TLD + dot, it's likely an app package name
-    if !has_protocol && is_app_package_name(&domain) {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
-    }
-
-    // Remove protocol if present
-    if let Some(stripped) = domain.strip_prefix("https://") {
-        domain = stripped.to_string();
-    } else if let Some(stripped) = domain.strip_prefix("http://") {
-        domain = stripped.to_string();
-    }
-
-    // Remove www. prefix
-    if let Some(stripped) = domain.strip_prefix("www.") {
-        domain = stripped.to_string();
-    }
-
-    // Remove path, query, and fragment first (before extracting port)
-    if let Some(pos) = domain.find('/') {
-        domain = domain[..pos].to_string();
-    }
-    if let Some(pos) = domain.find('?') {
-        domain = domain[..pos].to_string();
-    }
-    if let Some(pos) = domain.find('#') {
-        domain = domain[..pos].to_string();
-    }
-
-    // Extract port number if present (e.g., :8080, :1234)
-    let port = if let Some(pos) = domain.find(':') {
-        let port_str = domain[pos + 1..].to_string();
-        domain = domain[..pos].to_string();
-        // Validate port is numeric
-        if port_str.chars().all(|c| c.is_ascii_digit()) && !port_str.is_empty() {
-            Some(port_str)
-        } else {
-            None
-        }
-    } else {
-        None
+    // A web scheme is what allows single-word hostnames like "http://plex" or "https://nas",
+    // common in self-hosted setups. Any other scheme names something that is not a website.
+    let has_protocol = match scheme {
+        Some(scheme) if is_web_scheme(scheme) => true,
+        Some(_) => return DomainWithPort::default(),
+        None => false,
     };
 
-    // Domain validation:
-    // - If URL had a protocol (http:// or https://), allow single-word hostnames
-    //   like "localhost", "plex", "nas", "router" - common in self-hosted/homelab setups
-    // - If no protocol, require at least one dot to distinguish from random text
-    if !domain.contains('.') && !has_protocol {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
+    // Without a scheme, text starting with a TLD and a dot is an app package name, not a domain.
+    if !has_protocol && is_app_package_name(authority) {
+        return DomainWithPort::default();
     }
 
-    // Check for valid domain characters (alphanumeric, dots, hyphens)
-    if !domain
-        .chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-')
-    {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
+    let host = authority.strip_prefix("www.").unwrap_or(authority);
+    let (domain, port) = match host.split_once(':') {
+        Some((domain, port)) if !port.is_empty() && port.chars().all(|c| c.is_ascii_digit()) => (domain, Some(port.to_string())),
+        Some((domain, _)) => (domain, None),
+        None => (host, None),
+    };
+
+    // Without a scheme, require at least one dot to distinguish a hostname from random text.
+    if domain.is_empty() || (!domain.contains('.') && !has_protocol) {
+        return DomainWithPort::default();
     }
 
-    // Ensure valid domain structure (no leading/trailing dots, no consecutive dots)
-    if domain.starts_with('.') || domain.ends_with('.') || domain.contains("..") {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
+    let valid_chars = domain.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-');
+    let valid_structure = !domain.starts_with('.') && !domain.ends_with('.') && !domain.contains("..");
+    if !valid_chars || !valid_structure {
+        return DomainWithPort::default();
     }
 
-    // Ensure domain is not empty after all processing
-    if domain.is_empty() {
-        return DomainWithPort {
-            domain: String::new(),
-            port: None,
-        };
-    }
-
-    DomainWithPort { domain, port }
+    DomainWithPort { domain: domain.to_string(), port }
 }
 
 /// Extract domain from URL, handling both full URLs and partial domains.
@@ -228,33 +195,34 @@ pub fn extract_domain(url: &str) -> String {
     extract_domain_with_port(url).domain
 }
 
+/// Check if a host string is an IP address literal (IPv4 or IPv6, optionally bracketed).
+/// IP addresses have no domain hierarchy, so they must never be reduced to a "root domain".
+fn is_ip_literal(host: &str) -> bool {
+    let bare = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')).unwrap_or(host);
+    bare.parse::<std::net::IpAddr>().is_ok()
+}
+
 /// Extract root domain from a domain string.
 /// E.g., "sub.example.com" -> "example.com"
 /// E.g., "sub.example.com.au" -> "example.com.au"
 /// E.g., "sub.example.co.uk" -> "example.co.uk"
+/// IP address literals are returned unchanged: "192.168.1.5" must not become "1.5".
 pub fn extract_root_domain(domain: &str) -> String {
+    if is_ip_literal(domain) {
+        return domain.to_string();
+    }
+
     let parts: Vec<&str> = domain.split('.').collect();
     if parts.len() < 2 {
         return domain.to_string();
     }
 
-    let two_level_set: HashSet<&str> = TWO_LEVEL_TLDS.iter().copied().collect();
-
-    // Check if the last two parts form a known two-level TLD
-    if parts.len() >= 3 {
-        let last_two_parts = format!("{}.{}", parts[parts.len() - 2], parts[parts.len() - 1]);
-        if two_level_set.contains(last_two_parts.as_str()) {
-            // Take the last three parts for two-level TLDs
-            return parts[parts.len() - 3..].join(".");
-        }
+    // A known two-level TLD (e.g. "co.uk") keeps three labels, anything else keeps two.
+    if parts.len() >= 3 && TWO_LEVEL_TLD_SET.contains(parts[parts.len() - 2..].join(".").as_str()) {
+        return parts[parts.len() - 3..].join(".");
     }
 
-    // Default to last two parts for regular TLDs
-    if parts.len() >= 2 {
-        parts[parts.len() - 2..].join(".")
-    } else {
-        domain.to_string()
-    }
+    parts[parts.len() - 2..].join(".")
 }
 
 /// Check if two domains match, supporting subdomain matching.
@@ -264,6 +232,12 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
         return false;
     }
 
+    // IP address literals have no subdomain structure: only the exact same address matches.
+    // Without this guard, "192.168.1.5" and "10.0.1.5" would both reduce to root "1.5" and match.
+    if is_ip_literal(domain1) || is_ip_literal(domain2) {
+        return domain1 == domain2;
+    }
+
     // Exact match
     if domain1 == domain2 {
         return true;
@@ -271,7 +245,7 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
 
     // Check subdomain relationship (must end with ".domain" not just contain it)
     // e.g., "sub.example.com" is a subdomain of "example.com"
-    // but "another-example.com" is NOT related to "example.com"
+    // but "another-example.com" is not related to "example.com"
     if is_subdomain_of(domain1, domain2) || is_subdomain_of(domain2, domain1) {
         return true;
     }
@@ -285,7 +259,7 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
 
 /// Check if domain1 is a subdomain of domain2.
 /// e.g., "sub.example.com" is a subdomain of "example.com"
-/// but "another-example.com" is NOT a subdomain of "example.com"
+/// but "another-example.com" is not a subdomain of "example.com"
 fn is_subdomain_of(domain1: &str, domain2: &str) -> bool {
     // domain1 must be longer and end with ".domain2"
     if domain1.len() <= domain2.len() {
@@ -340,7 +314,7 @@ mod tests {
         assert_eq!(extract_domain("http://homeassistant"), "homeassistant");
         assert_eq!(extract_domain("http://pihole/admin"), "pihole");
 
-        // Single-word hostnames WITHOUT protocol should NOT be accepted
+        // Single-word hostnames without protocol should not be accepted
         // (to avoid matching random text as domains)
         assert_eq!(extract_domain("localhost"), "");
         assert_eq!(extract_domain("plex"), "");
@@ -357,7 +331,7 @@ mod tests {
         assert_eq!(extract_domain("https://nas:5001"), "nas");
         assert_eq!(extract_domain("http://router:8080/admin"), "router");
 
-        // Without protocol - should NOT work (could be ambiguous)
+        // Without protocol - should not work (could be ambiguous)
         assert_eq!(extract_domain("localhost:8080"), "");
         assert_eq!(extract_domain("plex:32400"), "");
 
@@ -433,6 +407,37 @@ mod tests {
     }
 
     #[test]
+    fn test_extract_root_domain_ip_literals_unchanged() {
+        assert_eq!(extract_root_domain("192.168.1.5"), "192.168.1.5");
+        assert_eq!(extract_root_domain("10.0.0.1"), "10.0.0.1");
+        assert_eq!(extract_root_domain("::1"), "::1");
+        assert_eq!(extract_root_domain("[2001:db8::1]"), "[2001:db8::1]");
+    }
+
+    #[test]
+    fn test_ip_literals_require_exact_match() {
+        // Same IP matches
+        assert!(domains_match("192.168.1.5", "192.168.1.5"));
+
+        // Distinct IPs sharing trailing octets must not match
+        // (previously both reduced to root "1.5" and matched)
+        assert!(!domains_match("192.168.1.5", "10.0.1.5"));
+
+        // An IP must not be treated as a "subdomain" of a suffix of itself
+        assert!(!domains_match("192.168.1.5", "168.1.5"));
+        assert!(!domains_match("168.1.5", "192.168.1.5"));
+
+        // IP vs regular domain never matches
+        assert!(!domains_match("192.168.1.5", "example.com"));
+
+        // IPv6 literals: exact match only (bare and bracketed forms)
+        assert!(domains_match("::1", "::1"));
+        assert!(!domains_match("::1", "::2"));
+        assert!(domains_match("[2001:db8::1]", "[2001:db8::1]"));
+        assert!(!domains_match("[2001:db8::1]", "[2001:db8::2]"));
+    }
+
+    #[test]
     fn test_domains_match() {
         // Exact match
         assert!(domains_match("example.com", "example.com"));
@@ -448,8 +453,8 @@ mod tests {
         assert!(!domains_match("example.com", "different.com"));
         assert!(!domains_match("coolblue.nl", "coolblue.be"));
 
-        // CRITICAL: Substring match should NOT work (anti-phishing protection)
-        // "another-example.com" contains "example.com" but is NOT a subdomain
+        // Critical: Substring match should not work (anti-phishing protection)
+        // "another-example.com" contains "example.com" but is not a subdomain
         assert!(!domains_match("another-example.com", "example.com"));
         assert!(!domains_match("example.com", "another-example.com"));
         assert!(!domains_match("myexample.com", "example.com"));

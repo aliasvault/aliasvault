@@ -1,15 +1,15 @@
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/models/defaults';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@/utils/dist/core/models/defaults';
 import type {
   PasswordSettings,
   PasswordGeneratorType,
   DicewareCapitalization,
   DicewareSeparator,
   DicewareSalt
-} from '@/utils/dist/core/models/vault';
-import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/PasswordLengthSlider';
+} from '@aliasvault/models/vault';
 
 const CAPITALIZATION_OPTIONS: DicewareCapitalization[] = ['Lowercase', 'TitleCase', 'Uppercase'];
 const SEPARATOR_OPTIONS: DicewareSeparator[] = ['Dash', 'Space', 'Underscore', 'Dot', 'None'];

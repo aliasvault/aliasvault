@@ -2,8 +2,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import { FieldKey } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField } from '@aliasvault/models/vault';
+import { FieldKey } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -101,7 +101,7 @@ export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactN
         <FieldBlock
           key={field.FieldKey}
           field={field}
-          itemId={item.Id}
+          item={item}
         />
       ))}
 

@@ -1,3 +1,4 @@
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,7 +8,6 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimension
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { AppErrorCode, getAppErrorCode, getErrorTranslationKey, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
@@ -17,17 +17,28 @@ import Logo from '@/assets/images/logo.svg';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { Avatar } from '@/components/ui/Avatar';
+import { AccountChip } from '@/components/ui/AccountChip';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
+ * Whether a failed unlock means the entered password was wrong.
+ * @param errorCode - the error code the unlock failed with
+ */
+async function isWrongUnlockKey(errorCode: AppErrorCode): Promise<boolean> {
+  if (errorCode === AppErrorCode.UNLOCK_KEY_REJECTED) {
+    return true;
+  }
+  return errorCode === AppErrorCode.VAULT_DECRYPT_FAILED && (await NativeVaultManager.getAccountKeyChain()) === null;
+}
+
+/**
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
-  const { isLoggedIn, username, getEncryptionKeyDerivationParams } = useApp();
+  const { isLoggedIn, username, getUnlockKeyDerivationParams } = useApp();
   const { logoutUserInitiated, logoutForced } = useLogout();
   const dbContext = useDb();
   const [isLoading, setIsLoading] = useState(true);
@@ -50,14 +61,14 @@ export default function UnlockScreen() : React.ReactNode {
    * If not, we can't unlock the vault so logout instead to redirect user to login screen.
    */
   const getKeyDerivationParams = useCallback(async () : Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null> => {
-    const params = await getEncryptionKeyDerivationParams();
+    const params = await getUnlockKeyDerivationParams();
     if (!params) {
       // No params means corrupted state - force logout without confirmation
       await logoutForced();
       return null;
     }
     return params;
-  }, [logoutForced, getEncryptionKeyDerivationParams]);
+  }, [logoutForced, getUnlockKeyDerivationParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -148,7 +159,7 @@ export default function UnlockScreen() : React.ReactNode {
           // Haptic feedback for authentication error
           HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
 
-          if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+          if (!errorCode || await isWrongUnlockKey(errorCode)) {
             setError(t('auth.errors.incorrectPassword'));
           } else {
             const translationKey = getErrorTranslationKey(errorCode);
@@ -236,11 +247,7 @@ export default function UnlockScreen() : React.ReactNode {
       // Haptic feedback for authentication error
       HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
 
-      /*
-       * During unlock, VAULT_DECRYPT_FAILED indicates wrong password.
-       * This is thrown when decryption fails due to incorrect encryption key.
-       */
-      if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+      if (!errorCode || await isWrongUnlockKey(errorCode)) {
         // Treat as incorrect password - show error and allow retry
         setError(t('auth.errors.incorrectPassword'));
       } else {
@@ -293,7 +300,7 @@ export default function UnlockScreen() : React.ReactNode {
     try {
       /*
        * Clear any wrong key from memory first (e.g., from failed password attempt).
-       * This forces getEncryptionKey() to fetch from keychain via biometrics.
+       * This forces the native unlock to fetch the key from the keychain via biometrics.
        */
       await NativeVaultManager.clearEncryptionKeyFromMemory();
 
@@ -389,17 +396,14 @@ export default function UnlockScreen() : React.ReactNode {
   })();
 
   const styles = StyleSheet.create({
+    accountChip: {
+      marginBottom: 16,
+    },
     appName: {
       color: colors.text,
       fontSize: 32,
       fontWeight: 'bold',
       textAlign: 'center',
-    },
-    avatarContainer: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginBottom: 16,
     },
     button: {
       alignItems: 'center',
@@ -526,12 +530,6 @@ export default function UnlockScreen() : React.ReactNode {
       opacity: 0.7,
       textAlign: 'center',
     },
-    username: {
-      color: colors.text,
-      fontSize: 18,
-      opacity: 0.8,
-      textAlign: 'center',
-    },
   });
 
   // Render password mode or loading
@@ -563,10 +561,7 @@ export default function UnlockScreen() : React.ReactNode {
               </View>
             </View>
             <View style={styles.content}>
-              <View style={styles.avatarContainer}>
-                <Avatar />
-                <ThemedText style={styles.username}>{username}</ThemedText>
-              </View>
+              <AccountChip style={styles.accountChip} />
 
               {/* Error Message */}
               {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}

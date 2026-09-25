@@ -2,27 +2,25 @@ package net.aliasvault.app.vaultstore
 
 import android.util.Base64
 import android.util.Log
-import io.requery.android.database.sqlite.SQLiteDatabase
+import net.aliasvault.app.rustcore.JnaInitializer
+import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
-import java.io.File
+import uniffi.aliasvault_core.SqlValue
+import uniffi.aliasvault_core.SqliteMemoryDatabase
 
 /**
- * Handles database storage, encryption, and decryption operations.
+ * The live vault database: the decrypted bytes are opened in memory using the Rust core's SQLite client.
  */
 class VaultDatabase(
     private val storageProvider: StorageProvider,
     private val crypto: VaultCrypto,
+    private val metadata: VaultMetadataManager,
 ) {
     companion object {
         private const val TAG = "VaultDatabase"
     }
 
-    /**
-     * The database connection.
-     */
-    internal var dbConnection: SQLiteDatabase? = null
-
-    // region Database Storage
+    private var db: SqliteMemoryDatabase? = null
 
     /**
      * Store the encrypted database in the storage provider.
@@ -45,19 +43,22 @@ class VaultDatabase(
         return storageProvider.getEncryptedDatabaseFile().exists()
     }
 
-    // endregion
-
-    // region Vault Unlock
+    /**
+     * The id of the user's personal manifest as the last sync recorded it (engine state, stored as `{"v": id}`),
+     * or null before the first pull.
+     */
+    fun getPersonalManifestId(): String? {
+        val json = storageProvider.getSyncEngineState("vaultPersonalManifestId") ?: return null
+        return org.json.JSONObject(json).optString("v").takeIf { it.isNotEmpty() }
+    }
 
     /**
      * Unlock the vault. This can trigger biometric authentication.
      */
     fun unlockVault(authMethods: String) {
-        val encryptedDbBase64 = getEncryptedDatabase()
-        val decryptedDbBase64 = crypto.decryptData(encryptedDbBase64, authMethods)
-
+        val decrypted = crypto.decryptDataBytes(getEncryptedDatabase(), authMethods)
         try {
-            setupDatabaseWithDecryptedData(decryptedDbBase64)
+            open(decrypted)
         } catch (e: Exception) {
             Log.e(TAG, "Error unlocking vault", e)
             throw e
@@ -68,196 +69,130 @@ class VaultDatabase(
      * Check if the vault is unlocked.
      */
     fun isVaultUnlocked(): Boolean {
-        return crypto.encryptionKey != null
+        return crypto.unlockKey != null
     }
 
-    // endregion
-
-    // region Database Setup
+    /**
+     * Whether a database is open.
+     */
+    fun isOpen(): Boolean = db != null
 
     /**
-     * Setup the database with decrypted data.
-     * Uses SQLite VACUUM INTO to properly copy all schema objects including
-     * foreign keys, indexes, triggers, and views from file to memory.
-     * This is equivalent to the Swift implementation using the backup API.
+     * Open the decrypted vault in memory. The plaintext is either the raw SQLite bytes
+     * or base64 text of them (legacy pre-0.31.0).
      */
-    private fun setupDatabaseWithDecryptedData(decryptedDbBase64: String) {
-        var tempDbFile: File? = null
-        var sourceDb: io.requery.android.database.sqlite.SQLiteDatabase? = null
-        try {
-            // Step 1: Decode base64
-            val decryptedDbData = try {
-                Base64.decode(decryptedDbBase64, Base64.NO_WRAP)
+    private fun open(decrypted: ByteArray) {
+        val bytes = if (isSqliteDatabase(decrypted)) {
+            decrypted
+        } else {
+            try {
+                Base64.decode(String(decrypted, Charsets.UTF_8), Base64.NO_WRAP)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to decode base64 data after decryption", e)
                 throw AppError.Base64DecodeFailed(cause = e)
             }
-
-            // Step 2: Write decrypted data to temp file
-            tempDbFile = File.createTempFile("temp_db", ".sqlite")
-            tempDbFile.deleteOnExit()
-            try {
-                tempDbFile.writeBytes(decryptedDbData)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to write decrypted data to temp file", e)
-                throw AppError.DatabaseTempWriteFailed(cause = e)
-            }
-
-            // Step 3: Close any existing connection
-            dbConnection?.close()
-            dbConnection = null
-
-            // Step 4: Open the source database from file using requery's SQLite (read-only)
-            sourceDb = try {
-                io.requery.android.database.sqlite.SQLiteDatabase.openDatabase(
-                    tempDbFile.path,
-                    null,
-                    io.requery.android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to open source database (file may be corrupt)", e)
-                throw AppError.DatabaseOpenFailed(cause = e)
-            }
-
-            // Close source database before we attach it to memory db
-            sourceDb.close()
-            sourceDb = null
-
-            // Step 5: Create in-memory database using requery's SQLite
-            dbConnection = try {
-                SQLiteDatabase.create(null)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to create in-memory database connection", e)
-                throw AppError.DatabaseMemoryFailed(cause = e)
-            }
-
-            // Step 6: Attach and copy database
-            try {
-                // Attach the temp file as 'source' to copy from
-                val attachSql = "ATTACH DATABASE '${tempDbFile.path}' AS source"
-                dbConnection?.compileStatement(attachSql)?.execute()
-
-                // Copy entire database using sqlite_master (preserves all schema)
-                dbConnection?.beginTransaction()
-                try {
-                    copyCompleteDatabase()
-                    dbConnection?.setTransactionSuccessful()
-                } finally {
-                    dbConnection?.endTransaction()
-                }
-
-                // Detach source
-                dbConnection?.compileStatement("DETACH DATABASE source")?.execute()
-            } catch (e: AppError) {
-                throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to backup database to memory", e)
-                throw AppError.DatabaseBackupFailed(cause = e)
-            }
-
-            // Step 7: Set pragmas for optimal performance and safety
-            try {
-                // PRAGMA statements must use rawQuery, not compileStatement
-                dbConnection?.rawQuery("PRAGMA journal_mode = WAL", null)
-                dbConnection?.rawQuery("PRAGMA synchronous = NORMAL", null)
-                dbConnection?.rawQuery("PRAGMA foreign_keys = ON", null)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to set database pragmas", e)
-                throw AppError.DatabasePragmaFailed(cause = e)
-            }
-        } catch (e: AppError) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting up database with decrypted data", e)
-            throw e
-        } finally {
-            // Clean up source database connection
-            sourceDb?.close()
-
-            // Clean up temp file
-            tempDbFile?.let {
-                if (it.exists()) {
-                    it.setWritable(true, true)
-                    it.delete()
-                }
-            }
         }
+
+        close()
+        JnaInitializer.ensureInitialized()
+        val opened = try {
+            SqliteMemoryDatabase.fromBytes(bytes).also {
+                it.queryValues("SELECT count(*) FROM sqlite_master", emptyList())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to open the vault database (data may be corrupt)", e)
+            throw AppError.DatabaseOpenFailed(cause = e)
+        }
+        try {
+            opened.executeBatch("PRAGMA foreign_keys = ON")
+        } catch (e: Exception) {
+            opened.destroy()
+            Log.e(TAG, "Failed to set database pragmas", e)
+            throw AppError.DatabasePragmaFailed(cause = e)
+        }
+        db = opened
     }
 
     /**
-     * Copy complete database from attached 'source' to main database.
-     * This copies all schema objects (tables, indexes, triggers, views) and data.
+     * The open database.
      */
-    private fun copyCompleteDatabase() {
-        // First, get and execute all schema statements
-        val schemaCursor = dbConnection?.rawQuery(
-            """
-            SELECT sql FROM source.sqlite_master
-            WHERE sql NOT NULL
-            AND type IN ('table', 'index', 'trigger', 'view')
-            AND name NOT LIKE 'sqlite_%'
-            ORDER BY
-                CASE type
-                    WHEN 'table' THEN 1
-                    WHEN 'index' THEN 2
-                    WHEN 'trigger' THEN 3
-                    WHEN 'view' THEN 4
-                END
-            """.trimIndent(),
-            null,
-        ) ?: error(IllegalStateException("Failed to read source schema"))
+    internal fun connection(): SqliteMemoryDatabase = db ?: error("Database not initialized")
 
-        val schemaStatements = mutableListOf<String>()
-        schemaCursor.use {
-            while (it.moveToNext()) {
-                val sql = it.getString(0)
-                if (!sql.isNullOrBlank()) {
-                    schemaStatements.add(sql)
-                }
-            }
-        }
-
-        // Execute schema creation statements
-        for (sql in schemaStatements) {
-            try {
-                dbConnection?.compileStatement(sql)?.execute()
-            } catch (e: Exception) {
-                // Skip if already exists or is an auto-created index
-                if (!e.message?.contains("already exists", ignoreCase = true)!!) {
-                    Log.w(TAG, "Schema statement may be auto-index: $sql", e)
-                }
-            }
-        }
-
-        // Then copy all table data
-        val tablesCursor = dbConnection?.rawQuery(
-            "SELECT name FROM source.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
-            null,
-        ) ?: error(IllegalStateException("Failed to get table list"))
-
-        tablesCursor.use {
-            while (it.moveToNext()) {
-                val tableName = it.getString(0)
-                val insertStmt = dbConnection?.compileStatement("INSERT INTO $tableName SELECT * FROM source.$tableName")
-                try {
-                    insertStmt?.execute()
-                } finally {
-                    insertStmt?.close()
-                }
-            }
-        }
+    /**
+     * Run a SELECT and return its rows keyed by column name. Values are String, Long, Double, ByteArray or null.
+     */
+    fun query(sql: String, params: List<Any?> = emptyList()): List<Map<String, Any?>> {
+        val result = connection().queryValues(sql, params.map(::toSqlValue))
+        return result.rows.map { row -> row.indices.associate { result.columns[it] to fromSqlValue(row[it]) } }
     }
 
-    // endregion
+    /**
+     * Run one INSERT, UPDATE or DELETE and return the number of rows it changed.
+     */
+    fun execute(sql: String, params: List<Any?> = emptyList()): Int {
+        return connection().execute(sql, params.map(::toSqlValue)).toInt()
+    }
 
-    // region Transaction Management
+    /**
+     * Run a multi-statement script without parameters. Migration scripts manage their own transactions and
+     * pragmas, so nothing is wrapped around them.
+     */
+    fun executeScript(sql: String) {
+        connection().executeBatch(sql)
+    }
+
+    private fun toSqlValue(value: Any?): SqlValue = when (value) {
+        null -> SqlValue.Null
+        is SqlValue -> value
+        is ByteArray -> SqlValue.Blob(value)
+        is Boolean -> SqlValue.Integer(if (value) 1L else 0L)
+        is Int -> SqlValue.Integer(value.toLong())
+        is Long -> SqlValue.Integer(value)
+        is Float -> SqlValue.Real(value.toDouble())
+        is Double -> SqlValue.Real(value)
+        else -> SqlValue.Text(value.toString())
+    }
+
+    private fun fromSqlValue(value: SqlValue): Any? = when (value) {
+        is SqlValue.Null -> null
+        is SqlValue.Integer -> value.v1
+        is SqlValue.Real -> value.v1
+        is SqlValue.Text -> value.v1
+        is SqlValue.Blob -> value.v1
+    }
 
     /**
      * Begin a SQL transaction on the vault.
      */
     fun beginTransaction() {
-        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
-        db.compileStatement("BEGIN TRANSACTION").execute()
+        connection().executeBatch("BEGIN TRANSACTION")
+    }
+
+    /**
+     * Commit a SQL transaction, persist the encrypted vault and mark it as changed locally.
+     * @param scope What the mutation touched, so the next sync can push only that scope
+     */
+    fun commitTransaction(scope: String = VaultMutationScope.MAIN) {
+        connection().executeBatch("COMMIT")
+        persistDatabaseToEncryptedStorage()
+        markMutated(scope)
+    }
+
+    /**
+     * Rollback a SQL transaction on the vault.
+     */
+    fun rollbackTransaction() {
+        connection().executeBatch("ROLLBACK")
+    }
+
+    /**
+     * Persist the in-memory database and mark it as changed locally, without committing a SQL transaction.
+     * Used after migrations, whose scripts manage their own transactions.
+     * @param scope What the mutation touched, so the next sync can push only that scope
+     */
+    fun persistAndMarkDirty(scope: String = VaultMutationScope.MAIN) {
+        persistDatabaseToEncryptedStorage()
+        markMutated(scope)
     }
 
     /**
@@ -265,98 +200,48 @@ class VaultDatabase(
      * This method can be called independently to persist the database without committing a transaction.
      */
     fun persistDatabaseToEncryptedStorage() {
-        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
-
-        // Slight delay tolerance for busy databases
-        try { db.rawQuery("PRAGMA busy_timeout=5000", null)?.close() } catch (_: Exception) {}
-
-        val tempDbFile = File(storageProvider.getRandomTempFilePath())
-
-        // Ensure the temp file does not exist yet
-        if (tempDbFile.exists()) {
-            tempDbFile.delete()
-        }
-
+        val connection = connection()
+        // End any open transactions.
+        try { connection.executeBatch("END") } catch (_: Exception) {}
         try {
-            // Properly quote the path for SQL
-            val quotedPath = tempDbFile.absolutePath.replace("'", "''")
-            val vacuumIntoSql = "VACUUM INTO '$quotedPath'"
-
-            // Retry up to 5 times if we hit transient locking errors
-            for (attempt in 1..5) {
-                try {
-                    // VACUUM cannot run inside a transaction.
-                    // End any lingering transaction (no-op if none).
-                    try { db.compileStatement("END").execute() } catch (_: Exception) {}
-
-                    db.compileStatement(vacuumIntoSql).use { it.execute() }
-                    break // Success, exit the loop
-                } catch (e: Exception) {
-                    val msg = e.message?.lowercase().orEmpty()
-                    val transient = msg.contains("locked") || msg.contains("busy") || msg.contains("statements in progress")
-
-                    Log.w(TAG, "VACUUM INTO attempt $attempt/5 failed: ${e.message}")
-
-                    if (transient && attempt < 5) {
-                        Thread.sleep((150L * attempt))
-                    } else {
-                        Log.e(TAG, "VACUUM INTO failed after retries", e)
-                        throw e
-                    }
-                }
-            }
-
-            // Validate output file exists and has content
-            if (!tempDbFile.exists() || tempDbFile.length() == 0L) {
-                Log.e(TAG, "VACUUM INTO produced no file or empty file at ${tempDbFile.absolutePath}")
-                error(IllegalStateException("VACUUM INTO produced no output"))
-            }
-
-            val rawData = tempDbFile.readBytes()
-            val base64String = android.util.Base64.encodeToString(rawData, android.util.Base64.NO_WRAP)
-            val encryptedBase64Data = crypto.encryptData(base64String)
-            storeEncryptedDatabase(encryptedBase64Data)
+            storeEncryptedDatabase(crypto.encryptBytes(export()))
         } catch (e: Exception) {
             Log.e(TAG, "Error exporting and encrypting database", e)
             throw e
-        } finally {
-            // Always clean up the temp file
-            try {
-                tempDbFile.delete()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error deleting temp file", e)
-            }
         }
     }
 
     /**
-     * Commit a SQL transaction and persist the encrypted vault.
+     * Mark the vault dirty and bump the mutation sequence, atomically from the sync engine's point of view,
+     * so the next sync pushes the local change instead of reporting the vault in sync.
      */
-    fun commitTransaction() {
-        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
-        db.compileStatement("COMMIT").execute()
-        persistDatabaseToEncryptedStorage()
+    private fun markMutated(scope: String) {
+        metadata.markDirty(scope)
+        metadata.incrementMutationSequence()
     }
 
     /**
-     * Rollback a SQL transaction on the vault.
+     * The database as SQLite file bytes, compacted first when no transaction is open.
      */
-    fun rollbackTransaction() {
-        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
-        db.compileStatement("ROLLBACK").execute()
+    fun export(): ByteArray {
+        val connection = connection()
+        try { connection.executeBatch("VACUUM") } catch (_: Exception) {}
+        return connection.export()
     }
-
-    // endregion
-
-    // region Cleanup
 
     /**
      * Close the database connection.
      */
     fun close() {
-        dbConnection?.close()
-        dbConnection = null
+        db?.destroy()
+        db = null
     }
 
-    // endregion
+    /**
+     * Whether these plaintext bytes are a SQLite database rather than base64 text of one.
+     */
+    private fun isSqliteDatabase(bytes: ByteArray): Boolean {
+        val header = "SQLite format 3\u0000".toByteArray(Charsets.UTF_8)
+        return bytes.size >= header.size && header.indices.all { bytes[it] == header[it] }
+    }
 }

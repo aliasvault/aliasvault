@@ -20,7 +20,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             },
             selectionHandler: { credential in
                 // For passkey authentication, we assume the data is available
-                self.handlePasskeySelection(credential: credential, clientDataHash: clientDataHash, rpId: rpId)
+                self.handlePasskeySelection(credential: credential, clientDataHash: clientDataHash, rpId: rpId, vaultStore: vaultStore)
             },
             cancelHandler: {
                 self.handleCancel()
@@ -87,8 +87,12 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
             // If the item behind this passkey also has a TOTP code and the user has the
             // copy-on-fill setting enabled (default), put the current code on the clipboard.
-            let totpSecret = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId))??.secretKey
-            TotpClipboard.copyCodeIfEnabled(secret: totpSecret)
+            if let manifestId = passkey.manifestId {
+                let totp = (try? vaultStore.getFirstTotpCode(forItemId: passkey.parentItemId, manifestId: manifestId)) ?? nil
+                TotpClipboard.copyCodeIfEnabled(totp: totp)
+            }
+
+            recordPasskeyUsage(vaultStore: vaultStore, passkey: passkey)
 
             // Build extension output if PRF results are available (iOS 18+)
             if #available(iOS 18.0, *), let prfResults = assertion.prfResults {
@@ -263,9 +267,13 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         var existingPasskeys: [PasskeyWithCredentialInfo] = []
         do {
             let results = try vaultStore.getPasskeysWithCredentialInfo(forRpId: rpId, userId: userId)
-            existingPasskeys = results.map { result in
-                PasskeyWithCredentialInfo(
+            existingPasskeys = results.compactMap { result in
+                guard let manifestId = result.passkey.manifestId else {
+                    return nil
+                }
+                return PasskeyWithCredentialInfo(
                     id: result.passkey.id,
+                    manifestId: manifestId,
                     displayName: result.passkey.displayName,
                     serviceName: result.serviceName,
                     username: result.username,
@@ -288,8 +296,9 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
             existingItemsWithoutPasskey = results.map { item in
                 ItemWithCredentialInfo(
                     itemId: item.itemId,
+                    manifestId: item.manifestId,
                     serviceName: item.serviceName,
-                    url: item.url,
+                    urls: item.urls,
                     username: item.username,
                     email: item.email,
                     hasPassword: item.hasPassword,
@@ -432,7 +441,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
                     // Show appropriate error dialog based on error type
                     await MainActor.run {
-                        self.showSyncErrorAlert(error: AppError.unknownError(message: syncResult.error ?? "Sync failed"))
+                        self.showSyncErrorAlert(error: AppError.unknownError(message: syncResult.errorMessage ?? syncResult.error ?? "Sync failed"))
                     }
                     return
                 }
@@ -483,18 +492,20 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
                 // Step 4: Store credential with passkey in database
                 // Check if we're replacing an existing passkey
-                if let oldPasskeyId = viewModel.selectedPasskeyToReplace {
+                if let oldPasskey = viewModel.selectedPasskeyToReplace {
                     // Replace existing passkey
                     try vaultStore.replacePasskey(
-                        oldPasskeyId: oldPasskeyId,
+                        oldPasskeyId: oldPasskey.id,
+                        manifestId: oldPasskey.manifestId,
                         newPasskey: passkey,
                         displayName: viewModel.displayName,
                         logo: logo
                     )
-                } else if let existingItemId = viewModel.selectedItemToMerge {
+                } else if let existingItem = viewModel.selectedItemToMerge {
                     // Merge passkey into existing item without passkey
                     try vaultStore.addPasskeyToExistingItem(
-                        itemId: existingItemId,
+                        itemId: existingItem.itemId,
+                        manifestId: existingItem.manifestId,
                         passkey: passkey,
                         logo: logo
                     )
@@ -647,9 +658,25 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
     }
 
     /**
+     * Record a passkey assertion in the item's usage statistics.
+     * Recorded before the request completes: the host may tear the extension down right after.
+     */
+    private func recordPasskeyUsage(vaultStore: VaultStore, passkey: Passkey) {
+        guard let manifestId = passkey.manifestId else {
+            print("[Autofill] Passkey \(passkey.id) carries no manifest, usage not recorded")
+            return
+        }
+        do {
+            try vaultStore.recordItemUsage(itemId: passkey.parentItemId, manifestId: manifestId, action: .passkey)
+        } catch {
+            print("[Autofill] Failed to record passkey usage: \(error)")
+        }
+    }
+
+    /**
      * Handle passkey credential selection from picker
      */
-    internal func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String) {
+    internal func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String, vaultStore: VaultStore) {
         do {
             // Get the passkey and verify it matches the RP ID
             guard let passkey = credential.passkey,
@@ -663,7 +690,9 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
             // If the credential also has a TOTP code and the user has the copy-on-fill setting
             // enabled (default), put the current code on the clipboard.
-            TotpClipboard.copyCodeIfEnabled(secret: credential.totpSecret)
+            TotpClipboard.copyCodeIfEnabled(totp: credential.totp)
+
+            recordPasskeyUsage(vaultStore: vaultStore, passkey: passkey)
 
             // Extract PRF inputs from the passkey request if available
             var prfInputs: PrfInputs?

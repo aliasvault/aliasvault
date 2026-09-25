@@ -1,6 +1,7 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { useState } from 'react';
 
-import { AppInfo } from '@/utils/AppInfo';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { storage } from '#imports';
 
@@ -20,7 +21,7 @@ export const useApiUrl = (): {
    * Load the API URL from storage.
    */
   const loadApiUrl = async (): Promise<void> => {
-    const storedUrl = await storage.getItem('local:apiUrl') as string;
+    const storedUrl = await storage.getItem(StorageKeys.API_URL) as string;
     if (storedUrl && storedUrl.length > 0) {
       setApiUrl(storedUrl);
     } else {

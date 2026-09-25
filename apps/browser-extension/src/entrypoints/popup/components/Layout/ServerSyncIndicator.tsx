@@ -4,13 +4,65 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { syncErrorMessage } from '@/utils/SyncError';
 
 /**
- * Minimum time (ms) to show the syncing indicator.
- * Ensures user sees confirmation that a new vault was downloaded.
+ * Minimum time (ms) an in-flight indicator stays visible once it has appeared.
+ * A sync that resolves in tens of milliseconds would otherwise flicker the badge, so we hold it just long enough
+ * to register as a state rather than a flicker. This also bridges the short idle gap between two chained syncs,
+ * which would otherwise flicker the badge off and straight back on.
  */
-const MIN_SYNC_DISPLAY_TIME = 1000;
+const MIN_SYNC_DISPLAY_TIME = 400;
+
+/**
+ * Grace period (ms) before the pending indicator appears. A save flips the vault to dirty for a few hundred ms
+ * even when the background sync will resolve it afterwards. So we wait a bit before showing the pending indicator
+ * to avoid flashing the badge unnecessarily.
+ */
+const PENDING_DISPLAY_DELAY = 1000;
+
+/**
+ * Keep the syncing indicator visible for a minimum amount of time, measured from the moment it first turned on to prevent flickering.
+ * @param active - the underlying state the indicator reflects
+ * @param minVisibleMs - how long the indicator has to stay visible at minimum
+ * @returns Whether the indicator should be rendered.
+ */
+const useMinimumVisible = (active: boolean, minVisibleMs: number): boolean => {
+  const [visible, setVisible] = useState(active);
+  const shownAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (active) {
+      if (shownAtRef.current === null) {
+        shownAtRef.current = Date.now();
+      }
+      setVisible(true);
+      return;
+    }
+
+    // Never shown, so there is nothing to hold on to.
+    if (shownAtRef.current === null) {
+      return;
+    }
+
+    const remaining = minVisibleMs - (Date.now() - shownAtRef.current);
+    if (remaining <= 0) {
+      shownAtRef.current = null;
+      setVisible(false);
+      return;
+    }
+
+    const timer = setTimeout((): void => {
+      shownAtRef.current = null;
+      setVisible(false);
+    }, remaining);
+    return (): void => clearTimeout(timer);
+  }, [active, minVisibleMs]);
+
+  return visible;
+};
 
 /**
  * Sync status indicator component.
@@ -19,7 +71,7 @@ const MIN_SYNC_DISPLAY_TIME = 1000;
  * Priority order (highest to lowest):
  * 1. Offline (amber) - network unavailable, clickable to retry
  * 2. Syncing (green spinner) - downloading new vault (minimum display time)
- * 3. Uploading (blue spinner) - uploading local changes to server
+ * 3. Uploading (blue spinner) - uploading local changes to server (minimum display time)
  * 4. Pending (blue pulsing) - local changes waiting to be uploaded, clickable to retry
  * 5. Hidden - when synced
  *
@@ -32,39 +84,24 @@ const ServerSyncIndicator: React.FC = () => {
   const dbContext = useDb();
   const [isRetrying, setIsRetrying] = useState(false);
 
-  // Track syncing state with minimum display time
-  const [showSyncing, setShowSyncing] = useState(false);
-  const syncStartTimeRef = useRef<number | null>(null);
+  // Hold both in-flight indicators up long enough that a fast sync never flashes them
+  const showSyncing = useMinimumVisible(dbContext.isSyncing, MIN_SYNC_DISPLAY_TIME);
+  const showUploading = useMinimumVisible(dbContext.isUploading, MIN_SYNC_DISPLAY_TIME);
+
+  // Track pending state with a grace delay so transient dirty windows never flash the badge
+  const [showPending, setShowPending] = useState(false);
 
   /**
-   * Handle syncing state changes with minimum display time.
-   * When syncing starts, show indicator immediately.
-   * When syncing ends, wait until minimum time has passed.
+   * Only surface the pending indicator when the vault has stayed dirty for the grace period.
    */
   useEffect(() => {
-    if (dbContext.isSyncing) {
-      // Sync started - show immediately and record start time
-      setShowSyncing(true);
-      syncStartTimeRef.current = Date.now();
-    } else if (syncStartTimeRef.current !== null) {
-      // Sync ended - wait for minimum display time
-      const elapsed = Date.now() - syncStartTimeRef.current;
-      const remaining = MIN_SYNC_DISPLAY_TIME - elapsed;
-
-      if (remaining > 0) {
-        const timer = setTimeout((): void => {
-          setShowSyncing(false);
-          syncStartTimeRef.current = null;
-        }, remaining);
-        return (): void => {
-          clearTimeout(timer);
-        };
-      } else {
-        setShowSyncing(false);
-        syncStartTimeRef.current = null;
-      }
+    if (!dbContext.hasUnsyncedUserChanges) {
+      setShowPending(false);
+      return;
     }
-  }, [dbContext.isSyncing]);
+    const timer = setTimeout((): void => setShowPending(true), PENDING_DISPLAY_DELAY);
+    return (): void => clearTimeout(timer);
+  }, [dbContext.hasUnsyncedUserChanges]);
 
   /**
    * Handle tap to force sync retry.
@@ -76,20 +113,12 @@ const ServerSyncIndicator: React.FC = () => {
 
     setIsRetrying(true);
 
-    // If we have local changes, show uploading indicator
-    if (dbContext.isDirty) {
-      dbContext.setIsUploading(true);
-    }
-
     try {
-      const result = await sendMessage('FULL_VAULT_SYNC');
+      const result = await sendMessage('FULL_VAULT_SYNC', {});
 
       // Handle logout requirement
       if (result.requiresLogout) {
-        const errorMessage = result.errorKey
-          ? t('common.errors.' + result.errorKey)
-          : result.error;
-        await app.logout(errorMessage);
+        await app.logout(syncErrorMessage(result, t));
         return;
       }
 
@@ -108,10 +137,9 @@ const ServerSyncIndicator: React.FC = () => {
 
       await dbContext.refreshSyncState();
     } catch (error) {
-      console.error('Retry sync error:', error);
+      logFailure('Retry sync error', error);
     } finally {
       setIsRetrying(false);
-      dbContext.setIsUploading(false);
     }
   }, [isRetrying, dbContext, app, t]);
 
@@ -129,7 +157,7 @@ const ServerSyncIndicator: React.FC = () => {
       <button
         onClick={handleRetry}
         disabled={isRetrying}
-        className="flex items-center gap-1.5 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
         title={t('sync.tapToRetry')}
       >
         <div className="relative">
@@ -152,7 +180,7 @@ const ServerSyncIndicator: React.FC = () => {
                   d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414"
                 />
               </svg>
-              {dbContext.isDirty && (
+              {dbContext.hasUnsyncedUserChanges && (
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
               )}
             </>
@@ -170,7 +198,7 @@ const ServerSyncIndicator: React.FC = () => {
   if (showSyncing) {
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-xs font-medium"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-xs font-medium"
         title={t('common.syncingVault')}
       >
         <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,10 +214,10 @@ const ServerSyncIndicator: React.FC = () => {
   }
 
   // Priority 3: Uploading indicator (not clickable, shows progress)
-  if (dbContext.isUploading) {
+  if (showUploading) {
     return (
       <div
-        className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"
       >
         <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -204,12 +232,12 @@ const ServerSyncIndicator: React.FC = () => {
   }
 
   // Priority 4: Pending indicator (clickable to force sync) - icon only
-  if (dbContext.isDirty) {
+  if (showPending) {
     return (
       <button
         onClick={handleRetry}
         disabled={isRetrying}
-        className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
+        className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium cursor-pointer hover:opacity-80 active:opacity-60 transition-colors"
         title={t('sync.tapToRetry')}
       >
         {isRetrying ? (

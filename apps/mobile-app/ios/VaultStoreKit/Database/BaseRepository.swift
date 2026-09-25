@@ -1,8 +1,13 @@
 import Foundation
+import VaultModels
 import VaultUtils
 
+/// The grouping key of a manifest-scoped row (same id can exist in several manifests by design).
+internal func scopedKey(manifestId: String, id: String) -> String {
+    return manifestId + id
+}
+
 /// Base repository class with common database operations.
-/// Provides transaction handling, soft delete, and other shared functionality.
 public class BaseRepository {
     /// The database client used for executing queries.
     internal let client: DatabaseClient
@@ -13,17 +18,29 @@ public class BaseRepository {
         self.client = client
     }
 
+    /// The manifest new rows outside any folder or item are stamped with: the personal manifest. Rows inside a
+    /// folder or item take that parent's manifest through the SQL instead. An unrecorded manifest is an error,
+    /// never the empty (unstamped) scope, which every later push would reject.
+    public func writeManifestId() throws -> String {
+        guard let manifestId = client.personalManifestId(), !manifestId.isEmpty else {
+            throw AppError.manifestNotRecorded
+        }
+        return manifestId
+    }
+
     // MARK: - Transaction Helpers
 
     /// Execute a function within a transaction.
     /// Automatically handles begin, commit, and rollback.
-    /// - Parameter operation: The function to execute within the transaction
+    /// - Parameters:
+    ///   - scope: What the mutation touched, so the next sync can push only that scope
+    ///   - operation: The function to execute within the transaction
     /// - Returns: The result of the function
-    public func withTransaction<T>(_ operation: () throws -> T) throws -> T {
+    public func withTransaction<T>(scope: String = VaultMutationScope.main, _ operation: () throws -> T) throws -> T {
         try client.beginTransaction()
         do {
             let result = try operation()
-            try client.commitTransaction()
+            try client.commitTransaction(scope: scope)
             return result
         } catch {
             try? client.rollbackTransaction()
@@ -31,96 +48,17 @@ public class BaseRepository {
         }
     }
 
-    // MARK: - Soft Delete Helpers
-
-    /// Soft delete a record by setting IsDeleted = 1.
-    /// - Parameters:
-    ///   - table: The table name
-    ///   - id: The record ID
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func softDelete(table: String, id: String) throws -> Int {
-        let timestamp = DateHelpers.now()
-        return try client.executeUpdate(
-            "UPDATE \(table) SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?",
-            params: [timestamp, id]
-        )
-    }
-
-    /// Soft delete records by a foreign key.
-    /// - Parameters:
-    ///   - table: The table name
-    ///   - foreignKey: The foreign key column name
-    ///   - foreignKeyValue: The foreign key value
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func softDeleteByForeignKey(table: String, foreignKey: String, foreignKeyValue: String) throws -> Int {
-        let timestamp = DateHelpers.now()
-        return try client.executeUpdate(
-            "UPDATE \(table) SET IsDeleted = 1, UpdatedAt = ? WHERE \(foreignKey) = ?",
-            params: [timestamp, foreignKeyValue]
-        )
-    }
-
-    // MARK: - Hard Delete Helpers
-
-    /// Hard delete a record permanently.
-    /// - Parameters:
-    ///   - table: The table name
-    ///   - id: The record ID
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func hardDelete(table: String, id: String) throws -> Int {
-        return try client.executeUpdate(
-            "DELETE FROM \(table) WHERE Id = ?",
-            params: [id]
-        )
-    }
-
-    /// Hard delete records by a foreign key.
-    /// - Parameters:
-    ///   - table: The table name
-    ///   - foreignKey: The foreign key column name
-    ///   - foreignKeyValue: The foreign key value
-    /// - Returns: Number of rows affected
-    @discardableResult
-    public func hardDeleteByForeignKey(table: String, foreignKey: String, foreignKeyValue: String) throws -> Int {
-        return try client.executeUpdate(
-            "DELETE FROM \(table) WHERE \(foreignKey) = ?",
-            params: [foreignKeyValue]
-        )
-    }
-
     // MARK: - Utility Methods
 
-    /// Check if a table exists in the database.
-    /// - Parameter tableName: The name of the table to check
-    /// - Returns: True if the table exists
-    public func tableExists(_ tableName: String) throws -> Bool {
-        let results = try client.executeQuery(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-            params: [tableName]
-        )
-        return !results.isEmpty
-    }
-
-    /// Generate a new UUID in uppercase format.
+    /// Generate a new id.
     /// - Returns: A new UUID string
     public func generateId() -> String {
-        return UUID().uuidString.uppercased()
+        return UUID().uuidString.lowercased()
     }
 
     /// Get the current timestamp in the standard format.
     /// - Returns: Current timestamp string
     public func now() -> String {
         return DateHelpers.now()
-    }
-
-    /// Build a parameterized IN clause for SQL queries.
-    /// - Parameter values: Array of values for the IN clause
-    /// - Returns: Tuple with placeholders string and values array
-    public func buildInClause(_ values: [String]) -> (placeholders: String, values: [String]) {
-        let placeholders = values.map { _ in "?" }.joined(separator: ",")
-        return (placeholders, values)
     }
 }

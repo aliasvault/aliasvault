@@ -10,19 +10,19 @@ namespace AliasVault.Api.Vault.RetentionRules;
 using AliasServerDb;
 
 /// <summary>
-/// Monthly retention rule that keeps the latest vault for each month.
+/// Monthly retention rule that keeps the latest revision for each month.
 /// </summary>
 public class MonthlyRetentionRule : IRetentionRule
 {
     /// <summary>
-    /// Gets the amount of months to keep vault.
+    /// Gets the amount of months to keep a revision for.
     /// </summary>
     public int MonthsToKeep { get; init; }
 
     /// <inheritdoc cref="IRetentionRule.ApplyRule"/>
-    public IEnumerable<Vault> ApplyRule(List<Vault> vaults, DateTime now)
+    public IEnumerable<IVaultRevision> ApplyRule(List<IVaultRevision> revisions, DateTime now)
     {
-        return vaults
+        return revisions
             .GroupBy(x => x.UpdatedAt.Month)
             .Select(g => g.OrderByDescending(x => x.UpdatedAt).First())
             .OrderByDescending(x => x.UpdatedAt)

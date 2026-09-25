@@ -4,5 +4,6 @@
 export type SaveLoginResponse = {
   success: boolean;
   itemId?: string;
+  manifestId?: string;
   error?: string;
 };

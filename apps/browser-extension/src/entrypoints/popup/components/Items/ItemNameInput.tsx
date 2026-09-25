@@ -1,22 +1,22 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@/utils/FolderUtils';
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
+import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-type Folder = {
-  Id: string;
-  Name: string;
-  ParentFolderId: string | null;
-  Weight: number;
-};
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 type ItemNameInputProps = {
   inputRef?: React.RefObject<HTMLInputElement | null>;
   value: string;
   onChange: (value: string) => void;
   folders: Folder[];
-  selectedFolderId: string | null | undefined;
-  onFolderChange: (folderId: string | null) => void;
+  selectedFolder: FolderRef | null | undefined;
+  onFolderChange: (folder: FolderRef | null) => void;
+  // Optional control rendered directly left of the input (the item logo).
+  logoSlot?: React.ReactNode;
   suggestions?: string[];
 };
 
@@ -29,15 +29,20 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   value,
   onChange,
   folders,
-  selectedFolderId,
+  selectedFolder: selectedFolderRef,
   onFolderChange,
+  logoSlot,
   suggestions = []
 }) => {
   const { t } = useTranslation();
+  const dbContext = useDb();
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
-  const selectedFolder = folders.find(f => f.Id === selectedFolderId);
+  const selectedFolderId = selectedFolderRef?.Id ?? null;
+  const selectedManifestId = selectedFolderRef?.ManifestId ?? null;
+  const selectedFolder = folders.find(f => f.Id === selectedFolderId && f.ManifestId === selectedManifestId);
+  const personalManifestId = dbContext?.sqliteClient?.getPersonalManifestId() ?? null;
 
   // Build folder tree
   const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
@@ -47,27 +52,27 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
    * This ensures the selected folder is visible in the tree when the modal opens.
    */
   useEffect(() => {
-    if (selectedFolderId && folders.length > 0) {
-      const fullPath = getFolderIdPath(selectedFolderId, folders);
+    if (selectedFolderId && selectedManifestId && folders.length > 0) {
+      const fullPath = getFolderIdPath({ Id: selectedFolderId, ManifestId: selectedManifestId }, folders);
       if (fullPath.length > 0) {
         // Expand all folders in the path including the selected folder if it has children.
-        setExpandedFolders(new Set(fullPath));
+        setExpandedFolders(new Set(fullPath.map(id => scopedKey(selectedManifestId, id))));
       }
     } else {
       setExpandedFolders(new Set());
     }
-  }, [selectedFolderId, folders]);
+  }, [selectedFolderId, selectedManifestId, folders]);
 
   /**
    * Toggle folder expansion in tree view.
    */
-  const toggleFolder = useCallback((folderId: string): void => {
+  const toggleFolder = useCallback((folderKey: string): void => {
     setExpandedFolders(prev => {
       const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
+      if (next.has(folderKey)) {
+        next.delete(folderKey);
       } else {
-        next.add(folderId);
+        next.add(folderKey);
       }
       return next;
     });
@@ -76,8 +81,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   /**
    * Handle folder selection and close the modal.
    */
-  const handleSelectFolder = useCallback((folderId: string | null): void => {
-    onFolderChange(folderId);
+  const handleSelectFolder = useCallback((folder: FolderRef | null): void => {
+    onFolderChange(folder);
     setShowFolderModal(false);
   }, [onFolderChange]);
 
@@ -106,15 +111,16 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
    * Render a folder tree node recursively.
    */
   const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
-    const isExpanded = expandedFolders.has(node.Id);
+    const nodeKey = scopedKey(node.ManifestId, node.Id);
+    const isExpanded = expandedFolders.has(nodeKey);
     const hasChildren = node.children.length > 0;
-    const isSelected = selectedFolderId === node.Id;
+    const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
 
     return (
-      <div key={node.Id}>
+      <div key={nodeKey}>
         <button
           type="button"
-          onClick={() => handleSelectFolder(node.Id)}
+          onClick={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
           className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-2 transition-colors ${
             isSelected
               ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
@@ -128,7 +134,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleFolder(node.Id);
+                toggleFolder(nodeKey);
               }}
               className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
             >
@@ -143,14 +149,12 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
           )}
 
           {/* Folder icon */}
-          <svg
-            className={`w-5 h-5 shrink-0 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-          </svg>
+          <FolderIcon
+            variant="outline"
+            isShared={isSharedFolder(node, personalManifestId)}
+            className={`w-5 h-5 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
+            badgeClassName="bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600"
+          />
 
           {/* Folder name */}
           <span className="font-medium flex-1">{node.Name}</span>
@@ -171,7 +175,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
         )}
       </div>
     );
-  }, [expandedFolders, selectedFolderId, handleSelectFolder, toggleFolder]);
+  }, [expandedFolders, selectedFolderId, selectedManifestId, handleSelectFolder, toggleFolder, personalManifestId]);
 
   return (
     <>
@@ -198,36 +202,42 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
             </div>
           )}
         </div>
-        <div className="relative flex items-center">
-          <input
-            ref={inputRef}
-            id="itemName"
-            type="text"
-            value={value}
-            onChange={handleNameChange}
-            className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white ${selectedFolderId ? 'pr-28' : 'pr-10'}`}
-            required
-          />
-          {/* Folder Button inside input - always visible, width adjusts based on whether a folder is selected */}
-          <button
-            type="button"
-            onClick={handleOpenFolderModal}
-            className={`absolute right-1 z-10 flex items-center gap-1 px-2 py-1 rounded transition-colors text-xs ${
-              selectedFolderId
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-            }`}
-            title={selectedFolder?.Name || '-'}
-          >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-            </svg>
-            {selectedFolderId && (
-              <span className="max-w-16 truncate">
-                {selectedFolder?.Name}
-              </span>
-            )}
-          </button>
+        <div className="flex items-stretch gap-2">
+          {logoSlot}
+          <div className="relative flex items-center flex-1 min-w-0">
+            <input
+              ref={inputRef}
+              id="itemName"
+              type="text"
+              value={value}
+              onChange={handleNameChange}
+              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white ${selectedFolderId ? 'pr-28' : 'pr-10'}`}
+              required
+            />
+            {/* Folder Button inside input - always visible, width adjusts based on whether a folder is selected */}
+            <button
+              type="button"
+              onClick={handleOpenFolderModal}
+              className={`absolute right-1 z-10 flex items-center gap-1 px-2 py-1 rounded transition-colors text-xs ${
+                selectedFolderId
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+              title={selectedFolder?.Name || '-'}
+            >
+              <FolderIcon
+                variant="outline"
+                isShared={selectedFolder !== undefined && isSharedFolder(selectedFolder, personalManifestId)}
+                className="w-4 h-4"
+                badgeClassName="bg-white dark:bg-gray-700 ring-gray-200 dark:ring-gray-600"
+              />
+              {selectedFolderId && (
+                <span className="max-w-16 truncate">
+                  {selectedFolder?.Name}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

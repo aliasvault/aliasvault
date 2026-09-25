@@ -7,6 +7,7 @@
 
 namespace AliasServerDb.Configuration;
 
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,85 +73,169 @@ public static class DatabaseConfiguration
     }
 
     /// <summary>
-    /// Waits for the database to be ready by checking if all migrations have been applied.
-    /// This is useful for services that should not run migrations themselves but need to wait
-    /// for another service (typically the API) to complete migrations first.
+    /// Applies all pending migrations, reporting which migration is being applied and how long each one took.
+    /// </summary>
+    /// <param name="context">The database context to migrate.</param>
+    /// <param name="logger">Logger to report the migration progress on.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task MigrateWithLoggingAsync(this DbContext context, ILogger logger, CancellationToken cancellationToken = default)
+    {
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync(cancellationToken)).ToList();
+        if (pendingMigrations.Count == 0)
+        {
+            logger.LogInformation("Database schema is up-to-date, no migrations to apply.");
+            return;
+        }
+
+        logger.LogInformation("Database schema is behind, applying {Count} pending migration(s): {Migrations}", pendingMigrations.Count, string.Join(", ", pendingMigrations));
+
+        var totalStopwatch = Stopwatch.StartNew();
+        for (var index = 0; index < pendingMigrations.Count; index++)
+        {
+            var migration = pendingMigrations[index];
+            logger.LogInformation("Applying migration {Index}/{Count}: {Migration} ...", index + 1, pendingMigrations.Count, migration);
+
+            var migrationStopwatch = Stopwatch.StartNew();
+            await context.Database.MigrateAsync(migration, cancellationToken);
+
+            logger.LogInformation("Applied migration {Index}/{Count}: {Migration} in {Duration}", index + 1, pendingMigrations.Count, migration, FormatDuration(migrationStopwatch.Elapsed));
+        }
+
+        logger.LogInformation("Database schema is up-to-date, applied {Count} migration(s) in {Duration}.", pendingMigrations.Count, FormatDuration(totalStopwatch.Elapsed));
+    }
+
+    /// <summary>
+    /// Waits until all migrations are applied by the API service.
     /// </summary>
     /// <param name="context">The database context to check.</param>
     /// <param name="logger">Optional logger for diagnostics.</param>
-    /// <param name="timeoutSeconds">Maximum time to wait in seconds (default: 60).</param>
+    /// <param name="timeoutSeconds">Maximum time to wait without seeing a pending migration (default: 60).</param>
     /// <param name="checkIntervalMs">Interval between checks in milliseconds (default: 2000).</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task WaitForDatabaseReadyAsync(this DbContext context, ILogger? logger = null, int timeoutSeconds = 60, int checkIntervalMs = 2000)
     {
         var timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+        var waitStopwatch = Stopwatch.StartNew();
+        var lastProgressLog = TimeSpan.FromSeconds(-30);
         var attempt = 0;
 
-        while (DateTime.UtcNow < timeout)
+        while (true)
         {
             attempt++;
 
             try
             {
                 // First check if database is accessible
-                var canConnect = await context.Database.CanConnectAsync();
-                if (!canConnect)
+                if (!await context.Database.CanConnectAsync())
                 {
-                    logger?.LogInformation(
-                        "Database not yet accessible. Attempt {Attempt}. Waiting {Interval}ms...",
-                        attempt,
-                        checkIntervalMs);
-                    await Task.Delay(checkIntervalMs);
-                    continue;
+                    logger?.LogInformation("Database not yet accessible. Attempt {Attempt}. Waiting {Interval}ms...", attempt, checkIntervalMs);
                 }
-
-                // Check if migrations history table exists to avoid PostgreSQL logging errors
-                var connection = context.Database.GetDbConnection();
-                await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '__EFMigrationsHistory')";
-
-                if (connection.State != System.Data.ConnectionState.Open)
+                else
                 {
-                    await connection.OpenAsync();
+                    var pendingCount = await GetPendingMigrationCountAsync(context);
+                    if (pendingCount == 0)
+                    {
+                        logger?.LogInformation("Database is ready. All migrations have been applied.");
+                        return;
+                    }
+
+                    if (pendingCount is null)
+                    {
+                        logger?.LogInformation("Database accessible but migrations not yet started. Attempt {Attempt}. Waiting {Interval}ms...", attempt, checkIntervalMs);
+                    }
+                    else
+                    {
+                        timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+                        if (waitStopwatch.Elapsed - lastProgressLog >= TimeSpan.FromSeconds(30))
+                        {
+                            lastProgressLog = waitStopwatch.Elapsed;
+                            logger?.LogInformation("Waiting for the API to apply {PendingCount} pending database migration(s), current wait time: {Duration}.", pendingCount, FormatDuration(waitStopwatch.Elapsed));
+                        }
+                    }
                 }
-
-                var tableExists = (bool)(await command.ExecuteScalarAsync() ?? false);
-
-                if (!tableExists)
+            }
+            catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.LockNotAvailable)
+            {
+                // The migration history table is locked, which means the API is applying a migration right now.
+                timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+                if (waitStopwatch.Elapsed - lastProgressLog >= TimeSpan.FromSeconds(30))
                 {
-                    logger?.LogInformation(
-                        "Database accessible but migrations not yet started. Attempt {Attempt}. Waiting {Interval}ms...",
-                        attempt,
-                        checkIntervalMs);
-                    await Task.Delay(checkIntervalMs);
-                    continue;
+                    lastProgressLog = waitStopwatch.Elapsed;
+                    logger?.LogInformation("Waiting for the API to finish applying database migrations, current wait time: {Duration}.", FormatDuration(waitStopwatch.Elapsed));
                 }
-
-                // Now safe to check pending migrations without PostgreSQL logging errors
-                var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-                if (!pendingMigrations.Any())
-                {
-                    logger?.LogInformation("Database is ready. All migrations have been applied.");
-                    return;
-                }
-
-                logger?.LogInformation(
-                    "Waiting for database migrations to complete. {PendingCount} migrations pending. Attempt {Attempt}.",
-                    pendingMigrations.Count(),
-                    attempt);
             }
             catch (Exception ex)
             {
-                logger?.LogWarning(
-                    ex,
-                    "Error checking database status. Attempt {Attempt}. Waiting {Interval}ms before retry...",
-                    attempt,
-                    checkIntervalMs);
+                logger?.LogWarning(ex, "Error checking database status. Attempt {Attempt}. Waiting {Interval}ms before retry...", attempt, checkIntervalMs);
+            }
+
+            if (DateTime.UtcNow >= timeout)
+            {
+                throw new TimeoutException($"Database did not become ready within {timeoutSeconds} seconds and no pending migrations were detected. Is the API running?");
             }
 
             await Task.Delay(checkIntervalMs);
         }
+    }
 
-        throw new TimeoutException($"Database did not become ready within {timeoutSeconds} seconds. Migrations may not have completed.");
+    /// <summary>
+    /// Gets the number of migrations not yet applied, or null when the migration history table does not exist yet.
+    /// </summary>
+    /// <param name="context">The database context to check.</param>
+    /// <returns>The pending migration count, or null when migrations have not started yet.</returns>
+    private static async Task<int?> GetPendingMigrationCountAsync(DbContext context)
+    {
+        var connection = context.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+
+        // Check if migrations history table exists to avoid PostgreSQL logging errors
+        command.CommandText = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '__EFMigrationsHistory')";
+        if (!(bool)(await command.ExecuteScalarAsync() ?? false))
+        {
+            return null;
+        }
+
+        command.CommandText = "SET LOCAL lock_timeout = '2s'";
+        await command.ExecuteNonQueryAsync();
+
+        command.CommandText = "SELECT \"MigrationId\" FROM \"__EFMigrationsHistory\"";
+        var applied = new HashSet<string>();
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                applied.Add(reader.GetString(0));
+            }
+        }
+
+        return context.Database.GetMigrations().Count(m => !applied.Contains(m));
+    }
+
+    /// <summary>
+    /// Formats an elapsed timespan as a short human readable duration, scaled to how long it actually took.
+    /// </summary>
+    /// <param name="elapsed">The elapsed time to format.</param>
+    /// <returns>The formatted duration, e.g. "84ms", "7.0s" or "2m 5s".</returns>
+    private static string FormatDuration(TimeSpan elapsed)
+    {
+        if (elapsed.TotalSeconds < 1)
+        {
+            return FormattableString.Invariant($"{elapsed.TotalMilliseconds:F0}ms");
+        }
+
+        if (elapsed.TotalMinutes < 1)
+        {
+            return FormattableString.Invariant($"{elapsed.TotalSeconds:F1}s");
+        }
+
+        return FormattableString.Invariant($"{(int)elapsed.TotalMinutes}m {elapsed.Seconds}s");
     }
 }

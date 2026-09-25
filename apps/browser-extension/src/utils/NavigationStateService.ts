@@ -1,14 +1,6 @@
-import { storage } from '#imports';
+import { StorageKeys } from '@/utils/constants/storageKeys';
 
-/**
- * Storage keys for the popup navigation state that is persisted across popup opens.
- */
-export const NAVIGATION_STATE_KEYS = {
-  LAST_VISITED_PAGE: 'session:lastVisitedPage',
-  LAST_VISITED_TIME: 'session:lastVisitedTime',
-  NAVIGATION_HISTORY: 'session:navigationHistory',
-  LAST_TAB_URL: 'session:lastTabUrl',
-} as const;
+import { storage } from '#imports';
 
 /**
  * A single entry in the persisted popup navigation history.
@@ -28,9 +20,9 @@ export const NavigationStateService = {
    */
   async storeNavigationState(pathname: string, historyEntries: NavigationHistoryEntry[]): Promise<void> {
     await Promise.all([
-      storage.setItem(NAVIGATION_STATE_KEYS.LAST_VISITED_PAGE, pathname),
-      storage.setItem(NAVIGATION_STATE_KEYS.LAST_VISITED_TIME, Date.now()),
-      storage.setItem(NAVIGATION_STATE_KEYS.NAVIGATION_HISTORY, historyEntries),
+      storage.setItem(StorageKeys.LAST_VISITED_PAGE, pathname),
+      storage.setItem(StorageKeys.LAST_VISITED_TIME, Date.now()),
+      storage.setItem(StorageKeys.NAVIGATION_HISTORY, historyEntries),
     ]);
   },
 
@@ -39,9 +31,9 @@ export const NavigationStateService = {
    */
   async getNavigationState(): Promise<{ lastPage: string | null, lastVisitTime: number | null, history: NavigationHistoryEntry[] | null }> {
     const [lastPage, lastVisitTime, history] = await Promise.all([
-      storage.getItem(NAVIGATION_STATE_KEYS.LAST_VISITED_PAGE) as Promise<string | null>,
-      storage.getItem(NAVIGATION_STATE_KEYS.LAST_VISITED_TIME) as Promise<number | null>,
-      storage.getItem(NAVIGATION_STATE_KEYS.NAVIGATION_HISTORY) as Promise<NavigationHistoryEntry[] | null>,
+      storage.getItem(StorageKeys.LAST_VISITED_PAGE) as Promise<string | null>,
+      storage.getItem(StorageKeys.LAST_VISITED_TIME) as Promise<number | null>,
+      storage.getItem(StorageKeys.NAVIGATION_HISTORY) as Promise<NavigationHistoryEntry[] | null>,
     ]);
     return { lastPage, lastVisitTime, history };
   },
@@ -51,20 +43,20 @@ export const NavigationStateService = {
    * Keeps the last tab URL, which is used separately for tab-switch detection.
    */
   async clearNavigationState(): Promise<void> {
-    await storage.removeItems([NAVIGATION_STATE_KEYS.LAST_VISITED_PAGE, NAVIGATION_STATE_KEYS.LAST_VISITED_TIME, NAVIGATION_STATE_KEYS.NAVIGATION_HISTORY]);
+    await storage.removeItems([StorageKeys.LAST_VISITED_PAGE, StorageKeys.LAST_VISITED_TIME, StorageKeys.NAVIGATION_HISTORY]);
   },
 
   /**
    * Get the last known browser tab URL, used to detect tab switches between popup opens.
    */
   async getLastTabUrl(): Promise<string | null> {
-    return await storage.getItem(NAVIGATION_STATE_KEYS.LAST_TAB_URL) as string | null;
+    return await storage.getItem(StorageKeys.LAST_TAB_URL) as string | null;
   },
 
   /**
    * Store the current browser tab URL for future tab-switch detection.
    */
   async setLastTabUrl(url: string): Promise<void> {
-    await storage.setItem(NAVIGATION_STATE_KEYS.LAST_TAB_URL, url);
+    await storage.setItem(StorageKeys.LAST_TAB_URL, url);
   },
 };

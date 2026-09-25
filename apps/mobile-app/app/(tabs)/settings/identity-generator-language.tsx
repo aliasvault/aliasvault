@@ -1,11 +1,10 @@
+import { getIdentityLanguages } from '@aliasvault/client/rust/RustCore';
+import { getLanguageInfo } from '@aliasvault/models/defaults';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
-
-import { getLanguageInfo } from '@/utils/dist/core/models/defaults';
-import { getIdentityLanguages } from '@/utils/IdentityGeneratorUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -43,7 +42,7 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
       const loadSettings = async (): Promise<void> => {
         try {
           const [currentLanguage, availableLanguages] = await Promise.all([
-            dbContext.sqliteClient!.getEffectiveIdentityLanguage(),
+            dbContext.sqliteClient!.settings.getEffectiveIdentityLanguage(),
             getIdentityLanguages()
           ]);
 
@@ -73,7 +72,7 @@ export default function IdentityGeneratorLanguageScreen(): React.ReactNode {
 
           try {
             await executeVaultMutation(async () => {
-              await dbContext.sqliteClient!.updateSetting('DefaultIdentityLanguage', pendingChanges.current.language!);
+              await dbContext.sqliteClient!.settings.updateSetting('DefaultIdentityLanguage', pendingChanges.current.language!);
             });
             pendingChanges.current = {};
           } catch (error) {

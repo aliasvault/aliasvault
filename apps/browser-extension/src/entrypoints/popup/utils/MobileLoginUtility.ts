@@ -1,11 +1,15 @@
 import { Buffer } from 'buffer';
 
+import { MobileLoginProtocol } from '@aliasvault/client/auth/MobileLoginProtocol';
+import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { serverPredatesV2Api } from '@aliasvault/client/sync/LegacyStorageModelMigration';
+
 import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginErrorCode';
 
-import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@/utils/dist/core/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-import type { WebApiService } from '@/utils/WebApiService';
+
+import type { WebApiService } from '@aliasvault/client/api/WebApiService';
+import type { MobileLoginInitiateResponse, MobileLoginPayload, MobileLoginPollResponse } from '@aliasvault/models/webapi';
 
 /**
  * Utility class for mobile login operations
@@ -13,9 +17,11 @@ import type { WebApiService } from '@/utils/WebApiService';
 export class MobileLoginUtility {
   private webApi: WebApiService;
   private pollingInterval: NodeJS.Timeout | null = null;
+  private pollingTimeout: NodeJS.Timeout | null = null;
+  private isPollInFlight = false;
   private requestId: string | null = null;
+  private pollSecret: string | null = null;
   private privateKey: CryptoKey | null = null;
-  private publicKeyHash: string | null = null;
 
   /**
    * Constructor for the MobileLoginUtility class.
@@ -27,30 +33,14 @@ export class MobileLoginUtility {
   }
 
   /**
-   * Computes a SHA-256 hash of the public key and returns the first 16 characters.
-   */
-  private async computePublicKeyHash(publicKey: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(publicKey);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    // Return first 16 characters for a compact but secure fingerprint
-    return hashHex.substring(0, 16);
-  }
-
-  /**
-   * Initiates a mobile login request and returns the QR code data
-   * @returns Object containing requestId and publicKeyHash for QR code generation
+   * Initiates a mobile login request.
+   * @returns The text for the QR code and the verification code the user has to type into the mobile app
    * @throws {MobileLoginErrorCode} If initiation fails
    */
-  public async initiate(): Promise<{ requestId: string; publicKeyHash: string }> {
+  public async initiate(): Promise<{ qrPayload: string; verificationCode: string }> {
     try {
       const { publicKeyJwk, privateKey } = await EncryptionUtility.generateRsaKeyPairNonExtractable();
       this.privateKey = privateKey;
-
-      // Compute hash of public key for QR code binding
-      this.publicKeyHash = await this.computePublicKeyHash(publicKeyJwk);
 
       // Send public key to server (no auth required)
       const response = await this.webApi.rawFetch('auth/mobile-login/initiate', {
@@ -63,17 +53,30 @@ export class MobileLoginUtility {
         }),
       });
 
+      /*
+       * A 404 on this initiating call means the v2 API is missing altogether. Only this call may read a 404 that
+       * way: the poll below answers 404 for an expired request, which is a normal outcome.
+       */
+      if (response.status === 404 && await serverPredatesV2Api(this.webApi)) {
+        throw MobileLoginErrorCode.SERVER_OUTDATED;
+      }
+
       if (!response.ok) {
         throw MobileLoginErrorCode.GENERIC;
       }
 
       const data = await response.json() as MobileLoginInitiateResponse;
+      if (!data.requestId || !data.pollSecret) {
+        // A server without the poll secret still runs the old handshake, which this client no longer takes part in.
+        throw MobileLoginErrorCode.SERVER_OUTDATED;
+      }
       this.requestId = data.requestId;
+      this.pollSecret = data.pollSecret;
 
-      // Return QR code data (request ID and public key hash)
+      // The QR code binds the request to this key pair, the verification code is derived from the same key.
       return {
-        requestId: this.requestId,
-        publicKeyHash: this.publicKeyHash,
+        qrPayload: MobileLoginProtocol.buildQrPayload(data.requestId, await MobileLoginProtocol.computePublicKeyHash(publicKeyJwk)),
+        verificationCode: await MobileLoginProtocol.computeVerificationCode(publicKeyJwk),
       };
     } catch (error) {
       if (typeof error === 'string' && Object.values(MobileLoginErrorCode).includes(error as MobileLoginErrorCode)) {
@@ -90,7 +93,7 @@ export class MobileLoginUtility {
     onSuccess: (result: MobileLoginResult) => void,
     onError: (errorCode: MobileLoginErrorCode) => void
   ): Promise<void> {
-    if (!this.requestId || !this.privateKey) {
+    if (!this.requestId || !this.pollSecret || !this.privateKey) {
       throw new Error('Must call initiate() before starting polling');
     }
 
@@ -98,24 +101,33 @@ export class MobileLoginUtility {
      * Polls the server for mobile login response
      */
     const pollFn = async (): Promise<void> => {
+      // An approved request can be collected once, so a slow poll must never overlap with the next one.
+      if (this.isPollInFlight) {
+        return;
+      }
+      this.isPollInFlight = true;
+
       try {
         if (!this.requestId) {
           this.stopPolling();
           return;
         }
 
-        const response = await this.webApi.rawFetch(
-          `auth/mobile-login/poll/${this.requestId}`,
-          {
-            method: 'GET',
-          }
-        );
+        const response = await this.webApi.rawFetch('auth/mobile-login/poll', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestId: this.requestId,
+            pollSecret: this.pollSecret,
+          }),
+        });
 
         if (!response.ok) {
           if (response.status === 404) {
             // Request expired or not found
-            this.stopPolling();
-            this.requestId = null;
+            this.cleanup();
             onError(MobileLoginErrorCode.TIMEOUT);
             return;
           }
@@ -124,62 +136,41 @@ export class MobileLoginUtility {
 
         const data = await response.json() as MobileLoginPollResponse;
 
-        if (data.fulfilled && data.encryptedSymmetricKey) {
-          // Capture key locally; stopPolling() nulls the field.
+        if (data.status === 'Declined') {
+          this.cleanup();
+          onError(MobileLoginErrorCode.DECLINED);
+          return;
+        }
+
+        if (data.status === 'Approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedUnlockKey) {
+          // Capture key locally; cleanup() nulls the field.
           const privateKey = this.privateKey!;
-          this.stopPolling();
+          this.cleanup();
 
-          // Decrypt the encrypted decryption key with RSA private key
-          const decryptionKeyBytes = await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedDecryptionKey!, privateKey);
-          const decryptionKey = Buffer.from(decryptionKeyBytes).toString('base64');
+          // The mobile app encrypted the unlock key with our public key
+          const unlockKeyBytes = await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedUnlockKey, privateKey);
+          const unlockKey = Buffer.from(unlockKeyBytes).toString('base64');
 
-          // Decrypt the other encrypted fields with the symmetric key
+          // The server encrypted the session payload with a symmetric key, which is encrypted with our public key
           const symmetricKeyBytes = await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey);
           const symmetricKey = Buffer.from(symmetricKeyBytes).toString('base64');
+          const payload = JSON.parse(await EncryptionUtility.symmetricDecrypt(data.encryptedPayload, symmetricKey)) as MobileLoginPayload;
 
-          const token = await EncryptionUtility.symmetricDecrypt(data.encryptedToken!, symmetricKey);
-          const refreshToken = await EncryptionUtility.symmetricDecrypt(data.encryptedRefreshToken!, symmetricKey);
-          const username = await EncryptionUtility.symmetricDecrypt(data.encryptedUsername!, symmetricKey);
-
-          this.requestId = null;
-
-          // Call /login endpoint with username to get salt and encryption settings
-          const loginResponse = await this.webApi.rawFetch('auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              username,
-            }),
+          onSuccess({
+            username: payload.username,
+            token: payload.token,
+            refreshToken: payload.refreshToken,
+            unlockKey: unlockKey,
+            salt: payload.salt,
+            encryptionType: payload.encryptionType,
+            encryptionSettings: payload.encryptionSettings,
           });
-
-          if (!loginResponse.ok) {
-            onError(MobileLoginErrorCode.GENERIC);
-            return;
-          }
-
-          const loginData = await loginResponse.json() as LoginResponse;
-
-          // Create result object using the MobileLoginResult type
-          const result: MobileLoginResult = {
-            username: username,
-            token: token,
-            refreshToken: refreshToken,
-            decryptionKey: decryptionKey,
-            salt: loginData.salt,
-            encryptionType: loginData.encryptionType,
-            encryptionSettings: loginData.encryptionSettings,
-          };
-
-          // Call success callback with result object
-          onSuccess(result);
-
         }
       } catch {
-        this.stopPolling();
-        this.requestId = null;
+        this.cleanup();
         onError(MobileLoginErrorCode.GENERIC);
+      } finally {
+        this.isPollInFlight = false;
       }
     };
 
@@ -187,10 +178,9 @@ export class MobileLoginUtility {
     this.pollingInterval = setInterval(pollFn, 3000);
 
     // Stop polling after 3.5 minutes (adds 1.5 minute buffer to default 2 minute timer for edge cases)
-    setTimeout(() => {
+    this.pollingTimeout = setTimeout(() => {
       if (this.pollingInterval) {
-        this.stopPolling();
-        this.requestId = null;
+        this.cleanup();
         onError(MobileLoginErrorCode.TIMEOUT);
       }
     }, 210000);
@@ -204,6 +194,10 @@ export class MobileLoginUtility {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+    if (this.pollingTimeout) {
+      clearTimeout(this.pollingTimeout);
+      this.pollingTimeout = null;
+    }
     this.privateKey = null;
   }
 
@@ -213,6 +207,6 @@ export class MobileLoginUtility {
   public cleanup(): void {
     this.stopPolling();
     this.requestId = null;
-    this.publicKeyHash = null;
+    this.pollSecret = null;
   }
 }

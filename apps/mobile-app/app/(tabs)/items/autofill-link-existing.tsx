@@ -1,3 +1,11 @@
+import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import {
+  FieldKey,
+  FieldTypes,
+  ItemTypes,
+  getFieldValue,
+  getFieldValues,
+} from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -5,14 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Platform, StyleSheet, TextInput, TouchableOpacity, View, type ListRenderItem } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
-import {
-  FieldKey,
-  FieldTypes,
-  ItemTypes,
-  getFieldValue,
-  getFieldValues,
-} from '@/utils/dist/core/models/vault';
+import type { DisplayItem } from '@/utils/DisplayItem';
 import { sanitizeServiceUrl } from '@/utils/UrlUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -25,6 +26,8 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { Item, ItemField } from '@aliasvault/models/vault';
 
 /**
  * Screen for picking an existing credential to attach the autofill
@@ -54,7 +57,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
     }
   }, [itemUrl]);
 
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<DisplayItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -115,7 +118,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
    * Append the autofill URL/package to the chosen item's `login.url`
    * multi-value field and persist via the vault mutation pipeline.
    */
-  const linkItem = useCallback(async (item: Item): Promise<void> => {
+  const linkItem = useCallback(async (item: DisplayItem): Promise<void> => {
     if (!decodedAppInfo) {
       return;
     }
@@ -177,7 +180,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
       };
 
       await executeVaultMutation(async () => {
-        await dbContext.sqliteClient!.items.update(itemToSave);
+        await dbContext.sqliteClient!.items.update({ Id: item.Id, ManifestId: item.ManifestId }, itemToSave);
       });
 
       navigateToSuccess();
@@ -196,7 +199,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   /**
    * Confirm with the user before mutating the credential.
    */
-  const handleSelectItem = useCallback((item: Item) => {
+  const handleSelectItem = useCallback((item: DisplayItem) => {
     if (isSaving) {
       return;
     }
@@ -300,7 +303,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
   /**
    * Render an individual credential row.
    */
-  const renderItem: ListRenderItem<Item> = useCallback((info) => {
+  const renderItem: ListRenderItem<DisplayItem> = useCallback((info) => {
     const row = info.item;
     const username = getFieldValue(row, FieldKey.LoginUsername);
     const email = getFieldValue(row, FieldKey.LoginEmail);
@@ -367,7 +370,7 @@ export default function AutofillLinkExistingScreen(): React.ReactNode {
 
       <FlatList
         data={filteredItems}
-        keyExtractor={item => item.Id}
+        keyExtractor={item => scopedKey(item.ManifestId, item.Id)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"

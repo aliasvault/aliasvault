@@ -1,9 +1,8 @@
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter } from 'expo-router';
 import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-
-import { AppInfo } from '@/utils/AppInfo';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';

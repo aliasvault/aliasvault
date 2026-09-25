@@ -80,10 +80,6 @@ fn filter(credentials: Vec<Credential>, current_url: &str, page_title: &str) -> 
         .collect()
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Test cases ported from CredentialMatcher.test.ts
-// ═══════════════════════════════════════════════════════════════════════════════
-
 /// [#1] - Exact URL match
 #[test]
 fn test_exact_url_match() {
@@ -381,7 +377,9 @@ fn test_json_roundtrip() {
     };
 
     let json = serde_json::to_string(&input).unwrap();
+    assert!(json.contains("\"currentUrl\"") && json.contains("\"matchingMode\""), "input fields are camelCase on the wire");
     let output_json = filter_credentials_json(&json).unwrap();
+    assert!(output_json.contains("\"matchedIds\""), "output fields are camelCase on the wire");
     let output: CredentialMatcherOutput = serde_json::from_str(&output_json).unwrap();
 
     assert_eq!(output.matched_ids.len(), 1);
@@ -400,7 +398,7 @@ fn test_empty_url() {
 }
 
 /// Test that the default cap (DEFAULT_MAX_RESULTS = 10) bounds the output.
-/// Twelve candidates → exactly 10 returned.
+/// Twelve candidates > exactly 10 returned.
 #[test]
 fn test_default_max_results_caps_at_ten() {
     let credentials: Vec<Credential> = (1..=12)
@@ -1026,4 +1024,16 @@ fn test_single_word_hostname_extraction_requires_protocol() {
 
     let with_match = filter(credentials_with_protocol.clone(), "http://plex:32400", "");
     assert_eq!(with_match.len(), 1, "Credential with protocol should match");
+}
+
+/// [#2299] - Whitespace around a stored URL or package name must not prevent a match
+#[test]
+fn test_stored_urls_are_trimmed() {
+    let credentials = vec![
+        create_test_credential_multi_url("Amazon", vec!["https://amazon.fr/", " https://amazon.de", "amazon.it\t", " com.amazon.app \n"], "user@amazon.com"),
+    ];
+
+    assert_eq!(filter(credentials.clone(), "https://www.amazon.de/ap/signin", "").len(), 1, "Leading space should be ignored");
+    assert_eq!(filter(credentials.clone(), "https://amazon.it", "").len(), 1, "Trailing whitespace should be ignored");
+    assert_eq!(filter(credentials, "com.amazon.app", "").len(), 1, "Package name should match when padded");
 }

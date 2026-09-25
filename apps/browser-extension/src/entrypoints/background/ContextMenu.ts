@@ -1,13 +1,15 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { type Browser } from '@wxt-dev/browser';
 
 import { handleGetPasswordSettings } from '@/entrypoints/background/VaultMessageHandler';
 
 import { POPUP_TYPES, type PopupType, isPopupType } from '@/utils/autofill/PopupTypes';
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import * as RustCore from '@/utils/RustCore';
 
 import { t } from '@/i18n/StandaloneI18n';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 import { browser } from "#imports";
 
@@ -65,7 +67,7 @@ export async function setupContextMenus() : Promise<void> {
   try {
     await browser.contextMenus.removeAll();
   } catch (error) {
-    console.error('Failed to remove existing context menus:', error);
+    logFailure('Failed to remove existing context menus', error);
   }
 
   const popupEntries = Object.entries(POPUP_TYPES) as [PopupType, typeof POPUP_TYPES[PopupType]][];
@@ -103,7 +105,7 @@ export async function setupContextMenus() : Promise<void> {
       }),
     ]);
   } catch (error) {
-    console.error('Failed to create context menus:', error);
+    logFailure('Failed to create context menus', error);
   }
 }
 

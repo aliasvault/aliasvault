@@ -1,3 +1,4 @@
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
@@ -27,7 +28,7 @@ async function createOffscreenDocument(): Promise<void> {
     // Check if offscreen document already exists
     if (chrome.runtime.getContexts) {
       const existingContexts = await chrome.runtime.getContexts({
-        contextTypes: ['OFFSCREEN_DOCUMENT'],
+        contextTypes: ['OFFSCREEN_DOCUMENT' as chrome.runtime.ContextType],
         documentUrls: [chrome.runtime.getURL('offscreen.html')]
       });
 
@@ -46,7 +47,7 @@ async function createOffscreenDocument(): Promise<void> {
 
     offscreenDocumentCreated = true;
   } catch (error) {
-    console.error('[CLIPBOARD] Failed to create offscreen document:', error);
+    logFailure('[CLIPBOARD] Failed to create offscreen document', error);
     offscreenDocumentCreated = false;
   }
 }
@@ -149,7 +150,7 @@ export async function handleClipboardCopied() : Promise<void> {
 
       sendMessage('CLIPBOARD_CLEARED', {}).catch(() => {});
     } catch (error) {
-      console.error('[CLIPBOARD] Error during clipboard clear:', error);
+      logFailure('[CLIPBOARD] Error during clipboard clear', error);
 
       // Clean up even on error
       clipboardClearTimer = null;
@@ -163,28 +164,6 @@ export async function handleClipboardCopied() : Promise<void> {
       sendMessage('CLIPBOARD_CLEARED', {}).catch(() => {});
     }
   }, timeout * 1000);
-}
-
-/**
- * Cancel clipboard clear countdown and timer.
- */
-export function handleCancelClipboardClear(): void {
-  if (clipboardClearTimer) {
-    clearTimeout(clipboardClearTimer);
-    clipboardClearTimer = null;
-  }
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-    countdownInterval = null;
-  }
-  sendMessage('CLIPBOARD_COUNTDOWN_CANCELLED', {}).catch(() => {});
-}
-
-/**
- * Get the clipboard clear timeout setting.
- */
-export async function handleGetClipboardClearTimeout(): Promise<number> {
-  return LocalPreferencesService.getClipboardClearTimeout();
 }
 
 /**

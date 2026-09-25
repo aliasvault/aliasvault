@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { SORT_OPTIONS } from '@/hooks/useItemSort';

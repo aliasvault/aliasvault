@@ -4,6 +4,14 @@
     "type": "module",
     "main": "dist/index.mjs",
     "types": "dist/index.d.mts",
+    "exports": {
+        "./defaults": "./src/defaults/index.ts",
+        "./icons": "./src/icons/index.ts",
+        "./identity": "./src/identity/index.ts",
+        "./metadata": "./src/metadata/index.ts",
+        "./vault": "./src/vault/index.ts",
+        "./webapi": "./src/webapi/index.ts"
+    },
     "scripts": {
         "build": "tsup",
         "clean": "rm -rf dist",

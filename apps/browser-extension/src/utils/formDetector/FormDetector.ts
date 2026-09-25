@@ -1,4 +1,4 @@
-import { devLog } from "@/utils/DevLogger";
+import { devLog } from "@/utils/devLogger/DevLogger";
 import { closestAcrossShadow, collectShadowRoots, getComposedParentElement, getQueryRoot, getShadowHostChain, queryAllDeep } from "@/utils/ShadowDom";
 
 import { CombinedEmailVerificationPatterns, CombinedFieldExclusionPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords, type FieldPatternEntry, includeTerms, specificIncludeTerms } from "./FieldPatterns";

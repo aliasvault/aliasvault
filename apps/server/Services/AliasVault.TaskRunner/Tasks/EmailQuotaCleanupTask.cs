@@ -45,10 +45,12 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
         var settings = await _settingsService.GetAllSettingsAsync();
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        // Get all users with their email claims and limits
+        // Get all users with their email claims and limits. The email limit is stored on the user's personal group.
         var usersWithClaims = await (from u in dbContext.AliasVaultUsers
-                                     join c in dbContext.UserEmailClaims on u.Id equals c.UserId
-                                     select new { u.Id, u.UserName, u.MaxEmails, u.LastActivityDate, u.CreatedAt, c.Address })
+                                     join g in dbContext.Groups on u.PersonalGroupId equals g.Id
+                                     join m in dbContext.VaultManifests on g.Id equals m.OwnerGroupId
+                                     join l in dbContext.EmailClaimLinks.Where(link => link.State != EmailClaimLinkState.Removed) on m.ManifestId equals l.VaultManifestId
+                                     select new { u.Id, u.UserName, g.MaxEmails, u.LastActivityDate, u.CreatedAt, l.EmailClaim.Address })
             .ToListAsync(cancellationToken);
 
         // Get minimum activity date which is used to determine if user is active.
@@ -127,12 +129,6 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
             }
         }
 
-        if (totalEmailsDeleted > 0)
-        {
-            _logger.LogInformation(
-                "Total emails deleted by quota cleanup: {TotalEmails} across {UserCount} users",
-                totalEmailsDeleted,
-                usersProcessed);
-        }
+        _logger.LogInformation("Total emails deleted by quota cleanup: {TotalEmails} across {UserCount} users", totalEmailsDeleted, usersProcessed);
     }
 }

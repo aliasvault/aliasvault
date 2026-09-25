@@ -45,10 +45,9 @@ public class DbSyncTests : ClientPlaywrightTest
 
         await SimulateClient(baselineVault, async () =>
         {
-            // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
-            await ApiDbContext.SaveChangesAsync();
+            // Restore client1's vault state as the server's current revision to simulate a conflict when
+            // this second client updates the same vault.
+            await RestoreServerVault(client1Vault);
 
             await NavigateUsingBlazorRouter("items");
             await WaitForUrlAsync("items", "Find all of your items");
@@ -96,10 +95,9 @@ public class DbSyncTests : ClientPlaywrightTest
         // Then client 2 updates the same vault causing a conflict and requiring a client-side merge.
         var client2Vault = await SimulateClient(baselineVault, async () =>
         {
-            // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
-            await ApiDbContext.SaveChangesAsync();
+            // Restore client1's vault state as the server's current revision to simulate a conflict when
+            // this second client updates the same vault.
+            await RestoreServerVault(client1Vault);
 
             await UpdateItemEntry("PropTestBaseline3", new Dictionary<string, string> { { "service-name", "PropTestMutate3" }, { "username", "propmutate3" }, { "email", "propemailmutate3@example.tld" } });
         });
@@ -107,10 +105,9 @@ public class DbSyncTests : ClientPlaywrightTest
         // Then another client updates the client 1 vault again, which should also cause a conflict with the client 2 vault update.
         await SimulateClient(client1Vault, async () =>
         {
-            // Re-add client2 vault to simulate conflict when this third client updates the same vault.
-            client2Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client2Vault);
-            await ApiDbContext.SaveChangesAsync();
+            // Restore client2's vault state as the server's current revision to simulate a conflict when
+            // this third client updates the same vault.
+            await RestoreServerVault(client2Vault);
 
             // Update username to test that field-level merge works correctly.
             await UpdateItemEntry("PropTestMutate2", new Dictionary<string, string> { { "service-name", "PropTestMutate23" }, { "username", "propmutate23" } });
@@ -144,100 +141,29 @@ public class DbSyncTests : ClientPlaywrightTest
     }
 
     /// <summary>
-    /// Test that merge between two vaults where one has changed the password results in an error.
-    /// </summary>
-    /// <returns>Async task.</returns>
-    [Test]
-    [Order(3)]
-    public async Task DbSyncClientMergePasswordChangeErrorTest()
-    {
-        var baselineVault = await CreateBaselineVault(async () =>
-        {
-            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestBaseline" } });
-        });
-
-        var client1Vault = await SimulateClient(baselineVault, async () =>
-        {
-            await NavigateUsingBlazorRouter("items");
-            await WaitForUrlAsync("items", "Find all of your items");
-
-            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestA" } });
-
-            // Attempt to change password.
-            await NavigateUsingBlazorRouter("settings/security/change-password");
-            await WaitForUrlAsync("settings/security/change-password", "Current Password");
-
-            // Fill in the form.
-            var currentPasswordField = Page.Locator("input[id='currentPassword']");
-            var newPasswordField = Page.Locator("input[id='newPassword']");
-            var confirmPasswordField = Page.Locator("input[id='newPasswordConfirm']");
-
-            var newPassword = TestUserPassword + "123";
-
-            await currentPasswordField.FillAsync(TestUserPassword);
-            await newPasswordField.FillAsync(newPassword);
-            await confirmPasswordField.FillAsync(newPassword);
-
-            // Advance time by 1 second manually to ensure the new vault (encrypted with new password) is created in the future.
-            ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
-
-            // Click the change password button.
-            var changePasswordButton = Page.Locator("button:has-text('Change Password')");
-            await changePasswordButton.ClickAsync();
-
-            // Wait for success message.
-            await WaitForUrlAsync("settings/security/change-password**", "Password changed successfully.");
-        });
-
-        await SimulateClient(baselineVault, async () =>
-        {
-            // Re-add client1 vault to simulate conflict when this second client updates the same vault.
-            client1Vault.Id = Guid.NewGuid();
-            ApiDbContext.Vaults.Add(client1Vault);
-            await ApiDbContext.SaveChangesAsync();
-
-            await NavigateUsingBlazorRouter("items");
-            await WaitForUrlAsync("items", "Find all of your items");
-
-            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestB" } }, null, false);
-
-            // Wait for 1 second to ensure the page is loaded.
-            await Task.Delay(1000);
-        });
-
-        // Assert that merge failed error message is shown.
-        var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("An unknown error occurred."), $"Merge failed error expected after another client changed the password but no error message found.");
-    }
-
-    /// <summary>
     /// Create a baseline vault.
     /// </summary>
     /// <param name="clientActions">Optional client actions to execute after creating the baseline vault.</param>
-    /// <returns>The baseline vault.</returns>
-    private async Task<AliasServerDb.Vault> CreateBaselineVault(Func<Task> clientActions)
+    /// <returns>A detached snapshot of the baseline vault state.</returns>
+    private async Task<AliasServerDb.VaultManifest> CreateBaselineVault(Func<Task> clientActions)
     {
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
         await clientActions();
-        return await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        return await SnapshotCurrentVault();
     }
 
     /// <summary>
-    /// Simulate a client by removing all vaults and adding the baseline vault back.
+    /// Simulate a client by restoring the baseline vault state as the server's current revision.
     /// </summary>
-    /// <param name="baselineVault">The baseline vault to add back.</param>
+    /// <param name="baselineVault">The baseline vault snapshot to restore.</param>
     /// <param name="clientActions">Optional client actions to execute after simulating the client.</param>
-    /// <returns>The baseline vault.</returns>
-    private async Task<AliasServerDb.Vault> SimulateClient(AliasServerDb.Vault baselineVault, Func<Task> clientActions)
+    /// <returns>A detached snapshot of the vault state after the client actions.</returns>
+    private async Task<AliasServerDb.VaultManifest> SimulateClient(AliasServerDb.VaultManifest baselineVault, Func<Task> clientActions)
     {
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-        // Remove all vaults and add the baseline vault back.
-        ApiDbContext.Vaults.RemoveRange(ApiDbContext.Vaults);
-        await ApiDbContext.SaveChangesAsync();
-        baselineVault.Id = Guid.NewGuid();
-        ApiDbContext.Vaults.Add(baselineVault);
-        await ApiDbContext.SaveChangesAsync();
+        // Restore the baseline vault state as the server's current revision.
+        await RestoreServerVault(baselineVault);
 
         // Simulate new client.
         await Logout();
@@ -246,6 +172,27 @@ public class DbSyncTests : ClientPlaywrightTest
 
         // Execute custom client actions.
         await clientActions();
-        return await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
+        return await SnapshotCurrentVault();
+    }
+
+    /// <summary>
+    /// Returns a detached snapshot of the current (personal) vault manifest row.
+    /// </summary>
+    private async Task<AliasServerDb.VaultManifest> SnapshotCurrentVault()
+    {
+        return await ApiDbContext.VaultManifests.AsNoTracking().OrderByDescending(x => x.RevisionNumber).FirstAsync();
+    }
+
+    /// <summary>
+    /// Overwrites the current vault manifest row with the given snapshot's payload and clears its history,
+    /// simulating a server whose latest vault state is the snapshot.
+    /// </summary>
+    /// <param name="snapshot">The vault snapshot to restore as current.</param>
+    private async Task RestoreServerVault(AliasServerDb.VaultManifest snapshot)
+    {
+        var current = await ApiDbContext.VaultManifests.FirstAsync(x => x.ManifestId == snapshot.ManifestId);
+        current.CopyPayloadFrom(snapshot);
+        ApiDbContext.VaultManifestsHistory.RemoveRange(ApiDbContext.VaultManifestsHistory.Where(x => x.ManifestId == snapshot.ManifestId));
+        await ApiDbContext.SaveChangesAsync();
     }
 }

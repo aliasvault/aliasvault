@@ -1,3 +1,7 @@
+import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
+import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -6,19 +10,17 @@ import { StyleSheet, Text, Platform, Animated, TextInput, TouchableOpacity, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { Folder } from '@/utils/db/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
-import type { Item, ItemType } from '@/utils/dist/core/models/vault';
-import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
+import type { DisplayItem } from '@/utils/DisplayItem';
 import emitter from '@/utils/EventEmitter';
+import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@/utils/ItemFilters';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useAppReviewPrompt } from '@/hooks/useAppReviewPrompt';
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
+import { usePersonalManifestId } from '@/hooks/usePersonalManifestId';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -39,6 +41,10 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+
+import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type filter option configuration.
@@ -70,12 +76,13 @@ export default function ItemsScreen(): React.ReactNode {
   const [scrollY] = useState(() => new Animated.Value(0));
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const flatListRef = useRef<Animated.FlatList<Item | null>>(null);
+  const flatListRef = useRef<Animated.FlatList<DisplayItem | null>>(null);
   const [isTabFocused, setIsTabFocused] = useState(false);
   const router = useRouter();
   const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
-  const [itemsList, setItemsList] = useState<Item[]>([]);
+  const [itemsList, setItemsList] = useState<DisplayItem[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const personalManifestId = usePersonalManifestId();
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
@@ -93,8 +100,8 @@ export default function ItemsScreen(): React.ReactNode {
   // Recently deleted count state
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
 
-  // Freshly duplicated item that gets scrolled into view and briefly highlighted
-  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  // Scoped key (manifest and id) of a freshly duplicated item that gets scrolled into view and briefly highlighted
+  const [highlightedItemKey, setHighlightedItemKey] = useState<string | null>(null);
 
   // Alert dialog state
   const [alertConfig, setAlertConfig] = useState<{ title: string; message: string } | null>(null);
@@ -184,36 +191,18 @@ export default function ItemsScreen(): React.ReactNode {
     // Apply the active type/feature filter to the items used for counting.
     const itemsForCount = applyTypeFilter(itemsList, filterType);
 
-    /**
-     * Count items per folder (including items in subfolders recursively).
-     * @param folderId - The folder ID to count items for
-     * @returns Total count of items in the folder and all subfolders
-     */
-    const getRecursiveItemCount = (folderId: string): number => {
-      // Get items directly in this folder
-      const directItems = itemsForCount.filter((item: Item) => item.FolderId === folderId);
-
-      // Get all child folders
-      const childFolders = folders.filter(f => f.ParentFolderId === folderId);
-
-      // Recursively count items in child folders
-      const childItemCount = childFolders.reduce((count, child) => {
-        return count + getRecursiveItemCount(child.Id);
-      }, 0);
-
-      return directItems.length + childItemCount;
-    };
-
     // Return only root-level folders (no parent) with recursive counts, sorted alphabetically
     return folders
       .filter(folder => !folder.ParentFolderId) // Only root-level folders
       .map(folder => ({
         id: folder.Id,
+        manifestId: folder.ManifestId,
         name: folder.Name,
-        itemCount: getRecursiveItemCount(folder.Id)
+        itemCount: getRecursiveItemCount(folder, itemsForCount, folders),
+        isShared: isSharedFolder(folder, personalManifestId)
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [folders, itemsList, searchQuery, filterType]);
+  }, [folders, itemsList, searchQuery, filterType, personalManifestId]);
 
   /**
    * Get the title based on the active filter.
@@ -244,7 +233,7 @@ export default function ItemsScreen(): React.ReactNode {
    * This is used to show a helpful message when the user has imported credentials that were all in folders.
    */
   const hasItemsInFoldersOnly = useMemo(() => {
-    return itemsList.length > 0 && itemsList.every((item: Item) => item.FolderId !== null);
+    return itemsList.length > 0 && itemsList.every((item: DisplayItem) => item.FolderId !== null);
   }, [itemsList]);
 
   /**
@@ -351,7 +340,7 @@ export default function ItemsScreen(): React.ReactNode {
     });
 
     // Add listener for item/credential changes
-    const itemChangedSub = emitter.addListener('credentialChanged', async () => {
+    const itemChangedSub = emitter.addListener('itemChanged', async () => {
       await loadItems();
     });
 
@@ -444,24 +433,20 @@ export default function ItemsScreen(): React.ReactNode {
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 
-  /**
-   * Track previous syncing state to detect when sync completes.
-   */
-  const wasSyncingRef = useRef(dbContext.isSyncing);
-
-  /**
-   * Reload items when background sync completes (isSyncing goes from true to false).
-   * This ensures newly synced data is displayed without requiring manual pull-to-refresh.
+  /*
+   * Reload once a sync completes, so newly synced data shows up without a manual pull-to-refresh.
    */
   useEffect(() => {
-    const wasSyncing = wasSyncingRef.current;
-    wasSyncingRef.current = dbContext.isSyncing;
+    const vaultSyncedSub = emitter.addListener('vaultSynced', () => {
+      if (isAuthenticated && isDatabaseAvailable) {
+        loadItems();
+      }
+    });
 
-    // Only reload when sync just completed (was syncing, now not syncing)
-    if (wasSyncing && !dbContext.isSyncing && isAuthenticated && isDatabaseAvailable) {
-      loadItems();
-    }
-  }, [dbContext.isSyncing, isAuthenticated, isDatabaseAvailable, loadItems]);
+    return (): void => {
+      vaultSyncedSub.remove();
+    };
+  }, [isAuthenticated, isDatabaseAvailable, loadItems]);
 
   // Set header for Android
   useEffect(() => {
@@ -505,9 +490,9 @@ export default function ItemsScreen(): React.ReactNode {
    * Delete an item (move to trash).
    * Non-blocking: saves locally and syncs in background via ServerSyncIndicator.
    */
-  const onItemDelete = useCallback(async (itemId: string): Promise<void> => {
+  const onItemDelete = useCallback(async (item: ItemRef): Promise<void> => {
     await executeVaultMutation(async () => {
-      await dbContext.sqliteClient!.items.trash(itemId);
+      await dbContext.sqliteClient!.items.trash(item);
     });
 
     // Reload items to reflect the deletion
@@ -518,17 +503,18 @@ export default function ItemsScreen(): React.ReactNode {
    * Duplicate an item including all fields except passkeys and field history.
    * Non-blocking: saves locally and syncs in background via ServerSyncIndicator.
    */
-  const onItemDuplicate = useCallback(async (itemId: string): Promise<void> => {
-    let newItemId: string | null = null;
+  const onItemDuplicate = useCallback(async (item: ItemRef): Promise<void> => {
+    let duplicate: ItemRef | null = null;
     await executeVaultMutation(async () => {
-      newItemId = await dbContext.sqliteClient!.items.duplicate(itemId);
+      duplicate = await dbContext.sqliteClient!.items.duplicate(item);
     });
 
     // Reload items to show the new duplicate
     await loadItems();
 
     // Scroll to and briefly highlight the new duplicate so it's clear where it landed
-    setHighlightedItemId(newItemId);
+    const created = duplicate as ItemRef | null;
+    setHighlightedItemKey(created ? scopedKey(created.ManifestId, created.Id) : null);
   }, [dbContext.sqliteClient, executeVaultMutation, loadItems]);
 
   /**
@@ -536,26 +522,26 @@ export default function ItemsScreen(): React.ReactNode {
    * rendered, then clear the highlight after a short moment.
    */
   useEffect(() => {
-    if (!highlightedItemId) {
+    if (!highlightedItemKey) {
       return;
     }
 
-    const index = sortedItems.findIndex(itm => itm.Id === highlightedItemId);
+    const index = sortedItems.findIndex(itm => scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey);
     if (index >= 0) {
       flatListRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
     }
 
-    const timer = setTimeout(() => setHighlightedItemId(null), 2000);
+    const timer = setTimeout(() => setHighlightedItemKey(null), 2000);
     return (): void => clearTimeout(timer);
-  }, [highlightedItemId, sortedItems]);
+  }, [highlightedItemKey, sortedItems]);
 
   /**
    * Navigate to a folder, preserving the active type/feature filter so the folder view
    * shows the same subset of items reflected in the folder's badge count.
    */
-  const handleFolderClick = useCallback((folderId: string) => {
+  const handleFolderClick = useCallback((folder: FolderRef) => {
     navigate(() => {
-      router.push(`/(tabs)/items/folder/${folderId}?filter=${encodeURIComponent(filterType)}` as '/(tabs)/items/folder/[id]');
+      router.push(folderRoute(folder, filterType));
     });
   }, [router, navigate, filterType]);
 
@@ -579,9 +565,9 @@ export default function ItemsScreen(): React.ReactNode {
       if (trimmedQuery) {
         const isUrl = /^https?:\/\//i.test(trimmedQuery);
         const queryParam = isUrl ? 'itemUrl' : 'itemName';
-        router.push(`/(tabs)/items/add-edit?itemType=${itemType}&${queryParam}=${encodeURIComponent(trimmedQuery)}`);
+        router.push(`/(tabs)/items/add?itemType=${itemType}&${queryParam}=${encodeURIComponent(trimmedQuery)}`);
       } else {
-        router.push(`/(tabs)/items/add-edit?itemType=${itemType}`);
+        router.push(`/(tabs)/items/add?itemType=${itemType}`);
       }
       HapticsUtility.impact();
     });
@@ -816,9 +802,9 @@ export default function ItemsScreen(): React.ReactNode {
           <View style={styles.folderPillsContainer}>
             {foldersWithCounts.map((folder) => (
               <FolderPill
-                key={folder.id}
+                key={scopedKey(folder.manifestId, folder.id)}
                 folder={folder}
-                onPress={() => handleFolderClick(folder.id)}
+                onPress={() => handleFolderClick({ Id: folder.id, ManifestId: folder.manifestId })}
               />
             ))}
             <TouchableOpacity
@@ -947,7 +933,7 @@ export default function ItemsScreen(): React.ReactNode {
           ref={flatListRef}
           testID="items-list"
           data={isLoadingItems ? Array(4).fill(null) : sortedItems}
-          keyExtractor={(itm, index) => itm?.Id ?? `skeleton-${index}`}
+          keyExtractor={(itm, index) => itm ? scopedKey(itm.ManifestId, itm.Id) : `skeleton-${index}`}
           keyboardShouldPersistTaps='handled'
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -976,7 +962,7 @@ export default function ItemsScreen(): React.ReactNode {
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} showFolderPath={!!searchQuery} isHighlighted={itm.Id === highlightedItemId} />
+              <ItemCard item={itm} onItemDelete={onItemDelete} onItemDuplicate={onItemDuplicate} showFolderPath={!!searchQuery} isHighlighted={scopedKey(itm.ManifestId, itm.Id) === highlightedItemKey} />
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}

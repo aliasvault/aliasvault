@@ -1,5 +1,5 @@
 import { isAvAutofillAllowed, isAvSuppressSave } from '@/utils/autofill/Autofill';
-import { extractFaviconUrlSimple } from '@/utils/favicon';
+import { logFailure } from '@/utils/Diagnostics';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { closestAcrossShadow, collectShadowRoots, queryAllDeep } from '@/utils/ShadowDom';
 
@@ -436,9 +436,6 @@ export class LoginDetector {
     const suggestedNames = FormDetector.getSuggestedServiceName(this.document, window.location);
     const suggestedName = suggestedNames[0] || domain;
 
-    // Extract favicon URL
-    const faviconUrl = this.extractFaviconUrl();
-
     return {
       username,
       password,
@@ -446,16 +443,7 @@ export class LoginDetector {
       domain,
       timestamp: Date.now(),
       suggestedName,
-      faviconUrl,
     };
-  }
-
-  /**
-   * Extract the page favicon URL.
-   * Uses the shared FaviconExtractor utility for consistent extraction across the extension.
-   */
-  private extractFaviconUrl(): string | undefined {
-    return extractFaviconUrlSimple(this.document);
   }
 
   /**
@@ -499,7 +487,7 @@ export class LoginDetector {
       try {
         callback(login);
       } catch (error) {
-        console.error('[AliasVault] Error in login capture callback:', error);
+        logFailure('[AliasVault] Error in login capture callback', error);
       }
     }
   }

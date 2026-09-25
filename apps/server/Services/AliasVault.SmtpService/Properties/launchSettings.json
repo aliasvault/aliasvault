@@ -4,9 +4,10 @@
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
-        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
+        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,aliasvault.net,disabled.tld",
         "SMTP_TLS_ENABLED": "false",
-        "SMTP_CERTIFICATES_PATH": "Certificates"
+        "SMTP_CERTIFICATES_PATH": "Certificates",
+        "ABUSE_METRICS_SALT": "oloXvmElPNGTXBAxQgEodegqEe9/vRBoXLho+sjIdWk="
       },
       "dotnetRunMessages": true
     },

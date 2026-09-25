@@ -1,11 +1,13 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
-import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
+import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
+import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -37,6 +39,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   const dbContext = useDb();
   const colors = useColors();
   const { t } = useTranslation();
+  const consecutiveFailuresRef = useRef(0);
 
   const emailsPerLoad = 3;
   const canLoadMore = displayedCount < emails.length;
@@ -108,6 +111,21 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   );
 
   useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * Record that a poll failed for the exponential backoff to work.
+     * @param reason - what did not work
+     * @param error - the underlying error, when there is one
+     */
+    const markPollFailed = (reason: string, error?: unknown): void => {
+      if (consecutiveFailuresRef.current === 0) {
+        logExpected(`[EmailPreview] ${reason}`, error);
+      }
+      consecutiveFailuresRef.current++;
+    };
+
     /**
      * Load the emails.
      */
@@ -119,7 +137,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
         const isPublic = await isPublicDomain(email);
         const isPrivate = await isPrivateDomain(email);
-        const isSupported = isPublic || isPrivate;
+        const isRoutable = !isPrivate || (await dbContext.sqliteClient?.items.isEmailAddressRoutable(email) ?? false);
+        const isSupported = (isPublic || isPrivate) && isRoutable;
 
         setIsSpamOk(isPublic);
         setIsSupportedDomain(isSupported);
@@ -146,6 +165,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
           });
 
           if (!response.ok) {
+            markPollFailed(`The mailbox request returned HTTP ${response.status}`);
             setError(t('items.emailLoadError'));
             return;
           }
@@ -163,6 +183,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
           setEmails(allMails);
           updateDisplayedEmails(allMails, displayedCount);
+          consecutiveFailuresRef.current = 0;
         } else if (isPrivate) {
           // For private domains, use existing encrypted email logic
           if (!dbContext?.sqliteClient) {
@@ -171,12 +192,12 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
           try {
             // Get all encryption keys
-            const encryptionKeys = await dbContext.sqliteClient.getAllEncryptionKeys();
+            const encryptionKeys = await dbContext.sqliteClient.encryptionKeys.getAll();
 
             // Use single emailbox operator instead of bulk
             const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
             try {
-              const data = response as { mails: MailboxEmail[] };
+              const data = response as { mails: MailboxEmail[]; publicKeys: string[] };
 
               // Store all emails, sorted by date
               const allMails = data.mails
@@ -186,6 +207,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails = await EncryptionUtility.decryptEmailList(
                   allMails,
+                  data.publicKeys,
                   encryptionKeys
                 );
 
@@ -198,6 +220,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
 
                 // Reset error
                 setError(null);
+                consecutiveFailuresRef.current = 0;
               }
             } catch {
               // Try to parse as error response instead
@@ -210,32 +233,45 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
                 return;
               }
 
+              markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
               setError(t(`apiErrors.${apiErrorResponse?.code}`));
               return;
             }
-          } catch {
+          } catch (err) {
             // Suppress errors while vault has unsynced changes
             if (dbContext.shouldSuppressEmailErrors()) {
               return;
             }
 
+            markPollFailed('The mailbox request failed', err);
             setError(t('items.emailLoadError'));
           }
         }
       } catch (err) {
-        console.error('Error loading emails:', err);
+        markPollFailed('Loading the mailbox failed', err);
         setError(t('items.emailUnexpectedError'));
       } finally {
         setLoading(false);
       }
     };
 
-    loadEmails();
-    // Set up auto-refresh interval only when component is visible
-    const interval = isComponentVisible ? setInterval(loadEmails, 2000) : null;
+    /**
+     * Poll, then schedule the next poll while the component is on screen.
+     */
+    const poll = async () : Promise<void> => {
+      await loadEmails();
+      if (cancelled || !isComponentVisible) {
+        return;
+      }
+      timer = setTimeout(poll, mailboxPollDelayMs(consecutiveFailuresRef.current));
+    };
+
+    void poll();
+
     return () : void => {
-      if (interval) {
-        clearInterval(interval);
+      cancelled = true;
+      if (timer) {
+        clearTimeout(timer);
       }
     };
   }, [email, loading, webApi, dbContext, isPublicDomain, isPrivateDomain, isComponentVisible, t, displayedCount, updateDisplayedEmails]);

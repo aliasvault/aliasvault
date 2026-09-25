@@ -10,6 +10,7 @@ namespace AliasVault.Client.Services.Auth;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 
 /// <summary>
 /// This services handles all API requests to the AliasVault API and will add the access token to the request headers.
@@ -40,6 +41,22 @@ public sealed class AliasVaultApiHandlerService(IServiceProvider serviceProvider
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var response = await base.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.UpgradeRequired)
+        {
+            // The server rejects clients it no longer supports with HTTP 426 on any endpoint: forced logout.
+            var logger = serviceProvider.GetRequiredService<ILogger<AliasVaultApiHandlerService>>();
+            logger.LogError("Server refused this client version (HTTP 426), redirect to login.");
+
+            await authService.RemoveTokensAsync();
+
+            var localizer = serviceProvider.GetRequiredService<IStringLocalizerFactory>().Create("SharedResources", "AliasVault.Client");
+            var globalNotificationService = serviceProvider.GetRequiredService<GlobalNotificationService>();
+            globalNotificationService.AddErrorMessage(localizer["ClientVersionUnsupported"]);
+            var navigationManager = serviceProvider.GetRequiredService<NavigationManager>();
+            navigationManager.NavigateTo("/user/login");
+            return response;
+        }
+
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
             // Call the refresh token endpoint to get a new access token

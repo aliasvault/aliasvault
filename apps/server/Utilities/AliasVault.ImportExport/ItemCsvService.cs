@@ -11,6 +11,7 @@ using AliasClientDb;
 using AliasClientDb.Models;
 using AliasVault.ImportExport.Importers;
 using AliasVault.ImportExport.Models;
+using AliasVault.TotpGenerator;
 using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
@@ -39,7 +40,7 @@ public static class ItemCsvService
                 Username = GetFieldValue(item, FieldKey.LoginUsername),
                 CurrentPassword = GetFieldValue(item, FieldKey.LoginPassword),
                 AliasEmail = GetFieldValue(item, FieldKey.LoginEmail),
-                TwoFactorSecret = item.TotpCodes.FirstOrDefault(t => !t.IsDeleted)?.SecretKey ?? string.Empty,
+                TwoFactorSecret = FormatTwoFactorSecret(item.TotpCodes.FirstOrDefault(t => !t.IsDeleted)),
                 AliasGender = GetFieldValue(item, FieldKey.AliasGender),
                 AliasFirstName = GetFieldValue(item, FieldKey.AliasFirstName),
                 AliasLastName = GetFieldValue(item, FieldKey.AliasLastName),
@@ -141,6 +142,33 @@ public static class ItemCsvService
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Formats an item's TOTP code for the single CSV secret column. Codes using the RFC 6238 defaults
+    /// export as a bare secret so the column stays interchangeable with other password managers; codes
+    /// with non-default parameters export as a full otpauth:// URI, which every importer understands.
+    /// </summary>
+    /// <param name="totpCode">The item's first non-deleted TOTP code, if any.</param>
+    /// <returns>The secret or an otpauth:// URI.</returns>
+    private static string FormatTwoFactorSecret(TotpCode? totpCode)
+    {
+        if (totpCode is null)
+        {
+            return string.Empty;
+        }
+
+        var algorithm = TotpParameters.NormalizeAlgorithm(totpCode.Algorithm);
+        var digits = TotpParameters.NormalizeDigits(totpCode.Digits);
+        var period = TotpParameters.NormalizePeriod(totpCode.Period);
+
+        if (algorithm == TotpParameters.DefaultAlgorithm && digits == TotpParameters.DefaultDigits && period == TotpParameters.DefaultPeriod)
+        {
+            return totpCode.SecretKey;
+        }
+
+        var label = Uri.EscapeDataString(string.IsNullOrWhiteSpace(totpCode.Name) ? "AliasVault" : totpCode.Name);
+        return $"otpauth://totp/{label}?secret={totpCode.SecretKey}&algorithm={algorithm}&digits={digits}&period={period}";
     }
 
     /// <summary>

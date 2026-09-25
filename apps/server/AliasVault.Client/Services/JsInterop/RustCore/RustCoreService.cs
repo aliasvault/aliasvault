@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AliasVault.Client.Main.Models;
+using AliasVault.Client.Services.JsInterop.RustCore.Models;
 using Microsoft.JSInterop;
 
 /// <summary>
@@ -19,10 +20,13 @@ using Microsoft.JSInterop;
 /// </summary>
 public class RustCoreService : IAsyncDisposable
 {
+    /// <summary>
+    /// Every Rust core DTO is camelCase on the wire.
+    /// </summary>
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        WriteIndented = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
     };
 
     private readonly IJSRuntime jsRuntime;
@@ -64,42 +68,6 @@ public class RustCoreService : IAsyncDisposable
         {
             return false;
         }
-    }
-
-    /// <summary>
-    /// Merge two vaults using Last-Write-Wins (LWW) strategy.
-    /// </summary>
-    /// <param name="input">The merge input containing local and server tables.</param>
-    /// <returns>The merge output with SQL statements to execute.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if merge fails or WASM module is unavailable.</exception>
-    public async Task<MergeOutput> MergeVaultsAsync(MergeInput input)
-    {
-        // Wait for WASM to be available with retries, as it may still be loading.
-        if (!await WaitForAvailabilityAsync())
-        {
-            throw new InvalidOperationException("Rust WASM module is not available.");
-        }
-
-        var inputJson = JsonSerializer.Serialize(input, JsonOptions);
-        var resultJson = await jsRuntime.InvokeAsync<string>("rustCoreMergeVaults", inputJson);
-
-        if (string.IsNullOrEmpty(resultJson))
-        {
-            throw new InvalidOperationException("Merge operation returned empty result.");
-        }
-
-        var result = JsonSerializer.Deserialize<MergeOutput>(resultJson, JsonOptions);
-        if (result == null)
-        {
-            throw new InvalidOperationException("Failed to deserialize merge result.");
-        }
-
-        if (!result.Success && !string.IsNullOrEmpty(result.Error))
-        {
-            throw new InvalidOperationException($"Merge failed: {result.Error}");
-        }
-
-        return result;
     }
 
     /// <summary>
@@ -250,6 +218,24 @@ public class RustCoreService : IAsyncDisposable
         {
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Derive a key from a password using Argon2id.
+    /// </summary>
+    /// <param name="password">The password, hashed as its UTF-8 bytes.</param>
+    /// <param name="salt">The salt, hashed as its UTF-8 bytes.</param>
+    /// <param name="encryptionSettings">The encryption settings JSON, or null for the defaults.</param>
+    /// <returns>The derived key as 32 bytes.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if WASM module is unavailable.</exception>
+    public async Task<byte[]> Argon2DeriveKeyAsync(string password, string salt, string? encryptionSettings = null)
+    {
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        return await jsRuntime.InvokeAsync<byte[]>("rustCoreArgon2DeriveKey", password, salt, encryptionSettings ?? string.Empty);
     }
 
     /// <summary>
@@ -454,10 +440,186 @@ public class RustCoreService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Canonicalize normalized vault tables into manifests, data buckets and blob maps.
+    /// </summary>
+    /// <param name="inputJson">The CanonicalizeInput JSON.</param>
+    /// <returns>The CanonicalizedVault JSON.</returns>
+    public Task<string> VaultCodecCanonicalizeFromSqliteAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultCodecCanonicalizeFromSqlite", inputJson);
+
+    /// <summary>
+    /// Materialize manifests and data buckets into the table set to insert into a fresh SQLite database.
+    /// </summary>
+    /// <param name="inputJson">The MaterializeInput JSON (manifests, dataBuckets, schemaColumns).</param>
+    /// <returns>The MaterializedTables JSON (tables, overflow).</returns>
+    public Task<string> VaultCodecMaterializeAsSqliteAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultCodecMaterializeAsSqlite", inputJson);
+
+    /// <summary>
+    /// Merge the local canonical vault onto the server canonical vault (the base), one manifest at a time.
+    /// </summary>
+    /// <param name="inputJson">The canonical merge input JSON.</param>
+    /// <returns>The canonical merge output JSON.</returns>
+    public Task<string> MergeCanonicalAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreMergeCanonical", inputJson);
+
+    /// <summary>
+    /// Extract the encryption-key row whose PublicKey matches from a decrypted manifest.
+    /// </summary>
+    /// <param name="manifestJson">The decrypted manifest JSON.</param>
+    /// <param name="publicKey">The public key to look up.</param>
+    /// <returns>The key row JSON, or null when the manifest holds no such key.</returns>
+    public Task<string?> VaultCodecExtractEncryptionKeyForPublicKeyAsync(string manifestJson, string publicKey) => InvokeCoreAsync<string?>("rustCoreVaultCodecExtractEncryptionKeyForPublicKey", manifestJson, publicKey);
+
+    /// <summary>
+    /// The Logos.Id to use for the logo (kind, source) inside the given manifest.
+    /// </summary>
+    /// <param name="manifestId">Owning manifest id.</param>
+    /// <param name="kind">Logo kind (favicon, builtin, custom).</param>
+    /// <param name="source">Logo source (domain, icon key or content hash).</param>
+    /// <returns>The logo id.</returns>
+    public Task<string> VaultCodecLogoIdForAsync(string manifestId, string kind, string source) => InvokeCoreAsync<string>("rustCoreVaultCodecLogoIdFor", manifestId, kind, source);
+
+    /// <summary>
+    /// The SHA-256 (lowercase hex) of an uploaded logo's bytes, the Source a custom logo row is stored under.
+    /// </summary>
+    /// <param name="bytes">The image bytes.</param>
+    /// <returns>The content hash.</returns>
+    public Task<string> VaultCodecLogoContentHashAsync(byte[] bytes) => InvokeCoreAsync<string>("rustCoreVaultCodecLogoContentHash", bytes);
+
+    /// <summary>
+    /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
+    /// </summary>
+    /// <returns>The salt.</returns>
+    public Task<string> VaultCodecGenerateManifestSaltAsync() => InvokeCoreAsync<string>("rustCoreVaultCodecGenerateManifestSalt");
+
+    /// <summary>
+    /// Pack a payload JSON string into gzip(envelope{contentHash, payload}). The caller encrypts the result.
+    /// </summary>
+    /// <param name="payloadJson">The manifest or data bucket JSON.</param>
+    /// <returns>The packed bytes.</returns>
+    public Task<byte[]> VaultCodecPackPayloadAsync(string payloadJson) => InvokeCoreAsync<byte[]>("rustCoreVaultCodecPackPayload", payloadJson);
+
+    /// <summary>
+    /// Unpack a decrypted payload: gunzip, verify the embedded content hash, return the payload JSON.
+    /// </summary>
+    /// <param name="plainBytes">The decrypted packed bytes.</param>
+    /// <returns>The payload JSON.</returns>
+    public Task<string> VaultCodecUnpackPayloadAsync(byte[] plainBytes) => InvokeCoreAsync<string>("rustCoreVaultCodecUnpackPayload", plainBytes);
+
+    /// <summary>
+    /// Decrypt a manifest or data bucket ciphertext and unpack it via the codec in one interop call.
+    /// </summary>
+    /// <param name="base64Ciphertext">The ciphertext as served by the server.</param>
+    /// <param name="base64Key">The symmetric key.</param>
+    /// <returns>The payload JSON.</returns>
+    public Task<string> VaultCodecDecryptAndUnpackPayloadAsync(string base64Ciphertext, string base64Key) => InvokeCoreAsync<string>("rustCoreVaultCodecDecryptAndUnpackPayload", base64Ciphertext, base64Key);
+
+    /// <summary>
+    /// Pack a manifest or data bucket payload via the codec and encrypt it in one interop call.
+    /// </summary>
+    /// <param name="payloadJson">The payload JSON.</param>
+    /// <param name="base64Key">The symmetric key.</param>
+    /// <returns>The base64 ciphertext.</returns>
+    public Task<string> VaultCodecPackAndEncryptPayloadAsync(string payloadJson, string base64Key) => InvokeCoreAsync<string>("rustCoreVaultCodecPackAndEncryptPayload", payloadJson, base64Key);
+
+    /// <summary>
+    /// Structurally validate a manifest before upload.
+    /// </summary>
+    /// <param name="manifestJson">The manifest JSON.</param>
+    /// <returns>The validation outcome.</returns>
+    public async Task<CodecValidation> VaultCodecValidateManifestAsync(string manifestJson)
+    {
+        var json = await InvokeCoreAsync<string>("rustCoreVaultCodecValidateManifest", manifestJson);
+        return JsonSerializer.Deserialize<CodecValidation>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize manifest validation result.");
+    }
+
+    /// <summary>
+    /// Validate a data bucket before upload.
+    /// </summary>
+    /// <param name="bucketJson">The data bucket JSON.</param>
+    /// <returns>The validation outcome.</returns>
+    public async Task<CodecValidation> VaultCodecValidateDataBucketAsync(string bucketJson)
+    {
+        var json = await InvokeCoreAsync<string>("rustCoreVaultCodecValidateDataBucket", bucketJson);
+        return JsonSerializer.Deserialize<CodecValidation>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize data bucket validation result.");
+    }
+
+    /// <summary>
+    /// SHA-256 (lowercase hex) of a base64 ciphertext string.
+    /// </summary>
+    /// <param name="base64Ciphertext">The ciphertext.</param>
+    /// <returns>The hash.</returns>
+    public Task<string> VaultCodecComputeCiphertextHashAsync(string base64Ciphertext) => InvokeCoreAsync<string>("rustCoreVaultCodecComputeCiphertextHash", base64Ciphertext);
+
+    /// <summary>
+    /// Content fingerprint of a manifest or data bucket payload for change detection (canonical JSON minus canonicalizedAt).
+    /// </summary>
+    /// <param name="payloadJson">The payload JSON.</param>
+    /// <returns>The fingerprint.</returns>
+    public Task<string> VaultCodecComputeContentFingerprintAsync(string payloadJson) => InvokeCoreAsync<string>("rustCoreVaultCodecComputeContentFingerprint", payloadJson);
+
+    /// <summary>
+    /// Determine which manifests the next push writes, personal manifest first.
+    /// </summary>
+    /// <param name="inputJson">The write-set request JSON.</param>
+    /// <returns>The write set JSON (records, skipped).</returns>
+    public Task<string> VaultSharingResolveManifestWriteSetAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultSharingResolveManifestWriteSet", inputJson);
+
+    /// <summary>
+    /// Split what the local vault holds by what this account can still open.
+    /// </summary>
+    /// <param name="inputJson">The access partition request JSON.</param>
+    /// <returns>The partition JSON (unwritable, lost).</returns>
+    public Task<string> VaultSharingPartitionManifestAccessAsync(string inputJson) => InvokeCoreAsync<string>("rustCoreVaultSharingPartitionManifestAccess", inputJson);
+
+    /// <summary>
+    /// Parse a raw RFC 822 email source into its html/plain bodies and attachment metadata.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <returns>The parsed bodies and attachment metadata.</returns>
+    public async Task<ParsedEmail> ParseEmailSourceAsync(byte[] source)
+    {
+        var json = await InvokeCoreAsync<string>("rustCoreParseEmailSource", source);
+        return JsonSerializer.Deserialize<ParsedEmail>(json, JsonOptions) ?? throw new InvalidOperationException("Failed to deserialize parsed email.");
+    }
+
+    /// <summary>
+    /// Turn a stored email source into the raw RFC 822 message bytes.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <returns>The raw message bytes.</returns>
+    public Task<byte[]> DecodeEmailSourceAsync(byte[] source) => InvokeCoreAsync<byte[]>("rustCoreDecodeEmailSource", source);
+
+    /// <summary>
+    /// Extract the decoded bytes of one attachment, identified by its index in the parsed attachment list.
+    /// </summary>
+    /// <param name="source">The decrypted message source.</param>
+    /// <param name="index">The attachment index.</param>
+    /// <param name="detachedBody">The separately fetched body, for an attachment the parse result flagged as detached.</param>
+    /// <returns>The attachment bytes.</returns>
+    public Task<byte[]> ExtractEmailAttachmentAsync(byte[] source, int index, byte[]? detachedBody) => InvokeCoreAsync<byte[]>("rustCoreExtractEmailAttachment", source, index, detachedBody);
+
     /// <inheritdoc/>
     public ValueTask DisposeAsync()
     {
         return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Invoke a Rust core interop function once the WASM module is available. Errors propagate as JS exceptions.
+    /// </summary>
+    /// <typeparam name="T">The return type.</typeparam>
+    /// <param name="function">The window-level interop function name.</param>
+    /// <param name="args">The arguments.</param>
+    /// <returns>The function result.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the WASM module is unavailable.</exception>
+    private async Task<T> InvokeCoreAsync<T>(string function, params object?[] args)
+    {
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        return await jsRuntime.InvokeAsync<T>(function, args);
     }
 
     /// <summary>

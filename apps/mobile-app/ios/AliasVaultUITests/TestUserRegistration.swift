@@ -74,17 +74,15 @@ enum TestUserRegistration {
 
     /// Derive encryption key from password using Argon2Id via Rust core.
     ///
-    /// Uses the AliasVault default parameters:
-    /// - Iterations: 2
-    /// - Memory: 19456 KiB
-    /// - Parallelism: 1
-    /// - Output length: 32 bytes
+    /// Derives against the same parameters the registration request declares, so the account can be
+    /// opened again with the settings the server stored for it.
     static func deriveKeyArgon2(_ password: String, salt: String) throws -> Data {
         // Use the Rust core's Argon2 implementation
-        let hashHex = try argon2HashPassword(password: password, salt: salt)
-
-        // Convert hex string to Data
-        return try hexToBytes(hashHex)
+        return try argon2DeriveKey(
+            password: password,
+            salt: salt,
+            encryptionSettings: EncryptionDefaults.settingsJson
+        )
     }
 
     // MARK: - Hex Conversion
@@ -92,32 +90,6 @@ enum TestUserRegistration {
     /// Convert Data to uppercase hex string.
     static func bytesToHex(_ data: Data) -> String {
         return data.map { String(format: "%02X", $0) }.joined()
-    }
-
-    /// Convert hex string to Data.
-    static func hexToBytes(_ hex: String) throws -> Data {
-        var hex = hex.trimmingCharacters(in: .whitespaces)
-        if hex.hasPrefix("0x") || hex.hasPrefix("0X") {
-            hex = String(hex.dropFirst(2))
-        }
-
-        guard hex.count % 2 == 0 else {
-            throw NSError(domain: "TestUserRegistration", code: 3,
-                         userInfo: [NSLocalizedDescriptionKey: "Invalid hex string length"])
-        }
-
-        var data = Data()
-        var index = hex.startIndex
-        while index < hex.endIndex {
-            let nextIndex = hex.index(index, offsetBy: 2)
-            guard let byte = UInt8(hex[index..<nextIndex], radix: 16) else {
-                throw NSError(domain: "TestUserRegistration", code: 4,
-                             userInfo: [NSLocalizedDescriptionKey: "Invalid hex character"])
-            }
-            data.append(byte)
-            index = nextIndex
-        }
-        return data
     }
 
     // MARK: - Registration

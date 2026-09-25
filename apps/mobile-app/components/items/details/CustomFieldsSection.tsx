@@ -1,4 +1,4 @@
-import type { Item, ItemField } from '@/utils/dist/core/models/vault';
+import type { Item, ItemField } from '@aliasvault/models/vault';
 
 import FieldBlock from '@/components/items/details/FieldBlock';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -26,7 +26,7 @@ export const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({ item }
         <FieldBlock
           key={field.FieldKey}
           field={field}
-          itemId={item.Id}
+          item={item}
         />
       ))}
     </ThemedView>

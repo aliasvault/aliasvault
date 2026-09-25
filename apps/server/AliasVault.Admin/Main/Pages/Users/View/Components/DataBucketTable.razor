@@ -1,0 +1,113 @@
+@using AliasVault.RazorComponents.Tables
+@using AliasVault.Shared.Models.WebApi.V2.Vault
+
+@if (Revisions.Count == 0)
+{
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+        This vault has no data buckets yet.
+    </p>
+}
+else
+{
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        @foreach (var bucket in BucketGroups)
+        {
+            <div>
+                <div class="mb-2 flex items-baseline gap-2">
+                    <h5 class="text-base font-semibold text-gray-900 dark:text-white">@bucket.Key</h5>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                        @bucket.Count() revisions · @StatisticsService.FormatBytes(bucket.Sum(x => x.SizeBytes))
+                    </span>
+                </div>
+                <SortableTable Columns="@_bucketTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+                    @foreach (var entry in SortList(bucket, SortColumn, SortDirection))
+                    {
+                        <SortableTableRow>
+                            <SortableTableColumn IsPrimary="true">@entry.RevisionNumber</SortableTableColumn>
+                            <SortableTableColumn>@entry.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+                            <SortableTableColumn>@StatisticsService.FormatBytes(entry.SizeBytes)</SortableTableColumn>
+                            <SortableTableColumn>
+                                @if (entry.IsCurrent)
+                                {
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Current</span>
+                                }
+                            </SortableTableColumn>
+                            <SortableTableColumn>
+                                @if (!entry.IsCurrent)
+                                {
+                                    <Button OnClick="() => RestoreAsync(entry)">Restore</Button>
+                                }
+                            </SortableTableColumn>
+                        </SortableTableRow>
+                    }
+                </SortableTable>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the bucket revisions to display: the current revision per bucket plus its history revisions.
+    /// </summary>
+    [Parameter]
+    public List<BucketRevisionRow> Revisions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the event callback to make a bucket history revision the current one.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BucketRevisionRow> OnRestore { get; set; }
+
+    private string SortColumn { get; set; } = "RevisionNumber";
+    private SortDirection SortDirection { get; set; } = SortDirection.Descending;
+
+    private readonly List<TableColumn> _bucketTableColumns = [
+        new TableColumn { Title = "Revision", PropertyName = "RevisionNumber" },
+        new TableColumn { Title = "Written (UTC)", PropertyName = "UpdatedAt" },
+        new TableColumn { Title = "Size", PropertyName = "SizeBytes" },
+        new TableColumn { Title = "Status", Sortable = false },
+        new TableColumn { Title = "Actions", Sortable = false },
+    ];
+
+    /// <summary>
+    /// Gets one group per bucket category.
+    /// </summary>
+    private IEnumerable<IGrouping<VaultDataBucketCategory, BucketRevisionRow>> BucketGroups => Revisions.GroupBy(x => x.Category).OrderBy(g => g.Key);
+
+    /// <summary>
+    /// Applies the sort to every bucket table.
+    /// </summary>
+    private void HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        StateHasChanged();
+    }
+
+    private static IEnumerable<BucketRevisionRow> SortList(IEnumerable<BucketRevisionRow> revisions, string sortColumn, SortDirection sortDirection)
+    {
+        return sortColumn switch
+        {
+            "UpdatedAt" => SortableTable.SortListByProperty(revisions, v => v.UpdatedAt, sortDirection),
+            "SizeBytes" => SortableTable.SortListByProperty(revisions, v => v.SizeBytes, sortDirection),
+            _ => SortableTable.SortListByProperty(revisions, v => v.RevisionNumber, sortDirection),
+        };
+    }
+
+    private async Task RestoreAsync(BucketRevisionRow entry)
+    {
+        if (await ConfirmModalService.ShowConfirmation(
+            title: "Confirm Bucket Restoration",
+            message: $@"Are you sure you want to make revision {entry.RevisionNumber} of the {entry.Category} bucket the active one?
+
+Important notes:
+• Only this bucket is rolled back. The vault contents, the user's master password and their sessions are not affected.
+• Clients pick the restored bucket up on their next sync.
+
+Do you want to proceed with the restoration?"))
+        {
+            await OnRestore.InvokeAsync(entry);
+        }
+    }
+}

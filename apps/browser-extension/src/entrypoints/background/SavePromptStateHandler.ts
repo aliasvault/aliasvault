@@ -206,3 +206,20 @@ export function handleClearLastAutofilled(
   return { success: true };
 }
 
+/**
+ * Clear the save prompt and last-autofilled state for every tab. Called on vault lock and logout.
+ */
+export function clearAllSavePromptState(): void {
+  for (const timer of stateExpiryTimers.values()) {
+    clearTimeout(timer);
+  }
+
+  for (const timer of autofillExpiryTimers.values()) {
+    clearTimeout(timer);
+  }
+
+  savePromptStateByTab.clear();
+  stateExpiryTimers.clear();
+  lastAutofilledByTab.clear();
+  autofillExpiryTimers.clear();
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
 /**
@@ -153,7 +154,7 @@ const useFormPersistence = <T>({
       try {
         wrapper = JSON.parse(persistedData) as PersistedDataWrapper<T>;
       } catch (error) {
-        console.error('Error parsing persisted form data:', error);
+        logFailure('Error parsing persisted form data', error);
         return false;
       }
 
@@ -167,7 +168,7 @@ const useFormPersistence = <T>({
       onRestore(wrapper.data);
       return true;
     } catch (error) {
-      console.error('Error loading persisted form data:', error);
+      logFailure('Error loading persisted form data', error);
       return false;
     }
   }, [formId, onRestore, skipRestore]);

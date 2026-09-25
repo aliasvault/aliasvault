@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Passkey } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
+
+import type { Passkey } from '@aliasvault/models/vault';
 
 type PasskeyBlockProps = {
   itemId: string;
+  manifestId: string;
 }
 
 /**
@@ -30,7 +33,7 @@ const PasskeyIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }
 /**
  * Display passkey information for an item in view mode.
  */
-const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId }) => {
+const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId, manifestId }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
@@ -43,14 +46,14 @@ const PasskeyBlock: React.FC<PasskeyBlockProps> = ({ itemId }) => {
     }
 
     try {
-      const itemPasskeys = dbContext.sqliteClient.passkeys.getByItemId(itemId);
+      const itemPasskeys = dbContext.sqliteClient.passkeys.getByItemId({ Id: itemId, ManifestId: manifestId });
       setPasskeys(itemPasskeys);
     } catch (err) {
-      console.error('Error loading passkeys:', err);
+      logFailure('Error loading passkeys', err);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId]);
+  }, [dbContext?.sqliteClient, itemId, manifestId]);
 
   if (loading) {
     return (

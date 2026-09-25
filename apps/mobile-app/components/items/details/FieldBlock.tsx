@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 
-import type { ItemField } from '@/utils/dist/core/models/vault';
-import { FieldTypes } from '@/utils/dist/core/models/vault';
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { ItemField } from '@aliasvault/models/vault';
+import { FieldTypes } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';
@@ -14,7 +15,7 @@ import FieldHistoryModal from '@/components/items/FieldHistoryModal';
 
 type FieldBlockProps = {
   field: ItemField;
-  itemId?: string;
+  item?: ItemRef;
   /** Whether to hide the label (useful when label is already shown as section header) */
   hideLabel?: boolean;
 }
@@ -42,7 +43,9 @@ const extractUrls = (text: string): { url: string; start: number; end: number }[
  * Dynamic field block component that renders based on field type.
  * Supports all field types with automatic history tracking when enabled.
  */
-const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = false }) => {
+const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, hideLabel = false }) => {
+  const itemId = item?.Id;
+  const itemManifestId = item?.ManifestId;
   const { t } = useTranslation();
   const colors = useColors();
   const dbContext = useDb();
@@ -62,12 +65,12 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
   // 1. There are more than 1 history records, OR
   // 2. There is exactly 1 history record but its value differs from current value
   useEffect(() => {
-    if (hasHistoryEnabled && itemId && dbContext?.sqliteClient) {
+    if (hasHistoryEnabled && itemId && itemManifestId && dbContext?.sqliteClient) {
       const checkHistory = async (): Promise<void> => {
         if (!dbContext.sqliteClient) return;
 
         try {
-          const history = await dbContext.sqliteClient.items.getFieldHistory(itemId, field.FieldKey);
+          const history = await dbContext.sqliteClient.items.getFieldHistory({ Id: itemId, ManifestId: itemManifestId }, field.FieldKey);
 
           if (history.length > 1) {
             // Multiple history records - always show icon
@@ -94,7 +97,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
 
       void checkHistory();
     }
-  }, [hasHistoryEnabled, itemId, field.FieldKey, field.Value, dbContext?.sqliteClient]);
+  }, [hasHistoryEnabled, itemId, itemManifestId, field.FieldKey, field.Value, dbContext?.sqliteClient]);
 
   // Skip rendering if no value
   if (!field.Value || (typeof field.Value === 'string' && field.Value.trim() === '')) {
@@ -238,11 +241,11 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
   /**
    * Render history modal.
    */
-  const HistoryModal = showHistoryModal && itemId ? (
+  const HistoryModal = showHistoryModal && itemId && itemManifestId ? (
     <FieldHistoryModal
       isOpen={showHistoryModal}
       onClose={() => setShowHistoryModal(false)}
-      itemId={itemId}
+      item={{ Id: itemId, ManifestId: itemManifestId }}
       fieldKey={field.FieldKey}
       fieldLabel={label}
       fieldType={field.FieldType}

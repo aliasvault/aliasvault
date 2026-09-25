@@ -2,11 +2,15 @@
 //!
 //! These words are filtered out to prevent generic terms from causing false positives.
 
+use std::collections::HashSet;
+use std::sync::LazyLock;
+
+/// [`STOP_WORDS`] as a set for constant-time lookup.
+pub static STOP_WORD_SET: LazyLock<HashSet<&'static str>> = LazyLock::new(|| STOP_WORDS.iter().copied().collect());
+
 /// Combined stop words from all supported languages (English + Dutch).
-pub static STOP_WORDS: &[&str] = &[
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // English Stop Words
-    // ═══════════════════════════════════════════════════════════════════════════════
+static STOP_WORDS: &[&str] = &[
+    // English stop words
 
     // Authentication related
     "login", "signin", "sign", "register", "signup", "account",
@@ -41,9 +45,7 @@ pub static STOP_WORDS: &[&str] = &[
     // General
     "the", "and", "or", "but", "to", "up",
 
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // Dutch Stop Words
-    // ═══════════════════════════════════════════════════════════════════════════════
+    // Dutch stop words
 
     // Authentication related
     "inloggen", "registreren", "registratie", "aanmelden",

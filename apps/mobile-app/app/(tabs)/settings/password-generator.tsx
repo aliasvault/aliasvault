@@ -3,8 +3,6 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/core/models/vault';
-
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
@@ -14,6 +12,8 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+
+import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
  * Password Generator Settings screen. Configures the default password and passphrase generator
@@ -41,7 +41,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
        */
       const loadSettings = async (): Promise<void> => {
         try {
-          const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
+          const passwordSettings = await dbContext.sqliteClient!.settings.getPasswordSettings();
           setSettings(passwordSettings);
           latestSettings.current = passwordSettings;
           persistedJson.current = JSON.stringify(passwordSettings);
@@ -66,7 +66,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
         }
 
         executeVaultMutation(async () => {
-          await dbContext.sqliteClient!.updateSetting('PasswordGenerationSettings', currentJson);
+          await dbContext.sqliteClient!.settings.updateSetting('PasswordGenerationSettings', currentJson);
         }).then(() => {
           persistedJson.current = currentJson;
         }).catch((error) => {

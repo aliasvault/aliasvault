@@ -1,83 +1,75 @@
-import { Buffer } from 'buffer';
-
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/core/models/metadata';
-import type { EncryptionKey, PasswordSettings } from '@/utils/dist/core/models/vault';
-import { DEFAULT_PASSWORD_LENGTH } from '@/utils/dist/core/models/defaults';
-import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
+import type { UnlockKeyDerivationParams, VaultMetadata } from '@aliasvault/models/metadata';
+import { VaultDataBucketCategory } from '@aliasvault/models/vault';
+import { asyncRepository } from '@aliasvault/client/database/DbOp';
+import { EncryptionKeyRepository } from '@aliasvault/client/database/repositories/EncryptionKeyRepository';
+import { FolderRepository } from '@aliasvault/client/database/repositories/FolderRepository';
+import { ItemRepository } from '@aliasvault/client/database/repositories/ItemRepository';
+import { ItemStatsRepository } from '@aliasvault/client/database/repositories/ItemStatsRepository';
+import { LogoRepository } from '@aliasvault/client/database/repositories/LogoRepository';
+import { PasskeyRepository } from '@aliasvault/client/database/repositories/PasskeyRepository';
+import { SettingsRepository } from '@aliasvault/client/database/repositories/SettingsRepository';
+import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@aliasvault/vault';
+import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import { ItemRepository } from '@/utils/db/repositories/ItemRepository';
-import { SettingsRepository } from '@/utils/db/repositories/SettingsRepository';
-import { LogoRepository } from '@/utils/db/repositories/LogoRepository';
-import { FolderRepository } from '@/utils/db/repositories/FolderRepository';
-import { PasskeyRepository } from '@/utils/db/repositories/PasskeyRepository';
-import type { IDatabaseClient, SqliteBindValue } from '@/utils/db/BaseRepository';
-
-type SQLiteBindValue = string | number | null | Uint8Array;
+import { NativeDatabaseClient } from '@/platform/NativeDatabaseClient';
+import { withDisplayItems } from '@/utils/DisplayItem';
 
 /**
- * Client for interacting with the SQLite database through native code.
- * Implements IDatabaseClient interface for repository pattern.
+ * The vault as the app reads and writes it: the client core's repositories over the native vault store, plus the
+ * vault metadata and key storage that only exist natively.
  */
-class SqliteClient implements IDatabaseClient {
-  // Lazy-initialized repositories
-  private _items: ItemRepository | null = null;
-  private _passkeys: PasskeyRepository | null = null;
-  private _folders: FolderRepository | null = null;
-  private _settings: SettingsRepository | null = null;
-  private _logos: LogoRepository | null = null;
+class SqliteClient {
+  /**
+   * The native vault store, as the client core's database client.
+   */
+  private readonly database = new NativeDatabaseClient();
 
   /**
-   * Repository for Item CRUD operations.
+   * The logo repository itself, which the item repository calls into.
    */
-  public get items(): ItemRepository {
-    if (!this._items) {
-      this._items = new ItemRepository(this);
-      // Set the logo repository for logo handling in item updates
-      this._items.setLogoRepository(this.logos);
-    }
-    return this._items;
-  }
+  private readonly logoRepository = new LogoRepository(this.database);
 
   /**
-   * Repository for Passkey operations.
+   * Repository for Item CRUD operations. Item reads return display items, which carry no logo bytes.
    */
-  public get passkeys(): PasskeyRepository {
-    if (!this._passkeys) {
-      this._passkeys = new PasskeyRepository(this);
-    }
-    return this._passkeys;
-  }
+  public readonly items = withDisplayItems(asyncRepository(new ItemRepository(this.database, this.logoRepository), this.database));
 
   /**
    * Repository for Folder operations.
    */
-  public get folders(): FolderRepository {
-    if (!this._folders) {
-      this._folders = new FolderRepository(this);
-    }
-    return this._folders;
-  }
+  public readonly folders = asyncRepository(new FolderRepository(this.database), this.database);
 
   /**
-   * Repository for Settings and auxiliary data operations.
+   * Repository for item logo operations.
    */
-  public get settings(): SettingsRepository {
-    if (!this._settings) {
-      this._settings = new SettingsRepository(this);
-    }
-    return this._settings;
-  }
+  public readonly logos = asyncRepository(this.logoRepository, this.database);
 
   /**
-   * Repository for Logo management operations.
+   * Repository for Passkey operations.
    */
-  public get logos(): LogoRepository {
-    if (!this._logos) {
-      this._logos = new LogoRepository(this);
-    }
-    return this._logos;
+  public readonly passkeys = asyncRepository(new PasskeyRepository(this.database), this.database);
+
+  /**
+   * Repository for the vault's user preferences.
+   */
+  public readonly settings = asyncRepository(new SettingsRepository(this.database), this.database, VaultDataBucketCategory.Settings);
+
+  /**
+   * Repository for the per-manifest keypairs that receive mail.
+   */
+  public readonly encryptionKeys = asyncRepository(new EncryptionKeyRepository(this.database), this.database);
+
+  /**
+   * Repository for per-item usage statistics.
+   */
+  public readonly itemStats = asyncRepository(new ItemStatsRepository(this.database), this.database, VaultDataBucketCategory.Stats);
+
+  /**
+   * The id of the user's personal manifest, or null when no pull has recorded one yet.
+   */
+  public getPersonalManifestId(): Promise<string | null> {
+    return this.database.getPersonalManifestId();
   }
 
   /**
@@ -147,7 +139,7 @@ class SqliteClient implements IDatabaseClient {
       };
 
       // Get the default email domain from vault settings
-      const defaultEmailDomain = await this.getSetting('DefaultEmailDomain');
+      const defaultEmailDomain = await this.settings.getDefaultEmailDomain();
 
       // First check if the default domain that is configured in the vault is still valid (not hidden)
       if (defaultEmailDomain && isValidDomain(defaultEmailDomain)) {
@@ -184,31 +176,31 @@ class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Store the encryption key in memory only (no keychain persistence).
+   * Open a session in memory with the unlock key (the password-derived KEK), without keychain persistence.
    * Use this to test if a password-derived key is valid before persisting.
    *
-   * @param base64EncryptionKey The base64 encoded encryption key
+   * @param base64UnlockKey The base64 encoded unlock key
    */
-  public async storeEncryptionKeyInMemory(base64EncryptionKey: string): Promise<void> {
+  public async storeUnlockKeyInMemory(base64UnlockKey: string): Promise<void> {
     try {
-      await NativeVaultManager.storeEncryptionKeyInMemory(base64EncryptionKey);
+      await NativeVaultManager.storeUnlockKeyInMemory(base64UnlockKey);
     } catch (error) {
-      console.error('Error storing encryption key in memory:', error);
+      console.error('Error storing unlock key in memory:', error);
       throw error;
     }
   }
 
   /**
-   * Store the encryption key in memory AND persist to keychain (may trigger biometric prompt).
+   * Open a session with the unlock key (the password-derived KEK) AND persist it to keychain (may trigger biometric prompt).
    *
-   * @param base64EncryptionKey The base64 encoded encryption key
+   * @param base64UnlockKey The base64 encoded unlock key
    */
-  public async storeEncryptionKey(base64EncryptionKey: string): Promise<void> {
+  public async storeUnlockKey(base64UnlockKey: string): Promise<void> {
     try {
-      // Store the encryption key in the native module
-      await NativeVaultManager.storeEncryptionKey(base64EncryptionKey);
+      // Open the session with the unlock key in the native module
+      await NativeVaultManager.storeUnlockKey(base64UnlockKey);
     } catch (error) {
-      console.error('Error storing encryption key:', error);
+      console.error('Error storing unlock key:', error);
       throw error;
     }
   }
@@ -218,215 +210,14 @@ class SqliteClient implements IDatabaseClient {
    *
    * @param keyDerivationParams The key derivation parameters
    */
-  public async storeEncryptionKeyDerivationParams(keyDerivationParams: EncryptionKeyDerivationParams): Promise<void> {
+  public async storeUnlockKeyDerivationParams(keyDerivationParams: UnlockKeyDerivationParams): Promise<void> {
     try {
       const keyDerivationParamsJson = JSON.stringify(keyDerivationParams);
-      await NativeVaultManager.storeEncryptionKeyDerivationParams(keyDerivationParamsJson);
+      await NativeVaultManager.storeUnlockKeyDerivationParams(keyDerivationParamsJson);
     } catch (error) {
       console.error('Error storing encryption key derivation params:', error);
       throw error;
     }
-  }
-
-  /**
-   * Execute a SELECT query
-   */
-  public async executeQuery<T>(query: string, params: SQLiteBindValue[] = []): Promise<T[]> {
-    try {
-      /*
-       * Convert any Uint8Array parameters to base64 strings as the Native wrapper
-       * communication requires everything to be a string.
-       */
-      const convertedParams = params.map(param => {
-        if (param instanceof Uint8Array) {
-          /*
-           * We prefix the base64 string with "av-base64:" to indicate that it is a base64 encoded Uint8Array.
-           * So the receiving end knows that it should convert this value back to a Uint8Array before using it in the query.
-           */
-          return 'av-base64-to-blob:' + Buffer.from(param).toString('base64');
-        }
-        return param;
-      });
-
-      const results = await NativeVaultManager.executeQuery(query, convertedParams);
-      return results as T[];
-    } catch (error) {
-      const originalMessage = error instanceof Error ? error.message : String(error);
-      const queryPreview = query.trim().substring(0, 200);
-      const enrichedError = new Error(originalMessage);
-      enrichedError.stack = `SQL: ${queryPreview}\n\n${error instanceof Error && error.stack ? error.stack : ''}`;
-      console.error('Error executing query:', enrichedError.message);
-      throw enrichedError;
-    }
-  }
-
-  /**
-   * Execute an INSERT, UPDATE, or DELETE query
-   */
-  public async executeUpdate(query: string, params: SQLiteBindValue[] = []): Promise<number> {
-    try {
-      /*
-       * Convert any Uint8Array parameters to base64 strings as the Native wrapper
-       * communication requires everything to be a string.
-       */
-      const convertedParams = params.map(param => {
-        if (param instanceof Uint8Array) {
-          /*
-           * We prefix the base64 string with "av-base64-to-blob:" to indicate that it is a base64 encoded Uint8Array.
-           * So the receiving end knows that it should convert this value back to a Uint8Array before using it in the query.
-           */
-          return 'av-base64-to-blob:' + Buffer.from(param).toString('base64');
-        }
-        return param;
-      });
-
-      const result = await NativeVaultManager.executeUpdate(query, convertedParams);
-      return result as number;
-    } catch (error) {
-      const originalMessage = error instanceof Error ? error.message : String(error);
-      const queryPreview = query.trim().substring(0, 200);
-      const enrichedError = new Error(originalMessage);
-      enrichedError.stack = `SQL: ${queryPreview}\n\n${error instanceof Error && error.stack ? error.stack : ''}`;
-      console.error('Error executing update:', enrichedError.message);
-      throw enrichedError;
-    }
-  }
-
-  /**
-   * Fetch all encryption keys.
-   */
-  public async getAllEncryptionKeys(): Promise<EncryptionKey[]> {
-    return this.executeQuery<EncryptionKey>(`SELECT
-                x.PublicKey,
-                x.PrivateKey,
-                x.IsPrimary
-            FROM EncryptionKeys x`);
-  }
-
-  /**
-   * Get setting from database for a given key.
-   * Returns default value (empty string by default) if setting is not found.
-   */
-  public async getSetting(key: string, defaultValue: string = ''): Promise<string> {
-    const results = await this.executeQuery<{ Value: string }>(`SELECT
-                s.Value
-            FROM Settings s
-            WHERE s.Key = ?`, [key]);
-
-    return results.length > 0 ? results[0].Value : defaultValue;
-  }
-
-  /**
-   * Get the default identity language from the database.
-   * Returns the stored override value if set, otherwise returns empty string to indicate no explicit preference.
-   * Use getEffectiveIdentityLanguage() to get the language with smart defaults based on UI language.
-   */
-  public async getDefaultIdentityLanguage(): Promise<string> {
-    return this.getSetting('DefaultIdentityLanguage');
-  }
-
-  /**
-   * Get the effective identity generator language to use.
-   * If user has explicitly set a language preference, use that.
-   * Otherwise, intelligently match the UI language to an available identity generator language.
-   * Falls back to "en" if no match is found.
-   */
-  public async getEffectiveIdentityLanguage(): Promise<string> {
-    const explicitLanguage = await this.getDefaultIdentityLanguage();
-
-    // If user has explicitly set a language preference, use it
-    if (explicitLanguage) {
-      return explicitLanguage;
-    }
-
-    // Otherwise, match the UI language to one of the identity generator's available languages using
-    // the shared region-variant alternative-code table (e.g. "de-CH" -> "de").
-    const { getIdentityLanguages } = await import('@/utils/IdentityGeneratorUtility');
-    const { matchAvailableLanguage } = await import('@/utils/dist/core/models/defaults');
-    const { default: i18n } = await import('@/i18n');
-
-    const uiLanguage = i18n.language;
-    const mappedLanguage = matchAvailableLanguage(uiLanguage, await getIdentityLanguages());
-
-    // Return the mapped language, or fall back to "en" if no match found
-    return mappedLanguage ?? 'en';
-  }
-
-  /**
-   * Get the default identity gender preference from the database.
-   */
-  public async getDefaultIdentityGender(): Promise<string> {
-    return this.getSetting('DefaultIdentityGender', 'random');
-  }
-
-  /**
-   * Get the default identity age range from the database.
-   */
-  public async getDefaultIdentityAgeRange(): Promise<string> {
-    return this.getSetting('DefaultIdentityAgeRange', 'random');
-  }
-
-  /**
-   * Update a setting in the database.
-   * @param key The setting key
-   * @param value The setting value
-   */
-  public async updateSetting(key: string, value: string): Promise<void> {
-    await NativeVaultManager.beginTransaction();
-
-    const currentDateTime = new Date().toISOString()
-      .replace('T', ' ')
-      .replace('Z', '')
-      .substring(0, 23);
-
-    // First check if the setting already exists
-    const checkQuery = `SELECT COUNT(*) as count FROM Settings WHERE Key = ?`;
-    const checkResults = await this.executeQuery<{ count: number }>(checkQuery, [key]);
-    const exists = checkResults[0]?.count > 0;
-
-    if (exists) {
-      // Update existing record
-      const updateQuery = `
-        UPDATE Settings
-        SET Value = ?, UpdatedAt = ?
-        WHERE Key = ?`;
-      await this.executeUpdate(updateQuery, [value, currentDateTime, key]);
-    } else {
-      // Insert new record
-      const insertQuery = `
-        INSERT INTO Settings (Key, Value, CreatedAt, UpdatedAt, IsDeleted)
-        VALUES (?, ?, ?, ?, ?)`;
-      await this.executeUpdate(insertQuery, [key, value, currentDateTime, currentDateTime, 0]);
-    }
-
-    await NativeVaultManager.commitTransaction();
-  }
-
-  /**
-   * Get the password settings from the database.
-   */
-  public async getPasswordSettings(): Promise<PasswordSettings> {
-    const settingsJson = await this.getSetting('PasswordGenerationSettings');
-
-    // Default settings if none found or parsing fails
-    const defaultSettings: PasswordSettings = {
-      Length: DEFAULT_PASSWORD_LENGTH,
-      UseLowercase: true,
-      UseUppercase: true,
-      UseNumbers: true,
-      UseSpecialChars: true,
-      UseNonAmbiguousChars: false
-    };
-
-    try {
-      if (settingsJson) {
-        return { ...defaultSettings, ...JSON.parse(settingsJson) };
-      }
-    } catch (error) {
-      console.warn('Failed to parse password settings:', error);
-    }
-
-    return defaultSettings;
   }
 
   /**
@@ -435,19 +226,12 @@ class SqliteClient implements IDatabaseClient {
    * Uses semantic versioning to allow backwards-compatible minor/patch versions.
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
-    // Query the migrations history table for the latest migration
-    const results = await this.executeQuery<{ MigrationId: string }>(`
-      SELECT MigrationId
-      FROM __EFMigrationsHistory
-      ORDER BY MigrationId DESC
-      LIMIT 1`);
-
-    if (results.length === 0) {
+    const migrationId = await this.getLatestMigrationId();
+    if (!migrationId) {
       throw new Error('No migrations found');
     }
 
     // Extract version from migration ID (e.g., "20240917191243_1.4.1-RenameAttachmentsPlural" -> "1.4.1")
-    const migrationId = results[0].MigrationId;
     const databaseVersion = extractVersionFromMigrationId(migrationId);
 
     if (!databaseVersion) {
@@ -491,6 +275,50 @@ class SqliteClient implements IDatabaseClient {
     const vaultSqlGenerator = new VaultSqlGenerator();
     const allVersions = vaultSqlGenerator.getAllVersions();
     return allVersions[allVersions.length - 1];
+  }
+
+  /**
+   * Whether the vault still has to walk the sqlite-blob upgrade chain (VAULT_VERSIONS, frozen at 2.0.0) via the upgrade
+   * page before it is eligible for anything else. Throws VaultVersionIncompatibleError for a vault newer than this app.
+   *
+   * TODO: this is the legacy sqlite-blob migration path; delete once all users have migrated.
+   */
+  public async requiresLegacySqliteBlobMigration(): Promise<boolean> {
+    const currentVersion = await this.getDatabaseVersion();
+    const latestVersion = await this.getLatestDatabaseVersion();
+    return currentVersion.revision < latestVersion.revision;
+  }
+
+  /**
+   * Whether the local database schema is older than the current full schema (COMPLETE_SCHEMA_SQL), which the manifest
+   * migration rebuilds. Not applicable while the sqlite-blob chain is still pending.
+   */
+  public async requiresSchemaMigration(): Promise<boolean> {
+    if (await this.requiresLegacySqliteBlobMigration()) {
+      return false;
+    }
+
+    const localMigrationId = await this.getLatestMigrationId();
+    const schemaMigrationId = new VaultSqlGenerator().getCompleteSchemaMigrationId();
+
+    // An unstamped database or an unreadable schema constant gives no evidence of staleness; don't block on a guess.
+    if (!localMigrationId || !schemaMigrationId) {
+      return false;
+    }
+
+    return localMigrationId < schemaMigrationId;
+  }
+
+  /**
+   * The latest EF migration id the vault is stamped with, or null when it carries none.
+   */
+  private async getLatestMigrationId(): Promise<string | null> {
+    const results = await this.database.executeQuery<{ MigrationId: string }>(`
+      SELECT MigrationId
+      FROM __EFMigrationsHistory
+      ORDER BY MigrationId DESC
+      LIMIT 1`);
+    return results[0]?.MigrationId ?? null;
   }
 }
 

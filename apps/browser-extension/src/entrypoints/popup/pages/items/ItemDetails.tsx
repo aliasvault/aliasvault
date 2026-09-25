@@ -1,3 +1,5 @@
+import { FieldCategories, FieldTypes, ItemTypes } from '@aliasvault/models/vault';
+import { groupFieldsByCategory } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,18 +19,19 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldCategories, FieldTypes, ItemTypes } from '@/utils/dist/core/models/vault';
-import { groupFieldsByCategory } from '@/utils/dist/core/models/vault';
+import { logExpected, logFailure } from '@/utils/Diagnostics';
+import { itemRoute } from '@/utils/ItemRoute';
 
 import { EmailPreview } from '../../components/EmailPreview';
+
+import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Item details page with dynamic field rendering.
  */
 const ItemDetails: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
-  const { id } = useParams();
+  const { id, manifestId } = useParams();
   const navigate = useNavigate();
   const dbContext = useDb();
   const [item, setItem] = useState<Item | null>(null);
@@ -39,40 +42,44 @@ const ItemDetails: React.FC = (): React.ReactElement => {
    * Open the item details in a new expanded popup.
    */
   const openInNewPopup = useCallback((): void => {
-    PopoutUtility.openInNewPopup(`/items/${id}`);
-  }, [id]);
+    if (id && manifestId) {
+      PopoutUtility.openInNewPopup(itemRoute({ Id: id, ManifestId: manifestId }));
+    }
+  }, [id, manifestId]);
 
   /**
    * Navigate to the edit page for this item.
    * Pass fromDetails so save can use navigate(-1) and avoid duplicate details in history.
    */
   const handleEdit = useCallback((): void => {
-    navigate(`/items/${id}/edit`, { state: { fromDetails: true } });
-  }, [id, navigate]);
+    if (id && manifestId) {
+      navigate(itemRoute({ Id: id, ManifestId: manifestId }, true), { state: { fromDetails: true } });
+    }
+  }, [id, manifestId, navigate]);
 
   useEffect(() => {
-    if (PopoutUtility.isPopup()) {
+    if (PopoutUtility.isPopup() && id && manifestId) {
       window.history.replaceState({}, '', `popup.html#/items`);
-      window.history.pushState({}, '', `popup.html#/items/${id}`);
+      window.history.pushState({}, '', `popup.html#${itemRoute({ Id: id, ManifestId: manifestId })}`);
     }
 
-    if (!dbContext?.sqliteClient || !id) {
+    if (!dbContext?.sqliteClient || !id || !manifestId) {
       return;
     }
 
     try {
-      const result = dbContext.sqliteClient.items.getById(id);
+      const result = dbContext.sqliteClient.items.getById({ Id: id, ManifestId: manifestId });
       if (result) {
         setItem(result);
         setIsInitialLoading(false);
       } else {
-        console.error('Item not found');
+        logExpected('[Item] The requested item no longer exists');
         navigate('/items');
       }
     } catch (err) {
-      console.error('Error loading item:', err);
+      logFailure('Error loading item', err);
     }
-  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading]);
+  }, [dbContext.sqliteClient, id, manifestId, navigate, setIsInitialLoading]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -108,7 +115,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
       if (item.FolderId) {
         // Item is in a folder - show folder name
         const allFolders = dbContext.sqliteClient.folders.getAll();
-        const folder = allFolders.find(f => f.Id === item.FolderId);
+        const folder = allFolders.find(f => f.Id === item.FolderId && f.ManifestId === item.ManifestId);
         if (folder) {
           setBackButtonTitle(folder.Name);
         } else {
@@ -142,7 +149,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
   return (
     <div className="space-y-4">
       {/* Folder breadcrumb navigation */}
-      <FolderBreadcrumb folderId={item.FolderId} />
+      <FolderBreadcrumb folder={item.FolderId ? { Id: item.FolderId, ManifestId: item.ManifestId } : null} />
 
       {/* Header with name, logo, and URLs */}
       <div className="flex justify-between items-start">
@@ -198,12 +205,12 @@ const ItemDetails: React.FC = (): React.ReactElement => {
 
       {/* TOTP codes - only for Login and Alias types, shown at top */}
       {(item.ItemType === ItemTypes.Login || item.ItemType === ItemTypes.Alias) && (
-        <TotpBlock itemId={item.Id} />
+        <TotpBlock itemId={item.Id} manifestId={item.ManifestId} />
       )}
 
       {/* Passkeys - only for Login and Alias types */}
       {(item.ItemType === ItemTypes.Login || item.ItemType === ItemTypes.Alias) && item.HasPasskey && (
-        <PasskeyBlock itemId={item.Id} />
+        <PasskeyBlock itemId={item.Id} manifestId={item.ManifestId} />
       )}
 
       {/* Notes - shown at top for Note type (primary content) */}
@@ -213,7 +220,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {t(`fieldLabels.${field.FieldKey}`, { defaultValue: field.Label || field.FieldKey })}
             </h2>
-            <FieldBlock field={field} itemId={item.Id} hideLabel />
+            <FieldBlock field={field} itemId={item.Id} manifestId={item.ManifestId} hideLabel />
           </div>
         ))
       )}
@@ -227,7 +234,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
                 {t('common.credentials')}
               </h2>
               {groupedFields[FieldCategories.Login].map((field) => (
-                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} />
+                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} manifestId={item.ManifestId} />
               ))}
             </div>
           )}
@@ -238,7 +245,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
                 {t('common.alias')}
               </h2>
               {groupedFields[FieldCategories.Alias].map((field) => (
-                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} />
+                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} manifestId={item.ManifestId} />
               ))}
             </div>
           )}
@@ -249,7 +256,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
                 {t('items.cardInformation')}
               </h2>
               {groupedFields[FieldCategories.Card].map((field) => (
-                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} />
+                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} manifestId={item.ManifestId} />
               ))}
             </div>
           )}
@@ -261,7 +268,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {t(`fieldLabels.${field.FieldKey}`, { defaultValue: field.Label || field.FieldKey })}
                 </h2>
-                <FieldBlock field={field} itemId={item.Id} hideLabel />
+                <FieldBlock field={field} itemId={item.Id} manifestId={item.ManifestId} hideLabel />
               </div>
             ))
           )}
@@ -270,7 +277,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
           {groupedFields[FieldCategories.Custom] && groupedFields[FieldCategories.Custom].length > 0 && (
             <div className="space-y-2">
               {groupedFields[FieldCategories.Custom].map((field) => (
-                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} />
+                <FieldBlock key={field.FieldKey} field={field} itemId={item.Id} manifestId={item.ManifestId} />
               ))}
             </div>
           )}
@@ -278,7 +285,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
       )}
 
       {/* Attachments - shown at bottom */}
-      <AttachmentBlock itemId={item.Id} />
+      <AttachmentBlock itemId={item.Id} manifestId={item.ManifestId} />
 
       {/* Tags */}
       {item.Tags && item.Tags.length > 0 && (

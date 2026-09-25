@@ -1,8 +1,9 @@
+import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import * as RustCore from '@/utils/RustCore';
+import { logFailure } from '@/utils/Diagnostics';
 
 /**
  * Generated alias data returned by the hook.
@@ -120,7 +121,7 @@ const useAliasGenerator = (): {
 
       return generatedData;
     } catch (error) {
-      console.error('Error generating random alias:', error);
+      logFailure('Error generating random alias', error);
       return null;
     }
   }, [dbContext?.sqliteClient, resolveDefaultEmailDomain]);

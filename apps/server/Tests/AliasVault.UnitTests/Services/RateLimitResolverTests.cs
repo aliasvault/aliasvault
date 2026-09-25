@@ -17,7 +17,8 @@ public class RateLimitResolverTests
 {
     private const int Day = 86400;
     private const int Week = 604800;
-    private const string UserId = "user-1";
+    private static readonly Guid GroupId = new("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid OtherGroupId = new("22222222-2222-2222-2222-222222222222");
     private static readonly DateTime Now = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
     /// <summary>
@@ -26,18 +27,18 @@ public class RateLimitResolverTests
     [Test]
     public void NoRulesNoLegacyTest()
     {
-        var result = Resolve([], User(UserId));
+        var result = Resolve([], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
 
     /// <summary>
-    /// A single global absolute cap applies to the user.
+    /// A single global absolute cap applies to the group.
     /// </summary>
     [Test]
     public void GlobalAbsoluteCapTest()
     {
-        var result = Resolve([Rule(window: 0, max: 20)], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 20)], Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -48,12 +49,12 @@ public class RateLimitResolverTests
     }
 
     /// <summary>
-    /// A single global velocity window applies to the user.
+    /// A single global velocity window applies to the group.
     /// </summary>
     [Test]
     public void GlobalVelocityWindowTest()
     {
-        var result = Resolve([Rule(window: Day, max: 10)], User(UserId));
+        var result = Resolve([Rule(window: Day, max: 10)], Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -75,7 +76,7 @@ public class RateLimitResolverTests
                 Rule(window: Day, max: 10),
                 Rule(window: Week, max: 50),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -87,17 +88,17 @@ public class RateLimitResolverTests
     }
 
     /// <summary>
-    /// A per-user override replaces the global value for the same window, even when it raises the limit.
+    /// A per-group override replaces the global value for the same window, even when it raises the limit.
     /// </summary>
     [Test]
-    public void PerUserOverrideRaisesGlobalTest()
+    public void PerGroupOverrideRaisesGlobalTest()
     {
         var result = Resolve(
             [
                 Rule(window: 0, max: 20),
-                Rule(window: 0, max: 500, userId: UserId),
+                Rule(window: 0, max: 500, groupId: GroupId),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -107,17 +108,17 @@ public class RateLimitResolverTests
     }
 
     /// <summary>
-    /// A per-user override that lowers the global value is applied (temporary abuse clamp scenario).
+    /// A per-group override that lowers the global value is applied (temporary abuse clamp scenario).
     /// </summary>
     [Test]
-    public void PerUserOverrideLowersGlobalTest()
+    public void PerGroupOverrideLowersGlobalTest()
     {
         var result = Resolve(
             [
                 Rule(window: Day, max: 50),
-                Rule(window: Day, max: 5, userId: UserId),
+                Rule(window: Day, max: 5, groupId: GroupId),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -127,34 +128,34 @@ public class RateLimitResolverTests
     }
 
     /// <summary>
-    /// A per-user override with MaxCount 0 (unlimited) lifts a stricter global limit for that user.
+    /// A per-group override with MaxCount 0 (unlimited) lifts a stricter global limit for that group.
     /// </summary>
     [Test]
-    public void PerUserUnlimitedLiftsGlobalTest()
+    public void PerGroupUnlimitedLiftsGlobalTest()
     {
         var result = Resolve(
             [
                 Rule(window: Day, max: 10),
-                Rule(window: Day, max: 0, userId: UserId),
+                Rule(window: Day, max: 0, groupId: GroupId),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
 
     /// <summary>
-    /// A per-user override only applies to the targeted user; a different user still gets the global value.
+    /// A per-group override only applies to the targeted group; a different group still gets the global value.
     /// </summary>
     [Test]
-    public void PerUserOverrideDoesNotLeakToOtherUserTest()
+    public void PerGroupOverrideDoesNotLeakToOtherGroupTest()
     {
         RateLimit[] rules =
         [
             Rule(window: 0, max: 20),
-            Rule(window: 0, max: 500, userId: UserId),
+            Rule(window: 0, max: 500, groupId: GroupId),
         ];
 
-        var other = Resolve(rules, User("other-user"));
+        var other = Resolve(rules, Group(OtherGroupId));
 
         Assert.Multiple(() =>
         {
@@ -164,48 +165,48 @@ public class RateLimitResolverTests
     }
 
     /// <summary>
-    /// A tier rule for the user's tier (Free) applies, while a tier rule for another tier (Premium) is ignored.
+    /// A tier rule for the group's tier (Free) applies, while a tier rule for another tier (Premium) is ignored.
     /// </summary>
     [Test]
     public void TierRuleAppliesOnlyForMatchingTierTest()
     {
-        var freeResult = Resolve([Rule(window: 0, max: 20, tier: AccountTier.Free)], User(UserId));
-        var premiumResult = Resolve([Rule(window: 0, max: 100, tier: AccountTier.Premium)], User(UserId));
+        var freeResult = Resolve([Rule(window: 0, max: 20, tier: AccountTier.Free)], Group(GroupId));
+        var premiumResult = Resolve([Rule(window: 0, max: 100, tier: AccountTier.Premium)], Group(GroupId));
 
         Assert.Multiple(() =>
         {
-            // The user resolves to Free, so the Free tier rule applies.
+            // The group resolves to Free, so the Free tier rule applies.
             Assert.That(freeResult, Has.Count.EqualTo(1));
             Assert.That(freeResult[0].MaxCount, Is.EqualTo(20));
 
-            // The Premium tier rule does not apply to a Free user (tiers are not implemented yet).
+            // The Premium tier rule does not apply to a Free group (tiers are not implemented yet).
             Assert.That(premiumResult, Is.Empty);
         });
     }
 
     /// <summary>
-    /// Precedence for a single window: per-user override beats tier default beats global default.
+    /// Precedence for a single window: per-group override beats tier default beats global default.
     /// </summary>
     [Test]
-    public void ScopePrecedenceUserBeatsTierBeatsGlobalTest()
+    public void ScopePrecedenceGroupBeatsTierBeatsGlobalTest()
     {
         RateLimit[] rules =
         [
             Rule(window: 0, max: 20),
             Rule(window: 0, max: 100, tier: AccountTier.Free),
-            Rule(window: 0, max: 500, userId: UserId),
+            Rule(window: 0, max: 500, groupId: GroupId),
         ];
 
-        // User rule wins when present.
-        var withUser = Resolve(rules, User(UserId));
+        // Group rule wins when present.
+        var withGroupRule = Resolve(rules, Group(GroupId));
 
-        // Tier rule wins for a different user (no user rule), over the global default.
-        var withoutUser = Resolve(rules, User("other-user"));
+        // Tier rule wins for a different group (no group rule), over the global default.
+        var withoutGroupRule = Resolve(rules, Group(OtherGroupId));
 
         Assert.Multiple(() =>
         {
-            Assert.That(withUser[0].MaxCount, Is.EqualTo(500));
-            Assert.That(withoutUser[0].MaxCount, Is.EqualTo(100));
+            Assert.That(withGroupRule[0].MaxCount, Is.EqualTo(500));
+            Assert.That(withoutGroupRule[0].MaxCount, Is.EqualTo(100));
         });
     }
 
@@ -215,7 +216,7 @@ public class RateLimitResolverTests
     [Test]
     public void DisabledRuleIgnoredTest()
     {
-        var result = Resolve([Rule(window: 0, max: 20, enabled: false)], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 20, enabled: false)], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
@@ -229,7 +230,7 @@ public class RateLimitResolverTests
         // Only AliasCreation exists today; use an out-of-range cast value to represent a different type so the
         // filter is exercised without depending on a second enum member being added later.
         var otherType = (RateLimitType)999;
-        var result = Resolve([Rule(window: 0, max: 20, type: otherType)], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 20, type: otherType)], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
@@ -240,7 +241,7 @@ public class RateLimitResolverTests
     [Test]
     public void EffectiveFromInFutureNotActiveTest()
     {
-        var result = Resolve([Rule(window: 0, max: 20, from: Now.AddHours(1))], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 20, from: Now.AddHours(1))], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
@@ -251,7 +252,7 @@ public class RateLimitResolverTests
     [Test]
     public void EffectiveUntilInPastExpiredTest()
     {
-        var result = Resolve([Rule(window: 0, max: 20, until: Now.AddHours(-1))], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 20, until: Now.AddHours(-1))], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
@@ -264,7 +265,7 @@ public class RateLimitResolverTests
     {
         var result = Resolve(
             [Rule(window: 0, max: 20, from: Now.AddHours(-1), until: Now.AddHours(1))],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -284,7 +285,7 @@ public class RateLimitResolverTests
                 Rule(window: Day, max: 50),
                 Rule(window: Day, max: 10),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -304,14 +305,14 @@ public class RateLimitResolverTests
                 Rule(window: Day, max: 0),
                 Rule(window: Day, max: 10),
             ],
-            User(UserId));
+            Group(GroupId));
 
         var concreteFirst = Resolve(
             [
                 Rule(window: Day, max: 10),
                 Rule(window: Day, max: 0),
             ],
-            User(UserId));
+            Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -328,7 +329,7 @@ public class RateLimitResolverTests
     [Test]
     public void GlobalUnlimitedProducesNoLimitTest()
     {
-        var result = Resolve([Rule(window: 0, max: 0)], User(UserId));
+        var result = Resolve([Rule(window: 0, max: 0)], Group(GroupId));
 
         Assert.That(result, Is.Empty);
     }
@@ -339,8 +340,8 @@ public class RateLimitResolverTests
     [Test]
     public void AgeGatedRuleAppliesToNewAccountTest()
     {
-        var newUser = User(UserId, createdAt: Now.AddDays(-1));
-        var result = Resolve([Rule(window: 0, max: 5, ageMaxDays: 7)], newUser);
+        var newGroup = Group(GroupId, createdAt: Now.AddDays(-1));
+        var result = Resolve([Rule(window: 0, max: 5, ageMaxDays: 7)], newGroup);
 
         Assert.Multiple(() =>
         {
@@ -355,15 +356,15 @@ public class RateLimitResolverTests
     [Test]
     public void AgeGatedRuleIgnoredForOldAccountTest()
     {
-        var oldUser = User(UserId, createdAt: Now.AddDays(-30));
-        var result = Resolve([Rule(window: 0, max: 5, ageMaxDays: 7)], oldUser);
+        var oldGroup = Group(GroupId, createdAt: Now.AddDays(-30));
+        var result = Resolve([Rule(window: 0, max: 5, ageMaxDays: 7)], oldGroup);
 
         Assert.That(result, Is.Empty);
     }
 
     /// <summary>
-    /// Full combined scenario: free default absolute cap, premium tier cap (ignored for free user), a per-user
-    /// absolute override that raises the cap, plus a global daily velocity window. The user gets the override
+    /// Full combined scenario: free default absolute cap, premium tier cap (ignored for a free group), a per-group
+    /// absolute override that raises the cap, plus a global daily velocity window. The group gets the override
     /// absolute cap and the daily window.
     /// </summary>
     [Test]
@@ -373,11 +374,11 @@ public class RateLimitResolverTests
         [
             Rule(window: 0, max: 20),
             Rule(window: 0, max: 100, tier: AccountTier.Premium),
-            Rule(window: 0, max: 500, userId: UserId),
+            Rule(window: 0, max: 500, groupId: GroupId),
             Rule(window: Day, max: 10),
         ];
 
-        var result = Resolve(rules, User(UserId));
+        var result = Resolve(rules, Group(GroupId));
 
         Assert.Multiple(() =>
         {
@@ -389,19 +390,19 @@ public class RateLimitResolverTests
 
     private static IReadOnlyList<EffectiveRateLimit> Resolve(
         RateLimit[] rules,
-        AliasVaultUser user)
-        => RateLimitResolver.Resolve(rules, user, RateLimitType.AliasCreation, Now);
+        Group group)
+        => RateLimitResolver.Resolve(rules, group, RateLimitType.AliasCreation, Now);
 
     private static int MaxFor(IReadOnlyList<EffectiveRateLimit> result, int window)
         => result.Single(r => r.WindowSeconds == window).MaxCount;
 
-    private static AliasVaultUser User(string id, DateTime? createdAt = null)
-        => new() { Id = id, CreatedAt = createdAt ?? Now };
+    private static Group Group(Guid id, DateTime? createdAt = null)
+        => new() { Id = id, Name = "group", CreatedAt = createdAt ?? Now };
 
     private static RateLimit Rule(
         int window,
         int max,
-        string? userId = null,
+        Guid? groupId = null,
         AccountTier? tier = null,
         bool enabled = true,
         RateLimitType type = RateLimitType.AliasCreation,
@@ -412,7 +413,7 @@ public class RateLimitResolverTests
         {
             Id = Guid.NewGuid(),
             LimitType = type,
-            UserId = userId,
+            GroupId = groupId,
             Tier = tier,
             WindowSeconds = window,
             MaxCount = max,

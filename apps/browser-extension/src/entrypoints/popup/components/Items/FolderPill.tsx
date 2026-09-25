@@ -1,5 +1,7 @@
 import React from 'react';
 
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
+
 type FolderWithCount = {
   id: string;
   name: string;
@@ -11,15 +13,17 @@ interface IFolderPillProps {
   onClick: () => void;
   isActive?: boolean;
   optionId?: string;
+  isShared?: boolean;
 }
 
 /**
  * FolderPill component
  *
  * Displays a folder as a compact pill/tag that can be clicked to navigate into.
- * Designed to be displayed inline with other folder pills.
+ * Designed to be displayed inline with other folder pills. A folder of a shared manifest gets a
+ * small people badge overlaid on the folder icon.
  */
-const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = false, optionId }) => {
+const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = false, optionId, isShared = false }) => {
   return (
     <button
       id={optionId}
@@ -32,13 +36,7 @@ const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = fa
           : 'border-gray-200 dark:border-gray-600'
       }`}
     >
-      <svg
-        className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 flex-shrink-0"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-      </svg>
+      <FolderIcon isShared={isShared} className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
       <span className="text-gray-700 dark:text-gray-200 font-medium truncate max-w-[120px]">
         {folder.name}
       </span>

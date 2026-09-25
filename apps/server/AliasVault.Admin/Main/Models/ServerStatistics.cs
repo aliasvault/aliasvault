@@ -8,52 +8,27 @@
 namespace AliasVault.Admin.Main.Models;
 
 /// <summary>
-/// Model representing comprehensive server statistics and metrics.
+/// All-time totals of this server.
 /// </summary>
 public class ServerStatistics
 {
     /// <summary>
-    /// Gets or sets the total number of users registered on the server.
+    /// Gets or sets the total number of registered users.
     /// </summary>
     public int TotalUsers { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of email aliases created.
+    /// Gets or sets the total number of email aliases that are still carried by at least one vault.
     /// </summary>
     public int TotalAliases { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of emails stored.
+    /// Gets or sets the total number of stored emails.
     /// </summary>
     public int TotalEmails { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of email attachments.
+    /// Gets or sets the total kilobytes occupied by all personal vaults.
     /// </summary>
-    public int TotalEmailAttachments { get; set; }
-
-    /// <summary>
-    /// Gets or sets the list of top users by storage size.
-    /// </summary>
-    public List<TopUserByStorage> TopUsersByStorage { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the list of top users by number of aliases.
-    /// </summary>
-    public List<TopUserByAliases> TopUsersByAliases { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the list of top users by number of emails.
-    /// </summary>
-    public List<TopUserByEmails> TopUsersByEmails { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the list of top users by number of credentials.
-    /// </summary>
-    public List<TopUserByCredentials> TopUsersByCredentials { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets the list of top IP addresses by user activity.
-    /// </summary>
-    public List<TopIpAddress> TopIpAddresses { get; set; } = new();
+    public long TotalVaultStorageKb { get; set; }
 }

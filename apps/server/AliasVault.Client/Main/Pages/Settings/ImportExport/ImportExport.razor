@@ -138,7 +138,6 @@
     private static readonly bool IsDebugBuild = false;
 #endif
 
-    private string _username = string.Empty;
     private bool _showPasswordConfirmation;
     private string _passwordError = string.Empty;
     private bool _showExportPasswordModal;
@@ -158,9 +157,6 @@
     {
         await base.OnInitializedAsync();
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["PageTitle"] });
-
-        // Get username for password verification
-        _username = await GetUsernameAsync();
     }
 
     private async Task ShowExportConfirmation(ExportType exportType)
@@ -211,7 +207,7 @@
 
         try
         {
-            var result = await AuthService.VerifyPasswordAsync(_username, password);
+            var result = await AuthService.VerifyPasswordAsync(password);
 
             switch (result)
             {
@@ -237,7 +233,7 @@
                     StateHasChanged();
                     break;
 
-                case PasswordVerificationResult.ServerError:
+                case PasswordVerificationResult.VerificationError:
                 default:
                     GlobalLoadingSpinner.Hide();
                     _passwordError = Localizer["PasswordVerificationFailed"];
@@ -302,7 +298,7 @@
     {
         try
         {
-            var items = await ItemService.LoadAllAsync();
+            var items = await ItemService.LoadAllInManifestAsync(DbService.PersonalManifestId);
 
             var csvBytes = ItemCsvService.ExportItemsToCsv(items);
 
@@ -369,16 +365,17 @@
     }
 
     /// <summary>
-    /// Generates .avux bytes from the current vault data.
-    /// This is used by both .avux export (unencrypted) and .avex export (encrypted).
+    /// Generates .avux bytes from the personal manifest. Note: shared manifests are not included in the export
+    /// on purpose, a separate export operation will be required for shared manifests.
     /// </summary>
     private async Task<byte[]> GenerateAvuxBytesAsync()
     {
         var context = await DbService.GetDbContextAsync();
+        var manifestId = DbService.PersonalManifestId;
 
         // Load all vault entities with their related data
         var items = await context.Items
-            .Where(i => !i.IsDeleted && i.DeletedAt == null)
+            .Where(i => i.ManifestId == manifestId && !i.IsDeleted && i.DeletedAt == null)
             .Include(i => i.FieldValues)
             .Include(i => i.Attachments)
             .Include(i => i.TotpCodes)
@@ -386,19 +383,19 @@
             .ToListAsync();
 
         var folders = await context.Folders
-            .Where(f => !f.IsDeleted)
+            .Where(f => f.ManifestId == manifestId && !f.IsDeleted)
             .ToListAsync();
 
         var tags = await context.Tags
-            .Where(t => !t.IsDeleted)
+            .Where(t => t.ManifestId == manifestId && !t.IsDeleted)
             .ToListAsync();
 
         var itemTags = await context.ItemTags
-            .Where(it => !it.IsDeleted)
+            .Where(it => it.ManifestId == manifestId && !it.IsDeleted)
             .ToListAsync();
 
         var fieldDefinitions = await context.FieldDefinitions
-            .Where(fd => !fd.IsDeleted)
+            .Where(fd => fd.ManifestId == manifestId && !fd.IsDeleted)
             .ToListAsync();
 
         // Get unique logo IDs from items
@@ -408,9 +405,9 @@
             .Distinct()
             .ToList();
 
-        // Load logos used by items
+        // Load logos used by items; the manifest predicate keeps a same-id logo of another manifest out
         var logos = await context.Logos
-            .Where(l => !l.IsDeleted && logoIds.Contains(l.Id))
+            .Where(l => l.ManifestId == manifestId && !l.IsDeleted && logoIds.Contains(l.Id))
             .ToListAsync();
 
         var username = await GetUsernameAsync();

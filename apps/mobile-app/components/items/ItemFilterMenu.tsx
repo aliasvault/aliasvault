@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ItemTypes, type ItemType } from '@/utils/dist/core/models/vault';
-import type { ItemFilterType } from '@/utils/ItemFilters';
+import { ItemTypes, type ItemType } from '@aliasvault/models/vault';
+import type { ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 
 import { useColors } from '@/hooks/useColorScheme';
 

@@ -237,9 +237,7 @@ class PasskeyRegistrationActivity : FragmentActivity() {
     private fun proceedWithPasskeyRegistration(savedInstanceState: Bundle?) {
         try {
             // Check for existing passkeys
-            val db = vaultStore.database
-
-            if (db != null) {
+            if (vaultStore.database.isOpen()) {
                 // Get existing passkeys for the rpId (can be replaced)
                 viewModel.existingPasskeys = vaultStore.getPasskeysWithCredentialInfo(
                     rpId = viewModel.rpId,

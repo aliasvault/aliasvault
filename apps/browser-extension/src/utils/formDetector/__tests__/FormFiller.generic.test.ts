@@ -1,19 +1,19 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import type { Credential } from '@/utils/dist/core/models/vault';
-
 import { FormFiller } from '../FormFiller';
 import { type FormFields } from '../types/FormFields';
 
 import { setupTestDOM, createMockFormFields, createMockCredential, wasTriggerCalledFor, createDateSelects } from './TestUtils';
+
+import type { Credential } from '@aliasvault/models/vault';
 
 const { window } = new JSDOM('<!DOCTYPE html>');
 global.HTMLSelectElement = window.HTMLSelectElement;
 global.HTMLInputElement = window.HTMLInputElement;
 
 describe('FormFiller', () => {
-  let mockTriggerInputEvents: ReturnType<typeof vi.fn>;
+  let mockTriggerInputEvents: ReturnType<typeof vi.fn<(element: HTMLInputElement | HTMLSelectElement, animate?: boolean) => void>>;
   let formFields: FormFields;
   let formFiller: FormFiller;
   let mockCredential: Credential;
@@ -22,7 +22,7 @@ describe('FormFiller', () => {
   beforeEach(() => {
     const { document: doc } = setupTestDOM();
     document = doc;
-    mockTriggerInputEvents = vi.fn();
+    mockTriggerInputEvents = vi.fn<(element: HTMLInputElement | HTMLSelectElement, animate?: boolean) => void>();
     formFields = createMockFormFields(document);
     mockCredential = createMockCredential();
     formFiller = new FormFiller(formFields, mockTriggerInputEvents);

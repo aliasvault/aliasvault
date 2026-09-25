@@ -37,7 +37,7 @@
 
     private async Task MakeWebApiCall()
     {
-        await HttpClient.GetAsync("v1/Test");
+        await HttpClient.GetAsync(ApiRoute("Test"));
 
         IsLoading = false;
         StateHasChanged();

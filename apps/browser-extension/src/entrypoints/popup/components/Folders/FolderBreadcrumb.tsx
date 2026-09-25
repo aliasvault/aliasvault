@@ -1,3 +1,4 @@
+import { getFolderPath, getFolderIdPath } from '@aliasvault/client/items/FolderUtils';
 import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -5,7 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useNavigationHistory } from '@/entrypoints/popup/hooks/useNavigationHistory';
 
-import { getFolderPath, getFolderIdPath } from '@/utils/FolderUtils';
+import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
 
 type Breadcrumb = {
   name: string;
@@ -14,10 +15,10 @@ type Breadcrumb = {
 
 type FolderBreadcrumbProps = {
   /**
-   * The ID of the current folder to show breadcrumbs for.
+   * The current folder to show breadcrumbs for.
    * If null/undefined, no breadcrumbs are shown.
    */
-  folderId: string | null | undefined;
+  folder: FolderRef | null | undefined;
   /**
    * Optional root path to navigate to when clicking the root breadcrumb.
    * Defaults to '/items'.
@@ -36,7 +37,7 @@ type FolderBreadcrumbProps = {
  * Example: If viewing "Client A" folder, shows "Items > Work > Projects" (not including "Client A")
  */
 const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
-  folderId,
+  folder,
   rootPath = '/items',
   rootLabel,
 }) => {
@@ -45,18 +46,21 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
   const location = useLocation();
   const dbContext = useDb();
   const { findStepsBack } = useNavigationHistory();
+  const folderId = folder?.Id ?? null;
+  const manifestId = folder?.ManifestId ?? null;
 
   /**
    * Compute breadcrumb trail based on current folder.
    * Excludes the current folder if we're viewing it (to avoid duplication with page title).
    */
   const breadcrumbs = useMemo((): Breadcrumb[] => {
-    if (!folderId || !dbContext?.sqliteClient) {
+    if (!folderId || !manifestId || !dbContext?.sqliteClient) {
       return [];
     }
+    const ref = { Id: folderId, ManifestId: manifestId };
     const allFolders = dbContext.sqliteClient.folders.getAll();
-    const folderNames = getFolderPath(folderId, allFolders);
-    const folderIds = getFolderIdPath(folderId, allFolders);
+    const folderNames = getFolderPath(ref, allFolders);
+    const folderIds = getFolderIdPath(ref, allFolders);
     const fullPath = folderNames.map((name, index) => ({
       name,
       id: folderIds[index]
@@ -66,13 +70,13 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
      * If we're on the folder view page for this folder, exclude it from breadcrumbs
      * (it's already shown as the page title)
      */
-    const currentFolderPath = `/items/folder/${folderId}`;
+    const currentFolderPath = `/items/folder/${manifestId}/${folderId}`;
     if (location.pathname === currentFolderPath && fullPath.length > 0) {
       return fullPath.slice(0, -1); // Remove last item (current folder)
     }
 
     return fullPath;
-  }, [folderId, dbContext?.sqliteClient, location.pathname]);
+  }, [folderId, manifestId, dbContext?.sqliteClient, location.pathname]);
 
   /**
    * Handle breadcrumb navigation with history management.
@@ -128,7 +132,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
         </button>
       )}
       {breadcrumbs.map((crumb) => {
-        const crumbPath = `/items/folder/${crumb.id}`;
+        const crumbPath = `/items/folder/${manifestId}/${crumb.id}`;
 
         return (
           <React.Fragment key={crumb.id}>

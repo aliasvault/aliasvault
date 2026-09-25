@@ -8,7 +8,7 @@
 namespace AliasVault.Shared.Models.Spamok;
 
 /// <summary>
-/// Represents an attachment for an email.
+/// Represents an attachment for an email of the external api.spamok.com API.
 /// </summary>
 public class AttachmentApiModel
 {

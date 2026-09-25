@@ -229,7 +229,7 @@ const config: Config = {
         },
       },
     ],
-    // Inject the analytics <script> verbatim into <head>, but only when
+    // Inject the analytics <script> as-is into <head>, but only when
     // ANALYTICS_SCRIPT is provided (production CI build).
     ...(analyticsScript
       ? [

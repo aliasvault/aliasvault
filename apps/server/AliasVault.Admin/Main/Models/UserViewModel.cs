@@ -8,7 +8,7 @@
 namespace AliasVault.Admin.Main.Models;
 
 /// <summary>
-/// User view model.
+/// A row in the user list.
 /// </summary>
 public class UserViewModel
 {
@@ -28,29 +28,19 @@ public class UserViewModel
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the vault count.
-    /// </summary>
-    public int VaultCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the credential count.
+    /// Gets or sets the number of credentials in the current vault revision.
     /// </summary>
     public int CredentialCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the email claim count.
+    /// Gets or sets the number of email aliases the vault still carries.
     /// </summary>
     public int EmailClaimCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of received emails across all email claims.
+    /// Gets or sets the kilobytes the vault occupies on the server, all revisions included.
     /// </summary>
-    public int ReceivedEmailCount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total vault storage that this user takes up in kilobytes.
-    /// </summary>
-    public int VaultStorageInKb { get; set; }
+    public long VaultStorageInKb { get; set; }
 
     /// <summary>
     /// Gets or sets the last activity date of the user.

@@ -20,7 +20,6 @@
     <ProjectReference Include="..\..\Shared\AliasVault.Shared.Core\AliasVault.Shared.Core.csproj" />
     <ProjectReference Include="..\..\Utilities\AliasVault.TotpGenerator\AliasVault.TotpGenerator.csproj" />
     <ProjectReference Include="..\..\Utilities\Cryptography\AliasVault.Cryptography.Client\AliasVault.Cryptography.Client.csproj" />
-    <ProjectReference Include="..\..\Utilities\Cryptography\AliasVault.Cryptography.Server\AliasVault.Cryptography.Server.csproj" />
   </ItemGroup>
 
 </Project>

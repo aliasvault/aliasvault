@@ -231,15 +231,25 @@ public sealed class SettingsService
 
         // Store the DbService instance for later use.
         _dbService = dbService;
+        await ReloadAsync(dbService);
+        _initialized = true;
+    }
 
+    /// <summary>
+    /// Re-read every setting from the database, for after the live database was replaced (a merge or migration).
+    /// </summary>
+    /// <param name="dbService">The database service the settings are read from.</param>
+    /// <returns>Task.</returns>
+    public async Task ReloadAsync(DbService dbService)
+    {
+        _dbService = dbService;
         var db = await _dbService.GetDbContextAsync();
         var settings = await db.Settings.ToListAsync();
+        _settings.Clear();
         foreach (var setting in settings)
         {
             _settings[setting.Key] = setting.Value;
         }
-
-        _initialized = true;
     }
 
     /// <summary>
@@ -373,11 +383,12 @@ public sealed class SettingsService
         }
 
         var db = await _dbService!.GetDbContextAsync();
-        var setting = await db.Settings.FindAsync(key);
+        var setting = await db.Settings.FindAsync(_dbService.PersonalManifestId, key);
         if (setting == null)
         {
             setting = new Setting
             {
+                ManifestId = _dbService.PersonalManifestId,
                 Key = key,
                 Value = value,
                 CreatedAt = DateTime.UtcNow,

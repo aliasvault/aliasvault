@@ -14,12 +14,11 @@ using AliasClientDb.Abstracts;
 /// <summary>
 /// FieldHistory entity that stores historical snapshots of field values.
 /// </summary>
-public class FieldHistory : SyncableEntity
+public class FieldHistory : ManifestScopedEntity
 {
     /// <summary>
     /// Gets or sets the field history ID.
     /// </summary>
-    [Key]
     public Guid Id { get; set; }
 
     /// <summary>
@@ -31,7 +30,6 @@ public class FieldHistory : SyncableEntity
     /// <summary>
     /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("ItemId")]
     public virtual Item Item { get; set; } = null!;
 
     /// <summary>

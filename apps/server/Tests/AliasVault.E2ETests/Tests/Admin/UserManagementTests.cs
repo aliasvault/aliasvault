@@ -7,7 +7,7 @@
 
 namespace AliasVault.E2ETests.Tests.Admin;
 
-using AliasServerDb;
+using AliasVault.IntegrationTests;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -29,50 +29,18 @@ public class UserManagementTests : AdminPlaywrightTest
     [OneTimeSetUp]
     public new async Task OneTimeSetUp()
     {
-        // Create a test user for user management operations
-        var testUser = new AliasVaultUser
+        // Every user needs a personal group owning a vault manifest before the Users pages can show them.
+        var (testUser, _, _, _) = await TestUserSeeder.CreateTestUserAsync(DbContext, _testUserEmail, _testUserEmail, configureUser: user =>
         {
-            Id = Guid.NewGuid().ToString(),
-            UserName = _testUserEmail,
-            NormalizedUserName = _testUserEmail.ToUpperInvariant(),
-            Email = _testUserEmail,
-            NormalizedEmail = _testUserEmail.ToUpperInvariant(),
-            EmailConfirmed = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            PasswordChangedAt = DateTime.UtcNow,
-            MaxEmails = 100,
-            MaxEmailAgeDays = 30,
-            Blocked = false,
-        };
-
-        DbContext.AliasVaultUsers.Add(testUser);
-        await DbContext.SaveChangesAsync();
+            user.NormalizedUserName = _testUserEmail.ToUpperInvariant();
+            user.NormalizedEmail = _testUserEmail.ToUpperInvariant();
+            user.EmailConfirmed = true;
+            user.CreatedAt = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.PasswordChangedAt = DateTime.UtcNow;
+        });
 
         _testUserId = testUser.Id;
-
-        // Create a vault for the test user (required by the Users list page)
-        var testVault = new Vault
-        {
-            Id = Guid.NewGuid(),
-            UserId = _testUserId,
-            Version = "1.0.0",
-            RevisionNumber = 1,
-            FileSize = 1024,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Salt = "test-salt",
-            Verifier = "test-verifier",
-            VaultBlob = "test-blob",
-            EncryptionType = "test",
-            EncryptionSettings = "test-settings",
-            CredentialsCount = 0,
-            EmailClaimsCount = 0,
-            Client = "test-client",
-        };
-
-        DbContext.Vaults.Add(testVault);
-        await DbContext.SaveChangesAsync();
     }
 
     /// <summary>
@@ -82,11 +50,13 @@ public class UserManagementTests : AdminPlaywrightTest
     [OneTimeTearDown]
     public new async Task OneTimeTearDown()
     {
-        // Clean up the test user
+        // Clean up the test user together with the personal group that owns its vault.
         var testUser = await DbContext.AliasVaultUsers.FindAsync(_testUserId);
         if (testUser != null)
         {
+            var personalGroup = await DbContext.Groups.FirstAsync(g => g.Id == testUser.PersonalGroupId);
             DbContext.AliasVaultUsers.Remove(testUser);
+            DbContext.Groups.Remove(personalGroup);
             await DbContext.SaveChangesAsync();
         }
 

@@ -54,8 +54,16 @@ public class IpBlockListService(IAliasServerDbContextFactory dbContextFactory, I
     /// <returns>The earliest shadow-block timestamp, or null when not shadow-blocked.</returns>
     public async Task<DateTime?> GetShadowBlockCutoffAsync(AliasVaultUser user, IPAddress? ipAddress)
     {
-        // Account-level shadow-block. When the timestamp is unknown, return min timestamp.
-        DateTime? cutoff = user.ShadowBlocked ? (user.ShadowBlockedAt ?? DateTime.UnixEpoch) : null;
+        // Account-level shadow-block, stored on the user's personal group. When the timestamp is unknown, return min timestamp.
+        DateTime? cutoff = null;
+        await using (var dbContext = await dbContextFactory.CreateDbContextAsync())
+        {
+            var personalGroup = await dbContext.Groups.AsNoTracking().Where(g => g.Id == user.PersonalGroupId).Select(g => new { g.ShadowBlocked, g.ShadowBlockedAt }).FirstOrDefaultAsync();
+            if (personalGroup is not null && personalGroup.ShadowBlocked)
+            {
+                cutoff = personalGroup.ShadowBlockedAt ?? DateTime.UnixEpoch;
+            }
+        }
 
         // IP-range shadow-block: the earliest matching block determines the cutoff time.
         if (ipAddress is not null)

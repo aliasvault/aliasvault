@@ -62,7 +62,7 @@ export const ConfirmDeleteModal: React.FC<IConfirmDeleteModalProps> = ({
     },
     cancelButton: {
       alignItems: 'center',
-      backgroundColor: colors.accentBackground,
+      backgroundColor: colors.modalSurfaceRaised,
       borderColor: colors.accentBorder,
       borderRadius: 8,
       borderWidth: 1,

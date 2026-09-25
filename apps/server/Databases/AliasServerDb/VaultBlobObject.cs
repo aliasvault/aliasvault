@@ -1,0 +1,66 @@
+//-----------------------------------------------------------------------
+// <copyright file="VaultBlobObject.cs" company="aliasvault">
+// Copyright (c) aliasvault. All rights reserved.
+// Licensed under the AGPLv3 license. See LICENSE.md file in the project root for full license information.
+// </copyright>
+//-----------------------------------------------------------------------
+namespace AliasServerDb;
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+/// <summary>
+/// Content-addressed encrypted binary blobs (e.g. favicons, attachments, etc.) for the manifest-v1 storage format.
+/// </summary>
+public class VaultBlobObject
+{
+    /// <summary>
+    /// Gets or sets the manifest this blob belongs to. Part of the composite PK.
+    /// </summary>
+    public Guid ManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the manifest.
+    /// </summary>
+    [ForeignKey("ManifestId")]
+    public virtual VaultManifest Manifest { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the per-manifest salted SHA-256 (hex) of the plaintext payload. Part of the composite PK.
+    /// </summary>
+    [StringLength(64)]
+    public string Hash { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the blob category.
+    /// </summary>
+    [StringLength(20)]
+    public required string Category { get; set; }
+
+    /// <summary>
+    /// Gets or sets the encrypted blob payload (AES-GCM ciphertext bytes), encrypted with the blob's own key.
+    /// </summary>
+    public required byte[] EncryptedData { get; set; }
+
+    /// <summary>
+    /// Gets or sets the blob's own key, encrypted with the manifest's VEK.
+    /// </summary>
+    [StringLength(255)]
+    public required string EncryptedBlobKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the size of the encrypted payload in bytes (cached for cheap metrics).
+    /// </summary>
+    public int SizeBytes { get; set; }
+
+    /// <summary>
+    /// Gets or sets the version of the VEK that <see cref="EncryptedBlobKey"/> is encrypted with.
+    /// </summary>
+    public int KeyVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets the timestamp the bytes were stored. Used by the task runner as the start of the grace period it
+    /// gives a blob that no manifest revision references yet.
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+}

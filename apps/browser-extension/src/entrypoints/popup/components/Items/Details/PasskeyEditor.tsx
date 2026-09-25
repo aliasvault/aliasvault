@@ -4,12 +4,15 @@ import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Passkey } from '@/utils/dist/core/models/vault';
+import { logFailure } from '@/utils/Diagnostics';
 
 import { PasskeyIcon } from './PasskeyBlock';
 
+import type { Passkey } from '@aliasvault/models/vault';
+
 type PasskeyEditorProps = {
   itemId: string;
+  manifestId: string;
   passkeyIdsMarkedForDeletion: string[];
   onPasskeyMarkedForDeletion: (passkeyIds: string[]) => void;
 }
@@ -20,6 +23,7 @@ type PasskeyEditorProps = {
  */
 const PasskeyEditor: React.FC<PasskeyEditorProps> = ({
   itemId,
+  manifestId,
   passkeyIdsMarkedForDeletion,
   onPasskeyMarkedForDeletion
 }) => {
@@ -35,14 +39,14 @@ const PasskeyEditor: React.FC<PasskeyEditorProps> = ({
     }
 
     try {
-      const itemPasskeys = dbContext.sqliteClient.passkeys.getByItemId(itemId);
+      const itemPasskeys = dbContext.sqliteClient.passkeys.getByItemId({ Id: itemId, ManifestId: manifestId });
       setPasskeys(itemPasskeys);
     } catch (err) {
-      console.error('Error loading passkeys:', err);
+      logFailure('Error loading passkeys', err);
     } finally {
       setLoading(false);
     }
-  }, [dbContext?.sqliteClient, itemId]);
+  }, [dbContext?.sqliteClient, itemId, manifestId]);
 
   /**
    * Mark a passkey for deletion.

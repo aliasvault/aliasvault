@@ -4,16 +4,17 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/core/models/webapi';
-import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@aliasvault/models/webapi';
+import { FieldKey, getFieldValue } from '@aliasvault/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { SrpUtility } from '@/utils/SrpUtility';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutationScope';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
-import { PayloadTooLargeError } from '@/utils/types/errors/PayloadTooLargeError';
+import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
 
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
@@ -162,7 +163,7 @@ export function useVaultMutate() : {
   ): Promise<void> => {
     await operation();
 
-    // Set uploading state BEFORE refreshing sync state to prevent "pending" flash
+    // Set uploading state before refreshing sync state to prevent "pending" flash
     dbContext.setIsUploading(true);
 
     // Refresh sync state to update isDirty flag
@@ -203,7 +204,7 @@ export function useVaultMutate() : {
     const srpIdentity = data.srpIdentity ?? username;
 
     // Derive the SRP client proof for the current password to authorize the change.
-    const currentClientProof = await SrpUtility.deriveClientProof(
+    const currentClientProof = await SrpAuthService.deriveClientProof(
       currentSalt,
       srpIdentity,
       currentPasswordHashString,
@@ -211,20 +212,20 @@ export function useVaultMutate() : {
     );
 
     // Generate salt and verifier for new password using native SRP
-    const newSalt = await SrpUtility.generateSalt();
+    const newSalt = await SrpAuthService.generateSalt();
     const newPasswordHash = await EncryptionUtility.deriveKeyFromPassword(newPasswordPlainText, newSalt, data.encryptionType, data.encryptionSettings);
     const newPasswordHashString = Buffer.from(newPasswordHash).toString('hex').toUpperCase();
 
     // Store the new encryption key and derivation parameters locally
     try {
-      const newEncryptionKeyDerivationParams : EncryptionKeyDerivationParams = {
+      const newUnlockKeyDerivationParams : UnlockKeyDerivationParams = {
         encryptionType: data.encryptionType,
         encryptionSettings: data.encryptionSettings,
         salt: newSalt,
       };
 
-      await dbContext.storeEncryptionKey(Buffer.from(newPasswordHash).toString('base64'));
-      await dbContext.storeEncryptionKeyDerivationParams(newEncryptionKeyDerivationParams);
+      await dbContext.storeUnlockKey(Buffer.from(newPasswordHash).toString('base64'));
+      await dbContext.storeUnlockKeyDerivationParams(newUnlockKeyDerivationParams);
 
       /**
        * Persist the new encrypted database with the new encryption key by starting and committing a transaction.
@@ -232,7 +233,7 @@ export function useVaultMutate() : {
        * locally which can then be uploaded to the server.
        */
       await NativeVaultManager.beginTransaction();
-      await NativeVaultManager.commitTransaction();
+      await NativeVaultManager.commitTransaction(DEFAULT_VAULT_MUTATION_SCOPE);
 
       // Unlock the newly persisted database to ensure it works and the new encryption key will be persisted in the keychain.
       await NativeVaultManager.unlockVault();
@@ -242,7 +243,7 @@ export function useVaultMutate() : {
     }
 
     // Generate SRP password change data (verifier for the new password) using native SRP
-    const newVerifier = await SrpUtility.deriveVerifier(newSalt, srpIdentity, newPasswordHashString);
+    const newVerifier = await SrpAuthService.deriveVerifier(await SrpAuthService.derivePrivateKey(newSalt, srpIdentity, newPasswordHashString));
 
     // Prepare vault for password change
     const vault = await prepareVaultForPasswordChange();
