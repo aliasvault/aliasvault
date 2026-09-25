@@ -6,7 +6,6 @@ import MainLayout from '@/layouts/MainLayout';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
 import Login from '@/pages/auth/Login';
 import Logout from '@/pages/auth/Logout';
-import Register from '@/pages/auth/Register';
 import Setup from '@/pages/auth/Setup';
 import Start from '@/pages/auth/Start';
 import Unlock from '@/pages/auth/Unlock';
@@ -15,7 +14,7 @@ import Home from '@/pages/Home';
 import Sync from '@/pages/sync/Sync';
 
 /**
- * The route table. Paths are the Blazor client's, so existing links and bookmarks keep working.
+ * The route table.
  */
 const App: React.FC = () => (
   <BrowserRouter>
@@ -27,7 +26,6 @@ const App: React.FC = () => (
         <Route path="/user/login" element={<Login />} />
         <Route path="/unlock" element={<Unlock />} />
         <Route path="/unlock/:skipWebAuthn" element={<Unlock />} />
-        <Route path="/user/register" element={<Register />} />
         <Route path="/user/forgot-password" element={<ForgotPassword />} />
       </Route>
       <Route path="/user/setup" element={<Setup />} />

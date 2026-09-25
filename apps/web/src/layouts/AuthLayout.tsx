@@ -13,7 +13,7 @@ const AuthLayout: React.FC = () => {
   const path = location.pathname.toLowerCase();
 
   // Show on login, forgot password and register, not during setup or unlock.
-  const showLanguageSwitcher = path.includes('/user/login') || path.includes('/user/forgot-password') || path.includes('/user/register') || path.endsWith('/');
+  const showLanguageSwitcher = path.includes('/user/login') || path.includes('/user/forgot-password') || path.endsWith('/');
 
   return (
     <div className="flex flex-col items-center justify-center px-6 pt-8 pb-8 mx-auto md:h-screen pt:mt-0 relative">
@@ -24,7 +24,7 @@ const AuthLayout: React.FC = () => {
       )}
       <Logo />
       <div className="w-full max-w-xl p-6 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800">
-        <GlobalNotificationDisplay marginTop={false} marginBottom={true} />
+        <GlobalNotificationDisplay marginTop={false} marginBottom={true} paddingX={false} />
         <Outlet />
       </div>
     </div>
