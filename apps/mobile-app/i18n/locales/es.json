@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmar solicitud de acceso",
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Otro dispositivo está pidiendo iniciar sesión con tu cuenta. Obtendrá acceso completo a tu bóveda. Sólo continúa si iniciaste este inicio de sesión.",
+        "selectCode": "Toca el número mostrado en el otro dispositivo",
+        "openedFromLink": "Sólo continúa si has escaneado este código QR con tu propia cámara. Si has llegado pulsando un enlace o un botón, declina.",
+        "codeMismatch": "El número no coincide. La solicitud de acceso fue rechazada.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
         "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Todos los elementos eliminados permanentemente"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Seleccionar icono",
+      "currentLogo": "Icono actual",
+      "builtinLogos": "Biblioteca de iconos",
+      "fetchFromWebsite": "Obtener icono del sitio web",
+      "refetchFromWebsite": "(Re)obtener icono del sitio web",
+      "sourceFavicon": "De {{domain}}",
+      "sourceBuiltin": "Icono integrado",
+      "sourceCustom": "Ícono personalizado",
+      "sourceNone": "Sin icono",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
+        "Shopping": "Compras",
+        "Bank": "Banca",
+        "Mail": "Correo",
         "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
+        "Work": "Trabajo",
+        "Game": "Juegos",
         "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Travel": "Viajes",
+        "Health": "Salud",
+        "Dev": "Desarrollo"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Novedades",
     "whatsNewDescription": "Se requiere una actualización para soportar los siguientes cambios:",
     "noDescriptionAvailable": "Ninguna descripción disponible para esta versión.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Después de esta actualización, tus otras aplicaciones de AliasVault necesitan la versión {{version}} o posterior. Aplicaciones antiguas y extensiones del navegador se desconectan y piden que se actualicen antes de que puedan abrir tu bóveda de nuevo.",
+    "successTitle": "Caja fuerte mejorada",
+    "successOtherDevices": "Tu bóveda está lista para usar. Asegúrate de actualizar la aplicación AliasVault también en tus otros dispositivos.",
     "status": {
       "preparingUpgrade": "Preparando actualización...",
       "applyingDatabaseMigrations": "Aplicando migración de base de datos...",
