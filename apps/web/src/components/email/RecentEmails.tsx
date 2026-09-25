@@ -246,7 +246,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
         ) : error.length > 0 ? (
           <AlertMessageError message={error} />
         ) : mailboxEmails.length === 0 ? (
-          <div className="text-gray-500 dark:text-gray-400">{t('components.main.email.recentEmails.NoEmailsReceivedMessage')}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('components.main.email.recentEmails.NoEmailsReceivedMessage')}</div>
         ) : (
           <div className="flex flex-col mt-6">
             <div className="overflow-x-auto rounded-lg">
