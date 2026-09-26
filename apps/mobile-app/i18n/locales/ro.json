@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmă Cererea de Autentificare",
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Un alt dispozitiv solicită conectarea la contul tău. Acesta va avea acces complet la seiful tău. Continuă doar dacă tu ai inițiat această conectare.",
+        "selectCode": "Atinge numărul afișat pe celălalt dispozitiv",
+        "openedFromLink": "Continuă doar dacă tocmai ai scanat acest cod QR cu camera ta. Dacă ai ajuns aici apăsând pe un link sau pe un buton, refuză.",
+        "codeMismatch": "Numărul nu corespunde. Solicitarea de conectare a fost refuzată.",
         "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
         "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Toate elementele au fost șterse definitiv"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Alege o pictogramă",
+      "currentLogo": "Pictograma curentă",
+      "builtinLogos": "Biblioteca de pictograme",
+      "fetchFromWebsite": "Preia pictograma de pe site",
+      "refetchFromWebsite": "(Re)preia pictograma de pe site",
+      "sourceFavicon": "De la {{domain}}",
+      "sourceBuiltin": "Pictogramă încorporată",
+      "sourceCustom": "Pictogramă personalizată",
+      "sourceNone": "Fără pictogramă",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
+        "Shopping": "Cumpărături",
+        "Bank": "Servicii bancare",
+        "Mail": "E-mail",
+        "Social": "Rețele sociale",
+        "Work": "Serviciu",
+        "Game": "Jocuri",
         "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Travel": "Călătorii",
+        "Health": "Sănătate",
+        "Dev": "Dezvoltare"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Ce este nou",
     "whatsNewDescription": "Este necesară o actualizare pentru a implementa următoarele modificări:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "După această actualizare, celelalte aplicații AliasVault trebuie să aibă versiunea {{version}} sau una mai nouă. Aplicațiile și extensiile de browser mai vechi te vor deconecta și îți vor solicita să le actualizezi înainte de a-ți putea deschide din nou seiful.",
+    "successTitle": "Seif actualizat",
+    "successOtherDevices": "Seiful tău este gata de utilizare. Asigură-te că actualizezi și aplicația AliasVault de pe celelalte dispozitive.",
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
