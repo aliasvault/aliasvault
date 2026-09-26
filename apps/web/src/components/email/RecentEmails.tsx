@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,11 +29,6 @@ const formatDate = (value: string): string => {
   const date = new Date(value);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
-
-/**
- * The structured API error code of a failed request, null for any other error.
- */
-const apiErrorCode = (error: unknown): string | null => error instanceof ApiRequestError ? error.apiErrorCode : null;
 
 /**
  * The recent emails received on an item's email address, with an in-place email modal.
@@ -76,9 +71,9 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
         setError('');
       }
     } catch (err) {
-      if (apiErrorCode(err) === 'CLAIM_DOES_NOT_MATCH_USER') {
+      if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_MATCH_USER') {
         setError(t('components.main.email.recentEmails.EmailAddressInUseError'));
-      } else if (apiErrorCode(err) === 'CLAIM_DOES_NOT_EXIST') {
+      } else if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_EXIST') {
         /*
          * The server learns about a new address when the vault push that follows a save lands. A load that races
          * that push is retried once instead of shown as an error.

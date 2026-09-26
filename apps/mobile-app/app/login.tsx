@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -11,6 +11,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { apiErrorMessage } from '@/utils/ApiErrors';
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import EncryptionUtility from '@/utils/EncryptionUtility';
@@ -435,9 +436,9 @@ export default function LoginScreen() : React.ReactNode {
         // Server refused this app version; show the notice translated, keyed on its error code.
         console.error('Client upgrade required:', err);
         setError(t('vault.errors.versionNotSupported'));
-      } else if (err instanceof ApiAuthError) {
-        console.error('ApiAuthError error:', err);
-        setError(t(`apiErrors.${err.message}`));
+      } else if (apiErrorCodeOf(err)) {
+        console.error('Login refused:', err);
+        setError(apiErrorMessage(err, t, t('auth.errors.serverError')));
       } else if (err instanceof LocalAuthError) {
         console.error('Network/SSL error:', err);
         setError((err as LocalAuthError).message);
@@ -468,7 +469,7 @@ export default function LoginScreen() : React.ReactNode {
 
       const code = twoFactorCode.trim();
       if (!/^\d{6}$/.test(code)) {
-        throw new ApiAuthError(t('auth.errors.invalidAuthCode'));
+        throw new LocalAuthError(t('auth.errors.invalidAuthCode'));
       }
 
       const validationResponse = await srpUtil.validateLogin2Fa(
@@ -497,8 +498,8 @@ export default function LoginScreen() : React.ReactNode {
       if (err instanceof ClientUpgradeRequiredError) {
         // Server refused this app version; show the notice translated, keyed on its error code.
         setError(t('vault.errors.versionNotSupported'));
-      } else if (err instanceof ApiAuthError) {
-        setError(t(`apiErrors.${err.message}`));
+      } else if (apiErrorCodeOf(err)) {
+        setError(apiErrorMessage(err, t, t('auth.errors.serverError')));
       } else if (err instanceof LocalAuthError) {
         setError((err as Error).message);
       } else {

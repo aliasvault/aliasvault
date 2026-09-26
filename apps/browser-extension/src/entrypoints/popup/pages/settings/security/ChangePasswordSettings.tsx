@@ -1,4 +1,3 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useState } from 'react';
@@ -14,6 +13,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { apiErrorMessage } from '@/utils/ApiErrors';
 import { logFailure } from '@/utils/Diagnostics';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
@@ -66,7 +66,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id, label, value, setValu
  * Change master password settings page.
  */
 const ChangePasswordSettings: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dbContext = useDb();
   const webApi = useWebApi();
   const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
@@ -96,10 +96,7 @@ const ChangePasswordSettings: React.FC = () => {
     if (err instanceof PasswordChangedElsewhereError) {
       return t('common.errors.passwordChanged');
     }
-    if (err instanceof ApiRequestError && err.apiErrorCode && i18n.exists(`common.apiErrors.${err.apiErrorCode}`)) {
-      return t(`common.apiErrors.${err.apiErrorCode}`);
-    }
-    return t('common.errors.unknownErrorTryAgain');
+    return apiErrorMessage(err, t, t('common.errors.unknownErrorTryAgain'));
   };
 
   /**

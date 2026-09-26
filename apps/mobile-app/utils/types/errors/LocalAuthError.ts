@@ -1,5 +1,5 @@
 /**
- * Custom error class for API authentication-related errors.
+ * A login failure detected on the device, whose message is shown to the user as-is.
  */
 export class LocalAuthError extends Error {
   /**

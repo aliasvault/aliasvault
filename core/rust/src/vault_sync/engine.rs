@@ -442,12 +442,17 @@ async fn materialized_vault_result(ctx: &mut Ctx, pulled: &PulledVault) -> SyncR
 }
 
 /// Store a pulled vault as the local one and only then commit its revisions as the local truth. A store the host
-/// refuses (a mutation raced the pull) re-runs the sync instead, which is the returned flow.
+/// refuses (a mutation raced the pull) re-runs the sync instead, which is the returned flow. A new vault that was
+/// never written is stored dirty, so a push that does not land now is retried by the next sync.
 async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Option<Flow>> {
-    let stored = ctx.store_vault(&pulled.encrypted_vault, false, Some(ctx.mutation_sequence), Some(pulled.revision)).await?;
+    let stored = ctx.store_vault(&pulled.encrypted_vault, pulled.needs_first_write, Some(ctx.mutation_sequence), Some(pulled.revision)).await?;
     if !stored.success {
         ctx.log("[VaultSync] Mutation detected during sync, re-syncing...").await;
         return Ok(Some(Flow::Resync { outdated: false }));
+    }
+    if pulled.needs_first_write {
+        ctx.is_dirty = true;
+        ctx.mutation_sequence = stored.mutation_sequence;
     }
     ctx.vault_changed = true;
     pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await?;
@@ -458,6 +463,12 @@ async fn commit_pulled_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<
 async fn store_server_vault(ctx: &mut Ctx, pulled: &PulledVault) -> SyncResult<Flow> {
     if let Some(resync) = commit_pulled_vault(ctx, pulled).await? {
         return Ok(resync);
+    }
+    if pulled.needs_first_write {
+        ctx.log("[VaultSync] Writing the first revision of the new vault.").await;
+        if push_local_changes(ctx, None, true, false).await?.is_none() {
+            return Ok(Flow::Resync { outdated: true });
+        }
     }
     Ok(Flow::Done(materialized_vault_result(ctx, pulled).await?))
 }

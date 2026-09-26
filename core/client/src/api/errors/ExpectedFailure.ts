@@ -33,7 +33,8 @@ export function isExpectedFailure(error: unknown): boolean {
     return true;
   }
   if (error instanceof ApiRequestError) {
-    return error.statusCode >= 500 || EXPECTED_STATUS_CODES.has(error.statusCode);
+    // A coded 400 is the server refusing on purpose (wrong password, username taken), not a malformed request.
+    return error.statusCode >= 500 || EXPECTED_STATUS_CODES.has(error.statusCode) || (error.statusCode === 400 && error.apiErrorCode !== null);
   }
   return isAbort(error);
 }

@@ -1,4 +1,4 @@
-import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { getErrorMessage, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
@@ -20,6 +20,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { apiErrorMessage } from '@/utils/ApiErrors';
 import { StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
 
@@ -96,9 +97,8 @@ const Login: React.FC = () => {
     if (err instanceof ServerUpdateRequiredError) {
       return [t('common.errors.serverVersionNotSupported')];
     }
-    if (err instanceof ApiAuthError) {
-      const key = `apiErrors.${err.message}`;
-      return [t(key) === key ? err.message : t(key)];
+    if (apiErrorCodeOf(err)) {
+      return [apiErrorMessage(err, t, t('components.auth.login.LoginErrorMessage'))];
     }
     if (hasErrorCode(err)) {
       return [getErrorMessage(err, t('components.auth.login.LoginErrorMessage'))];

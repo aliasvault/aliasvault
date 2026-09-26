@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -97,7 +97,7 @@ export default function FamilySharingScreen(): React.ReactNode {
       return actionError.message;
     }
 
-    const code = actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
+    const code = apiErrorCodeOf(actionError);
     const knownError = sharingErrorMessage(code);
     if (knownError) {
       return knownError;
@@ -244,7 +244,7 @@ export default function FamilySharingScreen(): React.ReactNode {
         await SharingService.deleteSharedManifest(webApi, group.groupId, manifest.manifestId, challenge => NativeVaultManager.deriveSrpProof(challenge.salt, challenge.srpIdentity, challenge.serverEphemeral));
       } catch (deleteError) {
         // Local unlock key could mismatch what is actually stored on server (recent password change on other device), if so we show a incorrect password error.
-        if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
+        if (apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH') {
           throw new SharingOperationError(t('auth.errors.incorrectPassword'));
         }
 

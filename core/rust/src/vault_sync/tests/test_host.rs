@@ -154,13 +154,9 @@ impl TestHost {
                         self.rekeyed_stores_found_the_chain.push(found_the_chain);
                         self.vault_key = key;
                     }
-                    if let Some(expected) = expected_mutation_seq {
-                        if expected != self.mutation_sequence {
-                            json!({ "success": false, "mutationSequence": self.mutation_sequence })
-                        } else {
-                            self.store_blob(&encrypted_blob);
-                            json!({ "success": true, "mutationSequence": self.mutation_sequence })
-                        }
+                    // Like the app hosts: a sync store is refused after a mutation, and either kind may mark the vault dirty.
+                    if expected_mutation_seq.is_some_and(|expected| expected != self.mutation_sequence) {
+                        json!({ "success": false, "mutationSequence": self.mutation_sequence })
                     } else {
                         if mark_dirty {
                             self.mutation_sequence += 1;

@@ -172,7 +172,7 @@ export class WebApiService {
           if (retryResponse.status === 413) {
             throw new PayloadTooLargeError(`Request rejected with HTTP 413: payload exceeds server limit`);
           }
-          throw new ApiRequestError(retryResponse.status, await this.extractApiErrorCode(retryResponse));
+          throw await ApiRequestError.fromResponse(retryResponse);
         }
 
         return parseJson ? retryResponse.json() : retryResponse as unknown as T;
@@ -189,28 +189,10 @@ export class WebApiService {
     }
 
     if (!response.ok && throwOnError) {
-      throw new ApiRequestError(response.status, await this.extractApiErrorCode(response));
+      throw await ApiRequestError.fromResponse(response);
     }
 
     return parseJson ? response.json() : response as unknown as T;
-  }
-
-  /**
-   * Extract the structured API error code (e.g. "VAULT_NOT_UP_TO_DATE") from an error response body.
-   */
-  private async extractApiErrorCode(response: Response): Promise<string | null> {
-    try {
-      const body = await response.clone().json() as { code?: unknown; title?: unknown };
-      for (const value of [body.code, body.title]) {
-        // Server error codes are uppercase enum names
-        if (typeof value === 'string' && /^[A-Z0-9_]{2,64}$/.test(value)) {
-          return value;
-        }
-      }
-    } catch {
-      // Body is empty or not JSON (e.g. proxy error page).
-    }
-    return null;
   }
 
   /**

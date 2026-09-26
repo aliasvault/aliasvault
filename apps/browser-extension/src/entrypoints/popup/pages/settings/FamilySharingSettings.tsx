@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -116,9 +116,7 @@ const FamilySharingSettings: React.FC = () => {
       return actionError.message.length > 0 ? actionError.message : fallback;
     }
 
-    const code = actionError instanceof BackgroundApiError
-      ? actionError.message
-      : actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
+    const code = actionError instanceof BackgroundApiError ? actionError.message : apiErrorCodeOf(actionError);
 
     const knownError = sharingErrorMessage(code);
     if (knownError) {
@@ -222,7 +220,7 @@ const FamilySharingSettings: React.FC = () => {
     try {
       await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, async challenge => (await MasterPasswordService.answerSrpChallenge(challenge, password)).proof);
     } catch (deleteError) {
-      if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
+      if (apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH') {
         throw new Error(t('common.errors.wrongPassword'));
       }
 

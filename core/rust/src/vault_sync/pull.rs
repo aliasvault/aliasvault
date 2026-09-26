@@ -10,7 +10,8 @@ use super::types::{self, BlobDto, BlobHashesRequest, Db, EmailRoutingDto, GetRes
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys, legacy};
 use crate::crypto;
-use crate::vault_codec::{self, DataBucket, Manifest, MaterializeInput, UnpackedPayload};
+use crate::vault_codec::{self, CanonicalizeInput, CodecTableData, DataBucket, Manifest, ManifestSpec, MaterializeInput, UnpackedPayload};
+use crate::vault_model::SYNCABLE_TABLE_NAMES;
 
 const BLOBS_DOWNLOAD_ENDPOINT: &str = "Vault/blobs/download";
 
@@ -32,6 +33,8 @@ pub(crate) struct OpenedManifestSet {
     pub blob_map: HashMap<String, Vec<u8>>,
     pub manifest_names: HashMap<String, String>,
     pub contentless_manifest_ids: Vec<String>,
+    /// The personal manifest is the empty placeholder of a new account, which this sync has to write.
+    pub personal_needs_first_write: bool,
     pub personal_revision: i64,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,
@@ -44,7 +47,7 @@ impl OpenedManifestSet {
 
     /// The opened set as a vault ready to become the local one.
     pub fn pulled_vault(&self, encrypted_vault: String, email_routing: EmailRoutingDto) -> PulledVault {
-        PulledVault { encrypted_vault, revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone() }
+        PulledVault { encrypted_vault, revision: self.personal_revision, email_routing, manifest_revisions: self.manifest_revisions.clone(), bucket_revisions: self.bucket_revisions.clone(), needs_first_write: self.personal_needs_first_write }
     }
 }
 
@@ -55,6 +58,8 @@ pub(crate) struct PulledVault {
     pub email_routing: EmailRoutingDto,
     pub manifest_revisions: HashMap<String, i64>,
     pub bucket_revisions: HashMap<String, i64>,
+    /// The vault is new and has never been written to the server; it is stored dirty and pushed by the same sync.
+    pub needs_first_write: bool,
 }
 
 /// `GET v2/Vault`.
@@ -145,8 +150,10 @@ pub(crate) async fn pull(ctx: &mut Ctx) -> SyncResult<PulledVault> {
 /// The revision maps travel on the result for the caller to commit once the pulled vault is stored.
 pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot: &GetResponse, vek: &str) -> SyncResult<OpenedManifestSet> {
     let personal_dto = select_personal_manifest(snapshot).ok_or_else(|| SyncError::Snapshot("server returned no personal manifest, refusing to assemble".to_string()))?;
-    if personal_dto.blob.as_deref().unwrap_or("").is_empty() {
-        return Err(SyncError::Snapshot("server returned no manifest blob, nothing to assemble".to_string()));
+    // Registration creates the personal manifest without content at revision 0; any later revision without content is damage.
+    let personal_needs_first_write = personal_dto.blob.as_deref().unwrap_or("").is_empty();
+    if personal_needs_first_write && personal_dto.revision != 0 {
+        return Err(SyncError::Snapshot(format!("server returned no manifest blob at revision {}, nothing to assemble", personal_dto.revision)));
     }
 
     let mut pulled_fingerprints: HashMap<String, String> = HashMap::new();
@@ -160,6 +167,14 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
     for dto in ordered {
         let is_personal = dto.manifest_id == personal_dto.manifest_id;
         let manifest_key = resolve_manifest_vek(ctx, dto, &personal_dto.manifest_id, vek, is_personal).await?;
+        if is_personal && personal_needs_first_write {
+            ctx.log("[V2Pull] Personal manifest has no content yet (new account); starting from an empty vault.").await;
+            let entry = empty_personal_manifest(ctx, dto, &manifest_key).await?;
+            state::set(&ctx.host, state::VAULT_MANIFEST_SALT, &entry.manifest.manifest_salt).await?;
+            state::set(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID, &entry.manifest_id).await?;
+            resolved.push(entry);
+            continue;
+        }
         if dto.blob.as_deref().unwrap_or("").is_empty() {
             // A shared manifest served without content yet (created but never written); its grant and revision are still tracked.
             let (encrypted_vek, encryption_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} was served without content and without a grant, refusing to assemble", dto.manifest_id)))?;
@@ -204,7 +219,8 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
 
     let blob_map = download_referenced_blobs(ctx, &resolved, vek).await?;
 
-    for entry in &resolved {
+    // An empty personal manifest has no server content to compare a push against, so it gets no baseline.
+    for entry in resolved.iter().filter(|m| !(m.is_personal && personal_needs_first_write)) {
         pulled_fingerprints.insert(state::fingerprint_manifest_key(&entry.manifest_id), entry.content_fingerprint.clone());
     }
     state::set(&ctx.host, state::VAULT_CONTENT_FINGERPRINTS, &pulled_fingerprints).await?;
@@ -216,6 +232,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
         blob_map,
         manifest_names,
         contentless_manifest_ids: contentless_revisions.keys().cloned().collect(),
+        personal_needs_first_write,
         personal_revision,
         manifest_revisions,
         bucket_revisions,
@@ -365,6 +382,17 @@ fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<
         blob_references: dto.blob_references.clone(),
         content_fingerprint: vault_codec::compute_content_fingerprint(&manifest_json),
     })
+}
+
+/// The empty personal manifest of a new account, canonicalized from every syncable table with no rows.
+async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> SyncResult<ResolvedManifest> {
+    // A salt from an earlier attempt is kept, so blob hashes stay stable until the first write lands.
+    let manifest_salt = state::get::<String>(&ctx.host, state::VAULT_MANIFEST_SALT).await?.unwrap_or_else(vault_codec::generate_manifest_salt);
+    let tables = SYNCABLE_TABLE_NAMES.iter().map(|name| CodecTableData { name: name.to_string(), records: Vec::new() }).collect();
+    let spec = ManifestSpec { manifest_id: dto.manifest_id.clone(), manifest_salt, name: None };
+    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests: vec![spec], stamp_unstamped_into: None })?;
+    let manifest = canonicalized.manifests.into_iter().next().map(|m| m.manifest).ok_or_else(|| SyncError::Other("canonicalize returned no manifest for the empty vault".to_string()))?;
+    Ok(ResolvedManifest { manifest_id: dto.manifest_id.clone(), is_personal: true, manifest, vek: vek.to_string(), revision: dto.revision, blob_references: Vec::new(), content_fingerprint: String::new() })
 }
 
 /// The key that opens one snapshot manifest.

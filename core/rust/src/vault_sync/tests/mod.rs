@@ -123,6 +123,102 @@ fn fresh_client_pulls_and_materializes_the_server_vault() {
     assert!(host.requests_to("Vault").len() == 1);
 }
 
+/// The status and snapshot of an account whose personal manifest the server holds without content.
+fn contentless_personal_snapshot(revision: i64) -> (Value, Value) {
+    let status = json!({
+        "clientVersionSupported": true,
+        "serverVersion": "0.31.0",
+        "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": revision }],
+        "bucketRevisions": [],
+        "personalManifestId": PERSONAL_MANIFEST_ID,
+        "srpSalt": "salt",
+        "capabilities": {},
+    });
+    let vault = json!({
+        "status": 0,
+        "storageFormat": 1,
+        "personalManifestId": PERSONAL_MANIFEST_ID,
+        "manifests": [{ "manifestId": PERSONAL_MANIFEST_ID, "blob": null, "ciphertextHash": null, "revision": revision, "blobReferences": [], "canAdminister": false, "keyType": "accountkey" }],
+        "buckets": [],
+        "emailRouting": { "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] },
+    });
+    (status, vault)
+}
+
+#[test]
+fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
+    let vek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&vek);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    let (status, vault) = contentless_personal_snapshot(0);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+
+    assert_eq!(result["success"], true, "{}", result);
+    assert_eq!(result["hasNewVault"], true);
+    assert!(item_names(&host.local).is_empty());
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
+    assert_eq!(posts.len(), 1, "the new vault is written once");
+    let body = posts[0].body.as_ref().unwrap();
+    assert_eq!(body["manifests"][0]["manifestId"], PERSONAL_MANIFEST_ID);
+    assert_eq!(body["manifests"][0]["currentRevision"], 0);
+    assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 1);
+    assert!(!host.is_dirty);
+
+    // The written manifest opens with the VEK and names the personal manifest.
+    let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
+    let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
+    assert_eq!(manifest["manifestId"], PERSONAL_MANIFEST_ID);
+    assert_eq!(manifest["manifestSalt"], host.state[state::VAULT_MANIFEST_SALT]);
+}
+
+#[test]
+fn new_account_whose_first_write_fails_retries_it_on_the_next_sync() {
+    let vek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&vek);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    let (status, vault) = contentless_personal_snapshot(0);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+
+    // No response for the write: the vault stays dirty and the sync goes offline on the stored empty vault.
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+    assert_eq!(result["success"], true, "{}", result);
+    assert!(host.is_dirty, "the unwritten new vault stays dirty");
+
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 1 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    let mutation_sequence = host.mutation_sequence;
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, true, mutation_sequence)).unwrap());
+
+    assert_eq!(result["success"], true, "{}", result);
+    let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
+    assert_eq!(posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["currentRevision"], 0);
+    assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 1);
+    assert!(!host.is_dirty);
+}
+
+#[test]
+fn contentless_personal_manifest_past_revision_zero_is_refused() {
+    let vek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&vek);
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    let (status, vault) = contentless_personal_snapshot(4);
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+
+    let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
+
+    assert_eq!(result["success"], false, "{}", result);
+    assert!(host.requests_to("Vault").iter().all(|r| r.method != "POST"), "nothing is written over a damaged manifest");
+    assert!(host.store_calls.is_empty());
+}
+
 #[test]
 fn unknown_storage_format_is_refused_not_read_as_legacy() {
     let vek = crypto::generate_key_base64();
