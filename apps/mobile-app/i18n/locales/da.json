@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Bekræft loginanmodning",
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "En anden enhed beder om at logge ind med din konto. Det vil få fuld adgang til din boks. Fortsæt kun, hvis du selv startede dette login.",
+        "selectCode": "Tryk på nummeret som vises på den anden enhed",
+        "openedFromLink": "Fortsæt kun, hvis du lige har scannet denne QR-kode med dit eget kamera. Hvis du er kommet hertil ved at trykke på et link eller en knap, skal du afvise.",
+        "codeMismatch": "Nummeret matcher ikke. Login-anmodningen blev afvist.",
         "successDescription": "Den eksterne enhed er blevet logget ind korrekt.",
         "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Alle elementer er slettet permanent"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Vælg ikon",
+      "currentLogo": "Nuværende ikon",
+      "builtinLogos": "Ikon bibliotek",
+      "fetchFromWebsite": "Hent ikon fra hjemmeside",
+      "refetchFromWebsite": "Hent ikon igen fra hjemmeside",
+      "sourceFavicon": "Fra {{domain}}",
+      "sourceBuiltin": "Indbygget ikon",
+      "sourceCustom": "Brugerdefineret ikon",
+      "sourceNone": "Ingen ikon",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
+        "Shopping": "Indkøb",
+        "Bank": "Bank",
         "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Social": "Sociale",
+        "Work": "Arbejde",
+        "Game": "Spil",
+        "Media": "Medie",
+        "Travel": "Rejser",
+        "Health": "Sundhed",
+        "Dev": "Udvikling"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Hvad er nyt",
     "whatsNewDescription": "En opgradering er nødvendig for at understøtte følgende ændringer:",
     "noDescriptionAvailable": "Ingen beskrivelse tilgængelig for denne version.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Efter denne opgradering skal dine andre AliasVault apps bruge version {{version}} eller nyere. Ældre apps og browserudvidelser logger ud, og beder om at blive opdateret, før de kan åbne din boks igen.",
+    "successTitle": "Boks opgraderet",
+    "successOtherDevices": "Din boks er klar til brug. Sørg også for at opdatere AliasVault appen på dine andre enheder.",
     "status": {
       "preparingUpgrade": "Forbereder opgradering...",
       "applyingDatabaseMigrations": "Anvender databasemigreringer...",
