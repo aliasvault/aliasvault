@@ -333,8 +333,8 @@
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
         "confirmMessage": "另一台设备正在请求使用您的账户登录。它将获得您密码库的完全访问权限。请仅在您自己发起此登录操作的情况下继续。",
         "selectCode": "点击另一台设备上显示的数字",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "openedFromLink": "只有当你您使用自己的相机扫描此二维码后才继续。如果您是通过点击链接或按钮进入此页面，请拒绝。",
+        "codeMismatch": "数字不匹配。登录请求已被拒绝。",
         "successDescription": "远程设备已成功登录。",
         "requestExpired": "此登录请求已过期，请生成新的二维码。"
       }
