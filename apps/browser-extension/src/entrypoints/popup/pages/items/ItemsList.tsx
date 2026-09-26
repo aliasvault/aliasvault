@@ -1,7 +1,7 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
-import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -67,7 +67,7 @@ const getStoredFilter = (): ItemFilterType => {
   try {
     const stored = localStorage.getItem(FILTER_STORAGE_KEY);
     if (!stored) {
-      return 'all';
+      return ItemFilter.All;
     }
 
     const { filter, timestamp } = JSON.parse(stored);
@@ -76,12 +76,12 @@ const getStoredFilter = (): ItemFilterType => {
     // Check if expired (5 minutes)
     if (now - timestamp > FILTER_EXPIRY_MS) {
       localStorage.removeItem(FILTER_STORAGE_KEY);
-      return 'all';
+      return ItemFilter.All;
     }
 
     return filter as ItemFilterType;
   } catch {
-    return 'all';
+    return ItemFilter.All;
   }
 };
 
@@ -228,7 +228,7 @@ const ItemsList: React.FC = () => {
     const state = location.state as { resetFilters?: boolean } | null;
     if (state?.resetFilters) {
       setSearchTerm('');
-      setItemFilterType('all');
+      setItemFilterType(ItemFilter.All);
       localStorage.removeItem(FILTER_STORAGE_KEY);
       // Clear the state to prevent re-triggering on subsequent renders
       navigate(location.pathname, { replace: true, state: {} });
@@ -540,13 +540,13 @@ const ItemsList: React.FC = () => {
    */
   const getFilterTitle = () : string => {
     switch (filterType) {
-      case 'passkeys':
+      case ItemFilter.Passkeys:
         return t('common.passkeys');
-      case 'attachments':
+      case ItemFilter.Attachments:
         return t('common.attachments');
-      case 'totp':
+      case ItemFilter.Totp:
         return t('items.filters.totp');
-      case 'all':
+      case ItemFilter.All:
         if (currentFolderId && currentFolderName) {
           return currentFolderName;
         }
@@ -934,7 +934,7 @@ const ItemsList: React.FC = () => {
       )}
 
       {/* Current-site suggestion: show a suggestion for the current site's matching item(s) to quickly view/open them. */}
-      {items.length > CURRENT_SITE_SUGGESTION_MIN_ITEMS && !currentFolderId && !searchTerm && filterType === 'all' && (
+      {items.length > CURRENT_SITE_SUGGESTION_MIN_ITEMS && !currentFolderId && !searchTerm && filterType === ItemFilter.All && (
         <CurrentSiteSuggestion items={items} onSearch={setSearchTerm} />
       )}
 
@@ -952,18 +952,18 @@ const ItemsList: React.FC = () => {
       ) : filteredItems.length === 0 && folders.length === 0 && !hasItemsInFoldersOnly && !currentFolderId ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-3 mb-10">
           {/* Show filter/search-specific messages only when actively filtering or searching */}
-          {(filterType !== 'all' || searchTerm) && (
+          {(filterType !== ItemFilter.All || searchTerm) && (
             <>
               <p>
                 {/* Different messages based on what's causing no results */}
-                {searchTerm && filterType !== 'all'
+                {searchTerm && filterType !== ItemFilter.All
                   // Both search and filter active
                   ? t('items.noMatchingItemsWithFilter', { filter: getFilterTitle(), search: searchTerm })
                   : searchTerm
                     // Only search active
                     ? t('items.noMatchingItemsSearch', { search: searchTerm })
                     // Only filter active (no search)
-                    : filterType !== 'all'
+                    : filterType !== ItemFilter.All
                       ? t('items.noMatchingItems')
                       : t('items.noMatchingItems')
                 }
@@ -982,10 +982,10 @@ const ItemsList: React.FC = () => {
                     {t('items.clearSearch')}
                   </button>
                 )}
-                {filterType !== 'all' && (
+                {filterType !== ItemFilter.All && (
                   <button
                     onClick={() => {
-                      setItemFilterType('all');
+                      setItemFilterType(ItemFilter.All);
                       localStorage.removeItem(FILTER_STORAGE_KEY);
                     }}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
@@ -1111,7 +1111,7 @@ const ItemsList: React.FC = () => {
           )}
 
           {/* Clear filter/search pills at bottom of list when filtering or searching */}
-          {(filterType !== 'all' || searchTerm) && (
+          {(filterType !== ItemFilter.All || searchTerm) && (
             <div className="flex flex-wrap justify-center gap-2 mt-4 pt-4">
               {searchTerm && (
                 <button
@@ -1125,10 +1125,10 @@ const ItemsList: React.FC = () => {
                   {t('items.clearSearch')}
                 </button>
               )}
-              {filterType !== 'all' && (
+              {filterType !== ItemFilter.All && (
                 <button
                   onClick={() => {
-                    setItemFilterType('all');
+                    setItemFilterType(ItemFilter.All);
                     localStorage.removeItem(FILTER_STORAGE_KEY);
                   }}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"

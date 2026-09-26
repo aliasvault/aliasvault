@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ItemTypes, type ItemType } from '@aliasvault/models/vault';
-import type { ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ItemFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -18,16 +17,16 @@ import { ThemedView } from '@/components/themed/ThemedView';
 export type ItemFilterSelection = ItemFilterType | 'deleted';
 
 type ItemTypeOption = {
-  type: ItemType;
+  type: ItemFilterType;
   titleKey: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
 };
 
 const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
-  { type: ItemTypes.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
-  { type: ItemTypes.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
-  { type: ItemTypes.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
-  { type: ItemTypes.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
+  { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
+  { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
+  { type: ItemFilter.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
+  { type: ItemFilter.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
 ];
 
 interface ItemFilterMenuProps {
@@ -178,9 +177,9 @@ export function ItemFilterMenu({
       <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
       <ThemedView style={styles.overlay}>
         {/* All items + show folders toggle */}
-        <View style={[styles.item, styles.itemWithToggle, isActive('all') && styles.itemActive]}>
-          <TouchableOpacity style={styles.itemLabel} onPress={() => handlePickFilter('all')}>
-            <ThemedText style={[styles.itemText, isActive('all') && styles.itemTextActive]}>
+        <View style={[styles.item, styles.itemWithToggle, isActive(ItemFilter.All) && styles.itemActive]}>
+          <TouchableOpacity style={styles.itemLabel} onPress={() => handlePickFilter(ItemFilter.All)}>
+            <ThemedText style={[styles.itemText, isActive(ItemFilter.All) && styles.itemTextActive]}>
               {t('items.filters.all')}
             </ThemedText>
           </TouchableOpacity>
@@ -228,26 +227,26 @@ export function ItemFilterMenu({
 
         {/* Passkeys / Attachments / TOTP */}
         <TouchableOpacity
-          style={[styles.item, isActive('passkeys') && styles.itemActive]}
-          onPress={() => handlePickFilter('passkeys')}
+          style={[styles.item, isActive(ItemFilter.Passkeys) && styles.itemActive]}
+          onPress={() => handlePickFilter(ItemFilter.Passkeys)}
         >
-          <ThemedText style={[styles.itemText, isActive('passkeys') && styles.itemTextActive]}>
+          <ThemedText style={[styles.itemText, isActive(ItemFilter.Passkeys) && styles.itemTextActive]}>
             {t('items.filters.passkeys')}
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.item, isActive('attachments') && styles.itemActive]}
-          onPress={() => handlePickFilter('attachments')}
+          style={[styles.item, isActive(ItemFilter.Attachments) && styles.itemActive]}
+          onPress={() => handlePickFilter(ItemFilter.Attachments)}
         >
-          <ThemedText style={[styles.itemText, isActive('attachments') && styles.itemTextActive]}>
+          <ThemedText style={[styles.itemText, isActive(ItemFilter.Attachments) && styles.itemTextActive]}>
             {t('common.attachments')}
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.item, isActive('totp') && styles.itemActive]}
-          onPress={() => handlePickFilter('totp')}
+          style={[styles.item, isActive(ItemFilter.Totp) && styles.itemActive]}
+          onPress={() => handlePickFilter(ItemFilter.Totp)}
         >
-          <ThemedText style={[styles.itemText, isActive('totp') && styles.itemTextActive]}>
+          <ThemedText style={[styles.itemText, isActive(ItemFilter.Totp) && styles.itemTextActive]}>
             {t('items.filters.totp')}
           </ThemedText>
         </TouchableOpacity>

@@ -1,5 +1,4 @@
-import { type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
-import { ItemTypes } from '@aliasvault/models/vault';
+import { ItemFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -77,8 +76,8 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
       {isOpen && (
         <div ref={menuRef} className="absolute left-0 top-full z-40 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
           <div className="py-1">
-            <div className={`flex items-center justify-between px-4 py-2 ${isActive('all') ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
-              <button onClick={() => pickFilter('all')} className={`text-left text-sm hover:text-gray-900 dark:hover:text-white ${isActive('all') ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
+            <div className={`flex items-center justify-between px-4 py-2 ${isActive(ItemFilter.All) ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
+              <button onClick={() => pickFilter(ItemFilter.All)} className={`text-left text-sm hover:text-gray-900 dark:hover:text-white ${isActive(ItemFilter.All) ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
                 {t('pages.main.items.home.FilterAllOption')}
               </button>
               {showFoldersToggle && (
@@ -95,26 +94,26 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
             </div>
             <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
-            <button onClick={() => pickFilter(ItemTypes.Login)} className={rowClass(ItemTypes.Login, true)}>
-              <svg className={iconClass(ItemTypes.Login)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={() => pickFilter(ItemFilter.Login)} className={rowClass(ItemFilter.Login, true)}>
+              <svg className={iconClass(ItemFilter.Login)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
               {t('components.main.items.itemTypeSelector.TypeLogin')}
             </button>
-            <button onClick={() => pickFilter(ItemTypes.Alias)} className={rowClass(ItemTypes.Alias, true)}>
-              <svg className={iconClass(ItemTypes.Alias)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={() => pickFilter(ItemFilter.Alias)} className={rowClass(ItemFilter.Alias, true)}>
+              <svg className={iconClass(ItemFilter.Alias)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               {t('components.main.items.itemTypeSelector.TypeAlias')}
             </button>
-            <button onClick={() => pickFilter(ItemTypes.CreditCard)} className={rowClass(ItemTypes.CreditCard, true)}>
-              <svg className={iconClass(ItemTypes.CreditCard)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={() => pickFilter(ItemFilter.CreditCard)} className={rowClass(ItemFilter.CreditCard, true)}>
+              <svg className={iconClass(ItemFilter.CreditCard)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
               {t('components.main.items.itemTypeSelector.TypeCreditCard')}
             </button>
-            <button onClick={() => pickFilter(ItemTypes.Note)} className={rowClass(ItemTypes.Note, true)}>
-              <svg className={iconClass(ItemTypes.Note)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onClick={() => pickFilter(ItemFilter.Note)} className={rowClass(ItemFilter.Note, true)}>
+              <svg className={iconClass(ItemFilter.Note)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               {t('components.main.items.itemTypeSelector.TypeNote')}
@@ -122,13 +121,13 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
 
             <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
-            <button onClick={() => pickFilter('passkeys')} className={rowClass('passkeys', false)}>
+            <button onClick={() => pickFilter(ItemFilter.Passkeys)} className={rowClass(ItemFilter.Passkeys, false)}>
               {t('pages.main.items.home.FilterPasskeysOption')}
             </button>
-            <button onClick={() => pickFilter('attachments')} className={rowClass('attachments', false)}>
+            <button onClick={() => pickFilter(ItemFilter.Attachments)} className={rowClass(ItemFilter.Attachments, false)}>
               {t('pages.main.items.home.FilterAttachmentsOption')}
             </button>
-            <button onClick={() => pickFilter('totp')} className={rowClass('totp', false)}>
+            <button onClick={() => pickFilter(ItemFilter.Totp)} className={rowClass(ItemFilter.Totp, false)}>
               {t('pages.main.items.home.FilterTotpOption')}
             </button>
 

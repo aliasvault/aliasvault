@@ -1,4 +1,4 @@
-import { isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ItemFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -106,8 +106,8 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
             <div className="py-1">
               <div className="relative">
                 <button
-                  onClick={() => handleSelectFilter('all')}
-                  className={itemRowClass(activeFilter === 'all')}
+                  onClick={() => handleSelectFilter(ItemFilter.All)}
+                  className={itemRowClass(activeFilter === ItemFilter.All)}
                 >
                   {t('items.title')}
                 </button>
@@ -155,20 +155,20 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
               })}
               <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
               <button
-                onClick={() => handleSelectFilter('passkeys')}
-                className={itemRowClass(activeFilter === 'passkeys')}
+                onClick={() => handleSelectFilter(ItemFilter.Passkeys)}
+                className={itemRowClass(activeFilter === ItemFilter.Passkeys)}
               >
                 {t('common.passkeys')}
               </button>
               <button
-                onClick={() => handleSelectFilter('attachments')}
-                className={itemRowClass(activeFilter === 'attachments')}
+                onClick={() => handleSelectFilter(ItemFilter.Attachments)}
+                className={itemRowClass(activeFilter === ItemFilter.Attachments)}
               >
                 {t('common.attachments')}
               </button>
               <button
-                onClick={() => handleSelectFilter('totp')}
-                className={itemRowClass(activeFilter === 'totp')}
+                onClick={() => handleSelectFilter(ItemFilter.Totp)}
+                className={itemRowClass(activeFilter === ItemFilter.Totp)}
               >
                 {t('items.filters.totp')}
               </button>
