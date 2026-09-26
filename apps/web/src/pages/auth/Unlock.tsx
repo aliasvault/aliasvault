@@ -209,7 +209,7 @@ const Unlock: React.FC = () => {
         <div className="mb-6">
           <p className="text-base font-normal text-gray-500 dark:text-gray-400 mb-4">{t('pages.auth.unlock.QuickUnlockDescription')}</p>
 
-          <ServerValidationErrors errors={errors} />
+          <ServerValidationErrors errors={errors} className="mb-4" />
 
           <div className="flex space-x-4">
             <button type="button" onClick={() => void unlockWithWebAuthn()} className="flex-grow inline-flex items-center justify-center px-5 py-2 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">

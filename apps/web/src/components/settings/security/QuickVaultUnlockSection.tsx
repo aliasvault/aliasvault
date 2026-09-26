@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useImperativeHandle, useState, forwardRef } from 'react';
+import React, { useCallback, useImperativeHandle, useState, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import SecuritySection, { type SectionHandle } from '@/components/settings/security/SecuritySection';
 import Button from '@/components/shared/Button';
 import { useAuth } from '@/context/AuthContext';
@@ -16,17 +15,13 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
   const { t } = useTranslation();
   const auth = useAuth();
   const notifications = useNotifications();
-  const [isLoading, setIsLoading] = useState(true);
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(() => WebAuthnService.isEnabled());
   const tk = 'components.main.settings.security.quickVaultUnlockSection';
 
   const loadData = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
     setEnabled(WebAuthnService.isEnabled());
-    setIsLoading(false);
   }, []);
   useImperativeHandle(ref, () => ({ loadData }), [loadData]);
-  useEffect(() => void loadData(), [loadData]);
 
   /**
    * Create a passkey and encrypt the session keys with it.
@@ -58,7 +53,7 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
 
   return (
     <SecuritySection title={t(`${tk}.Title`)}>
-      {isLoading ? <LoadingIndicator /> : enabled ? (
+      {enabled ? (
         <>
           <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.EnabledDescription`)}</div>
           <Button color="danger" onClick={() => void disable()}>{t(`${tk}.DisableButton`)}</Button>

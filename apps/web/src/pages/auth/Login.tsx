@@ -219,7 +219,7 @@ const Login: React.FC = () => {
           {t('components.auth.login.TwoFactorAuthenticationTitle')}
         </h2>
 
-        <ServerValidationErrors errors={errors} />
+        <ServerValidationErrors errors={errors} className="mb-4" />
 
         <p className="text-gray-700 dark:text-gray-300 mb-6">{t('components.auth.login.TwoFactorAuthenticationDescription')}</p>
         <div className="w-full">
@@ -259,7 +259,7 @@ const Login: React.FC = () => {
           {t('components.auth.login.RecoveryCodeVerificationTitle')}
         </h2>
 
-        <ServerValidationErrors errors={errors} />
+        <ServerValidationErrors errors={errors} className="mb-4" />
 
         <p className="text-gray-700 dark:text-gray-300 mb-6">
           {t('components.auth.login.RecoveryCodeDescription')}

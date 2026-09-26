@@ -5,12 +5,12 @@ import AlertMessageError from '@/components/alerts/AlertMessageError';
 /**
  * List of form-level errors.
  */
-const ServerValidationErrors: React.FC<{ errors: string[] }> = ({ errors }) => {
+const ServerValidationErrors: React.FC<{ errors: string[]; className?: string }> = ({ errors, className = '' }) => {
   if (errors.length === 0) {
     return null;
   }
   return (
-    <div className="messages-container">
+    <div className={`messages-container ${className}`.trim()}>
       {errors.map((error, index) => (
         <AlertMessageError key={index} message={error} />
       ))}
