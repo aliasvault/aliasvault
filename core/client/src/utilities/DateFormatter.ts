@@ -30,12 +30,30 @@ export function now(): string {
 }
 
 /**
+ * Parses a stored date-time string as UTC; a value without a timezone designator is read as UTC, not local time.
+ * @param value - The date-time string, in the standard format or ISO 8601
+ * @returns The date, or the epoch when the value cannot be read
+ */
+export function fromStandardFormat(value: string | null | undefined): Date {
+  const date = parseUtc(value ?? '');
+  return isNaN(date.getTime()) ? new Date(0) : date;
+}
+
+/**
  * Formats a date-time returned by the API (UTC by default) for display in the user's own locale and timezone.
  * @param value - The date-time string as returned by the API
  * @returns The date-time formatted for the current locale, or the raw value when it cannot be parsed
  */
 export function toLocalDisplayFormat(value: string): string {
-  const normalized = /^\d{4}-\d{2}-\d{2}[T ][\d:.]+$/.test(value) ? `${value.replace(' ', 'T')}Z` : value;
-  const date = new Date(normalized);
+  const date = parseUtc(value);
   return isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+/**
+ * Parses a date-time string, reading one without a timezone designator as UTC.
+ * @param value - The date-time string
+ * @returns The date, invalid when the value cannot be read
+ */
+function parseUtc(value: string): Date {
+  return new Date(/^\d{4}-\d{2}-\d{2}[T ][\d:.]+$/.test(value) ? `${value.replace(' ', 'T')}Z` : value);
 }

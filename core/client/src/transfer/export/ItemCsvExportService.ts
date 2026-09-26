@@ -1,11 +1,11 @@
-import { FieldKey, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
+import { FieldKey, getFieldValue, getFieldValues, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 
-import { formatInvariantDateTime, parseDateExact } from '../shared/DateTimeUtils';
-import { buildFolderPath } from '../shared/FolderPaths';
+import { fromStandardFormat } from '../../utilities/DateFormatter';
+import { parseDateExact } from '../shared/DateTimeUtils';
 
 import { writeCsv } from './CsvWriter';
 
-import type { FolderEntity, ItemEntity, TotpCodeEntity } from '../shared/VaultEntities';
+import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 /** The columns of the AliasVault CSV export. */
 export const ITEM_CSV_COLUMNS = [
@@ -41,40 +41,45 @@ export class ItemCsvExportService {
   /**
    * Export items to CSV.
    * @param items - The items to export
-   * @param folders - The vault's folders, to resolve each item's folder path
+   * @param getTotpCodes - Reads an item's TOTP codes; the first one is exported
    * @returns The CSV file as UTF-8 bytes
    */
-  public static exportItemsToCsv(items: ItemEntity[], folders: FolderEntity[] = []): Uint8Array {
-    const foldersById = new Map(folders.map(folder => [folder.Id, folder]));
-
+  public static exportItemsToCsv(items: Item[], getTotpCodes: (item: Item) => TotpCode[] = (): TotpCode[] => []): Uint8Array {
     const rows = items.map((item): string[] => {
+      /**
+       *
+       */
+      /**
+       * A single field value, or the empty string when absent.
+       */
+      const field = (fieldKey: string): string => getFieldValue(item, fieldKey) ?? '';
       const record: Record<ItemCsvColumn, string | Date | null> = {
         ServiceName: item.Name ?? '',
-        FolderPath: buildFolderPath(item.FolderId, foldersById),
-        ServiceUrl: ItemCsvExportService.getJoinedFieldValues(item, FieldKey.LoginUrl),
-        Username: ItemCsvExportService.getFieldValue(item, FieldKey.LoginUsername),
-        CurrentPassword: ItemCsvExportService.getFieldValue(item, FieldKey.LoginPassword),
-        AliasEmail: ItemCsvExportService.getFieldValue(item, FieldKey.LoginEmail),
-        TwoFactorSecret: ItemCsvExportService.formatTwoFactorSecret(item.TotpCodes.find(t => !t.IsDeleted) ?? null),
-        AliasGender: ItemCsvExportService.getFieldValue(item, FieldKey.AliasGender),
-        AliasFirstName: ItemCsvExportService.getFieldValue(item, FieldKey.AliasFirstName),
-        AliasLastName: ItemCsvExportService.getFieldValue(item, FieldKey.AliasLastName),
-        AliasBirthDate: ItemCsvExportService.parseBirthDate(ItemCsvExportService.getFieldValue(item, FieldKey.AliasBirthdate)),
-        Notes: ItemCsvExportService.getFieldValue(item, FieldKey.NotesContent),
-        CardholderName: ItemCsvExportService.getFieldValue(item, FieldKey.CardCardholderName),
-        CardNumber: ItemCsvExportService.getFieldValue(item, FieldKey.CardNumber),
-        CardExpiryMonth: ItemCsvExportService.getFieldValue(item, FieldKey.CardExpiryMonth),
-        CardExpiryYear: ItemCsvExportService.getFieldValue(item, FieldKey.CardExpiryYear),
-        CardCvv: ItemCsvExportService.getFieldValue(item, FieldKey.CardCvv),
-        CardPin: ItemCsvExportService.getFieldValue(item, FieldKey.CardPin),
-        CreatedAt: item.CreatedAt,
-        UpdatedAt: item.UpdatedAt,
+        FolderPath: item.FolderPath?.join('/') ?? '',
+        ServiceUrl: getFieldValues(item, FieldKey.LoginUrl).map(url => url.trim()).filter(url => url.length > 0).join(','),
+        Username: field(FieldKey.LoginUsername),
+        CurrentPassword: field(FieldKey.LoginPassword),
+        AliasEmail: field(FieldKey.LoginEmail),
+        TwoFactorSecret: ItemCsvExportService.formatTwoFactorSecret(getTotpCodes(item)[0] ?? null),
+        AliasGender: field(FieldKey.AliasGender),
+        AliasFirstName: field(FieldKey.AliasFirstName),
+        AliasLastName: field(FieldKey.AliasLastName),
+        AliasBirthDate: ItemCsvExportService.parseBirthDate(field(FieldKey.AliasBirthdate)),
+        Notes: field(FieldKey.NotesContent),
+        CardholderName: field(FieldKey.CardCardholderName),
+        CardNumber: field(FieldKey.CardNumber),
+        CardExpiryMonth: field(FieldKey.CardExpiryMonth),
+        CardExpiryYear: field(FieldKey.CardExpiryYear),
+        CardCvv: field(FieldKey.CardCvv),
+        CardPin: field(FieldKey.CardPin),
+        CreatedAt: fromStandardFormat(item.CreatedAt),
+        UpdatedAt: fromStandardFormat(item.UpdatedAt),
       };
 
       return ITEM_CSV_COLUMNS.map(header => {
         const value = record[header];
         if (value instanceof Date) {
-          return formatInvariantDateTime(value);
+          return ItemCsvExportService.formatDateTime(value);
         }
         return value ?? '';
       });
@@ -88,7 +93,7 @@ export class ItemCsvExportService {
    * @param totpCode - The item's first live TOTP code, if any
    * @returns The secret or an otpauth:// URI
    */
-  private static formatTwoFactorSecret(totpCode: TotpCodeEntity | null): string {
+  private static formatTwoFactorSecret(totpCode: TotpCode | null): string {
     if (!totpCode) {
       return '';
     }
@@ -101,32 +106,22 @@ export class ItemCsvExportService {
       return totpCode.SecretKey;
     }
 
-    const label = encodeURIComponent(totpCode.Name.trim().length === 0 ? 'AliasVault' : totpCode.Name);
+    const name = totpCode.Name ?? '';
+    const label = encodeURIComponent(name.trim().length === 0 ? 'AliasVault' : name);
     return `otpauth://totp/${label}?secret=${totpCode.SecretKey}&algorithm=${algorithm}&digits=${digits}&period=${period}`;
   }
 
   /**
-   * A single field value of an item.
-   * @param item - The item
-   * @param fieldKey - The field key
-   * @returns The value, or the empty string when absent
+   * Format a date as "MM/dd/yyyy HH:mm:ss" (UTC), the date format of the CSV file.
+   * @param date - The date
+   * @returns The formatted date/time
    */
-  private static getFieldValue(item: ItemEntity, fieldKey: string): string {
-    return item.FieldValues.find(fv => fv.FieldKey === fieldKey && !fv.IsDeleted)?.Value ?? '';
-  }
-
-  /**
-   * All values of a multi-value field as one comma separated string, ordered by weight.
-   * @param item - The item
-   * @param fieldKey - The field key
-   * @returns The joined values, or the empty string when there are none
-   */
-  private static getJoinedFieldValues(item: ItemEntity, fieldKey: string): string {
-    return item.FieldValues
-      .filter(fv => fv.FieldKey === fieldKey && !fv.IsDeleted && !!fv.Value && fv.Value.trim().length > 0)
-      .sort((a, b) => a.Weight - b.Weight)
-      .map(fv => fv.Value!.trim())
-      .join(',');
+  private static formatDateTime(date: Date): string {
+    /**
+     * Two-digit zero-padded component.
+     */
+    const pad = (value: number): string => String(value).padStart(2, '0');
+    return `${pad(date.getUTCMonth() + 1)}/${pad(date.getUTCDate())}/${date.getUTCFullYear()} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
   }
 
   /**

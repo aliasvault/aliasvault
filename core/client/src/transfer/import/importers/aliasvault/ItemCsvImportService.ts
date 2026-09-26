@@ -67,8 +67,6 @@ export class ItemCsvImportService {
           FirstName: record.AliasFirstName,
           LastName: record.AliasLastName,
           BirthDate: record.AliasBirthDate,
-          CreatedAt: record.CreatedAt,
-          UpdatedAt: record.UpdatedAt,
         },
         TwoFactorSecret: record.TwoFactorSecret,
         CreatedAt: record.CreatedAt,

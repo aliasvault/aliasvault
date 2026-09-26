@@ -1,5 +1,4 @@
 import { bytesToBase64 } from '../../utilities/Base64';
-import { formatIsoDateTime } from '../shared/DateTimeUtils';
 import { createZipArchive, textToZipBytes } from '../shared/ZipArchive';
 
 import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from './AvuxManifest';
@@ -46,7 +45,7 @@ export class AvuxExportService {
   private static createManifest(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], logos: LogoEntity[], username: string): AvuxManifest {
     return {
       version: AVUX_FORMAT_VERSION,
-      exportedAt: formatIsoDateTime(new Date()),
+      exportedAt: new Date().toISOString(),
       exportedBy: username,
       items: items.filter(i => !i.IsDeleted).map(AvuxExportService.mapItemToAvux),
       folders: folders.filter(f => !f.IsDeleted).map(AvuxExportService.mapFolderToAvux),
@@ -67,8 +66,8 @@ export class AvuxExportService {
       id: item.Id,
       name: item.Name,
       itemType: item.ItemType,
-      createdAt: formatIsoDateTime(item.CreatedAt),
-      updatedAt: formatIsoDateTime(item.UpdatedAt),
+      createdAt: item.CreatedAt.toISOString(),
+      updatedAt: item.UpdatedAt.toISOString(),
       folderId: item.FolderId,
       logoId: item.LogoId,
       fieldValues: item.FieldValues.filter(fv => !fv.IsDeleted).map(AvuxExportService.mapFieldValueToAvux),
@@ -150,8 +149,8 @@ export class AvuxExportService {
       name: folder.Name,
       parentFolderId: folder.ParentFolderId,
       weight: folder.Weight,
-      createdAt: formatIsoDateTime(folder.CreatedAt),
-      updatedAt: formatIsoDateTime(folder.UpdatedAt),
+      createdAt: folder.CreatedAt.toISOString(),
+      updatedAt: folder.UpdatedAt.toISOString(),
     };
   }
 
@@ -166,8 +165,8 @@ export class AvuxExportService {
       name: tag.Name,
       color: tag.Color,
       displayOrder: tag.DisplayOrder,
-      createdAt: formatIsoDateTime(tag.CreatedAt),
-      updatedAt: formatIsoDateTime(tag.UpdatedAt),
+      createdAt: tag.CreatedAt.toISOString(),
+      updatedAt: tag.UpdatedAt.toISOString(),
     };
   }
 
@@ -212,7 +211,7 @@ export class AvuxExportService {
       id: logo.Id,
       source: logo.Source,
       mimeType: logo.MimeType,
-      fetchedAt: logo.FetchedAt ? formatIsoDateTime(logo.FetchedAt) : null,
+      fetchedAt: logo.FetchedAt ? logo.FetchedAt.toISOString() : null,
       relativePath: AvuxExportService.logoPath(logo),
     };
   }

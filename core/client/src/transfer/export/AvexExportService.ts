@@ -3,7 +3,6 @@ import { EncryptionUtility } from '../../crypto/EncryptionUtility';
 import { AppInfo } from '../../platform/AppInfo';
 import { argon2DeriveKey } from '../../rust/RustCore';
 import { base64ToBytes, bytesToBase64 } from '../../utilities/Base64';
-import { formatIsoDateTime } from '../shared/DateTimeUtils';
 
 import { AvexConstants } from './AvexConstants';
 
@@ -39,7 +38,7 @@ export class AvexExportService {
       version: AvexConstants.FormatVersion,
       kdf: { type: DEFAULT_ENCRYPTION.type, salt: saltBase64, params: { ...ARGON2_KDF_PARAMS } },
       encryption: { algorithm: 'AES-256-GCM', encryptedDataOffset: 0 },
-      metadata: { exportedAt: formatIsoDateTime(new Date()), exportedBy: username, appVersion: AppInfo.VERSION },
+      metadata: { exportedAt: new Date().toISOString(), exportedBy: username, appVersion: AppInfo.VERSION },
     };
 
     const encoder = new TextEncoder();
