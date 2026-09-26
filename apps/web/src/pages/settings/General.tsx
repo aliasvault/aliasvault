@@ -4,8 +4,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import DefaultPasswordSettings from '@/components/settings/DefaultPasswordSettings';
+import Card from '@/components/shared/Card';
+import FormLabel from '@/components/shared/FormLabel';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
+import Select from '@/components/shared/Select';
 import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -13,10 +16,6 @@ import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { AVAILABLE_LANGUAGES } from '@/i18n/config';
 import { changeLanguage } from '@/i18n/i18n';
 import { vaultStore } from '@/vault/VaultStore';
-
-const SELECT_CLASSES = 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500';
-const LABEL_CLASSES = 'block mb-2 text-sm font-medium text-gray-900 dark:text-white';
-const CARD_CLASSES = 'p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800';
 
 /**
  * Whether the private domain list holds a usable domain.
@@ -119,25 +118,25 @@ const GeneralSettings: React.FC = () => {
       <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
 
       <PageContent>
-        <div className={CARD_CLASSES}>
+        <Card>
           <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.AppLanguageTitle`)}</h3>
           <div className="mb-4">
-            <label htmlFor="appLanguage" className={LABEL_CLASSES}>{t(`${tk}.AppLanguageLabel`)}</label>
-            <select id="appLanguage" value={appLanguage} onChange={e => void updateAppLanguage(e.target.value)} className={SELECT_CLASSES}>
+            <FormLabel htmlFor="appLanguage">{t(`${tk}.AppLanguageLabel`)}</FormLabel>
+            <Select id="appLanguage" value={appLanguage} onChange={e => void updateAppLanguage(e.target.value)}>
               {AVAILABLE_LANGUAGES.map(language => <option key={language.code} value={language.code}>{language.flag} {language.nativeName}</option>)}
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AppLanguageDescription`)}</span>
           </div>
-        </div>
+        </Card>
 
-        <div className={CARD_CLASSES}>
+        <Card>
           <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.EmailSettingsTitle`)}</h3>
           <div className="mb-4">
-            <label htmlFor="defaultEmailDomain" className={LABEL_CLASSES}>{t(`${tk}.DefaultEmailDomainLabel`)}</label>
-            <select id="defaultEmailDomain" value={defaultEmailDomain} onChange={(e) => {
+            <FormLabel htmlFor="defaultEmailDomain">{t(`${tk}.DefaultEmailDomainLabel`)}</FormLabel>
+            <Select id="defaultEmailDomain" value={defaultEmailDomain} onChange={(e) => {
               setDefaultEmailDomain(e.target.value);
               void updateSetting('DefaultEmailDomain', e.target.value);
-            }} className={SELECT_CLASSES}>
+            }}>
               <optgroup label={t(`${tk}.PrivateDomainsLabel`)}>
                 {hasValidPrivateDomains(privateDomains)
                   ? privateDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)
@@ -146,7 +145,7 @@ const GeneralSettings: React.FC = () => {
               <optgroup label={t(`${tk}.PublicDomainsLabel`)}>
                 {publicDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)}
               </optgroup>
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 dark:text-gray-400 mt-2">
               {t(`${tk}.DefaultEmailDomainDescription`)} {t(`${tk}.DefaultEmailDomainDescriptionNote`)} <a href="https://docs.aliasvault.com/misc/private-vs-public-email.html" className="text-primary-500 hover:text-primary-700 hover:underline" target="_blank" rel="noopener noreferrer">{t(`${tk}.DefaultEmailDomainLearnMore`)}</a>.
             </span>
@@ -159,71 +158,71 @@ const GeneralSettings: React.FC = () => {
             }} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
             <label htmlFor="autoEmailRefresh" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{t(`${tk}.AutoEmailRefreshLabel`)}</label>
           </div>
-        </div>
+        </Card>
 
-        <div className={CARD_CLASSES}>
+        <Card>
           <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.AliasSettingsTitle`)}</h3>
 
           <div className="mb-4">
-            <label htmlFor="defaultIdentityLanguage" className={LABEL_CLASSES}>{t(`${tk}.AliasGenerationLanguageLabel`)}</label>
-            <select id="defaultIdentityLanguage" value={identityLanguage} onChange={(e) => {
+            <FormLabel htmlFor="defaultIdentityLanguage">{t(`${tk}.AliasGenerationLanguageLabel`)}</FormLabel>
+            <Select id="defaultIdentityLanguage" value={identityLanguage} onChange={(e) => {
               setIdentityLanguage(e.target.value);
               void updateSetting('DefaultIdentityLanguage', e.target.value);
-            }} className={SELECT_CLASSES}>
+            }}>
               {identityLanguages.map(code => <option key={code} value={code}>{getLanguageInfo(code).flag} {getLanguageInfo(code).label}</option>)}
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationLanguageDescription`)}</span>
           </div>
 
           <div className="mb-4">
-            <label htmlFor="defaultIdentityGender" className={LABEL_CLASSES}>{t(`${tk}.AliasGenerationGenderLabel`)}</label>
-            <select id="defaultIdentityGender" value={identityGender} onChange={(e) => {
+            <FormLabel htmlFor="defaultIdentityGender">{t(`${tk}.AliasGenerationGenderLabel`)}</FormLabel>
+            <Select id="defaultIdentityGender" value={identityGender} onChange={(e) => {
               setIdentityGender(e.target.value);
               void updateSetting('DefaultIdentityGender', e.target.value);
-            }} className={SELECT_CLASSES}>
+            }}>
               <option value="random">{t(`${tk}.RandomOption`)}</option>
               <option value="male">{t(`${tk}.MaleOption`)}</option>
               <option value="female">{t(`${tk}.FemaleOption`)}</option>
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationGenderDescription`)}</span>
           </div>
 
           <div className="mb-4">
-            <label htmlFor="defaultIdentityAgeRange" className={LABEL_CLASSES}>{t(`${tk}.AliasGenerationAgeRangeLabel`)}</label>
-            <select id="defaultIdentityAgeRange" value={identityAgeRange} onChange={(e) => {
+            <FormLabel htmlFor="defaultIdentityAgeRange">{t(`${tk}.AliasGenerationAgeRangeLabel`)}</FormLabel>
+            <Select id="defaultIdentityAgeRange" value={identityAgeRange} onChange={(e) => {
               setIdentityAgeRange(e.target.value);
               void updateSetting('DefaultIdentityAgeRange', e.target.value);
-            }} className={SELECT_CLASSES}>
+            }}>
               {ageRanges.map(range => <option key={range} value={range}>{range === 'random' ? t(`${tk}.RandomOption`) : range}</option>)}
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationAgeRangeDescription`)}</span>
           </div>
-        </div>
+        </Card>
 
-        <div className={CARD_CLASSES}>
+        <Card>
           <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.ClipboardSettingsTitle`)}</h3>
           <div className="mb-4">
-            <label htmlFor="clipboardClearSeconds" className={LABEL_CLASSES}>{t(`${tk}.ClipboardClearSecondsLabel`)}</label>
-            <select id="clipboardClearSeconds" value={clipboardClearSeconds} onChange={(e) => {
+            <FormLabel htmlFor="clipboardClearSeconds">{t(`${tk}.ClipboardClearSecondsLabel`)}</FormLabel>
+            <Select id="clipboardClearSeconds" value={clipboardClearSeconds} onChange={(e) => {
               setClipboardClearSeconds(e.target.value);
               void updateSetting('ClipboardClearSeconds', e.target.value);
-            }} className={SELECT_CLASSES}>
+            }}>
               <option value="0">{t(`${tk}.ClipboardClearDisabledOption`)}</option>
               <option value="5">{t(`${tk}.ClipboardClear5SecondsOption`)}</option>
               <option value="10">{t(`${tk}.ClipboardClear10SecondsOption`)}</option>
               <option value="15">{t(`${tk}.ClipboardClear15SecondsOption`)}</option>
-            </select>
+            </Select>
             <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t(`${tk}.ClipboardClearSecondsDescription`)}</span>
             <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">{t(`${tk}.ClipboardClearLimitationNote`)}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className={CARD_CLASSES}>
+        <Card>
           <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.PasswordSettingsTitle`)}</h3>
           <DefaultPasswordSettings />
-        </div>
+        </Card>
       </PageContent>
     </>
   );

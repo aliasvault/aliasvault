@@ -12,6 +12,7 @@ import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
+import FormLabel from '@/components/shared/FormLabel';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
@@ -232,7 +233,7 @@ const Unlock: React.FC = () => {
 
       <form onSubmit={unlockSubmit} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
         <div>
-          <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('pages.auth.unlock.YourPasswordLabel')}</label>
+          <FormLabel htmlFor="password">{t('pages.auth.unlock.YourPasswordLabel')}</FormLabel>
           <PasswordInputField ref={passwordRef} id="password" value={password} onValueChange={setPassword} placeholder="••••••••" />
         </div>
 

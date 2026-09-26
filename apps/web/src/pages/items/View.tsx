@@ -13,6 +13,7 @@ import ItemIcon from '@/components/items/ItemIcon';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
+import Card from '@/components/shared/Card';
 import FormModal from '@/components/shared/FormModal';
 import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
@@ -33,10 +34,10 @@ import type { Folder } from '@aliasvault/client/database/repositories/FolderRepo
  * A card section on the item page.
  */
 const Section: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+  <Card variant="section">
     {title && <h3 className="mb-4 text-xl font-semibold dark:text-white">{title}</h3>}
     {children}
-  </div>
+  </Card>
 );
 
 /**
@@ -221,7 +222,7 @@ const ItemView: React.FC = () => {
 
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
             {isLoginLike && loginFields.length > 0 && (
-              <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+              <Card variant="section">
                 <h3 className="mb-2 text-xl font-semibold dark:text-white">{t('pages.main.items.view.LoginDetailsSection')}</h3>
                 <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <span>{domains.isAliasVaultSupportedDomain(emailAddress) ? t('pages.main.items.view.GeneratedItemDescription') : t('pages.main.items.view.StoredItemDescription')}</span>
@@ -258,7 +259,7 @@ const ItemView: React.FC = () => {
                 )}
 
                 <FieldGrid fields={loginFields} item={item} fullWidth={f => shouldBeFullWidth(f, loginFields)} />
-              </div>
+              </Card>
             )}
 
             {item.ItemType === ItemTypes.Alias && aliasFields.length > 0 && (

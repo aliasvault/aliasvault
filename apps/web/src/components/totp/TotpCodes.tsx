@@ -4,6 +4,8 @@ import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Card from '@/components/shared/Card';
+import FormLabel from '@/components/shared/FormLabel';
 import FormModal from '@/components/shared/FormModal';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -162,7 +164,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
 
   return (
     <>
-      <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+      <Card variant="section" className="relative">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-xl font-semibold dark:text-white">{t(`${tk}.TwoFactorAuthenticationTitle`)}</h3>
@@ -206,7 +208,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
               </div>
               <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.TotpInstructions`)}</p>
               <div className="mb-4">
-                <label htmlFor="totp-secret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.SecretKeyLabel`)}</label>
+                <FormLabel htmlFor="totp-secret">{t(`${tk}.SecretKeyLabel`)}</FormLabel>
                 <input id="totp-secret" type="text" value={newSecret} onChange={(e) => {
                   setNewSecret(e.target.value);
                   setSecretError('');
@@ -266,7 +268,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       <FormModal isOpen={editingCode !== null} title={t('sharedResources.Edit')} showDefaultFooter={false} maxWidth="lg" onClose={() => setEditingCode(null)} submitOnEnter={false}>
         <div className="space-y-4">

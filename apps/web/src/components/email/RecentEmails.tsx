@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import EmailModal from '@/components/email/EmailModal';
 import SkeletonBase from '@/components/loading/SkeletonBase';
+import Card from '@/components/shared/Card';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailDomains } from '@/hooks/useEmailDomains';
@@ -197,7 +198,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
     <>
       {emailModalVisible && <EmailModal email={email} onClose={() => setEmailModalVisible(false)} onEmailDeleted={() => void manualRefresh()} />}
 
-      <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+      <Card variant="section">
         <div className="flex justify-between">
           <div>
             <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('components.main.email.recentEmails.EmailSectionTitle')}</h3>
@@ -276,7 +277,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
             )}
           </div>
         )}
-      </div>
+      </Card>
     </>
   );
 };

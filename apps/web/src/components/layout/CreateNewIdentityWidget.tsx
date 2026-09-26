@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import FormLabel from '@/components/shared/FormLabel';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -214,7 +215,7 @@ const CreateNewIdentityWidget: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{getPopupTitle()}</h3>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="serviceName" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.main.widgets.createNewIdentityWidget.NameLabel')}</label>
+              <FormLabel htmlFor="serviceName">{t('components.main.widgets.createNewIdentityWidget.NameLabel')}</FormLabel>
               <input
                 ref={nameInputRef}
                 id="serviceName"
@@ -229,7 +230,7 @@ const CreateNewIdentityWidget: React.FC = () => {
             </div>
             {(itemType === ItemTypes.Login || itemType === ItemTypes.Alias) && (
               <div className="mb-4">
-                <label htmlFor="serviceUrl" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.main.widgets.createNewIdentityWidget.WebsiteUrlLabel')}</label>
+                <FormLabel htmlFor="serviceUrl">{t('components.main.widgets.createNewIdentityWidget.WebsiteUrlLabel')}</FormLabel>
                 <input
                   id="serviceUrl"
                   type="text"

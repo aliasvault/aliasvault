@@ -1,5 +1,7 @@
 import React from 'react';
 
+import FormLabel from '@/components/shared/FormLabel';
+
 type EditFormRowProps = {
   id: string;
   label: string;
@@ -21,7 +23,7 @@ const EditFormRow: React.FC<EditFormRowProps> = ({ id, label, type = 'text', val
   <>
     {labelStyle === 'header'
       ? <label htmlFor={id} className="mb-4 text-xl font-semibold dark:text-white block">{label}</label>
-      : <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{label}</label>}
+      : <FormLabel htmlFor={id}>{label}</FormLabel>}
     <div className="relative">
       {type === 'textarea' ? (
         <textarea id={id} style={{ height: '200px' }} className={EDIT_INPUT_CLASSES} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoCapitalize="off" autoCorrect="off"></textarea>

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PasswordSettingsPopup from '@/components/settings/PasswordSettingsPopup';
+import FormLabel from '@/components/shared/FormLabel';
 import { useDb } from '@/context/DbContext';
 
 import type { PasswordSettings } from '@aliasvault/models/vault';
@@ -70,7 +71,7 @@ const EditPasswordFormRow: React.FC<EditPasswordFormRowProps> = ({ id, label, va
 
   return (
     <>
-      <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{label}</label>
+      <FormLabel htmlFor={id}>{label}</FormLabel>
       <div className="flex">
         <div className="relative flex-grow">
           <input type={isVisible ? 'text' : 'password'} id={id} autoComplete="off" className="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 pr-16 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />

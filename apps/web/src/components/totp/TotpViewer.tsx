@@ -3,6 +3,7 @@ import { normalizeTotpPeriod, type TotpCode } from '@aliasvault/models/vault';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Card from '@/components/shared/Card';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
 type TotpViewerProps = {
@@ -65,7 +66,7 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes }) => {
   }, []);
 
   return (
-    <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <Card variant="section">
       <div className="flex justify-between">
         <div>
           <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('components.main.components.totpCodes.totpViewer.TwoFactorAuthenticationTitle')}</h3>
@@ -81,7 +82,7 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes }) => {
           {totpCodes.map(totpCode => <TotpRow key={totpCode.Id} totpCode={totpCode} tick={tick} />)}
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 

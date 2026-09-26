@@ -1,6 +1,8 @@
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
 
+import Card from '@/components/shared/Card';
+
 import type { Attachment } from '@aliasvault/models/vault';
 
 type AttachmentViewerProps = {
@@ -29,7 +31,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
   const visible = attachments.filter(a => !a.IsDeleted);
 
   return (
-    <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <Card variant="section">
       <h3 className="mb-4 text-xl font-semibold dark:text-white">Attachments</h3>
       {visible.length > 0 ? (
         <div className="overflow-x-auto">
@@ -60,7 +62,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
       ) : (
         <p className="text-gray-500 dark:text-gray-400">No attachments available.</p>
       )}
-    </div>
+    </Card>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PasswordSettingsPopup from '@/components/settings/PasswordSettingsPopup';
+import FormLabel from '@/components/shared/FormLabel';
 import { useDb } from '@/context/DbContext';
 
 import type { PasswordSettings } from '@aliasvault/models/vault';
@@ -22,7 +23,7 @@ const DefaultPasswordSettings: React.FC = () => {
 
   return (
     <div className="mb-4">
-      <label htmlFor="password-generator-settings-modal" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.PasswordGeneratorSettingsLabel`)}</label>
+      <FormLabel htmlFor="password-generator-settings-modal">{t(`${tk}.PasswordGeneratorSettingsLabel`)}</FormLabel>
       <button type="button" id="password-generator-settings-modal" className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600" onClick={() => setIsVisible(true)}>
         {t(`${tk}.ConfigureButton`)}
       </button>

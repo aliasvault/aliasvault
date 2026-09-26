@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -62,7 +63,7 @@ const AppsSettings: React.FC = () => {
       <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
 
       <PageContent>
-        <div className="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+        <Card>
           <div className="mb-6">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t(`${tk}.BrowserExtensionsTitle`)}</h3>
             <p className="text-gray-600 dark:text-gray-400">{t(`${tk}.BrowserExtensionsDescription`)}</p>
@@ -82,7 +83,7 @@ const AppsSettings: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {MOBILE_APPS.map(app => <AppRow key={app.name} app={app} buttonText={t(`${tk}.DownloadButton`)} comingSoonText={t(`${tk}.ComingSoonText`)} />)}
           </div>
-        </div>
+        </Card>
       </PageContent>
     </>
   );

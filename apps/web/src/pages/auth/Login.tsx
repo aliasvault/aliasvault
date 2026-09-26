@@ -11,9 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
-import InputTextField from '@/components/auth/InputTextField';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
+import FormLabel from '@/components/shared/FormLabel';
+import InputTextField from '@/components/shared/InputTextField';
 import { getAppConfig } from '@/config/AppConfig';
 import { useAuth } from '@/context/AuthContext';
 import { useLoading } from '@/context/LoadingContext';
@@ -224,7 +225,7 @@ const Login: React.FC = () => {
         <div className="w-full">
           <form onSubmit={handle2Fa} className="space-y-6" av-enable="true" av-suppress-save="true">
             <div>
-              <label htmlFor="two-factor-code" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.auth.login.AuthenticatorCodeLabel')}</label>
+              <FormLabel htmlFor="two-factor-code">{t('components.auth.login.AuthenticatorCodeLabel')}</FormLabel>
               <input ref={twoFactorRef} id="two-factor-code" type="number" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} className={inputClass} autoComplete="one-time-code" />
             </div>
             <div className="flex items-start">
@@ -266,7 +267,7 @@ const Login: React.FC = () => {
         <div className="w-full">
           <form onSubmit={handleRecoveryCode} className="space-y-6">
             <div>
-              <label htmlFor="recovery-code" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.auth.login.RecoveryCodeLabel')}</label>
+              <FormLabel htmlFor="recovery-code">{t('components.auth.login.RecoveryCodeLabel')}</FormLabel>
               <input id="recovery-code" type="text" value={recoveryCode} onChange={(e) => setRecoveryCode(e.target.value)} className={inputClass} autoComplete="off" />
             </div>
             <button type="submit" className={submitClass}>{t('components.auth.login.LoginButton')}</button>
@@ -294,11 +295,11 @@ const Login: React.FC = () => {
       <form onSubmit={handleLogin} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
         <ServerValidationErrors errors={errors} />
         <div>
-          <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.auth.login.UsernameOrEmailLabel')}</label>
+          <FormLabel htmlFor="email">{t('components.auth.login.UsernameOrEmailLabel')}</FormLabel>
           <InputTextField ref={usernameRef} id="email" value={username} onValueChange={setUsername} type="text" placeholder={t('components.auth.login.UsernamePlaceholder')} autoCapitalize="off" autoCorrect="off" required />
         </div>
         <div>
-          <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('components.auth.login.PasswordLabel')}</label>
+          <FormLabel htmlFor="password">{t('components.auth.login.PasswordLabel')}</FormLabel>
           <PasswordInputField id="password" value={password} onValueChange={setPassword} placeholder={t('components.auth.login.PasswordPlaceholder')} />
         </div>
 

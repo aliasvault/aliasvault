@@ -18,6 +18,7 @@ import ItemTypeSelector from '@/components/items/ItemTypeSelector';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
+import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import StickyActionBar from '@/components/shared/StickyActionBar';
@@ -41,12 +42,12 @@ const MIN_SAVE_INDICATOR_MS = 250;
  * A card section on the form.
  */
 const Section: React.FC<{ title?: React.ReactNode; children: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => (
-  <div className={`p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 ${className}`}>
+  <Card variant="section" className={className}>
     {title && <h3 className="mb-4 text-xl font-semibold dark:text-white flex items-center gap-2">{title}</h3>}
     <div className="grid gap-6">
       {children}
     </div>
-  </div>
+  </Card>
 );
 
 /**
@@ -623,7 +624,7 @@ const ItemAddEdit: React.FC = () => {
 
                 {edit.ItemType === ItemTypes.Alias && (
                   <div className="col-span-1 md:col-span-1 lg:col-span-2">
-                    <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <Card variant="section">
                       <h3 className="mb-4 text-xl font-semibold dark:text-white flex items-center justify-between gap-2">
                         <span>{t(`${tk}.AliasSectionHeader`)}</span>
                         <button type="button" id="generate-random-alias" onClick={() => void onGenerateRandomAlias()} className="p-1.5 text-gray-400 hover:text-primary-500 transition-colors focus:outline-none" title={t('sharedResources.Generate')}>
@@ -639,7 +640,7 @@ const ItemAddEdit: React.FC = () => {
                         <div className="col-span-6 sm:col-span-3">{textField(FieldKey.AliasGender, 'gender', t(`${tk}.GenderLabel`))}</div>
                         <div className="col-span-6 sm:col-span-3">{textField(FieldKey.AliasBirthdate, 'birthdate', t(`${tk}.BirthDateLabel`))}</div>
                       </div>
-                    </div>
+                    </Card>
                   </div>
                 )}
 
@@ -679,7 +680,7 @@ const ItemAddEdit: React.FC = () => {
 
                 {customFields.length > 0 && (
                   <div className="col-span-1 md:col-span-1 lg:col-span-2">
-                    <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <Card variant="section">
                       <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.CustomFieldsSectionHeader`)}</h3>
                       <DraggableCustomFieldsList
                         customFields={customFields}
@@ -688,7 +689,7 @@ const ItemAddEdit: React.FC = () => {
                         onFieldUpdate={(fieldKey, label, fieldType) => update(current => updateCustomField(current, fieldKey, label, fieldType))}
                         onDelete={fieldKey => update(current => removeCustomField(current, fieldKey))}
                       />
-                    </div>
+                    </Card>
                   </div>
                 )}
 

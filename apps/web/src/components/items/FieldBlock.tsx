@@ -6,6 +6,7 @@ import CopyPasteFormRow from '@/components/forms/CopyPasteFormRow';
 import CopyPastePasswordFormRow from '@/components/forms/CopyPastePasswordFormRow';
 import type { DisplayField } from '@/components/items/DisplayField';
 import FieldHistoryModal from '@/components/items/FieldHistoryModal';
+import FormLabel from '@/components/shared/FormLabel';
 import { useDb } from '@/context/DbContext';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -92,7 +93,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
   }, [dbContext.sqliteClient, field.EnableHistory, field.FieldKey, field.Value, item.Id, item.ManifestId, showHistoryModal]);
 
   const labelElement = (
-    <label htmlFor={fieldId} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+    <FormLabel htmlFor={fieldId}>
       {label}
       {field.EnableHistory && historyCount > 0 && (
         <button type="button" className="ml-2 inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none" title={t('components.fields.fieldBlock.ViewHistory')} onClick={() => setShowHistoryModal(true)}>
@@ -101,7 +102,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
           </svg>
         </button>
       )}
-    </label>
+    </FormLabel>
   );
 
   /**

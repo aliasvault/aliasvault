@@ -1,5 +1,7 @@
 import React from 'react';
 
+import FormLabel from '@/components/shared/FormLabel';
+
 type EditUsernameFormRowProps = {
   id: string;
   label: string;
@@ -14,7 +16,7 @@ type EditUsernameFormRowProps = {
  */
 const EditUsernameFormRow: React.FC<EditUsernameFormRowProps> = ({ id, label, value, onChange, onGenerateNewUsername, placeholder = '' }) => (
   <>
-    <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{label}</label>
+    <FormLabel htmlFor={id}>{label}</FormLabel>
     <div className="flex">
       <div className="relative flex-grow">
         <input type="text" id={id} autoComplete="off" className="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />

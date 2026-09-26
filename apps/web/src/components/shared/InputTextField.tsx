@@ -7,7 +7,7 @@ type InputTextFieldProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'on
 };
 
 /**
- * Text input with the auth form styling.
+ * Text input with the form styling.
  */
 const InputTextField = forwardRef<HTMLInputElement, InputTextFieldProps>(({ id, value, onValueChange, ...rest }, ref) => (
   <input

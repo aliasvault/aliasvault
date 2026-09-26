@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import FormLabel from '@/components/shared/FormLabel';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
 type CopyPastePasswordFormRowProps = {
@@ -18,7 +19,7 @@ const CopyPastePasswordFormRow: React.FC<CopyPastePasswordFormRowProps> = ({ id,
 
   return (
     <>
-      {label !== '' && <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{label}</label>}
+      {label !== '' && <FormLabel htmlFor={id}>{label}</FormLabel>}
       <div className="relative">
         {isPasswordVisible ? (
           <div id={id} className={`outline-0 shadow-sm bg-gray-50 border ${borderClasses} text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 pr-20 min-h-[42px] break-all cursor-pointer dark:bg-gray-700 dark:text-white`} onClick={() => void copyToClipboard(value)}>{value}</div>

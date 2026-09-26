@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { EDIT_INPUT_CLASSES } from '@/components/forms/EditFormRow';
+import FormLabel from '@/components/shared/FormLabel';
 
 type MultiValueFormRowProps = {
   id: string;
@@ -19,7 +20,7 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
 
   return (
     <>
-      <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{label}</label>
+      <FormLabel htmlFor={id}>{label}</FormLabel>
       <div className="space-y-2">
         {shown.map((value, index) => (
           <div key={index} className="relative">

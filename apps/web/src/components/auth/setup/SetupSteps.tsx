@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import EditFormRow from '@/components/forms/EditFormRow';
+import FormLabel from '@/components/shared/FormLabel';
 import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -250,14 +251,14 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
       <div className="space-y-4">
         <div>
           <div>
-            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.MasterPasswordLabel`)}</label>
+            <FormLabel htmlFor="password">{t(`${tk}.MasterPasswordLabel`)}</FormLabel>
             <PasswordInputField id="password" value={password} onValueChange={onPasswordInput} placeholder={t(`${tk}.MasterPasswordPlaceholder`)} />
           </div>
 
           <PasswordStrengthIndicator password={password} />
 
           <div className="mt-4">
-            <label htmlFor="confirmPassword" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.ConfirmMasterPasswordLabel`)}</label>
+            <FormLabel htmlFor="confirmPassword">{t(`${tk}.ConfirmMasterPasswordLabel`)}</FormLabel>
             <PasswordInputField id="confirmPassword" value={confirmPassword} onValueChange={onConfirmInput} placeholder={t(`${tk}.ConfirmMasterPasswordPlaceholder`)} />
           </div>
           {errorMessage.length > 0 && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</div>}

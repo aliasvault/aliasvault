@@ -16,9 +16,11 @@ import { type ItemListEntry, toItemListEntry } from '@/components/items/ItemList
 import ItemsTable from '@/components/items/ItemsTable';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
+import FormLabel from '@/components/shared/FormLabel';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
+import Select from '@/components/shared/Select';
 import type { SortDirection } from '@/components/shared/SortableTable';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -416,8 +418,6 @@ const ItemsHome: React.FC = () => {
     }
   };
 
-  const selectClass = 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500';
-
   return (
     <>
       <PageHeader
@@ -464,23 +464,23 @@ const ItemsHome: React.FC = () => {
                 <div ref={settingsDropdownRef} id="settingsDropdown" className="absolute right-0 z-10 mt-2 min-w-[220px] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
                   <div className="p-4">
                     <div className="mb-4">
-                      <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('pages.main.items.home.ViewModeLabel')}</label>
-                      <select value={viewMode} onChange={(e) => {
+                      <FormLabel>{t('pages.main.items.home.ViewModeLabel')}</FormLabel>
+                      <Select value={viewMode} onChange={(e) => {
                         setViewMode(e.target.value as ViewMode); closeSettingsPopup(); 
-                      }} className={selectClass}>
+                      }}>
                         <option value="grid">{t('pages.main.items.home.GridViewOption')}</option>
                         <option value="table">{t('pages.main.items.home.TableViewOption')}</option>
-                      </select>
+                      </Select>
                     </div>
                     <div className="mb-4">
-                      <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('pages.main.items.home.SortOrderLabel')}</label>
-                      <select value={sortOrder} onChange={(e) => {
+                      <FormLabel>{t('pages.main.items.home.SortOrderLabel')}</FormLabel>
+                      <Select value={sortOrder} onChange={(e) => {
                         setSortOrder(e.target.value as CredentialSortOrder); closeSettingsPopup(); 
-                      }} className={selectClass}>
+                      }}>
                         <option value={CredentialSortOrder.OldestFirst}>{t('pages.main.items.home.OldestFirstOption')}</option>
                         <option value={CredentialSortOrder.NewestFirst}>{t('pages.main.items.home.NewestFirstOption')}</option>
                         <option value={CredentialSortOrder.Alphabetical}>{t('pages.main.items.home.AlphabeticalOption')}</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 </div>
