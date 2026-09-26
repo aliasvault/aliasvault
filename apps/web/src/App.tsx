@@ -11,6 +11,17 @@ import Start from '@/pages/auth/Start';
 import Unlock from '@/pages/auth/Unlock';
 import EmailsHome from '@/pages/emails/Home';
 import Home from '@/pages/Home';
+import ItemAddEdit from '@/pages/items/AddEdit';
+import ItemsHome from '@/pages/items/Home';
+import ItemView from '@/pages/items/View';
+import NotFound from '@/pages/NotFound';
+import AppsSettings from '@/pages/settings/Apps';
+import GeneralSettings from '@/pages/settings/General';
+import ChangePassword from '@/pages/settings/security/ChangePassword';
+import DeleteAccount from '@/pages/settings/security/DeleteAccount';
+import Disable2Fa from '@/pages/settings/security/Disable2Fa';
+import Enable2Fa from '@/pages/settings/security/Enable2Fa';
+import SecuritySettings from '@/pages/settings/security/Security';
 import Sync from '@/pages/sync/Sync';
 
 /**
@@ -37,8 +48,19 @@ const App: React.FC = () => (
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/items" element={<ItemsHome />} />
+        <Route path="/items/folder/:manifestId/:folderId" element={<ItemsHome />} />
+        <Route path="/items/create" element={<ItemAddEdit />} />
+        <Route path="/items/:manifestId/:id/edit" element={<ItemAddEdit />} />
+        <Route path="/items/:manifestId/:id" element={<ItemView />} />
         <Route path="/emails" element={<EmailsHome />} />
         <Route path="/welcome" element={<Navigate to="/items" replace />} />
+        <Route path="/settings/general" element={<GeneralSettings />} />
+        <Route path="/settings/security" element={<SecuritySettings />} />
+        <Route path="/settings/security/change-password" element={<ChangePassword />} />
+        <Route path="/settings/security/enable-2fa" element={<Enable2Fa />} />
+        <Route path="/settings/security/disable-2fa" element={<Disable2Fa />} />
+        <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
+        <Route path="/settings/apps" element={<AppsSettings />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
