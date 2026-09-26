@@ -30,7 +30,7 @@
     "loginWithMobile": "Log ind via mobilapp",
     "unlockWithMobile": "Lås op ved hjælp af Mobil App",
     "scanQrCode": "Skan denne QR-kode med din AliasVault-mobilapp for at logge ind og låse din boks op.",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Når appen beder om det, skal du indtaste dette nummer.",
     "passwordAttemptsWarning": "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode {{remainingAttempts}} flere gange.",
     "maxAttemptsReached": "For mange mislykkede forsøg på oplåsning. Du er blevet logget ud af sikkerhedsårsager."
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "Indlæsning af boksen tog for lang tid. Luk og genåbn udvidelsen og prøv igen, eller genstart din browser, hvis problemet fortsætter.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "Noget gik galt under indlæsning af din boks. Kopier venligst fejloplysningerne nedenfor og kontakt support for hjælp.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "mobileLoginRequestExpired": "Anmodning om mobil-logon udløb. Genindlæs siden og prøv igen.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "Login-anmodningen blev afvist på din mobilenhed."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Der opstod en ukendt fejl. Prøv venligst igen.",
@@ -290,26 +290,26 @@
       "required": "Dette felt er påkrævet"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Vælg ikon",
+      "currentLogo": "Nuværende ikon",
+      "builtinLogos": "Ikon bibliotek",
+      "fetchFromWebsite": "Hent ikon fra hjemmeside",
+      "refetchFromWebsite": "Hent ikon igen fra hjemmeside",
+      "sourceFavicon": "Fra {{domain}}",
+      "sourceBuiltin": "Indbygget ikon",
+      "sourceCustom": "Brugerdefineret ikon",
+      "sourceNone": "Ingen ikon",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
+        "Shopping": "Indkøb",
+        "Bank": "Bank",
         "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Social": "Sociale",
+        "Work": "Arbejde",
+        "Game": "Spil",
+        "Media": "Medie",
+        "Travel": "Rejser",
+        "Health": "Sundhed",
+        "Dev": "Udvikling"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "Administrer dine konto- og boks-sikkerhedsindstillinger.",
       "changePassword": {
         "title": "Skift adgangskode",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Ændring af din hovedadgangskode vil logge dig ud af dine andre enheder, som kræver, at du logger ind igen med den nye adgangskode.",
         "currentPassword": "Nuværende adgangskode",
         "newPassword": "Ny adgangskode",
         "confirmNewPassword": "Bekræft ny adgangskode",
         "passwordsDoNotMatch": "De nye adgangskoder er ikke ens",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "Adgangskoden skal være mindst {{minLength}} tegn lang.",
         "success": "Adgangskode ændret korrekt"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "Hvad er nyt",
     "whatsNewDescription": "En opgradering er påkrævet for at understøtte følgende ændringer:",
     "noDescriptionAvailable": "Ingen beskrivelse tilgængelig for denne version.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Efter denne opgradering skal dine andre AliasVault apps bruge version {{version}} eller nyere. Ældre apps og browserudvidelser logger ud, og beder om at blive opdateret, før de kan åbne din boks igen.",
+    "successTitle": "Boks opgraderet",
+    "successOtherDevices": "Din boks er klar til brug. Sørg også for at opdatere AliasVault appen på dine andre enheder.",
     "alerts": {
       "unableToGetVersionInfo": "Kunne ikke hente versionsinformation. Prøv venligst igen.",
       "selfHostedServer": "Selv-hosted server",
