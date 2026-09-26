@@ -30,7 +30,7 @@
     "loginWithMobile": "使用移动应用登录",
     "unlockWithMobile": "使用移动应用解锁",
     "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "当应用要求输入时，请输入此数字。",
     "passwordAttemptsWarning": "密码错误。若您再输入 {{remainingAttempts}} 次错误的密码，则会被退出登录。",
     "maxAttemptsReached": "解锁尝试次数过多，出于安全考虑，您已被退出登录。"
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "加载密码库耗时过长。请关闭并重新打开扩展后重试；如果问题仍然存在，请重启浏览器。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "加载您的密码库时出现错误。请复制以下错误详情并联系支持人员寻求帮助。",
       "wrongPassword": "密码错误，请重试。",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "mobileLoginRequestExpired": "移动端登录请求超时，请重新加载页面后重试。",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "您的移动设备登录请求被拒绝。"
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "发生未知错误。请重试。",
