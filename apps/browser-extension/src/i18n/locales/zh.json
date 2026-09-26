@@ -295,21 +295,21 @@
       "builtinLogos": "图标库",
       "fetchFromWebsite": "从网站获取图标",
       "refetchFromWebsite": "（重新）从网站获取图标",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "sourceFavicon": "从 {{domain}}",
+      "sourceBuiltin": "内置图标",
+      "sourceCustom": "自定义图标",
+      "sourceNone": "无图标",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
-        "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Shopping": "购物",
+        "Bank": "银行",
+        "Mail": "邮件",
+        "Social": "社交",
+        "Work": "工作",
+        "Game": "游戏",
+        "Media": "媒体",
+        "Travel": "旅游",
+        "Health": "健康",
+        "Dev": "开发"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "管理您的账户和密码库安全设置。",
       "changePassword": {
         "title": "更改密码",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "更改主密码后，您将从其他设备上退出登录，需要使用新密码重新登录。",
         "currentPassword": "当前密码",
         "newPassword": "新密码",
         "confirmNewPassword": "确认新密码",
         "passwordsDoNotMatch": "新密码不匹配",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "密码必须至少包含 {{minLength}} 个字符。",
         "success": "密码修改成功"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "新功能",
     "whatsNewDescription": "需要升级才能支持以下更改：",
     "noDescriptionAvailable": "此版本无可用说明。",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "升级后，您的其他 AliasVault 应用需要使用 {{version}} 或更高版本。旧版应用和浏览器扩展将退出登录并请求更新，之后才能再次打开您的密码库。",
+    "successTitle": "密码库已升级",
+    "successOtherDevices": "您的密码库已准备就绪。请确保在其他设备上也更新 AliasVault 应用。",
     "alerts": {
       "unableToGetVersionInfo": "无法获取版本信息，请重试。",
       "selfHostedServer": "自托管服务器",
