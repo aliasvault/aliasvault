@@ -290,11 +290,11 @@
       "required": "此字段为必填项"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
+      "chooseLogo": "选择图标",
+      "currentLogo": "当前图标",
+      "builtinLogos": "图标库",
+      "fetchFromWebsite": "从网站获取图标",
+      "refetchFromWebsite": "（重新）从网站获取图标",
       "sourceFavicon": "From {{domain}}",
       "sourceBuiltin": "Built-in icon",
       "sourceCustom": "Custom icon",
