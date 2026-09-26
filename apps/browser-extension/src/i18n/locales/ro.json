@@ -30,7 +30,7 @@
     "loginWithMobile": "Autentificare prin aplicația mobilă",
     "unlockWithMobile": "Deblochează prin aplicația mobilă",
     "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
-    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
+    "mobileUnlockVerificationCode": "Când aplicația îți solicită acest lucru, introdu acest număr.",
     "passwordAttemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{remainingAttempts}} ori.",
     "maxAttemptsReached": "Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate."
   },
@@ -126,11 +126,11 @@
       "vaultLoadTimeout": "Încărcarea seifului a durat prea mult. Închide și redeschide extensia și încearcă din nou, sau repornește browserul dacă problema persistă.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultLoadError": "Ceva nu a funcționat corect la încărcarea seifului tău. Copiază detaliile erorii de mai jos și contactează serviciul de asistență pentru ajutor.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou.",
       "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
       "mobileLoginRequestExpired": "Cererea de autentificare de pe dispozitivul mobil a expirat. Reîncarcă pagina și încearcă din nou.",
-      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
+      "mobileLoginRequestDeclined": "Solicitarea de conectare a fost refuzată pe dispozitivul tău mobil."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
@@ -290,26 +290,26 @@
       "required": "Acest câmp este obligatoriu"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Alege o pictogramă",
+      "currentLogo": "Pictograma curentă",
+      "builtinLogos": "Biblioteca de pictograme",
+      "fetchFromWebsite": "Preia pictograma de pe site",
+      "refetchFromWebsite": "(Re)preia pictograma de pe site",
+      "sourceFavicon": "De la {{domain}}",
+      "sourceBuiltin": "Pictogramă încorporată",
+      "sourceCustom": "Pictogramă personalizată",
+      "sourceNone": "Fără pictogramă",
       "builtin": {
-        "Shopping": "Shopping",
-        "Bank": "Banking",
-        "Mail": "Mail",
-        "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
+        "Shopping": "Cumpărături",
+        "Bank": "Servicii bancare",
+        "Mail": "E-mail",
+        "Social": "Rețele sociale",
+        "Work": "Serviciu",
+        "Game": "Jocuri",
         "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Travel": "Călătorii",
+        "Health": "Sănătate",
+        "Dev": "Dezvoltare"
       }
     }
   },
@@ -532,12 +532,12 @@
       "description": "Gestionează setările de securitate ale contului și seifului.",
       "changePassword": {
         "title": "Schimbă Parola",
-        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "description": "Schimbarea parolei principale te va deconecta de pe celelalte dispozitive, iar pentru a le folosi din nou va trebui să te conectezi cu noua parolă.",
         "currentPassword": "Parolă actuală",
         "newPassword": "Parolă nouă",
         "confirmNewPassword": "Confirmă parola nouă",
         "passwordsDoNotMatch": "Parolele noi nu se potrivesc",
-        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "passwordTooShort": "Parola trebuie să aibă cel puțin {{minLength}} caractere.",
         "success": "Parola a fost schimbată cu succes"
       },
       "activeSessions": {
@@ -650,9 +650,9 @@
     "whatsNew": "Ce este nou",
     "whatsNewDescription": "Este necesară o actualizare pentru a permite următoarele modificări:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "După această actualizare, celelalte aplicații AliasVault trebuie să aibă versiunea {{version}} sau una mai nouă. Aplicațiile și extensiile de browser mai vechi te vor deconecta și îți vor solicita să le actualizezi înainte de a-ți putea deschide din nou seiful.",
+    "successTitle": "Seif actualizat",
+    "successOtherDevices": "Seiful tău este gata de utilizare. Asigură-te că actualizezi și aplicația AliasVault de pe celelalte dispozitive.",
     "alerts": {
       "unableToGetVersionInfo": "Informațiile despre versiune nu au putut fi obținute. Reîncearcă.",
       "selfHostedServer": "Server Self-Hosted",
