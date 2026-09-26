@@ -1,0 +1,61 @@
+import { DEFAULT_ENCRYPTION } from '../../auth/SrpAuthService';
+import { EncryptionUtility } from '../../crypto/EncryptionUtility';
+import { AppInfo } from '../../platform/AppInfo';
+import { argon2DeriveKey } from '../../rust/RustCore';
+import { base64ToBytes, bytesToBase64 } from '../../utilities/Base64';
+import { formatIsoDateTime } from '../shared/DateTimeUtils';
+
+import { AvexConstants } from './AvexConstants';
+
+import type { AvexHeader } from './AvexHeader';
+
+/** The Argon2id parameters a new export is encrypted with: the vault key derivation defaults. */
+const ARGON2_KDF_PARAMS: Record<string, number> = JSON.parse(DEFAULT_ENCRYPTION.settings);
+
+/**
+ * Writes the .avex encrypted vault export format: a JSON header, a PEM-style delimiter and the encrypted .avux payload
+ * keyed with Argon2id from the export password.
+ */
+export class AvexExportService {
+  /**
+   * Encrypt .avux bytes to an .avex file.
+   * @param avuxBytes - The unencrypted .avux bytes
+   * @param exportPassword - The password to encrypt with
+   * @param username - The username creating the export
+   * @returns The .avex file bytes
+   */
+  public static async encryptToAvex(avuxBytes: Uint8Array, exportPassword: string, username: string): Promise<Uint8Array> {
+    // 1. A random salt and a key derived from it with Argon2id, as for the vault encryption.
+    const salt = crypto.getRandomValues(new Uint8Array(32));
+    const saltBase64 = bytesToBase64(salt);
+    const key = await argon2DeriveKey(exportPassword, saltBase64, DEFAULT_ENCRYPTION.settings);
+
+    // 2. AES-256-GCM over the .avux bytes.
+    const encryptedPayload = base64ToBytes(await EncryptionUtility.symmetricEncryptBytes(avuxBytes, bytesToBase64(key)));
+
+    // 3. The header.
+    const header: AvexHeader = {
+      format: AvexConstants.FormatIdentifier,
+      version: AvexConstants.FormatVersion,
+      kdf: { type: DEFAULT_ENCRYPTION.type, salt: saltBase64, params: { ...ARGON2_KDF_PARAMS } },
+      encryption: { algorithm: 'AES-256-GCM', encryptedDataOffset: 0 },
+      metadata: { exportedAt: formatIsoDateTime(new Date()), exportedBy: username, appVersion: AppInfo.VERSION },
+    };
+
+    const encoder = new TextEncoder();
+    const delimiterBytes = encoder.encode(AvexConstants.HeaderDelimiter);
+
+    // 4. The offset of the payload is recorded in the header, so serialize, measure and serialize again.
+    let headerBytes = encoder.encode(JSON.stringify(header, null, 2));
+    header.encryption.encryptedDataOffset = headerBytes.length + delimiterBytes.length;
+    headerBytes = encoder.encode(JSON.stringify(header, null, 2));
+
+    // 5. header + delimiter + payload.
+    const avexFile = new Uint8Array(headerBytes.length + delimiterBytes.length + encryptedPayload.length);
+    avexFile.set(headerBytes, 0);
+    avexFile.set(delimiterBytes, headerBytes.length);
+    avexFile.set(encryptedPayload, headerBytes.length + delimiterBytes.length);
+
+    return avexFile;
+  }
+}
