@@ -36,6 +36,7 @@
       "unknownError": "Произошла неизвестная ошибка.",
       "unknownErrorTryAgain": "Произошла неизвестная ошибка. Попробуйте снова.",
       "vaultTooLarge": "Хранилище слишком велико для загрузки на сервер. Удалите часть данных или вложений и повторите попытку.",
+      "vaultSyncTimeout": "Тайм-аут синхронизации. Возможно, хранилище слишком велико или интернет-соединение нестабильно. Попробуйте еще раз.",
       "serverVersionTooOld": "Сервер AliasVault необходимо обновить до более новой версии, чтобы использовать эту функцию. Если вам нужна помощь, обратитесь к администратору сервера."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Подтвердите запрос на вход",
         "confirmSubtitle": "Авторизуйтесь повторно, чтобы подтвердить вход на другом устройстве.",
-        "confirmMessage": "Внимание! Вы входите в аккаунт на другом устройстве. Оно получит полный доступ к вашему хранилищу. Продолжайте только если полностью доверяете этому устройству.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Вход на удаленном устройстве выполнен успешно.",
         "requestExpired": "Срок действия запроса на вход истек. Пожалуйста, сгенерируйте новый QR-код."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Запись восстановлена",
       "itemDeleted": "Запись удалена навсегда",
       "allItemsDeleted": "Все записи удалены навсегда"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Что нового",
     "whatsNewDescription": "Для поддержки следующих изменений требуется обновление:",
     "noDescriptionAvailable": "Описание для этой версии недоступно.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Подготовка обновления...",
-      "vaultAlreadyUpToDate": "Хранилище уже обновлено",
       "applyingDatabaseMigrations": "Применение перемещения базы данных...",
       "applyingMigration": "Применяя перемещение {{current}} из {{total}}...",
       "committingChanges": "Фиксация изменений..."

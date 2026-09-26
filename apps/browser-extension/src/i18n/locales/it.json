@@ -30,6 +30,7 @@
     "loginWithMobile": "Accedi con l'App Mobile",
     "unlockWithMobile": "Sblocca con l'App Mobile",
     "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Password errata. Sarai disconnesso se inserisci la password errata {{remainingAttempts}} altre volte.",
     "maxAttemptsReached": "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Sincronizzazione...",
     "mergingVaultChanges": "Sincronizzzazione modifiche della cassaforte...",
     "uploadingVault": "Caricamento cassaforte in corso...",
+    "passwordStrength": {
+      "title": "Sicurezza password",
+      "veryWeak": "Continua",
+      "weak": "Migliora",
+      "fair": "Buona",
+      "good": "Molto buona",
+      "strong": "Eccellente"
+    },
     "errors": {
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "clientVersionNotSupported": "Questa versione dell'estensione del browser AliasVault non è più supportata dal server. Aggiorna l'estensione alla versione più recente.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Il caricamento della cassaforte ha richiesto troppo tempo. Si prega di chiudere e riaprire le estensioni e riprovare, o riavviare il browser se il problema persiste.",
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Password errata. Riprovare.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
-      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova."
+      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto. Riprova.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
     "validation": {
       "required": "Campo obbligatorio"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Nessuna email trovata",
     "noEmailsDescription": "Non hai ancora ricevuto email ai tuoi indirizzi email privati. Quando ne riceverai una nuova, apparirà qui.",
     "offlineMessage": "Sei offline. Collegati a internet per caricare le email.",
-    "updateClientForFormattedView": "Questa email richiede una nuova versione dell'app per essere visualizzata correttamente. Si prega di aggiornare l'app.",
     "loadMore": "Carica altro ({{count}} rimanenti)",
     "dateFormat": {
       "justNow": "proprio ora",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Siti in cui il prompt di salvataggio non apparirà mai.",
       "clearAllBlockedSites": "Cancella tutti i siti bloccati"
     },
+    "securitySettings": {
+      "title": "Sicurezza",
+      "description": "Gestisci le impostazioni di sicurezza del tuo account e cassaforte.",
+      "changePassword": {
+        "title": "Cambia password",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Password attuale",
+        "newPassword": "Nuova password",
+        "confirmNewPassword": "Conferma nuova password",
+        "passwordsDoNotMatch": "Le nuove password non coincidono",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Password cambiata con successo"
+      },
+      "activeSessions": {
+        "title": "Sessioni attive",
+        "description": "Qui trovi un elenco dei dispositivi dove il tuo account è attualmente connesso o con sessione attiva. Puoi disconnetterti da queste sessioni.",
+        "noSessions": "Nessuna sessione attiva",
+        "revoke": "Revoca",
+        "revokeSession": "Revoca sessione",
+        "revokeConfirmation": "Sei sicuro di voler revocare questa sessione? Verrai disconnesso dal dispositivo scelto.",
+        "sessionRevoked": "Sessione revocata con successo",
+        "failedToRevoke": "Revoca sessione fallita",
+        "failedToLoad": "Caricamento sessioni attive fallito",
+        "lastActive": "Ultima attività",
+        "expires": "Scade"
+      },
+      "authLogs": {
+        "title": "Log accessi recenti",
+        "description": "Ecco una panoramica degli ultimi tentativi di accesso al tuo account.",
+        "noLogs": "Nessun log di accesso trovato",
+        "success": "Successo",
+        "failed": "Fallito",
+        "time": "Ora",
+        "ipAddress": "Indirizzo IP",
+        "client": "Client",
+        "failedToLoad": "Caricamento log accessi fallito"
+      }
+    },
     "unlockMethod": {
       "title": "Metodo di sblocco cassaforte",
       "introText": "Scegli come sbloccare la cassaforte. Puoi usare la tua password principale (sempre disponibile) o impostare un codice PIN per un accesso più veloce. Dopo 3 tentativi di PIN falliti, è necessario utilizzare la password principale.",
@@ -579,6 +650,9 @@
     "whatsNew": "Novità",
     "whatsNewDescription": "È richiesto un aggiornamento per supportare le seguenti modifiche:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Impossibile ottenere informazioni sulla versione. Riprova.",
       "selfHostedServer": "Server Autospitato",

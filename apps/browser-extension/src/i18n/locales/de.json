@@ -30,6 +30,7 @@
     "loginWithMobile": "Mit mobiler App anmelden",
     "unlockWithMobile": "Mit mobiler App entsperren",
     "scanQrCode": "Scanne diesen QR-Code mit Deiner AliasVault-App, um Dich anzumelden und Deinen Tresor zu entsperren.",
+    "mobileUnlockVerificationCode": "Wenn die App danach fragt, gebe diese Nummer ein.",
     "passwordAttemptsWarning": "Ungültiges Passwort. Noch {{remainingAttempts}} Versuche bis zur Abmeldung.",
     "maxAttemptsReached": "Zu viele fehlgeschlagene Entsperrversuche. Du wurdest aus Sicherheitsgründen abgemeldet."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synchronisierung läuft...",
     "mergingVaultChanges": "Tresor Änderungen zusammenführen...",
     "uploadingVault": "Tresor wird hochgeladen...",
+    "passwordStrength": {
+      "title": "Kennwortstärke",
+      "veryWeak": "Mach weiter",
+      "weak": "Es wird besser",
+      "fair": "Gut",
+      "good": "Großartig",
+      "strong": "Ausgezeichnet"
+    },
     "errors": {
       "serverNotAvailable": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Das Laden des Tresors hat zu lange gedauert. Bitte schließe die Erweiterung und versuche es erneut oder starte Deinen Browser neu, wenn das Problem weiterhin besteht.",
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server ist nicht erreichbar. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
+      "vaultLoadError": "Beim Laden deines Tresors ist etwas schief gelaufen. Bitte kopiere die Fehlerdetails und kontaktiere den Support für Hilfe.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
-      "mobileLoginRequestExpired": "Zeitüberschreitung für mobile Anmeldeanforderung. Bitte lade die Seite neu und versuche es erneut."
+      "mobileLoginRequestExpired": "Zeitüberschreitung für mobile Anmeldeanforderung. Bitte lade die Seite neu und versuche es erneut.",
+      "mobileLoginRequestDeclined": "Die Anmeldeanfrage wurde auf Deinem mobilen Gerät abgelehnt."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "validation": {
       "required": "Dieses Feld ist ein Pflichtfeld"
+    },
+    "logo": {
+      "chooseLogo": "Symbol auswählen",
+      "currentLogo": "Aktuelles Symbol",
+      "builtinLogos": "Symbolbibliothek",
+      "fetchFromWebsite": "Symbol von Webseite abrufen",
+      "refetchFromWebsite": "Symbol von Webseite (erneut) abrufen",
+      "sourceFavicon": "Von {{domain}}",
+      "sourceBuiltin": "Eingebautes Symbol",
+      "sourceCustom": "Benutzerdefiniertes Symbol",
+      "sourceNone": "Kein Symbol",
+      "builtin": {
+        "Shopping": "Einkaufen",
+        "Bank": "Finanzen",
+        "Mail": "E-Mail",
+        "Social": "Soziale Medien",
+        "Work": "Arbeit",
+        "Game": "Spiele",
+        "Media": "Medien",
+        "Travel": "Reisen",
+        "Health": "Gesundheit",
+        "Dev": "Entwicklung"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Keine E-Mails gefunden",
     "noEmailsDescription": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
-    "updateClientForFormattedView": "Diese E-Mail erfordert eine neuere App-Version, um sie korrekt anzuzeigen. Bitte aktualisiere Deine App.",
     "loadMore": "Weitere laden ({{count}} verbleibend)",
     "dateFormat": {
       "justNow": "gerade eben",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Webseiten wo keine Speicheraufforderung angezeigt wird.",
       "clearAllBlockedSites": "Alle gesperrten Webseiten zurücksetzen"
     },
+    "securitySettings": {
+      "title": "Sicherheit",
+      "description": "Verwalte Deine Sicherheitseinstellungen für Dein Konto und den Tresor.",
+      "changePassword": {
+        "title": "Password ändern",
+        "description": "Das Ändern deines Master-Passworts wird deine anderen Geräte abmelden, was eine erneute Anmeldung mit dem neuen Passwort erforderlich macht.",
+        "currentPassword": "Aktuelles Passwort",
+        "newPassword": "Neues Passwort",
+        "confirmNewPassword": "Bestätige Dein neues Passwort",
+        "passwordsDoNotMatch": "Die neuen Passwörter stimmen nicht überein",
+        "passwordTooShort": "Passwort muss mindestens {{minLength}} Zeichen lang sein.",
+        "success": "Dein Passwort wurde erfolgreich geändert."
+      },
+      "activeSessions": {
+        "title": "Aktive Sitzungen",
+        "description": "Nachfolgend findest Du eine Liste der Geräte, auf denen Du aktuell angemeldet bist oder eine aktive Sitzung hast. Hier kannst Du Dich von jeder dieser Sitzungen abmelden.",
+        "noSessions": "Keine aktiven Sitzungen",
+        "revoke": "Widerrufen",
+        "revokeSession": "Sitzung widerrufen",
+        "revokeConfirmation": "Bist Du sicher, dass Du diese Sitzung widerrufen möchtest? Dadurch wirst Du auf dem ausgewählten Gerät ausgeloggt.",
+        "sessionRevoked": "Sitzung erfolgreich widerrufen",
+        "failedToRevoke": "Sitzung konnte nicht widerrufen werden",
+        "failedToLoad": "Laden der aktiven Sitzungen fehlgeschlagen",
+        "lastActive": "Zuletzt aktiv",
+        "expires": "Gültig bis"
+      },
+      "authLogs": {
+        "title": "Letzte Anmeldeversuche",
+        "description": "Nachfolgend findest Du eine Übersicht der letzten Anmeldeversuche für Dein Konto.",
+        "noLogs": "Keine Anmeldeversuche gefunden",
+        "success": "Erfolg",
+        "failed": "Aktion fehlgeschlagen",
+        "time": "Zeit",
+        "ipAddress": "IP-Adresse",
+        "client": "Client",
+        "failedToLoad": "Das Laden der Anmeldeversuche ist fehlgeschlagen"
+      }
+    },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
       "introText": "Wähle, wie Du Deinen Tresor entsperren möchtest. Du kannst Dein Master-Passwort verwenden (immer verfügbar) oder einen PIN-Code für einen schnelleren Zugriff einrichten. Nach drei fehlgeschlagenen PIN-Versuchen musst Du Dein Master-Passwort verwenden.",
@@ -579,6 +650,9 @@
     "whatsNew": "Neu in dieser Version",
     "whatsNewDescription": "Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen:",
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
+    "otherDevicesWarning": "Nach diesem Upgrade benötigen Deine anderen AliasVault-Apps Version {{version}} oder neuer. Ältere Apps und Browser-Erweiterungen melden sich ab und bitten um Aktualisierung, bevor sie Deinen Tresor wieder öffnen können.",
+    "successTitle": "Tresor aktualisiert",
+    "successOtherDevices": "Dein Tresor ist einsatzbereit. Bitte aktualisiere auch die AliasVault-App auf deinen anderen Geräten.",
     "alerts": {
       "unableToGetVersionInfo": "Versionsinformationen konnten nicht abgerufen werden. Bitte versuche es erneut.",
       "selfHostedServer": "Selbst gehosteter Server",

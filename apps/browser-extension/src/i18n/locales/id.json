@@ -30,6 +30,7 @@
     "loginWithMobile": "Masuk menggunakan Aplikasi Seluler",
     "unlockWithMobile": "Buka kunci menggunakan Aplikasi Seluler",
     "scanQrCode": "Pindai kode QR dengan aplikasi mobile Aliasvault untuk login dan membuka brankas mu.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah {{remainingAttempts}} kali lagi.",
     "maxAttemptsReached": ""
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Menyinkronkan...",
     "mergingVaultChanges": "Menggabungkan perubahan pada brankas...",
     "uploadingVault": "Mengunggah brankas...",
+    "passwordStrength": {
+      "title": "Kekuatan Kata Sandi",
+      "veryWeak": "Teruskan",
+      "weak": "Semakin membaik",
+      "fair": "Baik",
+      "good": "Bagus",
+      "strong": "Luar biasa"
+    },
     "errors": {
       "serverNotAvailable": "Server AliasVault sedang tidak tersedia. Silakan coba lagi nanti atau hubungi bagian dukungan jika masalah ini masih berlanjut.",
       "clientVersionNotSupported": "Versi ekstensi browser AliasVault ini tidak lagi didukung oleh server. Silakan perbarui ekstensi browser Anda ke versi terbaru.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Mohon masukkan 6-digit kode autentikasi yang valid.",
       "serverError": "",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Kata sandi salah. Silakan coba lagi.",
       "sessionExpired": "Sesi Anda telah berakhir. Harap masuk kembali.",
-      "mobileLoginRequestExpired": "Login mobile telah habis waktu. Mohon muat ulang halaman dan coba lagi."
+      "mobileLoginRequestExpired": "Login mobile telah habis waktu. Mohon muat ulang halaman dan coba lagi.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Terjadi kesalahan tidak diketahui. Coba lagi.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonim tetapi privasi terbatas. Isi email dapat dibaca oleh siapa pun yang mengetahui alamat tersebut.",
     "validation": {
       "required": "Bagian ini perlu diisi"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Tidak ada email yang ditemukan",
     "noEmailsDescription": "Anda belum menerima email apa pun di alamat email privat Anda. Ketika Anda menerima email baru, email tersebut akan muncul di sini.",
     "offlineMessage": "Anda sedang offline. Silakan hubungkan ke internet untuk memuat email Anda.",
-    "updateClientForFormattedView": "Email ini memerlukan versi aplikasi yang lebih baru agar dapat ditampilkan dengan benar. Silakan perbarui aplikasi Anda.",
     "loadMore": "Muat Lebih Banyak (tersisa {{count}})",
     "dateFormat": {
       "justNow": "baru saja",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Situs tempat popup pengisian otomatis tidak akan muncul.",
       "clearAllBlockedSites": "Situs tempat perintah simpan tidak akan pernah muncul"
     },
+    "securitySettings": {
+      "title": "Keamanan",
+      "description": "Kelola pengaturan keamanan akun dan brankas Anda.",
+      "changePassword": {
+        "title": "Ubah Kata Sandi",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Kata sandi saat ini",
+        "newPassword": "Kata Sandi Baru",
+        "confirmNewPassword": "Konfirmasi Kata Sandi Baru",
+        "passwordsDoNotMatch": "Kata sandi baru tidak cocok",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Kata sandi berhasil diubah"
+      },
+      "activeSessions": {
+        "title": "Sesi Aktif",
+        "description": "Di bawah ini adalah daftar perangkat yang saat ini sedang digunakan untuk masuk ke akun Anda atau memiliki sesi aktif. Anda dapat keluar dari salah satu sesi tersebut di sini.",
+        "noSessions": "Tidak ada sesi aktif",
+        "revoke": "Cabut izin",
+        "revokeSession": "Cabut Sesi",
+        "revokeConfirmation": "Apakah Anda yakin ingin membatalkan sesi ini? Tindakan ini akan membuat Anda keluar dari perangkat yang dipilih.",
+        "sessionRevoked": "Sesi berhasil dicabut",
+        "failedToRevoke": "Gagal mencabut sesi",
+        "failedToLoad": "Gagal memuat sesi aktif",
+        "lastActive": "Terakhir aktif",
+        "expires": "Berlaku hingga"
+      },
+      "authLogs": {
+        "title": "Riwayat Otentikasi Terbaru",
+        "description": "Di bawah ini Anda dapat melihat ringkasan upaya login terbaru ke akun Anda.",
+        "noLogs": "Tidak ditemukan log otentikasi",
+        "success": "Berhasil",
+        "failed": "Gagal",
+        "time": "Waktu",
+        "ipAddress": "Alamat IP",
+        "client": "Klien",
+        "failedToLoad": "Gagal memuat log otentikasi"
+      }
+    },
     "unlockMethod": {
       "title": "Metode buka Vault",
       "introText": "Pilih cara Anda ingin membuka kunci brankas. Anda dapat menggunakan kata sandi utama Anda (selalu tersedia) atau mengatur kode PIN untuk akses yang lebih cepat. Setelah 3 kali percobaan PIN yang gagal, Anda harus menggunakan kata sandi utama Anda.",
@@ -579,6 +650,9 @@
     "whatsNew": "Apa yang baru",
     "whatsNewDescription": "Pembaruan diperlukan untuk mendukung perubahan berikut:",
     "noDescriptionAvailable": "Tidak ada deskripsi yang tersedia untuk versi ini.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Tidak dapat memperoleh informasi versi. Silakan coba lagi.",
       "selfHostedServer": "Server yang Dihosting Mandiri",

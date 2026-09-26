@@ -36,6 +36,7 @@
       "unknownError": "Ein unbekannter Fehler ist aufgetreten.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
       "vaultTooLarge": "Der Tresor ist zu groß für den Server. Versuche einige Elemente oder Anhänge zu entfernen, um die Größe zu verringern und versuche es dann erneut.",
+      "vaultSyncTimeout": "Zeitüberschreitung bei der Tresor-Synchronisation. Dies kann passieren, wenn der Tresor groß ist oder die Internetverbindung langsam ist. Bitte versuche es erneut.",
       "serverVersionTooOld": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Funktion nutzen zu können. Bitte kontaktiere den Administrator des Servers, falls Du Hilfe benötigst."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Anmeldeanfrage bestätigen",
         "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
-        "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
+        "confirmMessage": "Ein anderes Gerät bittet um Anmeldung an deinem Konto. Es erhält vollen Zugriff auf deinen Tresor. Nur fortfahren, wenn du diese Anmeldung selbst gestartet hast.",
+        "selectCode": "Tippen die angezeigte Nummer auf dem anderen Gerät ein",
+        "openedFromLink": "Fahre nur fort, wenn Du diesen QR-Code mit Deiner eigenen Kamera gescannt hast. Wenn Du hier durch Tippen auf einen Link oder einen Knopf gelandet bist, lehnen die Anfrage ab.",
+        "codeMismatch": "Die Nummer stimmt nicht überein. Die Anmeldeanfrage wurde abgelehnt.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
         "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Element wiederhergestellt",
       "itemDeleted": "Element endgültig gelöscht",
       "allItemsDeleted": "Alle Elemente endgültig gelöscht"
+    },
+    "logo": {
+      "chooseLogo": "Symbol auswählen",
+      "currentLogo": "Aktuelles Symbol",
+      "builtinLogos": "Symbolbibliothek",
+      "fetchFromWebsite": "Symbol von Webseite abrufen",
+      "refetchFromWebsite": "Symbol von Webseite (erneut) abrufen",
+      "sourceFavicon": "Von {{domain}}",
+      "sourceBuiltin": "Eingebautes Symbol",
+      "sourceCustom": "Benutzerdefiniertes Symbol",
+      "sourceNone": "Kein Symbol",
+      "builtin": {
+        "Shopping": "Einkaufen",
+        "Bank": "Finanzen",
+        "Mail": "E-Mail",
+        "Social": "Soziale Medien",
+        "Work": "Arbeit",
+        "Game": "Spiele",
+        "Media": "Medien",
+        "Travel": "Reisen",
+        "Health": "Gesundheit",
+        "Dev": "Entwicklung"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Neu in dieser Version",
     "whatsNewDescription": "Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen:",
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
+    "otherDevicesWarning": "Nach diesem Upgrade benötigen Deine anderen AliasVault-Apps Version {{version}} oder neuer. Ältere Apps und Browser-Erweiterungen melden sich ab und bitten um Aktualisierung, bevor sie Deinen Tresor wieder öffnen können.",
+    "successTitle": "Tresor aktualisiert",
+    "successOtherDevices": "Dein Tresor ist einsatzbereit. Bitte aktualisiere auch die AliasVault-App auf deinen anderen Geräten.",
     "status": {
       "preparingUpgrade": "Aktualisierung wird vorbereitet...",
-      "vaultAlreadyUpToDate": "Tresor ist bereits aktualisiert",
       "applyingDatabaseMigrations": "Datenbankmigration wird durchgeführt...",
       "applyingMigration": "Führe Migration {{current}} von {{total}} durch...",
       "committingChanges": "Änderungen werden übernommen..."

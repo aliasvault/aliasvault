@@ -388,4 +388,8 @@
     <value>Elementtyp</value>
     <comment>Inline label on the item type picker</comment>
   </data>
+  <data name="ClientVersionUnsupported" xml:space="preserve">
+    <value>Diese Version der App wird vom Server nicht mehr unterstützt. Bitte aktualisiere die Seite, um die neueste Version zu laden.</value>
+    <comment>Shown when the server rejects the client version (HTTP 426).</comment>
+  </data>
 </root>

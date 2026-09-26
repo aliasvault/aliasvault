@@ -30,6 +30,7 @@
     "loginWithMobile": "Se connecter à l'aide de l'application mobile",
     "unlockWithMobile": "Déverrouiller en utilisant l'application mobile",
     "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre-fort.",
+    "mobileUnlockVerificationCode": "Lorsque l'application le demande, saisissez ce numéro.",
     "passwordAttemptsWarning": "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de {{remainingAttempts}} fois.",
     "maxAttemptsReached": "Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synchronisation...",
     "mergingVaultChanges": "Fusion des modifications du coffre-fort...",
     "uploadingVault": "Envoi du coffre-fort...",
+    "passwordStrength": {
+      "title": "Force de mot de passe",
+      "veryWeak": "Trop faible",
+      "weak": "C'est mieux",
+      "fair": "Bon",
+      "good": "Très bon",
+      "strong": "Excellent"
+    },
     "errors": {
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Le chargement du coffre a pris trop de temps. Veuillez fermer et rouvrir l'extension et réessayer, ou redémarrer votre navigateur si le problème persiste.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
+      "vaultLoadError": "Une erreur s'est produite lors du chargement de votre coffre. Veuillez copier les détails de l'erreur ci-dessous et contacter le support pour obtenir de l'aide.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-      "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer."
+      "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer.",
+      "mobileLoginRequestDeclined": "La demande de connexion a été refusée sur votre appareil mobile."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
     "validation": {
       "required": "Ce champ est requis"
+    },
+    "logo": {
+      "chooseLogo": "Choisir une icône",
+      "currentLogo": "Icône actuelle",
+      "builtinLogos": "Bibliothèque des icônes",
+      "fetchFromWebsite": "Récupérer l'icône depuis le site web",
+      "refetchFromWebsite": "(Re)récupérer l'icône depuis le site web",
+      "sourceFavicon": "Depuis {{domain}}",
+      "sourceBuiltin": "Icône intégrée",
+      "sourceCustom": "Icône personnalisée",
+      "sourceNone": "Pas d'icône",
+      "builtin": {
+        "Shopping": "Achats",
+        "Bank": "Banque",
+        "Mail": "Mail",
+        "Social": "Réseaux",
+        "Work": "Travail",
+        "Game": "Jeux",
+        "Media": "Médias",
+        "Travel": "Voyages",
+        "Health": "Santé",
+        "Dev": "Développement"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Aucun email trouvé",
     "noEmailsDescription": "Vous n'avez pas encore reçu d'emails dans vos adresses email privées. Quand vous recevez un nouvel email, il apparaîtra ici.",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
-    "updateClientForFormattedView": "Cet e-mail nécessite une version plus récente de l'application pour s'afficher correctement. Veuillez mettre à jour votre application.",
     "loadMore": "Charger plus ({{count}} restants)",
     "dateFormat": {
       "justNow": "maintenant",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Les sites où l'invite de sauvegarde n'apparaîtra jamais.",
       "clearAllBlockedSites": "Effacer tous les sites bloqués"
     },
+    "securitySettings": {
+      "title": "Sécurité",
+      "description": "Gérer les paramètres de sécurité de votre compte et de votre coffre-fort.",
+      "changePassword": {
+        "title": "Modifier le mot de passe",
+        "description": "Changer votre mot de passe principal déconnectera vos autres appareils et vous demandera de vous reconnecter avec le nouveau mot de passe.",
+        "currentPassword": "Mot de passe actuel",
+        "newPassword": "Nouveau mot de passe",
+        "confirmNewPassword": "Confirmez votre nouveau mot de passe",
+        "passwordsDoNotMatch": "Les nouveaux mots de passe ne correspondent pas",
+        "passwordTooShort": "Le mot de passe doit comporter au moins {{minLength}} caractères.",
+        "success": "Mot de passe modifié avec succès"
+      },
+      "activeSessions": {
+        "title": "Sessions actives",
+        "description": "Voici une liste des appareils où votre compte est actuellement connecté ou a une session active. Vous pouvez vous déconnecter de n'importe laquelle de ces sessions ici.",
+        "noSessions": "Aucune session active",
+        "revoke": "Révoquer",
+        "revokeSession": "Révoquer la session",
+        "revokeConfirmation": "Êtes-vous sûr de vouloir révoquer cette session ? Cela vous déconnectera de l'appareil choisi.",
+        "sessionRevoked": "Session révoquée avec succès",
+        "failedToRevoke": "Échec de la révocation de la session",
+        "failedToLoad": "Échec du chargement des sessions actives",
+        "lastActive": "Dernière activité",
+        "expires": "Expire le"
+      },
+      "authLogs": {
+        "title": "Journaux d'authentification récents",
+        "description": "Vous trouverez ci-dessous un aperçu des récentes tentatives de connexion à votre compte.",
+        "noLogs": "Aucun journal d'authentification trouvé",
+        "success": "Succès",
+        "failed": "Échec",
+        "time": "Heure",
+        "ipAddress": "Adresse IP",
+        "client": "Client",
+        "failedToLoad": "Impossible de charger les journaux d'authentification"
+      }
+    },
     "unlockMethod": {
       "title": "Méthode de déverrouillage du coffre-fort",
       "introText": "Choisissez comment vous voulez déverrouiller votre coffre-fort. Vous pouvez utiliser votre mot de passe principal (toujours disponible) ou configurer un code PIN pour un accès rapide. Après 3 tentatives de PIN échouées, vous devrez utiliser votre mot de passe maître.",
@@ -579,6 +650,9 @@
     "whatsNew": "Nouveautés",
     "whatsNewDescription": "Une mise à niveau est nécessaire pour prendre en charge les modifications suivantes :",
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
+    "otherDevicesWarning": "Après cette mise à jour, vos autres applications AliasVault auront besoin de la version {{version}} ou plus récente. Les anciennes applications et extensions de navigateur se déconnecteront et demanderont à être mises à jour avant de pouvoir ouvrir à nouveau votre coffre.",
+    "successTitle": "Coffre-fort mis à jour",
+    "successOtherDevices": "Votre coffre est prêt à être utilisé. Assurez-vous de mettre à jour l'application AliasVault sur vos autres appareils également.",
     "alerts": {
       "unableToGetVersionInfo": "Impossible d'obtenir les informations de version. Veuillez réessayer.",
       "selfHostedServer": "Serveur auto-hébergé",

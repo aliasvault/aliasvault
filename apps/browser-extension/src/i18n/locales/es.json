@@ -30,6 +30,7 @@
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
     "unlockWithMobile": "Desbloquear con la aplicación móvil",
     "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda.",
+    "mobileUnlockVerificationCode": "Cuando la aplicación lo solicite, introduzca este número.",
     "passwordAttemptsWarning": "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta {{remainingAttempts}} más veces.",
     "maxAttemptsReached": "Demasiados intentos de desbloqueo fallidos. Se ha cerrado la sesión por razones de seguridad."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Sincronizando...",
     "mergingVaultChanges": "Combinando cambios en la bóveda...",
     "uploadingVault": "Subiendo bóveda...",
+    "passwordStrength": {
+      "title": "Fuerza de la contraseña",
+      "veryWeak": "Continúa",
+      "weak": "Mejorando",
+      "fair": "Buena",
+      "good": "Genial",
+      "strong": "Excelente"
+    },
     "errors": {
       "serverNotAvailable": "El servidor AliasVault no está disponible. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte técnico si el problema persiste.",
       "clientVersionNotSupported": "Esta versión de la extensión del navegador AliasVault ya no es compatible con el servidor. Por favor, actualice la extensión de su navegador a la última versión.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "La carga de la bóveda tardó demasiado. Por favor, cierre y vuelva a abrir la extensión e inténtelo de nuevo, o reinicie su navegador si el problema persiste.",
       "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
       "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
+      "vaultLoadError": "Algo salió mal al cargar tu bóveda. Por favor, copia los detalles de error a continuación y ponte en contacto con soporte para obtener ayuda.",
       "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
       "sessionExpired": "Su sesión ha caducado. Por favor, inicie sesión de nuevo.",
-      "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo."
+      "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo.",
+      "mobileLoginRequestDeclined": "La solicitud de acceso fue rechazada en tu dispositivo móvil."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
     "validation": {
       "required": "Se requiere este campo"
+    },
+    "logo": {
+      "chooseLogo": "Seleccionar icono",
+      "currentLogo": "Icono actual",
+      "builtinLogos": "Biblioteca de iconos",
+      "fetchFromWebsite": "Obtener icono del sitio web",
+      "refetchFromWebsite": "(Re)obtener icono del sitio web",
+      "sourceFavicon": "De {{domain}}",
+      "sourceBuiltin": "Icono integrado",
+      "sourceCustom": "Ícono personalizado",
+      "sourceNone": "Sin icono",
+      "builtin": {
+        "Shopping": "Compras",
+        "Bank": "Banca",
+        "Mail": "Correo",
+        "Social": "Social",
+        "Work": "Trabajo",
+        "Game": "Juegos",
+        "Media": "Media",
+        "Travel": "Viajes",
+        "Health": "Salud",
+        "Dev": "Desarrollo"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "No se han encontrado correos electrónicos",
     "noEmailsDescription": "No has recibido ningún correo electrónico en tus direcciones privadas todavía. Cuando recibas un nuevo correo electrónico, aparecerá aquí.",
     "offlineMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
-    "updateClientForFormattedView": "Este correo electrónico requiere una nueva versión de la aplicación para mostrarla correctamente. Por favor, actualice su aplicación.",
     "loadMore": "Cargar más ({{count}} restantes)",
     "dateFormat": {
       "justNow": "ahora mismo",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sitios donde el indicador de guardado nunca aparecerá.",
       "clearAllBlockedSites": "Borrar todos los sitios bloqueados"
     },
+    "securitySettings": {
+      "title": "Seguridad",
+      "description": "Gestiona la configuración de seguridad de tu cuenta y bóveda.",
+      "changePassword": {
+        "title": "Cambiar contraseña",
+        "description": "Cambiar tu contraseña maestra cerrará la sesión de tus otros dispositivos que requieren volver a iniciar sesión con la nueva contraseña.",
+        "currentPassword": "Contraseña actual",
+        "newPassword": "Nueva contraseña",
+        "confirmNewPassword": "Confirmar nueva contraseña",
+        "passwordsDoNotMatch": "Las contraseñas nuevas no coinciden",
+        "passwordTooShort": "La contraseña debe tener al menos {{minLength}} caracteres.",
+        "success": "Contraseña cambiada con éxito"
+      },
+      "activeSessions": {
+        "title": "Sesiones Activas",
+        "description": "A continuación se muestra una lista de dispositivos donde su cuenta está actualmente conectada o tiene una sesión activa. Puede cerrar sesión de cualquiera de estas sesiones aquí.",
+        "noSessions": "No hay sesiones activas",
+        "revoke": "Revocar",
+        "revokeSession": "Revocar sesión",
+        "revokeConfirmation": "¿Está seguro que desea revocar esta sesión? Esto cerrará la sesión del dispositivo elegido.",
+        "sessionRevoked": "Sesión revocada exitosamente",
+        "failedToRevoke": "Fallo al revocar sesión",
+        "failedToLoad": "Error al cargar las sesiones activas",
+        "lastActive": "Última actividad",
+        "expires": "Caduca"
+      },
+      "authLogs": {
+        "title": "Registros de autenticación recientes",
+        "description": "A continuación puede encontrar un resumen de los intentos de inicio de sesión recientes en su cuenta.",
+        "noLogs": "No hay registros de autenticación",
+        "success": "Correcto",
+        "failed": "Fallo",
+        "time": "Hora",
+        "ipAddress": "Dirección IP",
+        "client": "Cliente",
+        "failedToLoad": "Error al cargar registros de autenticación"
+      }
+    },
     "unlockMethod": {
       "title": "Método de desbloqueo de la bóveda",
       "introText": "Elija cómo desea desbloquear su bóveda. Puede utilizar su contraseña maestra (siempre disponible) o configurar un código PIN para un acceso más rápido. Después de 3 intentos fallidos de PIN, necesitarás usar tu contraseña maestra.",
@@ -579,6 +650,9 @@
     "whatsNew": "Novedades",
     "whatsNewDescription": "Se requiere una actualización para soportar los siguientes cambios:",
     "noDescriptionAvailable": "Ninguna descripción disponible para esta versión.",
+    "otherDevicesWarning": "Después de esta actualización, tus otras aplicaciones de AliasVault necesitan la versión {{version}} o posterior. Aplicaciones antiguas y extensiones del navegador se desconectan y piden que se actualicen antes de que puedan abrir tu bóveda de nuevo.",
+    "successTitle": "Caja fuerte mejorada",
+    "successOtherDevices": "Tu bóveda está lista para usar. Asegúrate de actualizar la aplicación AliasVault también en tus otros dispositivos.",
     "alerts": {
       "unableToGetVersionInfo": "No se pudo obtener información de la versión. Por favor, inténtalo de nuevo.",
       "selfHostedServer": "Servidor autoalojado",

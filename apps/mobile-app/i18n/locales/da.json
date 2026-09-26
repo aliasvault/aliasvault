@@ -36,6 +36,7 @@
       "unknownError": "Der opstod en ukendt fejl.",
       "unknownErrorTryAgain": "Der opstod en ukendt fejl. Prøv venligst igen.",
       "vaultTooLarge": "Boksen er for stor til, at serveren kan acceptere. Prøv at fjerne nogle elementer eller vedhæftede filer for at reducere størrelsen og prøv igen.",
+      "vaultSyncTimeout": "Boks synkronisering timeout. Dette kan ske, når boksen er stor eller internetforbindelsen er langsom. Prøv igen.",
       "serverVersionTooOld": "AliasVault-serveren skal opdateres til en nyere version for at bruge denne funktion. Kontakt venligst serveradministratoren, hvis du har brug for hjælp."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Bekræft loginanmodning",
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
-        "confirmMessage": "Du er ved at logge ind på en ekstern enhed med din konto. Denne enhed vil have fuld adgang til din boks. Fortsæt kun, hvis du har tillid til denne enhed.",
+        "confirmMessage": "En anden enhed beder om at logge ind med din konto. Det vil få fuld adgang til din boks. Fortsæt kun, hvis du selv startede dette login.",
+        "selectCode": "Tryk på nummeret som vises på den anden enhed",
+        "openedFromLink": "Fortsæt kun, hvis du lige har scannet denne QR-kode med dit eget kamera. Hvis du er kommet hertil ved at trykke på et link eller en knap, skal du afvise.",
+        "codeMismatch": "Nummeret matcher ikke. Login-anmodningen blev afvist.",
         "successDescription": "Den eksterne enhed er blevet logget ind korrekt.",
         "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Element gendannet",
       "itemDeleted": "Element slettet permanent",
       "allItemsDeleted": "Alle elementer er slettet permanent"
+    },
+    "logo": {
+      "chooseLogo": "Vælg ikon",
+      "currentLogo": "Nuværende ikon",
+      "builtinLogos": "Ikon bibliotek",
+      "fetchFromWebsite": "Hent ikon fra hjemmeside",
+      "refetchFromWebsite": "Hent ikon igen fra hjemmeside",
+      "sourceFavicon": "Fra {{domain}}",
+      "sourceBuiltin": "Indbygget ikon",
+      "sourceCustom": "Brugerdefineret ikon",
+      "sourceNone": "Ingen ikon",
+      "builtin": {
+        "Shopping": "Indkøb",
+        "Bank": "Bank",
+        "Mail": "Mail",
+        "Social": "Sociale",
+        "Work": "Arbejde",
+        "Game": "Spil",
+        "Media": "Medie",
+        "Travel": "Rejser",
+        "Health": "Sundhed",
+        "Dev": "Udvikling"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Hvad er nyt",
     "whatsNewDescription": "En opgradering er nødvendig for at understøtte følgende ændringer:",
     "noDescriptionAvailable": "Ingen beskrivelse tilgængelig for denne version.",
+    "otherDevicesWarning": "Efter denne opgradering skal dine andre AliasVault apps bruge version {{version}} eller nyere. Ældre apps og browserudvidelser logger ud, og beder om at blive opdateret, før de kan åbne din boks igen.",
+    "successTitle": "Boks opgraderet",
+    "successOtherDevices": "Din boks er klar til brug. Sørg også for at opdatere AliasVault appen på dine andre enheder.",
     "status": {
       "preparingUpgrade": "Forbereder opgradering...",
-      "vaultAlreadyUpToDate": "Boksen er allerede opdateret",
       "applyingDatabaseMigrations": "Anvender databasemigreringer...",
       "applyingMigration": "Anvender migrering {{current}} af {{total}}...",
       "committingChanges": "Gemmer ændringer..."

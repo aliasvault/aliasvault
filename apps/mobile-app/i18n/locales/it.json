@@ -36,6 +36,7 @@
       "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
+      "vaultSyncTimeout": "Sincronizzazione cassaforte scaduta. Questo può accadere quando la cassaforte è molto grande o la connessione internet è troppo lenta. Riprovare.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Conferma Richiesta Di Accesso",
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
-        "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
         "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Elemento ripristinato",
       "itemDeleted": "Elemento eliminato definitivamente",
       "allItemsDeleted": "Tutti gli elementi sono stati eliminati definitivamente"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Novità",
     "whatsNewDescription": "È richiesto un aggiornamento per supportare i seguenti cambiamenti:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Preparazione aggiornamento...",
-      "vaultAlreadyUpToDate": "La cassaforte è già aggiornata",
       "applyingDatabaseMigrations": "Applicazione migrazioni database...",
       "applyingMigration": "Applicazione migrazione {{current}} di {{total}}...",
       "committingChanges": "Modifica in corso..."

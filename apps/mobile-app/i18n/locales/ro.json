@@ -36,6 +36,7 @@
       "unknownError": "A apărut o eroare necunoscută.",
       "unknownErrorTryAgain": "A apărut o eroare necunoscută. Încearcă din nou.",
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
+      "vaultSyncTimeout": "Sincronizarea seifului a expirat. Acest lucru se poate întâmpla dacă seiful este de dimensiuni mari sau conexiunea la internet este lentă. Încearcă din nou.",
       "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a utiliza această funcție. Contactează administratorul serverului pentru ajutor."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmă Cererea de Autentificare",
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
-        "confirmMessage": "Ești pe cale să te autentifici pe un dispozitiv la distanță. Acest dispozitiv va avea acces complet la seiful tău. Continuă doar dacă ai încredere în acel dispozitiv.",
+        "confirmMessage": "Un alt dispozitiv solicită conectarea la contul tău. Acesta va avea acces complet la seiful tău. Continuă doar dacă tu ai inițiat această conectare.",
+        "selectCode": "Atinge numărul afișat pe celălalt dispozitiv",
+        "openedFromLink": "Continuă doar dacă tocmai ai scanat acest cod QR cu camera ta. Dacă ai ajuns aici apăsând pe un link sau pe un buton, refuză.",
+        "codeMismatch": "Numărul nu corespunde. Solicitarea de conectare a fost refuzată.",
         "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
         "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Element restaurat",
       "itemDeleted": "Element șters definitiv",
       "allItemsDeleted": "Toate elementele au fost șterse definitiv"
+    },
+    "logo": {
+      "chooseLogo": "Alege o pictogramă",
+      "currentLogo": "Pictograma curentă",
+      "builtinLogos": "Biblioteca de pictograme",
+      "fetchFromWebsite": "Preia pictograma de pe site",
+      "refetchFromWebsite": "(Re)preia pictograma de pe site",
+      "sourceFavicon": "De la {{domain}}",
+      "sourceBuiltin": "Pictogramă încorporată",
+      "sourceCustom": "Pictogramă personalizată",
+      "sourceNone": "Fără pictogramă",
+      "builtin": {
+        "Shopping": "Cumpărături",
+        "Bank": "Servicii bancare",
+        "Mail": "E-mail",
+        "Social": "Rețele sociale",
+        "Work": "Serviciu",
+        "Game": "Jocuri",
+        "Media": "Media",
+        "Travel": "Călătorii",
+        "Health": "Sănătate",
+        "Dev": "Dezvoltare"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Ce este nou",
     "whatsNewDescription": "Este necesară o actualizare pentru a implementa următoarele modificări:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
+    "otherDevicesWarning": "După această actualizare, celelalte aplicații AliasVault trebuie să aibă versiunea {{version}} sau una mai nouă. Aplicațiile și extensiile de browser mai vechi te vor deconecta și îți vor solicita să le actualizezi înainte de a-ți putea deschide din nou seiful.",
+    "successTitle": "Seif actualizat",
+    "successOtherDevices": "Seiful tău este gata de utilizare. Asigură-te că actualizezi și aplicația AliasVault de pe celelalte dispozitive.",
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
-      "vaultAlreadyUpToDate": "Seiful este deja actualizat",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
       "applyingMigration": "Se aplică migrarea {{current}} din {{total}}...",
       "committingChanges": "Se finalizează modificările..."

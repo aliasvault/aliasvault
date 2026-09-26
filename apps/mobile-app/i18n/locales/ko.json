@@ -36,6 +36,7 @@
       "unknownError": "알 수 없는 오류가 발생했습니다.",
       "unknownErrorTryAgain": "알 수 없는 오류가 발생했습니다. 다시 시도하세요.",
       "vaultTooLarge": "보관함 크기가 너무 커서 서버에서 수용할 수 없습니다. 일부 항목이나 첨부 파일을 삭제하여 크기를 줄인 후 다시 시도해 주세요.",
+      "vaultSyncTimeout": "보관함 동기화 시간이 초과되었습니다. 보관함 용량이 크거나 인터넷 연결이 느릴 때 발생할 수 있습니다. 다시 시도하세요.",
       "serverVersionTooOld": "이 기능을 사용하려면 AliasVault 서버를 최신 버전으로 업데이트해야 합니다. 도움이 필요하면 서버 관리자에게 문의하세요."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "로그인 요청 확인",
         "confirmSubtitle": "다른 기기에서의 로그인을 승인하려면 다시 인증하세요.",
-        "confirmMessage": "원격 기기에서 귀하의 계정으로 로그인하려고 합니다. 해당 기기는 보관함에 대한 전체 접근 권한을 갖게 됩니다. 신뢰할 수 있는 기기인 경우에만 진행하세요.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "원격 기기에서 성공적으로 로그인되었습니다.",
         "requestExpired": "로그인 요청이 만료되었습니다. 새 QR 코드를 생성해 주세요."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "항목이 복원되었습니다",
       "itemDeleted": "항목이 영구적으로 삭제되었습니다",
       "allItemsDeleted": "모든 항목이 영구적으로 삭제되었습니다"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "새로운 기능",
     "whatsNewDescription": "다음 변경 사항을 지원하려면 업그레이드가 필요합니다:",
     "noDescriptionAvailable": "이 버전에 대한 설명이 없습니다.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "업그레이드 준비 중...",
-      "vaultAlreadyUpToDate": "보관함이 이미 최신 상태입니다",
       "applyingDatabaseMigrations": "데이터베이스 마이그레이션 적용 중...",
       "applyingMigration": "마이그레이션 적용 중 ({{current}}/{{total}})...",
       "committingChanges": "변경 사항 커밋 중..."

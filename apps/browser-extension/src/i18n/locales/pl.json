@@ -30,6 +30,7 @@
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
     "unlockWithMobile": "Odblokuj za pomocą aplikacji mobilnej",
     "scanQrCode": "Zeskanuj ten kod QR za pomocą aplikacji mobilnej AliasVault, aby się zalogować i odblokować sejf.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{remainingAttempts}} więcej razy.",
     "maxAttemptsReached": "Zbyt wiele nieudanych prób odblokowania. Zostałeś wylogowany ze względów bezpieczeństwa."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synchronizowanie...",
     "mergingVaultChanges": "Łączenie zmian w sejfie...",
     "uploadingVault": "Ładowanie sejfu...",
+    "passwordStrength": {
+      "title": "Siła hasła",
+      "veryWeak": "Kontynuuj",
+      "weak": "Coraz lepsze",
+      "fair": "Dobre",
+      "good": "Bardzo dobre",
+      "strong": "Doskonałe"
+    },
     "errors": {
       "serverNotAvailable": "Serwer AliasVault jest niedostępny. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "clientVersionNotSupported": "Ta wersja rozszerzenia przeglądarki AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj rozszerzenie przeglądarki do najnowszej wersji.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
       "sessionExpired": "Twoja sesja wygasła. Prosimy o zalogowanie się ponownie.",
-      "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie."
+      "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Wystąpił nieznany błąd. Spróbuj ponownie.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "validation": {
       "required": "To pole jest wymagane"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Nie znaleziono wiadomości e-mail",
     "noEmailsDescription": "Nie otrzymałeś jeszcze żadnych wiadomości e-mail na prywatne adresy e-mail. Kiedy otrzymasz nowy e-mail, pojawi się on tutaj.",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Załaduj więcej (pozostało {{count}})",
     "dateFormat": {
       "justNow": "w tej chwili",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Witryny, w których nie pojawi się monit zapisu.",
       "clearAllBlockedSites": "Wyczyść wszystkie zablokowane strony"
     },
+    "securitySettings": {
+      "title": "Bezpieczeństwo",
+      "description": "Zarządzaj ustawieniami bezpieczeństwa swojego konta i sejfu.",
+      "changePassword": {
+        "title": "Zmień hasło",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Aktualne hasło",
+        "newPassword": "Nowe hasło",
+        "confirmNewPassword": "Potwierdź nowe hasło",
+        "passwordsDoNotMatch": "Nowe hasła nie są zgodne",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Hasło zostało pomyślnie zmienione"
+      },
+      "activeSessions": {
+        "title": "Aktywne sesje",
+        "description": "Poniżej znajduje się lista urządzeń, na których Twoje konto jest obecnie zalogowane lub ma aktywną sesję. Możesz się tutaj wylogować z dowolnej z tych sesji.",
+        "noSessions": "Brak aktywnych sesji",
+        "revoke": "Unieważnij",
+        "revokeSession": "Unieważnij sesję",
+        "revokeConfirmation": "Czy na pewno chcesz anulować tę sesję? Spowoduje to wylogowanie z wybranego urządzenia.",
+        "sessionRevoked": "Sesja została pomyślnie unieważniona",
+        "failedToRevoke": "Nie udało się unieważnić sesji",
+        "failedToLoad": "Nie udało się załadować aktywnych sesji",
+        "lastActive": "Ostatnia aktywność",
+        "expires": "Wygasa"
+      },
+      "authLogs": {
+        "title": "Ostatnie logi autoryzacji",
+        "description": "Poniżej znajduje się przegląd ostatnich prób logowania do Twojego konta.",
+        "noLogs": "Nie znaleziono żadnych dzienników uwierzytelniania",
+        "success": "Gotowe",
+        "failed": "Nie powiodło się",
+        "time": "Czas",
+        "ipAddress": "Adres IP",
+        "client": "Klient",
+        "failedToLoad": "Nie udało się załadować dzienników uwierzytelniania"
+      }
+    },
     "unlockMethod": {
       "title": "Metoda odblokowania skarbca",
       "introText": "Wybierz sposób odblokowania sejfu. Możesz użyć hasła głównego (zawsze dostępnego) lub skonfigurować kod PIN, aby uzyskać szybszy dostęp. Po 3 nieudanych próbach wprowadzenia kodu PIN konieczne będzie użycie hasła głównego.",
@@ -579,6 +650,9 @@
     "whatsNew": "Co nowego",
     "whatsNewDescription": "Uaktualnienie jest wymagane do obsługi następujących zmian:",
     "noDescriptionAvailable": "Brak dostępnego opisu dla tej wersji.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Nie można uzyskać informacji o wersji. Spróbuj ponownie.",
       "selfHostedServer": "Serwer własny",

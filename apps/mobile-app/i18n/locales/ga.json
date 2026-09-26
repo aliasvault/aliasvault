@@ -36,6 +36,7 @@
       "unknownError": "Tharla earráid anaithnid.",
       "unknownErrorTryAgain": "Tharla earráid anaithnid. Déan iarracht arís.",
       "vaultTooLarge": "Tá an cruinneachán rómhór don fhreastalaí le glacadh leis. Bain triail as roinnt míreanna nó ceangaltán a bhaint chun an méid a laghdú agus déan iarracht arís.",
+      "vaultSyncTimeout": "Chuaigh an t-am isteach ar shioncrónú an tseomra cruinneacháin. Is féidir leis seo tarlú nuair a bhíonn an seomra cruinneacháin mór nó nuair a bhíonn an nasc idirlín mall. Déan iarracht arís.",
       "serverVersionTooOld": "Ní mór an freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an ghné seo a úsáid. Téigh i dteagmháil le riarthóir an fhreastalaí más gá duit cabhair."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Deimhnigh Iarratas Logála Isteach",
         "confirmSubtitle": "Athfhíordheimhnigh chun logáil isteach ar ghléas eile a cheadú.",
-        "confirmMessage": "Tá tú ar tí logáil isteach ar ghléas iargúlta le do chuntas. Beidh rochtain iomlán ag an ngléas eile seo ar do chruinneachán. Ná lean ar aghaidh ach amháin má tá muinín agat as an ngléas seo.",
+        "confirmMessage": "Tá gléas eile ag iarraidh logáil isteach le do chuntas. Gheobhaidh sé rochtain iomlán ar do stór. Ná lean ar aghaidh ach amháin má chuir tú féin tús leis an logáil isteach seo.",
+        "selectCode": "Tapáil an uimhir a thaispeántar ar an ngléas eile",
+        "openedFromLink": "Ná lean ar aghaidh ach má tá an cód QR seo scanta agat le do cheamara féin. Má tháinig tú anseo trí chliceáil ar nasc nó ar chnaipe, diúltaigh dó.",
+        "codeMismatch": "Ní hionann na huimhreacha. Diúltaíodh don iarratas logála isteach.",
         "successDescription": "Tá an gléas cianda logáilte isteach go rathúil.",
         "requestExpired": "Tá an t-iarratas logála isteach seo imithe in éag. Gin cód QR nua le do thoil."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Mír athchóirithe",
       "itemDeleted": "Mír scriosta go buan",
       "allItemsDeleted": "Gach earra scriosta go buan"
+    },
+    "logo": {
+      "chooseLogo": "Roghnaigh deilbhín",
+      "currentLogo": "Deilbhín reatha",
+      "builtinLogos": "Leabharlann deilbhíní",
+      "fetchFromWebsite": "Faigh deilbhín ón suíomh gréasáin",
+      "refetchFromWebsite": "Faigh an deilbhín ón suíomh gréasáin arís",
+      "sourceFavicon": "Ó {{domain}}",
+      "sourceBuiltin": "Deilbhín ionsuite",
+      "sourceCustom": "Deilbhín saincheaptha",
+      "sourceNone": "Gan deilbhín",
+      "builtin": {
+        "Shopping": "Siopadóireacht",
+        "Bank": "Baincéireacht",
+        "Mail": "Post",
+        "Social": "Sóisialta",
+        "Work": "Obair",
+        "Game": "Cluichí",
+        "Media": "Meáin",
+        "Travel": "Taisteal",
+        "Health": "Sláinte",
+        "Dev": "Forbairt"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Cad atá Nua",
     "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
     "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
+    "otherDevicesWarning": "Tar éis an uasghrádaithe seo, beidh leagan {{version}} nó leagan níos déanaí ag teastáil ó do chuid aipeanna AliasVault eile. Logálfar aipeanna agus síntí brabhsálaí níos sine amach agus iarrfar ort iad a uasghrádú sula mbeidh siad in ann do stór a oscailt arís.",
+    "successTitle": "Uasghrádaíodh an cruinneachán",
+    "successOtherDevices": "Tá do stór sábháilte réidh le húsáid. Bí cinnte an aip AliasVault a nuashonrú ar do ghléasanna eile chomh maith.",
     "status": {
       "preparingUpgrade": "Uasghrádú á ullmhú...",
-      "vaultAlreadyUpToDate": "Tá an Vault cothrom le dáta cheana féin",
       "applyingDatabaseMigrations": "Ag cur imirce bunachar sonraí i bhfeidhm...",
       "applyingMigration": "Ag cur imirce {{current}} de {{total}} i bhfeidhm...",
       "committingChanges": "Ag déanamh athruithe..."

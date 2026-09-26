@@ -36,6 +36,7 @@
       "unknownError": "Terjadi kesalahan yang tidak diketahui.",
       "unknownErrorTryAgain": "Terjadi kesalahan tidak diketahui. Coba lagi.",
       "vaultTooLarge": "Vault terlalu besar untuk diterima server. Coba untuk menghapus beberapa item atau lampiran untuk mengurangi ukuran dan coba lagi.",
+      "vaultSyncTimeout": "Sinkronisasi brankas habis waktu. Ini dapat terjadi ketika brankas berukuran besar atau koneksi internet lambat. Silakan coba lagi.",
       "serverVersionTooOld": "Server AliasVault perlu diperbarui ke versi yang lebih baru agar dapat menggunakan fitur ini. Silakan hubungi admin server jika Anda memerlukan bantuan."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Konfirmasi Permintaan Masuk",
         "confirmSubtitle": "Lakukan otentikasi ulang untuk menyetujui proses masuk di perangkat lain.",
-        "confirmMessage": "Anda akan segera masuk ke perangkat jarak jauh menggunakan akun Anda. Perangkat lain ini akan memiliki akses penuh ke brankas Anda. Lanjutkan hanya jika Anda mempercayai perangkat ini.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Perangkat jarak jauh telah berhasil masuk.",
         "requestExpired": "Permintaan masuk ini telah berakhir. Silakan buat kode QR baru."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Item telah dipulihkan",
       "itemDeleted": "Item dihapus secara permanen",
       "allItemsDeleted": "Semua item dihapus secara permanen"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Apa yang baru",
     "whatsNewDescription": "Pembaruan diperlukan untuk mendukung perubahan berikut:",
     "noDescriptionAvailable": "Tidak ada deskripsi yang tersedia untuk versi ini.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Menyiapkan pembaruan...",
-      "vaultAlreadyUpToDate": "Brankas sudah diperbarui",
       "applyingDatabaseMigrations": "Sedang menerapkan migrasi database...",
       "applyingMigration": "Menerapkan migrasi {{current}} dari {{total}}...",
       "committingChanges": "Menerapkan perubahan..."

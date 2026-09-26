@@ -388,4 +388,8 @@
     <value>项目类型</value>
     <comment>Inline label on the item type picker</comment>
   </data>
+  <data name="ClientVersionUnsupported" xml:space="preserve">
+    <value>此版本的应用已不再受服务器支持。请刷新页面以加载最新版本。</value>
+    <comment>Shown when the server rejects the client version (HTTP 426).</comment>
+  </data>
 </root>

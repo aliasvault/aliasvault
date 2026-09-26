@@ -36,6 +36,7 @@
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
+      "vaultSyncTimeout": "La synchronisation du coffre a expiré. Cela peut se produire lorsque le coffre est grand ou que la connexion Internet est lente. Veuillez réessayer.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmer la demande de connexion",
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
-        "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre-fort. Ne procédez que si vous faites confiance à cet appareil.",
+        "confirmMessage": "Un autre appareil demande de se connecter avec votre compte. Il aura un accès complet à votre coffre. Ne continuez que si vous avez commencé à vous connecter vous-même.",
+        "selectCode": "Appuyez sur le numéro affiché sur l'autre appareil",
+        "openedFromLink": "Ne continuez que si vous venez de scanner ce code QR avec votre propre caméra. Si vous êtes arrivé ici en appuyant sur un lien ou un bouton, refusez.",
+        "codeMismatch": "Le numéro ne correspond pas. La demande de connexion a été refusée.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
         "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Élément restauré",
       "itemDeleted": "Élément supprimé définitivement",
       "allItemsDeleted": "Tous les éléments ont été définitivement supprimés"
+    },
+    "logo": {
+      "chooseLogo": "Choisir une icône",
+      "currentLogo": "Icône actuelle",
+      "builtinLogos": "Bibliothèque des icônes",
+      "fetchFromWebsite": "Récupérer l'icône depuis le site web",
+      "refetchFromWebsite": "(Re)récupérer l'icône depuis le site web",
+      "sourceFavicon": "Depuis {{domain}}",
+      "sourceBuiltin": "Icône intégrée",
+      "sourceCustom": "Icône personnalisée",
+      "sourceNone": "Pas d'icône",
+      "builtin": {
+        "Shopping": "Achats",
+        "Bank": "Banque",
+        "Mail": "Mail",
+        "Social": "Réseaux",
+        "Work": "Travail",
+        "Game": "Jeux",
+        "Media": "Médias",
+        "Travel": "Voyages",
+        "Health": "Santé",
+        "Dev": "Développement"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Nouveautés",
     "whatsNewDescription": "Une mise à jour est nécessaire pour prendre en charge les modifications suivantes:",
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
+    "otherDevicesWarning": "Après cette mise à jour, vos autres applications AliasVault auront besoin de la version {{version}} ou plus récente. Les anciennes applications et extensions de navigateur se déconnecteront et demanderont à être mises à jour avant de pouvoir ouvrir à nouveau votre coffre.",
+    "successTitle": "Coffre-fort mis à jour",
+    "successOtherDevices": "Votre coffre est prêt à être utilisé. Assurez-vous de mettre à jour l'application AliasVault sur vos autres appareils également.",
     "status": {
       "preparingUpgrade": "Préparation de la mise à jour...",
-      "vaultAlreadyUpToDate": "Le coffre-fort est déjà à jour",
       "applyingDatabaseMigrations": "Application des migrations de base de données...",
       "applyingMigration": "Application de la migration {{current}} sur {{total}}...",
       "committingChanges": "Application des modifications..."

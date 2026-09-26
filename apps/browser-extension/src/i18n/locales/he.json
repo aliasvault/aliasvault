@@ -30,6 +30,7 @@
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Syncing...",
     "mergingVaultChanges": "Merging vault changes...",
     "uploadingVault": "Uploading vault...",
+    "passwordStrength": {
+      "title": "Password Strength",
+      "veryWeak": "Keep going",
+      "weak": "Getting better",
+      "fair": "Good",
+      "good": "Great",
+      "strong": "Excellent"
+    },
     "errors": {
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "clientVersionNotSupported": "הגרסה הזאת של הרחבת הדפדפן של AliasVault לא נתמכת עוד על ידי השרת. נא לעדכן את הרחבת הדפדפן שלך לגרסה העדכנית ביותר.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
       "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
       "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
     "validation": {
       "required": "שדה חובה"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "לא נמצאו הודעות דוא״ל",
     "noEmailsDescription": "לא קיבלת הודעות דוא״ל כלשהן לכתובות הדוא״ל הפרטיות שלך עדיין. כשמגיעה הודעה חדשה היא תופיע כאן.",
     "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "ממש הרגע",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
+    "securitySettings": {
+      "title": "אבטחה",
+      "description": "ניהול הגדרות האבטחה של החשבון והכספת שלך.",
+      "changePassword": {
+        "title": "החלפת סיסמה",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "סיסמה נוכחית",
+        "newPassword": "סיסמה חדשה",
+        "confirmNewPassword": "אישור סיסמה חדשה",
+        "passwordsDoNotMatch": "הסיסמאות החדשות לא תואמות",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "הסיסמה הוחלפה בהצלחה"
+      },
+      "activeSessions": {
+        "title": "הפעלות פעילות",
+        "description": "להלן מופיעה רשימת המכשירים שהחשבון שלך מחובר בהם או שההפעלה בהם פעילה. אפשר להוציא אותם מכל אחת מההפעלות דרך כאן.",
+        "noSessions": "אין הפעלות פעילות",
+        "revoke": "שלילה",
+        "revokeSession": "שלילת הפעלה",
+        "revokeConfirmation": "לשלול את ההפעלה הזאת? הפעולה הזאת תוציא את המשתמש שלך מהמכשיר הנבחר.",
+        "sessionRevoked": "ההפעלה נשללה בהצלחה",
+        "failedToRevoke": "שלילת הפעלה נכשלה",
+        "failedToLoad": "טעינת ההפעלות הפעילות נכשלה",
+        "lastActive": "פעילות אחרונה",
+        "expires": "תפוגה"
+      },
+      "authLogs": {
+        "title": "יומני אימותים אחרונים",
+        "description": "להלן ניתן למצוא סקירה של ניסיונות הכניסה האחרונים לחשבון שלך.",
+        "noLogs": "לא נמצאו יומני אימות",
+        "success": "הצליח",
+        "failed": "כשל",
+        "time": "זמן",
+        "ipAddress": "כתובת IP",
+        "client": "לקוח",
+        "failedToLoad": "טעינת יומני האימות נכשלה"
+      }
+    },
     "unlockMethod": {
       "title": "שיטת שחרור נעילת כספת",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
@@ -579,6 +650,9 @@
     "whatsNew": "מה חדש",
     "whatsNewDescription": "יש לשדרג כדי שתהיה תמיכה בשינויים הבאים:",
     "noDescriptionAvailable": "אין תיאור זמין לגרסה הזאת.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "לא ניתן לקבל את פרטי הגרסה. נא לנסות שוב מאוחר יותר.",
       "selfHostedServer": "שרת באירוח עצמי",
