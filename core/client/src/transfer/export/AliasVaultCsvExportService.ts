@@ -8,7 +8,7 @@ import { writeCsv } from './CsvWriter';
 import type { Item, TotpCode } from '@aliasvault/models/vault';
 
 /** The columns of the AliasVault CSV export. */
-export const ITEM_CSV_COLUMNS = [
+export const ALIASVAULT_CSV_COLUMNS = [
   'ServiceName',
   'FolderPath',
   'ServiceUrl',
@@ -32,12 +32,12 @@ export const ITEM_CSV_COLUMNS = [
 ] as const;
 
 /** One column of the AliasVault CSV export. */
-export type ItemCsvColumn = (typeof ITEM_CSV_COLUMNS)[number];
+export type AliasVaultCsvColumn = (typeof ALIASVAULT_CSV_COLUMNS)[number];
 
 /**
  * Exports items to the AliasVault CSV format.
  */
-export class ItemCsvExportService {
+export class AliasVaultCsvExportService {
   /**
    * Export items to CSV.
    * @param items - The items to export
@@ -53,18 +53,18 @@ export class ItemCsvExportService {
        * A single field value, or the empty string when absent.
        */
       const field = (fieldKey: string): string => getFieldValue(item, fieldKey) ?? '';
-      const record: Record<ItemCsvColumn, string | Date | null> = {
+      const record: Record<AliasVaultCsvColumn, string | Date | null> = {
         ServiceName: item.Name ?? '',
         FolderPath: item.FolderPath?.join('/') ?? '',
         ServiceUrl: getFieldValues(item, FieldKey.LoginUrl).map(url => url.trim()).filter(url => url.length > 0).join(','),
         Username: field(FieldKey.LoginUsername),
         CurrentPassword: field(FieldKey.LoginPassword),
         AliasEmail: field(FieldKey.LoginEmail),
-        TwoFactorSecret: ItemCsvExportService.formatTwoFactorSecret(getTotpCodes(item)[0] ?? null),
+        TwoFactorSecret: AliasVaultCsvExportService.formatTwoFactorSecret(getTotpCodes(item)[0] ?? null),
         AliasGender: field(FieldKey.AliasGender),
         AliasFirstName: field(FieldKey.AliasFirstName),
         AliasLastName: field(FieldKey.AliasLastName),
-        AliasBirthDate: ItemCsvExportService.parseBirthDate(field(FieldKey.AliasBirthdate)),
+        AliasBirthDate: AliasVaultCsvExportService.parseBirthDate(field(FieldKey.AliasBirthdate)),
         Notes: field(FieldKey.NotesContent),
         CardholderName: field(FieldKey.CardCardholderName),
         CardNumber: field(FieldKey.CardNumber),
@@ -76,16 +76,16 @@ export class ItemCsvExportService {
         UpdatedAt: fromStandardFormat(item.UpdatedAt),
       };
 
-      return ITEM_CSV_COLUMNS.map(header => {
+      return ALIASVAULT_CSV_COLUMNS.map(header => {
         const value = record[header];
         if (value instanceof Date) {
-          return ItemCsvExportService.formatDateTime(value);
+          return AliasVaultCsvExportService.formatDateTime(value);
         }
         return value ?? '';
       });
     });
 
-    return new TextEncoder().encode(writeCsv([...ITEM_CSV_COLUMNS], rows));
+    return new TextEncoder().encode(writeCsv([...ALIASVAULT_CSV_COLUMNS], rows));
   }
 
   /**

@@ -4,7 +4,7 @@ import { nullIfBlank } from '../../../shared/StringUtils';
 import { dateTime, readCsvRecords, text, type CsvColumn, type CsvRecord } from '../../readers/CsvRecordMapper';
 import { parseUrls } from '../shared/CredentialHelpers';
 
-import type { ItemCsvColumn } from '../../../export/ItemCsvExportService';
+import type { AliasVaultCsvColumn } from '../../../export/AliasVaultCsvExportService';
 import type { ImportedCredential } from '../../models/ImportedCredential';
 
 /** How each column of the AliasVault CSV export is read. */
@@ -29,17 +29,17 @@ const COLUMNS = {
   Notes: text,
   CreatedAt: dateTime,
   UpdatedAt: dateTime,
-} satisfies Record<ItemCsvColumn, CsvColumn<unknown>>;
+} satisfies Record<AliasVaultCsvColumn, CsvColumn<unknown>>;
 
 /**
  * A row of the AliasVault CSV export.
  */
-type ItemCsvRecord = CsvRecord<typeof COLUMNS>;
+type AliasVaultCsvRecord = CsvRecord<typeof COLUMNS>;
 
 /**
  * Imports items from the AliasVault CSV format.
  */
-export class ItemCsvImportService {
+export class AliasVaultCsvImportService {
   /**
    * Import items from an AliasVault CSV file.
    * @param fileContent - The CSV file content
@@ -74,7 +74,7 @@ export class ItemCsvImportService {
         FolderPath: nullIfBlank(record.FolderPath),
       };
 
-      if (ItemCsvImportService.hasCardData(record)) {
+      if (AliasVaultCsvImportService.hasCardData(record)) {
         credential.ItemType = ItemTypes.CreditCard;
         credential.Creditcard = {
           CardholderName: record.CardholderName,
@@ -95,7 +95,7 @@ export class ItemCsvImportService {
    * @param record - The record
    * @returns True when a card field has a value
    */
-  private static hasCardData(record: ItemCsvRecord): boolean {
+  private static hasCardData(record: AliasVaultCsvRecord): boolean {
     return [record.CardholderName, record.CardNumber, record.CardExpiryMonth, record.CardExpiryYear, record.CardCvv, record.CardPin].some(value => value.trim().length > 0);
   }
 }
