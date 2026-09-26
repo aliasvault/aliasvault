@@ -1,4 +1,4 @@
-import { parseDateTime } from '../utils/DateTimeUtils';
+import { parseDateTime } from '../../shared/DateTimeUtils';
 
 import { parseCsvRows } from './CsvParser';
 
