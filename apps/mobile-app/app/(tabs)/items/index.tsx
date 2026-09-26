@@ -1,4 +1,5 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
@@ -43,7 +44,6 @@ import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { ItemType } from '@aliasvault/models/vault';
 
 /**
@@ -93,7 +93,7 @@ export default function ItemsScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<ItemFilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolderItems, setShowFolderItems] = useState(true);
 
@@ -278,15 +278,15 @@ export default function ItemsScreen(): React.ReactNode {
   const sortedItems = useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {
-      case 'NewestFirst':
+      case CredentialSortOrder.NewestFirst:
         return itemsCopy.sort((a, b) =>
           new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
         );
-      case 'Alphabetical':
+      case CredentialSortOrder.Alphabetical:
         return itemsCopy.sort((a, b) =>
           (a.Name || '').localeCompare(b.Name || '')
         );
-      case 'OldestFirst':
+      case CredentialSortOrder.OldestFirst:
       default:
         return itemsCopy.sort((a, b) =>
           new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()

@@ -1,4 +1,5 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
+import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
@@ -38,7 +39,6 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { Item, ItemType } from '@aliasvault/models/vault';
 
 const FILTER_STORAGE_KEY = 'items-filter';
@@ -55,9 +55,9 @@ const CURRENT_SITE_SUGGESTION_MIN_ITEMS = 5;
  * Sort order options with their translation keys
  */
 const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
-  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
-  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
-  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
+  { value: CredentialSortOrder.OldestFirst, labelKey: 'items.sort.oldestFirst' },
+  { value: CredentialSortOrder.NewestFirst, labelKey: 'items.sort.newestFirst' },
+  { value: CredentialSortOrder.Alphabetical, labelKey: 'items.sort.alphabetical' },
 ];
 
 /**
@@ -141,7 +141,7 @@ const ItemsList: React.FC = () => {
   const [highlightedItem, setHighlightedItem] = useState<ItemRef | null>(null);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
   const { setIsInitialLoading } = useLoading();
@@ -523,7 +523,7 @@ const ItemsList: React.FC = () => {
         const deletedCount = dbContext.sqliteClient?.items.getRecentlyDeletedCount() ?? 0;
         setRecentlyDeletedCount(deletedCount);
         // Load sort order from settings
-        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? 'NewestFirst';
+        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? CredentialSortOrder.NewestFirst;
         setSortOrder(savedSortOrder);
         setIsLoading(false);
         setIsInitialLoading(false);
@@ -689,15 +689,15 @@ const ItemsList: React.FC = () => {
   const sortedItems = useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {
-      case 'NewestFirst':
+      case CredentialSortOrder.NewestFirst:
         return itemsCopy.sort((a, b) =>
           new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
         );
-      case 'Alphabetical':
+      case CredentialSortOrder.Alphabetical:
         return itemsCopy.sort((a, b) =>
           (a.Name || '').localeCompare(b.Name || '')
         );
-      case 'OldestFirst':
+      case CredentialSortOrder.OldestFirst:
       default:
         return itemsCopy.sort((a, b) =>
           new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
