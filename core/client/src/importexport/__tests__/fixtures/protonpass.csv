@@ -1,0 +1,5 @@
+type,name,url,email,username,password,note,totp,createTime,modifyTime,vault
+login,Test proton 1,https://www.website.com/,,user1,pass1,,otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30,1744362003,1744362003,Personal
+alias,Test alias,,testalias.gating981@passinbox.com,,,,,1744362031,1744362052,Personal
+login,Test proton2,,,testuser2,testpassword2,,,1744362088,1744362088,Personal
+login,testwithoutpass,,,testuser,,,,1744362100,1744362110,Personal

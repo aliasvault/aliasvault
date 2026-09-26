@@ -1,0 +1,6 @@
+Name,URL,Username,Password,Notes
+Gmail,https://gmail.com,testuser@gmail.com,gmailpass123,Important email account
+Facebook,https://facebook.com,fbuser,fbpass456,Social media account
+GitHub,https://github.com,devuser,devpass789,Development platform
+Secure Note,,,,Important information stored securely
+Test Site,https://test.example.com,testlogin,testpassword,Test notes for example site

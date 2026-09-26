@@ -1,0 +1,10 @@
+Title,Username,Email,Password,URL,OTPAuth,Notes
+Sample,username,,&3V_$z?Aiw-_x+nbYj,https://strongboxsafe.com,,
+Business1,username,,NYVqE8MpfnX#r+ukpE,,,
+Business 2,username,,+jeN9dTLy4Ahh-C3fB,,,
+Prive 1,username,,4c*Ksh??7Q_K#xKMLh,,,
+Prive 2,username,,Ld6JsF^JXR7^8_F#Ad,,,
+TutaNota,avtest2@tutamail.com,,blabla,,otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30,"Recovery code for main account: e45f a053 8b7e 127c 302b a816 abc2 739a 9b0c 7393 6adc 123a ff4e 084d 7798 ef26
+
+Recovery code for 2FA:
+e45f a053 8b7e 127c 302b a816 abc2 739a 9b0c 7393 6adc 123a ff4e 084d 7798 ef26"
