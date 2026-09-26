@@ -127,8 +127,7 @@ const Unlock: React.FC = () => {
   }, [isLoading, isWebAuthnLoading, showWebAuthnButton]);
 
   /**
-   * Derive the KEK from the password and open the vault key chain: online through the server, offline through the
-   * cached key material.
+   * Derive the KEK from the password and open the vault key chain.
    */
   const unlockSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

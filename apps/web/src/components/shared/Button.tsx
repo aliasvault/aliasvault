@@ -14,7 +14,8 @@ type ButtonProps = {
   id?: string;
 };
 
-const BASE_CLASSES = 'center items-center px-3 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-4';
+/** Base classes shared by every button-styled element. */
+export const BUTTON_BASE_CLASSES = 'center items-center px-3 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-4';
 const DISABLED_CLASSES = 'bg-gray-400 cursor-not-allowed';
 
 /**
@@ -38,7 +39,7 @@ export const getButtonColorClasses = (color: ButtonColor): string => {
  * Generic button.
  */
 const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', additionalClasses = '', display = 'inline', id }) => {
-  const classes = `${display} ${BASE_CLASSES} ${getButtonColorClasses(color)} ${isDisabled ? DISABLED_CLASSES : ''} ${additionalClasses}`.trim();
+  const classes = `${display} ${BUTTON_BASE_CLASSES} ${getButtonColorClasses(color)} ${isDisabled ? DISABLED_CLASSES : ''} ${additionalClasses}`.trim();
 
   return (
     <button type={type} id={id} onClick={isDisabled ? undefined : onClick} disabled={isDisabled} className={classes}>
