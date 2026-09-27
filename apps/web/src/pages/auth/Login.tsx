@@ -22,6 +22,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { apiErrorMessage } from '@/utils/ApiErrors';
+import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
 
@@ -75,8 +76,7 @@ const Login: React.FC = () => {
         setUsername(current => current || saved);
       }
     });
-    const timer = setTimeout(() => usernameRef.current?.focus(), 300);
-    return (): void => clearTimeout(timer);
+    return focusWhenVisible(() => usernameRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
