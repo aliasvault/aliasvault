@@ -174,8 +174,10 @@ export const WebAuthnService = {
       keys = null;
     }
 
-    // Check for legacy storage (pre-0.31.0).
-    // TODO: this can be removed in a future release once 0.31.0 has been released.
+    /*
+     * Check for legacy storage (pre-0.31.0).
+     * TODO: this can be removed in a future release once 0.31.0 has been released.
+     */
     const isLegacyStore = typeof keys?.UnlockKey !== 'string';
     const unlockKey = keys && !isLegacyStore ? keys.UnlockKey : payload;
     try {
