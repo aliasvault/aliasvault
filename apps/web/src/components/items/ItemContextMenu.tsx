@@ -135,16 +135,16 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       </button>
 
       {isOpen && (
-        <div ref={menuRef} role="menu" style={menuStyle} className={`${position ? 'fixed' : 'absolute right-0 top-full mt-1'} z-50 w-40 py-1 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700`}>
-          <button type="button" role="menuitem" onClick={() => navigate(itemRoute(item, true))} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+        <div ref={menuRef} role="menu" style={menuStyle} className={`${position ? 'fixed' : 'absolute right-0 top-full mt-1'} z-50 w-40 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100`}>
+          <button type="button" role="menuitem" onClick={() => navigate(itemRoute(item, true))} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             {t('sharedResources.Edit')}
           </button>
-          <button type="button" role="menuitem" onClick={duplicateItem} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+          <button type="button" role="menuitem" onClick={duplicateItem} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             {t('sharedResources.Duplicate')}
           </button>
           <button type="button" role="menuitem" onClick={() => {
             setIsOpen(false); setShowDeleteModal(true); 
-          }} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600">
+          }} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
             {t('sharedResources.Delete')}
           </button>
         </div>
