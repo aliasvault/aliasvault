@@ -3,17 +3,20 @@ import React from 'react';
 import FormLabel from '@/components/shared/FormLabel';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 type CopyPasteFormRowProps = {
   id: string;
   label?: string | null;
   value: string;
+  item?: ItemRef;
 };
 
 /**
  * Read-only value that copies to the clipboard on click.
  */
-const CopyPasteFormRow: React.FC<CopyPasteFormRowProps> = ({ id, label = null, value }) => {
-  const { copied, copyToClipboard } = useClipboardCopy(id);
+const CopyPasteFormRow: React.FC<CopyPasteFormRowProps> = ({ id, label = null, value, item }) => {
+  const { copied, copyToClipboard } = useClipboardCopy(id, item);
 
   return (
     <>

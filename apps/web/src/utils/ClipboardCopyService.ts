@@ -30,6 +30,7 @@ class ClipboardCopyService {
   private progressListeners: ProgressListener[] = [];
   private statusListeners: StatusListener[] = [];
   private listenersAttached = false;
+  private status: ClipboardStatus = 'cleared';
 
   /**
    * Copy a value and schedule the clear. Returns whether the copy succeeded.
@@ -49,6 +50,11 @@ class ClipboardCopyService {
     this.setCopied(id);
     if (clearAfterSeconds > 0) {
       this.scheduleClear(clearAfterSeconds);
+    } else {
+      // The new value replaced the one a running countdown was going to clear.
+      this.stopTimers();
+      this.clearByTime = null;
+      this.notifyStatus('cleared');
     }
     return true;
   }
@@ -88,6 +94,13 @@ class ClipboardCopyService {
     return (): void => {
       this.statusListeners = this.statusListeners.filter(l => l !== listener);
     };
+  }
+
+  /**
+   * The current clear status.
+   */
+  public getStatus(): ClipboardStatus {
+    return this.status;
   }
 
   /**
@@ -169,10 +182,11 @@ class ClipboardCopyService {
       const notFocused = (error instanceof Error && error.name === 'NotAllowedError') || message.includes('Document is not focused');
       if (!notFocused) {
         console.warn('[Clipboard] Failed to clear clipboard:', error);
+        this.notifyStatus('manual_clear_required');
         return false;
       }
       this.failedAttempts++;
-      this.notifyStatus(this.failedAttempts >= 2 ? 'manual_clear_required' : 'pending');
+      this.notifyStatus(this.failedAttempts >= 2 || manual ? 'manual_clear_required' : 'pending');
       return false;
     }
   }
@@ -221,6 +235,7 @@ class ClipboardCopyService {
    * Tell the bar about a status change.
    */
   private notifyStatus(status: ClipboardStatus): void {
+    this.status = status;
     this.statusListeners.forEach(l => l(status));
   }
 }

@@ -209,7 +209,7 @@ const ItemView: React.FC = () => {
 
             {isLoginLike && emailAddress.length > 0 && <RecentEmails emailAddress={emailAddress} />}
 
-            {totpCodes.length > 0 && <TotpViewer totpCodes={totpCodes} />}
+            {totpCodes.length > 0 && <TotpViewer totpCodes={totpCodes} item={item} />}
 
             {item.ItemType !== ItemTypes.Note && notesFields.length > 0 && (
               <Section title={t('pages.main.items.view.NotesSection')}>
@@ -268,7 +268,7 @@ const ItemView: React.FC = () => {
                   <div className="grid grid-cols-6 gap-6">
                     {firstName.trim().length > 0 && lastName.trim().length > 0 && (
                       <div className="col-span-6">
-                        <CopyPasteFormRow id="alias-full-name" label={t('pages.main.items.view.FullNameLabel')} value={`${firstName} ${lastName}`} />
+                        <CopyPasteFormRow id="alias-full-name" label={t('pages.main.items.view.FullNameLabel')} value={`${firstName} ${lastName}`} item={item} />
                       </div>
                     )}
                     {aliasFields.map((field, index) => (

@@ -115,7 +115,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
         return (
           <div className={widthClass}>
             {labelElement}
-            <CopyPastePasswordFormRow id={fieldId} label="" value={field.Value} />
+            <CopyPastePasswordFormRow id={fieldId} label="" value={field.Value} item={item} />
           </div>
         );
       case FieldTypes.TextArea:
@@ -140,7 +140,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
         return (
           <div className={widthClass}>
             {labelElement}
-            <CopyPasteFormRow id={fieldId} label="" value={field.Value} />
+            <CopyPasteFormRow id={fieldId} label="" value={field.Value} item={item} />
           </div>
         );
     }

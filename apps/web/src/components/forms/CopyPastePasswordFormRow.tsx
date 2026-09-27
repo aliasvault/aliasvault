@@ -3,17 +3,20 @@ import React, { useState } from 'react';
 import FormLabel from '@/components/shared/FormLabel';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 type CopyPastePasswordFormRowProps = {
   id: string;
   label?: string;
   value: string;
+  item?: ItemRef;
 };
 
 /**
  * Read-only masked value that copies to the clipboard on click, with a show/hide toggle.
  */
-const CopyPastePasswordFormRow: React.FC<CopyPastePasswordFormRowProps> = ({ id, label = '', value }) => {
-  const { copied, copyToClipboard } = useClipboardCopy(id);
+const CopyPastePasswordFormRow: React.FC<CopyPastePasswordFormRowProps> = ({ id, label = '', value, item }) => {
+  const { copied, copyToClipboard } = useClipboardCopy(id, item);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const borderClasses = `${copied ? 'border-green-500 border-2' : 'border-gray-300'} ${copied ? 'dark:border-green-500' : 'dark:border-gray-600'}`;
 

@@ -6,8 +6,11 @@ import { useTranslation } from 'react-i18next';
 import Card from '@/components/shared/Card';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
+import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+
 type TotpViewerProps = {
   totpCodes: TotpCode[];
+  item: ItemRef;
 };
 
 /**
@@ -18,9 +21,9 @@ const codeOf = (totpCode: TotpCode): string => generateTotpCode(totpCode.SecretK
 /**
  * A single TOTP row with its countdown.
  */
-const TotpRow: React.FC<{ totpCode: TotpCode; tick: number }> = ({ totpCode, tick }) => {
+const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = ({ totpCode, item, tick }) => {
   const { t } = useTranslation();
-  const { copied, copyToClipboard } = useClipboardCopy(totpCode.Id);
+  const { copied, copyToClipboard } = useClipboardCopy(totpCode.Id, item);
   const code = codeOf(totpCode);
   const period = normalizeTotpPeriod(totpCode.Period);
   const remaining = getTotpRemainingSeconds(totpCode);
@@ -56,7 +59,7 @@ const TotpRow: React.FC<{ totpCode: TotpCode; tick: number }> = ({ totpCode, tic
 /**
  * Shows the live two-factor codes of an item.
  */
-const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes }) => {
+const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes, item }) => {
   const { t } = useTranslation();
   const [tick, setTick] = useState(0);
 
@@ -79,7 +82,7 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 mt-4">
-          {totpCodes.map(totpCode => <TotpRow key={totpCode.Id} totpCode={totpCode} tick={tick} />)}
+          {totpCodes.map(totpCode => <TotpRow key={totpCode.Id} totpCode={totpCode} item={item} tick={tick} />)}
         </div>
       )}
     </Card>
