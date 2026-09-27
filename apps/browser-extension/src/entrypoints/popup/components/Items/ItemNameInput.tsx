@@ -3,6 +3,7 @@ import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode }
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
@@ -242,66 +243,34 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
       </div>
 
       {/* Folder Selection Modal */}
-      {showFolderModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-80 transition-opacity"
-            onClick={handleCloseFolderModal}
-          />
+      <ModalWrapper isOpen={showFolderModal} onClose={handleCloseFolderModal} title={t('items.folder')} maxWidth="max-w-sm">
+        {/* Folder Options - Tree View */}
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {/* No Folder Option */}
+          <button
+            type="button"
+            onClick={() => handleSelectFolder(null)}
+            className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${
+              !selectedFolderId
+                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <svg className={`w-5 h-5 ${!selectedFolderId ? 'text-primary-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+            <span className="font-medium">&mdash;</span>
+            {!selectedFolderId && (
+              <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
 
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all w-full max-w-sm">
-              {/* Close button */}
-              <button
-                type="button"
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-500 focus:outline-none"
-                onClick={handleCloseFolderModal}
-              >
-                <span className="sr-only">{t('common.close')}</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              {/* Content */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
-                  {t('items.folder')}
-                </h3>
-              </div>
-
-              {/* Folder Options - Tree View */}
-              <div className="space-y-1 max-h-64 overflow-y-auto">
-                {/* No Folder Option */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectFolder(null)}
-                  className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${
-                    !selectedFolderId
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <svg className={`w-5 h-5 ${!selectedFolderId ? 'text-primary-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                  </svg>
-                  <span className="font-medium">&mdash;</span>
-                  {!selectedFolderId && (
-                    <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
-
-                {/* Folder Tree */}
-                {folderTree.map(node => renderFolderNode(node, 0))}
-              </div>
-            </div>
-          </div>
+          {/* Folder Tree */}
+          {folderTree.map(node => renderFolderNode(node, 0))}
         </div>
-      )}
+      </ModalWrapper>
     </>
   );
 };

@@ -215,7 +215,7 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
           <>
             {/* Dark overlay backdrop for better visibility */}
             <div
-              className="fixed inset-0 z-10 bg-black bg-opacity-50"
+              className="fixed inset-0 z-10 bg-gray-600/50 backdrop-blur-sm dark:bg-black/80"
               onClick={() => setIsOpen(false)}
             />
             <div className="absolute bottom-full left-0 right-0 mb-1 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg overflow-hidden">
