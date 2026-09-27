@@ -74,7 +74,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="fixed inset-0 bg-gray-600/50 backdrop-blur-sm dark:bg-black/80" />
+      <div className="fixed inset-0 bg-gray-600/50 backdrop-blur-sm dark:bg-black/70" />
       <div className="fixed inset-0 overflow-y-auto">
         {/* Pressing outside the panel closes the modal */}
         <div className="flex min-h-full items-center justify-center p-4" onMouseDown={handleContainerMouseDown}>

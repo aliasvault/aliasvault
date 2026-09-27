@@ -30,8 +30,8 @@ type ChildRow = { ItemId: string; ManifestId: string };
 const RESET_TABLES = ['Attachments', 'FieldValues', 'FieldHistories', 'TotpCodes', 'Passkeys', 'ItemTags', 'FieldDefinitions', 'Tags', 'Items', 'Logos', 'Folders'];
 
 /**
- * Repository for the import/export feature: reads whole item graphs for an export and writes imported item graphs
- * with their original timestamps, which the regular item repository does not allow.
+ * Repository for the import/export logic: reads whole item graphs for an export and writes imported item graphs
+ * with their original timestamps.
  */
 export class ImportExportRepository extends BaseRepository {
   /**
@@ -44,7 +44,7 @@ export class ImportExportRepository extends BaseRepository {
   }
 
   /**
-   * Read every live item with its child rows, plus the folders, tags, custom field definitions and the logos the
+   * Read every live item with its child rows, plus the folders, tags, custom field definitions and logos the
    * items use. Trashed items are left out, archived items are included.
    * @returns The vault data
    */
@@ -265,7 +265,6 @@ export class ImportExportRepository extends BaseRepository {
       item.ItemType,
       item.LogoId,
       item.FolderId,
-      // Second bind of the folder id, then the manifest an item outside any folder joins (see INSERT_ITEM).
       item.FolderId,
       manifestId,
       createdAt,
