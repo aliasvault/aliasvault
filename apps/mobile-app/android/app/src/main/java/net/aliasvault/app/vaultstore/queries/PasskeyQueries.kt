@@ -174,12 +174,11 @@ object LogoQueries {
     """
 
     /**
-     * The kind and key of an existing logo. Binds (id).
+     * The kind and key of an item's logo, which always lives in the item's own manifest. Binds (id, manifestId).
      */
     const val GET_BY_ID = """
         SELECT Id, Kind, Source, Name FROM Logos
-        WHERE Id = ? AND IsDeleted = 0
-        LIMIT 1
+        WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
     """
 
     /**

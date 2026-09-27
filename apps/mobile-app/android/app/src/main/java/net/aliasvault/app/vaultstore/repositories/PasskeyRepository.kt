@@ -453,7 +453,7 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @return The logo id, or null when the item should keep what it has (update) or get none (create)
      */
     private fun resolveLogoId(scope: String, existingLogoId: String?, url: String, logo: ByteArray?, timestamp: String): String? {
-        val existing = existingLogoId?.let { getLogoById(it) }
+        val existing = existingLogoId?.let { getLogoById(it, scope) }
         if (existing != null && existing.kind != LOGO_KIND_FAVICON) {
             return ensureInScope(scope, existing.kind, existing.source, timestamp)
         }
@@ -476,10 +476,10 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     /**
-     * The kind and key of a logo row, in whichever manifest holds it, or null when it no longer exists.
+     * The kind and key of an item's logo in the item's manifest, or null when it no longer exists.
      */
-    private fun getLogoById(logoId: String): LogoRef? {
-        val row = executeQuery(LogoQueries.GET_BY_ID, arrayOf(logoId)).firstOrNull() ?: return null
+    private fun getLogoById(logoId: String, manifestId: String): LogoRef? {
+        val row = executeQuery(LogoQueries.GET_BY_ID, arrayOf(logoId, manifestId)).firstOrNull() ?: return null
         val source = row["Source"] as? String ?: return null
         return LogoRef(row["Kind"] as? String ?: LOGO_KIND_FAVICON, source)
     }
