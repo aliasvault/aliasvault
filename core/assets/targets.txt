@@ -1,0 +1,105 @@
+# Asset copies: <source under core/assets>  <destination under the repo root>
+# Run core/assets/sync.sh after editing this file or any source; see README.md.
+
+# Web app
+brand/web/favicon.png apps/web/public/favicon.png
+brand/logo.svg apps/web/public/img/logo.svg
+brand/logo-cropped.png apps/web/public/img/logo-cropped.png
+brand/web/icon-192.png apps/web/public/img/icon-192.png
+brand/web/icon-500.png apps/web/public/img/icon-500.png
+browsers/brave.svg apps/web/public/img/browser-icons/brave.svg
+browsers/chrome.svg apps/web/public/img/browser-icons/chrome.svg
+browsers/edge.svg apps/web/public/img/browser-icons/edge.svg
+browsers/firefox.svg apps/web/public/img/browser-icons/firefox.svg
+browsers/safari.svg apps/web/public/img/browser-icons/safari.svg
+platforms/android.svg apps/web/public/img/mobile-icons/android.svg
+platforms/ios.svg apps/web/public/img/mobile-icons/ios.svg
+importers/1password.svg apps/web/public/img/importers/1password.svg
+importers/bitwarden.svg apps/web/public/img/importers/bitwarden.svg
+browsers/chrome.svg apps/web/public/img/importers/chrome.svg
+importers/dashlane.svg apps/web/public/img/importers/dashlane.svg
+importers/dropbox.svg apps/web/public/img/importers/dropbox.svg
+browsers/edge.svg apps/web/public/img/importers/edge.svg
+importers/enpass.svg apps/web/public/img/importers/enpass.svg
+browsers/firefox.svg apps/web/public/img/importers/firefox.svg
+importers/generic-csv.svg apps/web/public/img/importers/generic-csv.svg
+importers/keepass.svg apps/web/public/img/importers/keepass.svg
+importers/keepassxc.svg apps/web/public/img/importers/keepassxc.svg
+importers/lastpass.svg apps/web/public/img/importers/lastpass.svg
+importers/nordpass.svg apps/web/public/img/importers/nordpass.svg
+importers/protonpass.svg apps/web/public/img/importers/protonpass.svg
+importers/roboform.svg apps/web/public/img/importers/roboform.svg
+importers/strongbox.svg apps/web/public/img/importers/strongbox.svg
+
+# Blazor client
+brand/web/favicon.png apps/server/AliasVault.Client/wwwroot/favicon.png
+brand/logo.svg apps/server/AliasVault.Client/wwwroot/img/logo.svg
+brand/logo-cropped.png apps/server/AliasVault.Client/wwwroot/img/logo-cropped.png
+brand/web/icon-192.png apps/server/AliasVault.Client/wwwroot/img/icon-192.png
+brand/web/icon-500.png apps/server/AliasVault.Client/wwwroot/img/icon-500.png
+browsers/brave.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/brave.svg
+browsers/chrome.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/chrome.svg
+browsers/edge.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/edge.svg
+browsers/firefox.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/firefox.svg
+browsers/safari.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/safari.svg
+platforms/android.svg apps/server/AliasVault.Client/wwwroot/img/mobile-icons/android.svg
+platforms/ios.svg apps/server/AliasVault.Client/wwwroot/img/mobile-icons/ios.svg
+importers/1password.svg apps/server/AliasVault.Client/wwwroot/img/importers/1password.svg
+importers/bitwarden.svg apps/server/AliasVault.Client/wwwroot/img/importers/bitwarden.svg
+browsers/chrome.svg apps/server/AliasVault.Client/wwwroot/img/importers/chrome.svg
+importers/dashlane.svg apps/server/AliasVault.Client/wwwroot/img/importers/dashlane.svg
+importers/dropbox.svg apps/server/AliasVault.Client/wwwroot/img/importers/dropbox.svg
+browsers/edge.svg apps/server/AliasVault.Client/wwwroot/img/importers/edge.svg
+importers/enpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/enpass.svg
+browsers/firefox.svg apps/server/AliasVault.Client/wwwroot/img/importers/firefox.svg
+importers/generic-csv.svg apps/server/AliasVault.Client/wwwroot/img/importers/generic-csv.svg
+importers/keepass.svg apps/server/AliasVault.Client/wwwroot/img/importers/keepass.svg
+importers/keepassxc.svg apps/server/AliasVault.Client/wwwroot/img/importers/keepassxc.svg
+importers/lastpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/lastpass.svg
+importers/nordpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/nordpass.svg
+importers/protonpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/protonpass.svg
+importers/roboform.svg apps/server/AliasVault.Client/wwwroot/img/importers/roboform.svg
+importers/strongbox.svg apps/server/AliasVault.Client/wwwroot/img/importers/strongbox.svg
+
+# Admin
+brand/web/favicon.png apps/server/AliasVault.Admin/wwwroot/favicon.png
+brand/logo.svg apps/server/AliasVault.Admin/wwwroot/img/logo.svg
+
+# Browser extension (WXT picks up public/icon/<size>.png for the manifest)
+brand/extension/icon-16.png apps/browser-extension/public/icon/16.png
+brand/extension/icon-32.png apps/browser-extension/public/icon/32.png
+brand/extension/icon-48.png apps/browser-extension/public/icon/48.png
+brand/extension/icon-128.png apps/browser-extension/public/icon/128.png
+brand/extension/icon-192.png apps/browser-extension/public/icon/192.png
+brand/extension/icon-512.png apps/browser-extension/public/icon/512.png
+brand/extension/icon-512.png apps/browser-extension/build-assets/safari-xcode/AliasVault/Resources/Icon.png
+brand/app-icon-1024.png apps/browser-extension/build-assets/safari-xcode/AliasVault/AliasVault.icon/Assets/icon-1024.png
+
+# Mobile app (icon.png and adaptive-icon.png are read by app.json)
+brand/logo.svg apps/mobile-app/assets/images/logo.svg
+brand/mobile/icon.png apps/mobile-app/assets/images/icon.png
+brand/mobile/icon.png apps/mobile-app/assets/images/adaptive-icon.png
+brand/app-icon-1024.png apps/mobile-app/ios/AliasVault.icon/Assets/icon-1024.png
+brand/logo.svg apps/mobile-app/ios/VaultUI/Images.xcassets/Logo.imageset/logo.svg
+brand/mobile/splash-logo.png apps/mobile-app/ios/AliasVault/Images.xcassets/SplashScreenLogo.imageset/image.png
+brand/mobile/splash-logo@2x.png apps/mobile-app/ios/AliasVault/Images.xcassets/SplashScreenLogo.imageset/image@2x.png
+brand/mobile/splash-logo@3x.png apps/mobile-app/ios/AliasVault/Images.xcassets/SplashScreenLogo.imageset/image@3x.png
+
+# Play Store listing (fastlane)
+brand/store/play-icon.png fastlane/metadata/android/en-US/images/icon.png
+brand/store/play-icon.png fastlane/metadata/android/nl-NL/images/icon.png
+brand/store/play-feature-graphic.png fastlane/metadata/android/en-US/images/featureGraphic.png
+brand/store/play-feature-graphic.png fastlane/metadata/android/nl-NL/images/featureGraphic.png
+
+# Docs site
+brand/web/favicon.png docs/static/assets/img/favicon.png
+brand/wordmark/wordmark.svg docs/static/assets/img/logo.svg
+brand/wordmark/wordmark-light.svg docs/static/assets/img/logo-light.svg
+
+# Logo drawn in code: path data written in place from logo.svg (see the "paths:" note in sync.sh)
+brand/logo.svg apps/browser-extension/src/assets/logo.svg
+paths:brand/logo.svg apps/mobile-app/android/app/src/main/res/drawable/av_logo.xml
+paths:brand/logo.svg apps/mobile-app/android/app/src/main/res/drawable/ic_launcher_foreground.xml
+paths:brand/logo.svg apps/mobile-app/android/app/src/main/res/drawable/ic_launcher_monochrome.xml
+paths:brand/logo.svg apps/mobile-app/android/app/src/main/res/drawable/splashscreen_logo.xml
+paths:brand/logo.svg apps/server/status.html

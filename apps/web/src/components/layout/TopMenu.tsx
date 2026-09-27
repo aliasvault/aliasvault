@@ -48,7 +48,7 @@ const TopMenu: React.FC = () => {
         <div className="flex justify-between items-center max-w-screen-2xl mx-auto relative">
           <div className="flex flex-shrink-0 justify-start items-center relative">
             <NavLink to="/" className="flex mr-0 sm:mr-4 lg:mr-8">
-              <img src="/img/icon-nopadding.png" className="mr-3 h-8 w-10" alt="AliasVault Logo" />
+              <img src="/img/logo-cropped.png" className="mr-3 h-8 w-10" alt="AliasVault Logo" />
               <span className="self-center hidden sm:flex text-2xl font-semibold content-start align-top whitespace-nowrap dark:text-white">
                 AliasVault
                 <span className="text-primary-500 text-[10px] ml-1 font-normal hidden sm:inline-block">{t('layout.topMenu.BetaLabel')}</span>

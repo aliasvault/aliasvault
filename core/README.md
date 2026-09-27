@@ -19,6 +19,9 @@ See [rust/README.md](rust/README.md) for detailed documentation.
 ## client
 Platform-neutral TypeScript client logic (`@aliasvault/client`): API access, SRP and key hierarchy, vault sync and codec, sharing, the SQLite repositories and item helpers.
 
+## assets
+Shared image assets (logos, app icons, third-party logos) copied as-is into the apps by `assets/sync.sh`. See [assets/README.md](assets/README.md).
+
 ## models
 TypeScript models that are auto-generated to platform-specific code:
 - TypeScript (source of truth)
