@@ -15,7 +15,7 @@ export const ModalBackdrop: React.FC = () => {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {Platform.OS === 'ios' && (
-        <BlurView intensity={20} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
+        <BlurView intensity={12} tint={colorScheme === 'dark' ? 'dark' : 'light'} style={StyleSheet.absoluteFill} />
       )}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.modalBackground }]} />
     </View>
