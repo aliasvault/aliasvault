@@ -29,6 +29,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSaveItem } from '@/hooks/useSaveItem';
+import { VaultPushFailedError } from '@/hooks/useVaultMutate';
 import {
   addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
   type ItemEdit, itemEditFromItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
@@ -78,6 +79,7 @@ const ItemAddEdit: React.FC = () => {
   usePageTitle(editMode ? t(`${tk}.EditItemTitle`) : t(`${tk}.AddItemTitle`));
 
   const [loading, setLoading] = useState(true);
+  const initializedFor = useRef<string | null>(null);
   const [edit, setEdit] = useState<ItemEdit>(() => ({ Id: '', ManifestId: '', ItemType: ItemTypes.Login, ServiceName: '', FolderId: null, CreatedAt: '', Fields: [], Attachments: [], TotpCodes: [], Passkeys: [] }));
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
@@ -164,7 +166,8 @@ const ItemAddEdit: React.FC = () => {
   // Load the item (edit) or prefill the form from the quick create widget's query (create).
   useEffect(() => {
     const client = dbContext.sqliteClient;
-    if (!client) {
+    const routeKey = `${manifestId}/${id}${location.search}`;
+    if (!client || initializedFor.current === routeKey) {
       return;
     }
     let cancelled = false;
@@ -207,6 +210,7 @@ const ItemAddEdit: React.FC = () => {
         crumbs.push({ displayName: t(`${tk}.ViewItemBreadcrumb`), url: itemRoute(ref) });
         crumbs.push({ displayName: t(`${tk}.EditItemBreadcrumb`) });
         if (!cancelled) {
+          initializedFor.current = routeKey;
           setEdit(loaded);
           setBreadcrumbItems(crumbs);
           setLoading(false);
@@ -238,6 +242,7 @@ const ItemAddEdit: React.FC = () => {
       const crumbs = folder ? buildFolderBreadcrumbs(folder, allFolders) : [];
       crumbs.push({ displayName: t(`${tk}.AddNewItemBreadcrumb`) });
       if (!cancelled) {
+        initializedFor.current = routeKey;
         setEdit(created);
         setBreadcrumbItems(crumbs);
         setLoading(false);
@@ -387,7 +392,10 @@ const ItemAddEdit: React.FC = () => {
       navigate(itemRoute(saved));
     } catch (error) {
       console.error('Error saving item:', error);
-      notifications.addErrorMessage(t(`${tk}.ErrorSavingItem`), true);
+      // Failed push (e.g. server not reachable).
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t(`${tk}.ErrorSavingItem`), true);
+      }
     } finally {
       hideLoading();
       setIsSaving(false);

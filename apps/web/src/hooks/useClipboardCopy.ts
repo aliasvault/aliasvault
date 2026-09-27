@@ -16,7 +16,7 @@ const DEFAULT_CLIPBOARD_CLEAR_SECONDS = 10;
  */
 export function useClipboardCopy(id: string, item?: ItemRef): { copied: boolean; copyToClipboard: (value: string) => Promise<void> } {
   const dbContext = useDb();
-  const { executeVaultMutationAsync } = useVaultMutate();
+  const { executeVaultMutationInBackground } = useVaultMutate();
   const [copied, setCopied] = useState(clipboardCopyService.getCopiedId() === id);
   const itemId = item?.Id;
   const manifestId = item?.ManifestId;
@@ -32,12 +32,12 @@ export function useClipboardCopy(id: string, item?: ItemRef): { copied: boolean;
     }
 
     // Stats-only writes push silently, without the sync indicator.
-    executeVaultMutationAsync(async () => {
+    executeVaultMutationInBackground(async () => {
       if (!dbContext.sqliteClient?.itemStats.recordUsage({ Id: itemId, ManifestId: manifestId }, 'copy')) {
         throw new Error('Item not found');
       }
     }).catch((error) => devLog('[Clipboard] Failed to record item usage', error));
-  }, [dbContext.sqliteClient, executeVaultMutationAsync, id, itemId, manifestId]);
+  }, [dbContext.sqliteClient, executeVaultMutationInBackground, id, itemId, manifestId]);
 
   return { copied, copyToClipboard };
 }

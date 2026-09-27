@@ -15,7 +15,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
 import { formatBytes } from '@/utils/FormatBytes';
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -218,7 +218,9 @@ const StorageInsights: React.FC = () => {
       notifications.addSuccessMessage(t(`${tk}.DeleteAllLogosSuccessMessage`, { 0: removed }), true);
     } catch (error) {
       console.error('Failed to delete the logos:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      }
     } finally {
       setIsDeletingLogos(false);
       reload();
@@ -253,7 +255,9 @@ const StorageInsights: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to re-download the logos:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      }
     } finally {
       setRedownloadProgress(null);
       reload();

@@ -52,4 +52,5 @@ const bootstrap = async (): Promise<void> => {
 
 bootstrap().catch((error) => {
   console.error('Failed to start AliasVault:', error);
+  (window as { showAppLoadError?: () => void }).showAppLoadError?.();
 });

@@ -41,7 +41,7 @@ const formatDate = (value: string): string => new Date(value).toLocaleString('en
 const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, fieldLabel, isHidden, onClose }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
-  const { executeVaultMutationAsync } = useVaultMutate();
+  const { executeVaultMutationInBackground } = useVaultMutate();
   const [isLoading, setIsLoading] = useState(true);
   const [records, setRecords] = useState<FieldHistory[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -74,7 +74,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
    * Delete a history record and sync.
    */
   const deleteRecord = async (historyId: string): Promise<void> => {
-    await executeVaultMutationAsync(async () => {
+    await executeVaultMutationInBackground(async () => {
       await dbContext.sqliteClient?.items.deleteFieldHistory(historyId, item.ManifestId);
     });
     setConfirmDeleteId(null);

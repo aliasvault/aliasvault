@@ -26,7 +26,7 @@ import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 import { folderRoute } from '@/utils/ItemRoute';
 import { getLocalPreferenceJson, setLocalPreferenceJson } from '@/utils/LocalPreferences';
@@ -76,7 +76,7 @@ const ItemsHome: React.FC = () => {
   const dbContext = useDb();
   const notifications = useNotifications();
   const { syncVault } = useVaultSync();
-  const { executeVaultMutationAsync } = useVaultMutate();
+  const { executeVaultMutationAsync, executeVaultMutationInBackground } = useVaultMutate();
   usePageTitle('Home');
 
   const folderRef = useMemo((): FolderRef | null => (folderIdParam && manifestIdParam ? { Id: folderIdParam, ManifestId: manifestIdParam } : null), [folderIdParam, manifestIdParam]);
@@ -166,7 +166,7 @@ const ItemsHome: React.FC = () => {
     setViewModeState(mode);
     const client = dbContext.sqliteClient;
     if (client) {
-      void executeVaultMutationAsync(async () => {
+      void executeVaultMutationInBackground(async () => {
         client.settings.updateSetting('CredentialsViewMode', mode);
       });
     }
@@ -181,7 +181,7 @@ const ItemsHome: React.FC = () => {
     setVisibleItemCount(BATCH_SIZE);
     const client = dbContext.sqliteClient;
     if (client) {
-      void executeVaultMutationAsync(async () => {
+      void executeVaultMutationInBackground(async () => {
         client.settings.setCredentialsSortOrder(order);
       });
     }
@@ -371,7 +371,10 @@ const ItemsHome: React.FC = () => {
       setAllFolders(client.folders.getAll());
     } catch (error) {
       console.error('Failed to create folder:', error);
-      notifications.addErrorMessage(t('pages.main.items.home.FailedToCreateFolder'), true);
+      // Failed push (e.g. server not reachable).
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('pages.main.items.home.FailedToCreateFolder'), true);
+      }
     }
   };
 
@@ -390,7 +393,9 @@ const ItemsHome: React.FC = () => {
       setAllFolders(client.folders.getAll());
     } catch (error) {
       console.error('Failed to rename folder:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      }
     }
   };
 
@@ -414,7 +419,9 @@ const ItemsHome: React.FC = () => {
       navigate(buildItemsUrl(parentFolderId ? { Id: parentFolderId, ManifestId: folderRef.ManifestId } : null, filterType));
     } catch (error) {
       console.error('Failed to delete folder:', error);
-      notifications.addErrorMessage(t('pages.main.items.home.FailedToDeleteFolder'), true);
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('pages.main.items.home.FailedToDeleteFolder'), true);
+      }
     }
   };
 

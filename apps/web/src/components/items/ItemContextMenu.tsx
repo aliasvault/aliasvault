@@ -7,7 +7,7 @@ import FormModal from '@/components/shared/FormModal';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -90,7 +90,10 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       onMutated();
     } catch (error) {
       console.error('Failed to duplicate item:', error);
-      notifications.addErrorMessage(t('sharedResources.DuplicateErrorMessage'), true);
+      // Failed push (e.g. server not reachable).
+      if (!(error instanceof VaultPushFailedError)) {
+        notifications.addErrorMessage(t('sharedResources.DuplicateErrorMessage'), true);
+      }
     } finally {
       setIsDuplicating(false);
     }
@@ -111,6 +114,11 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       notifications.addSuccessMessage(t('pages.main.items.delete.DeleteSuccessMessage'), true);
       setShowDeleteModal(false);
       onMutated();
+    } catch (error) {
+      // Failed push (e.g. server not reachable).
+      if (!(error instanceof VaultPushFailedError)) {
+        throw error;
+      }
     } finally {
       setIsDeleting(false);
     }

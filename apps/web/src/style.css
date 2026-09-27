@@ -110,14 +110,6 @@ TODO: migrate all styles to native Tailwind CSS and components where possible.
     50% { opacity: 1; transform: scale(1.3); }
 }
 
-.loading {
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-.dark .loading {
-    background-color: rgba(107, 114, 128, 0.9);
-}
-
 .loading-message {
     font-size: 0.875rem;
     line-height: 1.25rem;

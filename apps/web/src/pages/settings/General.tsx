@@ -28,7 +28,7 @@ const hasValidPrivateDomains = (domains: string[]): boolean => domains.length > 
 const GeneralSettings: React.FC = () => {
   const { t, i18n } = useTranslation();
   const dbContext = useDb();
-  const { executeVaultMutationAsync } = useVaultMutate();
+  const { executeVaultMutationInBackground } = useVaultMutate();
   const tk = 'pages.main.settings.general';
   usePageTitle(t(`${tk}.PageTitle`));
 
@@ -48,10 +48,10 @@ const GeneralSettings: React.FC = () => {
    * Write a vault setting and push it.
    */
   const updateSetting = useCallback(async (key: string, value: string): Promise<void> => {
-    await executeVaultMutationAsync(async () => {
+    await executeVaultMutationInBackground(async () => {
       dbContext.sqliteClient?.settings.updateSetting(key, value);
     });
-  }, [dbContext.sqliteClient, executeVaultMutationAsync]);
+  }, [dbContext.sqliteClient, executeVaultMutationInBackground]);
 
   /**
    * The identity language: the explicit setting, or the one matching the UI language.

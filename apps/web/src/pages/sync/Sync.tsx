@@ -35,7 +35,7 @@ const Sync: React.FC = () => {
   const navigate = useNavigate();
   const auth = useAuth();
   const dbContext = useDb();
-  const { executeVaultMutationAsync } = useVaultMutate();
+  const { executeVaultMutationLocally } = useVaultMutate();
   usePageTitle(t('pages.main.sync.sync.PageTitle'));
 
   const [status, setStatus] = useState<SyncStatus>('loading');
@@ -175,7 +175,7 @@ const Sync: React.FC = () => {
          * The migration SQL contains PRAGMA statements that only take effect outside a transaction, so every
          * command runs as-is; each script handles its own transactions.
          */
-        await executeVaultMutationAsync(async () => {
+        await executeVaultMutationLocally(async () => {
           for (const sqlCommand of upgrade.sqlCommands) {
             client.executeRaw(sqlCommand);
           }

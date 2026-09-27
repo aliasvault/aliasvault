@@ -38,18 +38,30 @@ export type VaultMetadata = {
   hiddenPrivateEmailDomains: string[];
 };
 
+/** The local vault as it was before a mutation, to put back when the mutation could not be pushed. */
+export type LocalVaultSnapshot = {
+  vaultBlob: string | null;
+  isDirty: boolean;
+  dirtyScopes: VaultMutationScope[];
+};
+
 /** What a full sync may be asked beyond what the revisions decide. */
 export type FullVaultSyncRequest = VaultSyncOptions & {
   /** Persist a failure so the UI shows it (default true). A login-time pull reports its own errors. */
   reportErrorToPopup?: boolean;
+  /** Wait for a running sync and then run one, instead of queueing a follow-up and returning at once. */
+  waitForRunningSync?: boolean;
 };
 
 let cachedSqliteClient: SqliteClient | null = null;
 let cachedVaultBlob: string | null = null;
 let isSyncInProgress = false;
+let runningSync: Promise<FullVaultSyncResult> | null = null;
 let hasPendingSync = false;
 
 const phaseListeners = new Set<(phase: VaultSyncPhase) => void>();
+let lastSyncFailed = false;
+const syncFailureListeners = new Set<(failed: boolean) => void>();
 
 /**
  * Tell the UI what the sync is doing.
@@ -256,24 +268,34 @@ async function syncIsOnHold(): Promise<boolean> {
 /**
  * Full vault sync (push and pull based on revision counters), one at a time.
  * @param options - what the caller asks beyond what the revisions decide
+ * @param waitForRunningSync - wait for a running sync and then run, so the result covers every mutation stored before the call
  */
-async function fullVaultSyncInternal(options?: VaultSyncOptions): Promise<FullVaultSyncResult> {
+async function fullVaultSyncInternal(options?: VaultSyncOptions, waitForRunningSync = false): Promise<FullVaultSyncResult> {
   if (await syncIsOnHold()) {
     return syncResult({ success: false });
   }
 
-  if (isSyncInProgress) {
+  if (isSyncInProgress && !waitForRunningSync) {
     hasPendingSync = true;
     devLog('[VaultSync] Sync already in progress, queued for retry after completion');
     return syncResult();
+  }
+
+  while (isSyncInProgress && runningSync) {
+    await runningSync.catch(() => undefined);
   }
 
   isSyncInProgress = true;
   hasPendingSync = false;
 
   try {
-    return await vaultSync.syncVaultWithServer(options);
+    runningSync = vaultSync.syncVaultWithServer(options);
+    const result = await runningSync;
+    lastSyncFailed = !result.success || result.wasOffline;
+    syncFailureListeners.forEach(listener => listener(lastSyncFailed));
+    return result;
   } finally {
+    runningSync = null;
     isSyncInProgress = false;
     broadcastSyncPhase('idle');
 
@@ -302,9 +324,51 @@ export const vaultStore = {
     };
   },
 
+  /**
+   * Subscribe to whether the last sync that ran failed to reach or update the server. Called with the current state.
+   * @param listener - called with true when the last sync failed
+   */
+  onSyncFailureChange(listener: (failed: boolean) => void): () => void {
+    syncFailureListeners.add(listener);
+    listener(lastSyncFailed);
+    return (): void => {
+      syncFailureListeners.delete(listener);
+    };
+  },
+
   getEncryptionKey,
   getEncryptedVault,
   storeEncryptedVault,
+
+  /**
+   * Capture the stored vault and its pending-sync state.
+   */
+  async snapshotLocalVault(): Promise<LocalVaultSnapshot> {
+    const storage = getPlatform().storage;
+    const [vaultBlob, isDirty, dirtyScopes] = await Promise.all([getEncryptedVault(), storage.get<boolean>(StorageKeys.IS_DIRTY), getDirtyScopes()]);
+    return { vaultBlob, isDirty: isDirty === true, dirtyScopes };
+  },
+
+  /**
+   * Put a snapshot back. Bumps the mutation sequence, so a sync that started before cannot store over it.
+   * @param snapshot - the state from snapshotLocalVault
+   */
+  async restoreLocalVault(snapshot: LocalVaultSnapshot): Promise<void> {
+    if (snapshot.vaultBlob === null) {
+      return;
+    }
+    const storage = getPlatform().storage;
+    const mutationSequence = (await storage.get<number>(StorageKeys.MUTATION_SEQUENCE) ?? 0) + 1;
+    await clearDirtyScopes();
+    await storage.setMany([
+      { key: StorageKeys.ENCRYPTED_VAULT, value: snapshot.vaultBlob },
+      { key: StorageKeys.MUTATION_SEQUENCE, value: mutationSequence },
+      { key: StorageKeys.IS_DIRTY, value: snapshot.isDirty },
+      ...snapshot.dirtyScopes.map(scope => ({ key: dirtyScopeStorageKey(scope), value: true })),
+    ]);
+    cachedSqliteClient = null;
+    cachedVaultBlob = null;
+  },
   createVaultSqliteClient,
 
   /**
@@ -405,8 +469,9 @@ export const vaultStore = {
    * @param options - what the caller asks of the sync beyond what the revisions decide
    */
   async fullVaultSync(options?: FullVaultSyncRequest): Promise<FullVaultSyncResult> {
-    const result = await fullVaultSyncInternal(options);
-    if (options?.reportErrorToPopup !== false) {
+    const { reportErrorToPopup, waitForRunningSync, ...syncOptions } = options ?? {};
+    const result = await fullVaultSyncInternal(syncOptions, waitForRunningSync);
+    if (reportErrorToPopup !== false) {
       await persistSyncErrorState(result);
     }
     return result;

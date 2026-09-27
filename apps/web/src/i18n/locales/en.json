@@ -701,6 +701,7 @@
   },
   "loadingScreen": {
     "errors": {
+      "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
       "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly."
     },
     "loading": {

@@ -87,10 +87,17 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
    */
   const onSaveGlobal = async (): Promise<void> => {
     showLoading();
-    await executeVaultMutationAsync(async () => {
-      dbContext.sqliteClient?.settings.setPasswordSettings(settings);
-    });
-    hideLoading();
+    try {
+      await executeVaultMutationAsync(async () => {
+        dbContext.sqliteClient?.settings.setPasswordSettings(settings);
+      });
+    } catch (error) {
+      // Failed push (e.g. server not reachable).
+      console.error('Failed to save the password settings:', error);
+      return;
+    } finally {
+      hideLoading();
+    }
     notifications.addSuccessMessage(t(`${tk}.SettingsUpdatedMessage`), true);
     onSaveSettings(settings, previewPassword);
     onClose();

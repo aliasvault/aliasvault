@@ -14,7 +14,7 @@ const FullScreenLoadingIndicator: React.FC<FullScreenLoadingIndicatorProps> = ({
   }
 
   return (
-    <div className="loading fixed inset-0 w-full h-full z-50 bg-gray-200 !m-0 !p-0 dark:bg-gray-500" style={{ zIndex: 2147483641 }}>
+    <div className="fixed inset-0 w-full h-full z-50 !m-0 !p-0 bg-white/90 dark:bg-gray-500/90" style={{ zIndex: 2147483641 }}>
       <div className="aliasvault-fullscreen-spinner mx-auto">
         <div className="cloud-shape-inverted">
           <div className="dot-inverted delay-1"></div>

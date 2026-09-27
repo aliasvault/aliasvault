@@ -1,22 +1,32 @@
+import { getPlatform } from '@aliasvault/client/platform';
+import { hasUnsyncedUserChanges } from '@aliasvault/client/sync/VaultDirtyState';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import SmallLoadingIndicator from '@/components/loading/SmallLoadingIndicator';
 import { useDb } from '@/context/DbContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { useVaultSync } from '@/hooks/useVaultSync';
+import { StorageKeys } from '@/utils/StorageKeys';
+import { vaultStore } from '@/vault/VaultStore';
 
 /** How long the indicator keeps spinning after a sync started, so a fast sync is still visible. */
 const MIN_SPIN_MS = 600;
 
 /**
- * Vault sync indicator in the top bar. Spins while syncing; otherwise a refresh button that pulls the latest vault.
+ * Vault sync indicator in the top bar. Spins while syncing; otherwise a refresh button that pulls the latest vault,
+ * marked with a red dot once a sync failed while the vault holds changes of the user the server does not have yet
+ * (e.g. a background save that failed), so a click retries the push.
  */
 const DbStatusIndicator: React.FC = () => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
+  const notifications = useNotifications();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [holdSpinning, setHoldSpinning] = useState(false);
+  const [hasUnsyncedChanges, setHasUnsyncedChanges] = useState(false);
+  const [lastSyncFailed, setLastSyncFailed] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isBusy = dbContext.isSyncing || dbContext.isUploading || isRefreshing;
@@ -41,17 +51,71 @@ const DbStatusIndicator: React.FC = () => {
 
   const isSpinning = isBusy || holdSpinning;
 
+  useEffect(() => vaultStore.onSyncFailureChange(setLastSyncFailed), []);
+
+  // Re-check the pending changes whenever a sync finishes or the dirty flag changes.
+  useEffect(() => {
+    if (isBusy) {
+      return undefined;
+    }
+    let cancelled = false;
+    /**
+     * Read whether the vault holds unsynced changes of the user.
+     */
+    const check = (): void => {
+      void hasUnsyncedUserChanges().then(value => {
+        if (!cancelled) {
+          setHasUnsyncedChanges(value);
+        }
+      });
+    };
+    check();
+    const unwatch = getPlatform().storage.watch(StorageKeys.IS_DIRTY, check);
+    return (): void => {
+      cancelled = true;
+      unwatch();
+    };
+  }, [isBusy]);
+
+  // Only a sync that failed makes pending changes an error; before the first attempt they are simply on their way.
+  const showSyncError = lastSyncFailed && hasUnsyncedChanges;
+
   /**
-   * Pull the latest vault from the server.
+   * Sync with the server. When the user's changes still did not get through, say so again.
    */
   const onRefreshClick = useCallback(async (): Promise<void> => {
     setIsRefreshing(true);
+    let wasOffline = false;
+    let errorMessage: string | null = null;
     try {
-      await syncVault();
+      await syncVault({
+        /**
+         * The server was not reachable.
+         */
+        onOffline: (): void => {
+          wasOffline = true;
+        },
+        /**
+         * The sync failed, or threw.
+         */
+        onError: (message: string): void => {
+          errorMessage = message;
+        },
+      });
+      if (wasOffline) {
+        notifications.addErrorMessage(t('common.errors.serverNotAvailable'), true);
+      } else if (errorMessage !== null) {
+        // A sync error with details already shows in the sync error dialog; anything else (e.g. an exception) shows here.
+        if (await getPlatform().storage.get(StorageKeys.LAST_SYNC_ERROR) === null) {
+          notifications.addErrorMessage(errorMessage, true);
+        }
+      } else if (await hasUnsyncedUserChanges()) {
+        notifications.addErrorMessage(t('sharedResources.VaultSaveError'), true);
+      }
     } finally {
       setIsRefreshing(false);
     }
-  }, [syncVault]);
+  }, [notifications, syncVault, t]);
 
   /**
    * The tooltip for the current state.
@@ -62,6 +126,9 @@ const DbStatusIndicator: React.FC = () => {
     }
     if (dbContext.isSyncing) {
       return t('sharedResources.LoadingVault');
+    }
+    if (showSyncError) {
+      return t('sharedResources.VaultSaveError');
     }
     return t('sharedResources.SyncVaultData');
   };
@@ -74,6 +141,7 @@ const DbStatusIndicator: React.FC = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
             </svg>
+            {showSyncError && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" aria-hidden="true"></span>}
           </button>
         )}
       </SmallLoadingIndicator>

@@ -14,7 +14,7 @@ import Modal from '@/components/shared/Modal';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
-import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
 import { delay } from '@/utils/Delay';
 import { formatBytes } from '@/utils/FormatBytes';
 
@@ -437,28 +437,36 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     setCredentialSaveProgress(0);
     setTotalCredentialsToSave(importedCredentials.length);
 
-    await executeVaultMutationAsync(async () => {
-      const folderNameToId = importFolders && detectedFolderPaths.length > 0 ? await VaultImportWriter.createOrGetFolders(sqliteClient, detectedFolderPaths) : null;
+    try {
+      await executeVaultMutationAsync(async () => {
+        const folderNameToId = importFolders && detectedFolderPaths.length > 0 ? await VaultImportWriter.createOrGetFolders(sqliteClient, detectedFolderPaths) : null;
 
-      await VaultImportWriter.importCredentialsToVault(sqliteClient, importedCredentials, {
-        folderNameToId,
-        importAttachments,
-        extractedFavicons: extractedFavicons.current,
-        /**
-         * Show the save progress, letting the browser paint every few items.
-         */
-        onProgress: async (saved: number): Promise<void> => {
-          setCredentialSaveProgress(saved);
-          if (saved % SAVE_PROGRESS_EVERY === 0) {
-            await yieldToPaint();
-          }
-        },
+        await VaultImportWriter.importCredentialsToVault(sqliteClient, importedCredentials, {
+          folderNameToId,
+          importAttachments,
+          extractedFavicons: extractedFavicons.current,
+          /**
+           * Show the save progress, letting the browser paint every few items.
+           */
+          onProgress: async (saved: number): Promise<void> => {
+            setCredentialSaveProgress(saved);
+            if (saved % SAVE_PROGRESS_EVERY === 0) {
+              await yieldToPaint();
+            }
+          },
+        });
+
+        await delay(50);
+        setIsSavingCredentials(false);
+        setIsSyncingVault(true);
       });
-
-      await delay(50);
-      setIsSavingCredentials(false);
-      setIsSyncingVault(true);
-    });
+    } catch (error) {
+      if (!(error instanceof VaultPushFailedError)) {
+        throw error;
+      }
+      // Failed push (e.g. server not reachable), try again.
+      return;
+    }
 
     notifications.addSuccessMessage(t(`${tk}.ImportSuccessMessage`, { 0: importedCredentials.length }));
     navigate('/items');
