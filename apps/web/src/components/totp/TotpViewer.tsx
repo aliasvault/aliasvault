@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -72,7 +73,7 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes, item }) => {
     <Card variant="section">
       <div className="flex justify-between">
         <div>
-          <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('components.main.components.totpCodes.totpViewer.TwoFactorAuthenticationTitle')}</h3>
+          <SectionTitle>{t('components.main.components.totpCodes.totpViewer.TwoFactorAuthenticationTitle')}</SectionTitle>
         </div>
       </div>
 

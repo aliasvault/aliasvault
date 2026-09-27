@@ -2,6 +2,7 @@ import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
 
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 
 import type { Attachment } from '@aliasvault/models/vault';
 
@@ -50,7 +51,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
 
   return (
     <Card variant="section">
-      <h3 className="mb-4 text-xl font-semibold dark:text-white">Attachments</h3>
+      <SectionTitle>Attachments</SectionTitle>
       {visible.length > 0 ? (
         <div className="space-y-2">
           {visible.map((attachment) => {

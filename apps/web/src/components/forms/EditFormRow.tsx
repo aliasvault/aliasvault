@@ -1,6 +1,7 @@
 import React from 'react';
 
 import FormLabel from '@/components/shared/FormLabel';
+import SectionTitle from '@/components/shared/SectionTitle';
 
 type EditFormRowProps = {
   id: string;
@@ -22,7 +23,7 @@ export const EDIT_INPUT_CLASSES = 'outline-0 shadow-sm bg-gray-50 border border-
 const EditFormRow: React.FC<EditFormRowProps> = ({ id, label, type = 'text', value, onChange, onFocus, placeholder = '', labelStyle = 'default' }) => (
   <>
     {labelStyle === 'header'
-      ? <label htmlFor={id} className="mb-4 text-xl font-semibold dark:text-white block">{label}</label>
+      ? <SectionTitle htmlFor={id}>{label}</SectionTitle>
       : <FormLabel htmlFor={id}>{label}</FormLabel>}
     <div className="relative">
       {type === 'textarea' ? (

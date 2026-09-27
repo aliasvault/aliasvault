@@ -31,8 +31,16 @@ export function detectImageMimeType(bytes: Uint8Array): string | null {
     return 'image/webp';
   }
 
-  // An SVG may start with an XML declaration, a BOM or whitespace before the root element.
-  const head = new TextDecoder().decode(bytes.subarray(0, 256)).replace(/^﻿/, '').trimStart().toLowerCase();
+  /*
+   * An SVG may start with an XML declaration, BOM (\uFEFF), or whitespace before the root element.
+   * Remove BOM and trim leading whitespace safely.
+   */
+  let head = new TextDecoder().decode(bytes.subarray(0, 256));
+  // Remove BOM (uFEFF if present at start)
+  if (head.charCodeAt(0) === 0xFEFF) {
+    head = head.substring(1);
+  }
+  head = head.trimStart().toLowerCase();
   if (head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg'))) {
     return 'image/svg+xml';
   }

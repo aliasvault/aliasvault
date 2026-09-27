@@ -9,13 +9,14 @@ type PageHeaderProps = {
   title: string;
   description?: string;
   titleActions?: React.ReactNode;
+  titleSuffix?: React.ReactNode;
   customActions?: React.ReactNode;
 };
 
 /**
  * Page header with breadcrumbs, title, description and actions.
  */
-const PageHeader: React.FC<PageHeaderProps> = ({ breadcrumbItems = [], title, description = '', titleActions, customActions }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ breadcrumbItems = [], title, description = '', titleActions, titleSuffix, customActions }) => {
   const { t } = useTranslation();
   const items: BreadcrumbItem[] = [{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, ...breadcrumbItems];
 
@@ -24,7 +25,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ breadcrumbItems = [], title, de
       <div className="mb-4 col-span-full xl:mb-2">
         <Breadcrumb items={items} />
         <div className="flex flex-row items-center justify-between gap-4">
-          {titleActions ?? <H1>{title}</H1>}
+          {titleActions ?? (titleSuffix ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <H1>{title}</H1>
+              {/* Centering uses the heading's line box, whose descender space makes the glyphs sit lower; nudge down to match. */}
+              <div className="translate-y-0.5">{titleSuffix}</div>
+            </div>
+          ) : <H1>{title}</H1>)}
           {customActions && (
             <div className="flex flex-wrap items-center gap-2">
               {customActions}

@@ -7,6 +7,7 @@ import AlertMessageError from '@/components/alerts/AlertMessageError';
 import EmailModal from '@/components/email/EmailModal';
 import SkeletonBase from '@/components/loading/SkeletonBase';
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailDomains } from '@/hooks/useEmailDomains';
@@ -201,7 +202,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
       <Card variant="section">
         <div className="flex justify-between">
           <div>
-            <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('components.main.email.recentEmails.EmailSectionTitle')}</h3>
+            <SectionTitle>{t('components.main.email.recentEmails.EmailSectionTitle')}</SectionTitle>
           </div>
           <div className="flex justify-end items-center space-x-2">
             {autoRefreshEnabled && (

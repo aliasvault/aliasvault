@@ -10,6 +10,7 @@ import { type DisplayField, getUrlValues, groupDisplayFields, shouldBeFullWidth 
 import FieldBlock from '@/components/items/FieldBlock';
 import { buildFolderBreadcrumbs } from '@/components/items/FolderBreadcrumbs';
 import ItemIcon from '@/components/items/ItemIcon';
+import { ItemTypePill } from '@/components/items/ItemTypeSelector';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
@@ -18,6 +19,7 @@ import FormModal from '@/components/shared/FormModal';
 import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
+import SectionTitle from '@/components/shared/SectionTitle';
 import TotpViewer from '@/components/totp/TotpViewer';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -35,7 +37,7 @@ import type { Folder } from '@aliasvault/client/database/repositories/FolderRepo
  */
 const Section: React.FC<{ title?: string; children: React.ReactNode }> = ({ title, children }) => (
   <Card variant="section">
-    {title && <h3 className="mb-4 text-xl font-semibold dark:text-white">{title}</h3>}
+    {title && <SectionTitle>{title}</SectionTitle>}
     {children}
   </Card>
 );
@@ -169,6 +171,7 @@ const ItemView: React.FC = () => {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         title={t('pages.main.items.view.ViewItemTitle')}
+        titleSuffix={<ItemTypePill itemType={item.ItemType} />}
         customActions={(
           <>
             <LinkButton smallText={t('pages.main.items.view.EditButtonMobile')} text={t('pages.main.items.view.EditButtonDesktop')} href={itemRoute(item, true)} color="primary" />
@@ -223,7 +226,7 @@ const ItemView: React.FC = () => {
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
             {isLoginLike && loginFields.length > 0 && (
               <Card variant="section">
-                <h3 className="mb-2 text-xl font-semibold dark:text-white">{t('pages.main.items.view.LoginDetailsSection')}</h3>
+                <SectionTitle className="mb-2">{t('pages.main.items.view.LoginDetailsSection')}</SectionTitle>
                 <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <span>{domains.isAliasVaultSupportedDomain(emailAddress) ? t('pages.main.items.view.GeneratedItemDescription') : t('pages.main.items.view.StoredItemDescription')}</span>
                 </p>

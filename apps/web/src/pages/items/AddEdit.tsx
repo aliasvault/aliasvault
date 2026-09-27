@@ -23,6 +23,7 @@ import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
+import SectionTitle from '@/components/shared/SectionTitle';
 import StickyActionBar from '@/components/shared/StickyActionBar';
 import TotpCodes from '@/components/totp/TotpCodes';
 import { useDb } from '@/context/DbContext';
@@ -48,8 +49,8 @@ const MIN_SAVE_INDICATOR_MS = 250;
  */
 const Section: React.FC<{ title?: React.ReactNode; children: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => (
   <Card variant="section" className={className}>
-    {title && <h3 className="mb-4 text-xl font-semibold dark:text-white flex items-center gap-2">{title}</h3>}
-    <div className="grid gap-6">
+    {title && <SectionTitle className="mb-3 flex items-center gap-2">{title}</SectionTitle>}
+    <div className="grid gap-4">
       {children}
     </div>
   </Card>
@@ -491,6 +492,11 @@ const ItemAddEditForm: React.FC = () => {
         breadcrumbItems={breadcrumbItems}
         title={editMode ? t(`${tk}.EditItemTitle`) : t(`${tk}.AddItemTitle`)}
         description={editMode ? t(`${tk}.EditItemDescription`) : t(`${tk}.AddItemDescription`)}
+        titleSuffix={!loading && (
+          <ItemTypeSelector selectedType={edit.ItemType} onSelectedTypeChange={(type) => {
+            void handleItemTypeChange(edit, type).then(setEdit);
+          }} showDropdown={showTypeDropdown} onShowDropdownChange={setShowTypeDropdown} />
+        )}
         customActions={(
           <>
             <Button color="success" onClick={() => void save()}>{t(`${tk}.SaveItemButton`)}</Button>
@@ -507,13 +513,8 @@ const ItemAddEditForm: React.FC = () => {
           }}>
             <div className="grid grid-cols-1 px-4 pt-6 md:grid-cols-2 lg:grid-cols-3 md:gap-4 dark:bg-gray-900">
               <div className="col-span-1 md:col-span-1 lg:col-span-1">
-                <ItemTypeSelector selectedType={edit.ItemType} onSelectedTypeChange={(type) => {
-                  void handleItemTypeChange(edit, type).then(setEdit);
-                }} showDropdown={showTypeDropdown} onShowDropdownChange={setShowTypeDropdown} />
-
-                <div className="p-4 mb-4 bg-white border-2 border-primary-600 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                  <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.ServiceSectionHeader`)}</h3>
-                  <div className="grid gap-6">
+                <Card variant="section">
+                  <div className="grid gap-4">
                     <div className="col-span-6 sm:col-span-3">
                       <FormLabel htmlFor="service-name">{t(`${tk}.ServiceNameLabel`)}</FormLabel>
                       <div className="flex items-start gap-4">
@@ -542,7 +543,7 @@ const ItemAddEditForm: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </div>
+                </Card>
 
                 {show2FA && hasLoginFields && (
                   <div className="col-span-1 md:col-span-1 lg:col-span-1">
@@ -672,7 +673,7 @@ const ItemAddEditForm: React.FC = () => {
                 {edit.ItemType === ItemTypes.Alias && (
                   <div className="col-span-1 md:col-span-1 lg:col-span-2">
                     <Card variant="section">
-                      <h3 className="mb-4 text-xl font-semibold dark:text-white flex items-center justify-between gap-2">
+                      <SectionTitle className="mb-3 flex items-center justify-between gap-2">
                         <span>{t(`${tk}.AliasSectionHeader`)}</span>
                         <button type="button" id="generate-random-alias" onClick={() => void onGenerateRandomAlias()} className="p-1.5 text-gray-400 hover:text-primary-500 transition-colors focus:outline-none" title={t('sharedResources.Generate')}>
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -680,8 +681,8 @@ const ItemAddEditForm: React.FC = () => {
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                           </svg>
                         </button>
-                      </h3>
-                      <div className="grid gap-6">
+                      </SectionTitle>
+                      <div className="grid gap-4">
                         <div className="col-span-6 sm:col-span-3">{textField(FieldKey.AliasFirstName, 'first-name', t(`${tk}.FirstNameLabel`))}</div>
                         <div className="col-span-6 sm:col-span-3">{textField(FieldKey.AliasLastName, 'last-name', t(`${tk}.LastNameLabel`))}</div>
                         <div className="col-span-6 sm:col-span-3">{textField(FieldKey.AliasGender, 'gender', t(`${tk}.GenderLabel`))}</div>
@@ -728,7 +729,7 @@ const ItemAddEditForm: React.FC = () => {
                 {customFields.length > 0 && (
                   <div className="col-span-1 md:col-span-1 lg:col-span-2">
                     <Card variant="section">
-                      <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.CustomFieldsSectionHeader`)}</h3>
+                      <SectionTitle>{t(`${tk}.CustomFieldsSectionHeader`)}</SectionTitle>
                       <DraggableCustomFieldsList
                         customFields={customFields}
                         onReorder={reordered => update(current => reorderCustomFields(current, reordered))}

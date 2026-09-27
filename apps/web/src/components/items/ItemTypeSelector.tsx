@@ -15,16 +15,16 @@ const ALL_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.Credi
 /**
  * The icon of an item type.
  */
-const TypeIcon: React.FC<{ itemType: ItemType }> = ({ itemType }) => {
+const TypeIcon: React.FC<{ itemType: ItemType; className?: string }> = ({ itemType, className = 'w-5 h-5' }) => {
   switch (itemType) {
     case ItemTypes.Login:
-      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>;
+      return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>;
     case ItemTypes.Alias:
-      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+      return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
     case ItemTypes.CreditCard:
-      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>;
+      return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>;
     default:
-      return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+      return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
   }
 };
 
@@ -40,6 +40,40 @@ const typeNameKey = (itemType: ItemType): string => {
   }
 };
 
+type ItemTypePillProps = {
+  itemType: ItemType;
+  /** Makes the pill the dropdown toggle of the edit page; without it the pill is a muted read-only label. */
+  onClick?: () => void;
+  isOpen?: boolean;
+};
+
+/**
+ * Pill showing the item type.
+ */
+export const ItemTypePill: React.FC<ItemTypePillProps> = ({ itemType, onClick, isOpen = false }) => {
+  const { t } = useTranslation();
+
+  if (!onClick) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full">
+        <span className="shrink-0 text-gray-500 dark:text-gray-400"><TypeIcon itemType={itemType} className="w-3.5 h-3.5" /></span>
+        <span className="text-xs font-medium whitespace-nowrap text-gray-700 dark:text-gray-300">{t(typeNameKey(itemType))}</span>
+      </span>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+      <span className="shrink-0 text-primary-600 dark:text-primary-400"><TypeIcon itemType={itemType} className="w-3.5 h-3.5" /></span>
+      <span className="text-xs font-medium whitespace-nowrap text-primary-700 dark:text-primary-300">{t(typeNameKey(itemType))}</span>
+      <span className="ml-1 text-xs whitespace-nowrap text-primary-600/70 dark:text-primary-400/70">{t('sharedResources.ItemTypeLabel')}</span>
+      <svg className={`w-3 h-3 shrink-0 text-primary-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  );
+};
+
 /**
  * Dropdown to pick the item type.
  */
@@ -47,25 +81,13 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({ selectedType, onSel
   const { t } = useTranslation();
 
   return (
-    <div className="relative mb-4">
-      <div className="relative w-full px-4 py-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
-        <button type="button" onClick={() => onShowDropdownChange(!showDropdown)} className="peer absolute inset-0 rounded-lg" aria-label={t('sharedResources.ItemTypeLabel')}></button>
-        <div className="relative flex items-center gap-2 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
-          <span className="shrink-0 text-primary-600 dark:text-primary-400"><TypeIcon itemType={selectedType} /></span>
-          <span className="text-primary-700 dark:text-primary-300 font-medium text-sm truncate">{t(typeNameKey(selectedType))}</span>
-        </div>
-        <div className="relative flex-1 flex items-center justify-end gap-1 min-w-0 pointer-events-none peer-hover:opacity-80 transition-opacity">
-          <span className="text-xs text-primary-600/80 dark:text-primary-400/80 truncate">{t('sharedResources.ItemTypeLabel')}</span>
-          <svg className={`w-4 h-4 shrink-0 text-primary-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
+    <div className="relative inline-block">
+      <ItemTypePill itemType={selectedType} onClick={() => onShowDropdownChange(!showDropdown)} isOpen={showDropdown} />
 
       {showDropdown && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => onShowDropdownChange(false)}></div>
-          <div className="absolute z-20 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute left-0 z-20 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
             {ALL_TYPES.map((itemType) => {
               const selected = selectedType === itemType;
               return (

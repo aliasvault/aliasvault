@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 
 type RemovableSectionProps = {
   title?: string;
@@ -18,8 +19,8 @@ const RemovableSection: React.FC<RemovableSectionProps> = ({ title = '', canRemo
 
   return (
     <Card variant="section" className="relative">
-      {title.length > 0 && <h3 className="mb-4 text-xl font-semibold dark:text-white">{title}</h3>}
-      <div className="grid gap-6">
+      {title.length > 0 && <SectionTitle>{title}</SectionTitle>}
+      <div className="grid gap-4">
         {children}
       </div>
       {canRemove && (

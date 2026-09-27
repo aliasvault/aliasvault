@@ -9,12 +9,12 @@ type CardProps = {
   className?: string;
 };
 
-const BASE_CLASSES = 'p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800';
+const BASE_CLASSES = 'mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800';
 
 const VARIANT_CLASSES: Record<CardVariant, string> = {
-  page: 'mx-4',
-  section: '2xl:col-span-2',
-  plain: '',
+  page: 'p-4 sm:p-6 mx-4',
+  section: 'p-4 sm:p-5 2xl:col-span-2',
+  plain: 'p-4 sm:p-6',
 };
 
 /**

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
 import FormModal from '@/components/shared/FormModal';
+import SectionTitle from '@/components/shared/SectionTitle';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useNotifications } from '@/context/NotificationContext';
 
@@ -167,7 +168,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
       <Card variant="section" className="relative">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-xl font-semibold dark:text-white">{t(`${tk}.TwoFactorAuthenticationTitle`)}</h3>
+            <SectionTitle className="">{t(`${tk}.TwoFactorAuthenticationTitle`)}</SectionTitle>
           </div>
           <div className="flex items-center gap-2">
             {visibleCodes.length > 0 && !isAddFormVisible && (
