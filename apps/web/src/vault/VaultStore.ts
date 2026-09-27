@@ -316,7 +316,7 @@ export const vaultStore = {
   },
 
   /**
-   * Store the unlock key derivation parameters, which enable an offline unlock.
+   * Store the unlock key derivation parameters, used for local password checks and offline unlock.
    * @param params - the parameters
    */
   async storeUnlockKeyDerivationParams(params: UnlockKeyDerivationParams): Promise<void> {
