@@ -10,7 +10,6 @@ import {
   LogoKinds,
 } from '@aliasvault/models/vault';
 
-import servicePlaceholder from '@/assets/images/service-placeholder.webp';
 import type { DisplayItem } from '@/utils/DisplayItem';
 
 // Import centralized icon components (auto-generated from core/models/src/icons/AppIcons.ts and ItemTypeIcons.ts)
@@ -144,23 +143,16 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
   }, [dataUri, isSvg, svgWidth, svgHeight]);
 
   if (!isSvg) {
-    return (
-      <Image
-        source={{ uri: dataUri }}
-        style={[styles.logo, style]}
-        defaultSource={servicePlaceholder}
-      />
-    );
+    return <Image source={{ uri: dataUri }} style={[styles.logo, style]} />;
   }
 
   const fallback = (
-    <Image
-      source={servicePlaceholder}
-      style={[styles.logo, style]}
-    />
+    <View style={[styles.iconContainer, style]}>
+      <PlaceholderIcon width={svgWidth} height={svgHeight} />
+    </View>
   );
 
-  // If sanitization failed (returned null), fall back to placeholder
+  // If sanitization failed (returned null), fall back to the placeholder icon.
   if (!svgXml) {
     return fallback;
   }
