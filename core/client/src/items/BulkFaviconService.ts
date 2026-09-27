@@ -1,7 +1,9 @@
 import { ApiRequestError } from '../api/errors/ApiRequestError';
+import { selectFaviconTarget } from '../rust/RustCore';
 import { base64ToBytes } from '../utilities/Base64';
 
 import type { WebApiService } from '../api/WebApiService';
+import type SqliteClient from '../database/SqliteClient';
 import type { FaviconTarget } from '../rust/RustCore';
 
 /**
@@ -32,7 +34,16 @@ type FaviconExtractBatchResult = {
 const BATCH_SIZE = 10;
 
 /**
- * Bulk favicon extraction for imports. Single-item favicon logic lives in FaviconService.
+ * Result of re-downloading every favicon of the personal vault.
+ */
+export type FaviconRefreshResult = {
+  status: BulkExtractStatus;
+  /** The number of items whose logo changed. */
+  changedItems: number;
+};
+
+/**
+ * Bulk favicon extraction for imports and vault-wide refreshes. Single-item favicon logic lives in FaviconService.
  */
 export class BulkFaviconService {
   /**
@@ -93,5 +104,37 @@ export class BulkFaviconService {
     }
 
     return { favicons, status: 'completed' };
+  }
+
+  /**
+   * Re-download the favicon of every item in the personal vault that shows one or none, and point each item at
+   * the favicon of its current domain.
+   * @param client The vault database
+   * @param webApi The WebAPI service for the favicon requests
+   * @param onProgress Called with the number of domains processed and the total
+   * @param signal Aborts the extraction between batches
+   * @returns The extraction outcome and the number of items whose logo changed
+   */
+  public static async refreshVaultFavicons(client: SqliteClient, webApi: WebApiService, onProgress?: (processed: number, total: number) => Promise<void> | void, signal?: AbortSignal): Promise<FaviconRefreshResult> {
+    const candidates = client.logos.getFaviconRefreshCandidates();
+    const assignments: { candidate: typeof candidates[number]; source: string | null }[] = [];
+    const targetsBySource = new Map<string, FaviconTarget>();
+    for (const candidate of candidates) {
+      const target = await selectFaviconTarget(candidate.Urls);
+      assignments.push({ candidate, source: target?.source ?? null });
+      if (target && !targetsBySource.has(target.source)) {
+        targetsBySource.set(target.source, target);
+      }
+    }
+
+    const total = targetsBySource.size;
+    await onProgress?.(0, total);
+    const result = await BulkFaviconService.extractBulk(webApi, [...targetsBySource.values()], processed => onProgress?.(processed, total), signal);
+    if (result.status === 'cancelled') {
+      return { status: result.status, changedItems: 0 };
+    }
+
+    const changedItems = await client.logos.applyFaviconRefresh(assignments, result.favicons);
+    return { status: result.status, changedItems };
   }
 }

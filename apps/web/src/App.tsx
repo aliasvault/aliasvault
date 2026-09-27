@@ -25,6 +25,7 @@ import DeleteAccount from '@/pages/settings/security/DeleteAccount';
 import Disable2Fa from '@/pages/settings/security/Disable2Fa';
 import Enable2Fa from '@/pages/settings/security/Enable2Fa';
 import SecuritySettings from '@/pages/settings/security/Security';
+import StorageInsights from '@/pages/settings/StorageInsights';
 import Sync from '@/pages/sync/Sync';
 
 /**
@@ -64,6 +65,7 @@ const App: React.FC = () => (
         <Route path="/settings/security/enable-2fa" element={<Enable2Fa />} />
         <Route path="/settings/security/disable-2fa" element={<Disable2Fa />} />
         <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
+        <Route path="/settings/storage-insights" element={<StorageInsights />} />
         <Route path="/settings/import-export" element={<ImportExport />} />
         <Route path="/settings/import-export/reset-vault" element={<ResetVault />} />
         <Route path="/settings/apps" element={<AppsSettings />} />

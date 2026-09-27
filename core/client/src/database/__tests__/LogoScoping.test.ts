@@ -46,17 +46,11 @@ describe('logo manifest scoping', () => {
     expect(rows(db, LogoQueries.GET_BEST_FOR_KEY, ['favicon', 'github.com'])[0].Name).toBe('real');
   });
 
-  it('GET_BY_ID answers for an item whose logo lives in another manifest', async () => {
+  it('GET_BY_ID only resolves a logo inside the given manifest', async () => {
     const db = await makeDb();
     db.run(`INSERT INTO Logos VALUES ('${PERSONAL}','L-PERSONAL','builtin','shopping',NULL,NULL,NULL,'t','t',0)`);
-    // Moved into the shared manifest by a restamp, still pointing at the personal logo row.
-    db.run(`INSERT INTO Items VALUES ('${SHARED}','ITEM-MOVED','L-PERSONAL','FOLDER-SHARED',0)`);
-
-    /*
-     * The write path prefers the item's own manifest but still finds the logo row the item came with, so the
-     * built-in logo the user picked is kept instead of being replaced by the domain's favicon.
-     */
-    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL', SHARED])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
+    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL', PERSONAL])[0]).toMatchObject({ Kind: 'builtin', Source: 'shopping' });
+    expect(rows(db, LogoQueries.GET_BY_ID, ['L-PERSONAL', SHARED])).toEqual([]);
   });
 
   it('GET_ID_FOR_KEY will not hand one manifest another manifest row', async () => {

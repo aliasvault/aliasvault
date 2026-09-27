@@ -19,7 +19,8 @@ import {
   SettingsRepository,
   EncryptionKeyRepository,
   LogoRepository,
-  ImportExportRepository
+  ImportExportRepository,
+  StorageInsightsRepository
 } from './index';
 
 import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
@@ -62,6 +63,7 @@ export class SqliteClient implements ISyncDatabaseClient {
   private _encryptionKeys: SyncRepository<EncryptionKeyRepository> | null = null;
   private _logos: SyncRepository<LogoRepository> | null = null;
   private _importExport: SyncRepository<ImportExportRepository> | null = null;
+  private _storageInsights: SyncRepository<StorageInsightsRepository> | null = null;
   private _logoRepository: LogoRepository | null = null;
 
   /**
@@ -150,6 +152,16 @@ export class SqliteClient implements ISyncDatabaseClient {
       this._importExport = syncRepository(new ImportExportRepository(this, this.logoRepository), this);
     }
     return this._importExport;
+  }
+
+  /**
+   * Repository for the storage statistics of the local vault.
+   */
+  public get storageInsights(): SyncRepository<StorageInsightsRepository> {
+    if (!this._storageInsights) {
+      this._storageInsights = syncRepository(new StorageInsightsRepository(this), this);
+    }
+    return this._storageInsights;
   }
 
   /**
