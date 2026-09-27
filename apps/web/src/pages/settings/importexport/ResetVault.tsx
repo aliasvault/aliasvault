@@ -1,4 +1,3 @@
-import { MasterPasswordService, PasswordVerificationResult } from '@aliasvault/client/auth/MasterPasswordService';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +15,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { verifyMasterPassword } from '@/utils/MasterPasswordCheck';
 
 /**
  * Empty the vault while keeping the account: confirm the username, then prompt to verify the master password.
@@ -69,13 +69,8 @@ const ResetVault: React.FC = () => {
     notifications.clearMessages();
 
     try {
-      const verificationResult = await MasterPasswordService.verifyPassword(password);
-      if (verificationResult === PasswordVerificationResult.InvalidPassword) {
+      if (!await verifyMasterPassword(password)) {
         notifications.addErrorMessage(t(`${tk}.ResetVaultPasswordIncorrect`), true);
-        return;
-      }
-      if (verificationResult !== PasswordVerificationResult.Success) {
-        notifications.addErrorMessage(t(`${tk}.ResetVaultErrorMessage`), true);
         return;
       }
 

@@ -1,4 +1,3 @@
-import { MasterPasswordService, PasswordVerificationResult } from '@aliasvault/client/auth/MasterPasswordService';
 import { AliasVaultCsvExportService } from '@aliasvault/client/transfer/export/AliasVaultCsvExportService';
 import { AvexExportService } from '@aliasvault/client/transfer/export/AvexExportService';
 import { AvuxExportService } from '@aliasvault/client/transfer/export/AvuxExportService';
@@ -20,6 +19,7 @@ import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { verifyMasterPassword } from '@/utils/MasterPasswordCheck';
 
 /**
  * The export formats.
@@ -182,25 +182,16 @@ const ImportExport: React.FC = () => {
 
     showLoading(t(`${tk}.VerifyingPasswordMessage`));
     try {
-      const result = await MasterPasswordService.verifyPassword(password);
+      const isValid = await verifyMasterPassword(password);
       hideLoading();
 
-      switch (result) {
-        case PasswordVerificationResult.Success:
-          if (currentExportType === ExportType.Avex) {
-            setShowExportPasswordModal(true);
-          } else {
-            await handleExportConfirmed();
-          }
-          break;
-        case PasswordVerificationResult.InvalidPassword:
-          setPasswordError(t(`${tk}.PasswordIncorrect`));
-          setShowPasswordConfirmation(true);
-          break;
-        default:
-          setPasswordError(t(`${tk}.PasswordVerificationFailed`));
-          setShowPasswordConfirmation(true);
-          break;
+      if (!isValid) {
+        setPasswordError(t(`${tk}.PasswordIncorrect`));
+        setShowPasswordConfirmation(true);
+      } else if (currentExportType === ExportType.Avex) {
+        setShowExportPasswordModal(true);
+      } else {
+        await handleExportConfirmed();
       }
     } catch (error) {
       console.error('[Export] Error verifying password:', error);
