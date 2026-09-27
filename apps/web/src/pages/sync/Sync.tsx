@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { waitForMinimumDuration } from '@/utils/Delay';
 import { getLocalPreference, removeLocalPreference } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
@@ -52,10 +53,7 @@ const Sync: React.FC = () => {
    * Go to the page the user wanted, else the default entry page.
    */
   const navigateToHome = useCallback(async (): Promise<void> => {
-    const elapsed = Date.now() - startedAt.current;
-    if (elapsed < MINIMUM_LOADING_TIME_MS) {
-      await new Promise(resolve => setTimeout(resolve, MINIMUM_LOADING_TIME_MS - elapsed));
-    }
+    await waitForMinimumDuration(startedAt.current, MINIMUM_LOADING_TIME_MS);
 
     const returnUrl = getLocalPreference(LocalPreferenceKeys.RETURN_URL)?.trim();
     removeLocalPreference(LocalPreferenceKeys.RETURN_URL);

@@ -33,6 +33,7 @@ import {
   addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
   type ItemEdit, itemEditFromItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
 } from '@/models/ItemEdit';
+import { waitForMinimumDuration } from '@/utils/Delay';
 import { generateAliasEmail, generateIdentity, generateRandomEmail, generateUsername, type GeneratedAliasData } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
@@ -381,7 +382,7 @@ const ItemAddEdit: React.FC = () => {
     try {
       const saved = await saveItem(edit, { original: editMode && manifestId ? { Id: edit.Id, ManifestId: manifestId } : undefined, originalAttachmentIds: originalAttachmentIds.current, originalTotpCodeIds: originalTotpCodeIds.current, deletePasskeys: passkeyMarkedForDeletion });
       // Keep the saving indicator up for a moment: a save that completes instantly reads as a flicker.
-      await new Promise(resolve => setTimeout(resolve, Math.max(0, MIN_SAVE_INDICATOR_MS - (Date.now() - startedAt))));
+      await waitForMinimumDuration(startedAt, MIN_SAVE_INDICATOR_MS);
       notifications.addSuccessMessage(editMode ? t(`${tk}.ItemUpdatedSuccess`) : t(`${tk}.ItemCreatedSuccess`));
       navigate(itemRoute(saved));
     } catch (error) {

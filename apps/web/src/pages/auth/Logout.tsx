@@ -6,6 +6,7 @@ import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { delay } from '@/utils/Delay';
 import { WebAuthnService } from '@/utils/WebAuthnService';
 
 /**
@@ -32,7 +33,7 @@ const Logout: React.FC = () => {
       WebAuthnService.disable();
       await auth.logout({ userInitiated: true });
       notifications.clearMessages();
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await delay(500);
       navigate('/', { replace: true });
     };
     void run();
