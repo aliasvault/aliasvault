@@ -10,10 +10,10 @@ import { useNavigate } from 'react-router-dom';
 
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import Button from '@/components/shared/Button';
+import Modal from '@/components/shared/Modal';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
-import { useClickOutside } from '@/hooks/useClickOutside';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { delay } from '@/utils/Delay';
 
@@ -200,7 +200,6 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const uploadedFilename = useRef<string | null>(null);
   const uploadedFileSize = useRef(0);
 
-  const modalRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -265,8 +264,6 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     uploadedFilename.current = null;
     uploadedFileSize.current = 0;
   }, []);
-
-  useClickOutside([modalRef], closeModal, isModalOpen && !isImporting);
 
   /**
    * Drop the credentials the vault already holds and determine what is left for the preview.
@@ -640,7 +637,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       {showFailureDetails && (
         <div className="mt-2 ml-7 flex items-start gap-2">
           <textarea readOnly rows={4} value={buildFailureDetailsText()} className="flex-1 text-xs font-mono p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 leading-snug" />
-          <button type="button" onClick={() => void copyToClipboard(buildFailureDetailsText())} title={t(`${tk}.ImportErrorCopyDetailsButton`)} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button type="button" onClick={() => void copyToClipboard(buildFailureDetailsText())} title={t(`${tk}.ImportErrorCopyDetailsButton`)} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
             </svg>
@@ -779,32 +776,30 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       </div>
 
       {isModalOpen && (
-        <div className="modal-dialog fixed inset-0 z-50 overflow-auto bg-gray-500 bg-opacity-75 flex items-start justify-center" onKeyDown={handleModalKeyDown}>
-          <div ref={modalRef} id="importServiceModal" className="relative mt-[160px] mb-8 mx-auto p-5 shadow-lg rounded-md bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-400 md:min-w-[32rem]">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full mx-auto">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex">
-                  <img src={logoUrl} alt={`${serviceName} logo`} className="w-8 h-8 float-left mr-4" />
-                  <h3 className="text-xl font-semibold dark:text-white">{t(`${tk}.ImportFromServiceTitle`, { 0: serviceName })}</h3>
-                </div>
-                <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
+        <Modal id="importServiceModal" position="top" onKeyDown={handleModalKeyDown} onBackdropClick={currentStep === ImportStep.FileUpload && !isImporting ? closeModal : undefined} panelClassName="p-5 md:min-w-[32rem]">
+          <div className="p-4 w-full mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex">
+                <img src={logoUrl} alt={`${serviceName} logo`} className="w-8 h-8 float-left mr-4" />
+                <h3 className="text-xl font-semibold dark:text-white">{t(`${tk}.ImportFromServiceTitle`, { 0: serviceName })}</h3>
               </div>
-
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
-                <div className="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
-              </div>
-
-              {currentStep === ImportStep.FileUpload && renderFileUploadStep()}
-              {currentStep === ImportStep.PasswordInput && renderPasswordInputStep()}
-              {currentStep === ImportStep.Preview && renderPreviewStep()}
-              {currentStep === ImportStep.Confirm && renderConfirmStep()}
+              <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
             </div>
+
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 dark:bg-gray-700">
+              <div className="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }}></div>
+            </div>
+
+            {currentStep === ImportStep.FileUpload && renderFileUploadStep()}
+            {currentStep === ImportStep.PasswordInput && renderPasswordInputStep()}
+            {currentStep === ImportStep.Preview && renderPreviewStep()}
+            {currentStep === ImportStep.Confirm && renderConfirmStep()}
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );

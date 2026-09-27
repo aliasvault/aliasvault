@@ -58,6 +58,7 @@ const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ i
       confirmDisabled={password.length === 0}
       onConfirm={handleConfirm}
       onClose={handleClose}
+      closeOnOverlayClick={false}
       submitOnEnter={true}
       icon={(
         <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
