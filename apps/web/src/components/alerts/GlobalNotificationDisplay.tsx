@@ -21,7 +21,12 @@ const GlobalNotificationDisplay: React.FC<GlobalNotificationDisplayProps> = ({ m
   const [messages, setMessages] = useState<Notification[]>([]);
 
   useEffect(() => {
-    setMessages(takeMessages());
+    const taken = takeMessages();
+    setMessages(taken);
+    if (taken.length > 0) {
+      // Messages render at the top of the page, so bring them into view when the user has scrolled down.
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [takeMessages, version, location.pathname]);
 
   if (messages.length === 0) {

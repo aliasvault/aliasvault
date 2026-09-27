@@ -167,4 +167,12 @@
     <value>This re-fetches the favicon for every credential that has a website URL, replacing the existing logo. Depending on your vault size this may take a while. Continue?</value>
     <comment>Confirmation modal body for redownload-all-logos</comment>
   </data>
+  <data name="DeleteAllLogosSuccessMessage">
+    <value>Removed the logo of {0} items.</value>
+    <comment>Success message after deleting all logos, {0} is the number of items</comment>
+  </data>
+  <data name="RedownloadAllLogosSuccessMessage">
+    <value>Updated the logo of {0} items.</value>
+    <comment>Success message after re-downloading all logos, {0} is the number of items</comment>
+  </data>
 </root>

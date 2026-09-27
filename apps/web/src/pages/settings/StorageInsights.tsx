@@ -211,10 +211,11 @@ const StorageInsights: React.FC = () => {
     }
     setIsDeletingLogos(true);
     try {
+      let removed = 0;
       await executeVaultMutationAsync(async () => {
-        await client.logos.deleteAllFavicons();
+        removed = await client.logos.deleteAllFavicons();
       });
-      notifications.addSuccessMessage(t('sharedResources.Success'));
+      notifications.addSuccessMessage(t(`${tk}.DeleteAllLogosSuccessMessage`, { 0: removed }), true);
     } catch (error) {
       console.error('Failed to delete the logos:', error);
       notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
@@ -239,14 +240,16 @@ const StorageInsights: React.FC = () => {
     setRedownloadProgress({ processed: 0, total: 0 });
     try {
       let rateLimited = false;
+      let changed = 0;
       await executeVaultMutationAsync(async () => {
         const result = await BulkFaviconService.refreshVaultFavicons(client, webApi, (processed, total) => setRedownloadProgress({ processed, total }));
         rateLimited = result.status === 'rateLimited';
+        changed = result.changedItems;
       });
       if (rateLimited) {
         notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
       } else {
-        notifications.addSuccessMessage(t('sharedResources.Success'));
+        notifications.addSuccessMessage(t(`${tk}.RedownloadAllLogosSuccessMessage`, { 0: changed }), true);
       }
     } catch (error) {
       console.error('Failed to re-download the logos:', error);
