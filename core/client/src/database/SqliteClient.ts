@@ -19,6 +19,7 @@ import {
   SettingsRepository,
   EncryptionKeyRepository,
   LogoRepository,
+  ImportExportRepository
 } from './index';
 
 import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
@@ -60,6 +61,7 @@ export class SqliteClient implements ISyncDatabaseClient {
   private _settings: SyncRepository<SettingsRepository> | null = null;
   private _encryptionKeys: SyncRepository<EncryptionKeyRepository> | null = null;
   private _logos: SyncRepository<LogoRepository> | null = null;
+  private _importExport: SyncRepository<ImportExportRepository> | null = null;
   private _logoRepository: LogoRepository | null = null;
 
   /**
@@ -141,7 +143,17 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * The logo repository itself, which the item repository calls into.
+   * Repository for the import/export logic.
+   */
+  public get importExport(): SyncRepository<ImportExportRepository> {
+    if (!this._importExport) {
+      this._importExport = syncRepository(new ImportExportRepository(this, this.logoRepository), this);
+    }
+    return this._importExport;
+  }
+
+  /**
+   * The logo repository itself, which the item and import/export repositories call into.
    */
   private get logoRepository(): LogoRepository {
     if (!this._logoRepository) {
@@ -185,6 +197,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this._folders = null;
       this._settings = null;
       this._logos = null;
+      this._importExport = null;
     } catch (error) {
       logDefect('[Sqlite] Initializing the database failed', error);
       throw error;
