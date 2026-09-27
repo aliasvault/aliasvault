@@ -17,6 +17,8 @@ import ItemView from '@/pages/items/View';
 import NotFound from '@/pages/NotFound';
 import AppsSettings from '@/pages/settings/Apps';
 import GeneralSettings from '@/pages/settings/General';
+import ImportExport from '@/pages/settings/importexport/ImportExport';
+import ResetVault from '@/pages/settings/importexport/ResetVault';
 import ChangePassword from '@/pages/settings/security/ChangePassword';
 import DeleteAccount from '@/pages/settings/security/DeleteAccount';
 import Disable2Fa from '@/pages/settings/security/Disable2Fa';
@@ -60,6 +62,8 @@ const App: React.FC = () => (
         <Route path="/settings/security/enable-2fa" element={<Enable2Fa />} />
         <Route path="/settings/security/disable-2fa" element={<Disable2Fa />} />
         <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
+        <Route path="/settings/import-export" element={<ImportExport />} />
+        <Route path="/settings/import-export/reset-vault" element={<ResetVault />} />
         <Route path="/settings/apps" element={<AppsSettings />} />
       </Route>
 
