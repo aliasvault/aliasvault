@@ -1,4 +1,5 @@
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
 import { FieldKey } from '@aliasvault/models/vault';
 import { useCallback } from 'react';
 
@@ -8,6 +9,7 @@ import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { type ItemEdit, itemEditToItem } from '@/models/ItemEdit';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
+import type { Item, LogoSelection } from '@aliasvault/models/vault';
 
 /**
  * How an item form is saved.
@@ -17,6 +19,9 @@ export type SaveItemOptions = {
   originalAttachmentIds?: string[];
   originalTotpCodeIds?: string[];
   deletePasskeys?: boolean;
+  logoSelection?: LogoSelection;
+  resolvedFaviconSource?: string | null;
+  resolvedFaviconBytes?: Item['Logo'];
 };
 
 /**
@@ -35,7 +40,12 @@ export function useSaveItem(): { saveItem: (edit: ItemEdit, options?: SaveItemOp
 
     let item = itemEditToItem(edit);
     const urlValue = item.Fields.find(f => f.FieldKey === FieldKey.LoginUrl)?.Value;
-    if (urlValue && urlValue.length > 0) {
+    // The form's preview already fetched this domain's icon: save exactly what it shows instead of fetching again.
+    const usesAutomaticLogo = usesWebsiteLogo(options.logoSelection);
+    const isLogoResolved = usesAutomaticLogo && !!options.resolvedFaviconSource && options.resolvedFaviconSource === (await FaviconService.resolveTarget(urlValue))?.source;
+    if (isLogoResolved) {
+      item.Logo = options.resolvedFaviconBytes;
+    } else if (usesAutomaticLogo && urlValue && urlValue.length > 0) {
       item = await FaviconService.fetchAndAttachFavicon(item, urlValue, client.logos, webApi);
     } else {
       item.Logo = undefined;
@@ -46,14 +56,14 @@ export function useSaveItem(): { saveItem: (edit: ItemEdit, options?: SaveItemOp
       const original = options.original;
       if (original) {
         // A folder change can move the item to another manifest; the update reports where it ended up.
-        saved = await client.items.update(original, item, options.originalAttachmentIds ?? [], edit.Attachments, options.originalTotpCodeIds ?? [], edit.TotpCodes) ?? original;
+        saved = await client.items.update(original, item, options.originalAttachmentIds ?? [], edit.Attachments, options.originalTotpCodeIds ?? [], edit.TotpCodes, options.logoSelection) ?? original;
         if (options.deletePasskeys) {
           for (const passkey of edit.Passkeys) {
             await client.passkeys.deleteById(passkey.Id, saved.ManifestId);
           }
         }
       } else {
-        saved = await client.items.create(item, edit.Attachments.filter(a => !a.IsDeleted), edit.TotpCodes.filter(c => !c.IsDeleted));
+        saved = await client.items.create(item, edit.Attachments.filter(a => !a.IsDeleted), edit.TotpCodes.filter(c => !c.IsDeleted), options.logoSelection);
       }
     });
 

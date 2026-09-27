@@ -1,11 +1,11 @@
-import { fieldAppliesToType, FieldKey, getFieldConfigForType, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, type ItemType, ItemTypes, SystemFieldRegistry } from '@aliasvault/models/vault';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { fieldAppliesToType, FieldKey, getFieldConfigForType, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, type Item, type ItemLogo, type ItemType, ItemTypes, SystemFieldRegistry } from '@aliasvault/models/vault';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import AttachmentUploader from '@/components/attachments/AttachmentUploader';
 import DraggableCustomFieldsList from '@/components/forms/DraggableCustomFieldsList';
-import EditFormRow from '@/components/forms/EditFormRow';
+import EditFormRow, { EDIT_INPUT_CLASSES } from '@/components/forms/EditFormRow';
 import EditPasswordFormRow from '@/components/forms/EditPasswordFormRow';
 import EditUsernameFormRow from '@/components/forms/EditUsernameFormRow';
 import EmailDomainField from '@/components/forms/EmailDomainField';
@@ -14,11 +14,13 @@ import RemovableSection from '@/components/forms/RemovableSection';
 import AddFieldMenu from '@/components/items/AddFieldMenu';
 import { buildFolderBreadcrumbs } from '@/components/items/FolderBreadcrumbs';
 import FolderSelector from '@/components/items/FolderSelector';
+import ItemLogoPicker from '@/components/items/ItemLogoPicker';
 import ItemTypeSelector from '@/components/items/ItemTypeSelector';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
+import FormLabel from '@/components/shared/FormLabel';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import StickyActionBar from '@/components/shared/StickyActionBar';
@@ -27,12 +29,13 @@ import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
+import useItemLogo from '@/hooks/useItemLogo';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSaveItem } from '@/hooks/useSaveItem';
 import { VaultPushFailedError } from '@/hooks/useVaultMutate';
 import {
   addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
-  type ItemEdit, itemEditFromItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
+  type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
 } from '@/models/ItemEdit';
 import { waitForMinimumDuration } from '@/utils/Delay';
 import { generateAliasEmail, generateIdentity, generateRandomEmail, generateUsername, type GeneratedAliasData } from '@/utils/IdentityGenerator';
@@ -62,9 +65,9 @@ const PasskeyIcon: React.FC<{ className: string }> = ({ className }) => (
 );
 
 /**
- * The item create and edit page.
+ * The item create and edit form.
  */
-const ItemAddEdit: React.FC = () => {
+const ItemAddEditForm: React.FC = () => {
   const { manifestId, id } = useParams<{ manifestId: string; id: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -94,6 +97,13 @@ const ItemAddEdit: React.FC = () => {
   const originalTotpCodeIds = useRef<string[]>([]);
   const originalAttachmentIds = useRef<string[]>([]);
   const lastGenerated = useRef<GeneratedAliasData | null>(null);
+  const [storedLogo, setStoredLogo] = useState<ItemLogo | undefined>(undefined);
+  const [logoBytes, setLogoBytes] = useState<Item['Logo']>(undefined);
+
+  /**
+   * Keep the icon bytes the form previews, so saving stores exactly what is shown.
+   */
+  const handleLogoBytesChange = useCallback((data?: Uint8Array): void => setLogoBytes(current => current === data ? current : data), []);
 
   /**
    * Apply a change to the form.
@@ -197,6 +207,8 @@ const ItemAddEdit: React.FC = () => {
         const totpCodes = client.items.getTotpCodesForItem(ref);
         const attachments = client.items.getAttachmentsForItem(ref);
         const passkeys = client.passkeys.getByItemId(ref);
+        setStoredLogo(item.LogoInfo);
+        setLogoBytes(item.Logo);
         let loaded = itemEditFromItem(item, totpCodes, attachments, passkeys);
         originalTotpCodeIds.current = loaded.TotpCodes.map(c => c.Id);
         originalAttachmentIds.current = loaded.Attachments.map(a => a.Id);
@@ -258,6 +270,18 @@ const ItemAddEdit: React.FC = () => {
   }, [dbContext.sqliteClient, editMode, manifestId, id, location.search]);
 
   const hasLoginFields = edit.ItemType === ItemTypes.Login || edit.ItemType === ItemTypes.Alias;
+  const urlKey = getFieldValues(edit, FieldKey.LoginUrl).join('\n');
+  const logoUrls = useMemo(() => urlKey.split('\n'), [urlKey]);
+
+  // The item's icon: a pick from the built-in catalog, or the website's own favicon resolved from the URL.
+  const { logoSelection, isFetchingLogo, resolvedFaviconSource, websiteSource, selectLogo, fetchLogoFromWebsite } = useItemLogo({
+    url: logoUrls,
+    currentLogoKind: storedLogo?.Kind,
+    isReady: !loading,
+    isExistingItem: editMode,
+    onLogoBytesChange: handleLogoBytesChange,
+  });
+  const logoPreviewItem = useMemo(() => ({ ...itemEditToItem(edit), LogoInfo: storedLogo, Logo: logoBytes }), [edit, storedLogo, logoBytes]);
 
   /**
    * Whether a system field is on the form: it applies to the type and was added, was there on load, has a value or
@@ -385,7 +409,7 @@ const ItemAddEdit: React.FC = () => {
     showLoading(t(`${tk}.SavingVaultMessage`));
     const startedAt = Date.now();
     try {
-      const saved = await saveItem(edit, { original: editMode && manifestId ? { Id: edit.Id, ManifestId: manifestId } : undefined, originalAttachmentIds: originalAttachmentIds.current, originalTotpCodeIds: originalTotpCodeIds.current, deletePasskeys: passkeyMarkedForDeletion });
+      const saved = await saveItem(edit, { original: editMode && manifestId ? { Id: edit.Id, ManifestId: manifestId } : undefined, originalAttachmentIds: originalAttachmentIds.current, originalTotpCodeIds: originalTotpCodeIds.current, deletePasskeys: passkeyMarkedForDeletion, logoSelection, resolvedFaviconSource, resolvedFaviconBytes: logoBytes });
       // Keep the saving indicator up for a moment: a save that completes instantly reads as a flicker.
       await waitForMinimumDuration(startedAt, MIN_SAVE_INDICATOR_MS);
       notifications.addSuccessMessage(editMode ? t(`${tk}.ItemUpdatedSuccess`) : t(`${tk}.ItemCreatedSuccess`));
@@ -491,12 +515,26 @@ const ItemAddEdit: React.FC = () => {
                   <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.ServiceSectionHeader`)}</h3>
                   <div className="grid gap-6">
                     <div className="col-span-6 sm:col-span-3">
-                      <EditFormRow id="service-name" label={t(`${tk}.ServiceNameLabel`)} placeholder={t(`${tk}.ServiceNamePlaceholder`)} value={edit.ServiceName} onChange={(value) => {
-                        setNameError('');
-                        update(current => ({ ...current, ServiceName: value }));
-                      }} />
-                      {nameError.length > 0 && <div className="validation-message text-red-600 dark:text-red-400 text-sm mt-1">{nameError}</div>}
-                      <FolderSelector selectedFolder={edit.FolderId ? { Id: edit.FolderId, ManifestId: edit.ManifestId } : null} onSelectedFolderChange={folder => update(current => setFolder(current, folder, dbContext.sqliteClient?.getPersonalManifestId() ?? null))} />
+                      <FormLabel htmlFor="service-name">{t(`${tk}.ServiceNameLabel`)}</FormLabel>
+                      <div className="flex items-start gap-4">
+                        <ItemLogoPicker
+                          item={logoPreviewItem}
+                          pendingSelection={logoSelection}
+                          faviconSource={resolvedFaviconSource}
+                          websiteSource={websiteSource}
+                          isFetching={isFetchingLogo}
+                          onSelect={selectLogo}
+                          onFetchFromWebsite={() => void fetchLogoFromWebsite()}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <input type="text" id="service-name" autoComplete="off" className={EDIT_INPUT_CLASSES} value={edit.ServiceName} placeholder={t(`${tk}.ServiceNamePlaceholder`)} autoCapitalize="off" autoCorrect="off" onChange={(e) => {
+                            setNameError('');
+                            update(current => ({ ...current, ServiceName: e.target.value }));
+                          }} />
+                          {nameError.length > 0 && <div className="validation-message text-red-600 dark:text-red-400 text-sm mt-1">{nameError}</div>}
+                          <FolderSelector selectedFolder={edit.FolderId ? { Id: edit.FolderId, ManifestId: edit.ManifestId } : null} onSelectedFolderChange={folder => update(current => setFolder(current, folder, dbContext.sqliteClient?.getPersonalManifestId() ?? null))} />
+                        </div>
+                      </div>
                     </div>
                     {shouldShowField(FieldKey.LoginUrl) && (
                       <div className="col-span-6 sm:col-span-3">
@@ -716,6 +754,15 @@ const ItemAddEdit: React.FC = () => {
       )}
     </>
   );
+};
+
+/**
+ * The item create and edit page.
+ */
+const ItemAddEdit: React.FC = () => {
+  const { manifestId, id } = useParams<{ manifestId: string; id: string }>();
+  const location = useLocation();
+  return <ItemAddEditForm key={`${manifestId}/${id}${location.search}`} />;
 };
 
 export default ItemAddEdit;

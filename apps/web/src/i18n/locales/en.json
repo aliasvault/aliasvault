@@ -675,6 +675,31 @@
   "content": {
     "vaultUpgradeRequired": "Vault upgrade required."
   },
+  "items": {
+    "logo": {
+      "builtin": {
+        "Bank": "Banking",
+        "Dev": "Development",
+        "Game": "Games",
+        "Health": "Health",
+        "Mail": "Mail",
+        "Media": "Media",
+        "Shopping": "Shopping",
+        "Social": "Social",
+        "Travel": "Travel",
+        "Work": "Work"
+      },
+      "builtinLogos": "Icon library",
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceFavicon": "From {{domain}}",
+      "sourceNone": "No icon"
+    }
+  },
   "layout": {
     "footer": {
       "CopyrightText": "All rights reserved.",
