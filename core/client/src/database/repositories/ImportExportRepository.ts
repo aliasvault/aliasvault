@@ -73,7 +73,7 @@ export class ImportExportRepository extends BaseRepository {
     const definitionsByKey = new Map(fieldDefinitions.map(definition => [scopedKey(definition.ManifestId, definition.Id), definition]));
 
     const fieldValueRows = yield* this.query<ChildRow & { Id: string; FieldKey: string | null; FieldDefinitionId: string | null; Value: string | null; Weight: number; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT fv.Id, fv.ItemId, fv.ManifestId, fv.FieldKey, fv.FieldDefinitionId, fv.Value, fv.Weight, fv.CreatedAt, fv.UpdatedAt FROM FieldValues fv INNER JOIN Items i ON i.Id = fv.ItemId AND i.ManifestId = fv.ManifestId WHERE fv.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL ORDER BY fv.Weight'
+      'SELECT fv.Id, fv.ItemId, fv.ManifestId, fv.FieldKey, fv.FieldDefinitionId, fv.Value, fv.Weight, fv.CreatedAt, fv.UpdatedAt FROM FieldValues fv INNER JOIN Items i ON i.Id = fv.ItemId AND i.ManifestId = fv.ManifestId WHERE fv.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL ORDER BY fv.Weight, fv.ValueIndex'
     );
     const fieldValuesByItem = ImportExportRepository.groupByItem(fieldValueRows, (row): FieldValueEntity => ({
       Id: row.Id,
@@ -265,7 +265,6 @@ export class ImportExportRepository extends BaseRepository {
       item.ItemType,
       item.LogoId,
       item.FolderId,
-      item.FolderId,
       manifestId,
       createdAt,
       updatedAt,
@@ -274,13 +273,14 @@ export class ImportExportRepository extends BaseRepository {
 
     // Custom field definitions come before the values that reference them; each is written once.
     const writtenDefinitions = new Set<string>();
+    // Values of one multi-value field are numbered in file order.
+    const valueIndexes = new Map<string, number>();
     for (const fieldValue of item.FieldValues) {
       const definition = fieldValue.FieldDefinition;
       if (definition && !writtenDefinitions.has(definition.Id)) {
         writtenDefinitions.add(definition.Id);
         yield* this.execute(FieldDefinitionQueries.INSERT, [
           definition.Id,
-          item.Id,
           manifestId,
           definition.FieldType,
           definition.Label,
@@ -295,15 +295,19 @@ export class ImportExportRepository extends BaseRepository {
         ]);
       }
 
+      const fieldIdentity = fieldValue.FieldDefinitionId ?? fieldValue.FieldKey ?? '';
+      const valueIndex = valueIndexes.get(fieldIdentity) ?? 0;
+      valueIndexes.set(fieldIdentity, valueIndex + 1);
+
       yield* this.execute(FieldValueQueries.INSERT, [
         fieldValue.Id,
-        item.Id,
         item.Id,
         manifestId,
         fieldValue.FieldDefinitionId,
         fieldValue.FieldKey,
         fieldValue.Value ?? '',
         fieldValue.Weight,
+        valueIndex,
         toStandardFormat(fieldValue.CreatedAt),
         toStandardFormat(fieldValue.UpdatedAt),
         0,
@@ -319,7 +323,6 @@ export class ImportExportRepository extends BaseRepository {
         totpCode.Digits,
         totpCode.Period,
         item.Id,
-        item.Id,
         manifestId,
         toStandardFormat(totpCode.CreatedAt),
         toStandardFormat(totpCode.UpdatedAt),
@@ -330,7 +333,6 @@ export class ImportExportRepository extends BaseRepository {
     for (const passkey of item.Passkeys) {
       yield* this.execute(PasskeyQueries.INSERT, [
         passkey.Id,
-        item.Id,
         item.Id,
         manifestId,
         passkey.RpId,
@@ -351,7 +353,6 @@ export class ImportExportRepository extends BaseRepository {
         attachment.Id,
         attachment.Filename,
         attachment.Blob,
-        item.Id,
         item.Id,
         manifestId,
         toStandardFormat(attachment.CreatedAt),
