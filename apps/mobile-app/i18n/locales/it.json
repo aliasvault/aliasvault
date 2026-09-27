@@ -331,10 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Conferma Richiesta Di Accesso",
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
-        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
-        "selectCode": "Tap the number shown on the other device",
-        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
-        "codeMismatch": "The number does not match. The login request was declined.",
+        "confirmMessage": "Un altro dispositivo sta chiedendo di accedere con il tuo account. Otterrà pieno accesso alla tua cassaforte. Continua solo se hai avviato tu stesso questo accesso.",
+        "selectCode": "Tocca il numero visualizzato sull'altro dispositivo",
+        "openedFromLink": "Continua solo se hai scansionato questo codice QR con la tua fotocamera. Se sei arrivato qui toccando un link o un pulsante, rifiuta.",
+        "codeMismatch": "Il numero non corrisponde. La richiesta di accesso è stata rifiutata.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
         "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
       }
@@ -593,26 +593,26 @@
       "allItemsDeleted": "Tutti gli elementi sono stati eliminati definitivamente"
     },
     "logo": {
-      "chooseLogo": "Choose icon",
-      "currentLogo": "Current icon",
-      "builtinLogos": "Icon library",
-      "fetchFromWebsite": "Fetch icon from website",
-      "refetchFromWebsite": "(Re)fetch icon from website",
-      "sourceFavicon": "From {{domain}}",
-      "sourceBuiltin": "Built-in icon",
-      "sourceCustom": "Custom icon",
-      "sourceNone": "No icon",
+      "chooseLogo": "Scegli l'icona",
+      "currentLogo": "Icona attuale",
+      "builtinLogos": "Libreria icone",
+      "fetchFromWebsite": "Recupera icona dal web",
+      "refetchFromWebsite": "(Re)Recupera icona dal web",
+      "sourceFavicon": "Da {{domain}}",
+      "sourceBuiltin": "Icona integrata",
+      "sourceCustom": "Icona personalizzata",
+      "sourceNone": "Nessuna icona",
       "builtin": {
         "Shopping": "Shopping",
         "Bank": "Banking",
         "Mail": "Mail",
         "Social": "Social",
-        "Work": "Work",
-        "Game": "Games",
+        "Work": "Lavoro",
+        "Game": "Giochi",
         "Media": "Media",
-        "Travel": "Travel",
-        "Health": "Health",
-        "Dev": "Development"
+        "Travel": "Viaggio",
+        "Health": "Salute",
+        "Dev": "Sviluppo"
       }
     }
   },
@@ -738,9 +738,9 @@
     "whatsNew": "Novità",
     "whatsNewDescription": "È richiesto un aggiornamento per supportare i seguenti cambiamenti:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
-    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
-    "successTitle": "Vault upgraded",
-    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
+    "otherDevicesWarning": "Dopo questo aggiornamento, le tue altre applicazioni AliasVault avranno bisogno della versione {{version}} o più recente. Le app più vecchie e le estensioni del browser saranno disconnesse e sarà necessario aggiornarle prima che possano riaprire la cassaforte.",
+    "successTitle": "Cassaforte aggiornata",
+    "successOtherDevices": "La cassaforte è pronta per l'uso. Assicurati di aggiornare l'app AliasVault anche sugli altri dispositivi.",
     "status": {
       "preparingUpgrade": "Preparazione aggiornamento...",
       "applyingDatabaseMigrations": "Applicazione migrazioni database...",
