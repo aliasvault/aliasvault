@@ -13,6 +13,7 @@ import EmailsHome from '@/pages/emails/Home';
 import Home from '@/pages/Home';
 import ItemAddEdit from '@/pages/items/AddEdit';
 import ItemsHome from '@/pages/items/Home';
+import RecentlyDeleted from '@/pages/items/RecentlyDeleted';
 import ItemView from '@/pages/items/View';
 import NotFound from '@/pages/NotFound';
 import AppsSettings from '@/pages/settings/Apps';
@@ -51,6 +52,7 @@ const App: React.FC = () => (
         <Route path="/" element={<Home />} />
         <Route path="/items" element={<ItemsHome />} />
         <Route path="/items/folder/:manifestId/:folderId" element={<ItemsHome />} />
+        <Route path="/items/recently-deleted" element={<RecentlyDeleted />} />
         <Route path="/items/create" element={<ItemAddEdit />} />
         <Route path="/items/:manifestId/:id/edit" element={<ItemAddEdit />} />
         <Route path="/items/:manifestId/:id" element={<ItemView />} />
