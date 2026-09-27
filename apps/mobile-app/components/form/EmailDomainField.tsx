@@ -5,6 +5,7 @@ import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Pressable, 
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 
@@ -418,7 +419,6 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       paddingVertical: 12,
     },
     modalOverlay: {
-      backgroundColor: colors.modalBackground,
       flex: 1,
       justifyContent: 'flex-end',
     },
@@ -536,6 +536,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         animationType="slide"
         onRequestClose={() => setIsModalVisible(false)}
       >
+        <ModalBackdrop />
         <Pressable style={styles.modalOverlay} onPress={() => setIsModalVisible(false)}>
           <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>

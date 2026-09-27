@@ -14,6 +14,7 @@ import { FieldCategories } from '@aliasvault/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 
@@ -159,7 +160,6 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
       fontWeight: '500',
     },
     modalOverlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       flex: 1,
       justifyContent: 'flex-end',
       paddingBottom: 40,
@@ -243,6 +243,7 @@ export const AddFieldMenu: React.FC<AddFieldMenuProps> = ({
         animationType="slide"
         onRequestClose={() => setIsOpen(false)}
       >
+        <ModalBackdrop />
         <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>

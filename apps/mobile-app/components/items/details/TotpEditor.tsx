@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TextInput, Modal, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDialog } from '@/context/DialogContext';
@@ -473,7 +474,6 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       flex: 1,
     },
     modalContainer: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       flex: 1,
       justifyContent: 'flex-end',
     },
@@ -621,6 +621,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         animationType="fade"
         onRequestClose={hideAddChoiceModal}
       >
+        <ModalBackdrop />
         <TouchableOpacity
           style={styles.modalContainer}
           activeOpacity={1}
@@ -680,6 +681,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         animationType="fade"
         onRequestClose={hideAddForm}
       >
+        <ModalBackdrop />
         <KeyboardAvoidingView
           style={styles.modalContainer}
           behavior="padding"
@@ -790,6 +792,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         animationType="fade"
         onRequestClose={closeEditModal}
       >
+        <ModalBackdrop />
         <KeyboardAvoidingView
           style={styles.modalContainer}
           behavior="padding"
