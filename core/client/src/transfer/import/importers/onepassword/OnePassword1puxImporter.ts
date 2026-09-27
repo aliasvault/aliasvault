@@ -3,9 +3,8 @@ import { FieldTypes, ItemTypes, type FieldType, type ItemType } from '@aliasvaul
 import { formatDateOnly, fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
 import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
+import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { readStringAtPath } from '../../readers/JsonReader';
-import { convertArchiveItems, openArchive, readArchiveJson } from '../shared/ArchiveImport';
-import { addAttachment, addCustomField } from '../shared/CredentialHelpers';
 
 import { OnePasswordCategories, OnePasswordPersonalVaultType, parseOnePassword1puxAttributes, parseOnePassword1puxData, parseOnePasswordItem, type OnePasswordField, type OnePasswordFieldValue, type OnePasswordItem, type OnePasswordVault } from './OnePassword1pux';
 

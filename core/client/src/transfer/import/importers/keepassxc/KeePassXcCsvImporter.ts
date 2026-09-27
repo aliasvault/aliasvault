@@ -6,28 +6,28 @@ import { parseUrls } from '../../readers/FieldParsers';
 import type { ImportedCredential } from '../../models/ImportedCredential';
 
 const COLUMNS = {
+  Group: text,
   Title: text,
-  Url: text,
-  Username: text,
-  Password: text,
-  OTPAuth: optionalText,
-  Tags: optionalText,
+  Username: optionalText,
+  Password: optionalText,
+  URL: optionalText,
   Notes: optionalText,
+  TOTP: optionalText,
 };
 
 /**
- * Import a 1Password CSV export. The tags become the folder.
+ * Import a KeePassXC CSV export.
  * @param fileContent - The CSV file content
  * @returns The imported credentials
  */
-export function importOnePasswordCsv(fileContent: string): ImportedCredential[] {
+export function importKeePassXcCsv(fileContent: string): ImportedCredential[] {
   return readImportCsv(fileContent, COLUMNS).map(record => ({
     ServiceName: record.Title,
-    ServiceUrls: parseUrls(record.Url),
+    ServiceUrls: parseUrls(record.URL),
     Username: record.Username,
     Password: record.Password,
-    TwoFactorSecret: record.OTPAuth,
+    TwoFactorSecret: record.TOTP,
     Notes: record.Notes,
-    FolderPath: nullIfBlank(record.Tags),
+    FolderPath: nullIfBlank(record.Group),
   }));
 }

@@ -2,7 +2,7 @@ import { ItemTypes } from '@aliasvault/models/vault';
 
 import { nullIfBlank } from '../../../shared/StringUtils';
 import { dateTime, readCsvRecords, text, type CsvColumn, type CsvRecord } from '../../readers/CsvRecordMapper';
-import { parseUrls } from '../shared/CredentialHelpers';
+import { parseUrls } from '../../readers/FieldParsers';
 
 import type { AliasVaultCsvColumn } from '../../../export/AliasVaultCsvExportService';
 import type { ImportedCredential } from '../../models/ImportedCredential';

@@ -3,9 +3,9 @@ import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { fromUnixTimeSeconds } from '../../../shared/DateTimeUtils';
 import { isBlank, nonBlank, nullIfBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
+import { addAttachment, addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
+import { mapItemType } from '../../readers/FieldParsers';
 import { readStringAtPath } from '../../readers/JsonReader';
-import { convertArchiveItems, openArchive, readArchiveJson } from '../shared/ArchiveImport';
-import { addAttachment, addCustomField, mapItemType } from '../shared/CredentialHelpers';
 
 import { ProtonPassItemStates, parseProtonPassItem, parseProtonPassJsonExport, type ProtonPassContent, type ProtonPassItem } from './ProtonPassJson';
 

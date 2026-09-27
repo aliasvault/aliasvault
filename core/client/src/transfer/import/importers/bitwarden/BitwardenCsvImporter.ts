@@ -3,7 +3,7 @@ import { ItemTypes } from '@aliasvault/models/vault';
 import { nullIfBlank } from '../../../shared/StringUtils';
 import { readImportCsv } from '../../readers/CsvImport';
 import { optionalText, text } from '../../readers/CsvRecordMapper';
-import { mapItemType, parseUrls } from '../shared/CredentialHelpers';
+import { mapItemType, parseUrls } from '../../readers/FieldParsers';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 

@@ -2,9 +2,8 @@ import { FieldTypes, ItemTypes, type ItemType } from '@aliasvault/models/vault';
 
 import { isBlank, nonBlank } from '../../../shared/StringUtils';
 import { ImportException, ImportStage } from '../../models/ImportException';
+import { addCustomField, convertArchiveItems, openArchive, readArchiveJson } from '../../readers/ArchiveImport';
 import { readStringAtPath } from '../../readers/JsonReader';
-import { convertArchiveItems, openArchive, readArchiveJson } from '../shared/ArchiveImport';
-import { addCustomField, appendNotes } from '../shared/CredentialHelpers';
 
 import { BitwardenFieldTypes, BitwardenItemTypes, parseBitwardenItem, parseBitwardenJsonExport, type BitwardenIdentity, type BitwardenItem } from './BitwardenJson';
 
@@ -100,4 +99,17 @@ function applyIdentity(credential: ImportedCredential, identity: BitwardenIdenti
   const address = nonBlank([identity.Address1, identity.Address2, identity.Address3, identity.City, identity.State, identity.PostalCode, identity.Country]).join(', ');
   const details: [string, string | null][] = [['Title', identity.Title], ['Company', identity.Company], ['Phone', identity.Phone], ['Address', address]];
   appendNotes(credential, details.filter(([, value]) => !isBlank(value)).map(([label, value]) => `${label}: ${value}`));
+}
+
+/**
+ * Append a block of text to a credential's notes, separated by an empty line.
+ * @param credential - The credential
+ * @param lines - The lines to append.
+ */
+function appendNotes(credential: ImportedCredential, lines: string[]): void {
+  if (lines.length === 0) {
+    return;
+  }
+  const block = lines.join('\n');
+  credential.Notes = isBlank(credential.Notes) ? block : `${credential.Notes}\n\n${block}`;
 }
