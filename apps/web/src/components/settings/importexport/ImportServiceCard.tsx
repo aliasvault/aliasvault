@@ -16,6 +16,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { delay } from '@/utils/Delay';
+import { formatBytes } from '@/utils/FormatBytes';
 
 import type { FaviconTarget } from '@aliasvault/client/rust/RustCore';
 import type { ImportedCredential } from '@aliasvault/client/transfer/import/models/ImportedCredential';
@@ -86,21 +87,6 @@ const yieldToPaint = (): Promise<void> =>
     requestAnimationFrame(() => setTimeout(resolve, 0));
     setTimeout(resolve, 100);
   });
-
-/**
- * Format a byte count to human readable format (e.g. "3.9 MB").
- * @param bytes - the byte count
- */
-const formatBytes = (bytes: number): string => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let size = bytes;
-  let unitIndex = 0;
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-  return unitIndex === 0 ? `${Math.round(size)} ${units[unitIndex]}` : `${(Math.round(size * 10) / 10).toString()} ${units[unitIndex]}`;
-};
 
 /**
  * One line naming an error: its class name when that says more than "Error", then the message.
