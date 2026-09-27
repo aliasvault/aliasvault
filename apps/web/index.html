@@ -17,12 +17,10 @@ https://github.com/aliasvault/aliasvault | AGPLv3
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>AliasVault</title>
 <link rel="icon" type="image/png" href="/favicon.png" />
-<link rel="manifest" href="/manifest.json" />
 <link rel="apple-touch-icon" sizes="500x500" href="/img/icon-500.png" />
 <link rel="apple-touch-icon" sizes="192x192" href="/img/icon-192.png" />
 <link rel="stylesheet" href="/src/style.css" />
 <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
-<link rel="prefetch" href="/wasm/sql-wasm-browser.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" />
 <script>
   (function () {
     var theme = localStorage.getItem('color-theme');
@@ -30,10 +28,16 @@ https://github.com/aliasvault/aliasvault | AGPLv3
       document.documentElement.classList.add('dark');
     }
   })();
+  window.addEventListener('error', function (event) {
+    if (event.target && event.target.tagName === 'SCRIPT') {
+      window.appLoadFailed = true;
+      if (window.showAppLoadError) { window.showAppLoadError(); }
+    }
+  }, true);
 </script>
 <style>
-  html { background-color: #f3f4f6; }
-  html.dark { background-color: #111827; }
+  body { background-color: #f3f4f6; }
+  html.dark body { background-color: #111827; }
   .index-aliasvault-inline-spinner { height: 51px; width: 112px; display: flex; justify-content: center; align-items: center; }
   .index-cloud-shape-inline { border: 6px solid #eabf69; border-radius: 9999px; padding: 13px 26px; display: flex; gap: 10px; align-items: center; background-color: transparent; box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1); }
   .index-dot-inline { width: 10px; height: 10px; border-radius: 9999px; background-color: #eabf69; animation: index-pulse-inverted 1.4s infinite ease-in-out; }
@@ -118,24 +122,34 @@ https://github.com/aliasvault/aliasvault | AGPLv3
   }
   var loadingScreen = document.getElementById('loading-screen');
   var errorMessageElement = document.getElementById('error-message');
+  var refreshButton = document.getElementById('refresh-button');
+  var webAssemblySupported = 'WebAssembly' in window;
   function showError(message) {
     if (errorMessageElement) {
       errorMessageElement.textContent = message;
       errorMessageElement.classList.remove('hidden');
     }
+    refreshButton.classList.remove('hidden');
+  }
+  window.showAppLoadError = function () {
+    showError(getTranslation('errors.unhandledError'));
+  };
+  if (window.appLoadFailed) {
+    window.showAppLoadError();
+  }
+  if (!webAssemblySupported) {
+    showError(getTranslation('errors.webAssemblyError'));
   }
   function manageLoadingScreen() {
     var startTime = new Date().getTime();
-    var minDisplayTime = 1000;
-    var checkInterval = 250;
-    var refreshButtonTimeout = 300000;
+    var minDisplayTime = 700;
+    var checkInterval = 200;
+    var refreshButtonTimeout = 20000;
     var appElement = document.getElementById('app');
-    var refreshButton = document.getElementById('refresh-button');
     appElement.style.visibility = 'hidden';
     loadingScreen.style.display = 'flex';
     setTimeout(function () { refreshButton.classList.remove('hidden'); }, refreshButtonTimeout);
-    if (!('WebAssembly' in window)) {
-      showError(getTranslation('errors.webAssemblyError'));
+    if (!webAssemblySupported) {
       return;
     }
     var intervalId = setInterval(function () {
@@ -148,11 +162,16 @@ https://github.com/aliasvault/aliasvault | AGPLv3
       }
     }, checkInterval);
   }
-  window.addEventListener('error', function (event) {
-    var errorMessage = (event.error && event.error.message) || event.message || '';
-    if (errorMessage.indexOf('WebAssembly') !== -1) {
+  function handleWebAssemblyError(errorMessage) {
+    if (String(errorMessage).indexOf('WebAssembly') !== -1) {
       showError(getTranslation('errors.webAssemblyError'));
     }
+  }
+  window.addEventListener('error', function (event) {
+    handleWebAssemblyError((event.error && event.error.message) || event.message || '');
+  });
+  window.addEventListener('unhandledrejection', function (event) {
+    handleWebAssemblyError((event.reason && event.reason.message) || event.reason || '');
   });
   localizeContent();
   window.addEventListener('load', manageLoadingScreen);
