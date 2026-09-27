@@ -64,6 +64,10 @@ async function getCredentialDerivedKey(credentialId: string, salt: string): Prom
       extensions: { prf: { eval: { first: base64ToBytes(salt) } } } as AuthenticationExtensionsClientInputs,
     },
   });
+  if (!credential) {
+    // Some passkey providers resolve null instead of rejecting when the user cancels.
+    throw new DOMException('The operation either timed out or was not allowed.', 'NotAllowedError');
+  }
   if (!hasPrf(credential)) {
     throw new WebAuthnNotSupportedError();
   }

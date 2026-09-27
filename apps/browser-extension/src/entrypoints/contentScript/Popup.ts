@@ -122,12 +122,24 @@ function isClickInsidePopupUi(event: MouseEvent, popup: Element, input: HTMLInpu
 }
 
 /**
+ * Whether the input a popup would anchor to has left the page or is hidden. Its rect is then all zeros,
+ * which would place the popup in the top-left corner (e.g. a SPA unmounting a form mid-navigation).
+ */
+function isAnchorGone(input: HTMLInputElement): boolean {
+  return !input.isConnected || input.getClientRects().length === 0;
+}
+
+/**
  * Open (or refresh) the autofill popup including check if vault is locked.
  * @param input - The input element that triggered the popup
  * @param container - The container element
  * @param forceShow - If true, always show the popup even if dismissed (for manual icon clicks)
  */
 export function openAutofillPopup(input: HTMLInputElement, container: HTMLElement, forceShow: boolean = false) : void {
+  if (isAnchorGone(input)) {
+    return;
+  }
+
   createLoadingPopup(input, '', container);
 
   /**
@@ -187,6 +199,10 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
  * @param forceShow - If true, always show the popup even if dismissed (for manual icon clicks)
  */
 export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, forceShow: boolean = false) : void {
+  if (isAnchorGone(input)) {
+    return;
+  }
+
   createLoadingPopup(input, '', container);
 
   /**
@@ -244,6 +260,11 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
   const noTotpItemsText = await t('content.noTotpItemsFound');
+
+  if (isAnchorGone(input)) {
+    removeExistingPopup(rootContainer);
+    return;
+  }
 
   const popup = createBasePopup(input, rootContainer);
 
@@ -826,6 +847,11 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   const hidePermanentlyText = await t('content.hidePermanently');
   const noMatchesText = await t('content.noMatchesFound');
 
+  if (isAnchorGone(input)) {
+    removeExistingPopup(rootContainer);
+    return;
+  }
+
   const popup = createBasePopup(input, rootContainer);
 
   /*
@@ -1105,6 +1131,11 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
   const handleUnlockClick = () : void => {
     sendMessage('OPEN_POPUP');
     removeExistingPopup(rootContainer);
+  }
+
+  if (isAnchorGone(input)) {
+    removeExistingPopup(rootContainer);
+    return;
   }
 
   const popup = createBasePopup(input, rootContainer);
@@ -1586,6 +1617,11 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
   const handleUpgradeClick = () : void => {
     sendMessage('OPEN_POPUP');
     removeExistingPopup(rootContainer);
+  }
+
+  if (isAnchorGone(input)) {
+    removeExistingPopup(rootContainer);
+    return;
   }
 
   const popup = createBasePopup(input, rootContainer);

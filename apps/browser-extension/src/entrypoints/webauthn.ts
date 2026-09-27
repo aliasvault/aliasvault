@@ -318,8 +318,8 @@ export default defineUnlistedScript(() => {
             reject(error);
           }
         } else {
-          // Cancelled
-          resolve(null);
+          // Cancelled: reject like the browser does, a null result reads as "no credential support" to most sites.
+          reject(new DOMException('The operation either timed out or was not allowed.', 'NotAllowedError'));
         }
       }
 
@@ -535,8 +535,8 @@ export default defineUnlistedScript(() => {
 
           resolve(credential);
         } else {
-          // Cancelled
-          resolve(null);
+          // Cancelled: reject like the browser does, a null result reads as "no credential support" to most sites.
+          reject(new DOMException('The operation either timed out or was not allowed.', 'NotAllowedError'));
         }
       }
 
