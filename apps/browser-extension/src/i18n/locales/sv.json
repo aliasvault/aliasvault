@@ -30,6 +30,7 @@
     "loginWithMobile": "Logga in med hjälp av mobilapp",
     "unlockWithMobile": "Lås upp med hjälp av mobilapp",
     "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord {{remainingAttempts}} gång(er) till.",
     "maxAttemptsReached": "För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synkroniserar...",
     "mergingVaultChanges": "Sammanfogar valvförändringar...",
     "uploadingVault": "Laddar upp valvet...",
+    "passwordStrength": {
+      "title": "Lösenordsstyrka",
+      "veryWeak": "Fortsätt",
+      "weak": "Blir bättre",
+      "fair": "Bra",
+      "good": "Mycket bra",
+      "strong": "Utmärkt"
+    },
     "errors": {
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta support om problemet kvarstår.",
       "clientVersionNotSupported": "Denna version av webbläsartillägget AliasVault stöds inte längre av servern. Vänligen uppdatera ditt webbläsartillägg till den senaste versionen.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Det tog för lång tid att ladda valvet. Stäng och öppna tillägget igen och försök igen, eller starta om din webbläsare om problemet kvarstår.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Felaktigt lösenord. Försök igen.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
-      "mobileLoginRequestExpired": "Mobil inloggningsbegäran har löpt ut. Ladda om sidan och försök igen."
+      "mobileLoginRequestExpired": "Mobil inloggningsbegäran har löpt ut. Ladda om sidan och försök igen.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonym men begränsad integritet. E-postinnehåll kan läsas av alla som känner till adressen.",
     "validation": {
       "required": "Detta fält är obligatoriskt"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Inga e-postmeddelanden hittades",
     "noEmailsDescription": "Du har inte mottagit några e-postmeddelanden på dina privata e-postadresser än. När du fått ett nytt e-postmeddelande så visas det här.",
     "offlineMessage": "Du är offline. Anslut till internet för att ladda dina e-postmeddelanden.",
-    "updateClientForFormattedView": "Denna e-post kräver en nyare app-version för att visas korrekt. Vänligen uppdatera din app.",
     "loadMore": "Läs in fler ({{count}} kvar)",
     "dateFormat": {
       "justNow": "precis nu",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Webbplatser där dialogrutan för att spara inloggning aldrig kommer att visas.",
       "clearAllBlockedSites": "Rensa alla blockerade webbplatser"
     },
+    "securitySettings": {
+      "title": "Säkerhet",
+      "description": "Hantera dina säkerhetsinställningar för konto och valv.",
+      "changePassword": {
+        "title": "Ändra lösenord",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Nuvarande lösenord",
+        "newPassword": "Nytt lösenord",
+        "confirmNewPassword": "Bekräfta nytt lösenord",
+        "passwordsDoNotMatch": "Nya lösenord matchar inte",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Lösenordet har ändrats."
+      },
+      "activeSessions": {
+        "title": "Aktiva sessioner",
+        "description": "Nedan följer en lista över enheter där ditt konto är inloggat eller har en aktiv session. Du kan logga ut från någon av dessa sessioner här.",
+        "noSessions": "Inga aktiva sessioner",
+        "revoke": "Återkalla",
+        "revokeSession": "Återkalla session",
+        "revokeConfirmation": "Är du säker på att du vill återkalla denna session? Detta kommer att logga ut dig från den valda enheten.",
+        "sessionRevoked": "Sessionen har återkallats",
+        "failedToRevoke": "Det gick inte att återkalla sessionen",
+        "failedToLoad": "Det gick inte att ladda aktiva sessioner",
+        "lastActive": "Senast aktiv",
+        "expires": "Förfaller"
+      },
+      "authLogs": {
+        "title": "Senaste Auth Loggar",
+        "description": "Nedan hittar du en översikt över de senaste inloggningsförsöken till ditt konto.",
+        "noLogs": "Inga auth loggar hittades",
+        "success": "Lyckades",
+        "failed": "Misslyckades",
+        "time": "Tid",
+        "ipAddress": "IP-adress",
+        "client": "Klient ",
+        "failedToLoad": "Det gick inte att läsa in auth loggar"
+      }
+    },
     "unlockMethod": {
       "title": "Valvupplåsningsmetod",
       "introText": "Välj hur du vill låsa upp ditt valv. Du kan använda ditt huvudlösenord (alltid tillgängligt) eller ange en PIN-kod för snabbare åtkomst. Efter 3 misslyckade PIN-försök måste du använda ditt huvudlösenord.",
@@ -579,6 +650,9 @@
     "whatsNew": "Vad är nytt",
     "whatsNewDescription": "En uppgradering krävs för att stödja följande ändringar:",
     "noDescriptionAvailable": "Ingen beskrivning tillgänglig för denna version.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Det gick inte att hämta versionsinformation. Försök igen.",
       "selfHostedServer": "Egenhostad server",

@@ -30,6 +30,7 @@
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
     "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
     "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Senha incorreta. Você será desconectado se você digitar a senha incorretamente mais {{remainingAttempts}} vezes.",
     "maxAttemptsReached": "Muitas tentativas de desbloqueio falharam. Você foi desconectado por motivos de segurança."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Sincronizando...",
     "mergingVaultChanges": "Integrando mudanças do cofre...",
     "uploadingVault": "Fazendo upload do cofre...",
+    "passwordStrength": {
+      "title": "Segurança da Senha",
+      "veryWeak": "Continue",
+      "weak": "Melhorando",
+      "fair": "Bom",
+      "good": "Ótimo",
+      "strong": "Excelente"
+    },
     "errors": {
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "clientVersionNotSupported": "Esta versão da extensão AliasVault para o navegador não é mais suportada pelo servidor. Por favor, atualize sua extensão para a última versão.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
-      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente."
+      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Um erro desconhecido ocorreu. Por favor, tente novamente.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
     "validation": {
       "required": "Este campo é obrigatório"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Nenhum e-mail encontrado",
     "noEmailsDescription": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
     "offlineMessage": "Você está offline. Por favor, conecte-se à internet para carregar seus e-mails.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Carregar Mais ({{count}} restante(s))",
     "dateFormat": {
       "justNow": "agora",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sites onde o prompt para salvar nunca vão aparecer.",
       "clearAllBlockedSites": "Limpar todos os sites bloqueados"
     },
+    "securitySettings": {
+      "title": "Segurança",
+      "description": "Gerencie as configurações de sua conta e de segurança do seu cofre.",
+      "changePassword": {
+        "title": "Mudar Senha",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Senha Atual",
+        "newPassword": "Nova Senha",
+        "confirmNewPassword": "Confirmar Nova Senha",
+        "passwordsDoNotMatch": "Novas senhas não são iguais",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Senha atualizada com sucesso"
+      },
+      "activeSessions": {
+        "title": "Sessões Ativas",
+        "description": "Abaixo está uma lista de dispositivos onde sua conta está atualmente logada ou tem uma sessão ativa. Você pode deslogar de qualquer uma dessas sessões por aqui.",
+        "noSessions": "Nenhuma sessão ativa",
+        "revoke": "Revogar",
+        "revokeSession": "Revogar Sessão",
+        "revokeConfirmation": "Tem certeza que quer revogar esta sessão? Isso vai deslogar sua conta do dispositivo selecionado.",
+        "sessionRevoked": "Sessão revogada com sucesso",
+        "failedToRevoke": "Falha ao revogar sessão",
+        "failedToLoad": "Falha ao carregar sessões ativas",
+        "lastActive": "Última atividade",
+        "expires": "Expira"
+      },
+      "authLogs": {
+        "title": "Logs de Autenticação Recente",
+        "description": "Abaixo você pode ter uma visão de tentativas de login recentes na sua conta.",
+        "noLogs": "Nenhum registro de autenticação encontrado",
+        "success": "Sucesso",
+        "failed": "Falha",
+        "time": "Horário",
+        "ipAddress": "Endereço IP",
+        "client": "Cliente",
+        "failedToLoad": "Falha ao carregar registros de autenticação"
+      }
+    },
     "unlockMethod": {
       "title": "Método de Desbloqueio do Cofre",
       "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar sua senha mestre (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, você deverá utilizar sua senha mestre.",
@@ -579,6 +650,9 @@
     "whatsNew": "O Que Há de Novo",
     "whatsNewDescription": "Uma atualização é necessária para utilizar as seguintes mudanças:",
     "noDescriptionAvailable": "Nenhuma descrição disponível para esta versão.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Não foi possível solicitar informações da versão. Por favor, tente novamente.",
       "selfHostedServer": "Servidor Self-Hosted",

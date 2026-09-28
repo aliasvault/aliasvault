@@ -30,6 +30,7 @@
     "loginWithMobile": "Belépés mobil alkalmazással",
     "unlockWithMobile": "Feloldás mobil appal",
     "scanQrCode": "Olvassa be a QR kódot a mobil applikációjával, hogy bejelentkezzen és feloldja a széfjét.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Hibás jelszó. Ha további {{remainingAttempts}} alkalommal rossz jelszót ad meg, kijelentkezteti a rendszer.",
     "maxAttemptsReached": "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Szinkronizálás...",
     "mergingVaultChanges": "Széf módosítások összefésülése...",
     "uploadingVault": "Széf feltöltése...",
+    "passwordStrength": {
+      "title": "Jelszó erősség",
+      "veryWeak": "Harmat gyenge jelszó",
+      "weak": "Tűrhető jelszó",
+      "fair": "Elégséges jelszó",
+      "good": "Egészen jó jelszó",
+      "strong": "Remek jelszó!"
+    },
     "errors": {
       "serverNotAvailable": "Az AliasVault szerver nem elérhető. Kérem próbálkozzon újra később, és forduljon az ügyfélszolgálathoz ha továbbra is fennáll a hiba.",
       "clientVersionNotSupported": "A szerver nem támogatja ezt a verziószámú bővítményt. Kérem, frissítse a legújabb verzióra a bővítményét.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Kérem adjon meg egy valós 6 számjegyű kódot.",
       "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Hibás jelszó. Próbálkozzon újra.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
-      "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra."
+      "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonim de limitáltan bizalmas. Tartalma olvasható bárki számára aki ismeri az e-mail címét.",
     "validation": {
       "required": "Ez a mező kötelező"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Nem található e-mail",
     "noEmailsDescription": "Nem kapott még e-maileket a privát címére. Beérkezés esetén itt jelenik majd meg.",
     "offlineMessage": "Jelenleg offline. Kapcsolódjon az internethez az e-mailek betöltéséhez.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Továbbiak betöltése ({{count}} hátra)",
     "dateFormat": {
       "justNow": "éppen most",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Azon oldalak, ahol a mentés felhívás nem jelenik meg.",
       "clearAllBlockedSites": "Blokkolt oldalak listájának törlése"
     },
+    "securitySettings": {
+      "title": "Biztonság",
+      "description": "Kezelje a fiókját, és széf biztonsági beállításait.",
+      "changePassword": {
+        "title": "Jelszó módosítása",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Jelenlegi jelszó",
+        "newPassword": "Új jelszó",
+        "confirmNewPassword": "Új jelszó megerősítése",
+        "passwordsDoNotMatch": "Az új jelszavak nem egyeznek",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Sikeres jelszó módosítás"
+      },
+      "activeSessions": {
+        "title": "Aktív munkamenetek",
+        "description": "Az alábbi listán látható, hol van jelenleg bejelentkezve, vagy aktív a munkamenete. Itt bármelyikből ki tudja magát jelentkeztetni.",
+        "noSessions": "Nincs aktív munkamenet",
+        "revoke": "Visszavonás",
+        "revokeSession": "Munkafolyamat visszavonása",
+        "revokeConfirmation": "Biztosan vissza akarja vonni ezt a munkamenetet? Ez ki fogja jelentkeztetni abból az eszközből.",
+        "sessionRevoked": "Munkamenet sikeresen visszavonva",
+        "failedToRevoke": "Sikertelen munkamenet visszavonás",
+        "failedToLoad": "Sikertelen munkamenet betöltés",
+        "lastActive": "Utoljára aktív",
+        "expires": "Lejár"
+      },
+      "authLogs": {
+        "title": "Legfrissebb hitelesítések naplója",
+        "description": "Alul megtalálhatja a legutolsó bejelentkezési próbálkozásokat a fiókjába.",
+        "noLogs": "Nem található hitelesítési napló",
+        "success": "Siker",
+        "failed": "Sikertelen",
+        "time": "Idő",
+        "ipAddress": "IP cím",
+        "client": "Kliens",
+        "failedToLoad": "A hitelesítési naplók nem tölthetőek be"
+      }
+    },
     "unlockMethod": {
       "title": "Széf feloldási mód",
       "introText": "Válassza ki, hogyan kívánja feloldani széfjét. Használhatja a mester jelszavát (mindig elérhető) vagy PIN kód a gyorsabb belépés érdekében. Azonban ha háromszor hibásan adja meg a PIN kódját, csak a mester jelszavával tud majd belépni.",
@@ -579,6 +650,9 @@
     "whatsNew": "Újdonságok",
     "whatsNewDescription": "Frissítés szükséges a következő változások támogatása érdekében:",
     "noDescriptionAvailable": "Nincs leírás ehhez a verzióhoz.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Sikertelen verzió lekérés. Kérem, próbálja meg újra.",
       "selfHostedServer": "Saját üzemeltetésű szerver",

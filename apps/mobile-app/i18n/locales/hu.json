@@ -36,6 +36,7 @@
       "unknownError": "Ismeretlen hiba lépett fel.",
       "unknownErrorTryAgain": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
       "vaultTooLarge": "Túl nagy a széf a befogadásra. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
+      "vaultSyncTimeout": "A széf szinkronizálás időtúllépés miatt leállt. Ez akkor fordulhat elő, ha az internet lassú vagy a széf túl nagy. Kérem próbálja újra.",
       "serverVersionTooOld": "Az AliasVault szerverét frissíteni kell egy új verzióra ha akarja használni ezt a funkciót. Kérem lépjen kapcsolatba szerver adminjával további segítségért."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Bejelentkezési kérelem jóváhagyása",
         "confirmSubtitle": "Hitelesítsen újra a más eszközön való belépés jóváhagyásáért.",
-        "confirmMessage": "Egy távoli eszközön akar belépni a fiókjával. Ez az eszköz teljes hozzáférést kap a széfjéhez. Csak abban az esetben lépjen tovább ha egyetért ezzel.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "A távoli eszközön sikeresen bejelentkezett.",
         "requestExpired": "Ez a bejelentkezési kérelem lejárt. Kérem generáljon új QR kódot."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Elem helyreállítva",
       "itemDeleted": "Elem véglegesen törölve",
       "allItemsDeleted": "Minden elem véglegesen törölve"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Újdonságok",
     "whatsNewDescription": "Frissítés szükséges a következő változások támogatása érdekében:",
     "noDescriptionAvailable": "Nem elérhető leírás ehhez a verzióhoz.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Frissítés előkészítése...",
-      "vaultAlreadyUpToDate": "A széf már naprakész",
       "applyingDatabaseMigrations": "Adatbázis migrációk alkalmazása...",
       "applyingMigration": "{{current}} migráció alkalmazva a {{total}}-ból...",
       "committingChanges": "Változások alkalmazása..."

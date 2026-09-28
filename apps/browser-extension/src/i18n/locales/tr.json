@@ -30,6 +30,7 @@
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Syncing...",
     "mergingVaultChanges": "Merging vault changes...",
     "uploadingVault": "Uploading vault...",
+    "passwordStrength": {
+      "title": "Password Strength",
+      "veryWeak": "Keep going",
+      "weak": "Getting better",
+      "fair": "Good",
+      "good": "Great",
+      "strong": "Excellent"
+    },
     "errors": {
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
       "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
       "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Parola yanlış. Lütfen yeniden deneyin.",
       "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonim ama mahremiyeti sınırlı. E-posta içeriği, adresi bilen herkes tarafından okunabilir.",
     "validation": {
       "required": "Bu alan zorunludur"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "No emails found",
     "noEmailsDescription": "Özel e-posta adreslerinize henüz bir e-posta gelmedi. Yeni bir e-posta aldığınızda burada görünecektir.",
     "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "biraz önce",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
+    "securitySettings": {
+      "title": "Güvenlik",
+      "description": "Hesabınızı ve kasa güvenliği ayarlarınızı yönetin.",
+      "changePassword": {
+        "title": "Parola Değiştir",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Geçerli Parola",
+        "newPassword": "Yeni Parola",
+        "confirmNewPassword": "Yeni Parolayı Onayla",
+        "passwordsDoNotMatch": "Yeni parolalar eşleşmiyor",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Parola başarıyla değiştirildi"
+      },
+      "activeSessions": {
+        "title": "Aktif Oturumlar",
+        "description": "Aşağıda, hesabınızın şu anda giriş yapmış veya aktif oturum açmış olduğu cihazların listesi yer almaktadır. Bu oturumlardan herhangi birinden buradan çıkış yapabilirsiniz.",
+        "noSessions": "Başka bir aktif oturum yok",
+        "revoke": "İptal Et",
+        "revokeSession": "Oturumu İptal Et",
+        "revokeConfirmation": "Bu oturumu iptal etmek istediğinizden emin misiniz? Seçilen cihazdan çıkış yapmış olacaksınız.",
+        "sessionRevoked": "Oturum başarıyla iptal edildi",
+        "failedToRevoke": "Oturum iptali başarısız oldu",
+        "failedToLoad": "Aktif oturumlar yüklenemedi",
+        "lastActive": "Son etkinlik",
+        "expires": "Sona Erme"
+      },
+      "authLogs": {
+        "title": "Son Kimlik Doğrulama Kayıtları",
+        "description": "Aşağıda, hesabınıza yapılan son giriş denemelerinin genel bir görünümünü bulabilirsiniz.",
+        "noLogs": "Hiç kimlik doğrulama kaydı bulunamadı",
+        "success": "Başarılı",
+        "failed": "Başarısız oldu",
+        "time": "Zaman",
+        "ipAddress": "IP Adres",
+        "client": "İstemci",
+        "failedToLoad": "Kimlik doğrulama kayıtları yüklenemedi"
+      }
+    },
     "unlockMethod": {
       "title": "Kasa Açma Yöntemi",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
@@ -579,6 +650,9 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Unable to get version information. Please try again.",
       "selfHostedServer": "Self-Hosted Server",

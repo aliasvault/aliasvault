@@ -36,6 +36,7 @@
       "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
       "vaultTooLarge": "La bóveda es demasiado grande para que el servidor lo acepte. Intente eliminar algunos elementos o archivos adjuntos para reducir el tamaño y vuelva a intentarlo.",
+      "vaultSyncTimeout": "Se ha agotado el tiempo de sincronización de la bóveda. Esto puede suceder cuando la bóveda es grande o la conexión a Internet es lenta. Por favor, inténtelo de nuevo.",
       "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacte con el administrador del servidor si necesita ayuda."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Confirmar solicitud de acceso",
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
-        "confirmMessage": "Estás a punto de iniciar sesión en un dispositivo remoto con tu cuenta. Este otro dispositivo tendrá acceso completo a su bóveda. Sólo proceda si confía en este dispositivo.",
+        "confirmMessage": "Otro dispositivo está pidiendo iniciar sesión con tu cuenta. Obtendrá acceso completo a tu bóveda. Sólo continúa si iniciaste este inicio de sesión.",
+        "selectCode": "Toca el número mostrado en el otro dispositivo",
+        "openedFromLink": "Sólo continúa si has escaneado este código QR con tu propia cámara. Si has llegado pulsando un enlace o un botón, declina.",
+        "codeMismatch": "El número no coincide. La solicitud de acceso fue rechazada.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
         "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Elemento restaurado",
       "itemDeleted": "Elemento eliminado permanentemente",
       "allItemsDeleted": "Todos los elementos eliminados permanentemente"
+    },
+    "logo": {
+      "chooseLogo": "Seleccionar icono",
+      "currentLogo": "Icono actual",
+      "builtinLogos": "Biblioteca de iconos",
+      "fetchFromWebsite": "Obtener icono del sitio web",
+      "refetchFromWebsite": "(Re)obtener icono del sitio web",
+      "sourceFavicon": "De {{domain}}",
+      "sourceBuiltin": "Icono integrado",
+      "sourceCustom": "Ícono personalizado",
+      "sourceNone": "Sin icono",
+      "builtin": {
+        "Shopping": "Compras",
+        "Bank": "Banca",
+        "Mail": "Correo",
+        "Social": "Social",
+        "Work": "Trabajo",
+        "Game": "Juegos",
+        "Media": "Media",
+        "Travel": "Viajes",
+        "Health": "Salud",
+        "Dev": "Desarrollo"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Novedades",
     "whatsNewDescription": "Se requiere una actualización para soportar los siguientes cambios:",
     "noDescriptionAvailable": "Ninguna descripción disponible para esta versión.",
+    "otherDevicesWarning": "Después de esta actualización, tus otras aplicaciones de AliasVault necesitan la versión {{version}} o posterior. Aplicaciones antiguas y extensiones del navegador se desconectan y piden que se actualicen antes de que puedan abrir tu bóveda de nuevo.",
+    "successTitle": "Caja fuerte mejorada",
+    "successOtherDevices": "Tu bóveda está lista para usar. Asegúrate de actualizar la aplicación AliasVault también en tus otros dispositivos.",
     "status": {
       "preparingUpgrade": "Preparando actualización...",
-      "vaultAlreadyUpToDate": "La bóveda ya está actualizada",
       "applyingDatabaseMigrations": "Aplicando migración de base de datos...",
       "applyingMigration": "Aplicando migración {{current}} de {{total}}...",
       "committingChanges": "Confirmando los cambios..."

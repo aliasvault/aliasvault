@@ -30,6 +30,7 @@
     "loginWithMobile": "Logáil isteach ag baint úsáide as Aip Soghluaiste",
     "unlockWithMobile": "Díghlasáil ag baint úsáide as Aip Soghluaiste",
     "scanQrCode": "Scan an cód QR seo le d’aip shoghluaiste AliasVault chun logáil isteach agus do chruinneog a dhíghlasáil.",
+    "mobileUnlockVerificationCode": "Nuair a iarrann an aip é, cuir an uimhir seo isteach.",
     "passwordAttemptsWarning": "Focal faire mícheart. Logálfar amach thú má chuireann tú isteach an pasfhocal mícheart {{remainingAttempts}} níos mó uaireanta.",
     "maxAttemptsReached": "Theip ar an iomarca iarrachtaí díghlasála. Logáladh amach thú ar chúiseanna slándála."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Ag sioncrónú...",
     "mergingVaultChanges": "Ag cumasc athruithe ar an chruinneachán...",
     "uploadingVault": "Ag uaslódáil an chruinneacháin...",
+    "passwordStrength": {
+      "title": "Neart an Phasfhocail",
+      "veryWeak": "Lean ort",
+      "weak": "Ag dul i bhfeabhas",
+      "fair": "Go maith",
+      "good": "Iontach",
+      "strong": "Sármhaith"
+    },
     "errors": {
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
       "clientVersionNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo den síneadh brabhsálaí AliasVault a thuilleadh. Nuashonraigh do shíneadh brabhsálaí go dtí an leagan is déanaí.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Thóg sé an iomarca ama an stór a luchtú. Dún agus athoscail an síneadh agus déan iarracht arís, le do thoil, nó athsheol do bhrabhsálaí má mhaireann an fhadhb.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
+      "vaultLoadError": "Tharla earráid agus do stór á luchtú. Cóipeáil sonraí na hearráide thíos le do thoil agus déan teagmháil leis an tacaíocht chun cabhair a fháil.",
       "wrongPassword": "Pasfhocal mícheart. Déan iarracht arís.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
-      "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís."
+      "mobileLoginRequestExpired": "Iarratas logála isteach soghluaiste imithe in éag. Athlódáil an leathanach agus déan iarracht arís.",
+      "mobileLoginRequestDeclined": "Diúltaíodh don iarratas logála isteach ar do ghléas soghluaiste."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Príobháideacht gan ainm ach teoranta. Is féidir le duine ar bith a bhfuil an seoladh ar eolas aige ábhar an ríomhphoist a léamh.",
     "validation": {
       "required": "Tá an réimse seo riachtanach"
+    },
+    "logo": {
+      "chooseLogo": "Roghnaigh deilbhín",
+      "currentLogo": "Deilbhín reatha",
+      "builtinLogos": "Leabharlann deilbhíní",
+      "fetchFromWebsite": "Faigh deilbhín ón suíomh gréasáin",
+      "refetchFromWebsite": "Faigh an deilbhín ón suíomh gréasáin arís",
+      "sourceFavicon": "Ó {{domain}}",
+      "sourceBuiltin": "Deilbhín ionsuite",
+      "sourceCustom": "Deilbhín saincheaptha",
+      "sourceNone": "Gan deilbhín",
+      "builtin": {
+        "Shopping": "Siopadóireacht",
+        "Bank": "Baincéireacht",
+        "Mail": "Post",
+        "Social": "Sóisialta",
+        "Work": "Obair",
+        "Game": "Cluichí",
+        "Media": "Meáin",
+        "Travel": "Taisteal",
+        "Health": "Sláinte",
+        "Dev": "Forbairt"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Níor aimsíodh aon ríomhphoist",
     "noEmailsDescription": "Níl aon ríomhphoist faighte agat ag do sheoltaí ríomhphoist príobháideacha go fóill. Nuair a gheobhaidh tú ríomhphost nua, beidh sé le feiceáil anseo.",
     "offlineMessage": "Tá tú as líne. Ceangail leis an idirlíon le do ríomhphoist a luchtú.",
-    "updateClientForFormattedView": "Éilíonn an ríomhphost seo leagan níos nuaí den aip le go dtaispeánfar i gceart é. Nuashonraigh d'aip le do thoil.",
     "loadMore": "Luchtaigh Tuilleadh ({{count}} fágtha)",
     "dateFormat": {
       "justNow": "díreach anois",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Láithreáin nach bhfeicfear an leid sábhála choíche.",
       "clearAllBlockedSites": "Glan gach suíomh blocáilte"
     },
+    "securitySettings": {
+      "title": "Slándáil",
+      "description": "Bainistigh do shocruithe slándála chuntais agus cruinneacháin.",
+      "changePassword": {
+        "title": "Athraigh Pasfhocal",
+        "description": "Má athraíonn tú do phríomhfhocal faire, logálfar amach thú ó do ghléasanna eile agus beidh ort logáil isteach arís leis an bhfocal faire nua.",
+        "currentPassword": "Pasfhocal Reatha",
+        "newPassword": "Pasfhocal Nua",
+        "confirmNewPassword": "Deimhnigh Pasfhocal Nua",
+        "passwordsDoNotMatch": "Ní hionann na pasfhocail nua",
+        "passwordTooShort": "Caithfidh an focal faire a bheith ar a laghad {{minLength}} carachtar ar fad.",
+        "success": "Athraíodh an focal faire go rathúil"
+      },
+      "activeSessions": {
+        "title": "Seisiúin Ghníomhacha",
+        "description": "Seo thíos liosta de na gléasanna ina bhfuil do chuntas logáilte isteach faoi láthair nó ina bhfuil seisiún gníomhach. Is féidir leat logáil amach ó aon cheann de na seisiúin seo anseo.",
+        "noSessions": "Gan aon seisiúin ghníomhacha",
+        "revoke": "Cúlghairm",
+        "revokeSession": "Cealaigh an Seisiún",
+        "revokeConfirmation": "An bhfuil tú cinnte gur mian leat an seisiún seo a chúlghairm? Logálfaidh sé seo amach as an ngléas roghnaithe thú.",
+        "sessionRevoked": "Seisiún curtha ar ceal go rathúil",
+        "failedToRevoke": "Theip ar an seisiún a chúlghairm",
+        "failedToLoad": "Theip ar na seisiúin ghníomhacha a lódáil",
+        "lastActive": "Gníomhach deireanach",
+        "expires": "Éagaíonn"
+      },
+      "authLogs": {
+        "title": "Logaí Údaraithe Le Déanaí",
+        "description": "Seo thíos forbhreathnú ar iarrachtaí logála isteach le déanaí i do chuntas.",
+        "noLogs": "Níor aimsíodh aon logaí údaraithe",
+        "success": "Rath",
+        "failed": "Theip air",
+        "time": "Am",
+        "ipAddress": "Seoladh IP",
+        "client": "Cliant",
+        "failedToLoad": "Theip ar logaí údaraithe a lódáil"
+      }
+    },
     "unlockMethod": {
       "title": "Modh Díghlasála Cruinneachán",
       "introText": "Roghnaigh conas is mian leat do cruinneachán a dhíghlasáil. Is féidir leat do mháistirfhocal faire a úsáid (ar fáil i gcónaí) nó cód PIN a shocrú le haghaidh rochtain níos tapúla. Tar éis 3 iarracht UAP theip, beidh ort do mháistirfhocal faire a úsáid.",
@@ -579,6 +650,9 @@
     "whatsNew": "Cad atá Nua",
     "whatsNewDescription": "Tá uasghrádú ag teastáil chun tacú leis na hathruithe seo a leanas:",
     "noDescriptionAvailable": "Níl aon chur síos ar fáil don leagan seo.",
+    "otherDevicesWarning": "Tar éis an uasghrádaithe seo, beidh leagan {{version}} nó leagan níos déanaí ag teastáil ó do chuid aipeanna AliasVault eile. Logálfar aipeanna agus síntí brabhsálaí níos sine amach agus iarrfar ort iad a uasghrádú sula mbeidh siad in ann do stór a oscailt arís.",
+    "successTitle": "Uasghrádaíodh an cruinneachán",
+    "successOtherDevices": "Tá do stór sábháilte réidh le húsáid. Bí cinnte an aip AliasVault a nuashonrú ar do ghléasanna eile chomh maith.",
     "alerts": {
       "unableToGetVersionInfo": "Ní féidir faisnéis leagain a fháil. Déan iarracht arís.",
       "selfHostedServer": "Freastalaí Féinóstáilte",

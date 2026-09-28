@@ -30,6 +30,7 @@
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
     "unlockWithMobile": "Розблокувати за допомогою мобільного додатку",
     "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{remainingAttempts}} more times.",
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Syncing...",
     "mergingVaultChanges": "Merging vault changes...",
     "uploadingVault": "Uploading vault...",
+    "passwordStrength": {
+      "title": "Password Strength",
+      "veryWeak": "Keep going",
+      "weak": "Getting better",
+      "fair": "Good",
+      "good": "Great",
+      "strong": "Excellent"
+    },
     "errors": {
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Loading the vault took too long. Please close and reopen the extension and try again, or restart your browser if the problem persists.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
-      "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз."
+      "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Анонімно, але обмежена конфіденційність. Зміст електронного листа може прочитати будь-хто, хто знає адресу.",
     "validation": {
       "required": "Це поле обов'язкове"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Електронних листів не знайдено",
     "noEmailsDescription": "Ви ще не отримували жодних листів на свої приватні адреси електронної пошти. Коли ви отримаєте новий лист, він з’явиться тут.",
     "offlineMessage": "Ви офлайн. Будь ласка, приєднайтесь до Інтернету, щоб завантажити свої електронні листи.",
-    "updateClientForFormattedView": "This email requires a newer app version to display properly. Please update your app.",
     "loadMore": "Load More ({{count}} remaining)",
     "dateFormat": {
       "justNow": "щойно",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
+    "securitySettings": {
+      "title": "Безпека",
+      "description": "Керуйте налаштуваннями безпеки свого облікового запису та сховища.",
+      "changePassword": {
+        "title": "Змінити пароль",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Поточний пароль",
+        "newPassword": "Новий пароль",
+        "confirmNewPassword": "Підтвердити новий пароль",
+        "passwordsDoNotMatch": "Нові паролі не збігаються",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Пароль успішно змінено"
+      },
+      "activeSessions": {
+        "title": "Активні сесії",
+        "description": "Нижче наведено список пристроїв, на яких ви зараз увійшли в обліковий запис або на яких триває активний сеанс. Ви можете вийти з будь-якого з цих сеансів тут.",
+        "noSessions": "Немає активних сеансів",
+        "revoke": "Закінчити",
+        "revokeSession": "Завершити сеанс",
+        "revokeConfirmation": "Ви впевнені, що хочете скасувати цей сеанс? Це призведе до виходу з вибраного пристрою.",
+        "sessionRevoked": "Сеанс успішно закінчено",
+        "failedToRevoke": "Не вдалось закінчити сеанс",
+        "failedToLoad": "Не вдалося завантажити активні сеанси",
+        "lastActive": "Остання активність",
+        "expires": "Термін дії"
+      },
+      "authLogs": {
+        "title": "Нещодавні журнали автентифікації",
+        "description": "Нижче ви можете знайти огляд останніх спроб входу до вашого облікового запису.",
+        "noLogs": "Журнали автентифікації не знайдені",
+        "success": "Успішно",
+        "failed": "Невдало",
+        "time": "Час",
+        "ipAddress": "Адреса IP",
+        "client": "Клієнт",
+        "failedToLoad": "Не вдалося завантажити журнали автентифікації"
+      }
+    },
     "unlockMethod": {
       "title": "Метод розблокування сховища",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
@@ -579,6 +650,9 @@
     "whatsNew": "Що нового",
     "whatsNewDescription": "Для підтримки таких змін потрібне оновлення:",
     "noDescriptionAvailable": "Для цієї версії немає опису.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Не вдалося отримати інформацію про версію. Спробуйте ще раз.",
       "selfHostedServer": "Сервер із самостійним розміщенням",

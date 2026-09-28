@@ -388,4 +388,8 @@
     <value>Tip element</value>
     <comment>Inline label on the item type picker</comment>
   </data>
+  <data name="ClientVersionUnsupported" xml:space="preserve">
+    <value>Această versiune a aplicației nu mai este acceptată de server. Repornește pagina pentru a încărca cea mai recentă versiune.</value>
+    <comment>Shown when the server rejects the client version (HTTP 426).</comment>
+  </data>
 </root>

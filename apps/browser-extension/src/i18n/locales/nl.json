@@ -30,6 +30,7 @@
     "loginWithMobile": "Log in via de mobiele app",
     "unlockWithMobile": "Ontgrendel met mobiele app",
     "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord {{remainingAttempts}} keer vaker invult.",
     "maxAttemptsReached": "Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synchroniseren...",
     "mergingVaultChanges": "Vault wijzigingen mergen...",
     "uploadingVault": "Vault opslaan...",
+    "passwordStrength": {
+      "title": "Wachtwoordsterkte",
+      "veryWeak": "Ga zo door",
+      "weak": "Het wordt beter",
+      "fair": "Goed",
+      "good": "Geweldig",
+      "strong": "Uitstekend"
+    },
     "errors": {
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Het laden van de vault duurde te lang. Sluit en heropen de extensie en probeer het opnieuw, of herstart je browser als het probleem zich blijft voordoen.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw."
+      "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
     "validation": {
       "required": "Dit veld is verplicht"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Geen e-mails gevonden",
     "noEmailsDescription": "Je hebt nog geen e-mails ontvangen op je privé e-mailadressen. Wanneer je een nieuwe e-mail ontvangt, zal deze hier verschijnen.",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
-    "updateClientForFormattedView": "Deze e-mail vereist een nieuwere app versie om correct weer te geven. Update je app.",
     "loadMore": "Meer laden ({{count}} resterend)",
     "dateFormat": {
       "justNow": "zojuist",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Sites waar de inloggegevens opslaan prompt niet zal verschijnen.",
       "clearAllBlockedSites": "Alle uitgeschakelde sites wissen"
     },
+    "securitySettings": {
+      "title": "Beveiliging",
+      "description": "Beheer je account en vault beveiligingsinstellingen.",
+      "changePassword": {
+        "title": "Wachtwoord wijzigen",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "Huidig wachtwoord",
+        "newPassword": "Nieuwe wachtwoord",
+        "confirmNewPassword": "Bevestig nieuwe wachtwoord",
+        "passwordsDoNotMatch": "Nieuwe wachtwoorden komen niet overeen",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "Wachtwoord succesvol gewijzigd"
+      },
+      "activeSessions": {
+        "title": "Actieve sessies",
+        "description": "Hieronder vindt je een lijst met apparaten waar je account momenteel is ingelogd of een actieve sessie heeft. Je kunt je hier afmelden van elk van deze sessies.",
+        "noSessions": "Geen actieve sessies",
+        "revoke": "Uitloggen",
+        "revokeSession": "Uitloggen",
+        "revokeConfirmation": "Weet je zeker dat je deze sessie wilt uitloggen? Dit zal je afmelden van het gekozen apparaat.",
+        "sessionRevoked": "Sessie succesvol ingetrokken",
+        "failedToRevoke": "Sessie uitloggen mislukt",
+        "failedToLoad": "Laden van actieve sessies mislukt",
+        "lastActive": "Laatst actief",
+        "expires": "Verloopt"
+      },
+      "authLogs": {
+        "title": "Recente authenticatielogs",
+        "description": "Hieronder vindt je een overzicht van recente aanmeldpogingen op je account.",
+        "noLogs": "Geen auth logs gevonden",
+        "success": "Succes",
+        "failed": "Mislukt",
+        "time": "Tijd",
+        "ipAddress": "IP-adres",
+        "client": "Client",
+        "failedToLoad": "Laden van auth logs mislukt"
+      }
+    },
     "unlockMethod": {
       "title": "Vault ontgrendelmethode",
       "introText": "Kies hoe je je vault wilt ontgrendelen. Je kunt je hoofdwachtwoord gebruiken (altijd beschikbaar) of een pincode instellen voor snellere toegang. Na 3 mislukte PIN-pogingen moet je je hoofdwachtwoord gebruiken.",
@@ -579,6 +650,9 @@
     "whatsNew": "Wat is er nieuw",
     "whatsNewDescription": "Een upgrade is vereist vanwege de volgende wijzigingen:",
     "noDescriptionAvailable": "Voor deze versie is geen beschrijving beschikbaar.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "Kan versie-informatie niet ophalen. Probeer het opnieuw.",
       "selfHostedServer": "Self-hosted server",

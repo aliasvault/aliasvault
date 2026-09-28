@@ -36,6 +36,7 @@
       "unknownError": "Сталася невідома помилка.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
       "vaultTooLarge": "The vault is too large for the server to accept. Try to remove some items or attachments to reduce the size and try again.",
+      "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
       "serverVersionTooOld": "Сервер AliasVault потрібно оновити до новішої версії, щоб використовувати цю функцію. Будь ласка, зверніться до адміністратора серверу, якщо вам потрібна допомога."
     }
   },
@@ -330,7 +331,10 @@
       "mobileLogin": {
         "confirmTitle": "Підтвердити запит на вхід",
         "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
-        "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
+        "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
+        "selectCode": "Tap the number shown on the other device",
+        "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
+        "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
         "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код."
       }
@@ -587,6 +591,29 @@
       "itemRestored": "Item restored",
       "itemDeleted": "Item permanently deleted",
       "allItemsDeleted": "All items permanently deleted"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "emails": {
@@ -711,9 +738,11 @@
     "whatsNew": "Що нового",
     "whatsNewDescription": "Для підтримки таких змін потрібне оновлення:",
     "noDescriptionAvailable": "Для цієї версії немає опису.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "status": {
       "preparingUpgrade": "Підготовка оновлення...",
-      "vaultAlreadyUpToDate": "Сховище вже оновлено",
       "applyingDatabaseMigrations": "Застосування міграцій бази даних...",
       "applyingMigration": "Застосування міграції {{current}} з {{total}}...",
       "committingChanges": "Внесення змін..."

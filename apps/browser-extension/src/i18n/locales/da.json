@@ -30,6 +30,7 @@
     "loginWithMobile": "Log ind via mobilapp",
     "unlockWithMobile": "Lås op ved hjælp af Mobil App",
     "scanQrCode": "Skan denne QR-kode med din AliasVault-mobilapp for at logge ind og låse din boks op.",
+    "mobileUnlockVerificationCode": "Når appen beder om det, skal du indtaste dette nummer.",
     "passwordAttemptsWarning": "Forkert adgangskode. Du vil blive logget ud, hvis du indtaster den forkerte adgangskode {{remainingAttempts}} flere gange.",
     "maxAttemptsReached": "For mange mislykkede forsøg på oplåsning. Du er blevet logget ud af sikkerhedsårsager."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "Synkroniserer...",
     "mergingVaultChanges": "Fletter ændringer i boks...",
     "uploadingVault": "Uploader boks...",
+    "passwordStrength": {
+      "title": "Adgangskodens styrke",
+      "veryWeak": "Opret Kpteret Eksport",
+      "weak": "Bliv bedre",
+      "fair": "God",
+      "good": "Fantastisk",
+      "strong": "Fremragende"
+    },
     "errors": {
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
       "clientVersionNotSupported": "Denne version af AliasVault-browserudvidelsen understøttes ikke længere af serveren. Opdater venligst din browserudvidelse til den nyeste version.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "Indlæsning af boksen tog for lang tid. Luk og genåbn udvidelsen og prøv igen, eller genstart din browser, hvis problemet fortsætter.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
+      "vaultLoadError": "Noget gik galt under indlæsning af din boks. Kopier venligst fejloplysningerne nedenfor og kontakt support for hjælp.",
       "wrongPassword": "Forkert adgangskode. Prøv venligst igen.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
-      "mobileLoginRequestExpired": "Anmodning om mobil-logon udløb. Genindlæs siden og prøv igen."
+      "mobileLoginRequestExpired": "Anmodning om mobil-logon udløb. Genindlæs siden og prøv igen.",
+      "mobileLoginRequestDeclined": "Login-anmodningen blev afvist på din mobilenhed."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Der opstod en ukendt fejl. Prøv venligst igen.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "Anonym men begrænset privatliv. E-mailindhold kan læses af alle, der kender adressen.",
     "validation": {
       "required": "Dette felt er påkrævet"
+    },
+    "logo": {
+      "chooseLogo": "Vælg ikon",
+      "currentLogo": "Nuværende ikon",
+      "builtinLogos": "Ikon bibliotek",
+      "fetchFromWebsite": "Hent ikon fra hjemmeside",
+      "refetchFromWebsite": "Hent ikon igen fra hjemmeside",
+      "sourceFavicon": "Fra {{domain}}",
+      "sourceBuiltin": "Indbygget ikon",
+      "sourceCustom": "Brugerdefineret ikon",
+      "sourceNone": "Ingen ikon",
+      "builtin": {
+        "Shopping": "Indkøb",
+        "Bank": "Bank",
+        "Mail": "Mail",
+        "Social": "Sociale",
+        "Work": "Arbejde",
+        "Game": "Spil",
+        "Media": "Medie",
+        "Travel": "Rejser",
+        "Health": "Sundhed",
+        "Dev": "Udvikling"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "Ingen e-mails fundet",
     "noEmailsDescription": "Du har endnu ikke modtaget nogen e-mails på dine private e-mailadresser. Når du modtager en ny e-mail, vil den blive vist her.",
     "offlineMessage": "Du er offline. Opret venligst forbindelse til internettet for at indlæse dine e-mails.",
-    "updateClientForFormattedView": "Denne e-mail kræver en nyere app-version for at vise den korrekt. Opdatér venligst din app.",
     "loadMore": "Indlæs flere ({{count}} tilbage)",
     "dateFormat": {
       "justNow": "lige nu",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "Websteder, hvor den gemte prompt aldrig vises.",
       "clearAllBlockedSites": "Slet alle blokerede websteder"
     },
+    "securitySettings": {
+      "title": "Sikkerhed",
+      "description": "Administrer dine konto- og boks-sikkerhedsindstillinger.",
+      "changePassword": {
+        "title": "Skift adgangskode",
+        "description": "Ændring af din hovedadgangskode vil logge dig ud af dine andre enheder, som kræver, at du logger ind igen med den nye adgangskode.",
+        "currentPassword": "Nuværende adgangskode",
+        "newPassword": "Ny adgangskode",
+        "confirmNewPassword": "Bekræft ny adgangskode",
+        "passwordsDoNotMatch": "De nye adgangskoder er ikke ens",
+        "passwordTooShort": "Adgangskoden skal være mindst {{minLength}} tegn lang.",
+        "success": "Adgangskode ændret korrekt"
+      },
+      "activeSessions": {
+        "title": "Aktive sessioner",
+        "description": "Herunder er en liste over enheder, hvor din konto i øjeblikket er logget ind eller har en aktiv session. Du kan logge ud fra enhver af disse sessioner her.",
+        "noSessions": "Ingen aktive sessioner",
+        "revoke": "Annuller",
+        "revokeSession": "Annuller session",
+        "revokeConfirmation": "Er du sikker på, at du vil annullere denne session? Dette vil logge dig ud af den valgte enhed.",
+        "sessionRevoked": "Sessionen blev annulleret korrekt",
+        "failedToRevoke": "Kunne ikke annullere session",
+        "failedToLoad": "Kunne ikke indlæse aktive sessioner",
+        "lastActive": "Sidst aktiv",
+        "expires": "Udløber"
+      },
+      "authLogs": {
+        "title": "Seneste autentificeringslogge",
+        "description": "Herunder kan du finde en oversigt over de seneste loginforsøg på din konto.",
+        "noLogs": "Ingen autentificeringslogge fundet",
+        "success": "Succes",
+        "failed": "Mislykkedes",
+        "time": "Tid",
+        "ipAddress": "IP-adresse",
+        "client": "Klient",
+        "failedToLoad": "Kunne ikke indlæse autentificeringslogge"
+      }
+    },
     "unlockMethod": {
       "title": "Oplåsningsmetode for boks",
       "introText": "Vælg hvordan du vil låse din boks op. Du kan bruge din hovedadgangskode (altid tilgængelig) eller opsætte en PIN-kode for hurtigere adgang. Efter 3 mislykkede PIN-forsøg skal du bruge din hovedadgangskode.",
@@ -579,6 +650,9 @@
     "whatsNew": "Hvad er nyt",
     "whatsNewDescription": "En opgradering er påkrævet for at understøtte følgende ændringer:",
     "noDescriptionAvailable": "Ingen beskrivelse tilgængelig for denne version.",
+    "otherDevicesWarning": "Efter denne opgradering skal dine andre AliasVault apps bruge version {{version}} eller nyere. Ældre apps og browserudvidelser logger ud, og beder om at blive opdateret, før de kan åbne din boks igen.",
+    "successTitle": "Boks opgraderet",
+    "successOtherDevices": "Din boks er klar til brug. Sørg også for at opdatere AliasVault appen på dine andre enheder.",
     "alerts": {
       "unableToGetVersionInfo": "Kunne ikke hente versionsinformation. Prøv venligst igen.",
       "selfHostedServer": "Selv-hosted server",

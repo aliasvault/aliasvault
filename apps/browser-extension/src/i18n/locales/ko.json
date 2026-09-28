@@ -30,6 +30,7 @@
     "loginWithMobile": "모바일 앱으로 로그인",
     "unlockWithMobile": "모바일 앱으로 잠금 해제",
     "scanQrCode": "AliasVault 모바일 앱으로 이 QR 코드를 스캔하여 로그인하고 보관함을 잠금 해제하세요.",
+    "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
     "passwordAttemptsWarning": "비밀번호가 올바르지 않습니다. 비밀번호를 {{remainingAttempts}}회 더 잘못 입력하면 로그아웃됩니다.",
     "maxAttemptsReached": "잠금 해제 시도 횟수를 초과했습니다. 보안을 위해 로그아웃되었습니다."
   },
@@ -98,6 +99,14 @@
     "pendingSync": "동기화 중...",
     "mergingVaultChanges": "보관함 변경 사항 병합 중...",
     "uploadingVault": "보관함 업로드 중...",
+    "passwordStrength": {
+      "title": "비밀번호 강도",
+      "veryWeak": "계속 입력하세요",
+      "weak": "나아지고 있습니다",
+      "fair": "보통",
+      "good": "강력함",
+      "strong": "매우 강력함"
+    },
     "errors": {
       "serverNotAvailable": "AliasVault 서버를 사용할 수 없습니다. 나중에 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
       "clientVersionNotSupported": "이 버전의 AliasVault 브라우저 확장 프로그램은 더 이상 서버에서 지원되지 않습니다. 브라우저 확장 프로그램을 최신 버전으로 업데이트하세요.",
@@ -117,9 +126,11 @@
       "vaultLoadTimeout": "보관함을 불러오는 데 시간이 너무 오래 걸렸습니다. 확장 프로그램을 닫았다가 다시 시도하거나, 문제가 지속되면 브라우저를 다시 시작하세요.",
       "invalidCode": "올바른 6자리 인증 코드를 입력하세요.",
       "serverError": "AliasVault 서버에 연결할 수 없습니다. 잠시 후 다시 시도하거나 문제가 지속되면 지원팀에 문의하세요.",
+      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
       "wrongPassword": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.",
       "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요.",
-      "mobileLoginRequestExpired": "모바일 로그인 요청 시간이 초과되었습니다. 페이지를 새로고침하고 다시 시도하세요."
+      "mobileLoginRequestExpired": "모바일 로그인 요청 시간이 초과되었습니다. 페이지를 새로고침하고 다시 시도하세요.",
+      "mobileLoginRequestDeclined": "The login request was declined on your mobile device."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "알 수 없는 오류가 발생했습니다. 다시 시도하세요.",
@@ -277,6 +288,29 @@
     "publicEmailDescription": "익명성은 보장되지만 개인정보 보호는 제한적입니다. 주소를 아는 사람은 누구나 이메일 내용을 읽을 수 있습니다.",
     "validation": {
       "required": "필수 입력 항목입니다"
+    },
+    "logo": {
+      "chooseLogo": "Choose icon",
+      "currentLogo": "Current icon",
+      "builtinLogos": "Icon library",
+      "fetchFromWebsite": "Fetch icon from website",
+      "refetchFromWebsite": "(Re)fetch icon from website",
+      "sourceFavicon": "From {{domain}}",
+      "sourceBuiltin": "Built-in icon",
+      "sourceCustom": "Custom icon",
+      "sourceNone": "No icon",
+      "builtin": {
+        "Shopping": "Shopping",
+        "Bank": "Banking",
+        "Mail": "Mail",
+        "Social": "Social",
+        "Work": "Work",
+        "Game": "Games",
+        "Media": "Media",
+        "Travel": "Travel",
+        "Health": "Health",
+        "Dev": "Development"
+      }
     }
   },
   "itemTypes": {
@@ -369,7 +403,6 @@
     "noEmails": "이메일이 없습니다",
     "noEmailsDescription": "개인 이메일 주소로 받은 이메일이 아직 없습니다. 새 이메일을 받으면 여기에 표시됩니다.",
     "offlineMessage": "오프라인 상태입니다. 이메일을 불러오려면 인터넷에 연결하세요.",
-    "updateClientForFormattedView": "이 이메일을 올바르게 표시하려면 최신 버전의 앱이 필요합니다. 앱을 업데이트하세요.",
     "loadMore": "더 불러오기 ({{count}}개 남음)",
     "dateFormat": {
       "justNow": "방금 전",
@@ -494,6 +527,44 @@
       "blockedSitesDescription": "저장 확인 메시지가 절대 표시되지 않는 사이트입니다.",
       "clearAllBlockedSites": "차단된 사이트 모두 지우기"
     },
+    "securitySettings": {
+      "title": "보안",
+      "description": "계정 및 보관함 보안 설정을 관리합니다.",
+      "changePassword": {
+        "title": "비밀번호 변경",
+        "description": "Changing your master password will sign out your other devices requiring you to re-login with the new password.",
+        "currentPassword": "현재 비밀번호",
+        "newPassword": "새 비밀번호",
+        "confirmNewPassword": "새 비밀번호 확인",
+        "passwordsDoNotMatch": "새 비밀번호가 일치하지 않습니다.",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
+        "success": "비밀번호가 성공적으로 변경되었습니다."
+      },
+      "activeSessions": {
+        "title": "활성 세션",
+        "description": "현재 계정이 로그인되어 있거나 활성 세션이 있는 기기 목록입니다. 여기에서 원하는 세션을 로그아웃할 수 있습니다.",
+        "noSessions": "활성 세션이 없습니다",
+        "revoke": "해제",
+        "revokeSession": "세션 해제",
+        "revokeConfirmation": "이 세션을 해제하시겠습니까? 선택한 기기에서 로그아웃됩니다.",
+        "sessionRevoked": "세션이 성공적으로 해제되었습니다.",
+        "failedToRevoke": "세션을 해제하지 못했습니다.",
+        "failedToLoad": "활성 세션을 불러오지 못했습니다.",
+        "lastActive": "마지막 활동",
+        "expires": "만료"
+      },
+      "authLogs": {
+        "title": "최근 인증 로그",
+        "description": "최근 귀하의 계정에 로그인하려 한 시도 내역을 아래에서 확인할 수 있습니다.",
+        "noLogs": "인증 로그가 없습니다",
+        "success": "성공",
+        "failed": "실패",
+        "time": "시간",
+        "ipAddress": "IP 주소",
+        "client": "클라이언트",
+        "failedToLoad": "인증 로그를 불러오지 못했습니다."
+      }
+    },
     "unlockMethod": {
       "title": "보관함 잠금 해제 방법",
       "introText": "보관함을 잠금 해제할 방법을 선택하세요. 마스터 비밀번호(항상 사용 가능)를 사용하거나 더 빠른 접근을 위해 PIN 코드를 설정할 수 있습니다. PIN 입력을 3회 실패하면 마스터 비밀번호를 사용해야 합니다.",
@@ -579,6 +650,9 @@
     "whatsNew": "새로운 기능",
     "whatsNewDescription": "다음 변경 사항을 지원하려면 업그레이드가 필요합니다:",
     "noDescriptionAvailable": "이 버전에 대한 설명이 없습니다.",
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successTitle": "Vault upgraded",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "alerts": {
       "unableToGetVersionInfo": "버전 정보를 가져올 수 없습니다. 다시 시도해 주세요.",
       "selfHostedServer": "자체 호스팅 서버",
