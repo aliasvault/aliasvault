@@ -12,18 +12,20 @@ export default [
         ignores: [
             "dist/**",
             "node_modules/**",
+            "playwright-report/**",
+            "tests/test-results/**",
         ]
     },
     js.configs.recommended,
     {
-        files: ["src/**/*.{ts,tsx}"],
+        files: ["src/**/*.{ts,tsx}", "tests/**/*.ts", "playwright.config.ts"],
         languageOptions: {
             parser: tsParser,
             parserOptions: {
                 ecmaFeatures: { jsx: true },
                 ecmaVersion: "latest",
                 sourceType: "module",
-                project: "./tsconfig.json",
+                project: ["./tsconfig.json", "./tests/tsconfig.json"],
                 tsconfigRootDir: import.meta.dirname,
             },
         },
@@ -144,6 +146,13 @@ export default [
             react: {
                 version: "detect",
             },
+        },
+    },
+    {
+        // Playwright fixtures call their `use` callback, which the React hooks rule mistakes for a hook.
+        files: ["tests/**/*.ts"],
+        rules: {
+            "react-hooks/rules-of-hooks": "off",
         },
     },
     {
