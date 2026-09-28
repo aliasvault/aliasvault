@@ -93,7 +93,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
 
     try {
       if (email.isSpamOk) {
-        const response = await spamOk.request('DELETE', `Email/${email.toLocal}/${email.id}`);
+        const response = await spamOk.request('DELETE', `Email/${encodeURIComponent(email.toLocal)}/${email.id}`);
         if (!response.ok) {
           notifications.addErrorMessage(`${t('components.main.email.emailModal.EmailDeleteFailed')}: ${await response.text()}`, true);
           return;

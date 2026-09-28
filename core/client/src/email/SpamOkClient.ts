@@ -43,7 +43,7 @@ export class SpamOkClient {
    * @param emailPrefix - the local part of the address
    */
   public async getMailbox(emailPrefix: string): Promise<MailboxEmail[] | null> {
-    const response = await this.request('GET', `EmailBox/${emailPrefix}`);
+    const response = await this.request('GET', `EmailBox/${encodeURIComponent(emailPrefix)}`);
     if (!response.ok) {
       return null;
     }
@@ -57,7 +57,7 @@ export class SpamOkClient {
    * @param emailId - the email id
    */
   public async getEmail(emailPrefix: string, emailId: number): Promise<SpamOkEmail | null> {
-    const response = await this.request('GET', `Email/${emailPrefix}/${emailId}`);
+    const response = await this.request('GET', `Email/${encodeURIComponent(emailPrefix)}/${emailId}`);
     return response.ok ? await response.json() as SpamOkEmail : null;
   }
 

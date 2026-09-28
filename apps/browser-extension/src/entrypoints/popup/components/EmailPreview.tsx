@@ -306,7 +306,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         isSpamOk ? (
           <a
             key={mail.id}
-            href={`https://spamok.com/${email.split('@')[0]}/${mail.id}`}
+            href={`https://spamok.com/${encodeURIComponent(email.split('@')[0])}/${mail.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className={`flex justify-between items-center p-2 ps-3 pe-3 rounded cursor-pointer bg-white dark:bg-gray-800 shadow hover:shadow-md transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
