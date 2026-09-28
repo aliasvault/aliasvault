@@ -25,7 +25,7 @@ export function convertToItems(credentials: ImportedCredential[], folderPathToId
  * @param folderPathToId - Folder paths to folder ids, or null
  * @returns The item
  */
-function convertToItem(credential: ImportedCredential, folderPathToId: Map<string, string> | null): ItemEntity {
+export function convertToItem(credential: ImportedCredential, folderPathToId: Map<string, string> | null): ItemEntity {
   const now = new Date();
   const itemId = crypto.randomUUID();
   const itemType = determineItemType(credential);
@@ -36,13 +36,16 @@ function convertToItem(credential: ImportedCredential, folderPathToId: Map<strin
     Name: credential.ServiceName ?? '',
     ItemType: itemType,
     FolderId: folderPathToId && !isBlank(credential.FolderPath) ? folderPathToId.get(credential.FolderPath) ?? null : null,
-    LogoId: null,
+    Logo: null,
+    ArchivedAt: null,
     ...row,
     FieldValues: [],
+    FieldHistories: [],
     Attachments: (credential.Attachments ?? []).map(attachment => ({ Id: crypto.randomUUID(), ItemId: itemId, Filename: attachment.Filename, Blob: attachment.Blob, ...row })),
     TotpCodes: [],
     Passkeys: (credential.Passkeys ?? []).map(passkey => ({
       Id: passkey.Id ?? crypto.randomUUID(),
+      CredentialId: null,
       ItemId: itemId,
       RpId: passkey.RpId,
       UserHandle: passkey.UserHandle ?? new Uint8Array(0),
@@ -50,6 +53,7 @@ function convertToItem(credential: ImportedCredential, folderPathToId: Map<strin
       PrivateKey: passkey.PrivateKey,
       PrfKey: passkey.PrfKey ?? null,
       DisplayName: passkey.DisplayName,
+      AdditionalData: null,
       ...row,
     })),
   };

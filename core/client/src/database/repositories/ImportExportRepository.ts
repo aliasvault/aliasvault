@@ -1,13 +1,12 @@
-import { LogoKinds, type ItemType } from '@aliasvault/models/vault';
+import { LogoKinds, type ItemType, type LogoKind } from '@aliasvault/models/vault';
 
 import { AliasVaultCsvExportService } from '../../transfer/export/AliasVaultCsvExportService';
 import { fromStandardFormat, toStandardFormat } from '../../utilities/DateFormatter';
 import { BaseRepository } from '../BaseRepository';
 import { scopedKey } from '../ItemRef';
-import { AttachmentQueries, FieldDefinitionQueries, FieldValueQueries, ItemQueries, TotpCodeQueries } from '../queries/ItemQueries';
-import { PasskeyQueries } from '../queries/PasskeyQueries';
+import { AttachmentQueries, FieldDefinitionQueries, FieldHistoryQueries, FieldValueQueries, TotpCodeQueries } from '../queries/ItemQueries';
 
-import type { AttachmentEntity, FieldDefinitionEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../../transfer/shared/VaultEntities';
+import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../../transfer/shared/VaultEntities';
 import type { IDatabaseClient } from '../BaseRepository';
 import type { DbOp } from '../DbOp';
 import type { LogoRepository } from './LogoRepository';
@@ -21,8 +20,25 @@ export type VaultExportData = {
   tags: TagEntity[];
   itemTags: ItemTagEntity[];
   fieldDefinitions: FieldDefinitionEntity[];
-  logos: LogoEntity[];
 };
+
+/**
+ * Keep track of what the import already wrote (shared and reused parent objects).
+ */
+export type ImportWriteSession = {
+  /** Ids of the custom field definitions already written. */
+  writtenDefinitionIds: Set<string>;
+  /** Imported tag ids to the ids of the tags they were written as. */
+  tagIds: Map<string, string>;
+};
+
+/**
+ * Start an empty import write session.
+ * @returns The session
+ */
+export function createImportWriteSession(): ImportWriteSession {
+  return { writtenDefinitionIds: new Set(), tagIds: new Map() };
+}
 
 /** A row of a manifest-scoped child table, with the key of the item it hangs off. */
 type ChildRow = { ItemId: string; ManifestId: string };
@@ -76,8 +92,8 @@ export class ImportExportRepository extends BaseRepository {
   public *getExportData(): DbOp<VaultExportData> {
     const manifestId = yield* this.exportManifestId();
 
-    const itemRows = yield* this.query<{ Id: string; ManifestId: string; Name: string | null; ItemType: string; FolderId: string | null; LogoId: string | null; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT Id, ManifestId, Name, ItemType, FolderId, LogoId, CreatedAt, UpdatedAt FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL AND ManifestId = ? ORDER BY CreatedAt',
+    const itemRows = yield* this.query<{ Id: string; ManifestId: string; Name: string | null; ItemType: string; FolderId: string | null; LogoId: string | null; ArchivedAt: string | null; CreatedAt: string; UpdatedAt: string }>(
+      'SELECT Id, ManifestId, Name, ItemType, FolderId, LogoId, ArchivedAt, CreatedAt, UpdatedAt FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL AND ManifestId = ? ORDER BY CreatedAt',
       [manifestId]
     );
 
@@ -118,6 +134,22 @@ export class ImportExportRepository extends BaseRepository {
       IsDeleted: false,
     }));
 
+    const fieldHistoryRows = yield* this.query<ChildRow & { Id: string; FieldKey: string | null; FieldDefinitionId: string | null; ValueSnapshot: string; ChangedAt: string; CreatedAt: string; UpdatedAt: string }>(
+      'SELECT fh.Id, fh.ItemId, fh.ManifestId, fh.FieldKey, fh.FieldDefinitionId, fh.ValueSnapshot, fh.ChangedAt, fh.CreatedAt, fh.UpdatedAt FROM FieldHistories fh INNER JOIN Items i ON i.Id = fh.ItemId AND i.ManifestId = fh.ManifestId WHERE fh.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ? ORDER BY fh.ChangedAt',
+      [manifestId]
+    );
+    const fieldHistoriesByItem = ImportExportRepository.groupByItem(fieldHistoryRows, (row): FieldHistoryEntity => ({
+      Id: row.Id,
+      ItemId: row.ItemId,
+      FieldKey: row.FieldKey,
+      FieldDefinitionId: row.FieldDefinitionId,
+      ValueSnapshot: row.ValueSnapshot,
+      ChangedAt: fromStandardFormat(row.ChangedAt),
+      CreatedAt: fromStandardFormat(row.CreatedAt),
+      UpdatedAt: fromStandardFormat(row.UpdatedAt),
+      IsDeleted: false,
+    }));
+
     const attachmentRows = yield* this.query<ChildRow & { Id: string; Filename: string; Blob: Uint8Array | null; CreatedAt: string; UpdatedAt: string }>(
       'SELECT a.Id, a.ItemId, a.ManifestId, a.Filename, a.Blob, a.CreatedAt, a.UpdatedAt FROM Attachments a INNER JOIN Items i ON i.Id = a.ItemId AND i.ManifestId = a.ManifestId WHERE a.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
       [manifestId]
@@ -149,12 +181,13 @@ export class ImportExportRepository extends BaseRepository {
       IsDeleted: false,
     }));
 
-    const passkeyRows = yield* this.query<ChildRow & { Id: string; RpId: string; UserHandle: Uint8Array | null; PublicKey: string; PrivateKey: string; PrfKey: Uint8Array | null; DisplayName: string; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT p.Id, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.CreatedAt, p.UpdatedAt FROM Passkeys p INNER JOIN Items i ON i.Id = p.ItemId AND i.ManifestId = p.ManifestId WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
+    const passkeyRows = yield* this.query<ChildRow & { Id: string; CredentialId: Uint8Array | null; RpId: string; UserHandle: Uint8Array | null; PublicKey: string; PrivateKey: string; PrfKey: Uint8Array | null; DisplayName: string; AdditionalData: Uint8Array | null; CreatedAt: string; UpdatedAt: string }>(
+      'SELECT p.Id, p.CredentialId, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.AdditionalData, p.CreatedAt, p.UpdatedAt FROM Passkeys p INNER JOIN Items i ON i.Id = p.ItemId AND i.ManifestId = p.ManifestId WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
       [manifestId]
     );
     const passkeysByItem = ImportExportRepository.groupByItem(passkeyRows, (row): PasskeyEntity => ({
       Id: row.Id,
+      CredentialId: row.CredentialId ? new Uint8Array(row.CredentialId) : null,
       ItemId: row.ItemId,
       RpId: row.RpId,
       UserHandle: row.UserHandle ? new Uint8Array(row.UserHandle) : null,
@@ -162,10 +195,28 @@ export class ImportExportRepository extends BaseRepository {
       PrivateKey: row.PrivateKey,
       PrfKey: row.PrfKey ? new Uint8Array(row.PrfKey) : null,
       DisplayName: row.DisplayName ?? '',
+      AdditionalData: row.AdditionalData ? new Uint8Array(row.AdditionalData) : null,
       CreatedAt: fromStandardFormat(row.CreatedAt),
       UpdatedAt: fromStandardFormat(row.UpdatedAt),
       IsDeleted: false,
     }));
+
+    // Only the logos the exported items point at.
+    const logoIds = new Set(itemRows.map(row => row.LogoId).filter((id): id is string => id !== null));
+    const logoRows = yield* this.query<{ Id: string; Kind: LogoKind; Source: string; Name: string | null; FileData: Uint8Array | null; MimeType: string | null; UpdatedAt: string }>(
+      'SELECT Id, Kind, Source, Name, FileData, MimeType, UpdatedAt FROM Logos WHERE IsDeleted = 0 AND ManifestId = ?',
+      [manifestId]
+    );
+    const logosById = new Map(logoRows.filter(row => logoIds.has(row.Id)).map((row): [string, LogoEntity] => [row.Id, {
+      Id: row.Id,
+      Kind: row.Kind,
+      Source: row.Source,
+      Name: row.Name,
+      FileData: row.FileData ? new Uint8Array(row.FileData) : null,
+      MimeType: row.MimeType,
+      FetchedAt: fromStandardFormat(row.UpdatedAt),
+      IsDeleted: false,
+    }]));
 
     const items = itemRows.map((row): ItemEntity => {
       const key = scopedKey(row.ManifestId, row.Id);
@@ -174,11 +225,13 @@ export class ImportExportRepository extends BaseRepository {
         Name: row.Name,
         ItemType: row.ItemType as ItemType,
         FolderId: row.FolderId,
-        LogoId: row.LogoId,
+        Logo: row.LogoId ? logosById.get(row.LogoId) ?? null : null,
+        ArchivedAt: row.ArchivedAt ? fromStandardFormat(row.ArchivedAt) : null,
         CreatedAt: fromStandardFormat(row.CreatedAt),
         UpdatedAt: fromStandardFormat(row.UpdatedAt),
         IsDeleted: false,
         FieldValues: fieldValuesByItem.get(key) ?? [],
+        FieldHistories: fieldHistoriesByItem.get(key) ?? [],
         Attachments: attachmentsByItem.get(key) ?? [],
         TotpCodes: totpCodesByItem.get(key) ?? [],
         Passkeys: passkeysByItem.get(key) ?? [],
@@ -216,22 +269,7 @@ export class ImportExportRepository extends BaseRepository {
     const itemTagRows = yield* this.query<{ ItemId: string; TagId: string }>('SELECT ItemId, TagId FROM ItemTags WHERE IsDeleted = 0 AND ManifestId = ?', [manifestId]);
     const itemTags = itemTagRows.map((row): ItemTagEntity => ({ ItemId: row.ItemId, TagId: row.TagId, IsDeleted: false }));
 
-    // Only the logos the exported items point at.
-    const logoIds = new Set(items.map(item => item.LogoId).filter((id): id is string => id !== null));
-    const logoRows = yield* this.query<{ Id: string; Source: string; FileData: Uint8Array | null; MimeType: string | null; UpdatedAt: string }>(
-      'SELECT Id, Source, FileData, MimeType, UpdatedAt FROM Logos WHERE IsDeleted = 0 AND ManifestId = ?',
-      [manifestId]
-    );
-    const logos = logoRows.filter(row => logoIds.has(row.Id)).map((row): LogoEntity => ({
-      Id: row.Id,
-      Source: row.Source,
-      FileData: row.FileData ? new Uint8Array(row.FileData) : null,
-      MimeType: row.MimeType,
-      FetchedAt: fromStandardFormat(row.UpdatedAt),
-      IsDeleted: false,
-    }));
-
-    return { items, folders, tags, itemTags, fieldDefinitions, logos };
+    return { items, folders, tags, itemTags, fieldDefinitions };
   }
 
   /**
@@ -278,59 +316,67 @@ export class ImportExportRepository extends BaseRepository {
   }
 
   /**
-   * Insert an imported item with its field values, custom field definitions, TOTP codes, passkeys and
-   * attachments, keeping the timestamps the source export carried.
-   * @param item - The item graph to insert
+   * Resolve the logo an item carried in from an AliasVault export, keeping its kind: a favicon goes through
+   * {@link resolveImportLogo}, a built-in logo is recreated from its catalog key and an uploaded one from its bytes.
+   * @param logo - The carried logo
+   * @returns The logo id, or null when the item gets no logo
    */
-  public async insertImportedItem(item: ItemEntity): Promise<void> {
-    return this.withTransaction(() => this.run(this.insertItemGraph(item)));
+  public async resolveCarriedLogo(logo: LogoEntity): Promise<string | null> {
+    if (logo.Kind === LogoKinds.Favicon) {
+      return this.resolveImportLogo(logo.Source, logo.FileData);
+    }
+
+    const scope = await this.run(this.writeManifestId());
+    const currentDateTime = this.now();
+    const options = { mimeType: logo.MimeType, name: logo.Name };
+
+    if (logo.Kind === LogoKinds.Builtin) {
+      return this.logoRepository.getOrCreate(scope, LogoKinds.Builtin, logo.Source, null, currentDateTime, options);
+    }
+
+    // An uploaded logo is keyed by the hash of its bytes, so it is stored the way an upload is rather than trusting the file's key.
+    if (logo.FileData && logo.FileData.length > 0) {
+      return this.logoRepository.storeUpload(scope, logo.FileData, currentDateTime, options);
+    }
+
+    return this.logoRepository.ensureInScope(scope, LogoKinds.Custom, logo.Source, currentDateTime);
+  }
+
+  /**
+   * Insert an imported item with its field values and history, custom field definitions, tags, TOTP codes, passkeys
+   * and attachments, keeping the timestamps the source export carried.
+   * @param item - The item graph to insert
+   * @param logoId - The id of the item's logo in this vault (from {@link resolveImportLogo} or {@link resolveCarriedLogo}), or null
+   * @param session - What this import already wrote, shared across its items
+   */
+  public async insertImportedItem(item: ItemEntity, logoId: string | null, session: ImportWriteSession = createImportWriteSession()): Promise<void> {
+    return this.withTransaction(() => this.run(this.insertItemGraph(item, logoId, session)));
   }
 
   /**
    * Write one item graph.
    * @param item - The item graph
+   * @param logoId - The id of the item's logo in this vault, or null
+   * @param session - What this import already wrote
    */
-  private *insertItemGraph(item: ItemEntity): DbOp<void> {
+  private *insertItemGraph(item: ItemEntity, logoId: string | null, session: ImportWriteSession): DbOp<void> {
     const manifestId = yield* this.writeManifestId();
-    const createdAt = toStandardFormat(item.CreatedAt);
-    const updatedAt = toStandardFormat(item.UpdatedAt);
 
-    yield* this.execute(ItemQueries.INSERT_ITEM, [
-      item.Id,
-      item.Name,
-      item.ItemType,
-      item.LogoId,
-      item.FolderId,
-      manifestId,
-      createdAt,
-      updatedAt,
-      0,
-    ]);
+    yield* this.execute(
+      'INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, ManifestId, ArchivedAt, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
+      [item.Id, item.Name, item.ItemType, logoId, item.FolderId, manifestId, item.ArchivedAt ? toStandardFormat(item.ArchivedAt) : null, toStandardFormat(item.CreatedAt), toStandardFormat(item.UpdatedAt)]
+    );
 
-    // Custom field definitions come before the values that reference them; each is written once.
-    const writtenDefinitions = new Set<string>();
+    // Custom field definitions come before the values and history that reference them.
+    for (const definition of [...item.FieldValues, ...item.FieldHistories].map(row => row.FieldDefinition)) {
+      if (definition) {
+        yield* this.insertFieldDefinition(definition, manifestId, session);
+      }
+    }
+
     // Values of one multi-value field are numbered in file order.
     const valueIndexes = new Map<string, number>();
     for (const fieldValue of item.FieldValues) {
-      const definition = fieldValue.FieldDefinition;
-      if (definition && !writtenDefinitions.has(definition.Id)) {
-        writtenDefinitions.add(definition.Id);
-        yield* this.execute(FieldDefinitionQueries.INSERT, [
-          definition.Id,
-          manifestId,
-          definition.FieldType,
-          definition.Label,
-          definition.IsMultiValue ? 1 : 0,
-          definition.IsHidden ? 1 : 0,
-          definition.EnableHistory ? 1 : 0,
-          definition.Weight,
-          definition.ApplicableToTypes,
-          toStandardFormat(definition.CreatedAt),
-          toStandardFormat(definition.UpdatedAt),
-          0,
-        ]);
-      }
-
       const fieldIdentity = fieldValue.FieldDefinitionId ?? fieldValue.FieldKey ?? '';
       const valueIndex = valueIndexes.get(fieldIdentity) ?? 0;
       valueIndexes.set(fieldIdentity, valueIndex + 1);
@@ -346,6 +392,21 @@ export class ImportExportRepository extends BaseRepository {
         valueIndex,
         toStandardFormat(fieldValue.CreatedAt),
         toStandardFormat(fieldValue.UpdatedAt),
+        0,
+      ]);
+    }
+
+    for (const fieldHistory of item.FieldHistories) {
+      yield* this.execute(FieldHistoryQueries.INSERT, [
+        fieldHistory.Id,
+        item.Id,
+        manifestId,
+        fieldHistory.FieldDefinitionId,
+        fieldHistory.FieldKey,
+        fieldHistory.ValueSnapshot,
+        toStandardFormat(fieldHistory.ChangedAt),
+        toStandardFormat(fieldHistory.CreatedAt),
+        toStandardFormat(fieldHistory.UpdatedAt),
         0,
       ]);
     }
@@ -367,21 +428,10 @@ export class ImportExportRepository extends BaseRepository {
     }
 
     for (const passkey of item.Passkeys) {
-      yield* this.execute(PasskeyQueries.INSERT, [
-        passkey.Id,
-        item.Id,
-        manifestId,
-        passkey.RpId,
-        passkey.UserHandle,
-        passkey.PublicKey,
-        passkey.PrivateKey,
-        passkey.PrfKey,
-        passkey.DisplayName,
-        null,
-        toStandardFormat(passkey.CreatedAt),
-        toStandardFormat(passkey.UpdatedAt),
-        0,
-      ]);
+      yield* this.execute(
+        'INSERT INTO Passkeys (Id, CredentialId, ItemId, ManifestId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
+        [passkey.Id, passkey.CredentialId, item.Id, manifestId, passkey.RpId, passkey.UserHandle, passkey.PublicKey, passkey.PrivateKey, passkey.PrfKey, passkey.DisplayName, passkey.AdditionalData, toStandardFormat(passkey.CreatedAt), toStandardFormat(passkey.UpdatedAt)]
+      );
     }
 
     for (const attachment of item.Attachments) {
@@ -396,6 +446,68 @@ export class ImportExportRepository extends BaseRepository {
         0,
       ]);
     }
+
+    for (const tag of item.Tags ?? []) {
+      const tagId = yield* this.resolveImportTag(tag, manifestId, session);
+      yield* this.execute(
+        'INSERT OR IGNORE INTO ItemTags (ManifestId, ItemId, TagId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, 0)',
+        [manifestId, item.Id, tagId, toStandardFormat(item.CreatedAt), toStandardFormat(item.UpdatedAt)]
+      );
+    }
+  }
+
+  /**
+   * Write a custom field definition, once per import.
+   * @param definition - The definition
+   * @param manifestId - The manifest to write into
+   * @param session - What this import already wrote
+   */
+  private *insertFieldDefinition(definition: FieldDefinitionEntity, manifestId: string, session: ImportWriteSession): DbOp<void> {
+    if (session.writtenDefinitionIds.has(definition.Id)) {
+      return;
+    }
+    session.writtenDefinitionIds.add(definition.Id);
+    yield* this.execute(FieldDefinitionQueries.INSERT, [
+      definition.Id,
+      manifestId,
+      definition.FieldType,
+      definition.Label,
+      definition.IsMultiValue ? 1 : 0,
+      definition.IsHidden ? 1 : 0,
+      definition.EnableHistory ? 1 : 0,
+      definition.Weight,
+      definition.ApplicableToTypes,
+      toStandardFormat(definition.CreatedAt),
+      toStandardFormat(definition.UpdatedAt),
+      0,
+    ]);
+  }
+
+  /**
+   * The tag an imported tag is written as: the vault's own tag with the same name when there is one, else a new tag.
+   * @param tag - The imported tag
+   * @param manifestId - The manifest to write into
+   * @param session - What this import already wrote
+   * @returns The tag id
+   */
+  private *resolveImportTag(tag: TagEntity, manifestId: string, session: ImportWriteSession): DbOp<string> {
+    const known = session.tagIds.get(tag.Id);
+    if (known) {
+      return known;
+    }
+
+    const existing = (yield* this.query<{ Id: string }>('SELECT Id FROM Tags WHERE ManifestId = ? AND IsDeleted = 0 AND Name = ? COLLATE NOCASE LIMIT 1', [manifestId, tag.Name.trim()]))[0];
+    let tagId = existing?.Id;
+    if (!tagId) {
+      tagId = tag.Id;
+      yield* this.execute(
+        'INSERT INTO Tags (Id, ManifestId, Name, Color, DisplayOrder, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, ?, 0)',
+        [tagId, manifestId, tag.Name.trim(), tag.Color, tag.DisplayOrder, toStandardFormat(tag.CreatedAt), toStandardFormat(tag.UpdatedAt)]
+      );
+    }
+
+    session.tagIds.set(tag.Id, tagId);
+    return tagId;
   }
 
   /**

@@ -385,7 +385,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   };
 
   /**
-   * Fetch favicons for the credentials that do not carry one and have a URL, one fetch per unique domain.
+   * Fetch favicons for the credentials that do not carry a logo and have a URL, one fetch per unique domain.
    */
   const extractFaviconsForCredentials = async (): Promise<void> => {
     setIsExtractingFavicons(true);
@@ -395,7 +395,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
     faviconExtractionAbort.current = abort;
 
     const targetsBySource = new Map<string, FaviconTarget>();
-    for (const credential of importedCredentials.filter(c => !c.FaviconBytes)) {
+    for (const credential of importedCredentials.filter(c => !c.FaviconBytes && !c.AliasVaultItem?.Logo)) {
       const target = await selectFaviconTarget(credential.ServiceUrls ?? []);
       if (target && !targetsBySource.has(target.source)) {
         targetsBySource.set(target.source, target);

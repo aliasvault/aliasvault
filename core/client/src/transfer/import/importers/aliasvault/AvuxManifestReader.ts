@@ -1,6 +1,8 @@
+import { LogoKinds } from '@aliasvault/models/vault';
+
 import { readBoolean, readNumber, readObjectArray, readString, requireObject, type JsonObject } from '../../readers/JsonReader';
 
-import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from '../../../export/AvuxManifest';
+import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldHistory, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from '../../../export/AvuxManifest';
 
 /**
  * Read an .avux manifest.json, matching property names case-insensitively.
@@ -37,7 +39,9 @@ function parseAvuxItem(obj: JsonObject): AvuxItem {
     updatedAt: readString(obj, 'updatedAt') ?? '',
     folderId: readString(obj, 'folderId'),
     logoId: readString(obj, 'logoId'),
+    archivedAt: readString(obj, 'archivedAt'),
     fieldValues: readObjectArray(obj, 'fieldValues', parseAvuxFieldValue) ?? [],
+    fieldHistories: readObjectArray(obj, 'fieldHistories', parseAvuxFieldHistory) ?? [],
     attachments: readObjectArray(obj, 'attachments', parseAvuxAttachment) ?? [],
     totpCodes: readObjectArray(obj, 'totpCodes', parseAvuxTotpCode) ?? [],
     passkeys: readObjectArray(obj, 'passkeys', parseAvuxPasskey) ?? [],
@@ -56,6 +60,21 @@ function parseAvuxFieldValue(obj: JsonObject): AvuxFieldValue {
     fieldDefinitionId: readString(obj, 'fieldDefinitionId'),
     value: readString(obj, 'value'),
     weight: readNumber(obj, 'weight') ?? 0,
+  };
+}
+
+/**
+ * Read a field history record.
+ * @param obj - The field history JSON
+ * @returns The field history record
+ */
+function parseAvuxFieldHistory(obj: JsonObject): AvuxFieldHistory {
+  return {
+    id: readString(obj, 'id') ?? '',
+    fieldKey: readString(obj, 'fieldKey'),
+    fieldDefinitionId: readString(obj, 'fieldDefinitionId'),
+    valueSnapshot: readString(obj, 'valueSnapshot') ?? '',
+    changedAt: readString(obj, 'changedAt') ?? '',
   };
 }
 
@@ -96,12 +115,14 @@ function parseAvuxTotpCode(obj: JsonObject): AvuxTotpCode {
 function parseAvuxPasskey(obj: JsonObject): AvuxPasskey {
   return {
     id: readString(obj, 'id') ?? '',
+    credentialId: readString(obj, 'credentialId'),
     rpId: readString(obj, 'rpId') ?? '',
     userHandle: readString(obj, 'userHandle'),
     publicKey: readString(obj, 'publicKey') ?? '',
     privateKey: readString(obj, 'privateKey') ?? '',
     prfKey: readString(obj, 'prfKey'),
     displayName: readString(obj, 'displayName') ?? '',
+    additionalData: readString(obj, 'additionalData'),
   };
 }
 
@@ -176,7 +197,9 @@ function parseAvuxFieldDefinition(obj: JsonObject): AvuxFieldDefinition {
 function parseAvuxLogo(obj: JsonObject): AvuxLogo {
   return {
     id: readString(obj, 'id') ?? '',
+    kind: readString(obj, 'kind') ?? LogoKinds.Favicon,
     source: readString(obj, 'source') ?? '',
+    name: readString(obj, 'name'),
     mimeType: readString(obj, 'mimeType'),
     fetchedAt: readString(obj, 'fetchedAt'),
     relativePath: readString(obj, 'relativePath') ?? '',

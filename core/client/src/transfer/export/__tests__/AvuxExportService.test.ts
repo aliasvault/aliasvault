@@ -25,7 +25,7 @@ describe('AvuxExportService', () => {
     const tags: TagEntity[] = [{ Id: crypto.randomUUID(), Name: 'Test Tag', Color: '#FF0000', DisplayOrder: 0, CreatedAt: new Date(), UpdatedAt: new Date(), IsDeleted: false }];
     const itemTags: ItemTagEntity[] = [{ ItemId: items[0].Id, TagId: tags[0].Id, IsDeleted: false }];
 
-    const avuxBytes = AvuxExportService.exportToAvux(items, folders, tags, itemTags, [], [], 'test@example.com');
+    const avuxBytes = AvuxExportService.exportToAvux(items, folders, tags, itemTags, [], 'test@example.com');
 
     expect(avuxBytes.length).toBeGreaterThan(0);
 
@@ -114,7 +114,7 @@ describe('AvuxExportService', () => {
     addCustomFieldValue(item, textFieldDef, 'My first pet');
     addCustomFieldValue(item, hiddenFieldDef, 'super-secret-recovery');
 
-    const imported = AvuxImportService.importFromAvux(exportItems([item], [], [textFieldDef, hiddenFieldDef]));
+    const imported = AvuxImportService.importFromAvux(exportItems([item], [textFieldDef, hiddenFieldDef]));
 
     expect(imported).toHaveLength(1);
     const credential = imported[0];
@@ -145,23 +145,18 @@ describe('AvuxExportService', () => {
   });
 
   it('re-imports exported logos', () => {
-    const logoId1 = crypto.randomUUID();
-    const logoId2 = crypto.randomUUID();
+    const githubLogo: LogoEntity = { Id: crypto.randomUUID(), Kind: 'favicon', Source: 'github.com', Name: null, FileData: new Uint8Array([1, 2, 3, 4, 5]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false };
+    const googleLogo: LogoEntity = { Id: crypto.randomUUID(), Kind: 'favicon', Source: 'google.com', Name: null, FileData: new Uint8Array([6, 7, 8, 9, 10]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false };
 
     const item1 = createTestItem('GitHub', ItemTypes.Login, { [FieldKey.LoginUsername]: 'testuser', [FieldKey.LoginPassword]: 'password123', [FieldKey.LoginUrl]: 'https://github.com' });
-    item1.LogoId = logoId1;
+    item1.Logo = githubLogo;
     const item2 = createTestItem('Google', ItemTypes.Login, { [FieldKey.LoginUsername]: 'user@gmail.com', [FieldKey.LoginPassword]: 'pass456', [FieldKey.LoginUrl]: 'https://google.com' });
-    item2.LogoId = logoId2;
+    item2.Logo = googleLogo;
     // Shares the logo of item1 (deduplication).
     const item3 = createTestItem('GitHub Issue Tracker', ItemTypes.Login, { [FieldKey.LoginUsername]: 'issueuser', [FieldKey.LoginPassword]: 'issuepass' });
-    item3.LogoId = logoId1;
+    item3.Logo = githubLogo;
 
-    const logos: LogoEntity[] = [
-      { Id: logoId1, Source: 'github.com', FileData: new Uint8Array([1, 2, 3, 4, 5]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false },
-      { Id: logoId2, Source: 'google.com', FileData: new Uint8Array([6, 7, 8, 9, 10]), MimeType: 'image/png', FetchedAt: new Date(), IsDeleted: false },
-    ];
-
-    const imported = AvuxImportService.importFromAvux(exportItems([item1, item2, item3], logos));
+    const imported = AvuxImportService.importFromAvux(exportItems([item1, item2, item3]));
 
     expect(imported).toHaveLength(3);
 

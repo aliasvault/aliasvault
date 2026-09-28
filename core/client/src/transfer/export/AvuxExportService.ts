@@ -1,8 +1,8 @@
 import { bytesToBase64 } from '../../utilities/Base64';
 import { createZipArchive, textToZipBytes } from '../shared/ZipArchive';
 
-import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from './AvuxManifest';
-import type { AttachmentEntity, FieldDefinitionEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../shared/VaultEntities';
+import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldHistory, AvuxFieldValue, AvuxFolder, AvuxItem, AvuxItemTag, AvuxLogo, AvuxManifest, AvuxPasskey, AvuxTag, AvuxTotpCode } from './AvuxManifest';
+import type { AttachmentEntity, FieldDefinitionEntity, FieldHistoryEntity, FieldValueEntity, FolderEntity, ItemEntity, ItemTagEntity, LogoEntity, PasskeyEntity, TagEntity, TotpCodeEntity } from '../shared/VaultEntities';
 
 /** The .avux manifest format version this service writes. */
 export const AVUX_FORMAT_VERSION = '1.0.0';
@@ -19,11 +19,11 @@ export class AvuxExportService {
    * @param tags - The tags to export
    * @param itemTags - The item-tag associations to export
    * @param fieldDefinitions - The custom field definitions to export
-   * @param logos - The logos to export
    * @param username - The username creating the export
    * @returns The .avux ZIP file bytes
    */
-  public static exportToAvux(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], logos: LogoEntity[], username: string): Uint8Array {
+  public static exportToAvux(items: ItemEntity[], folders: FolderEntity[], tags: TagEntity[], itemTags: ItemTagEntity[], fieldDefinitions: FieldDefinitionEntity[], username: string): Uint8Array {
+    const logos = AvuxExportService.itemLogos(items);
     const manifest = AvuxExportService.createManifest(items, folders, tags, itemTags, fieldDefinitions, logos, username);
     const attachmentMap = AvuxExportService.extractAttachments(items);
     const logoMap = AvuxExportService.extractLogos(logos);
@@ -52,8 +52,23 @@ export class AvuxExportService {
       tags: tags.filter(t => !t.IsDeleted).map(AvuxExportService.mapTagToAvux),
       itemTags: itemTags.filter(it => !it.IsDeleted).map(AvuxExportService.mapItemTagToAvux),
       fieldDefinitions: fieldDefinitions.filter(fd => !fd.IsDeleted).map(AvuxExportService.mapFieldDefinitionToAvux),
-      logos: logos.filter(l => !l.IsDeleted).map(AvuxExportService.mapLogoToAvux),
+      logos: logos.map(AvuxExportService.mapLogoToAvux),
     };
+  }
+
+  /**
+   * Get all the live logos of the live items.
+   * @param items - The items
+   * @returns The logos, one per id
+   */
+  private static itemLogos(items: ItemEntity[]): LogoEntity[] {
+    const logosById = new Map<string, LogoEntity>();
+    for (const item of items.filter(i => !i.IsDeleted)) {
+      if (item.Logo && !item.Logo.IsDeleted) {
+        logosById.set(item.Logo.Id, item.Logo);
+      }
+    }
+    return [...logosById.values()];
   }
 
   /**
@@ -69,8 +84,10 @@ export class AvuxExportService {
       createdAt: item.CreatedAt.toISOString(),
       updatedAt: item.UpdatedAt.toISOString(),
       folderId: item.FolderId,
-      logoId: item.LogoId,
+      logoId: item.Logo && !item.Logo.IsDeleted ? item.Logo.Id : null,
+      archivedAt: item.ArchivedAt ? item.ArchivedAt.toISOString() : null,
       fieldValues: item.FieldValues.filter(fv => !fv.IsDeleted).map(AvuxExportService.mapFieldValueToAvux),
+      fieldHistories: item.FieldHistories.filter(fh => !fh.IsDeleted).map(AvuxExportService.mapFieldHistoryToAvux),
       attachments: item.Attachments.filter(a => !a.IsDeleted).map(AvuxExportService.mapAttachmentToAvux),
       totpCodes: item.TotpCodes.filter(tc => !tc.IsDeleted).map(AvuxExportService.mapTotpCodeToAvux),
       passkeys: item.Passkeys.filter(p => !p.IsDeleted).map(AvuxExportService.mapPasskeyToAvux),
@@ -89,6 +106,21 @@ export class AvuxExportService {
       fieldDefinitionId: fieldValue.FieldDefinitionId,
       value: fieldValue.Value,
       weight: fieldValue.Weight,
+    };
+  }
+
+  /**
+   * Map a field history record.
+   * @param fieldHistory - The field history record
+   * @returns The manifest field history record
+   */
+  private static mapFieldHistoryToAvux(fieldHistory: FieldHistoryEntity): AvuxFieldHistory {
+    return {
+      id: fieldHistory.Id,
+      fieldKey: fieldHistory.FieldKey,
+      fieldDefinitionId: fieldHistory.FieldDefinitionId,
+      valueSnapshot: fieldHistory.ValueSnapshot,
+      changedAt: fieldHistory.ChangedAt.toISOString(),
     };
   }
 
@@ -129,12 +161,14 @@ export class AvuxExportService {
   private static mapPasskeyToAvux(passkey: PasskeyEntity): AvuxPasskey {
     return {
       id: passkey.Id,
+      credentialId: passkey.CredentialId ? bytesToBase64(passkey.CredentialId) : null,
       rpId: passkey.RpId,
       userHandle: passkey.UserHandle ? bytesToBase64(passkey.UserHandle) : null,
       publicKey: passkey.PublicKey,
       privateKey: passkey.PrivateKey,
       prfKey: passkey.PrfKey ? bytesToBase64(passkey.PrfKey) : null,
       displayName: passkey.DisplayName,
+      additionalData: passkey.AdditionalData ? bytesToBase64(passkey.AdditionalData) : null,
     };
   }
 
@@ -209,7 +243,9 @@ export class AvuxExportService {
   private static mapLogoToAvux(logo: LogoEntity): AvuxLogo {
     return {
       id: logo.Id,
+      kind: logo.Kind,
       source: logo.Source,
+      name: logo.Name,
       mimeType: logo.MimeType,
       fetchedAt: logo.FetchedAt ? logo.FetchedAt.toISOString() : null,
       relativePath: AvuxExportService.logoPath(logo),

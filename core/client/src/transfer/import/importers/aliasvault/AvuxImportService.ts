@@ -1,4 +1,4 @@
-import { FieldTypes, isItemType, ItemTypes, type FieldType } from '@aliasvault/models/vault';
+import { FieldTypes, isItemType, ItemTypes, LogoKinds, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, type FieldType, type LogoKind } from '@aliasvault/models/vault';
 
 import { base64ToBytes } from '../../../../utilities/Base64';
 import { parseDateTime } from '../../../shared/DateTimeUtils';
@@ -9,14 +9,26 @@ import { parseJson } from '../../readers/JsonReader';
 
 import { parseAvuxManifest } from './AvuxManifestReader';
 
-import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldValue, AvuxManifest, AvuxPasskey } from '../../../export/AvuxManifest';
+import type { AvuxAttachment, AvuxFieldDefinition, AvuxFieldValue, AvuxItem, AvuxManifest, AvuxPasskey } from '../../../export/AvuxManifest';
+import type { AttachmentEntity, FieldDefinitionEntity, ItemEntity, LogoEntity, TagEntity } from '../../../shared/VaultEntities';
 import type { ImportedAttachment } from '../../models/ImportedAttachment';
 import type { ImportedCredential } from '../../models/ImportedCredential';
 import type { ImportedPasskey } from '../../models/ImportedPasskey';
 
 /**
+ * The rows an .avux manifest shares between its items, each under a new id for the vault it is imported into.
+ */
+type SharedRows = {
+  definitions: Map<string, FieldDefinitionEntity>;
+  tagsByItem: Map<string, TagEntity[]>;
+  logos: Map<string, LogoEntity>;
+};
+
+/**
  * Imports vault data from the .avux (AliasVault Unencrypted eXport) format: a ZIP archive with a manifest.json,
- * all attachments and all logos. Logos are embedded into the FaviconBytes of each credential.
+ * all attachments and all logos.
+ *
+ * Every credential carries the complete item as AliasVaultItem, which is what gets written as-is.
  */
 export class AvuxImportService {
   /**
@@ -60,6 +72,7 @@ export class AvuxImportService {
   private static convertManifestToImportedCredentials(manifest: AvuxManifest, attachmentMap: Map<string, Uint8Array>, logoDataById: Map<string, Uint8Array>): ImportedCredential[] {
     const foldersById = new Map(manifest.folders.map(folder => [folder.id, { Name: folder.name, ParentFolderId: folder.parentFolderId }]));
     const fieldDefinitionsById = new Map(manifest.fieldDefinitions.map(fd => [fd.id, fd]));
+    const sharedRows = AvuxImportService.buildSharedRows(manifest, logoDataById);
 
     return manifest.items.map((item): ImportedCredential => {
       const credential: ImportedCredential = {
@@ -96,8 +109,142 @@ export class AvuxImportService {
         credential.Attachments = item.attachments.map(a => AvuxImportService.mapAvuxAttachmentToImported(a, attachmentMap));
       }
 
+      credential.AliasVaultItem = AvuxImportService.buildItem(item, credential, sharedRows, attachmentMap);
+
       return credential;
     });
+  }
+
+  /**
+   * Create the custom field definitions, tags and logos the items share, under new ids.
+   * @param manifest - The manifest
+   * @param logoDataById - Logo ids to image data
+   * @returns The shared rows, keyed by their id in the manifest (tags by the id of the item they are on)
+   */
+  private static buildSharedRows(manifest: AvuxManifest, logoDataById: Map<string, Uint8Array>): SharedRows {
+    const now = new Date();
+
+    const definitions = new Map(manifest.fieldDefinitions.map((definition): [string, FieldDefinitionEntity] => [definition.id, {
+      Id: crypto.randomUUID(),
+      FieldType: AvuxImportService.toFieldType(definition.fieldType),
+      Label: definition.label,
+      IsMultiValue: definition.isMultiValue,
+      IsHidden: definition.isHidden,
+      EnableHistory: definition.enableHistory,
+      Weight: definition.weight,
+      ApplicableToTypes: definition.applicableToTypes,
+      CreatedAt: now,
+      UpdatedAt: now,
+      IsDeleted: false,
+    }]));
+
+    const tags = new Map(manifest.tags.filter(tag => tag.name.trim().length > 0).map((tag): [string, TagEntity] => [tag.id, {
+      Id: crypto.randomUUID(),
+      Name: tag.name,
+      Color: tag.color,
+      DisplayOrder: tag.displayOrder,
+      CreatedAt: parseDateTime(tag.createdAt) ?? now,
+      UpdatedAt: parseDateTime(tag.updatedAt) ?? now,
+      IsDeleted: false,
+    }]));
+    const tagsByItem = new Map<string, TagEntity[]>();
+    for (const itemTag of manifest.itemTags) {
+      const tag = tags.get(itemTag.tagId);
+      if (tag) {
+        tagsByItem.set(itemTag.itemId, [...tagsByItem.get(itemTag.itemId) ?? [], tag]);
+      }
+    }
+
+    const logos = new Map<string, LogoEntity>();
+    for (const logo of manifest.logos) {
+      const kind = AvuxImportService.toLogoKind(logo.kind);
+      if (kind && logo.source.length > 0) {
+        logos.set(logo.id, { Id: logo.id, Kind: kind, Source: logo.source, Name: logo.name, FileData: logoDataById.get(logo.id) ?? null, MimeType: logo.mimeType, FetchedAt: parseDateTime(logo.fetchedAt), IsDeleted: false });
+      }
+    }
+
+    return { definitions, tagsByItem, logos };
+  }
+
+  /**
+   * Build the complete item graph of a manifest item, under new ids. Passkeys keep theirs, since the WebAuthn
+   * credential id the relying party knows is derived from it.
+   * @param item - The manifest item
+   * @param credential - The credential summary of the item, for its dates and item type
+   * @param sharedRows - The definitions, tags and logos the items share
+   * @param attachmentMap - Attachment paths to file data
+   * @returns The item
+   */
+  private static buildItem(item: AvuxItem, credential: ImportedCredential, sharedRows: SharedRows, attachmentMap: Map<string, Uint8Array>): ItemEntity {
+    const now = new Date();
+    const itemId = crypto.randomUUID();
+    const row = { CreatedAt: credential.CreatedAt ?? now, UpdatedAt: credential.UpdatedAt ?? now, IsDeleted: false };
+    /**
+     * The new definition of a manifest definition id, or null for a system field or an unknown definition.
+     */
+    const definitionOf = (definitionId: string | null): FieldDefinitionEntity | null => definitionId ? sharedRows.definitions.get(definitionId) ?? null : null;
+
+    const attachments: AttachmentEntity[] = [];
+    for (const attachment of item.attachments) {
+      const blob = attachmentMap.get(attachment.relativePath);
+      if (blob && blob.length > 0) {
+        attachments.push({ Id: crypto.randomUUID(), ItemId: itemId, Filename: attachment.filename, Blob: blob, ...row });
+      }
+    }
+
+    return {
+      Id: itemId,
+      Name: item.name,
+      ItemType: credential.ItemType ?? ItemTypes.Login,
+      FolderId: null,
+      ArchivedAt: parseDateTime(item.archivedAt),
+      ...row,
+      // A value or history record is either a system field or a custom field whose definition the file holds.
+      FieldValues: item.fieldValues.filter(fv => fv.fieldKey || definitionOf(fv.fieldDefinitionId)).map(fv => {
+        const definition = definitionOf(fv.fieldDefinitionId);
+        return { Id: crypto.randomUUID(), ItemId: itemId, FieldKey: definition ? null : fv.fieldKey, FieldDefinitionId: definition?.Id ?? null, FieldDefinition: definition, Value: fv.value, Weight: fv.weight, ...row };
+      }),
+      FieldHistories: item.fieldHistories.filter(fh => fh.fieldKey || definitionOf(fh.fieldDefinitionId)).map(fh => {
+        const definition = definitionOf(fh.fieldDefinitionId);
+        const changedAt = parseDateTime(fh.changedAt) ?? row.UpdatedAt;
+        return { Id: crypto.randomUUID(), ItemId: itemId, FieldKey: definition ? null : fh.fieldKey, FieldDefinitionId: definition?.Id ?? null, FieldDefinition: definition, ValueSnapshot: fh.valueSnapshot, ChangedAt: changedAt, CreatedAt: changedAt, UpdatedAt: changedAt, IsDeleted: false };
+      }),
+      Attachments: attachments,
+      TotpCodes: item.totpCodes.filter(totp => totp.secretKey.length > 0).map(totp => ({
+        Id: crypto.randomUUID(),
+        ItemId: itemId,
+        Name: totp.name,
+        SecretKey: totp.secretKey,
+        Algorithm: normalizeTotpAlgorithm(totp.algorithm),
+        Digits: normalizeTotpDigits(totp.digits),
+        Period: normalizeTotpPeriod(totp.period),
+        ...row,
+      })),
+      Passkeys: item.passkeys.map(passkey => ({
+        Id: passkey.id.length > 0 ? passkey.id : crypto.randomUUID(),
+        CredentialId: passkey.credentialId ? base64ToBytes(passkey.credentialId) : null,
+        ItemId: itemId,
+        RpId: passkey.rpId,
+        UserHandle: passkey.userHandle ? base64ToBytes(passkey.userHandle) : new Uint8Array(0),
+        PublicKey: passkey.publicKey,
+        PrivateKey: passkey.privateKey,
+        PrfKey: passkey.prfKey ? base64ToBytes(passkey.prfKey) : null,
+        DisplayName: passkey.displayName,
+        AdditionalData: passkey.additionalData ? base64ToBytes(passkey.additionalData) : null,
+        ...row,
+      })),
+      Logo: item.logoId ? sharedRows.logos.get(item.logoId) ?? null : null,
+      Tags: sharedRows.tagsByItem.get(item.id) ?? [],
+    };
+  }
+
+  /**
+   * Map a logo kind string to a known logo kind.
+   * @param value - The logo kind text
+   * @returns The logo kind, or null when this version does not know it
+   */
+  private static toLogoKind(value: string): LogoKind | null {
+    return (Object.values(LogoKinds) as string[]).includes(value) ? value as LogoKind : null;
   }
 
   /**

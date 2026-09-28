@@ -1,4 +1,4 @@
-import type { ItemType } from '@aliasvault/models/vault';
+import type { ItemType, LogoKind } from '@aliasvault/models/vault';
 
 /**
  * An item with its child fields, as the export reads it and as the import produces it.
@@ -8,14 +8,18 @@ export type ItemEntity = {
   Name: string | null;
   ItemType: ItemType;
   FolderId: string | null;
-  LogoId: string | null;
+  ArchivedAt: Date | null;
   CreatedAt: Date;
   UpdatedAt: Date;
   IsDeleted: boolean;
   FieldValues: FieldValueEntity[];
+  FieldHistories: FieldHistoryEntity[];
   Attachments: AttachmentEntity[];
   TotpCodes: TotpCodeEntity[];
   Passkeys: PasskeyEntity[];
+  /** The item's logo, null when it has none. */
+  Logo: LogoEntity | null;
+  Tags?: TagEntity[];
 };
 
 /**
@@ -26,10 +30,25 @@ export type FieldValueEntity = {
   ItemId: string;
   FieldKey: string | null;
   FieldDefinitionId: string | null;
-  /** The definition of a custom field, carried along so the import can recreate it. */
   FieldDefinition?: FieldDefinitionEntity | null;
   Value: string | null;
   Weight: number;
+  CreatedAt: Date;
+  UpdatedAt: Date;
+  IsDeleted: boolean;
+};
+
+/**
+ * A previous value of a field: a system field (FieldKey set) or a custom field (FieldDefinitionId set).
+ */
+export type FieldHistoryEntity = {
+  Id: string;
+  ItemId: string;
+  FieldKey: string | null;
+  FieldDefinitionId: string | null;
+  FieldDefinition?: FieldDefinitionEntity | null;
+  ValueSnapshot: string;
+  ChangedAt: Date;
   CreatedAt: Date;
   UpdatedAt: Date;
   IsDeleted: boolean;
@@ -73,6 +92,7 @@ export type TotpCodeEntity = {
  */
 export type PasskeyEntity = {
   Id: string;
+  CredentialId: Uint8Array | null;
   ItemId: string;
   RpId: string;
   UserHandle: Uint8Array | null;
@@ -80,6 +100,7 @@ export type PasskeyEntity = {
   PrivateKey: string;
   PrfKey: Uint8Array | null;
   DisplayName: string;
+  AdditionalData: Uint8Array | null;
   CreatedAt: Date;
   UpdatedAt: Date;
   IsDeleted: boolean;
@@ -138,7 +159,9 @@ export type ItemTagEntity = {
  */
 export type LogoEntity = {
   Id: string;
+  Kind: LogoKind;
   Source: string;
+  Name: string | null;
   FileData: Uint8Array | null;
   MimeType: string | null;
   FetchedAt: Date | null;

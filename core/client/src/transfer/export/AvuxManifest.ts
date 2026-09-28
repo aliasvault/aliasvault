@@ -17,6 +17,19 @@ export type AvuxFieldValue = {
 };
 
 /**
+ * A previous value of a field in an item.
+ */
+export type AvuxFieldHistory = {
+  id: string;
+  /** The system field key, null for custom fields. */
+  fieldKey: string | null;
+  /** The custom field definition id, null for system fields. */
+  fieldDefinitionId: string | null;
+  valueSnapshot: string;
+  changedAt: string;
+};
+
+/**
  * An attachment in an item.
  */
 export type AvuxAttachment = {
@@ -43,8 +56,10 @@ export type AvuxTotpCode = {
  * A passkey in an item.
  */
 export type AvuxPasskey = {
-  /** The passkey id; the WebAuthn credential id is derived from it at runtime. */
+  /** The passkey id; the WebAuthn credential id is derived from it at runtime unless credentialId is set. */
   id: string;
+  /** The WebAuthn credential id (base64-encoded), null when it is derived from id. */
+  credentialId: string | null;
   rpId: string;
   /** The user handle (base64-encoded). */
   userHandle: string | null;
@@ -53,6 +68,7 @@ export type AvuxPasskey = {
   /** The PRF key (base64-encoded). */
   prfKey: string | null;
   displayName: string;
+  additionalData: string | null;
 };
 
 /**
@@ -67,7 +83,10 @@ export type AvuxItem = {
   updatedAt: string;
   folderId: string | null;
   logoId: string | null;
+  /** When the item was archived, null when it is not. */
+  archivedAt: string | null;
   fieldValues: AvuxFieldValue[];
+  fieldHistories: AvuxFieldHistory[];
   attachments: AvuxAttachment[];
   totpCodes: AvuxTotpCode[];
   passkeys: AvuxPasskey[];
@@ -122,14 +141,19 @@ export type AvuxFieldDefinition = {
 };
 
 /**
- * A logo in the .avux export, deduplicated by source domain.
+ * A logo in the .avux export.
  */
 export type AvuxLogo = {
   id: string;
+  /** favicon, builtin or custom. */
+  kind: string;
+  /** The natural key within the kind: a domain, a catalog key or an image hash. */
   source: string;
+  /** The user-facing label of an uploaded logo. */
+  name: string | null;
   mimeType: string | null;
   fetchedAt: string | null;
-  /** The relative path to the logo file in the .avux archive. */
+  /** The relative path to the logo file in the .avux archive; a builtin logo has no file. */
   relativePath: string;
 };
 

@@ -1,10 +1,12 @@
-import { FieldKey } from '@aliasvault/models/vault';
+import { FieldKey, LogoKinds } from '@aliasvault/models/vault';
 
+import { createImportWriteSession } from '../../../database/repositories/ImportExportRepository';
 import { selectFaviconTarget } from '../../../rust/RustCore';
 import { buildFolderPath } from '../../shared/FolderPaths';
+import { isBlank } from '../../shared/StringUtils';
 import { ImportException, ImportStage } from '../models/ImportException';
 
-import { convertToItems } from './ItemConverter';
+import { convertToItem } from './ItemConverter';
 
 import type { SqliteClient } from '../../../database/SqliteClient';
 import type { ItemEntity } from '../../shared/VaultEntities';
@@ -14,13 +16,9 @@ import type { ImportedCredential } from '../models/ImportedCredential';
  * How an import is written.
  */
 export type VaultImportOptions = {
-  /** Folder paths to the folder ids they were created as; null when folders are not imported. */
   folderNameToId?: Map<string, string> | null;
-  /** Whether attachments are written; false strips them before conversion. */
   importAttachments: boolean;
-  /** Favicons fetched for the import, keyed by their Logos.Source (domain). */
   extractedFavicons: Map<string, Uint8Array>;
-  /** Progress callback with the number of items saved so far and the total. */
   onProgress?: (saved: number, total: number) => Promise<void> | void;
 };
 
@@ -81,63 +79,92 @@ export class VaultImportWriter {
    * @throws {ImportException} With stage Save when an item cannot be written.
    */
   public static async importCredentialsToVault(sqliteClient: SqliteClient, credentials: ImportedCredential[], options: VaultImportOptions): Promise<number> {
-    // Stripping the attachments before conversion keeps them out of the resulting items.
-    if (!options.importAttachments) {
-      for (const credential of credentials) {
-        credential.Attachments = null;
-      }
-    }
+    const session = createImportWriteSession();
 
-    const items = convertToItems(credentials, options.folderNameToId);
-
-    // One logo row per source per import session.
+    // One logo row per kind and source per import session.
     const sessionLogoIds = new Map<string, string | null>();
 
-    for (let index = 0; index < items.length; index++) {
-      const item = items[index];
+    for (let index = 0; index < credentials.length; index++) {
+      const credential = credentials[index];
+      const item = VaultImportWriter.toItem(credential, options);
       try {
-        await VaultImportWriter.processSingleItem(sqliteClient, item, credentials, options.extractedFavicons, sessionLogoIds);
+        const logoId = await VaultImportWriter.resolveLogoId(sqliteClient, item, credential, options.extractedFavicons, sessionLogoIds);
+        await sqliteClient.importExport.insertImportedItem(item, logoId, session);
       } catch (error) {
         // Re-thrown with item context so the UI can show the credential that failed.
-        throw new ImportException(ImportStage.Save, `Failed to save item #${index + 1} of ${items.length} ("${item.Name ?? ''}"): ${error instanceof Error ? error.message : String(error)}`, error);
+        throw new ImportException(ImportStage.Save, `Failed to save item #${index + 1} of ${credentials.length} ("${item.Name ?? ''}"): ${error instanceof Error ? error.message : String(error)}`, error);
       }
 
-      await options.onProgress?.(index + 1, items.length);
+      await options.onProgress?.(index + 1, credentials.length);
     }
 
-    return items.length;
+    return credentials.length;
   }
 
   /**
-   * Resolve an item's logo and insert it.
-   * @param sqliteClient - The vault
-   * @param item - The item
-   * @param credentials - The credentials the item came from, for embedded logo bytes
-   * @param extractedFavicons - Favicons fetched for the import, by source
-   * @param sessionLogoIds - Logo ids already resolved in this import, by source
+   * The item a credential is written as: the item an AliasVault export carried, placed in the imported folder, or
+   * else an item built from the credential's fields.
+   * @param credential - The credential
+   * @param options - Folder mapping and attachments
+   * @returns The item
    */
-  private static async processSingleItem(sqliteClient: SqliteClient, item: ItemEntity, credentials: ImportedCredential[], extractedFavicons: Map<string, Uint8Array>, sessionLogoIds: Map<string, string | null>): Promise<void> {
-    const importedCredential = credentials.find(c => c.ServiceName === item.Name);
-    const urls = item.FieldValues.filter(fv => fv.FieldKey === FieldKey.LoginUrl && !!fv.Value).map(fv => fv.Value!);
-    const target = await selectFaviconTarget(urls);
-
-    if (target) {
-      // Bytes embedded in the import file take precedence; otherwise what was fetched for this source.
-      const faviconBytes = importedCredential?.FaviconBytes ?? extractedFavicons.get(target.source) ?? null;
-      try {
-        if (sessionLogoIds.has(target.source)) {
-          item.LogoId = sessionLogoIds.get(target.source) ?? null;
-        } else {
-          item.LogoId = await sqliteClient.importExport.resolveImportLogo(target.source, faviconBytes);
-          sessionLogoIds.set(target.source, item.LogoId);
-        }
-      } catch (error) {
-        // A favicon is not critical: log and import the credential without one.
-        console.warn(`Failed to process favicon for item ${item.Name ?? ''}:`, error);
-        item.LogoId = null;
-      }
+  private static toItem(credential: ImportedCredential, options: VaultImportOptions): ItemEntity {
+    // Stripping the attachments before conversion keeps them out of the resulting item.
+    if (!options.importAttachments) {
+      credential.Attachments = null;
     }
 
-    await sqliteClient.importExport.insertImportedItem(item);
+    const carried = credential.AliasVaultItem;
+    if (!carried) {
+      return convertToItem(credential, options.folderNameToId ?? null);
+    }
+
+    const folderNameToId = options.folderNameToId;
+    return {
+      ...carried,
+      FolderId: folderNameToId && !isBlank(credential.FolderPath) ? folderNameToId.get(credential.FolderPath) ?? null : null,
+      Attachments: options.importAttachments ? carried.Attachments : [],
+    };
+  }
+
+  /**
+   * Resolve the id an item's logo gets in this vault: the logo an AliasVault export carried, with its kind, or else
+   * the favicon of its URL.
+   * @param sqliteClient - The vault
+   * @param item - The item
+   * @param credential - The credential the item came from, for embedded favicon bytes
+   * @param extractedFavicons - Favicons fetched for the import, by source
+   * @param sessionLogoIds - Logo ids already resolved in this import, by kind and source
+   * @returns The logo id, or null when the item gets no logo
+   */
+  private static async resolveLogoId(sqliteClient: SqliteClient, item: ItemEntity, credential: ImportedCredential, extractedFavicons: Map<string, Uint8Array>, sessionLogoIds: Map<string, string | null>): Promise<string | null> {
+    try {
+      const carriedLogo = item.Logo;
+      if (carriedLogo) {
+        const key = `${carriedLogo.Kind}:${carriedLogo.Source}`;
+        if (!sessionLogoIds.has(key)) {
+          sessionLogoIds.set(key, await sqliteClient.importExport.resolveCarriedLogo(carriedLogo));
+        }
+        return sessionLogoIds.get(key) ?? null;
+      }
+
+      const urls = item.FieldValues.filter(fv => fv.FieldKey === FieldKey.LoginUrl && !!fv.Value).map(fv => fv.Value!);
+      const target = await selectFaviconTarget(urls);
+      if (!target) {
+        return null;
+      }
+
+      const key = `${LogoKinds.Favicon}:${target.source}`;
+      if (!sessionLogoIds.has(key)) {
+        // Bytes embedded in the import file take precedence; otherwise what was fetched for this source.
+        const faviconBytes = credential.FaviconBytes ?? extractedFavicons.get(target.source) ?? null;
+        sessionLogoIds.set(key, await sqliteClient.importExport.resolveImportLogo(target.source, faviconBytes));
+      }
+      return sessionLogoIds.get(key) ?? null;
+    } catch (error) {
+      // A logo is not critical: log and import the credential without one.
+      console.warn(`Failed to process logo for item ${item.Name ?? ''}:`, error);
+      return null;
+    }
   }
 }

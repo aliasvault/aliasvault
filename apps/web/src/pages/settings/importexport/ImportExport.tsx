@@ -83,7 +83,7 @@ const ImportExport: React.FC = () => {
       throw new Error('Vault is not available');
     }
     const data = sqliteClient.importExport.getExportData();
-    return AvuxExportService.exportToAvux(data.items, data.folders, data.tags, data.itemTags, data.fieldDefinitions, data.logos, username ?? '');
+    return AvuxExportService.exportToAvux(data.items, data.folders, data.tags, data.itemTags, data.fieldDefinitions, username ?? '');
   };
 
   /**

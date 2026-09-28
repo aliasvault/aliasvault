@@ -3,6 +3,7 @@ import type { ImportedAttachment } from './ImportedAttachment';
 import type { ImportedCreditcard } from './ImportedCreditcard';
 import type { ImportedCustomField } from './ImportedCustomField';
 import type { ImportedPasskey } from './ImportedPasskey';
+import type { ItemEntity } from '../../shared/VaultEntities';
 import type { ItemType } from '@aliasvault/models/vault';
 
 /**
@@ -32,4 +33,10 @@ export type ImportedCredential = {
   Tags?: string[] | null;
   Attachments?: ImportedAttachment[] | null;
   CustomFieldValues?: ImportedCustomField[] | null;
+  /**
+   * The full item from an AliasVault export. When set, the writer stores this item graph instead of rebuilding one
+   * from the fields above, which then only serve the preview and the duplicate check. This is used primarily for the
+   * .avux and .avex file formats which contains much more detailed item data compared to e.g. CSV.
+   */
+  AliasVaultItem?: ItemEntity | null;
 };

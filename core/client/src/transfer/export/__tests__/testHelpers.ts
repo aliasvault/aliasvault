@@ -1,6 +1,6 @@
 import { AvuxExportService } from '../AvuxExportService';
 
-import type { FieldDefinitionEntity, FieldValueEntity, ItemEntity, LogoEntity, TotpCodeEntity } from '../../shared/VaultEntities';
+import type { FieldDefinitionEntity, FieldValueEntity, ItemEntity, TotpCodeEntity } from '../../shared/VaultEntities';
 import type { ItemType } from '@aliasvault/models/vault';
 
 /*
@@ -30,11 +30,13 @@ export function createTestItem(name: string, itemType: ItemType, fields: Record<
     Name: name,
     ItemType: itemType,
     FolderId: null,
-    LogoId: null,
+    Logo: null,
+    ArchivedAt: null,
     CreatedAt: now,
     UpdatedAt: now,
     IsDeleted: false,
     FieldValues: [],
+    FieldHistories: [],
     Attachments: [],
     TotpCodes: [],
     Passkeys: [],
@@ -109,12 +111,11 @@ export function addAttachment(item: ItemEntity, filename: string, content: strin
 }
 
 /**
- * Export with no folders, tags or definitions.
+ * Export with no folders or tags.
  * @param items - The items
- * @param logos - The logos
  * @param fieldDefinitions - The custom field definitions
  * @returns The .avux bytes
  */
-export function exportItems(items: ItemEntity[], logos: LogoEntity[] = [], fieldDefinitions: FieldDefinitionEntity[] = []): Uint8Array {
-  return AvuxExportService.exportToAvux(items, [], [], [], fieldDefinitions, logos, 'test@example.com');
+export function exportItems(items: ItemEntity[], fieldDefinitions: FieldDefinitionEntity[] = []): Uint8Array {
+  return AvuxExportService.exportToAvux(items, [], [], [], fieldDefinitions, 'test@example.com');
 }

@@ -129,7 +129,7 @@ describe('vault export scoping', () => {
     expect(data.tags.map(tag => tag.Name)).toEqual(['personal tag']);
     expect(data.itemTags).toHaveLength(1);
     expect(data.fieldDefinitions.map(definition => definition.Label)).toEqual(['personal field']);
-    expect(data.logos.map(logo => logo.Source)).toEqual(['personal.example']);
+    expect(data.items[0].Logo?.Source).toBe('personal.example');
   });
 
   it('writes only the personal manifest to a CSV export, archived items included', async () => {
