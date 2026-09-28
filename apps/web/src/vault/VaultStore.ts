@@ -10,7 +10,7 @@ import { getPlatform } from '@aliasvault/client/platform';
 import { clearDirtyScopes, getDirtyScopes } from '@aliasvault/client/sync/VaultDirtyState';
 import { vaultRequiresManifestMigration, VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleScope, type VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
-import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
+import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 
@@ -496,5 +496,34 @@ export const vaultStore = {
    */
   migrateVaultManifest(): Promise<VaultManifestMigrationResult> {
     return vaultSync.migrateVaultManifest();
+  },
+
+  /**
+   * Create a group's shared manifest. Leaves the vault dirty, so the next sync pushes it.
+   * @param groupId - the group
+   * @param name - the shared manifest's name
+   */
+  createSharedManifest(groupId: string, name: string): Promise<SharingOperationResult> {
+    return vaultSync.createSharedManifest(groupId, name);
+  },
+
+  /**
+   * Invite a group member to one of its shared manifests.
+   * @param groupId - the group
+   * @param manifestId - the shared manifest
+   * @param userId - the member being invited
+   */
+  inviteToSharedManifest(groupId: string, manifestId: string, userId: string): Promise<SharingOperationResult> {
+    return vaultSync.inviteToSharedManifest(groupId, manifestId, userId);
+  },
+
+  /**
+   * Change the details of a shared manifest (group administrators only).
+   * @param groupId - the group
+   * @param manifestId - the shared manifest
+   * @param details - the details to change
+   */
+  updateSharedManifest(groupId: string, manifestId: string, details: SharedManifestDetails): Promise<SharingOperationResult> {
+    return vaultSync.updateSharedManifest(groupId, manifestId, details);
   },
 };

@@ -1,3 +1,5 @@
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -7,6 +9,7 @@ import DbLockButton from '@/components/layout/DbLockButton';
 import DbStatusIndicator from '@/components/layout/DbStatusIndicator';
 import SearchWidget from '@/components/layout/SearchWidget';
 import { useAuth } from '@/context/AuthContext';
+import { useCapabilities } from '@/context/CapabilityContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
@@ -28,6 +31,7 @@ const TopMenu: React.FC = () => {
   const location = useLocation();
   const { username } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
+  const hasCapability = useCapabilities();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -97,6 +101,18 @@ const TopMenu: React.FC = () => {
             <div className="py-3 px-4">
               <span className="block text-sm font-semibold text-gray-900 dark:text-white">{username}</span>
             </div>
+            {hasCapability(CapabilityKeys.VaultSharing) && (
+              <ul className="py-1 text-gray-700 dark:text-gray-400">
+                <li>
+                  <NavLink to="/settings/family-sharing" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
+                    {familySharingText.title}
+                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
+                      {familySharingText.beta}
+                    </span>
+                  </NavLink>
+                </li>
+              </ul>
+            )}
             <ul className="py-1 text-gray-700 dark:text-gray-400">
               <li>
                 <NavLink to="/settings/general" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
@@ -121,9 +137,6 @@ const TopMenu: React.FC = () => {
               <li className="border-t border-b border-gray-100 dark:border-gray-600">
                 <NavLink to="/settings/apps" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
                   {t('layout.topMenu.ExtensionsAppsNav')}
-                  <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                    {t('layout.topMenu.NewLabel')}
-                  </span>
                 </NavLink>
               </li>
               <li>
