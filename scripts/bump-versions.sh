@@ -306,6 +306,16 @@ get_core_client_version() {
     grep "\"version\": " "$REPO_ROOT/core/client/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
+# Function to extract version from core i18n package.json
+get_core_i18n_version() {
+    grep "\"version\": " "$REPO_ROOT/core/i18n/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+}
+
+# Function to extract version from web app package.json
+get_web_app_version() {
+    grep "\"version\": " "$REPO_ROOT/apps/web/package.json" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+}
+
 # Check current versions
 server_version=$(get_server_version)
 browser_wxt_version=$(get_browser_extension_version)
@@ -318,34 +328,40 @@ android_version=$(get_android_version)
 safari_version=$(get_safari_version)
 rust_core_version=$(get_rust_core_version)
 core_client_version=$(get_core_client_version)
+core_i18n_version=$(get_core_i18n_version)
+web_app_version=$(get_web_app_version)
 
-# Create associative array of versions
-declare -A versions
-versions["server"]="$server_version"
-versions["browser_wxt"]="$browser_wxt_version"
-versions["browser_package"]="$browser_package_version"
-versions["browser_ts"]="$browser_ts_version"
-versions["mobile"]="$mobile_version"
-versions["mobile_ts"]="$mobile_ts_version"
-versions["ios"]="$ios_version"
-versions["android"]="$android_version"
-versions["safari"]="$safari_version"
-versions["rust_core"]="$rust_core_version"
-versions["core_client"]="$core_client_version"
-
-# Create display names for output
-declare -A display_names
-display_names["server"]="Server"
-display_names["browser_wxt"]="Browser Extension (wxt.config.ts)"
-display_names["browser_package"]="Browser Extension (package.json)"
-display_names["browser_ts"]="Browser Extension (ExtensionPlatform.ts)"
-display_names["mobile"]="Mobile App"
-display_names["mobile_ts"]="Mobile App (TS)"
-display_names["ios"]="iOS App"
-display_names["android"]="Android App"
-display_names["safari"]="Safari Extension"
-display_names["rust_core"]="Rust Core"
-display_names["core_client"]="Core Client (package.json)"
+# Versions and display names per project (parallel lists, since macOS ships bash 3.2 without associative arrays)
+version_values=(
+    "$server_version"
+    "$browser_wxt_version"
+    "$browser_package_version"
+    "$browser_ts_version"
+    "$mobile_version"
+    "$mobile_ts_version"
+    "$ios_version"
+    "$android_version"
+    "$safari_version"
+    "$rust_core_version"
+    "$core_client_version"
+    "$core_i18n_version"
+    "$web_app_version"
+)
+display_names=(
+    "Server"
+    "Browser Extension (wxt.config.ts)"
+    "Browser Extension (package.json)"
+    "Browser Extension (ExtensionPlatform.ts)"
+    "Mobile App"
+    "Mobile App (TS)"
+    "iOS App"
+    "Android App"
+    "Safari Extension"
+    "Rust Core"
+    "Core Client (package.json)"
+    "Core i18n (package.json)"
+    "Web App (package.json)"
+)
 
 # Function to normalize version by removing stage suffix
 normalize_version() {
@@ -362,8 +378,8 @@ else
     first_version="$server_version"
 fi
 first_normalized_version=$(normalize_version "$first_version")
-for project in "${!versions[@]}"; do
-    normalized_version=$(normalize_version "${versions[$project]}")
+for project in "${!version_values[@]}"; do
+    normalized_version=$(normalize_version "${version_values[$project]}")
     if [[ "$normalized_version" != "$first_normalized_version" ]]; then
         all_equal=false
         break
@@ -421,10 +437,10 @@ fi
 if [[ "$all_equal" == false ]]; then
     echo -e "\nWARNING: Not all base versions are equal!"
     echo "Different base versions found (ignoring stage suffixes):"
-    for project in "${!versions[@]}"; do
-        project_normalized=$(normalize_version "${versions[$project]}")
+    for project in "${!version_values[@]}"; do
+        project_normalized=$(normalize_version "${version_values[$project]}")
         if [[ "$project_normalized" != "$first_normalized_version" ]]; then
-            echo "${display_names[$project]}: ${versions[$project]} (base: $project_normalized, differs from base: $first_normalized_version)"
+            echo "${display_names[$project]}: ${version_values[$project]} (base: $project_normalized, differs from base: $first_normalized_version)"
         fi
     done
     read -p "Do you want to continue with the version bump? (y/N) " confirm
@@ -457,8 +473,8 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     echo "--------------------------------"
     echo "Current versions"
     echo "--------------------------------"
-    for project in "${!versions[@]}"; do
-        echo "${display_names[$project]}: ${versions[$project]}"
+    for project in "${!version_values[@]}"; do
+        echo "${display_names[$project]}: ${version_values[$project]}"
     done
 
     # Read new version or use provided version
@@ -612,6 +628,19 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$version\","
 
+    # The project version appears twice in package-lock.json (root object and "" package entry), each on the
+    # line directly after the package name.
+    echo -e "${BLUE}Updating browser extension package-lock.json version...${RESET}"
+    sed -i '' '/"name": "aliasvault-browser-extension"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
+
+    # Update web app package.json + package-lock.json version (without suffix, same as the browser extension)
+    echo -e "${BLUE}Updating web app package.json version...${RESET}"
+    update_version "$REPO_ROOT/apps/web/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+    echo -e "${BLUE}Updating web app package-lock.json version...${RESET}"
+    sed -i '' '/"name": "aliasvault-web"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/web/package-lock.json"
+
     # Update docs (Docusaurus) package.json so the documentation site version
     # stays in sync with the rest of the codebase.
     echo -e "${BLUE}Updating docs package.json version...${RESET}"
@@ -679,6 +708,22 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/browser-extension/package-lock.json"
     echo -e "${BLUE}Updating mobile app package-lock.json core client version...${RESET}"
     sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/mobile-app/package-lock.json"
+    echo -e "${BLUE}Updating web app package-lock.json core client version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/client"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/apps/web/package-lock.json"
+
+    # Update core i18n package.json + package-lock.json version (plain semver, consumed via file: links only)
+    echo -e "${BLUE}Updating core i18n package.json version...${RESET}"
+    update_version "$REPO_ROOT/core/i18n/package.json" \
+        "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
+        "\"version\": \"$version\","
+    echo -e "${BLUE}Updating core i18n package-lock.json version...${RESET}"
+    sed -i '' '/"name": "@aliasvault\/i18n"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/core/i18n/package-lock.json"
+
+    # The apps and core/client link core/i18n via file:, which embeds its version into their lockfiles.
+    for lockfile in apps/browser-extension apps/mobile-app apps/web core/client; do
+        echo -e "${BLUE}Updating $lockfile/package-lock.json core i18n version...${RESET}"
+        sed -i '' '/"name": "@aliasvault\/i18n"/{n;s/"version": "[^"]*"/"version": "'"$version"'"/;}' "$REPO_ROOT/$lockfile/package-lock.json"
+    done
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
     echo -e "${BLUE}Updating Rust core version...${RESET}"
