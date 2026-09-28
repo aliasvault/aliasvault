@@ -4,7 +4,7 @@
     "ACCOUNT_LOCKED": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб. Будь ласка, спробуйте пізніше.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Обліковий запис успішно видалено.",
     "CLAIM_DOES_NOT_EXIST": "Під час спроби завантажити електронні листи сталася помилка. Спробуйте відредагувати та зберегти запис облікових даних, щоб синхронізувати базу даних, а потім повторіть спробу.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Поточна вибрана електронна адреса вже використовується. Змініть електронну адресу, відредагувавши ці облікові дані.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Поточна обрана адреса електронної пошти вже використовується. Будь ласка, змініть адресу електронної пошти, відредагувавши ці облікові дані.",
     "INTERNAL_SERVER_ERROR": "Внутрішня помилка сервера.",
     "INVALID_AUTHENTICATOR_CODE": "Недійсний код автентифікатора. Будь ласка, спробуйте ще раз.",
     "INVALID_RECOVERY_CODE": "Недійсний код відновлення. Будь ласка, спробуйте ще раз.",
@@ -83,7 +83,7 @@
     "browseVault": "Переглянути вміст сховища",
     "closePopup": "Закрити цю підказку",
     "confirmLogout": "Ви впевнені, що хочете вийти? Вам потрібно знову увійти, використовуючи свій головний пароль, щоб отримати доступ до свого сховища.",
-    "connectingTo": "Приєднатись до",
+    "connectingTo": "Підключення до",
     "createNewVault": "Створити нове сховище",
     "enableBiometric": "Увімкнути {{biometric}}?",
     "enterAuthCode": "Введіть 6-значний код",
@@ -100,7 +100,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
-      "contactSupportWithEmail": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему, зверніться по допомогу до служби підтримки за адресою {{email}}.",
+      "contactSupportWithEmail": "If you've recently changed your password and are experiencing difficulties signing in, please contact support at {{email}} for assistance.",
       "lostPasswordTitle": "Забули пароль",
       "newAccountRequired": "Якщо ви не пам’ятаєте свій пароль, вам потрібно буде створити новий обліковий запис. Зверніть увагу, що це призведе до втрати всіх ваших даних.",
       "noRecoveryExplanation": "На жаль, якщо ви втратили пароль, його неможливо відновити. AliasVault використовує наскрізне шифрування для всіх ваших даних, гарантуючи, що ніхто, крім вас, не зможе отримати доступ до ваших даних.",
@@ -207,8 +207,8 @@
     "unlockVault": "Розблокувати Vault",
     "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithMobile": "Розблокувати за допомогою мобільного додатку",
-    "unlockWithPassword": "Розблокувати за допомогою пароля",
-    "unlockWithPin": "Розблокувати за допомогою PIN-коду",
+    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPin": "Розблокувати за допомогою ПІН-коду",
     "unlocking": "Розблоковування...",
     "useMasterPassword": "Використовуйте головний пароль",
     "username": "Ім’я користувача або Email",
@@ -251,7 +251,7 @@
       "5seconds": "5 секунд"
     },
     "edit": "Редагувати",
-    "email": "Електронна пошта",
+    "email": "Пошта",
     "emailItemLabel": "Item:",
     "enabled": "Увімкнено",
     "error": "Помилка",
@@ -262,7 +262,7 @@
       "browserExtensionOutdated": "Це розширення браузера застаріло, і його не можна використовувати для доступу до цього сховища. Щоб продовжити, оновіть це розширення браузера.",
       "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
       "contactSupportAt": "Contact support at {{email}}.",
-      "invalidCode": "Будь ласка, введіть дійсний 6-значний код автентифікації",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
@@ -271,7 +271,7 @@
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverVersionNotSupported": "Щоб використовувати це розширення браузера, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "serverVersionTooOld": "Сервер AliasVault потрібно оновити до новішої версії, щоб використовувати цю функцію. Будь ласка, зверніться до адміністратора серверу, якщо вам потрібна допомога.",
+      "serverVersionTooOld": "Щоб скористатися цією функцією, потрібно оновити сервер AliasVault до нової версії. Якщо вам потрібна допомога, будь ласка, зверніться до адміністратора сервера.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -300,7 +300,7 @@
     "loadingVault": "Loading vault...",
     "lockVault": "Заблокувати сховище",
     "loggedIn": "Вхід виконано",
-    "logout": "Вихід",
+    "logout": "Вийти",
     "never": "Ніколи",
     "next": "Далі",
     "no": "Ні",
@@ -469,7 +469,7 @@
     "exportEncryptedWarningMessage": "This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.\n\nAre you sure you want to continue?",
     "exportPasswordConfirmTitle": "Confirm Export",
     "exportPasswordModal": {
-      "confirmExportPasswordLabel": "Підтвердити пароль",
+      "confirmExportPasswordLabel": "Confirm Password",
       "createEncryptedExportButton": "Create Encrypted Export",
       "exportPasswordLabel": "Encryption Password"
     },
@@ -506,7 +506,7 @@
       "importErrorInvalidFile": "Please select a valid export file to import.",
       "importErrorUnsupportedFormat": "Unsupported file format. Supported formats: {{formats}}",
       "importFoldersLabel": "Import folders",
-      "importFromServiceTitle": "Імпорт з {{service}}",
+      "importFromServiceTitle": "Import from {{service}}",
       "importPartialFailureWarning": "{{count}} item(s) could not be parsed and will be skipped.",
       "importSuccessMessage": "Successfully imported {{count}} credentials.",
       "moreCredentials": "... and {{count}} more credentials",
@@ -517,7 +517,7 @@
       "serviceColumn": "Сервіс",
       "supportedFormats": "Supported formats",
       "syncingVault": "Syncing vault to server...",
-      "uploadExportFileText": "Завантажте свій {{service}} експортний файл:"
+      "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
       "aliasVaultDescription": "Import from AliasVault backup",
@@ -579,7 +579,7 @@
     "fieldLabel": "Field Label",
     "fieldType": "Field Type",
     "fieldTypes": {
-      "date": "Date",
+      "date": "Дата",
       "email": "Пошта",
       "hidden": "Hidden",
       "hiddenMasked": "Hidden (masked text)",
@@ -765,7 +765,7 @@
     "itemCreated": "Item Created",
     "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "itemDetails": "Item Details",
-    "itemName": "Назва",
+    "itemName": "Ім’я",
     "loginCredentials": "Облікові дані для входу",
     "logo": {
       "builtin": {
@@ -807,7 +807,7 @@
       "includeNumbersLabel": "Включити цифри (0-9)",
       "includeSpecialCharsLabel": "Включити спеціальні символи (!@#$%^&*)",
       "includeUppercaseLabel": "Включити великі літери (A-Z)",
-      "passwordLengthLabel": "Довжина пароля: {{length}}",
+      "passwordLengthLabel": "Password Length: {{length}}",
       "previewLabel": "Попередній перегляд",
       "saveGloballyButton": "Зберегти глобально",
       "settingsUpdatedMessage": "Налаштування генерації паролів оновлено глобально.",
@@ -859,7 +859,7 @@
       "noResultsFoundMessage": "Результатів не знайдено",
       "searchHelpText": "Введіть термін для пошуку, це може бути назва служби, опис або адреса електронної пошти.",
       "searchTooShortMessage": "Будь ласка, введіть більше символів",
-      "searchingForMessage": "Пошук для \"{{search}}\"",
+      "searchingForMessage": "Searching for \"{{search}}\"",
       "searchingMessage": "Пошук..."
     },
     "searchPlaceholder": "Пошук сховища...",
@@ -881,7 +881,7 @@
       "itemCreated": "Item created successfully",
       "itemDeleted": "Item deleted successfully",
       "itemUpdated": "Item updated successfully",
-      "passwordCopied": "Пароль скопійовано до буфера обміну",
+      "passwordCopied": "Пароль скопійовано в буфер обміну",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
       "usernameCopied": "Ім'я користувача скопійовано до буфера обміну"
@@ -1094,7 +1094,7 @@
       "titlePlaceholder": "Enter a name for this passkey",
       "unsupportedAlgorithm": "This website requires a passkey type that AliasVault doesn't support."
     },
-    "helpText": "Ключі доступу створюються на сайті за запитом. Їх не можна редагувати вручну. Щоб видалити цей ключ доступу, ви можете видалити його з цих облікових даних.",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
     "passkey": "Ключ доступу",
     "passkeyMarkedForDeletion": "Ключ доступу позначено для видалення",
     "passkeyWillBeDeleted": "Цей ключ доступу буде видалено, коли ви збережете ці облікові дані.",
@@ -1153,7 +1153,7 @@
     "autofill": "Автозаповнення та ключі доступу",
     "autofillDisabledDescription": "Autofill suggestions are disabled globally",
     "autofillEnabled": "Увімкнути автозаповнення",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
+    "autofillEnabledDescription": "",
     "autofillMatching": "Автозаповнення відповідності",
     "autofillMatchingDefault": "URL-адреса + піддомен + універсальне ім'я",
     "autofillMatchingMode": "Режим автозаповнення відповідностей",
@@ -1280,7 +1280,7 @@
     "passwordGenerator": "Генератор паролів",
     "passwordGeneratorSettings": {
       "configureButton": "Налаштування",
-      "description": "Налаштуйте стандартні параметри, які використовуються під час створення нових паролів. Ці налаштування використовуватимуться для всіх нових паролів, якщо їх не буде перевизначено для певних записів.",
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
       "passwordGeneratorSettingsLabel": "Налаштування генератора паролів за замовчуванням"
     },
     "qrScanner": {
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "Активних сеансів не знайдено.",
         "revoke": "Закінчити",
         "revokeConfirmation": "Ви впевнені, що хочете скасувати цей сеанс? Це призведе до виходу з вибраного пристрою.",
-        "revokeExceptionMessage": "Не вдалося закінчити сеанс: {{error}}.",
+        "revokeExceptionMessage": "Failed to revoke session: {{error}}.",
         "revokeSession": "Завершити сеанс",
         "revokeSuccessMessage": "Сеанс успішно закінчено.",
         "sessionRevoked": "Сеанс успішно закінчено"
