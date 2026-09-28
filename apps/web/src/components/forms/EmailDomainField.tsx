@@ -31,7 +31,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
   const [selectedDomain, setSelectedDomain] = useState('');
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const modeToggledByUser = useRef(false);
-  const tk = 'components.main.forms.emailDomainField';
 
   const showPrivateDomains = privateDomains.length > 0 && !(privateDomains.length === 1 && (privateDomains[0] === 'DISABLED.TLD' || privateDomains[0] === ''));
   const defaultDomain = showPrivateDomains ? privateDomains[0] : publicDomains[0] ?? '';
@@ -178,17 +177,17 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
           <div className="flex items-center">
             <div className="flex items-center">
               <button type="button" disabled={isCustomDomain} className={isCustomDomain ? 'text-sm font-medium text-primary-600 dark:text-primary-400' : 'text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer transition-colors'} onClick={toggleToEmailMode}>
-                {t('sharedResources.Email')}
+                {t('common.email')}
               </button>
               <span className="mx-2 text-gray-400 dark:text-gray-500">/</span>
               <button type="button" disabled={!isCustomDomain} className={!isCustomDomain ? 'text-sm font-medium text-primary-600 dark:text-primary-400' : 'text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer transition-colors'} onClick={toggleToAliasMode}>
-                {t(`${tk}.Alias`)}
+                {t('common.alias')}
               </button>
               {required && <span className="text-red-500 ml-1">*</span>}
             </div>
           </div>
           {onRemove && (
-            <button type="button" onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('sharedResources.Delete')}>
+            <button type="button" onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('common.delete')}>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
@@ -207,7 +206,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
               </button>
             )}
             {!isCustomDomain && onGenerateAlias && (
-              <button type="button" onClick={handleRegenerate} className="px-3 text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm border-l border-gray-300 dark:border-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" title={t('sharedResources.Generate')}>
+              <button type="button" onClick={handleRegenerate} className="px-3 text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm border-l border-gray-300 dark:border-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" title={t('common.generate')}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
@@ -221,9 +220,9 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
                 {showPrivateDomains && (
                   <div className="mb-4">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      {t(`${tk}.PrivateEmailTitle`)} <span className="text-gray-500 dark:text-gray-400">({t(`${tk}.PrivateEmailAliasVaultServer`)})</span>
+                      {t('items.privateEmailTitle')} <span className="text-gray-500 dark:text-gray-400">({t('items.privateEmailAliasVaultServer')})</span>
                     </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t(`${tk}.PrivateEmailDescription`)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.privateEmailDescription')}</p>
                     <div className="flex flex-wrap gap-2">
                       {privateDomains.map(domain => <button key={domain} type="button" onClick={() => selectDomain(domain)} className={domainButtonClasses(domain)}>{domain}</button>)}
                     </div>
@@ -231,8 +230,8 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
                 )}
 
                 <div className={showPrivateDomains ? 'border-t border-gray-200 dark:border-gray-600 pt-4' : ''}>
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{t(`${tk}.PublicEmailTitle`)}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t(`${tk}.PublicEmailDescription`)}</p>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{t('items.publicEmailTitle')}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.publicEmailDescription')}</p>
                   <div className="flex flex-wrap gap-2">
                     {publicDomains.map(domain => <button key={domain} type="button" onClick={() => selectDomain(domain)} className={domainButtonClasses(domain)}>{domain}</button>)}
                   </div>

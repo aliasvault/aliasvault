@@ -40,7 +40,7 @@ export function useEmailBody(email: EmailViewModel | null, onBodyLoading?: (load
   const [viewMode, setViewMode] = useState<EmailViewMode>('html');
   const renderedEmailId = useRef<number | null>(null);
   const sequence = useRef(0);
-  const noBody = t('components.main.email.emailModal.NoEmailBody');
+  const noBody = t('emails.modal.noEmailBody');
 
   /**
    * Render the body in a format.
@@ -107,7 +107,7 @@ export function useEmailBody(email: EmailViewModel | null, onBodyLoading?: (load
     });
   }, [applyViewMode, availableModes, email, viewMode]);
 
-  const formatLabel = viewMode === 'html' ? t('sharedResources.EmailFormatHtml') : viewMode === 'plain' ? t('sharedResources.EmailFormatPlain') : t('sharedResources.EmailFormatSource');
+  const formatLabel = viewMode === 'html' ? t('emails.formatHtml') : viewMode === 'plain' ? t('itemTypes.fieldTypes.text') : t('emails.formatSource');
 
   return { emailBody, viewMode, availableModes, formatLabel, cycleViewMode };
 }

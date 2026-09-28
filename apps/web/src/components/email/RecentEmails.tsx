@@ -74,7 +74,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
       }
     } catch (err) {
       if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_MATCH_USER') {
-        setError(t('components.main.email.recentEmails.EmailAddressInUseError'));
+        setError(t('apiErrors.CLAIM_DOES_NOT_MATCH_USER'));
       } else if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_EXIST') {
         /*
          * The server learns about a new address when the vault push that follows a save lands. A load that races
@@ -84,7 +84,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
           setTimeout(() => void loadRecentEmails(), ACTIVE_TAB_REFRESH_INTERVAL_MS);
           return;
         }
-        setError(t('components.main.email.recentEmails.EmailLoadError'));
+        setError(t('apiErrors.CLAIM_DOES_NOT_EXIST'));
       } else {
         setError(err instanceof Error ? err.message : String(err));
       }
@@ -190,8 +190,8 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
   const canLoadMore = displayedCount < mailboxEmails.length;
   const headerRow = (
     <tr>
-      <th scope="col" className="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-white">{t('components.main.email.recentEmails.SubjectColumn')}</th>
-      <th scope="col" className="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-white">{t('components.main.email.recentEmails.DateColumn')}</th>
+      <th scope="col" className="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-white">{t('emails.recent.subjectColumn')}</th>
+      <th scope="col" className="p-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-white">{t('emails.dateColumn')}</th>
     </tr>
   );
 
@@ -202,11 +202,11 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
       <Card variant="section">
         <div className="flex justify-between">
           <div>
-            <SectionTitle>{t('components.main.email.recentEmails.EmailSectionTitle')}</SectionTitle>
+            <SectionTitle>{t('common.email')}</SectionTitle>
           </div>
           <div className="flex justify-end items-center space-x-2">
             {autoRefreshEnabled && (
-              <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('components.main.email.recentEmails.AutoRefreshEnabledTooltip')}></div>
+              <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('emails.home.autoRefreshEnabledTooltip')}></div>
             )}
             <button id="recent-email-refresh" onClick={() => void manualRefresh()} type="button" className="text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-full text-sm p-2 text-center inline-flex items-center dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 dark:focus:ring-gray-700">
               <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
@@ -243,7 +243,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
         ) : error.length > 0 ? (
           <AlertMessageError message={error} />
         ) : mailboxEmails.length === 0 ? (
-          <div className="text-sm text-gray-600 dark:text-gray-400">{t('components.main.email.recentEmails.NoEmailsReceivedMessage')}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('emails.recent.noEmailsReceivedMessage')}</div>
         ) : (
           <div className="flex flex-col mt-6">
             <div className="overflow-x-auto rounded-lg">
@@ -270,7 +270,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
 
             {canLoadMore && (
               <button onClick={() => setDisplayedCount(c => c + EMAILS_PER_LOAD)} type="button" className="w-full mt-3 py-1 px-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md transition-colors duration-200 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 flex items-center justify-center gap-1">
-                <span>{t('components.main.email.recentEmails.LoadMoreButton')}</span>
+                <span>{t('common.loadMore')}</span>
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>

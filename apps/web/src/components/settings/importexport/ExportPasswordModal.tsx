@@ -23,7 +23,7 @@ type ExportPasswordModalProps = {
  */
 const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title, description, errorMessage = '', onPasswordSubmitted, onClose }) => {
   const { t } = useTranslation();
-  const tk = 'pages.main.settings.importExport.components.exportPasswordModal';
+  
   const [exportPassword, setExportPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -43,11 +43,11 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title
    */
   const validate = (password: string, confirm: string): void => {
     if (password.trim().length > 0 && password.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
-      setValidationError(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_ACCEPTED_PASSWORD_LENGTH }));
+      setValidationError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
     if (confirm.trim().length > 0 && password !== confirm) {
-      setValidationError(t('validationMessages.PasswordsDoNotMatchGeneric'));
+      setValidationError(t('common.errorPasswordMismatch'));
       return;
     }
     setValidationError('');
@@ -116,10 +116,10 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title
       footerContent={(
         <>
           <button type="button" onClick={handleSubmit} disabled={!isPasswordValid} className="inline-flex w-full justify-center rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
-            {t(`${tk}.CreateEncryptedExportButton`)}
+            {t('importExport.exportPasswordModal.createEncryptedExportButton')}
           </button>
           <button type="button" onClick={onClose} className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
-            {t('sharedResources.Cancel')}
+            {t('common.cancel')}
           </button>
         </>
       )}>
@@ -129,13 +129,13 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title
         {errorMessage.length > 0 && <AlertMessageError message={errorMessage} hasTopMargin={false} />}
 
         <div className="mb-4">
-          <label htmlFor="exportPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t(`${tk}.ExportPasswordLabel`)}</label>
+          <label htmlFor="exportPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t('importExport.exportPasswordModal.exportPasswordLabel')}</label>
           <PasswordInputField id="exportPassword" value={exportPassword} onValueChange={handleExportPasswordChange} autoFocus={true} />
           <PasswordStrengthIndicator password={exportPassword} />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="confirmExportPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t(`${tk}.ConfirmExportPasswordLabel`)}</label>
+          <label htmlFor="confirmExportPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t('importExport.exportPasswordModal.confirmExportPasswordLabel')}</label>
           <PasswordInputField id="confirmExportPassword" value={confirmPassword} onValueChange={handleConfirmPasswordChange} />
         </div>
 

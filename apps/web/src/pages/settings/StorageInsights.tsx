@@ -22,8 +22,6 @@ import { itemRoute } from '@/utils/ItemRoute';
 import type { AttachmentSizeRow, LogoSizeRow, StorageCounts } from '@aliasvault/client/database/repositories/StorageInsightsRepository';
 import type { StorageStatisticsResponse } from '@aliasvault/models/webapi';
 
-const tk = 'pages.main.settings.storageInsights';
-
 /** Blob categories as the server stores them. */
 const ATTACHMENT_CATEGORY = 'attachment';
 const LOGO_CATEGORY = 'favicon';
@@ -90,7 +88,7 @@ const StorageInsights: React.FC = () => {
   const notifications = useNotifications();
   const { showConfirmation } = useConfirmModal();
   const { executeVaultMutationAsync } = useVaultMutate();
-  usePageTitle(t(`${tk}.PageTitle`));
+  usePageTitle(t('settings.storageInsights.pageTitle'));
 
   const [localStats, setLocalStats] = useState<LocalStats | null>(null);
   const [serverStats, setServerStats] = useState<StorageStatisticsResponse | null>(null);
@@ -176,9 +174,9 @@ const StorageInsights: React.FC = () => {
       }
     }
     return [
-      { label: t(`${tk}.BreakdownCredentialsLabel`), bytes: credentials, colorClass: 'bg-blue-500' },
-      { label: t(`${tk}.BreakdownAttachmentsLabel`), bytes: attachments, colorClass: 'bg-amber-500' },
-      { label: t(`${tk}.BreakdownLogosLabel`), bytes: logos, colorClass: 'bg-emerald-500' },
+      { label: t('common.credentials'), bytes: credentials, colorClass: 'bg-blue-500' },
+      { label: t('common.attachments'), bytes: attachments, colorClass: 'bg-amber-500' },
+      { label: t('settings.storageInsights.breakdownLogosLabel'), bytes: logos, colorClass: 'bg-emerald-500' },
     ];
   }, [serverStats, t]);
 
@@ -186,15 +184,15 @@ const StorageInsights: React.FC = () => {
   const isLogoActionRunning = isDeletingLogos || redownloadProgress !== null;
 
   const attachmentColumns: TableColumn[] = [
-    { title: t(`${tk}.ColumnFilename`) },
-    { title: t(`${tk}.ColumnSize`) },
-    { title: t(`${tk}.ColumnItem`) },
-    { title: t(`${tk}.ColumnCreated`) },
+    { title: t('settings.storageInsights.columnFilename') },
+    { title: t('settings.storageInsights.columnSize') },
+    { title: t('settings.storageInsights.columnItem') },
+    { title: t('settings.storageInsights.columnCreated') },
   ];
   const logoColumns: TableColumn[] = [
-    { title: t(`${tk}.ColumnWebsiteURL`) },
-    { title: t(`${tk}.ColumnSize`) },
-    { title: t(`${tk}.ColumnItemCount`) },
+    { title: t('fieldLabels.login.url') },
+    { title: t('settings.storageInsights.columnSize') },
+    { title: t('settings.storageInsights.columnItemCount') },
   ];
 
   /**
@@ -205,7 +203,7 @@ const StorageInsights: React.FC = () => {
     if (!client || isLogoActionRunning) {
       return;
     }
-    const confirmed = await showConfirmation(t(`${tk}.DeleteAllLogosConfirmTitle`), t(`${tk}.DeleteAllLogosConfirmMessage`), t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('settings.storageInsights.deleteAllLogosConfirmTitle'), t('settings.storageInsights.deleteAllLogosConfirmMessage'), t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -215,11 +213,11 @@ const StorageInsights: React.FC = () => {
       await executeVaultMutationAsync(async () => {
         removed = await client.logos.deleteAllFavicons();
       });
-      notifications.addSuccessMessage(t(`${tk}.DeleteAllLogosSuccessMessage`, { 0: removed }), true);
+      notifications.addSuccessMessage(t('settings.storageInsights.deleteAllLogosSuccessMessage', { count: removed }), true);
     } catch (error) {
       console.error('Failed to delete the logos:', error);
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+        notifications.addErrorMessage(t('common.errorGeneric'), true);
       }
     } finally {
       setIsDeletingLogos(false);
@@ -235,7 +233,7 @@ const StorageInsights: React.FC = () => {
     if (!client || isLogoActionRunning) {
       return;
     }
-    const confirmed = await showConfirmation(t(`${tk}.RedownloadAllLogosConfirmTitle`), t(`${tk}.RedownloadAllLogosConfirmMessage`), t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('settings.storageInsights.redownloadAllLogosConfirmTitle'), t('settings.storageInsights.redownloadAllLogosConfirmMessage'), t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -249,14 +247,14 @@ const StorageInsights: React.FC = () => {
         changed = result.changedItems;
       });
       if (rateLimited) {
-        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+        notifications.addErrorMessage(t('common.errorGeneric'), true);
       } else {
-        notifications.addSuccessMessage(t(`${tk}.RedownloadAllLogosSuccessMessage`, { 0: changed }), true);
+        notifications.addSuccessMessage(t('settings.storageInsights.redownloadAllLogosSuccessMessage', { count: changed }), true);
       }
     } catch (error) {
       console.error('Failed to re-download the logos:', error);
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+        notifications.addErrorMessage(t('common.errorGeneric'), true);
       }
     } finally {
       setRedownloadProgress(null);
@@ -266,41 +264,41 @@ const StorageInsights: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
+      <PageHeader breadcrumbItems={[{ displayName: t('settings.storageInsights.breadcrumbTitle') }]} title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
 
       <PageContent>
         <Card>
-          <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.ServerTotalTitle`)}</h3>
+          <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t('settings.storageInsights.serverTotalTitle')}</h3>
           {serverStatsFailed ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">{t('sharedResources.ErrorGeneric')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.errorGeneric')}</p>
           ) : serverStats ? (
             <>
               <p className="text-4xl font-semibold text-gray-900 dark:text-white">{formatBytes(totalBytes)}</p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.ServerTotalDescription`)}</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('settings.storageInsights.serverTotalDescription')}</p>
             </>
           ) : (
-            <p className="text-gray-600 dark:text-gray-400">{t('sharedResources.Loading')}</p>
+            <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
           )}
         </Card>
 
         <Card>
-          <CardHeading title={t(`${tk}.CountsTitle`)} />
+          <CardHeading title={t('settings.storageInsights.countsTitle')} />
           {localStats ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              <CountTile label={t(`${tk}.ItemCountLabel`)} value={localStats.counts.ItemCount} />
-              <CountTile label={t(`${tk}.ItemsWithAttachmentsLabel`)} value={localStats.counts.ItemsWithAttachments} />
-              <CountTile label={t(`${tk}.ItemsWithLogosLabel`)} value={localStats.counts.ItemsWithLogos} />
-              <CountTile label={t(`${tk}.BreakdownAttachmentsLabel`)} value={localStats.counts.AttachmentCount} />
-              <CountTile label={t(`${tk}.BreakdownLogosLabel`)} value={localStats.counts.LogoCount} />
+              <CountTile label={t('items.title')} value={localStats.counts.ItemCount} />
+              <CountTile label={t('settings.storageInsights.itemsWithAttachmentsLabel')} value={localStats.counts.ItemsWithAttachments} />
+              <CountTile label={t('settings.storageInsights.itemsWithLogosLabel')} value={localStats.counts.ItemsWithLogos} />
+              <CountTile label={t('common.attachments')} value={localStats.counts.AttachmentCount} />
+              <CountTile label={t('settings.storageInsights.breakdownLogosLabel')} value={localStats.counts.LogoCount} />
             </div>
           ) : (
-            <p className="text-gray-600 dark:text-gray-400">{t('sharedResources.Loading')}</p>
+            <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
           )}
         </Card>
 
         {totalBytes > 0 && (
           <Card>
-            <CardHeading title={t(`${tk}.BreakdownTitle`)} />
+            <CardHeading title={t('settings.storageInsights.breakdownTitle')} />
             <div className="flex w-full h-4 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
               {segments.map(segment => (
                 <div key={segment.label} className={segment.colorClass} style={{ width: `${percent(segment.bytes, totalBytes).toFixed(2)}%` }} title={segment.label}></div>
@@ -321,7 +319,7 @@ const StorageInsights: React.FC = () => {
         {localStats && (
           <>
             <Card>
-              <CardHeading title={t(`${tk}.TopAttachmentsTitle`)} description={t(`${tk}.TopAttachmentsDescription`)} />
+              <CardHeading title={t('settings.storageInsights.topAttachmentsTitle')} description={t('settings.storageInsights.topAttachmentsDescription')} />
               {localStats.attachments.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">-</p>
               ) : (
@@ -339,7 +337,7 @@ const StorageInsights: React.FC = () => {
             </Card>
 
             <Card>
-              <CardHeading title={t(`${tk}.TopLogosTitle`)} description={t(`${tk}.TopLogosDescription`)} />
+              <CardHeading title={t('settings.storageInsights.topLogosTitle')} description={t('settings.storageInsights.topLogosDescription')} />
               {localStats.logos.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">-</p>
               ) : (
@@ -361,11 +359,11 @@ const StorageInsights: React.FC = () => {
         )}
 
         <Card>
-          <CardHeading title={t(`${tk}.LogoManagementTitle`)} description={t(`${tk}.LogoManagementDescription`)} />
+          <CardHeading title={t('settings.storageInsights.logoManagementTitle')} description={t('settings.storageInsights.logoManagementDescription')} />
           {redownloadProgress && (
             <div className="mb-4">
               <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300 mb-1">
-                <span>{t('sharedResources.Loading')}</span>
+                <span>{t('common.loading')}</span>
                 <span>{redownloadProgress.processed} / {redownloadProgress.total}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
@@ -374,8 +372,8 @@ const StorageInsights: React.FC = () => {
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button color="secondary" isDisabled={isLogoActionRunning} onClick={() => void redownloadAllLogos()}>{t(`${tk}.RedownloadAllLogosButton`)}</Button>
-            <Button color="danger" isDisabled={isLogoActionRunning} onClick={() => void deleteAllLogos()}>{t(`${tk}.DeleteAllLogosButton`)}</Button>
+            <Button color="secondary" isDisabled={isLogoActionRunning} onClick={() => void redownloadAllLogos()}>{t('settings.storageInsights.redownloadAllLogosButton')}</Button>
+            <Button color="danger" isDisabled={isLogoActionRunning} onClick={() => void deleteAllLogos()}>{t('settings.storageInsights.deleteAllLogosButton')}</Button>
           </div>
         </Card>
       </PageContent>

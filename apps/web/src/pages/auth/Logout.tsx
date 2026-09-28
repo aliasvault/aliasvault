@@ -18,7 +18,7 @@ const Logout: React.FC = () => {
   const auth = useAuth();
   const notifications = useNotifications();
   const hasStarted = useRef(false);
-  usePageTitle(t('pages.auth.logout.LoggingOutTitle'));
+  usePageTitle(t('logout.loggingOutTitle'));
 
   useEffect(() => {
     if (hasStarted.current) {
@@ -45,9 +45,9 @@ const Logout: React.FC = () => {
         <div className="text-center">
           <div className="space-y-4">
             <BoldLoadingIndicator />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('pages.auth.logout.LoggingOutTitle')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('logout.loggingOutTitle')}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('pages.auth.logout.LoggingOutDescription')}
+              {t('logout.loggingOutDescription')}
             </p>
           </div>
         </div>

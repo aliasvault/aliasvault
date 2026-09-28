@@ -46,7 +46,7 @@ const Login: React.FC = () => {
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
   const srpUtil = useMemo(() => new SrpLoginService(webApi), [webApi]);
-  usePageTitle(t('components.auth.login.PageTitle'));
+  usePageTitle(t('auth.loginTitle'));
 
   const [step, setStep] = useState<LoginStep>('credentials');
   const [username, setUsername] = useState('');
@@ -110,7 +110,7 @@ const Login: React.FC = () => {
       return [t('common.errors.serverVersionNotSupported')];
     }
     if (apiErrorCodeOf(err)) {
-      return [apiErrorMessage(err, t, t('components.auth.login.LoginErrorMessage'))];
+      return [apiErrorMessage(err, t, t('auth.loginForm.loginErrorMessage'))];
     }
     const codedError = translateCodedError(err, t);
     if (codedError) {
@@ -119,7 +119,7 @@ const Login: React.FC = () => {
     if (import.meta.env.DEV && err instanceof Error) {
       return [err.message];
     }
-    return [t('components.auth.login.LoginErrorMessage')];
+    return [t('auth.loginForm.loginErrorMessage')];
   };
 
   /**
@@ -153,7 +153,7 @@ const Login: React.FC = () => {
    */
   const processLoginVerify = async (validateLoginResponse: ValidateLoginResponse, hashBase64: string, response: LoginResponse): Promise<void> => {
     if (!validateLoginResponse.token) {
-      throw new Error(t('components.auth.login.LoginRequestErrorMessage'));
+      throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
     }
     const params = { salt: response.salt, encryptionType: response.encryptionType, encryptionSettings: response.encryptionSettings };
     await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, hashBase64, params);
@@ -163,7 +163,7 @@ const Login: React.FC = () => {
    * Finish a login the mobile app approved: the mobile app sends the unlock key.
    */
   const handleMobileLoginSuccess = async (result: MobileLoginResult): Promise<void> => {
-    showLoading(t('components.auth.login.LoggingInMessage'));
+    showLoading(t('auth.loggingIn'));
     setErrors([]);
     setShowMobileLoginModal(false);
 
@@ -182,7 +182,7 @@ const Login: React.FC = () => {
    */
   const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    showLoading(t('components.auth.login.LoggingInMessage'));
+    showLoading(t('auth.loggingIn'));
     setErrors([]);
 
     try {
@@ -215,12 +215,12 @@ const Login: React.FC = () => {
    */
   const handle2Fa = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    showLoading(t('components.auth.login.VerifyingTwoFactorCodeMessage'));
+    showLoading(t('auth.loginForm.verifyingTwoFactorCodeMessage'));
     setErrors([]);
 
     try {
       if (!loginResponse || !passwordHashString || !passwordHashBase64) {
-        throw new Error(t('components.auth.login.LoginRequestErrorMessage'));
+        throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
       }
       const code = twoFactorCode.trim();
       if (!/^\d{6}$/.test(code)) {
@@ -240,12 +240,12 @@ const Login: React.FC = () => {
    */
   const handleRecoveryCode = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    showLoading(t('components.auth.login.VerifyingRecoveryCodeMessage'));
+    showLoading(t('auth.loginForm.verifyingRecoveryCodeMessage'));
     setErrors([]);
 
     try {
       if (!loginResponse || !passwordHashString || !passwordHashBase64) {
-        throw new Error(t('components.auth.login.LoginRequestErrorMessage'));
+        throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
       }
       const validateLoginResponse = await srpUtil.validateLoginRecoveryCode(username, passwordHashString, rememberMe, loginResponse, recoveryCode.trim());
       await processLoginVerify(validateLoginResponse, passwordHashBase64, loginResponse);
@@ -276,16 +276,16 @@ const Login: React.FC = () => {
     return (
       <>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          {t('components.auth.login.TwoFactorAuthenticationTitle')}
+          {t('common.twoFactorAuthentication')}
         </h2>
 
         <ServerValidationErrors errors={errors} className="mb-4" />
 
-        <p className="text-gray-700 dark:text-gray-300 mb-6">{t('components.auth.login.TwoFactorAuthenticationDescription')}</p>
+        <p className="text-gray-700 dark:text-gray-300 mb-6">{t('auth.loginForm.twoFactorAuthenticationDescription')}</p>
         <div className="w-full">
           <form onSubmit={handle2Fa} className="space-y-6" av-enable="true" av-suppress-save="true">
             <div>
-              <FormLabel htmlFor="two-factor-code">{t('components.auth.login.AuthenticatorCodeLabel')}</FormLabel>
+              <FormLabel htmlFor="two-factor-code">{t('auth.loginForm.authenticatorCodeLabel')}</FormLabel>
               <input ref={twoFactorRef} id="two-factor-code" type="number" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} className={inputClass} autoComplete="one-time-code" />
             </div>
             <div className="flex items-start">
@@ -293,19 +293,19 @@ const Login: React.FC = () => {
                 <input id="remember-machine" type="checkbox" checked={rememberMachine} onChange={(e) => setRememberMachine(e.target.checked)} className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800" />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="remember-machine" className="font-medium text-gray-900 dark:text-white">{t('components.auth.login.RememberMachineLabel')}</label>
+                <label htmlFor="remember-machine" className="font-medium text-gray-900 dark:text-white">{t('auth.loginForm.rememberMachineLabel')}</label>
               </div>
             </div>
-            <button type="submit" className={submitClass}>{t('components.auth.login.LoginButton')}</button>
+            <button type="submit" className={submitClass}>{t('auth.login')}</button>
           </form>
         </div>
         <p className="mt-6 text-sm text-gray-700 dark:text-gray-300">
-          {t('components.auth.login.DontHaveAuthenticatorText')}
+          {t('auth.loginForm.dontHaveAuthenticatorText')}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
           <button onClick={() => {
             setErrors([]); setStep('recovery-code'); 
-          }} className="text-primary-600 hover:underline dark:text-primary-500">{t('components.auth.login.LoginWithRecoveryCodeLink')}</button>
+          }} className="text-primary-600 hover:underline dark:text-primary-500">{t('auth.loginForm.loginWithRecoveryCodeLink')}</button>
         </p>
         <FooterLogin />
       </>
@@ -316,30 +316,30 @@ const Login: React.FC = () => {
     return (
       <>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          {t('components.auth.login.RecoveryCodeVerificationTitle')}
+          {t('auth.loginForm.recoveryCodeVerificationTitle')}
         </h2>
 
         <ServerValidationErrors errors={errors} className="mb-4" />
 
         <p className="text-gray-700 dark:text-gray-300 mb-6">
-          {t('components.auth.login.RecoveryCodeDescription')}
+          {t('auth.loginForm.recoveryCodeDescription')}
         </p>
         <div className="w-full">
           <form onSubmit={handleRecoveryCode} className="space-y-6">
             <div>
-              <FormLabel htmlFor="recovery-code">{t('components.auth.login.RecoveryCodeLabel')}</FormLabel>
+              <FormLabel htmlFor="recovery-code">{t('auth.loginForm.recoveryCodeLabel')}</FormLabel>
               <input id="recovery-code" type="text" value={recoveryCode} onChange={(e) => setRecoveryCode(e.target.value)} className={inputClass} autoComplete="off" />
             </div>
-            <button type="submit" className={submitClass}>{t('components.auth.login.LoginButton')}</button>
+            <button type="submit" className={submitClass}>{t('auth.login')}</button>
           </form>
         </div>
         <p className="mt-6 text-sm text-gray-700 dark:text-gray-300">
-          {t('components.auth.login.RegainedAccessText')}
+          {t('auth.loginForm.regainedAccessText')}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
           <button onClick={() => {
             setErrors([]); setStep('two-factor'); 
-          }} className="text-primary-600 hover:underline dark:text-primary-500">{t('components.auth.login.LoginWithAuthenticatorLink')}</button>
+          }} className="text-primary-600 hover:underline dark:text-primary-500">{t('auth.loginForm.loginWithAuthenticatorLink')}</button>
         </p>
         <FooterLogin />
       </>
@@ -349,18 +349,18 @@ const Login: React.FC = () => {
   return (
     <>
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {t('components.auth.login.PageTitle')}
+        {t('auth.loginTitle')}
       </h2>
 
       <form onSubmit={handleLogin} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
         <ServerValidationErrors errors={errors} />
         <div>
-          <FormLabel htmlFor="email">{t('components.auth.login.UsernameOrEmailLabel')}</FormLabel>
-          <InputTextField ref={usernameRef} id="email" value={username} onValueChange={setUsername} type="text" placeholder={t('components.auth.login.UsernamePlaceholder')} autoCapitalize="off" autoCorrect="off" required />
+          <FormLabel htmlFor="email">{t('auth.register.usernameOrEmailLabel')}</FormLabel>
+          <InputTextField ref={usernameRef} id="email" value={username} onValueChange={setUsername} type="text" placeholder={t('auth.usernamePlaceholder')} autoCapitalize="off" autoCorrect="off" required />
         </div>
         <div>
-          <FormLabel htmlFor="password">{t('components.auth.login.PasswordLabel')}</FormLabel>
-          <PasswordInputField id="password" value={password} onValueChange={setPassword} placeholder={t('components.auth.login.PasswordPlaceholder')} />
+          <FormLabel htmlFor="password">{t('auth.register.passwordLabel')}</FormLabel>
+          <PasswordInputField id="password" value={password} onValueChange={setPassword} placeholder={t('auth.register.passwordPlaceholder')} />
         </div>
 
         <div className="flex items-start">
@@ -368,26 +368,26 @@ const Login: React.FC = () => {
             <input id="remember" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600" />
           </div>
           <div className="ml-3 text-sm">
-            <label htmlFor="remember" className="font-medium text-gray-900 dark:text-white">{t('components.auth.login.RememberMeLabel')}</label>
+            <label htmlFor="remember" className="font-medium text-gray-900 dark:text-white">{t('auth.rememberMe')}</label>
           </div>
-          <Link to="/user/forgot-password" className="ml-auto text-sm text-primary-700 hover:underline dark:text-primary-500">{t('components.auth.login.LostPasswordLink')}</Link>
+          <Link to="/user/forgot-password" className="ml-auto text-sm text-primary-700 hover:underline dark:text-primary-500">{t('auth.loginForm.lostPasswordLink')}</Link>
         </div>
 
         <div className="flex flex-col gap-4">
           <button type="submit" id="login-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
-            {t('components.auth.login.LoginButton')}
+            {t('auth.login')}
           </button>
           <button type="button" id="mobile-login-button" onClick={() => setShowMobileLoginModal(true)} className="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
             </svg>
-            {t('components.auth.login.MobileDeviceLink')}
+            {t('auth.loginWithMobile')}
           </button>
         </div>
 
         {getAppConfig().publicRegistrationEnabled && (
           <div className="text-sm font-medium text-gray-500 dark:text-gray-400 text-center">
-            {t('components.auth.login.NoAccountYetText')} <Link to="/user/setup" className="text-primary-700 hover:underline dark:text-primary-500">{t('components.auth.login.CreateNewVaultLink')}</Link>
+            {t('auth.noAccountYet')} <Link to="/user/setup" className="text-primary-700 hover:underline dark:text-primary-500">{t('auth.createNewVault')}</Link>
           </div>
         )}
       </form>

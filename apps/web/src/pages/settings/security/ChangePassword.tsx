@@ -29,8 +29,8 @@ const ChangePassword: React.FC = () => {
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
   const { syncVault } = useVaultSync();
-  const tk = 'components.main.pages.settings.security.changePassword';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.securitySettings.changePassword.changePassword'));
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -43,11 +43,11 @@ const ChangePassword: React.FC = () => {
    */
   const validate = (password: string, confirm: string): void => {
     if (password.trim().length > 0 && password.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
-      setValidationError(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_ACCEPTED_PASSWORD_LENGTH }));
+      setValidationError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
     if (confirm.trim().length > 0 && password !== confirm) {
-      setValidationError(t('validationMessages.PasswordsDoNotMatchGeneric'));
+      setValidationError(t('common.errorPasswordMismatch'));
       return;
     }
     setValidationError('');
@@ -82,18 +82,18 @@ const ChangePassword: React.FC = () => {
     e.preventDefault();
     setValidationError('');
     if (newPassword.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
-      setValidationError(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_ACCEPTED_PASSWORD_LENGTH }));
+      setValidationError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
 
-    showLoading(t(`${tk}.ChangingPasswordMessage`));
+    showLoading(t('settings.securitySettings.changePassword.changingPasswordMessage'));
     notifications.clearMessages();
     try {
       await MasterPasswordService.changePassword(webApi, currentPassword, newPassword);
       setCurrentPassword('');
       setNewPassword('');
       setNewPasswordConfirm('');
-      notifications.addSuccessMessage(t(`${tk}.PasswordChangedSuccessfully`), true);
+      notifications.addSuccessMessage(t('settings.securitySettings.changePassword.passwordChangedSuccessfully'), true);
     } catch (error) {
       console.error('Password change failed:', error);
       if (error instanceof IncorrectPasswordError) {
@@ -101,7 +101,7 @@ const ChangePassword: React.FC = () => {
       } else if (error instanceof PasswordChangedElsewhereError) {
         notifications.addErrorMessage(t('common.errors.passwordChanged'), true);
       } else {
-        notifications.addErrorMessage(apiErrorMessage(error, t, t(`${tk}.FailedToChangePassword`)), true);
+        notifications.addErrorMessage(apiErrorMessage(error, t, t('settings.securitySettings.changePassword.failedToChangePassword')), true);
       }
       return;
     } finally {
@@ -116,30 +116,30 @@ const ChangePassword: React.FC = () => {
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
         <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, { displayName: t(`${tk}.BreadcrumbSecuritySettings`), url: '/settings/security' }, { displayName: t(`${tk}.BreadcrumbChangePassword`) }]} />
-          <H1>{t(`${tk}.PageTitle`)}</H1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.PageDescription`)}</p>
+          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.changePassword.changePassword') }]} />
+          <H1>{t('settings.securitySettings.changePassword.changePassword')}</H1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.changePassword.headerText')}</p>
         </div>
       </div>
 
       <Card>
         <form onSubmit={changePassword} className="space-y-4">
           <div>
-            <FormLabel htmlFor="currentPassword">{t(`${tk}.CurrentPasswordLabel`)}</FormLabel>
-            <PasswordInputField id="currentPassword" value={currentPassword} onValueChange={setCurrentPassword} placeholder={t(`${tk}.CurrentPasswordLabel`)} />
+            <FormLabel htmlFor="currentPassword">{t('settings.securitySettings.changePassword.currentPassword')}</FormLabel>
+            <PasswordInputField id="currentPassword" value={currentPassword} onValueChange={setCurrentPassword} placeholder={t('settings.securitySettings.changePassword.currentPassword')} />
           </div>
           <div>
-            <FormLabel htmlFor="newPassword">{t(`${tk}.NewPasswordLabel`)}</FormLabel>
-            <PasswordInputField id="newPassword" value={newPassword} onValueChange={onNewPasswordChange} placeholder={t(`${tk}.NewPasswordLabel`)} />
+            <FormLabel htmlFor="newPassword">{t('settings.securitySettings.changePassword.newPassword')}</FormLabel>
+            <PasswordInputField id="newPassword" value={newPassword} onValueChange={onNewPasswordChange} placeholder={t('settings.securitySettings.changePassword.newPassword')} />
             <PasswordStrengthIndicator password={newPassword} />
           </div>
           <div>
-            <FormLabel htmlFor="newPasswordConfirm">{t(`${tk}.ConfirmNewPasswordLabel`)}</FormLabel>
-            <PasswordInputField id="newPasswordConfirm" value={newPasswordConfirm} onValueChange={onConfirmChange} placeholder={t(`${tk}.ConfirmNewPasswordLabel`)} />
+            <FormLabel htmlFor="newPasswordConfirm">{t('settings.securitySettings.changePassword.confirmNewPassword')}</FormLabel>
+            <PasswordInputField id="newPasswordConfirm" value={newPasswordConfirm} onValueChange={onConfirmChange} placeholder={t('settings.securitySettings.changePassword.confirmNewPassword')} />
           </div>
           {validationError.length > 0 && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{validationError}</div>}
           <button type="submit" disabled={!isSubmitEnabled} className={`w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-150 ease-in-out ${isSubmitEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
-            {t(`${tk}.ChangePasswordButton`)}
+            {t('settings.securitySettings.changePassword.changePassword')}
           </button>
         </form>
       </Card>

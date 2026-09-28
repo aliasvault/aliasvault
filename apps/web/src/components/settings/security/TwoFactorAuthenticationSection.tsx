@@ -16,7 +16,6 @@ const TwoFactorAuthenticationSection = forwardRef<SectionHandle>((_, ref) => {
   const webApi = useWebApi();
   const [isLoading, setIsLoading] = useState(true);
   const [enabled, setEnabled] = useState(false);
-  const tk = 'components.main.settings.security.twoFactorAuthenticationSection';
 
   const loadData = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -30,16 +29,16 @@ const TwoFactorAuthenticationSection = forwardRef<SectionHandle>((_, ref) => {
   useImperativeHandle(ref, () => ({ loadData }), [loadData]);
 
   return (
-    <SecuritySection title={t(`${tk}.Title`)}>
+    <SecuritySection title={t('common.twoFactorAuthentication')}>
       {isLoading ? <LoadingIndicator /> : enabled ? (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.EnabledMessage`)}</div>
-          <Button color="danger" onClick={() => navigate('/settings/security/disable-2fa')}>{t(`${tk}.DisableButton`)}</Button>
+          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.twoFactor.enabledMessage')}</div>
+          <Button color="danger" onClick={() => navigate('/settings/security/disable-2fa')}>{t('settings.securitySettings.disable2fa.pageTitle')}</Button>
         </>
       ) : (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.DisabledMessage`)}</div>
-          <Button color="success" onClick={() => navigate('/settings/security/enable-2fa')}>{t(`${tk}.EnableButton`)}</Button>
+          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.twoFactor.disabledMessage')}</div>
+          <Button color="success" onClick={() => navigate('/settings/security/enable-2fa')}>{t('settings.securitySettings.enable2fa.pageTitle')}</Button>
         </>
       )}
     </SecuritySection>

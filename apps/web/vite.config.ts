@@ -6,11 +6,11 @@ import { minify } from 'html-minifier-terser';
 import { defineConfig, type Plugin } from 'vite';
 
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
-const LOCALES_DIR = path.resolve(import.meta.dirname, 'src/i18n/locales');
+const LOCALES_DIR = path.join(CORE_DIR, 'i18n/locales');
 const APP_VERSION = (JSON.parse(readFileSync(path.resolve(import.meta.dirname, 'package.json'), 'utf8')) as { version: string }).version;
 
 /**
- * Inline the loadingScreen strings of every src/i18n/locales/<lang>.json into index.html, so the loading screen
+ * Inline the loadingScreen strings of every core/i18n/locales/<lang>.json into index.html, so the loading screen
  * script shows the right language on the first load without needing a separate request.
  */
 function loadingScreenLocales(): Plugin {

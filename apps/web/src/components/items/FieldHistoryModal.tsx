@@ -86,9 +86,9 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {t('components.fields.fieldHistoryModal.HistoryTitle')} - {fieldLabel}
+            {t('items.history')} - {fieldLabel}
           </h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300" title={t('sharedResources.Close')} aria-label={t('sharedResources.Close')}>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300" title={t('common.close')} aria-label={t('common.close')}>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -105,7 +105,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
             </svg>
           </div>
         ) : records.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('components.fields.fieldHistoryModal.NoHistoryAvailable')}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('items.noHistoryAvailable')}</p>
         ) : (
           <div className="space-y-4">
             {records.map((record) => {
@@ -116,16 +116,16 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
                     <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(record.ChangedAt)}</div>
                     {confirmDeleteId === record.Id ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('components.fields.fieldHistoryModal.DeleteConfirm')}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.fieldHistory.deleteConfirm')}</span>
                         <button type="button" onClick={() => void deleteRecord(record.Id)} className="text-xs px-2 py-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
-                          {t('sharedResources.Confirm')}
+                          {t('common.confirm')}
                         </button>
                         <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                          {t('sharedResources.Cancel')}
+                          {t('common.cancel')}
                         </button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setConfirmDeleteId(record.Id)} className="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors" title={t('sharedResources.Delete')}>
+                      <button type="button" onClick={() => setConfirmDeleteId(record.Id)} className="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors" title={t('common.delete')}>
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                         </svg>

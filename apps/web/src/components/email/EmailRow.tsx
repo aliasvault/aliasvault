@@ -65,7 +65,7 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, onEma
                   </svg>
                 )}
                 {isNewEmail && (
-                  <div className="w-2 h-2 ml-1 bg-yellow-500 rounded-full animate-pulse flex-shrink-0" title={t('components.main.email.emailRow.NewEmailTooltip')}></div>
+                  <div className="w-2 h-2 ml-1 bg-yellow-500 rounded-full animate-pulse flex-shrink-0" title={t('emails.row.newEmailTooltip')}></div>
                 )}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate mb-1">

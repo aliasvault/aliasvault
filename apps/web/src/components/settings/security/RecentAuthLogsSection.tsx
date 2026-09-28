@@ -20,7 +20,6 @@ const RecentAuthLogsSection = forwardRef<SectionHandle>((_, ref) => {
   const webApi = useWebApi();
   const [isLoading, setIsLoading] = useState(true);
   const [logs, setLogs] = useState<AuthLogModel[]>([]);
-  const tk = 'components.main.settings.security.recentAuthLogsSection';
 
   const loadData = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -34,20 +33,20 @@ const RecentAuthLogsSection = forwardRef<SectionHandle>((_, ref) => {
   useImperativeHandle(ref, () => ({ loadData }), [loadData]);
 
   return (
-    <SecuritySection title={t(`${tk}.Title`)}>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t(`${tk}.Description`)}</p>
+    <SecuritySection title={t('settings.securitySettings.recentAuthLogs')}>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('settings.securitySettings.authLogs.headerText')}</p>
       {isLoading ? <LoadingIndicator /> : logs.length === 0 ? (
-        <p className="text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.NoLogsMessage`)}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.authLogs.noLogsMessage')}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">{t(`${tk}.TimestampColumn`)}</th>
-                <th scope="col" className="px-6 py-3">{t(`${tk}.EventTypeColumn`)}</th>
-                <th scope="col" className="px-6 py-3">{t(`${tk}.ClientColumn`)}</th>
-                <th scope="col" className="px-6 py-3">{t(`${tk}.IpAddressColumn`)}</th>
-                <th scope="col" className="px-6 py-3">{t(`${tk}.SuccessColumn`)}</th>
+                <th scope="col" className="px-6 py-3">{t('settings.securitySettings.authLogs.timestampColumn')}</th>
+                <th scope="col" className="px-6 py-3">{t('settings.securitySettings.authLogs.eventTypeColumn')}</th>
+                <th scope="col" className="px-6 py-3">{t('settings.securitySettings.authLogs.client')}</th>
+                <th scope="col" className="px-6 py-3">{t('settings.securitySettings.authLogs.ipAddress')}</th>
+                <th scope="col" className="px-6 py-3">{t('settings.securitySettings.authLogs.success')}</th>
               </tr>
             </thead>
             <tbody>
@@ -57,7 +56,7 @@ const RecentAuthLogsSection = forwardRef<SectionHandle>((_, ref) => {
                   <td className="px-6 py-4">{AuthEventType[log.eventType] ?? log.eventType}</td>
                   <td className="px-6 py-4">{log.client}</td>
                   <td className="px-6 py-4">{log.ipAddress}</td>
-                  <td className="px-4 py-4"><StatusPill enabled={log.isSuccess} textTrue={t(`${tk}.SuccessStatus`)} textFalse={t(`${tk}.FailedStatus`)} /></td>
+                  <td className="px-4 py-4"><StatusPill enabled={log.isSuccess} textTrue={t('settings.securitySettings.authLogs.success')} textFalse={t('settings.securitySettings.authLogs.failed')} /></td>
                 </tr>
               ))}
             </tbody>

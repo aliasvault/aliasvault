@@ -69,7 +69,7 @@ const ItemView: React.FC = () => {
   const notifications = useNotifications();
   const domains = useEmailDomains();
   const { executeVaultMutationAsync } = useVaultMutate();
-  usePageTitle(t('pages.main.items.view.ViewItemPageTitle'));
+  usePageTitle(t('items.view.viewItemTitle'));
 
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState<Item | null>(null);
@@ -94,7 +94,7 @@ const ItemView: React.FC = () => {
     const ref = { Id: id, ManifestId: manifestId };
     const loaded = client.items.getById(ref);
     if (!loaded) {
-      notifications.addErrorMessage(t('pages.main.items.view.ItemNotFoundError'));
+      notifications.addErrorMessage(t('items.view.itemNotFoundError'));
       navigate('/items', { replace: true });
       return;
     }
@@ -103,7 +103,7 @@ const ItemView: React.FC = () => {
     const folderRef = loaded.FolderId ? { Id: loaded.FolderId, ManifestId: loaded.ManifestId } : null;
     const itemFolder = folderRef ? allFolders.find(f => f.Id === folderRef.Id && f.ManifestId === folderRef.ManifestId) ?? null : null;
     const crumbs = folderRef ? buildFolderBreadcrumbs(folderRef, allFolders) : [];
-    crumbs.push({ displayName: t('pages.main.items.view.ViewItemBreadcrumb') });
+    crumbs.push({ displayName: t('items.view.viewItemTitle') });
 
     setItem(loaded);
     setFolder(itemFolder);
@@ -136,7 +136,7 @@ const ItemView: React.FC = () => {
       return;
     }
     if (!item) {
-      notifications.addErrorMessage(t('pages.main.items.delete.DeleteItemNotFoundError'), true);
+      notifications.addErrorMessage(t('items.delete.deleteItemNotFoundError'), true);
       setShowDeleteModal(false);
       return;
     }
@@ -146,7 +146,7 @@ const ItemView: React.FC = () => {
       await executeVaultMutationAsync(async () => {
         await dbContext.sqliteClient?.items.trash(item);
       });
-      notifications.addSuccessMessage(t('pages.main.items.delete.DeleteSuccessMessage'));
+      notifications.addSuccessMessage(t('items.delete.deleteSuccessMessage'));
       navigate('/items');
     } finally {
       setIsDeleting(false);
@@ -172,14 +172,14 @@ const ItemView: React.FC = () => {
     <>
       <PageHeader
         breadcrumbItems={breadcrumbItems}
-        title={t('pages.main.items.view.ViewItemTitle')}
+        title={t('items.view.viewItemTitle')}
         titleSuffix={<ItemTypePill itemType={item.ItemType} />}
         customActions={(
           <>
-            <LinkButton smallText={t('pages.main.items.view.EditButtonMobile')} text={t('pages.main.items.view.EditButtonDesktop')} href={itemRoute(item, true)} color="primary" />
+            <LinkButton smallText={t('common.edit')} text={t('items.editItem')} href={itemRoute(item, true)} color="primary" />
             <Button color="danger" onClick={() => setShowDeleteModal(true)}>
-              <span className="md:hidden">{t('pages.main.items.view.DeleteButtonMobile')}</span>
-              <span className="hidden md:inline">{t('pages.main.items.view.DeleteButtonDesktop')}</span>
+              <span className="md:hidden">{t('common.delete')}</span>
+              <span className="hidden md:inline">{t('items.deleteItem')}</span>
             </Button>
           </>
         )}
@@ -192,7 +192,7 @@ const ItemView: React.FC = () => {
               <div className="items-center flex space-x-4">
                 <ItemIcon item={item} altText={item.Name ?? 'Item'} sizeClass="w-14 h-14" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="mb-1 text-xl font-bold text-gray-900 dark:text-white truncate">{item.Name ?? t('pages.main.items.view.Untitled')}</h3>
+                  <h3 className="mb-1 text-xl font-bold text-gray-900 dark:text-white truncate">{item.Name ?? t('items.untitled')}</h3>
                   {urlValues.map((url) => (
                     <div key={url} className="text-sm truncate">
                       {/^https?:\/\//i.test(url)
@@ -215,7 +215,7 @@ const ItemView: React.FC = () => {
             {totpCodes.length > 0 && <TotpViewer totpCodes={totpCodes} item={item} />}
 
             {item.ItemType !== ItemTypes.Note && notesFields.length > 0 && (
-              <Section title={t('pages.main.items.view.NotesSection')}>
+              <Section title={t('common.notes')}>
                 <FieldGrid fields={notesFields} item={item} hideLabel withForm={false} />
               </Section>
             )}
@@ -226,9 +226,9 @@ const ItemView: React.FC = () => {
           <div className="col-span-1 md:col-span-2 lg:col-span-2">
             {isLoginLike && loginFields.length > 0 && (
               <Card variant="section">
-                <SectionTitle className="mb-2">{t('pages.main.items.view.LoginDetailsSection')}</SectionTitle>
+                <SectionTitle className="mb-2">{t('items.view.loginDetailsSection')}</SectionTitle>
                 <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                  <span>{domains.isAliasVaultSupportedDomain(emailAddress) ? t('pages.main.items.view.GeneratedItemDescription') : t('pages.main.items.view.StoredItemDescription')}</span>
+                  <span>{domains.isAliasVaultSupportedDomain(emailAddress) ? t('items.view.generatedItemDescription') : t('items.view.storedItemDescription')}</span>
                 </p>
 
                 {passkey && (
@@ -239,23 +239,23 @@ const ItemView: React.FC = () => {
                       </svg>
                       <div className="flex-1">
                         <div className="mb-1">
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('pages.main.items.view.PasskeyLabel')}</span>
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
                         </div>
                         <div className="space-y-1 mb-2">
                           {passkey.RpId.trim().length > 0 && (
                             <div>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('pages.main.items.view.PasskeySiteLabel')}: </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
                               <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
                             </div>
                           )}
                           {(passkey.DisplayName ?? '').trim().length > 0 && (
                             <div>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('pages.main.items.view.PasskeyDisplayNameLabel')}: </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
                               <span className="text-sm text-gray-900 dark:text-white">{passkey.DisplayName}</span>
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('pages.main.items.view.PasskeyHelpText')}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('items.view.passkeyHelpText')}</p>
                       </div>
                     </div>
                   </div>
@@ -266,12 +266,12 @@ const ItemView: React.FC = () => {
             )}
 
             {item.ItemType === ItemTypes.Alias && aliasFields.length > 0 && (
-              <Section title={t('pages.main.items.view.AliasSection')}>
+              <Section title={t('common.alias')}>
                 <form action="#">
                   <div className="grid grid-cols-6 gap-6">
                     {firstName.trim().length > 0 && lastName.trim().length > 0 && (
                       <div className="col-span-6">
-                        <CopyPasteFormRow id="alias-full-name" label={t('pages.main.items.view.FullNameLabel')} value={`${firstName} ${lastName}`} item={item} />
+                        <CopyPasteFormRow id="alias-full-name" label={t('items.fullName')} value={`${firstName} ${lastName}`} item={item} />
                       </div>
                     )}
                     {aliasFields.map((field, index) => (
@@ -283,13 +283,13 @@ const ItemView: React.FC = () => {
             )}
 
             {item.ItemType === ItemTypes.CreditCard && cardFields.length > 0 && (
-              <Section title={t('pages.main.items.view.CardSection')}>
+              <Section title={t('items.view.cardSection')}>
                 <FieldGrid fields={cardFields} item={item} fullWidth={f => shouldBeFullWidth(f, cardFields)} />
               </Section>
             )}
 
             {item.ItemType === ItemTypes.Note && notesFields.length > 0 && (
-              <Section title={t('pages.main.items.view.NotesSection')}>
+              <Section title={t('common.notes')}>
                 <FieldGrid fields={notesFields} item={item} hideLabel withForm={false} />
               </Section>
             )}
@@ -305,10 +305,10 @@ const ItemView: React.FC = () => {
 
       <FormModal
         isOpen={showDeleteModal}
-        title={t('pages.main.items.delete.DeleteItemTitle')}
+        title={t('items.deleteItem')}
         iconBackgroundClass="bg-red-100 dark:bg-red-900/30"
-        confirmText={t('pages.main.items.delete.YesImSureButton')}
-        cancelText={t('pages.main.items.delete.NoCancelButton')}
+        confirmText={t('items.delete.yesImSureButton')}
+        cancelText={t('items.delete.noCancelButton')}
         confirmButtonClass="bg-red-600 hover:bg-red-700"
         isLoading={isDeleting}
         onConfirm={() => void confirmDelete()}
@@ -323,7 +323,7 @@ const ItemView: React.FC = () => {
           </svg>
         )}
       >
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('pages.main.items.delete.DeleteItemDescription', { 0: TRASH_RETENTION_DEFAULT_DAYS })}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('items.delete.deleteItemDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}</p>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
           <p className="text-sm font-medium text-gray-900 dark:text-white break-all">{item.Name ?? ''}</p>
         </div>

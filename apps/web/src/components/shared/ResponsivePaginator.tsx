@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 type ResponsivePaginatorProps = {
   currentPage: number;
@@ -11,6 +12,7 @@ type ResponsivePaginatorProps = {
  * Paginator with numbered pages on desktop and prev/next on mobile.
  */
 const ResponsivePaginator: React.FC<ResponsivePaginatorProps> = ({ currentPage, pageSize, totalRecords, onPageChanged }) => {
+  const { t } = useTranslation();
   const pageCount = Math.ceil(totalRecords / pageSize);
 
   if (totalRecords <= pageSize) {
@@ -30,12 +32,12 @@ const ResponsivePaginator: React.FC<ResponsivePaginatorProps> = ({ currentPage, 
   return (
     <>
       <div className="hidden md:block">
-        <nav aria-label="Page navigation" className="mt-4 flex justify-end mb-5">
+        <nav aria-label={t('common.pageNavigation')} className="mt-4 flex justify-end mb-5">
           <ul className="flex space-x-2">
             <li className={currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}>
               <a className={pillClasses} href="#" onClick={(e) => {
                 e.preventDefault(); setPage(currentPage - 1); 
-              }}>Previous</a>
+              }}>{t('common.previous')}</a>
             </li>
             {pages.map(pageNum => (
               <li key={pageNum}>
@@ -47,14 +49,14 @@ const ResponsivePaginator: React.FC<ResponsivePaginatorProps> = ({ currentPage, 
             <li className={currentPage === pageCount ? 'opacity-50 cursor-not-allowed' : ''}>
               <a className={pillClasses} href="#" onClick={(e) => {
                 e.preventDefault(); setPage(currentPage + 1); 
-              }}>Next</a>
+              }}>{t('common.next')}</a>
             </li>
           </ul>
         </nav>
       </div>
 
       <div className="block md:hidden">
-        <nav aria-label="Page navigation" className="mt-4 flex justify-center mb-5">
+        <nav aria-label={t('common.pageNavigation')} className="mt-4 flex justify-center mb-5">
           <ul className="flex items-center space-x-2">
             <li className={currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}>
               <button onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1} className={`${pillClasses} disabled:opacity-50 disabled:cursor-not-allowed`}>

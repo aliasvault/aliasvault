@@ -11,11 +11,11 @@ import Button from '@/components/shared/Button';
 const PasswordChangeSection: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const tk = 'components.main.settings.security.passwordChangeSection';
+  
   return (
-    <SecuritySection title={t(`${tk}.Title`)}>
-      <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.Description`)}</div>
-      <Button onClick={() => navigate('/settings/security/change-password')}>{t(`${tk}.ChangePasswordButton`)}</Button>
+    <SecuritySection title={t('settings.securitySettings.changeMasterPassword')}>
+      <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.changePassword.headerText')}</div>
+      <Button onClick={() => navigate('/settings/security/change-password')}>{t('settings.securitySettings.changePassword.changePassword')}</Button>
     </SecuritySection>
   );
 };

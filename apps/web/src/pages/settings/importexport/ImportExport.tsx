@@ -34,8 +34,8 @@ enum ExportType {
  */
 const ImportExport: React.FC = () => {
   const { t } = useTranslation();
-  const tk = 'pages.main.settings.importExport.importExport';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.importExport'));
   const dbContext = useDb();
   const { username } = useAuth();
   const { showConfirmation } = useConfirmModal();
@@ -62,9 +62,9 @@ const ImportExport: React.FC = () => {
    */
   const showExportConfirmation = async (exportType: ExportType): Promise<void> => {
     setCurrentExportType(exportType);
-    const confirmMessage = exportType === ExportType.Avex ? t(`${tk}.ExportEncryptedWarningMessage`) : t(`${tk}.ExportWarningMessage`);
+    const confirmMessage = exportType === ExportType.Avex ? t('importExport.exportEncryptedWarningMessage') : t('importExport.exportWarningMessage');
 
-    const confirmed = await showConfirmation(t(`${tk}.ExportConfirmTitle`), confirmMessage, t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('settings.exportConfirmTitle'), confirmMessage, t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -96,10 +96,10 @@ const ImportExport: React.FC = () => {
         throw new Error('Vault is not available');
       }
       downloadBytes(getExportFileName('csv'), sqliteClient.importExport.exportToCsv(), 'text/csv');
-      notifications.addSuccessMessage(t(`${tk}.ExportSuccessMessage`), true);
+      notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error downloading file:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      notifications.addErrorMessage(t('common.errorGeneric'), true);
     }
   };
 
@@ -107,13 +107,13 @@ const ImportExport: React.FC = () => {
    * Export the vault to .avux.
    */
   const exportVaultAvux = async (): Promise<void> => {
-    showLoading(t(`${tk}.ExportingVaultMessage`));
+    showLoading(t('importExport.exportingVaultMessage'));
     try {
       downloadBytes(getExportFileName('avux'), generateAvuxBytes());
-      notifications.addSuccessMessage(t(`${tk}.ExportSuccessMessage`), true);
+      notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error exporting vault to .avux format:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      notifications.addErrorMessage(t('common.errorGeneric'), true);
     } finally {
       hideLoading();
     }
@@ -123,14 +123,14 @@ const ImportExport: React.FC = () => {
    * Export the vault to .avex, encrypted with the given password.
    */
   const exportVaultAvex = async (exportPassword: string): Promise<void> => {
-    showLoading(t(`${tk}.ExportingVaultMessage`));
+    showLoading(t('importExport.exportingVaultMessage'));
     try {
       const avexBytes = await AvexExportService.encryptToAvex(generateAvuxBytes(), exportPassword, username ?? '');
       downloadBytes(getExportFileName('avex'), avexBytes);
-      notifications.addSuccessMessage(t(`${tk}.ExportSuccessMessage`), true);
+      notifications.addSuccessMessage(t('importExport.exportSuccessMessage'), true);
     } catch (error) {
       console.error('[Export] Error exporting vault to .avex format:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      notifications.addErrorMessage(t('common.errorGeneric'), true);
     } finally {
       hideLoading();
     }
@@ -149,7 +149,7 @@ const ImportExport: React.FC = () => {
       downloadBytes(getExportFileName('sqlite'), sqliteClient.exportToBytes());
     } catch (error) {
       console.error('[Export] Error exporting raw SQLite vault:', error);
-      notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+      notifications.addErrorMessage(t('common.errorGeneric'), true);
     } finally {
       hideLoading();
     }
@@ -178,13 +178,13 @@ const ImportExport: React.FC = () => {
     setShowPasswordConfirmation(false);
     setPasswordError('');
 
-    showLoading(t(`${tk}.VerifyingPasswordMessage`));
+    showLoading(t('common.verifyingPassword'));
     try {
       const isValid = await verifyMasterPassword(password);
       hideLoading();
 
       if (!isValid) {
-        setPasswordError(t(`${tk}.PasswordIncorrect`));
+        setPasswordError(t('importExport.passwordIncorrect'));
         setShowPasswordConfirmation(true);
       } else if (currentExportType === ExportType.Avex) {
         setShowExportPasswordModal(true);
@@ -194,7 +194,7 @@ const ImportExport: React.FC = () => {
     } catch (error) {
       console.error('[Export] Error verifying password:', error);
       hideLoading();
-      setPasswordError(t(`${tk}.PasswordVerificationFailed`));
+      setPasswordError(t('importExport.passwordVerificationFailed'));
       setShowPasswordConfirmation(true);
     }
   };
@@ -209,47 +209,47 @@ const ImportExport: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.PageTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
+      <PageHeader breadcrumbItems={[{ displayName: t('settings.importExport') }]} title={t('settings.importExport')} description={t('importExport.pageDescription')} />
 
       <PageContent>
         <Card className="2xl:col-span-2">
-          <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.ImportSectionTitle`)}</h3>
-          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.ImportSectionDescription`)}</div>
+          <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('importExport.importSectionTitle')}</h3>
+          <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t('importExport.importSectionDescription')}</div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <ImportServices />
           </div>
         </Card>
 
         <Card className="2xl:col-span-2">
-          <h3 className="mb-4 text-xl font-semibold dark:text-white">{t(`${tk}.ExportSectionTitle`)}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t(`${tk}.ExportSectionDescription`)}</p>
+          <h3 className="mb-4 text-xl font-semibold dark:text-white">{t('settings.exportConfirmTitle')}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('importExport.exportSectionDescription')}</p>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 border-2 border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50 dark:bg-orange-900/20">
               <div className="flex-1 min-w-0 mr-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t(`${tk}.ExportAvexTitle`)}</h4>
-                  <span className="px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900 rounded">{t(`${tk}.RecommendedLabel`)}</span>
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t('importExport.exportAvexTitle')}</h4>
+                  <span className="px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900 rounded">{t('importExport.recommendedLabel')}</span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t(`${tk}.ExportAvexDescription`)}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportAvexDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Avex)}>{t(`${tk}.ExportAvexButton`)}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Avex)}>{t('importExport.exportAvexButton')}</Button>
             </div>
 
             <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex-1 min-w-0 mr-4">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t(`${tk}.ExportAvuxTitle`)}</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t(`${tk}.ExportAvuxDescription`)}</p>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportAvuxTitle')}</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportAvuxDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Avux)}>{t(`${tk}.ExportAvuxButton`)}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Avux)}>{t('importExport.exportAvuxButton')}</Button>
             </div>
 
             <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex-1 min-w-0 mr-4">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t(`${tk}.ExportCsvTitle`)}</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t(`${tk}.ExportCsvDescription`)}</p>
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportCsvTitle')}</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportCsvDescription')}</p>
               </div>
-              <Button onClick={() => void showExportConfirmation(ExportType.Csv)}>{t(`${tk}.ExportCsvButton`)}</Button>
+              <Button onClick={() => void showExportConfirmation(ExportType.Csv)}>{t('importExport.exportCsvButton')}</Button>
             </div>
 
             {isDebugBuild && (
@@ -272,8 +272,8 @@ const ImportExport: React.FC = () => {
 
       <PasswordConfirmationModal
         isOpen={showPasswordConfirmation}
-        title={t(`${tk}.ExportPasswordConfirmTitle`)}
-        description={t(`${tk}.ExportPasswordConfirmDescription`)}
+        title={t('importExport.exportPasswordConfirmTitle')}
+        description={t('settings.passwordConfirm.exportDescription')}
         errorMessage={passwordError}
         onPasswordSubmitted={password => void handlePasswordSubmitted(password)}
         onClose={() => {
@@ -283,8 +283,8 @@ const ImportExport: React.FC = () => {
 
       <ExportPasswordModal
         isOpen={showExportPasswordModal}
-        title={t(`${tk}.ExportEncryptedPasswordTitle`)}
-        description={t(`${tk}.ExportEncryptedPasswordDescription`)}
+        title={t('importExport.exportEncryptedPasswordTitle')}
+        description={t('importExport.exportEncryptedPasswordDescription')}
         onPasswordSubmitted={password => void handleExportPasswordSubmitted(password)}
         onClose={() => setShowExportPasswordModal(false)} />
     </>

@@ -86,13 +86,13 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       await executeVaultMutationAsync(async () => {
         await dbContext.sqliteClient!.items.duplicate(item);
       });
-      notifications.addSuccessMessage(t('sharedResources.DuplicateSuccessMessage'), true);
+      notifications.addSuccessMessage(t('common.duplicateSuccessMessage'), true);
       onMutated();
     } catch (error) {
       console.error('Failed to duplicate item:', error);
       // Failed push (e.g. server not reachable).
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('sharedResources.DuplicateErrorMessage'), true);
+        notifications.addErrorMessage(t('common.duplicateErrorMessage'), true);
       }
     } finally {
       setIsDuplicating(false);
@@ -111,7 +111,7 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       await executeVaultMutationAsync(async () => {
         await dbContext.sqliteClient!.items.trash(item);
       });
-      notifications.addSuccessMessage(t('pages.main.items.delete.DeleteSuccessMessage'), true);
+      notifications.addSuccessMessage(t('items.delete.deleteSuccessMessage'), true);
       setShowDeleteModal(false);
       onMutated();
     } catch (error) {
@@ -132,7 +132,7 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
         ref={buttonRef}
         type="button"
         onClick={toggleMenu}
-        aria-label={t('sharedResources.ItemOptions')}
+        aria-label={t('items.contextMenu.title')}
         aria-haspopup="menu"
         className={`px-0.5 py-1 rounded text-gray-400 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'} group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500`}>
         <svg className="w-2 h-4" viewBox="0 0 12 24" fill="currentColor" aria-hidden="true">
@@ -145,25 +145,25 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
       {isOpen && (
         <div ref={menuRef} role="menu" style={menuStyle} className={`${position ? 'fixed' : 'absolute right-0 top-full mt-1'} z-50 w-40 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:shadow-xl dark:shadow-black/40 dark:ring-gray-600 dark:ring-opacity-100`}>
           <button type="button" role="menuitem" onClick={() => navigate(itemRoute(item, true))} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-            {t('sharedResources.Edit')}
+            {t('common.edit')}
           </button>
           <button type="button" role="menuitem" onClick={duplicateItem} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-            {t('sharedResources.Duplicate')}
+            {t('common.duplicate')}
           </button>
           <button type="button" role="menuitem" onClick={() => {
             setIsOpen(false); setShowDeleteModal(true); 
           }} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-            {t('sharedResources.Delete')}
+            {t('common.delete')}
           </button>
         </div>
       )}
 
       <FormModal
         isOpen={showDeleteModal}
-        title={t('pages.main.items.delete.DeleteItemTitle')}
+        title={t('items.deleteItem')}
         iconBackgroundClass="bg-red-100 dark:bg-red-900/30"
-        confirmText={t('pages.main.items.delete.YesImSureButton')}
-        cancelText={t('pages.main.items.delete.NoCancelButton')}
+        confirmText={t('items.delete.yesImSureButton')}
+        cancelText={t('items.delete.noCancelButton')}
         confirmButtonClass="bg-red-600 hover:bg-red-700"
         isLoading={isDeleting}
         onConfirm={confirmDelete}
@@ -174,7 +174,7 @@ const ItemContextMenu = forwardRef<ItemContextMenuHandle, ItemContextMenuProps>(
           </svg>
         )}>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          {t('pages.main.items.delete.DeleteItemDescription', { 0: TRASH_RETENTION_DEFAULT_DAYS })}
+          {t('items.delete.deleteItemDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}
         </p>
         <div className="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
           <p className="text-sm font-medium text-gray-900 dark:text-white break-all">{itemName ?? ''}</p>

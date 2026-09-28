@@ -35,7 +35,7 @@ const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = (
     <button type="button" onClick={() => void copyToClipboard(code)} className="group w-full text-left p-2 ps-3 pe-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600">
       <div className="flex justify-between items-center gap-2">
         <div className="flex items-center flex-1">
-          <span className="text-sm font-medium text-gray-900 dark:text-white">{totpCode.Name.length > 0 ? totpCode.Name : t('sharedResources.TotpDefaultName')}</span>
+          <span className="text-sm font-medium text-gray-900 dark:text-white">{totpCode.Name.length > 0 ? totpCode.Name : t('totp.defaultName')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end">
@@ -44,7 +44,7 @@ const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = (
             </div>
             <div className="text-xs">
               {copied
-                ? <span className="text-green-600 dark:text-green-400">{t('components.main.components.totpCodes.totpViewer.CopiedMessage')}</span>
+                ? <span className="text-green-600 dark:text-green-400">{t('common.copiedShort')}</span>
                 : <span className="text-gray-500 dark:text-gray-400">{remaining}s</span>}
             </div>
           </div>
@@ -73,13 +73,13 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes, item }) => {
     <Card variant="section">
       <div className="flex justify-between">
         <div>
-          <SectionTitle>{t('components.main.components.totpCodes.totpViewer.TwoFactorAuthenticationTitle')}</SectionTitle>
+          <SectionTitle>{t('common.twoFactorAuthentication')}</SectionTitle>
         </div>
       </div>
 
       {totpCodes.length === 0 ? (
         <div className="flex flex-col justify-center">
-          <p className="text-gray-500 dark:text-gray-400">{t('components.main.components.totpCodes.totpViewer.NoTotpCodesMessage')}</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('totp.viewer.noTotpCodesMessage')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 mt-4">

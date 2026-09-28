@@ -22,8 +22,8 @@ import { verifyMasterPassword } from '@/utils/MasterPasswordCheck';
  */
 const ResetVault: React.FC = () => {
   const { t } = useTranslation();
-  const tk = 'components.main.pages.settings.importExport.resetVault';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.resetVault.pageTitle'));
   const navigate = useNavigate();
   const dbContext = useDb();
   const { username: accountUsername } = useAuth();
@@ -43,12 +43,12 @@ const ResetVault: React.FC = () => {
     notifications.clearMessages();
 
     if (username.length === 0) {
-      notifications.addErrorMessage(t(`${tk}.ResetVaultUsernameRequired`), true);
+      notifications.addErrorMessage(t('apiErrors.USERNAME_REQUIRED'), true);
       return;
     }
 
     if (username.trim().toLowerCase() !== (accountUsername ?? '').trim().toLowerCase()) {
-      notifications.addErrorMessage(t(`${tk}.ResetVaultUsernameDoesNotMatch`), true);
+      notifications.addErrorMessage(t('settings.resetVault.resetVaultUsernameDoesNotMatch'), true);
       return;
     }
 
@@ -61,16 +61,16 @@ const ResetVault: React.FC = () => {
   const resetVaultConfirmed = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (password.length === 0) {
-      notifications.addErrorMessage(t('validationMessages.PasswordRequired'), true);
+      notifications.addErrorMessage(t('validation.passwordRequired'), true);
       return;
     }
 
-    showLoading(t(`${tk}.ResetVaultProgressMessage`));
+    showLoading(t('settings.resetVault.resetVaultProgressMessage'));
     notifications.clearMessages();
 
     try {
       if (!await verifyMasterPassword(password)) {
-        notifications.addErrorMessage(t(`${tk}.ResetVaultPasswordIncorrect`), true);
+        notifications.addErrorMessage(t('settings.resetVault.resetVaultPasswordIncorrect'), true);
         return;
       }
 
@@ -85,11 +85,11 @@ const ResetVault: React.FC = () => {
         sqliteClient.settings.updateSetting('TutorialDone', 'True');
       });
 
-      notifications.addSuccessMessage(t(`${tk}.ResetVaultSuccessMessage`));
+      notifications.addSuccessMessage(t('settings.resetVault.resetVaultSuccessMessage'));
       navigate('/items');
     } catch (error) {
       console.error('[ResetVault] Error resetting vault:', error);
-      notifications.addErrorMessage(t(`${tk}.ResetVaultErrorMessage`), true);
+      notifications.addErrorMessage(t('settings.resetVault.resetVaultErrorMessage'), true);
     } finally {
       hideLoading();
     }
@@ -106,8 +106,8 @@ const ResetVault: React.FC = () => {
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
         <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, { displayName: t(`${tk}.BreadcrumbImportExport`), url: '/settings/import-export' }, { displayName: t(`${tk}.BreadcrumbResetVault`) }]} />
-          <H1>{t(`${tk}.PageTitle`)}</H1>
+          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.importExport'), url: '/settings/import-export' }, { displayName: t('settings.resetVault.pageTitle') }]} />
+          <H1>{t('settings.resetVault.pageTitle')}</H1>
         </div>
       </div>
 
@@ -115,45 +115,45 @@ const ResetVault: React.FC = () => {
         {!showPasswordConfirm ? (
           <>
             <div className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-              <p className="mb-2">{t(`${tk}.ResetVaultPleaseNote`)}</p>
+              <p className="mb-2">{t('settings.resetVault.resetVaultPleaseNote')}</p>
               <ul className="list-disc list-inside space-y-2">
-                <li>{t(`${tk}.ResetVaultItemsDeletedNote`)}</li>
-                <li>{t(`${tk}.ResetVaultEmailAliasesKeptNote`)}</li>
-                <li>{t(`${tk}.ResetVaultSettingsKeptNote`)}</li>
-                <li>{t(`${tk}.ResetVaultIrreversibleNote`)}</li>
+                <li>{t('settings.resetVault.resetVaultItemsDeletedNote')}</li>
+                <li>{t('settings.resetVault.resetVaultEmailAliasesKeptNote')}</li>
+                <li>{t('settings.resetVault.resetVaultSettingsKeptNote')}</li>
+                <li>{t('settings.resetVault.resetVaultIrreversibleNote')}</li>
               </ul>
             </div>
 
             <form onSubmit={confirmUsername}>
               <div className="mb-4">
-                <FormLabel htmlFor="username">{t(`${tk}.ResetVaultConfirmUsernameLabel`)}</FormLabel>
+                <FormLabel htmlFor="username">{t('settings.resetVault.resetVaultConfirmUsernameLabel')}</FormLabel>
                 <InputTextField id="username" type="text" value={username} onValueChange={setUsername} />
               </div>
               <div className="flex space-x-3">
-                <Button type="submit" color="danger">{t(`${tk}.ResetVaultContinueButton`)}</Button>
-                <Button type="button" color="secondary" onClick={cancel}>{t('sharedResources.Cancel')}</Button>
+                <Button type="submit" color="danger">{t('settings.resetVault.resetVaultContinueButton')}</Button>
+                <Button type="button" color="secondary" onClick={cancel}>{t('common.cancel')}</Button>
               </div>
             </form>
           </>
         ) : (
           <>
-            <MessageWarning message={t(`${tk}.ResetVaultFinalWarning`)} />
+            <MessageWarning message={t('settings.resetVault.resetVaultFinalWarning')} />
 
             <div className="mt-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
-              <p className="mb-2">{t(`${tk}.ResetVaultPleaseNote`)}</p>
+              <p className="mb-2">{t('settings.resetVault.resetVaultPleaseNote')}</p>
               <ul className="list-disc list-inside space-y-2">
-                <li>{t(`${tk}.ResetVaultDeletionIrreversibleNote`)}</li>
+                <li>{t('settings.resetVault.resetVaultDeletionIrreversibleNote')}</li>
               </ul>
             </div>
 
             <form onSubmit={e => void resetVaultConfirmed(e)}>
               <div className="mb-4">
-                <FormLabel htmlFor="password">{t(`${tk}.ResetVaultEnterPasswordLabel`)}</FormLabel>
+                <FormLabel htmlFor="password">{t('settings.resetVault.resetVaultEnterPasswordLabel')}</FormLabel>
                 <InputTextField id="password" type="password" value={password} onValueChange={setPassword} autoComplete="off" />
               </div>
               <div className="flex space-x-3">
-                <Button type="submit" color="danger">{t(`${tk}.ResetVaultConfirmButton`)}</Button>
-                <Button type="button" color="secondary" onClick={cancel}>{t('sharedResources.Cancel')}</Button>
+                <Button type="submit" color="danger">{t('settings.resetVault.resetVaultConfirmButton')}</Button>
+                <Button type="button" color="secondary" onClick={cancel}>{t('common.cancel')}</Button>
               </div>
             </form>
           </>

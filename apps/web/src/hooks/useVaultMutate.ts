@@ -91,7 +91,7 @@ export function useVaultMutate(): {
     } catch (error) {
       console.error('[VaultMutate] Sync after mutation failed:', error);
       if (notifyFailure) {
-        notifications.addErrorMessage(t('sharedResources.VaultSaveError'), true);
+        notifications.addErrorMessage(t('common.vaultSaveError'), true);
       }
       return false;
     }
@@ -108,7 +108,7 @@ export function useVaultMutate(): {
       await auth.logout({ errorMessage: syncErrorMessage(result, t) });
     } else if (notifyFailure && (result.wasOffline || !hasSyncError(result))) {
       // A sync error with details already shows in the sync error dialog (see VaultStore.fullVaultSync).
-      notifications.addErrorMessage(t(result.wasOffline ? 'common.errors.serverNotAvailable' : 'sharedResources.VaultSaveError'), true);
+      notifications.addErrorMessage(t(result.wasOffline ? 'common.errors.serverNotAvailable' : 'common.vaultSaveError'), true);
     }
     return false;
   }, [auth, dbContext, notifications, t]);

@@ -55,7 +55,7 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
                   <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
                   <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
                 </svg>
-                {copied ? t('components.main.components.totpCodes.totpViewer.CopiedMessage') : t('common.errors.copyErrorDetails')}
+                {copied ? t('common.copiedShort') : t('app.vaultError.copyErrorDetails')}
               </button>
             </div>
           </div>
@@ -65,7 +65,7 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
 
         {onBack && (
           <button type="button" id="critical-error-back" onClick={onBack} className="mt-6 w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-            {t('sharedResources.Back')}
+            {t('common.back')}
           </button>
         )}
       </div>

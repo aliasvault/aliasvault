@@ -11,13 +11,12 @@ import Card from '@/components/shared/Card';
 const ResetVaultSection: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const tk = 'components.main.settings.importExport.resetVaultSection';
 
   return (
     <Card>
-      <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.Title`)}</h3>
-      <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.Description`)}</div>
-      <Button color="danger" onClick={() => navigate('/settings/import-export/reset-vault')}>{t(`${tk}.ResetVaultButton`)}</Button>
+      <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t('settings.resetVault.pageTitle')}</h3>
+      <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.resetVault.section.description')}</div>
+      <Button color="danger" onClick={() => navigate('/settings/import-export/reset-vault')}>{t('settings.resetVault.pageTitle')}</Button>
     </Card>
   );
 };

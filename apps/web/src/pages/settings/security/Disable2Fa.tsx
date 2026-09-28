@@ -19,8 +19,8 @@ const Disable2Fa: React.FC = () => {
   const navigate = useNavigate();
   const webApi = useWebApi();
   const notifications = useNotifications();
-  const tk = 'components.main.pages.settings.security.disable2Fa';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.securitySettings.disable2fa.pageTitle'));
   const [isLoading, setIsLoading] = useState(true);
   const hasStarted = useRef(false);
 
@@ -37,7 +37,7 @@ const Disable2Fa: React.FC = () => {
       try {
         const status = await webApi.get<{ twoFactorEnabled: boolean }>('TwoFactorAuth/status');
         if (!status.twoFactorEnabled) {
-          notifications.addErrorMessage(t(`${tk}.TwoFactorNotEnabled`));
+          notifications.addErrorMessage(t('settings.securitySettings.disable2fa.twoFactorNotEnabled'));
           navigate('/settings/security');
           return;
         }
@@ -55,11 +55,11 @@ const Disable2Fa: React.FC = () => {
   const disableTwoFactor = async (): Promise<void> => {
     try {
       await webApi.post<null, unknown>('TwoFactorAuth/disable', null, false);
-      notifications.addSuccessMessage(t(`${tk}.TwoFactorDisabledSuccess`));
+      notifications.addSuccessMessage(t('settings.securitySettings.disable2fa.twoFactorDisabledSuccess'));
       navigate('/settings/security');
     } catch (error) {
       console.error('Failed to disable 2FA:', error);
-      notifications.addErrorMessage(t(`${tk}.FailedToDisable2Fa`), true);
+      notifications.addErrorMessage(t('settings.securitySettings.disable2fa.failedToDisable2Fa'), true);
     }
   };
 
@@ -71,17 +71,17 @@ const Disable2Fa: React.FC = () => {
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
         <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, { displayName: t(`${tk}.BreadcrumbSecuritySettings`), url: '/settings/security' }, { displayName: t(`${tk}.BreadcrumbDisable2Fa`) }]} />
-          <H1>{t(`${tk}.PageTitle`)}</H1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.PageDescription`)}</p>
+          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.disable2fa.pageTitle') }]} />
+          <H1>{t('settings.securitySettings.disable2fa.pageTitle')}</H1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.disable2fa.pageDescription')}</p>
         </div>
       </div>
 
       <Card>
-        <AlertMessageError hasTopMargin={false} message={t(`${tk}.WarningMessage`)} />
-        <div className="mb-3 mt-4 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.StatusMessage`)}</div>
+        <AlertMessageError hasTopMargin={false} message={t('settings.securitySettings.disable2fa.warningMessage')} />
+        <div className="mb-3 mt-4 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.disable2fa.statusMessage')}</div>
         <button type="button" onClick={() => void disableTwoFactor()} className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">
-          {t(`${tk}.ConfirmDisableButton`)}
+          {t('settings.securitySettings.disable2fa.confirmDisableButton')}
         </button>
       </Card>
     </>

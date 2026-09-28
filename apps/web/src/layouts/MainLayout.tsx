@@ -95,7 +95,7 @@ const MainLayout: React.FC = () => {
       </div>
       <Footer />
       {syncError && (
-        <ConfirmModal title={t('sharedResources.Error')} message={syncError} confirmText={t('sharedResources.Close')} onClose={() => void clearSyncError()} />
+        <ConfirmModal title={t('common.error')} message={syncError} confirmText={t('common.close')} onClose={() => void clearSyncError()} />
       )}
     </>
   );

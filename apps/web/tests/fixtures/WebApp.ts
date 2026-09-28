@@ -89,7 +89,7 @@ export class WebApp {
     await this.page.locator('#quickIdentitySubmit').click();
     await expect(this.page.locator('#service-name')).toHaveValue(name);
     await this.saveItemButton().click();
-    await expect(this.page.getByText('Item created successfully.')).toBeVisible();
+    await expect(this.page.getByText('Item created successfully')).toBeVisible();
     await this.expectItemView(name);
   }
 

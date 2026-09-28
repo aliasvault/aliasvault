@@ -30,7 +30,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
   const [itemCounts, setItemCounts] = useState<Record<string, number>>({});
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set());
   const [showFolderModal, setShowFolderModal] = useState(false);
-  const tk = 'components.main.items.folderSelector';
+  
   const personalManifestId = dbContext.sqliteClient?.getPersonalManifestId() ?? null;
 
   useEffect(() => {
@@ -155,7 +155,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
         )}
-        <span className="truncate">{selectedFolder ? selectedFolderRow?.Name : t(`${tk}.NoFolder`)}</span>
+        <span className="truncate">{selectedFolder ? selectedFolderRow?.Name : t('items.folderSelector.noFolder')}</span>
         <svg className="w-3.5 h-3.5 ml-auto flex-shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
@@ -163,7 +163,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
       <FormModal
         isOpen={showFolderModal}
-        title={t(`${tk}.SelectFolderTitle`)}
+        title={t('items.folders.selectFolder')}
         showDefaultFooter={false}
         maxWidth="sm"
         onClose={() => setShowFolderModal(false)}
@@ -215,7 +215,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
             );
           })}
 
-          {flatTree.length === 0 && <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic">{t(`${tk}.NoFoldersAvailable`)}</p>}
+          {flatTree.length === 0 && <p className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic">{t('items.folderSelector.noFoldersAvailable')}</p>}
         </div>
       </FormModal>
     </>

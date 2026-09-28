@@ -18,8 +18,8 @@ type SetupStep = typeof STEPS[number];
 const Setup: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const tk = 'pages.auth.setup.setup';
-  usePageTitle(t(`${tk}.SetupStepTitle`));
+  
+  usePageTitle(t('auth.setup.setupStepTitle'));
 
   const [step, setStep] = useState<SetupStep>('terms');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -41,10 +41,10 @@ const Setup: React.FC = () => {
    */
   const stepTitle = (): string => {
     switch (step) {
-      case 'terms': return t(`${tk}.TermsAndConditionsStepTitle`);
-      case 'username': return t(`${tk}.UsernameStepTitle`);
-      case 'password': return t(`${tk}.PasswordStepTitle`);
-      default: return t(`${tk}.CreatingStepTitle`);
+      case 'terms': return t('auth.setup.termsAndConditionsStepTitle');
+      case 'username': return t('auth.setup.usernameStepTitle');
+      case 'password': return t('auth.setup.passwordStepTitle');
+      default: return t('auth.setup.creatingStepTitle');
     }
   };
 
@@ -115,11 +115,11 @@ const Setup: React.FC = () => {
           <div className="fixed lg:relative bottom-0 left-0 right-0 p-4 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 lg:bg-transparent lg:dark:bg-transparent lg:border-0">
             {step === 'password' && password.trim().length > 0 ? (
               <button type="button" onClick={goNext} className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out">
-                {t(`${tk}.CreateAccountButton`)}
+                {t('auth.setup.createAccountButton')}
               </button>
             ) : step !== 'creating' && (
               <button type="button" onClick={goNext} disabled={!isNextEnabled} className={`w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out ${isNextEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
-                <ButtonLabel arrow="forward">{t(`${tk}.ContinueButton`)}</ButtonLabel>
+                <ButtonLabel arrow="forward">{t('common.continue')}</ButtonLabel>
               </button>
             )}
           </div>

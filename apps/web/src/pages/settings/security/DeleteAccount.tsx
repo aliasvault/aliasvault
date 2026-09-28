@@ -30,8 +30,8 @@ const DeleteAccount: React.FC = () => {
   const webApi = useWebApi();
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
-  const tk = 'components.main.pages.settings.security.deleteAccount';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.securitySettings.deleteAccount.deleteAccount'));
 
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [username, setUsername] = useState('');
@@ -45,11 +45,11 @@ const DeleteAccount: React.FC = () => {
     e.preventDefault();
     notifications.clearMessages();
     if (username.length === 0) {
-      notifications.addErrorMessage(t(`${tk}.UsernameRequired`), true);
+      notifications.addErrorMessage(t('apiErrors.USERNAME_REQUIRED'), true);
       return;
     }
     if (username.trim().toLowerCase() !== currentUsername.trim().toLowerCase()) {
-      notifications.addErrorMessage(t(`${tk}.UsernameDoesNotMatch`), true);
+      notifications.addErrorMessage(t('settings.securitySettings.deleteAccount.usernameMismatchDescription'), true);
       return;
     }
     setShowPasswordConfirm(true);
@@ -61,10 +61,10 @@ const DeleteAccount: React.FC = () => {
   const deleteAccountConfirmed = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (password.length === 0) {
-      notifications.addErrorMessage(t('validationMessages.PasswordRequired'), true);
+      notifications.addErrorMessage(t('validation.passwordRequired'), true);
       return;
     }
-    showLoading(t(`${tk}.DeletingAccountMessage`));
+    showLoading(t('settings.securitySettings.deleteAccount.deletingAccount'));
     notifications.clearMessages();
     try {
       const initiate = await webApi.post<DeleteAccountInitiateRequest, DeleteAccountInitiateResponse>('Auth/delete-account/initiate', { username: currentUsername });
@@ -74,7 +74,7 @@ const DeleteAccount: React.FC = () => {
       navigate('/user/logout');
     } catch (error) {
       console.error('Account deletion failed:', error);
-      notifications.addErrorMessage(apiErrorMessage(error, t, t(`${tk}.ErrorProcessingRequest`)), true);
+      notifications.addErrorMessage(apiErrorMessage(error, t, t('settings.securitySettings.deleteAccount.errorProcessingRequest')), true);
     } finally {
       hideLoading();
     }
@@ -84,51 +84,51 @@ const DeleteAccount: React.FC = () => {
     <>
       <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
         <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, { displayName: t(`${tk}.BreadcrumbSecuritySettings`), url: '/settings/security' }, { displayName: t(`${tk}.BreadcrumbDeleteAccount`) }]} />
-          <H1>{t(`${tk}.PageTitle`)}</H1>
+          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.deleteAccount.deleteAccount') }]} />
+          <H1>{t('settings.securitySettings.deleteAccount.deleteAccount')}</H1>
         </div>
       </div>
 
       <Card>
         {!showPasswordConfirm ? (
           <>
-            <MessageWarning message={t(`${tk}.PermanentActionWarning`)} />
+            <MessageWarning message={t('settings.securitySettings.deleteAccount.permanentActionWarning')} />
             <div className="mt-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
-              <p className="mb-2">{t(`${tk}.PleaseNote`)}</p>
+              <p className="mb-2">{t('settings.resetVault.resetVaultPleaseNote')}</p>
               <ul className="list-disc list-inside space-y-2">
-                <li>{t(`${tk}.VaultsDeletedNote`)}</li>
-                <li>{t(`${tk}.EmailAliasesOrphanedNote`)}</li>
-                <li>{t(`${tk}.AccountCannotBeRecoveredNote`)}</li>
+                <li>{t('settings.securitySettings.deleteAccount.warningVaults')}</li>
+                <li>{t('settings.securitySettings.deleteAccount.warningAliases')}</li>
+                <li>{t('settings.securitySettings.deleteAccount.warningRecovery')}</li>
               </ul>
             </div>
             <form onSubmit={confirmUsername}>
               <div className="mb-4">
-                <FormLabel htmlFor="username">{t(`${tk}.ConfirmUsernameLabel`)}</FormLabel>
+                <FormLabel htmlFor="username">{t('settings.securitySettings.deleteAccount.confirmUsernameLabel')}</FormLabel>
                 <InputTextField id="username" type="text" value={username} onValueChange={setUsername} />
               </div>
               <div className="flex space-x-3">
-                <Button type="submit" color="danger">{t(`${tk}.ContinueWithAccountDeletion`)}</Button>
-                <Button type="button" color="secondary" onClick={() => navigate('/settings/security')}>{t('sharedResources.Cancel')}</Button>
+                <Button type="submit" color="danger">{t('settings.securitySettings.deleteAccount.continueWithAccountDeletion')}</Button>
+                <Button type="button" color="secondary" onClick={() => navigate('/settings/security')}>{t('common.cancel')}</Button>
               </div>
             </form>
           </>
         ) : (
           <>
-            <MessageWarning message={t(`${tk}.FinalWarning`)} />
+            <MessageWarning message={t('settings.securitySettings.deleteAccount.finalWarning')} />
             <div className="mt-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
-              <p className="mb-2">{t(`${tk}.PleaseNote`)}</p>
+              <p className="mb-2">{t('settings.resetVault.resetVaultPleaseNote')}</p>
               <ul className="list-disc list-inside space-y-2">
-                <li>{t(`${tk}.DeletionIrreversibleNote`)}</li>
+                <li>{t('settings.securitySettings.deleteAccount.deletionIrreversibleNote')}</li>
               </ul>
             </div>
             <form onSubmit={deleteAccountConfirmed}>
               <div className="mb-4">
-                <FormLabel htmlFor="password">{t(`${tk}.EnterPasswordLabel`)}</FormLabel>
+                <FormLabel htmlFor="password">{t('auth.passwordPlaceholder')}</FormLabel>
                 <InputTextField id="password" type="password" value={password} onValueChange={setPassword} />
               </div>
               <div className="flex space-x-3">
-                <Button type="submit" color="danger">{t(`${tk}.DeleteMyAccount`)}</Button>
-                <Button type="button" color="secondary" onClick={() => navigate('/settings/security')}>{t('sharedResources.Cancel')}</Button>
+                <Button type="submit" color="danger">{t('settings.securitySettings.deleteAccount.deleteMyAccount')}</Button>
+                <Button type="button" color="secondary" onClick={() => navigate('/settings/security')}>{t('common.cancel')}</Button>
               </div>
             </form>
           </>

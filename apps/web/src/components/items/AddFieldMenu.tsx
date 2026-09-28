@@ -1,4 +1,4 @@
-import { FieldCategories, FieldKey, type SystemFieldDefinition } from '@aliasvault/models/vault';
+import { FieldCategories, type SystemFieldDefinition } from '@aliasvault/models/vault';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,24 +18,6 @@ type AddFieldMenuProps = {
 };
 
 /** Translation keys of the optional system field names. */
-const FIELD_LABEL_KEYS: Record<string, string> = {
-  [FieldKey.LoginUsername]: 'FieldLoginUsername',
-  [FieldKey.LoginPassword]: 'FieldLoginPassword',
-  [FieldKey.LoginEmail]: 'FieldLoginEmail',
-  [FieldKey.LoginUrl]: 'FieldLoginUrl',
-  [FieldKey.AliasFirstName]: 'FieldAliasFirstName',
-  [FieldKey.AliasLastName]: 'FieldAliasLastName',
-  [FieldKey.AliasGender]: 'FieldAliasGender',
-  [FieldKey.AliasBirthdate]: 'FieldAliasBirthdate',
-  [FieldKey.CardNumber]: 'FieldCardNumber',
-  [FieldKey.CardCardholderName]: 'FieldCardCardholderName',
-  [FieldKey.CardExpiryMonth]: 'FieldCardExpiryMonth',
-  [FieldKey.CardExpiryYear]: 'FieldCardExpiryYear',
-  [FieldKey.CardCvv]: 'FieldCardCvv',
-  [FieldKey.CardPin]: 'FieldCardPin',
-  [FieldKey.NotesContent]: 'FieldNotesContent',
-};
-
 /**
  * The icon of a field category.
  */
@@ -60,7 +42,6 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
   const [isOpen, setIsOpen] = useState(false);
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
   const [customFieldLabel, setCustomFieldLabel] = useState('');
-  const tk = 'components.main.items.addFieldMenu';
 
   return (
     <div className="relative">
@@ -80,7 +61,7 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
                 setIsOpen(false);
               }} className={MENU_ITEM_CLASSES}>
                 <span className="text-gray-500 dark:text-gray-400"><FieldIcon category={field.Category} /></span>
-                <span>{FIELD_LABEL_KEYS[field.FieldKey] ? t(`${tk}.${FIELD_LABEL_KEYS[field.FieldKey]}`) : field.FieldKey}</span>
+                <span>{t(`fieldLabels.${field.FieldKey}`, { defaultValue: field.FieldKey })}</span>
               </button>
             ))}
 
@@ -94,7 +75,7 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </span>
-                <span>{t(`${tk}.TwoFactorAuthentication`)}</span>
+                <span>{t('common.twoFactorAuthentication')}</span>
               </button>
             )}
 
@@ -108,12 +89,12 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                   </svg>
                 </span>
-                <span>{t(`${tk}.Attachments`)}</span>
+                <span>{t('common.attachments')}</span>
               </button>
             )}
 
             <button type="button" onClick={() => {
-              setCustomFieldLabel(t(`${tk}.DefaultFieldLabel`, { 0: customFieldCount + 1 }));
+              setCustomFieldLabel(t('items.addFieldMenu.defaultFieldLabel', { number: customFieldCount + 1 }));
               setShowCustomFieldModal(true);
               setIsOpen(false);
             }} className={MENU_ITEM_CLASSES}>
@@ -122,7 +103,7 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </span>
-              <span>{t(`${tk}.AddCustomField`)}</span>
+              <span>{t('itemTypes.addCustomField')}</span>
             </button>
           </div>
         </>

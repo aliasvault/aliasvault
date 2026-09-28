@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 import { getAppConfig } from '@/config/AppConfig';
 
-const TIP_KEYS = ['layout.footer.TipCreateShortcut', 'layout.footer.TipFindShortcut', 'layout.footer.TipHomeShortcut', 'layout.footer.TipLockShortcut'];
+const TIP_KEYS = ['web.footer.tipCreateShortcut', 'web.footer.tipFindShortcut', 'web.footer.tipHomeShortcut', 'web.footer.tipLockShortcut'];
 
 /**
  * Page footer.
@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col lg:flex-row justify-between items-center">
           <p className="text-sm text-center text-gray-500 mb-4 lg:mb-0">
-            © {new Date().getFullYear()} <span>AliasVault v{__APP_VERSION__}</span>{deploymentMode && <> <span className="ml-1">({deploymentMode})</span></>}. {t('layout.footer.CopyrightText')}
+            © {new Date().getFullYear()} <span>AliasVault v{__APP_VERSION__}</span>{deploymentMode && <> <span className="ml-1">({deploymentMode})</span></>}. {t('web.footer.copyrightText')}
           </p>
           <div className="hidden lg:block text-center text-gray-400 text-sm">{t(tipKey)}</div>
         </div>

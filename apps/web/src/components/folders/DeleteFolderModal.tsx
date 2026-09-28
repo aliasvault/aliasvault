@@ -35,7 +35,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({ isOpen, folderNam
   return (
     <FormModal
       isOpen={isOpen}
-      title={t('components.folders.deleteFolderModal.DeleteFolderTitle')}
+      title={t('items.folders.deleteFolder')}
       iconBackgroundClass="bg-red-100 dark:bg-red-900/30"
       showDefaultFooter={false}
       onClose={onClose}
@@ -57,8 +57,8 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({ isOpen, folderNam
               </svg>
             </div>
             <div className="flex-1 text-left">
-              <div className="font-medium text-orange-700 dark:text-orange-300">{t('components.folders.deleteFolderModal.DeleteFolderOnlyTitle')}</div>
-              <div className="text-sm text-orange-600/80 dark:text-orange-400/80">{t('components.folders.deleteFolderModal.DeleteFolderOnlyDescription')}</div>
+              <div className="font-medium text-orange-700 dark:text-orange-300">{t('items.folders.deleteFolderKeepItems')}</div>
+              <div className="text-sm text-orange-600/80 dark:text-orange-400/80">{t('items.folders.deleteFolderKeepItemsDescription')}</div>
             </div>
           </button>
 
@@ -75,8 +75,8 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({ isOpen, folderNam
                 </svg>
               </div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-red-700 dark:text-red-300">{t('components.folders.deleteFolderModal.DeleteFolderAndContentsTitle')}</div>
-                <div className="text-sm text-red-600/80 dark:text-red-400/80">{t('components.folders.deleteFolderModal.DeleteFolderAndContentsDescription', { 0: itemCount })}</div>
+                <div className="font-medium text-red-700 dark:text-red-300">{t('items.folders.deleteModal.deleteFolderAndContentsTitle')}</div>
+                <div className="text-sm text-red-600/80 dark:text-red-400/80">{t('items.folders.deleteModal.deleteFolderAndContentsDescription', { count: itemCount })}</div>
               </div>
             </button>
           )}
@@ -85,12 +85,12 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({ isOpen, folderNam
             type="button"
             onClick={onClose}
             className="w-full mt-2 inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
-            {t('components.folders.deleteFolderModal.CancelButton')}
+            {t('common.cancel')}
           </button>
         </div>
       )}>
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {t('components.folders.deleteFolderModal.DeleteFolderDescription', { 0: folderName })}
+        {t('items.folders.deleteModal.deleteFolderDescription', { name: folderName })}
       </p>
     </FormModal>
   );

@@ -34,7 +34,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
   const handleSave = async (): Promise<void> => {
     const trimmedName = folderName.trim();
     if (trimmedName.length === 0) {
-      setErrorMessage(t('components.folders.folderModal.FolderNameRequired'));
+      setErrorMessage(t('items.folders.folderNameRequired'));
       return;
     }
 
@@ -53,9 +53,9 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
   return (
     <FormModal
       isOpen={isOpen}
-      title={mode === 'create' ? t('components.folders.folderModal.CreateFolderTitle') : t('components.folders.folderModal.EditFolderTitle')}
-      confirmText={mode === 'create' ? t('components.folders.folderModal.CreateButton') : t('components.folders.folderModal.SaveButton')}
-      cancelText={t('components.folders.folderModal.CancelButton')}
+      title={mode === 'create' ? t('items.folders.createFolder') : t('items.folders.editFolder')}
+      confirmText={mode === 'create' ? t('common.create') : t('common.save')}
+      cancelText={t('common.cancel')}
       isLoading={isSaving}
       confirmDisabled={folderName.trim().length === 0}
       onClose={onClose}
@@ -66,14 +66,14 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
         </svg>
       )}>
       <label htmlFor="folder-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {t('components.folders.folderModal.FolderNameLabel')}
+        {t('items.folders.folderName')}
       </label>
       <input
         type="text"
         id="folder-name"
         value={folderName}
         onChange={(e) => setFolderName(e.target.value)}
-        placeholder={t('components.folders.folderModal.FolderNamePlaceholder')}
+        placeholder={t('items.folders.modal.folderNamePlaceholder')}
         autoFocus
         className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500 dark:focus:ring-orange-500" />
       {errorMessage && (

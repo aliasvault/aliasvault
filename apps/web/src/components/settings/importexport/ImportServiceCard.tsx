@@ -142,7 +142,7 @@ const buildErrorPayload = (serviceName: string, filename: string, fileSize: numb
  */
 const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, description = '', logoUrl = '', acceptedFileExtensions, processFile, children }) => {
   const { t } = useTranslation();
-  const tk = 'components.main.settings.importExport.importServiceCard';
+  
   const navigate = useNavigate();
   const dbContext = useDb();
   const webApi = useWebApi();
@@ -193,7 +193,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
    */
   const setImportErrorFromException = (error: unknown, filename: string, fileSize: number, defaultStage: ImportStage, fallbackMessage?: string): void => {
     const stage = error instanceof ImportException ? error.stage : defaultStage;
-    setImportError(fallbackMessage ?? t(`${tk}.ImportErrorGeneric`));
+    setImportError(fallbackMessage ?? t('importExport.serviceCard.importErrorGeneric'));
     setErrorPayload(buildErrorPayload(serviceName, filename, fileSize, stage, error));
   };
 
@@ -270,14 +270,14 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = event.target.files?.[0];
     if (!file || file.name.length === 0) {
-      setImportError(t(`${tk}.ImportErrorInvalidFile`));
+      setImportError(t('importExport.serviceCard.importErrorInvalidFile'));
       return;
     }
 
     const extensionIndex = file.name.lastIndexOf('.');
     const fileExtension = extensionIndex >= 0 ? file.name.substring(extensionIndex).toLowerCase() : '';
     if (!acceptedFileExtensions.some(ext => ext.toLowerCase() === fileExtension)) {
-      setImportError(t(`${tk}.ImportErrorUnsupportedFormat`, { 0: acceptedFileExtensions.join(', ') }));
+      setImportError(t('importExport.serviceCard.importErrorUnsupportedFormat', { formats: acceptedFileExtensions.join(', ') }));
       return;
     }
 
@@ -290,7 +290,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       setErrorPayload(null);
 
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        setImportError(t(`${tk}.ImportErrorFileTooLarge`, { 0: MAX_FILE_SIZE_MB }));
+        setImportError(t('importExport.serviceCard.importErrorFileTooLarge', { size: MAX_FILE_SIZE_MB }));
         return;
       }
 
@@ -347,11 +347,11 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       setCurrentStep(ImportStep.Preview);
     } catch (error) {
       if (error instanceof AvexDecryptionError) {
-        setImportError(t(`${tk}.IncorrectPasswordError`));
+        setImportError(t('common.errors.wrongPassword'));
         setErrorPayload(null);
       } else {
         console.error('[Import] Error decrypting .avex file:', error);
-        setImportErrorFromException(error, pendingAvexFilename.current ?? 'decrypted.avux', avexBytes.length, ImportStage.Parse, t(`${tk}.DecryptionErrorGeneric`));
+        setImportErrorFromException(error, pendingAvexFilename.current ?? 'decrypted.avux', avexBytes.length, ImportStage.Parse, t('importExport.serviceCard.decryptionErrorGeneric'));
       }
     } finally {
       setIsImporting(false);
@@ -468,7 +468,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       return;
     }
 
-    notifications.addSuccessMessage(t(`${tk}.ImportSuccessMessage`, { 0: importedCredentials.length }));
+    notifications.addSuccessMessage(t('importExport.serviceCard.importSuccessMessage', { count: importedCredentials.length }));
     navigate('/items');
   };
 
@@ -539,10 +539,10 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       <p>{importError}</p>
       {errorPayload && (
         <>
-          <p className="mt-3 mb-2 text-sm">{t(`${tk}.ImportErrorDetailsIntro`)}</p>
+          <p className="mt-3 mb-2 text-sm">{t('importExport.serviceCard.importErrorDetailsIntro')}</p>
           <pre className="text-xs whitespace-pre-wrap break-words bg-red-50 dark:bg-red-50 p-2 rounded border border-red-200 dark:border-red-300 select-all">{errorPayload}</pre>
           <div className="mt-2">
-            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="text-xs underline font-medium hover:no-underline">{t(`${tk}.ImportErrorCopyDetailsButton`)}</button>
+            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="text-xs underline font-medium hover:no-underline">{t('importExport.serviceCard.importErrorCopyDetailsButton')}</button>
           </div>
         </>
       )}
@@ -559,14 +559,14 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       <div className={isImporting ? 'hidden' : ''}>
         {children}
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-          <strong>{t(`${tk}.supportedFormats`)}:</strong> {acceptedFileExtensions.join(', ')}
+          <strong>{t('importExport.serviceCard.supportedFormats')}:</strong> {acceptedFileExtensions.join(', ')}
         </p>
         <div className="mb-4 bg-amber-50 border border-amber-400 dark:bg-amber-800/30 dark:border-amber-500/50 rounded-lg p-4">
-          <p className="mb-4 text-gray-700 dark:text-gray-200">{t(`${tk}.UploadExportFileText`, { 0: serviceName })}</p>
+          <p className="mb-4 text-gray-700 dark:text-gray-200">{t('importExport.serviceCard.uploadExportFileText', { service: serviceName })}</p>
           <input ref={fileInputRef} type="file" accept={fileAcceptTypes} onChange={e => void handleFileUpload(e)} className="text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/40 dark:file:text-primary-300 dark:hover:file:bg-primary-800/60" />
         </div>
         <div className="flex justify-end mt-6 space-x-2">
-          <Button onClick={closeModal} color="secondary">{t(`${tk}.CancelButton`)}</Button>
+          <Button onClick={closeModal} color="secondary">{t('common.cancel')}</Button>
         </div>
       </div>
     </div>
@@ -581,21 +581,21 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       {isImporting ? (
         <div className="text-center">
           <LoadingIndicator />
-          <p className="mt-4 text-gray-700 dark:text-gray-300">{t(`${tk}.DecryptingFile`)}</p>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.decryptingFile')}</p>
         </div>
       ) : (
         <>
           <div className="mb-4">
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t(`${tk}.EncryptedFilePasswordPrompt`)}</p>
-            <label htmlFor="decryptionPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t(`${tk}.DecryptionPasswordLabel`)}</label>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.encryptedFilePasswordPrompt')}</p>
+            <label htmlFor="decryptionPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('importExport.serviceCard.decryptionPasswordLabel')}</label>
             <input id="decryptionPassword" type="password" value={decryptionPassword} onChange={e => setDecryptionPassword(e.target.value)} onKeyDown={handlePasswordKeyDown} autoFocus autoComplete="off" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
           <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-            <p className="text-xs text-orange-800 dark:text-orange-200">{t(`${tk}.DecryptionPasswordHint`)}</p>
+            <p className="text-xs text-orange-800 dark:text-orange-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
           </div>
           <div className="flex justify-end mt-6 space-x-2">
-            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
-            <Button onClick={() => void handleDecryptFile()} color="primary" isDisabled={decryptionPassword.trim().length === 0}>{t(`${tk}.DecryptAndContinueButton`)}</Button>
+            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
+            <Button onClick={() => void handleDecryptFile()} color="primary" isDisabled={decryptionPassword.trim().length === 0}>{t('importExport.serviceCard.decryptAndContinueButton')}</Button>
           </div>
         </>
       )}
@@ -611,7 +611,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z" />
         </svg>
-        <p className="font-medium text-amber-900 dark:text-amber-200">{t(`${tk}.ImportPartialFailureWarning`, { 0: parseFailures.length })}</p>
+        <p className="font-medium text-amber-900 dark:text-amber-200">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
       </div>
       <ul className="mb-3 ml-7 text-xs list-disc pl-5 space-y-0.5 text-gray-700 dark:text-gray-300">
         {parseFailures.slice(0, FAILED_ITEMS_PREVIEW_LIMIT).map(failure => (
@@ -622,20 +622,20 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         ))}
       </ul>
       {parseFailures.length > FAILED_ITEMS_PREVIEW_LIMIT && (
-        <p className="mb-3 ml-7 text-xs text-gray-700 dark:text-gray-300">{t(`${tk}.MoreCredentials`, { 0: parseFailures.length - FAILED_ITEMS_PREVIEW_LIMIT })}</p>
+        <p className="mb-3 ml-7 text-xs text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.moreCredentials', { count: parseFailures.length - FAILED_ITEMS_PREVIEW_LIMIT })}</p>
       )}
       <button type="button" onClick={() => setShowFailureDetails(!showFailureDetails)} className="ml-7 inline-flex items-center gap-1 text-xs font-medium text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 hover:underline">
         <span className={`${showFailureDetails ? 'rotate-90' : ''} transition-transform`}>▸</span>
-        {showFailureDetails ? t(`${tk}.ImportErrorHideDetailsButton`) : t(`${tk}.ImportErrorShowDetailsButton`)}
+        {showFailureDetails ? t('common.hideDetails') : t('common.showDetails')}
       </button>
       {showFailureDetails && (
         <div className="mt-2 ml-7 flex items-start gap-2">
           <textarea readOnly rows={4} value={buildFailureDetailsText()} className="flex-1 text-xs font-mono p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 leading-snug" />
-          <button type="button" onClick={() => void copyToClipboard(buildFailureDetailsText())} title={t(`${tk}.ImportErrorCopyDetailsButton`)} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
+          <button type="button" onClick={() => void copyToClipboard(buildFailureDetailsText())} title={t('importExport.serviceCard.importErrorCopyDetailsButton')} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
             </svg>
-            {t(`${tk}.ImportErrorCopyDetailsButton`)}
+            {t('importExport.serviceCard.importErrorCopyDetailsButton')}
           </button>
         </div>
       )}
@@ -650,7 +650,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       <div className="mb-4">
         {duplicateCredentialsCount > 0 && (
           <div className="p-4 mb-4 text-gray-700 bg-gray-100 rounded-lg dark:bg-gray-700/50 dark:text-gray-300" role="alert">
-            <p>{t(`${tk}.DuplicateCredentialsWarning`, { 0: duplicateCredentialsCount })}</p>
+            <p>{t('importExport.serviceCard.duplicateCredentialsWarning', { count: duplicateCredentialsCount })}</p>
           </div>
         )}
 
@@ -658,17 +658,17 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
 
         {importedCredentials.length === 0 ? (
           <div className="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-            <p>{t(`${tk}.NoNewCredentials`)}</p>
+            <p>{t('importExport.serviceCard.noNewCredentials')}</p>
           </div>
         ) : (
           <>
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t(`${tk}.PreviewInstructions`)}</p>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.previewInstructions')}</p>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t(`${tk}.ServiceColumn`)}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t(`${tk}.UsernameColumn`)}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t(`${tk}.PasswordColumn`)}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('importExport.serviceCard.serviceColumn')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.username')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.password')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -682,25 +682,25 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
               </tbody>
             </table>
             {importedCredentials.length > PREVIEW_ROW_COUNT && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.MoreCredentials`, { 0: importedCredentials.length - PREVIEW_ROW_COUNT })}</p>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('importExport.serviceCard.moreCredentials', { count: importedCredentials.length - PREVIEW_ROW_COUNT })}</p>
             )}
           </>
         )}
       </div>
       {importedCredentials.length > 0 && (
         <div className="mb-4 space-y-2">
-          <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t(`${tk}.ExtractFaviconsLabel`)} />
+          <ImportOption checked={extractFavicons} onChange={setExtractFavicons} label={t('importExport.serviceCard.extractFaviconsLabel')} />
           {detectedFolderPaths.length > 0 && (
-            <ImportOption checked={importFolders} onChange={setImportFolders} label={t(`${tk}.ImportFoldersLabel`)} detail={t(`${tk}.FoldersDetected`, { 0: detectedFolderPaths.length })} />
+            <ImportOption checked={importFolders} onChange={setImportFolders} label={t('importExport.serviceCard.importFoldersLabel')} detail={t('importExport.serviceCard.foldersDetected', { count: detectedFolderPaths.length })} />
           )}
           {detectedAttachmentCount > 0 && (
-            <ImportOption checked={importAttachments} onChange={setImportAttachments} label={t(`${tk}.ImportAttachmentsLabel`)} detail={t(`${tk}.AttachmentsDetected`, { 0: detectedAttachmentCount, 1: formatBytes(detectedAttachmentsTotalSize) })} />
+            <ImportOption checked={importAttachments} onChange={setImportAttachments} label={t('importExport.serviceCard.importAttachmentsLabel')} detail={t('importExport.serviceCard.attachmentsDetected', { count: detectedAttachmentCount, size: formatBytes(detectedAttachmentsTotalSize) })} />
           )}
         </div>
       )}
       <div className="flex justify-end mt-6 space-x-2">
-        <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
-        {importedCredentials.length > 0 && <Button onClick={handleNextStep} color="primary" arrow="forward">{t(`${tk}.NextButton`)}</Button>}
+        <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
+        {importedCredentials.length > 0 && <Button onClick={handleNextStep} color="primary" arrow="forward">{t('common.next')}</Button>}
       </div>
     </>
   );
@@ -714,20 +714,20 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         isExtractingFavicons ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t(`${tk}.ExtractingFavicons`, { 0: faviconExtractionProgress, 1: totalFaviconsToExtract })}</p>
+            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.extractingFavicons', { current: faviconExtractionProgress, total: totalFaviconsToExtract })}</p>
             <div className="mt-4">
-              <Button onClick={cancelFaviconExtraction} color="secondary">{t(`${tk}.CancelButton`)}</Button>
+              <Button onClick={cancelFaviconExtraction} color="secondary">{t('common.cancel')}</Button>
             </div>
           </div>
         ) : isSavingCredentials ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t(`${tk}.SavingCredentials`, { 0: credentialSaveProgress, 1: totalCredentialsToSave })}</p>
+            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.savingCredentials', { current: credentialSaveProgress, total: totalCredentialsToSave })}</p>
           </div>
         ) : isSyncingVault ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t(`${tk}.SyncingVault`)}</p>
+            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.syncingVault')}</p>
           </div>
         ) : (
           <LoadingIndicator />
@@ -735,16 +735,16 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       ) : (
         <>
           <div className="mb-4">
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t(`${tk}.ConfirmImportText`, { 0: importedCredentials.length })}</p>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.confirmImportText', { count: importedCredentials.length })}</p>
             {extractFavicons && (
               <div className="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-                <p>{t(`${tk}.FaviconExtractionNote`)}</p>
+                <p>{t('importExport.serviceCard.faviconExtractionNote')}</p>
               </div>
             )}
           </div>
           <div className="flex justify-end mt-6 space-x-2">
-            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
-            <Button onClick={() => void handleModalConfirm()} color="primary">{t(`${tk}.ImportButton`)}</Button>
+            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
+            <Button onClick={() => void handleModalConfirm()} color="primary">{t('importExport.serviceCard.importButton')}</Button>
           </div>
         </>
       )}
@@ -759,7 +759,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             {logoUrl.length > 0 ? (
               <img src={logoUrl} alt={`${serviceName} logo`} className="w-full h-full object-contain" />
             ) : (
-              <span className="text-gray-500 dark:text-gray-400 text-xs">{t(`${tk}.NoLogoText`)}</span>
+              <span className="text-gray-500 dark:text-gray-400 text-xs">{t('importExport.serviceCard.noLogoText')}</span>
             )}
           </div>
           <div>
@@ -775,7 +775,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             <div className="flex justify-between items-center mb-4">
               <div className="flex">
                 <img src={logoUrl} alt={`${serviceName} logo`} className="w-8 h-8 float-left mr-4" />
-                <h3 className="text-xl font-semibold dark:text-white">{t(`${tk}.ImportFromServiceTitle`, { 0: serviceName })}</h3>
+                <h3 className="text-xl font-semibold dark:text-white">{t('importExport.serviceCard.importFromServiceTitle', { service: serviceName })}</h3>
               </div>
               <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

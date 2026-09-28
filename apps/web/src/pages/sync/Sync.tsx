@@ -38,7 +38,7 @@ const Sync: React.FC = () => {
   const auth = useAuth();
   const dbContext = useDb();
   const { executeVaultMutationLocally } = useVaultMutate();
-  usePageTitle(t('pages.main.sync.sync.PageTitle'));
+  usePageTitle(t('sync.page.pageTitle'));
 
   const [status, setStatus] = useState<SyncStatus>('loading');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
@@ -173,11 +173,11 @@ const Sync: React.FC = () => {
       if (upgradeKind === 'legacy-sqlite-blob') {
         const client = dbContext.sqliteClient;
         if (!client || !currentVersion || !latestVersion) {
-          throw new Error(t('pages.main.sync.statusMessages.pendingMigrations.UpgradeFailedError'));
+          throw new Error(t('upgrade.upgradeFailedError'));
         }
         const upgrade = new VaultSqlGenerator().getUpgradeVaultSql(currentVersion.revision, latestVersion.revision);
         if (!upgrade.success) {
-          throw new Error(upgrade.error ?? t('pages.main.sync.statusMessages.pendingMigrations.UpgradeFailedError'));
+          throw new Error(upgrade.error ?? t('upgrade.upgradeFailedError'));
         }
         /*
          * The migration SQL contains PRAGMA statements that only take effect outside a transaction, so every
@@ -191,7 +191,7 @@ const Sync: React.FC = () => {
       } else {
         const result = await vaultStore.migrateVaultManifest();
         if (!result.success) {
-          throw new Error(syncErrorMessage(result, t) ?? t('pages.main.sync.statusMessages.pendingMigrations.UpgradeFailedError'));
+          throw new Error(syncErrorMessage(result, t) ?? t('upgrade.upgradeFailedError'));
         }
       }
 
@@ -201,7 +201,7 @@ const Sync: React.FC = () => {
       await openVault(upgradeKind === 'storage-format');
     } catch (error) {
       console.error('Vault upgrade failed:', error);
-      setUpgradeError(error instanceof Error ? error.message : t('pages.main.sync.statusMessages.pendingMigrations.UpgradeFailedError'));
+      setUpgradeError(error instanceof Error ? error.message : t('upgrade.upgradeFailedError'));
     } finally {
       setIsUpgrading(false);
     }
@@ -216,13 +216,13 @@ const Sync: React.FC = () => {
         return (
           <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center">
-              <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">Vault version not supported</h2>
+              <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">{t('sync.versionNotSupported.title')}</h2>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                The version of this vault is not compatible with your client. <br />
-                Please update to the latest version of AliasVault, refresh this page, and try again. <br />
+                {t('sync.versionNotSupported.notCompatible')} <br />
+                {t('sync.versionNotSupported.updateInstructions')} <br />
               </p>
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                If the issue persists, contact our support team for help.
+                {t('sync.versionNotSupported.contactSupport')}
               </p>
             </div>
           </div>
@@ -232,14 +232,14 @@ const Sync: React.FC = () => {
           <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center">
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.pendingMigrations.UpgradeVaultTitle')}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('upgrade.title')}</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('pages.main.sync.statusMessages.pendingMigrations.UpgradeDescription')}
+                  {t('upgrade.upgradeDescription')}
                 </p>
                 {upgradeKind === 'legacy-sqlite-blob' && (
                   <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
                     <div className="flex items-center justify-center mb-3">
-                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{t('pages.main.sync.statusMessages.pendingMigrations.VersionInformationTitle')}</h3>
+                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{t('upgrade.versionInformation')}</h3>
                       <button onClick={() => setShowVersionDescription(!showVersionDescription)} className="ml-2 w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
                         <span className="text-sm font-bold">?</span>
                       </button>
@@ -247,17 +247,17 @@ const Sync: React.FC = () => {
                     {showVersionDescription && (
                       <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg">
                         <p className="text-sm text-orange-800 dark:text-orange-200">
-                          {t('pages.main.sync.statusMessages.pendingMigrations.UpgradeRequiredDescription', { 0: latestVersion?.description ?? t('pages.main.sync.statusMessages.pendingMigrations.NoDescriptionAvailable') })}
+                          {t('upgrade.upgradeRequiredDescription', { changes: latestVersion?.description ?? t('upgrade.noDescriptionAvailable') })}
                         </p>
                       </div>
                     )}
                     <div className="space-y-2">
                       <p className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('pages.main.sync.statusMessages.pendingMigrations.YourVaultLabel')}</span>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('upgrade.yourVault')}</span>
                         <span className="text-base font-bold text-blue-600 dark:text-blue-400">{currentVersion?.compatibleUpToVersion ?? '...'}</span>
                       </p>
                       <p className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('pages.main.sync.statusMessages.pendingMigrations.NewVersionLabel')}</span>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('upgrade.newVersion')}</span>
                         <span className="text-base font-bold text-green-600 dark:text-green-400">{latestVersion?.releaseVersion ?? '...'}</span>
                       </p>
                     </div>
@@ -276,7 +276,7 @@ const Sync: React.FC = () => {
                     <BoldLoadingIndicator />
                   ) : (
                     <button onClick={migrateDatabase} type="button" className="px-4 mt-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">
-                      {t('pages.main.sync.statusMessages.pendingMigrations.StartUpgradeButton')}
+                      {t('upgrade.startUpgradeButton')}
                     </button>
                   )}
                 </div>
@@ -291,10 +291,10 @@ const Sync: React.FC = () => {
               <svg className="w-12 h-12 mx-auto text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.pendingMigrations.UpgradeSuccessMessage')}</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('upgrade.upgradeSuccessMessage')}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('upgrade.successOtherDevices')}</p>
               <button onClick={() => void navigateToHome()} type="button" id="upgrade-continue-button" className="px-4 mt-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">
-                {t('sharedResources.Continue')}
+                {t('common.continue')}
               </button>
             </div>
           </div>
@@ -304,8 +304,8 @@ const Sync: React.FC = () => {
           <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center">
               <BoldLoadingIndicator />
-              <h2 className="mt-6 text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.vaultDecryptionProgress.Title')}</h2>
-              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{t('pages.main.sync.statusMessages.vaultDecryptionProgress.Description')}</p>
+              <h2 className="mt-6 text-xl font-semibold text-gray-900 dark:text-white">{t('sync.decrypting.title')}</h2>
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{t('sync.decrypting.description')}</p>
             </div>
           </div>
         );
@@ -314,14 +314,14 @@ const Sync: React.FC = () => {
 
   const logoutLink = (
     <>
-      {t('pages.main.sync.sync.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.main.sync.sync.LogoutLink')}</Link>
+      {t('auth.switchAccounts')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('common.logout')}</Link>
     </>
   );
 
   if (status === 'decryption-failed') {
     return errorDetails
       ? <CriticalErrorPanel report={errorDetails} footer={logoutLink} />
-      : <CriticalErrorPanel title={t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorTitle')} description={t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorDescription')} footer={logoutLink} />;
+      : <CriticalErrorPanel title={t('sync.decryptError.errorTitle')} description={t('sync.decryptError.errorDescription')} footer={logoutLink} />;
   }
 
   return (

@@ -153,7 +153,7 @@ const ItemsHome: React.FC = () => {
       syncTableSortWithSortOrder(order);
     } catch (error) {
       console.error('Failed to load items:', error);
-      notifications.addErrorMessage(t('pages.main.items.home.FailedToLoadItemsMessage'), true);
+      notifications.addErrorMessage(t('items.home.failedToLoadItemsMessage'), true);
     } finally {
       setIsLoading(false);
     }
@@ -288,15 +288,15 @@ const ItemsHome: React.FC = () => {
    */
   const getFilterTitle = (): string => {
     switch (filterType) {
-      case ItemFilter.Passkeys: return t('pages.main.items.home.FilterPasskeysOption');
-      case ItemFilter.Attachments: return t('pages.main.items.home.FilterAttachmentsOption');
-      case ItemFilter.Totp: return t('pages.main.items.home.FilterTotpOption');
-      case ItemFilter.Login: return t('components.main.items.itemTypeSelector.TypeLogin');
-      case ItemFilter.Alias: return t('components.main.items.itemTypeSelector.TypeAlias');
-      case ItemFilter.CreditCard: return t('components.main.items.itemTypeSelector.TypeCreditCard');
-      case ItemFilter.Note: return t('components.main.items.itemTypeSelector.TypeNote');
+      case ItemFilter.Passkeys: return t('common.passkeys');
+      case ItemFilter.Attachments: return t('common.attachments');
+      case ItemFilter.Totp: return t('items.filters.totp');
+      case ItemFilter.Login: return t('itemTypes.login.title');
+      case ItemFilter.Alias: return t('itemTypes.alias.title');
+      case ItemFilter.CreditCard: return t('itemTypes.creditCard.title');
+      case ItemFilter.Note: return t('itemTypes.secureNote');
       default:
-        return isInFolder && currentFolderName ? currentFolderName : t('pages.main.items.home.PageTitle');
+        return isInFolder && currentFolderName ? currentFolderName : t('navigation.vault');
     }
   };
 
@@ -379,7 +379,7 @@ const ItemsHome: React.FC = () => {
       console.error('Failed to create folder:', error);
       // Failed push (e.g. server not reachable).
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('pages.main.items.home.FailedToCreateFolder'), true);
+        notifications.addErrorMessage(t('items.home.failedToCreateFolder'), true);
       }
     }
   };
@@ -400,7 +400,7 @@ const ItemsHome: React.FC = () => {
     } catch (error) {
       console.error('Failed to rename folder:', error);
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('sharedResources.ErrorGeneric'), true);
+        notifications.addErrorMessage(t('common.errorGeneric'), true);
       }
     }
   };
@@ -426,7 +426,7 @@ const ItemsHome: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete folder:', error);
       if (!(error instanceof VaultPushFailedError)) {
-        notifications.addErrorMessage(t('pages.main.items.home.FailedToDeleteFolder'), true);
+        notifications.addErrorMessage(t('items.home.failedToDeleteFolder'), true);
       }
     }
   };
@@ -436,7 +436,7 @@ const ItemsHome: React.FC = () => {
       <PageHeader
         breadcrumbItems={breadcrumbItems}
         title={getFilterTitle()}
-        description={t('pages.main.items.home.PageDescription')}
+        description={t('items.home.pageDescription')}
         titleActions={(
           <ItemFilterDropdown
             title={getFilterTitle()}
@@ -450,12 +450,12 @@ const ItemsHome: React.FC = () => {
             onToggleShowFolders={toggleShowFolders}
             titleActions={isInFolder && !currentFolderIsVirtual ? (
               <>
-                <button onClick={() => setShowEditFolderModal(true)} title={t('pages.main.items.home.EditFolder')} className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <button onClick={() => setShowEditFolderModal(true)} title={t('items.folders.editFolder')} className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button onClick={() => setShowDeleteFolderModal(true)} title={t('pages.main.items.home.DeleteFolder')} className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <button onClick={() => setShowDeleteFolderModal(true)} title={t('items.folders.deleteFolder')} className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <polyline points="3 6 5 6 21 6" />
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -477,29 +477,29 @@ const ItemsHome: React.FC = () => {
                 <div ref={settingsDropdownRef} id="settingsDropdown" className="absolute right-0 z-10 mt-2 min-w-[220px] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
                   <div className="p-4">
                     <div className="mb-4">
-                      <FormLabel>{t('pages.main.items.home.ViewModeLabel')}</FormLabel>
+                      <FormLabel>{t('items.home.viewModeLabel')}</FormLabel>
                       <Select value={viewMode} onChange={(e) => {
                         setViewMode(e.target.value as ViewMode); closeSettingsPopup(); 
                       }}>
-                        <option value="grid">{t('pages.main.items.home.GridViewOption')}</option>
-                        <option value="table">{t('pages.main.items.home.TableViewOption')}</option>
+                        <option value="grid">{t('items.home.gridViewOption')}</option>
+                        <option value="table">{t('items.home.tableViewOption')}</option>
                       </Select>
                     </div>
                     <div className="mb-4">
-                      <FormLabel>{t('pages.main.items.home.SortOrderLabel')}</FormLabel>
+                      <FormLabel>{t('items.home.sortOrderLabel')}</FormLabel>
                       <Select value={sortOrder} onChange={(e) => {
                         setSortOrder(e.target.value as CredentialSortOrder); closeSettingsPopup(); 
                       }}>
-                        <option value={CredentialSortOrder.OldestFirst}>{t('pages.main.items.home.OldestFirstOption')}</option>
-                        <option value={CredentialSortOrder.NewestFirst}>{t('pages.main.items.home.NewestFirstOption')}</option>
-                        <option value={CredentialSortOrder.Alphabetical}>{t('pages.main.items.home.AlphabeticalOption')}</option>
+                        <option value={CredentialSortOrder.OldestFirst}>{t('items.sort.oldestFirst')}</option>
+                        <option value={CredentialSortOrder.NewestFirst}>{t('items.sort.newestFirst')}</option>
+                        <option value={CredentialSortOrder.Alphabetical}>{t('items.home.alphabeticalOption')}</option>
                       </Select>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-            <RefreshButton onClick={refreshVault} buttonText={t('sharedResources.Refresh')} />
+            <RefreshButton onClick={refreshVault} buttonText={t('common.refresh')} />
           </>
         )} />
 
@@ -509,7 +509,7 @@ const ItemsHome: React.FC = () => {
         <PageContent className="px-4 mb-4">
           {filterType !== ItemFilter.All && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-sm text-gray-500 dark:text-gray-400">{t('pages.main.items.home.FilteringBy')}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.home.filteringBy')}</span>
               <button onClick={() => setFilter(ItemFilter.All)} className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
                 <span>{getFilterTitle()}</span>
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -536,7 +536,7 @@ const ItemsHome: React.FC = () => {
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
-                  {currentLevelFolders.length === 0 && <span>{t('pages.main.items.home.NewFolder')}</span>}
+                  {currentLevelFolders.length === 0 && <span>{t('items.folders.newFolder')}</span>}
                 </button>
               )}
             </div>
@@ -549,20 +549,20 @@ const ItemsHome: React.FC = () => {
               {items.length === 0 && !isInFolder ? (
                 <div className="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
                   <div className="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center flex flex-col items-center">
-                    <p className="mb-2 text-lg font-semibold text-primary-700 dark:text-primary-400">{t('pages.main.items.home.NoItemsTitle')}</p>
+                    <p className="mb-2 text-lg font-semibold text-primary-700 dark:text-primary-400">{t('items.home.noItemsTitle')}</p>
                     <div className="max-w-md mx-auto">
                       <div className="mb-6">
-                        <p className="text-sm mb-2">{t('pages.main.items.home.CreateFirstItemText')} <span className="hidden md:inline">{t('pages.main.items.home.NewAliasButtonText')}</span><span className="md:hidden">{t('pages.main.items.home.NewAliasButtonTextMobile')}</span> {t('pages.main.items.home.ButtonLocationText')}</p>
+                        <p className="text-sm mb-2">{t('items.home.createFirstItemText')} <span className="hidden md:inline">{t('items.home.newAliasButtonText')}</span><span className="md:hidden">{t('items.home.newAliasButtonTextMobile')}</span> {t('items.home.buttonLocationText')}</p>
                       </div>
                       <div className="flex items-center my-6">
                         <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-                        <span className="px-4 text-sm text-gray-500 dark:text-gray-400">{t('pages.main.items.home.OrText')}</span>
+                        <span className="px-4 text-sm text-gray-500 dark:text-gray-400">{t('common.or')}</span>
                         <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
                       </div>
                       <div>
-                        <p className="text-sm mb-2">{t('pages.main.items.home.ImportItemsText')}</p>
+                        <p className="text-sm mb-2">{t('items.home.importItemsText')}</p>
                         <Link to="/settings/import-export" className="inline-block text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors dark:bg-primary-700 dark:hover:bg-primary-600">
-                          {t('pages.main.items.home.ImportButtonText')}
+                          {t('items.home.importButtonText')}
                         </Link>
                       </div>
                     </div>
@@ -572,13 +572,13 @@ const ItemsHome: React.FC = () => {
                 <div className="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
                   <div className="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center">
                     {filterType !== ItemFilter.All ? (
-                      <p>{t('pages.main.items.home.NoItemsFound')}</p>
+                      <p>{t('items.noMatchingItems')}</p>
                     ) : isInFolder ? (
-                      <p>{t('pages.main.items.home.EmptyFolderMessage')}</p>
+                      <p>{t('items.home.emptyFolderMessage')}</p>
                     ) : hasItemsInFoldersOnly ? (
-                      <p>{t('pages.main.items.home.AllItemsInFoldersMessage')}</p>
+                      <p>{t('items.allItemsInFoldersClick')}</p>
                     ) : (
-                      <p>{t('pages.main.items.home.NoItemsFound')}</p>
+                      <p>{t('items.noMatchingItems')}</p>
                     )}
                   </div>
                 </div>
@@ -597,7 +597,7 @@ const ItemsHome: React.FC = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>{t('pages.main.items.home.LoadingMore')}</span>
+                  <span>{t('items.home.loadingMore')}</span>
                 </div>
               )}
             </div>

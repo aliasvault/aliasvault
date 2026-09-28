@@ -93,7 +93,7 @@ const CreateNewIdentityWidget: React.FC = () => {
       return;
     }
     setIsCreating(true);
-    showLoading(t('components.main.widgets.createNewIdentityWidget.CreatingNewAliasMessage'));
+    showLoading(t('items.quickCreate.creatingNewAliasMessage'));
     try {
       let edit: ItemEdit = { ...createNewItemEdit(getCurrentFolderFromUrl(), dbContext.sqliteClient?.getPersonalManifestId() ?? null), ItemType: ItemTypes.Alias, ServiceName: serviceName.trim() };
       if (serviceUrl !== DEFAULT_SERVICE_URL) {
@@ -110,12 +110,12 @@ const CreateNewIdentityWidget: React.FC = () => {
         edit = setFieldValue(edit, 'alias.birthdate', identity.birthdate);
       }
       const saved = await saveItem(edit);
-      notifications.addSuccessMessage(t('components.main.widgets.createNewIdentityWidget.ItemCreatedSuccessMessage'));
+      notifications.addSuccessMessage(t('items.toasts.itemCreated'));
       closePopup();
       navigate(itemRoute(saved));
     } catch (error) {
       console.error('Error creating alias:', error);
-      notifications.addErrorMessage(t('components.main.widgets.createNewIdentityWidget.CreateItemErrorMessage'), true);
+      notifications.addErrorMessage(t('items.quickCreate.createItemErrorMessage'), true);
     } finally {
       hideLoading();
       setIsCreating(false);
@@ -128,7 +128,7 @@ const CreateNewIdentityWidget: React.FC = () => {
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     if (serviceName.trim().length === 0) {
-      setNameError(t('validationMessages.ServiceNameRequired'));
+      setNameError(t('validation.serviceNameRequired'));
       return;
     }
     if (itemType === ItemTypes.Alias) {
@@ -155,10 +155,10 @@ const CreateNewIdentityWidget: React.FC = () => {
    */
   const getPopupTitle = (): string => {
     switch (itemType) {
-      case ItemTypes.Alias: return t('components.main.widgets.createNewIdentityWidget.CreateNewAliasTitle');
-      case ItemTypes.CreditCard: return t('components.main.widgets.createNewIdentityWidget.CreateNewCreditCardTitle');
-      case ItemTypes.Note: return t('components.main.widgets.createNewIdentityWidget.CreateNewNoteTitle');
-      default: return t('components.main.widgets.createNewIdentityWidget.CreateNewLoginTitle');
+      case ItemTypes.Alias: return t('items.quickCreate.createNewAliasTitle');
+      case ItemTypes.CreditCard: return t('items.quickCreate.createNewCreditCardTitle');
+      case ItemTypes.Note: return t('items.quickCreate.createNewNoteTitle');
+      default: return t('items.quickCreate.createNewLoginTitle');
     }
   };
 
@@ -167,10 +167,10 @@ const CreateNewIdentityWidget: React.FC = () => {
    */
   const getNamePlaceholder = (): string => {
     switch (itemType) {
-      case ItemTypes.Alias: return t('components.main.widgets.createNewIdentityWidget.NamePlaceholderAlias');
-      case ItemTypes.CreditCard: return t('components.main.widgets.createNewIdentityWidget.NamePlaceholderCard');
-      case ItemTypes.Note: return t('components.main.widgets.createNewIdentityWidget.NamePlaceholderNote');
-      default: return t('components.main.widgets.createNewIdentityWidget.NamePlaceholderLogin');
+      case ItemTypes.Alias: return t('items.addEdit.serviceNamePlaceholder');
+      case ItemTypes.CreditCard: return t('items.quickCreate.namePlaceholderCard');
+      case ItemTypes.Note: return t('items.quickCreate.namePlaceholderNote');
+      default: return t('items.addEdit.serviceNamePlaceholder');
     }
   };
 
@@ -179,19 +179,19 @@ const CreateNewIdentityWidget: React.FC = () => {
    */
   const getTypeDisplayName = (type: ItemType): string => {
     switch (type) {
-      case ItemTypes.Alias: return t('components.main.widgets.createNewIdentityWidget.TypeAlias');
-      case ItemTypes.CreditCard: return t('components.main.widgets.createNewIdentityWidget.TypeCard');
-      case ItemTypes.Note: return t('components.main.widgets.createNewIdentityWidget.TypeNote');
-      default: return t('components.main.widgets.createNewIdentityWidget.TypeLogin');
+      case ItemTypes.Alias: return t('common.alias');
+      case ItemTypes.CreditCard: return t('items.quickCreate.typeCard');
+      case ItemTypes.Note: return t('itemTypes.note.title');
+      default: return t('items.quickCreate.typeLogin');
     }
   };
 
-  const newAliasButtonText = t('components.main.widgets.createNewIdentityWidget.NewAliasButtonText');
+  const newAliasButtonText = t('items.quickCreate.newAliasButtonText');
 
   return (
     <div className="relative" ref={containerRef}>
       <button onClick={() => (isPopupVisible ? closePopup() : showPopup())} id="quickIdentityButton" className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 focus:outline-none dark:from-primary-400 dark:to-primary-500 dark:hover:from-primary-500 dark:hover:to-primary-600 rounded-md shadow-sm transition duration-150 ease-in-out transform hover:scale-105 active:scale-95 focus:shadow-outline">
-        {t('components.main.widgets.createNewIdentityWidget.NewAliasButtonShort')} <span className="hidden md:inline">{newAliasButtonText.substring(1).trim()}</span>
+        {t('items.quickCreate.newAliasButtonShort')} <span className="hidden md:inline">{newAliasButtonText.substring(1).trim()}</span>
       </button>
 
       {isPopupVisible && (
@@ -215,7 +215,7 @@ const CreateNewIdentityWidget: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{getPopupTitle()}</h3>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <FormLabel htmlFor="serviceName">{t('components.main.widgets.createNewIdentityWidget.NameLabel')}</FormLabel>
+              <FormLabel htmlFor="serviceName">{t('items.itemName')}</FormLabel>
               <input
                 ref={nameInputRef}
                 id="serviceName"
@@ -230,7 +230,7 @@ const CreateNewIdentityWidget: React.FC = () => {
             </div>
             {(itemType === ItemTypes.Login || itemType === ItemTypes.Alias) && (
               <div className="mb-4">
-                <FormLabel htmlFor="serviceUrl">{t('components.main.widgets.createNewIdentityWidget.WebsiteUrlLabel')}</FormLabel>
+                <FormLabel htmlFor="serviceUrl">{t('fieldLabels.login.url')}</FormLabel>
                 <input
                   id="serviceUrl"
                   type="text"
@@ -246,9 +246,9 @@ const CreateNewIdentityWidget: React.FC = () => {
             )}
             <div className="flex justify-between items-center">
               <button id="quickIdentitySubmit" type="submit" className={`${itemType === ItemTypes.Alias ? 'bg-green-600 hover:bg-green-700' : 'bg-primary-600 hover:bg-primary-700'} text-white font-bold py-2 px-4 rounded flex items-center gap-2`}>
-                {itemType === ItemTypes.Alias ? t('components.main.widgets.createNewIdentityWidget.CreateButton') : (
+                {itemType === ItemTypes.Alias ? t('common.create') : (
                   <>
-                    {t('components.main.widgets.createNewIdentityWidget.ContinueButton')}
+                    {t('common.continue')}
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>

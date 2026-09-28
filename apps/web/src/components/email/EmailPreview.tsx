@@ -36,7 +36,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
     if (!email) {
       return;
     }
-    const confirmed = await showConfirmation(t('components.main.email.emailPreview.DeleteEmailTitle'), t('components.main.email.emailPreview.DeleteEmailConfirmation'), t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('emails.deleteEmail'), t('emails.modal.deleteEmailConfirmation'), t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -45,16 +45,16 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
       if (email.isSpamOk) {
         const response = await spamOk.request('DELETE', `Email/${encodeURIComponent(email.toLocal)}/${email.id}`);
         if (!response.ok) {
-          notifications.addErrorMessage(`${t('components.main.email.emailPreview.EmailDeleteFailed')}: ${await response.text()}`, true);
+          notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${await response.text()}`, true);
           return;
         }
       } else {
         await webApi.delete(`Email/${email.id}`);
       }
       onEmailDeleted(email.id);
-      notifications.addSuccessMessage(t('components.main.email.emailPreview.EmailDeletedSuccess'), true);
+      notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
     } catch (error) {
-      notifications.addErrorMessage(`${t('components.main.email.emailPreview.EmailDeleteFailed')}: ${error instanceof Error ? error.message : String(error)}`, true);
+      notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${error instanceof Error ? error.message : String(error)}`, true);
     }
   };
 
@@ -68,12 +68,12 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
     try {
       const bytes = await getAttachmentBytes(webApi, dbContext.sqliteClient, email, attachment);
       if (!bytes) {
-        notifications.addErrorMessage(t('components.main.email.emailPreview.AttachmentDownloadFailed'), true);
+        notifications.addErrorMessage(t('common.attachmentDownloadFailed'), true);
         return;
       }
       downloadBytes(attachment.filename, bytes, attachment.mimeType);
     } catch (error) {
-      notifications.addErrorMessage(`${t('components.main.email.emailPreview.AttachmentDownloadError')}: ${error instanceof Error ? error.message : String(error)}`, true);
+      notifications.addErrorMessage(`${t('emails.modal.attachmentDownloadError')}: ${error instanceof Error ? error.message : String(error)}`, true);
     }
   };
 
@@ -90,7 +90,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
               </h2>
               <div className="flex items-center gap-2">
                 {availableModes.length > 1 && (
-                  <button type="button" onClick={cycleViewMode} title={t('sharedResources.EmailFormatSwitchTitle')} className="text-xs font-medium px-2 py-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-600">
+                  <button type="button" onClick={cycleViewMode} title={t('emails.formatSwitchTitle')} className="text-xs font-medium px-2 py-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-200 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-600">
                     {formatLabel}
                   </button>
                 )}
@@ -103,17 +103,17 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
               <div className="space-y-1">
-                <p><span className="font-medium">{t('components.main.email.emailPreview.FromLabel')}</span> {email.fromLocal}@{email.fromDomain}</p>
-                <p><span className="font-medium">{t('components.main.email.emailPreview.ToLabel')}</span> {email.toLocal}@{email.toDomain}</p>
+                <p><span className="font-medium">{t('emails.from')}</span> {email.fromLocal}@{email.fromDomain}</p>
+                <p><span className="font-medium">{t('emails.to')}</span> {email.toLocal}@{email.toDomain}</p>
               </div>
               <div className="space-y-1">
-                <p><span className="font-medium">{t('components.main.email.emailPreview.DateLabel')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
+                <p><span className="font-medium">{t('emails.date')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
                 {item !== null && item.name.length > 0 ? (
-                  <p><span className="font-medium">{t('sharedResources.EmailItemLabel')}</span>{' '}
+                  <p><span className="font-medium">{t('common.emailItemLabel')}</span>{' '}
                     <button type="button" onClick={() => onItemClick(item.ref)} className="text-primary-600 hover:underline dark:text-primary-400 cursor-pointer">{item.name}</button>
                   </p>
                 ) : (
-                  <p><span className="font-medium">{t('sharedResources.EmailItemLabel')}</span> <span className="text-gray-400 dark:text-gray-500">{t('sharedResources.EmailItemNone')}</span></p>
+                  <p><span className="font-medium">{t('common.emailItemLabel')}</span> <span className="text-gray-400 dark:text-gray-500">{t('common.none')}</span></p>
                 )}
               </div>
             </div>
@@ -123,13 +123,13 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
             <div className="flex-1 overflow-y-auto p-4">
               <div className="text-gray-700 dark:text-gray-300 h-full">
                 {/* Mount only once the body exists to prevent browsers from dropping a srcdoc change made while the initial empty srcdoc still loads. */}
-                {emailBody !== '' && <iframe title="email" className="w-full h-full border-0" srcDoc={emailBody} sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>}
+                {emailBody !== '' && <iframe title={t('common.email')} className="w-full h-full border-0" srcDoc={emailBody} sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>}
               </div>
             </div>
 
             {email.attachments.length > 0 && (
               <div className="border-t border-gray-200 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-800">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('components.main.email.emailPreview.AttachmentsLabel')}</h3>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('common.attachments')}</h3>
                 <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                   {email.attachments.map((attachment) => (
                     <div key={attachment.index} className="flex items-center space-x-2">
@@ -152,7 +152,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
             <svg className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            <p className="mt-2 text-sm">{t('components.main.email.emailPreview.SelectEmailMessage')}</p>
+            <p className="mt-2 text-sm">{t('emails.preview.selectEmailMessage')}</p>
           </div>
         </div>
       )}

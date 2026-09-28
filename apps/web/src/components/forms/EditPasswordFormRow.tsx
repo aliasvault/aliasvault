@@ -31,7 +31,6 @@ const EditPasswordFormRow: React.FC<EditPasswordFormRowProps> = ({ id, label, va
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
   const [settings, setSettings] = useState<PasswordSettings | null>(null);
   const [sliderValue, setSliderValue] = useState(0);
-  const tk = 'components.main.settings.passwordSettingsPopup';
 
   useEffect(() => {
     if (showPassword) {
@@ -111,7 +110,7 @@ const EditPasswordFormRow: React.FC<EditPasswordFormRowProps> = ({ id, label, va
         <div className="pt-2">
           <div className="flex items-center justify-between mb-1">
             <label htmlFor={`${id}-inline-length`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {isDiceware ? t(`${tk}.WordCountLabel`) : t(`${tk}.PasswordLengthLabel`, { 0: settings.Length })}
+              {isDiceware ? t('items.wordCount') : t('items.passwordSettingsPopup.passwordLengthLabel', { length: settings.Length })}
             </label>
             {isDiceware && <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">{settings.WordCount}</span>}
           </div>
