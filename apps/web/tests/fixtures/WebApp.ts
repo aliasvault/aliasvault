@@ -27,7 +27,7 @@ export class WebApp {
   }
 
   /**
-   * Log in from the start page and wait for the vault.
+   * Log in from the start page and wait for the vault, finishing the tutorial an empty new vault opens with.
    */
   public async login(username: string, password: string): Promise<void> {
     await this.openStart();
@@ -35,7 +35,21 @@ export class WebApp {
     await expect(this.page).toHaveURL(/\/user\/login$/);
 
     await this.submitLogin(username, password);
+    await expect(this.page).toHaveURL(/\/(items|welcome)$/);
+    if (this.page.url().endsWith('/welcome')) {
+      await this.finishTutorial();
+    }
     await this.expectVaultOpen(username);
+  }
+
+  /**
+   * Click through the welcome tutorial; it marks the tutorial as done and continues to the items page.
+   */
+  public async finishTutorial(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/welcome$/);
+    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await this.page.getByRole('button', { name: 'Get Started' }).click();
   }
 
   /**

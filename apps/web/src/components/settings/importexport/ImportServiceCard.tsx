@@ -594,7 +594,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             <p className="text-xs text-orange-800 dark:text-orange-200">{t(`${tk}.DecryptionPasswordHint`)}</p>
           </div>
           <div className="flex justify-end mt-6 space-x-2">
-            <Button onClick={handlePreviousStep} color="secondary">{t(`${tk}.BackButton`)}</Button>
+            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
             <Button onClick={() => void handleDecryptFile()} color="primary" isDisabled={decryptionPassword.trim().length === 0}>{t(`${tk}.DecryptAndContinueButton`)}</Button>
           </div>
         </>
@@ -699,8 +699,8 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         </div>
       )}
       <div className="flex justify-end mt-6 space-x-2">
-        <Button onClick={handlePreviousStep} color="secondary">{t(`${tk}.BackButton`)}</Button>
-        {importedCredentials.length > 0 && <Button onClick={handleNextStep} color="primary">{t(`${tk}.NextButton`)}</Button>}
+        <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
+        {importedCredentials.length > 0 && <Button onClick={handleNextStep} color="primary" arrow="forward">{t(`${tk}.NextButton`)}</Button>}
       </div>
     </>
   );
@@ -743,7 +743,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             )}
           </div>
           <div className="flex justify-end mt-6 space-x-2">
-            <Button onClick={handlePreviousStep} color="secondary">{t(`${tk}.BackButton`)}</Button>
+            <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t(`${tk}.BackButton`)}</Button>
             <Button onClick={() => void handleModalConfirm()} color="primary">{t(`${tk}.ImportButton`)}</Button>
           </div>
         </>

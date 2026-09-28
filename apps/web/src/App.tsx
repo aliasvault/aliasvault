@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import AuthLayout from '@/layouts/AuthLayout';
 import MainLayout from '@/layouts/MainLayout';
@@ -27,6 +27,7 @@ import Enable2Fa from '@/pages/settings/security/Enable2Fa';
 import SecuritySettings from '@/pages/settings/security/Security';
 import StorageInsights from '@/pages/settings/StorageInsights';
 import Sync from '@/pages/sync/Sync';
+import Welcome from '@/pages/Welcome';
 
 /**
  * The route table.
@@ -58,7 +59,7 @@ const App: React.FC = () => (
         <Route path="/items/:manifestId/:id/edit" element={<ItemAddEdit />} />
         <Route path="/items/:manifestId/:id" element={<ItemView />} />
         <Route path="/emails" element={<EmailsHome />} />
-        <Route path="/welcome" element={<Navigate to="/items" replace />} />
+        <Route path="/welcome" element={<Welcome />} />
         <Route path="/settings/general" element={<GeneralSettings />} />
         <Route path="/settings/security" element={<SecuritySettings />} />
         <Route path="/settings/security/change-password" element={<ChangePassword />} />

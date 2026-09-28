@@ -139,6 +139,10 @@ const ItemsHome: React.FC = () => {
     setVisibleItemCount(BATCH_SIZE);
     try {
       const vaultItems: Item[] = client.items.getAll();
+      if (vaultItems.length === 0 && !folderRef && client.settings.getSetting('TutorialDone', 'False').toLowerCase() !== 'true') {
+        navigate('/welcome');
+        return;
+      }
       setItems(vaultItems.map(toItemListEntry));
       setAllFolders(client.folders.getAll());
       setRecentlyDeletedCount(client.items.getRecentlyDeletedCount());
@@ -153,7 +157,7 @@ const ItemsHome: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dbContext.sqliteClient, notifications, syncTableSortWithSortOrder, t]);
+  }, [dbContext.sqliteClient, folderRef, navigate, notifications, syncTableSortWithSortOrder, t]);
 
   useEffect(() => {
     loadItems();

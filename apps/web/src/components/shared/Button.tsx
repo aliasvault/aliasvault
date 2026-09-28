@@ -3,6 +3,9 @@ import React from 'react';
 /** Button colors. */
 export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success';
 
+/** Direction of the arrow a button can show: forward after the label, back before it. */
+export type ButtonArrowDirection = 'forward' | 'back';
+
 type ButtonProps = {
   children: React.ReactNode;
   onClick?: () => void;
@@ -12,6 +15,7 @@ type ButtonProps = {
   additionalClasses?: string;
   display?: 'inline' | 'flex';
   id?: string;
+  arrow?: ButtonArrowDirection;
 };
 
 /** Base classes shared by every button-styled element. */
@@ -36,14 +40,39 @@ export const getButtonColorClasses = (color: ButtonColor): string => {
 };
 
 /**
+ * A small arrow icon for a button that moves through a process.
+ */
+export const ButtonArrow: React.FC<{ direction: ButtonArrowDirection }> = ({ direction }) => (
+  <svg className="w-4 h-4 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={direction === 'forward' ? 'M14 5l7 7m0 0l-7 7m7-7H3' : 'M10 19l-7-7m0 0l7-7m-7 7h18'} />
+  </svg>
+);
+
+/**
+ * Button label with an optional arrow, forward after the label and back before it.
+ */
+export const ButtonLabel: React.FC<{ children: React.ReactNode; arrow?: ButtonArrowDirection }> = ({ children, arrow }) => {
+  if (!arrow) {
+    return <>{children}</>;
+  }
+  return (
+    <span className="inline-flex items-center justify-center gap-2">
+      {arrow === 'back' && <ButtonArrow direction="back" />}
+      <span>{children}</span>
+      {arrow === 'forward' && <ButtonArrow direction="forward" />}
+    </span>
+  );
+};
+
+/**
  * Generic button.
  */
-const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', additionalClasses = '', display = 'inline', id }) => {
+const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', additionalClasses = '', display = 'inline', id, arrow }) => {
   const classes = `${display} ${BUTTON_BASE_CLASSES} ${getButtonColorClasses(color)} ${isDisabled ? DISABLED_CLASSES : ''} ${additionalClasses}`.trim();
 
   return (
     <button type={type} id={id} onClick={isDisabled ? undefined : onClick} disabled={isDisabled} className={classes}>
-      {children}
+      <ButtonLabel arrow={arrow}>{children}</ButtonLabel>
     </button>
   );
 };

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import LanguageSwitcher from '@/components/auth/LanguageSwitcher';
 import { CreatingStep, PasswordStep, TermsAndConditionsStep, UsernameStep } from '@/components/auth/setup/SetupSteps';
+import { ButtonLabel } from '@/components/shared/Button';
 import { getAppConfig } from '@/config/AppConfig';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -118,7 +119,7 @@ const Setup: React.FC = () => {
               </button>
             ) : step !== 'creating' && (
               <button type="button" onClick={goNext} disabled={!isNextEnabled} className={`w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out ${isNextEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
-                {t(`${tk}.ContinueButton`)}
+                <ButtonLabel arrow="forward">{t(`${tk}.ContinueButton`)}</ButtonLabel>
               </button>
             )}
           </div>

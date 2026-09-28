@@ -29,6 +29,12 @@ test.describe('1. Registration', () => {
       await page.locator('#password').fill(credentials.password);
       await page.locator('#confirmPassword').fill(credentials.password);
       await page.getByRole('button', { name: 'Create Account' }).click();
+    });
+
+    await test.step('the welcome tutorial confirms the new vault', async () => {
+      await expect(page).toHaveURL(/\/welcome$/);
+      await expect(page.getByText('Your vault has been successfully created!')).toBeVisible();
+      await app.finishTutorial();
       await app.expectVaultOpen(credentials.username);
     });
 
