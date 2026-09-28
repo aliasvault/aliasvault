@@ -29,4 +29,23 @@ test.describe('2. Authentication', () => {
     await expect(app.page.getByText('Invalid username or password')).toBeVisible();
     await expect(app.page).toHaveURL(/\/user\/login$/);
   });
+
+  test('2.3 should return to the open page after unlocking a reloaded vault', async ({ app, testUser }) => {
+    const { page } = app;
+    await app.login(testUser.username, testUser.password);
+    await app.createItem('Return after unlock');
+    const itemUrl = page.url();
+
+    await test.step('reloading locks the vault', async () => {
+      await page.reload();
+      await expect(page).toHaveURL(/\/unlock$/);
+    });
+
+    await test.step('unlocking returns to the item', async () => {
+      await page.locator('#password').fill(testUser.password);
+      await page.locator('#unlock-button').click();
+      await expect(page).toHaveURL(itemUrl);
+      await app.expectItemView('Return after unlock');
+    });
+  });
 });

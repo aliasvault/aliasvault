@@ -22,11 +22,12 @@ export default defineConfig({
   // Checks the API is reachable and applies the test server settings.
   globalSetup: './tests/global-setup.ts',
 
-  // Tests within a file run in order; files run in parallel, as every test registers its own account.
-  fullyParallel: false,
+  // Every test registers its own account, so all tests run in parallel, also within a file except
+  // when a test file is marked as serial explicitly.
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : 4,
+  workers: process.env.CI ? 4 : '100%',
 
   reporter: [
     ['html', { open: 'never' }],

@@ -56,7 +56,7 @@ export class WebApp {
   }
 
   /**
-   * Stop here and open the Playwright Inspector to look at the page, only in a `npm run test:e2e:pause` run; a no-op otherwise.
+   * Stop here and open the Playwright Inspector to look at the page, only in a `npm run test:e2e:p` run; a no-op otherwise.
    */
   public async pause(): Promise<void> {
     if (!process.env.E2E_PAUSE) {

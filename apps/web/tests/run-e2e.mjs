@@ -6,7 +6,7 @@
  *   npm run test:e2e 4.3                  test 4.3
  *   npm run test:e2e 14.1,14.2 3          tests 14.1 and 14.2, plus every test in file 03
  *   npm run test:e2e 14.1-14.3            tests 14.1 up to and including 14.3
- *   npm run test:e2e:pause 4.3            headed, stopping at each app.pause() in the Playwright Inspector
+ *   npm run test:e2e:p 4.3                headed, stopping at each app.pause() in the Playwright Inspector
  *
  * Numbers become one title filter (--grep), so selections combine as "or". Any other argument goes to Playwright as-is.
  */

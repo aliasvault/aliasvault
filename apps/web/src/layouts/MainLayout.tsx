@@ -42,13 +42,10 @@ const MainLayout: React.FC = () => {
         navigate('/user/start', { replace: true });
         return;
       }
-      if (status.isVaultLocked) {
-        navigate('/unlock', { replace: true });
-        return;
-      }
-      if (!dbAvailable) {
+      // Unlock continues via the sync page, which returns to this URL.
+      if (status.isVaultLocked || !dbAvailable) {
         setLocalPreference(LocalPreferenceKeys.RETURN_URL, location.pathname + location.search);
-        navigate('/sync', { replace: true });
+        navigate(status.isVaultLocked ? '/unlock' : '/sync', { replace: true });
         return;
       }
       setIsReady(true);

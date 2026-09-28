@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
-import { StorageKeys } from '@/utils/StorageKeys';
+import { removeLocalPreference } from '@/utils/LocalPreferences';
+import { LocalPreferenceKeys, StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
 
 /**
@@ -101,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       if (options.userInitiated) {
         await vaultStore.clearVaultData();
+        removeLocalPreference(LocalPreferenceKeys.RETURN_URL);
         setUsername(null);
       }
       await vaultStore.clearSession();
