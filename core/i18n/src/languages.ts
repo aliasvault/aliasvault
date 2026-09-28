@@ -4,7 +4,7 @@
  * language (`ui`). Languages with `ui: false` are only used by features such as the identity generator.
  */
 
-import languages from '../languages.json';
+import languages from '../languages.json' with { type: 'json' };
 
 /**
  * Display metadata for a single language.

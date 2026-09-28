@@ -1,4 +1,4 @@
-import { englishTranslations, loadTranslations, type TranslationTree } from '@aliasvault/i18n';
+import { ALL_TRANSLATIONS } from '@aliasvault/i18n/all';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -29,24 +29,15 @@ const detectLanguage = async (): Promise<string> => {
 };
 
 /**
- * Load the translations of a language into i18next before switching to it. Each language is a separate chunk.
- * @param code - the language code
- */
-export const ensureLanguageLoaded = async (code: string): Promise<void> => {
-  if (!i18n.hasResourceBundle(code, 'translation')) {
-    i18n.addResourceBundle(code, 'translation', await loadTranslations(code));
-  }
-};
-
-/**
  * Initialize i18n with async language detection
  */
 const initI18n = async (): Promise<void> => {
   const language = await detectLanguage();
-  const resources: Record<string, { translation: TranslationTree }> = { [DEFAULT_LANGUAGE]: { translation: englishTranslations } };
-  if (language !== DEFAULT_LANGUAGE) {
-    resources[language] = { translation: await loadTranslations(language) };
-  }
+  /*
+   * The extension build puts each entry point in one file (no code splitting), so the popup bundles every language
+   * up front; the background and content scripts only bundle the namespaces they use (config.ts).
+   */
+  const resources = Object.fromEntries(Object.entries(ALL_TRANSLATIONS).map(([code, translation]) => [code, { translation }]));
 
   await i18n
     .use(initReactI18next)
