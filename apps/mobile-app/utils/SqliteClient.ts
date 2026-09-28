@@ -3,6 +3,7 @@ import { VaultDataBucketCategory } from '@aliasvault/models/vault';
 import { asyncRepository } from '@aliasvault/client/database/DbOp';
 import { EncryptionKeyRepository } from '@aliasvault/client/database/repositories/EncryptionKeyRepository';
 import { FolderRepository } from '@aliasvault/client/database/repositories/FolderRepository';
+import { ImportExportRepository } from '@aliasvault/client/database/repositories/ImportExportRepository';
 import { ItemRepository } from '@aliasvault/client/database/repositories/ItemRepository';
 import { ItemStatsRepository } from '@aliasvault/client/database/repositories/ItemStatsRepository';
 import { LogoRepository } from '@aliasvault/client/database/repositories/LogoRepository';
@@ -59,6 +60,11 @@ class SqliteClient {
    * Repository for the per-manifest keypairs that receive mail.
    */
   public readonly encryptionKeys = asyncRepository(new EncryptionKeyRepository(this.database), this.database);
+
+  /**
+   * Repository for the vault export.
+   */
+  public readonly importExport = asyncRepository(new ImportExportRepository(this.database, this.logoRepository), this.database);
 
   /**
    * Repository for per-item usage statistics.
