@@ -338,19 +338,6 @@ export class WebApiService {
   }
 
   /**
-   * Issue PUT request to the API.
-   */
-  public async put<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse> {
-    return this.authFetch<TResponse>(endpoint, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-  }
-
-  /**
    * Issue DELETE request to the API.
    */
   public async delete<T>(endpoint: string): Promise<T> {

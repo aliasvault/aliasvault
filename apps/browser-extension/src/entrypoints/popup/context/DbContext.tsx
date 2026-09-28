@@ -1,5 +1,6 @@
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { decryptVaultBlob } from '@aliasvault/client/crypto/VaultBlob';
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
 import { syncErrorMessage, toSyncErrorDetail } from '@aliasvault/client/sync/SyncErrorMessage';
 import { hasUnsyncedUserChanges as hasUnsyncedUserChangesInStorage } from '@aliasvault/client/sync/VaultDirtyState';
@@ -20,14 +21,9 @@ import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import { storage } from '#imports';
 
 /**
- * Maximum time to wait for the background service worker to answer a PING before treating it as unresponsive.
+ * Maximum time to wait for the background service worker to hand out the vault encryption key before treating it as unresponsive.
  */
-const BACKGROUND_PING_TIMEOUT_MS = 5000;
-
-/**
- * Maximum time to wait for GET_VAULT once the background is responsive (large vaults take a while to decrypt and transfer).
- */
-const GET_VAULT_TIMEOUT_MS = 30000;
+const BACKGROUND_RESPONSE_TIMEOUT_MS = 5000;
 
 /**
  * Wrap a promise in a timeout that returns a rejected promise with a translated error carrying the given code.
@@ -91,7 +87,7 @@ type DbContextType = {
    */
   shouldSuppressEmailErrors: () => boolean;
   /**
-   * Load the stored (encrypted) vault from background storage into memory.
+   * Load the stored (encrypted) vault into memory.
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
    */
   loadStoredDatabase: () => Promise<SqliteClient | null>;
@@ -256,50 +252,62 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
-   * Load the stored (encrypted) vault from background storage into memory.
+   * Load the stored (encrypted) vault into memory.
    * Returns the SqliteClient if vault was loaded successfully.
-   * Throws an error if the background returns an error (all errors now have E-XXX codes).
+   * Throws an error with an E-XXX code when the vault is missing, locked or cannot be decrypted.
+   *
+   * The popup reads and decrypts the stored vault itself instead of receiving it from the background: a runtime message
+   * is capped at 64 MiB in Chrome, which a large vault exceeds. Only the key comes from the background, which stays the
+   * single writer of the stored vault (see STORE_ENCRYPTED_VAULT).
    */
   const loadStoredDatabase = useCallback(async (): Promise<SqliteClient | null> => {
     try {
-      // Ping service worker with a short timeout so an unresponsive service worker fails fast instead of keeping the popup open indefinitely.
-      await withTimeout(sendMessage('PING'), BACKGROUND_PING_TIMEOUT_MS, AppErrorCode.BACKGROUND_UNRESPONSIVE, 'common.errors.backgroundUnresponsive');
+      // Short timeout so an unresponsive service worker fails fast instead of keeping the popup open indefinitely.
+      const encryptionKey = await withTimeout(sendMessage('GET_ENCRYPTION_KEY'), BACKGROUND_RESPONSE_TIMEOUT_MS, AppErrorCode.BACKGROUND_UNRESPONSIVE, 'common.errors.backgroundUnresponsive');
 
-      // Get vault from background with a 30sec timeout as decrypting and transferring a large vault can take several seconds depending on the device hardware.
-      const response = await withTimeout(sendMessage('GET_VAULT'), GET_VAULT_TIMEOUT_MS, AppErrorCode.VAULT_LOAD_TIMEOUT, 'common.errors.vaultLoadTimeout');
-
-      // Check if response contains an error, if so, throw.
-      if (!response?.success && response?.error) {
-        throw new Error(response.error);
+      let encryptedVault: string | null;
+      try {
+        encryptedVault = await storage.getItem<string>(StorageKeys.ENCRYPTED_VAULT);
+      } catch (error) {
+        logFailure('Failed to read the stored vault', error);
+        throw new Error(formatErrorWithCode(t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED));
       }
 
-      if (response?.vault) {
-        const client = new SqliteClient();
-        await client.initializeFromBase64(response.vault);
-
-        setSqliteClient(client);
-        setDbInitialized(true);
-        setDbAvailable(true);
-        return client;
-      } else {
-        // No vault and no error - this shouldn't happen but handle gracefully
-        setDbInitialized(true);
-        setDbAvailable(false);
-        return null;
+      if (!encryptedVault) {
+        throw new Error(formatErrorWithCode(t('common.errors.vaultNotAvailable'), AppErrorCode.VAULT_NOT_FOUND));
       }
+      if (!encryptionKey) {
+        throw new Error(formatErrorWithCode(t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
+      }
+
+      let decryptedVault: Uint8Array;
+      try {
+        decryptedVault = await decryptVaultBlob(encryptedVault, encryptionKey);
+      } catch (error) {
+        logFailure('Failed to decrypt the stored vault', error);
+        throw new Error(formatErrorWithCode(t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED));
+      }
+
+      const client = new SqliteClient();
+      await client.initializeFromBytes(decryptedVault);
+
+      setSqliteClient(client);
+      setDbInitialized(true);
+      setDbAvailable(true);
+      return client;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes(AppErrorCode.VAULT_LOCKED)) {
         // Vault is locked which is expected when the popup is opened after auto-lock timeout or browser restart.
       } else {
-        logFailure('Error retrieving vault from background', error);
+        logFailure('Error loading the stored vault', error);
       }
       setDbInitialized(true);
       setDbAvailable(false);
       // Re-throw all errors so callers can display them with proper codes
       throw error;
     }
-  }, []);
+  }, [t]);
 
   /**
    * Get the vault metadata from local storage (persistent).

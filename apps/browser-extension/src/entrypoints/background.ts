@@ -11,7 +11,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVault, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVault, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -253,12 +253,10 @@ export default defineBackground({
     /*
      * Listen for messages via @webext-core/messaging.
      */
-    onExtensionPageMessage('PING', () => true);
     onMessage('CHECK_AUTH_STATUS', () => handleCheckAuthStatus());
 
     onExtensionPageMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
     onExtensionPageMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
-    onExtensionPageMessage('GET_VAULT', () => handleGetVault());
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
@@ -275,7 +273,7 @@ export default defineBackground({
     });
     onExtensionPageMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
 
-    onExtensionPageMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data));
+    onExtensionPageMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVaultChunk(data));
     onExtensionPageMessage('GET_SYNC_STATE', () => handleGetSyncState());
 
     onExtensionPageMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));

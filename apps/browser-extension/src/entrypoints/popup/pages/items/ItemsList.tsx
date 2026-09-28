@@ -3,7 +3,7 @@ import { CredentialSortOrder } from '@aliasvault/client/database/repositories/Se
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, getRecursiveItemCount, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useDeferredValue, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -50,6 +50,11 @@ const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
  * already visible, so a suggestion just duplicates an entry that's right there.
  */
 const CURRENT_SITE_SUGGESTION_MIN_ITEMS = 5;
+
+/**
+ * How many items render per infinite scroll batch, so a large vault does not render thousands of item cards at once.
+ */
+const ITEM_BATCH_SIZE = 200;
 
 /**
  * Sort order options with their translation keys
@@ -144,8 +149,16 @@ const ItemsList: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolders, setShowFolders] = useState(true);
+  const [visibleItemCount, setVisibleItemCount] = useState(ITEM_BATCH_SIZE);
   const { setIsInitialLoading } = useLoading();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * The list filters on a deferred copy of the search term: the input updates on every keystroke right away, and
+   * React filters and renders the list for the latest term when it has time, so typing never waits on the list.
+   */
+  const listSearchTerm = useDeferredValue(searchTerm);
 
   // Load showFolders preference from storage on mount
   useEffect(() => {
@@ -582,8 +595,11 @@ const ItemsList: React.FC = () => {
    * - Counts include items in the folder AND all subfolders recursively
    * - Counts respect the active type/feature filter so the badge matches what the user sees inside.
    */
-  const getFoldersWithCounts = (): FolderWithCount[] => {
-    if (searchTerm) {
+  const folders = useMemo((): FolderWithCount[] => {
+    // folderRefreshKey is included in deps to force re-computation when a folder changes
+    void folderRefreshKey;
+
+    if (listSearchTerm) {
       return []; // Don't show folders when searching
     }
 
@@ -647,16 +663,16 @@ const ItemsList: React.FC = () => {
     })).sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name));
 
     return result;
-  };
+  }, [listSearchTerm, dbContext?.sqliteClient, currentFolderRef, items, filterType, folderRefreshKey]);
 
   /**
    * Filter items based on current view (folder, search, filter type)
    */
-  const filteredItems = ((): Item[] => {
+  const filteredItems = useMemo((): Item[] => {
     // Filter by current folder (if in folder view)
     let folderScoped: Item[];
     if (currentFolderRef !== null) {
-      if (searchTerm) {
+      if (listSearchTerm) {
         // When searching inside a folder, include items in subfolders too
         const allFolders = dbContext?.sqliteClient?.folders.getAll() || [];
         const childFolderIds = getDescendantFolderIds(currentFolderRef, allFolders);
@@ -668,7 +684,7 @@ const ItemsList: React.FC = () => {
         // When not searching, only show direct items (not items in subfolders)
         folderScoped = items.filter((item: Item) => isItemInFolder(item, currentFolderRef));
       }
-    } else if (!searchTerm && showFolders) {
+    } else if (!listSearchTerm && showFolders) {
       /*
        * When showing folders (checkbox ON): only show root items (exclude items in folders)
        * When not showing folders (checkbox OFF): show all items flat
@@ -680,8 +696,8 @@ const ItemsList: React.FC = () => {
 
     const typeFiltered = applyTypeFilter(folderScoped, filterType);
 
-    return applySearchFilter(typeFiltered, searchTerm);
-  })();
+    return applySearchFilter(typeFiltered, listSearchTerm);
+  }, [items, currentFolderRef, listSearchTerm, showFolders, filterType, dbContext?.sqliteClient]);
 
   /**
    * Sort the filtered items based on the current sort order.
@@ -705,7 +721,46 @@ const ItemsList: React.FC = () => {
     }
   }, [filteredItems, sortOrder]);
 
-  const folders = getFoldersWithCounts();
+  /**
+   * Start again at the first batch whenever the list itself changes (search, filter, folder or sort order).
+   */
+  useEffect(() => {
+    setVisibleItemCount(ITEM_BATCH_SIZE);
+  }, [listSearchTerm, filterType, currentFolderRef, sortOrder, showFolders]);
+
+  /*
+   * The rendered part of the list. It always reaches a freshly duplicated item, so the highlight can scroll to it.
+   */
+  const highlightedIndex = useMemo(() => (highlightedItem ? sortedItems.findIndex(item => isSameItem(item, highlightedItem)) : -1), [sortedItems, highlightedItem]);
+  const renderedItemCount = Math.max(visibleItemCount, highlightedIndex + 1);
+  const visibleItems = useMemo(() => sortedItems.slice(0, renderedItemCount), [sortedItems, renderedItemCount]);
+  const hasMoreItems = renderedItemCount < sortedItems.length;
+
+  /**
+   * Keep a highlighted item rendered after the highlight clears, instead of dropping it from the list again.
+   */
+  useEffect(() => {
+    if (highlightedIndex >= 0) {
+      setVisibleItemCount(count => Math.max(count, highlightedIndex + 1));
+    }
+  }, [highlightedIndex]);
+
+  /**
+   * Infinite scroll: render the next batch when the sentinel below the list comes into view.
+   */
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMoreItems || isLoading) {
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        setVisibleItemCount(count => count + ITEM_BATCH_SIZE);
+      }
+    });
+    observer.observe(sentinel);
+    return (): void => observer.disconnect();
+  }, [hasMoreItems, visibleItemCount, isLoading]);
 
   /**
    * Calculate total item count including items in current folder and all child folders.
@@ -788,7 +843,7 @@ const ItemsList: React.FC = () => {
 
   const { activeKind, activeIndex, itemIdFor, folderIdFor, activeDescendantId } = useListKeyboardNav({
     folderCount: folders.length,
-    itemCount: sortedItems.length,
+    itemCount: visibleItems.length,
     searchInputRef,
     resetKey: currentFolderRef ? scopedKey(currentFolderRef.ManifestId, currentFolderRef.Id) : null,
     onActivateFolder: handleActivateFolder,
@@ -796,6 +851,15 @@ const ItemsList: React.FC = () => {
     onGoBack: handleGoBack,
     onClearSearch: handleClearSearch,
   });
+
+  /**
+   * Render the next batch while keyboard selection is still a few items from the end, so a held arrow-down keeps going.
+   */
+  useEffect(() => {
+    if (activeKind === 'item' && activeIndex >= visibleItems.length - 10 && hasMoreItems) {
+      setVisibleItemCount(count => count + ITEM_BATCH_SIZE);
+    }
+  }, [activeKind, activeIndex, visibleItems.length, hasMoreItems]);
 
   if (isLoading) {
     return (
@@ -1084,14 +1148,14 @@ const ItemsList: React.FC = () => {
           )}
 
           {/* Items */}
-          {sortedItems.length > 0 && (
+          {visibleItems.length > 0 && (
             <ul id="items-list" role="listbox" className="space-y-2">
-              {sortedItems.map((item, index) => (
+              {visibleItems.map((item, index) => (
                 <ItemCard
                   key={scopedKey(item.ManifestId, item.Id)}
                   item={item}
-                  showFolderPath={!!searchTerm && !!item.FolderPath}
-                  searchTerm={searchTerm}
+                  showFolderPath={!!listSearchTerm && !!item.FolderPath}
+                  searchTerm={listSearchTerm}
                   currentFolderPath={currentFolderPath}
                   isActive={activeKind === 'item' && activeIndex === index}
                   optionId={itemIdFor(index)}
@@ -1102,6 +1166,8 @@ const ItemsList: React.FC = () => {
               ))}
             </ul>
           )}
+
+          {hasMoreItems && <div ref={sentinelRef} className="h-10" />}
 
           {/* Show help text when inside an empty folder with no items */}
           {currentFolderId && sortedItems.length === 0 && !searchTerm && (

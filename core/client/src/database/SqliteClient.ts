@@ -5,7 +5,7 @@ import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompa
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { TranslatableMessage } from '../platform/TranslatableMessage';
-import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+import { bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
 import { detectImageMimeType } from '../utilities/ImageType';
 
@@ -181,14 +181,6 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public getDb(): ISqliteDatabase | null {
     return this.db;
-  }
-
-  /**
-   * Initialize the SQLite database from a base64 string.
-   * @param base64String - Base64 encoded SQLite database
-   */
-  public async initializeFromBase64(base64String: string): Promise<void> {
-    return this.initializeFromBytes(base64ToBytes(base64String));
   }
 
   /**

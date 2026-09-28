@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
-import { AppErrorCode, formatErrorWithCode, getErrorMessage, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
@@ -21,7 +21,6 @@ import { type VaultMutationScope, DEFAULT_VAULT_MUTATION_SCOPE, hasUserVisibleSc
 import { hasSyncError, syncResult, VaultSync, type FullVaultSyncResult, type SharedManifestDetails, type SharingOperationResult, type VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import { type IVaultSyncEngineHost, type VaultSyncOptions, type VaultSyncPhase as EngineSyncPhase, type VaultSyncStoreOutcome, type VaultSyncStoreRequest } from '@aliasvault/client/sync/VaultSyncEngine';
 import { getVaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
-import { bytesToBase64 } from '@aliasvault/client/utilities/Base64';
 import { FieldKey, ItemTypes, createSystemField, type Item } from '@aliasvault/models/vault';
 
 import { clearAllSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
@@ -29,9 +28,9 @@ import { handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorSta
 
 import { AUTH_STORAGE_KEYS, dirtyScopeStorageKey, SESSION_STORAGE_KEYS, StorageKeys, vaultDataStorageKeys, VAULT_LOCK_STORAGE_KEYS } from '@/utils/constants/storageKeys';
 import { devLog } from '@/utils/devLogger/DevLogger';
-import { logExpected, logFailure } from '@/utils/Diagnostics';
+import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
+import { sendMessage, type TotpSecret, type VaultBlobStoreOptions } from '@/utils/messaging/ExtensionMessaging';
 import { RecentlySelectedItemService } from '@/utils/RecentlySelectedItemService';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import type { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -40,7 +39,6 @@ import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSync
 import type { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
-import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
@@ -226,58 +224,6 @@ export async function handleStoreUnlockKeyDerivationParams(
     logFailure('Failed to store encryption key derivation params', error);
     // E-602: Storage write failed during derivation params store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
-  }
-}
-
-/**
- * Get the vault from browser storage (local: for persistence).
- */
-export async function handleGetVault(
-) : Promise<messageVaultResponse> {
-  try {
-    const encryptionKey = await handleGetEncryptionKey();
-
-    const encryptedVault = await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string;
-    const publicEmailDomains = await storage.getItem<string[]>(StorageKeys.PUBLIC_EMAIL_DOMAINS);
-    const privateEmailDomains = await storage.getItem<string[]>(StorageKeys.PRIVATE_EMAIL_DOMAINS);
-    const hiddenPrivateEmailDomains = await storage.getItem<string[]>(StorageKeys.HIDDEN_PRIVATE_EMAIL_DOMAINS) ?? [];
-
-    if (!encryptedVault) {
-      logExpected('[Vault] No encrypted vault in storage');
-      // E-201: No encrypted vault in storage
-      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultNotAvailable'), AppErrorCode.VAULT_NOT_FOUND) };
-    }
-
-    if (!encryptionKey) {
-      // E-202: No encryption key available (vault is locked)
-      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
-    }
-
-    let decryptedBytes: Uint8Array;
-    try {
-      decryptedBytes = await decryptVaultBlob(encryptedVault, encryptionKey);
-    } catch (error) {
-      logFailure('Failed to decrypt the stored vault', error);
-      // E-203: the stored vault does not decrypt with the session key
-      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED) };
-    }
-
-    return {
-      success: true,
-      // The popup receives the database as base64: messages carry strings, not bytes.
-      vault: bytesToBase64(decryptedBytes),
-      publicEmailDomains: publicEmailDomains ?? [],
-      privateEmailDomains: privateEmailDomains ?? [],
-      hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? []
-    };
-  } catch (error) {
-    logFailure('Failed to get vault', error);
-    // Keep an already-coded error (the key chain reports its own failures) instead of masking it.
-    if (hasErrorCode(error)) {
-      return { success: false, error: getErrorMessage(error, '') };
-    }
-    // E-601: reading the vault or its key from storage failed
-    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
 }
 
@@ -678,6 +624,49 @@ export async function createVaultSqliteClient() : Promise<SqliteClient> {
  */
 export async function handleGetEncryptedVault(): Promise<string | null> {
   return await storage.getItem(StorageKeys.ENCRYPTED_VAULT) as string | null;
+}
+
+/**
+ * Encrypted vault blobs an extension page is sending in chunks, by transfer id (see VaultBlobTransfer).
+ */
+const pendingVaultBlobTransfers = new Map<string, { chunks: string[]; startedAt: number }>();
+
+/**
+ * How long an unfinished transfer is kept, so the chunks of a popup that closed during a save do not stay in memory.
+ */
+const VAULT_BLOB_TRANSFER_EXPIRY_MS = 60_000;
+
+/**
+ * Receive one chunk of an encrypted vault blob an extension page is sending. The last chunk carries the store options:
+ * the joined blob is then stored via {@link handleStoreEncryptedVault}, whose result is returned. Earlier chunks return null.
+ */
+export async function handleStoreEncryptedVaultChunk(request: {
+  transferId: string;
+  index: number;
+  chunk: string;
+  commit?: VaultBlobStoreOptions;
+}): Promise<{ success: boolean; mutationSequence: number } | null> {
+  const now = Date.now();
+  for (const [transferId, pending] of pendingVaultBlobTransfers) {
+    if (now - pending.startedAt > VAULT_BLOB_TRANSFER_EXPIRY_MS) {
+      pendingVaultBlobTransfers.delete(transferId);
+    }
+  }
+
+  const transfer = pendingVaultBlobTransfers.get(request.transferId) ?? { chunks: [], startedAt: now };
+  if (transfer.chunks.length !== request.index) {
+    // E-602: earlier chunks are gone, e.g. the service worker restarted or the transfer expired
+    pendingVaultBlobTransfers.delete(request.transferId);
+    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED));
+  }
+  transfer.chunks.push(request.chunk);
+  if (!request.commit) {
+    pendingVaultBlobTransfers.set(request.transferId, transfer);
+    return null;
+  }
+
+  pendingVaultBlobTransfers.delete(request.transferId);
+  return handleStoreEncryptedVault({ ...request.commit, vaultBlob: transfer.chunks.join('') });
 }
 
 /**
