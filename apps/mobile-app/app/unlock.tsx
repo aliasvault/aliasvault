@@ -160,7 +160,7 @@ export default function UnlockScreen() : React.ReactNode {
           HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
 
           if (!errorCode || await isWrongUnlockKey(errorCode)) {
-            setError(t('auth.errors.incorrectPassword'));
+            setError(t('common.errors.wrongPassword'));
           } else {
             const translationKey = getErrorTranslationKey(errorCode);
             setError(formatErrorWithCode(t(translationKey), errorCode));
@@ -249,7 +249,7 @@ export default function UnlockScreen() : React.ReactNode {
 
       if (!errorCode || await isWrongUnlockKey(errorCode)) {
         // Treat as incorrect password - show error and allow retry
-        setError(t('auth.errors.incorrectPassword'));
+        setError(t('common.errors.wrongPassword'));
       } else {
         // Other error codes: show the formatted message with raw error code
         const translationKey = getErrorTranslationKey(errorCode);
@@ -587,7 +587,7 @@ export default function UnlockScreen() : React.ReactNode {
               onPress={logoutUserInitiated}
               testID="logout-button"
             >
-              <ThemedText style={styles.logoutButtonText}>{t('auth.logout')}</ThemedText>
+              <ThemedText style={styles.logoutButtonText}>{t('common.logout')}</ThemedText>
             </RobustPressable>
           </View>
         </ScrollView>

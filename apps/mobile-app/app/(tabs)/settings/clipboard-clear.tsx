@@ -19,11 +19,11 @@ export default function ClipboardClearScreen(): React.ReactNode {
   const { t } = useTranslation();
 
   const TIMEOUT_OPTIONS = [
-    { value: 0, label: t('settings.clipboardClearOptions.never') },
-    { value: 5, label: t('settings.clipboardClearOptions.5seconds') },
+    { value: 0, label: t('common.never') },
+    { value: 5, label: t('common.duration.5seconds') },
     { value: 10, label: t('settings.clipboardClearOptions.10seconds') },
-    { value: 15, label: t('settings.clipboardClearOptions.15seconds') },
-    { value: 30, label: t('settings.clipboardClearOptions.30seconds') },
+    { value: 15, label: t('common.duration.15seconds') },
+    { value: 30, label: t('common.duration.30seconds') },
   ];
   const [selectedTimeout, setSelectedTimeout] = useState<number>(10);
   const [localOnlyEnabled, setLocalOnlyEnabled] = useState<boolean>(true);

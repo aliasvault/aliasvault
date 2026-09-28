@@ -1,5 +1,5 @@
 import { getIdentityAgeRanges } from '@aliasvault/client/rust/RustCore';
-import { getLanguageInfo } from '@aliasvault/models/defaults';
+import { getLanguageInfo } from '@aliasvault/i18n/languages';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
@@ -215,17 +215,17 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
           {t('settings.identityGeneratorSettings.description')}
         </ThemedText>
 
-        <ThemedText style={styles.sectionTitle}>{t('settings.identityGeneratorSettings.languageSection')}</ThemedText>
+        <ThemedText style={styles.sectionTitle}>{t('settings.language')}</ThemedText>
         <ThemedText style={styles.descriptionText}>
           {t('settings.identityGeneratorSettings.languageDescription')}
         </ThemedText>
         <TouchableOpacity style={styles.navRow} onPress={handleLanguagePress}>
-          <ThemedText style={styles.navRowLabel}>{t('settings.identityGeneratorSettings.languageSection')}</ThemedText>
+          <ThemedText style={styles.navRowLabel}>{t('settings.language')}</ThemedText>
           <ThemedText style={styles.navRowValue}>{getLanguageDisplayLabel()}</ThemedText>
           <Ionicons name="chevron-forward" size={20} style={styles.chevron} />
         </TouchableOpacity>
 
-        <ThemedText style={styles.sectionTitle}>{t('settings.identityGeneratorSettings.genderSection')}</ThemedText>
+        <ThemedText style={styles.sectionTitle}>{t('fieldLabels.alias.gender')}</ThemedText>
         <ThemedText style={styles.descriptionText}>
           {t('settings.identityGeneratorSettings.genderDescription')}
         </ThemedText>

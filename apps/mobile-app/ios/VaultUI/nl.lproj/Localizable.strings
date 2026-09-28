@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Fout";
 "cancel" = "Annuleren";
 "back" = "Terug";
@@ -7,8 +7,7 @@
 "website" = "Website";
 "username" = "Gebruikersnaam";
 "title" = "Titel";
-"unknown_error" = "Er is een onbekende fout opgetreden";
-
+"unknown_error" = "Er is een onbekende fout opgetreden.";
 "loading_items" = "Items laden...";
 "no_items_found" = "Geen items gevonden";
 "no_items_match" = "Er zijn geen items gevonden die overeenkomen met je zoekopdracht";
@@ -22,7 +21,7 @@
 "linking_url" = "Koppelen...";
 "select_item" = "Item selecteren";
 "select_text_to_insert" = "Selecteer tekst om in te voegen";
-"choose_username" = "Kies gebruikersnaam";
+"choose_username" = "Gebruikersnaam kiezen";
 "select_text_to_insert_message" = "Selecteer de tekst om in te voegen";
 "choose_username_message" = "Deze website vereist mogelijk je gebruikersnaam of e-mailadres om in te loggen";
 "username_prefix" = "Gebruikersnaam: ";
@@ -30,8 +29,6 @@
 "password" = "Wachtwoord";
 "items_load_error" = "Laden van items mislukt. Open de AliasVault app om te controleren op updates.";
 "no_item_selected" = "Geen item geselecteerd.";
-
-/* Context menu strings */
 "copy_username" = "Kopieer gebruikersnaam";
 "copy_password" = "Kopieer wachtwoord";
 "copy_email" = "Kopieer e-mail";
@@ -42,49 +39,33 @@
 "email_copied" = "E-mail gekopieerd";
 "totp_code_copied" = "TOTP code gekopieerd";
 "totp_code" = "TOTP Code";
-
-/* Search bar */
 "search_items" = "Zoek items...";
-
-/* Passkey registration */
 "create_passkey_title" = "Passkey aanmaken";
 "create_passkey_subtitle" = "Registreer een nieuwe passkey voor deze website. Deze wordt veilig opgeslagen in je vault en wordt automatisch gesynchroniseerd met je andere apparaten.";
 "create_passkey_button_confirm" = "Passkey aanmaken";
-
-/* Passkey provider */
 "passkey" = "Passkey";
 "loading_passkeys" = "Passkeys laden...";
 "no_passkeys_found" = "Geen passkeys gevonden";
 "no_passkeys_match" = "Er zijn geen passkeys gevonden die overeenkomen met je zoekopdracht";
 "select_passkey" = "Selecteer passkey";
 "passkeys_load_error" = "Laden van passkeys mislukt. Open de AliasVault app om te controleren op updates.";
-
-/* Passkey replacement */
-"create_new_passkey" = "Nieuwe passkey aanmaken";
+"create_new_passkey" = "Passkey aanmaken";
 "select_passkey_to_replace" = "Of vervang een bestaande passkey";
 "replace_passkey" = "Passkey vervangen";
 "replace_passkey_explanation" = "Dit zal de bestaande passkey vervangen door een nieuwe. Houd er rekening mee dat je oude passkey wordt overschreven en niet langer toegankelijk is. Als je in plaats hiervan een aparte passkey wilt maken, ga dan terug naar het vorige scherm.";
 "create_passkey_explanation" = "Dit maakt een nieuwe passkey aan en slaat deze op in je vault. De passkey wordt automatisch gesynchroniseerd naar je andere apparaten.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Of, voeg passkey toe aan een bestaand item";
 "add_passkey" = "Passkey toevoegen";
 "merge_passkey_explanation" = "Dit zal een passkey toevoegen aan je bestaande item. Je wachtwoord en andere gegevens zullen worden bewaard.";
-
-/* PIN Unlock */
 "unlock_vault" = "Vault ontgrendelen";
 "enter_pin_to_unlock_vault" = "Voer je pincode in om je vault te ontgrendelen";
 "pin_locked_max_attempts" = "Pincode vergrendeld na te veel mislukte pogingen";
 "pin_incorrect_attempts_remaining" = "Onjuiste pincode, %d pogingen resterend";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Voer je hoofdwachtwoord in";
 "unlock" = "Ontgrendelen";
 "incorrect_password" = "Onjuist wachtwoord. Probeer het opnieuw.";
 "attempts_warning" = "Onjuist wachtwoord. Je wordt uitgelogd als je het verkeerde wachtwoord %d vaker invult.";
 "max_attempts_reached" = "Te veel mislukte ontgrendel pogingen. Je bent uitgelogd om veiligheidsredenen.";
-
-/* PIN Setup */
 "pin_setup_title" = "Pincode instellen";
 "pin_setup_subtitle" = "Kies een pincode om je vault te ontgrendelen";
 "pin_confirm_title" = "Bevestig pincode";

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "compile": "tsc --noEmit",
-    "preinstall": "node ../../core/scripts/install-linked-deps.mjs"
+    "preinstall": "node ../../core/scripts/install-linked-deps.mjs",
+    "i18n:export-native": "node ../../core/i18n/scripts/export-native.mjs"
   },
   "codegenConfig": {
     "name": "NativeVaultManagerSpec",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@aliasvault/client": "file:../../core/client",
+    "@aliasvault/i18n": "file:../../core/i18n",
     "@aliasvault/models": "file:../../core/models",
     "@aliasvault/vault": "file:../../core/vault",
     "@expo/vector-icons": "^15.0.2",

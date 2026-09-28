@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Ошибка";
 "cancel" = "Отмена";
 "back" = "Назад";
@@ -7,8 +7,7 @@
 "website" = "Сайт";
 "username" = "Имя пользователя";
 "title" = "Название";
-"unknown_error" = "Произошла неизвестная ошибка";
-
+"unknown_error" = "Произошла неизвестная ошибка.";
 "loading_items" = "Загрузка записей...";
 "no_items_found" = "Записи не найдены";
 "no_items_match" = "Совпадений не найдено";
@@ -30,8 +29,6 @@
 "password" = "Пароль";
 "items_load_error" = "Ошибка загрузки. Откройте AliasVault и проверьте наличие обновлений.";
 "no_item_selected" = "Запись не выбрана.";
-
-/* Context menu strings */
 "copy_username" = "Скопировать имя пользователя";
 "copy_password" = "Скопировать пароль";
 "copy_email" = "Скопировать Email";
@@ -42,49 +39,33 @@
 "email_copied" = "Email скопирован";
 "totp_code_copied" = "Код TOTP скопирован";
 "totp_code" = "TOTP код";
-
-/* Search bar */
 "search_items" = "Поиск записей...";
-
-/* Passkey registration */
 "create_passkey_title" = "Создать новый ключ доступа";
 "create_passkey_subtitle" = "Зарегистрируйте новый ключ доступа для этого веб-сайта. Он будет надежно сохранен в вашем хранилище и автоматически синхронизирован между вашими устройствами с помощью AliasVault.";
-"create_passkey_button_confirm" = "Создать ключ доступа";
-
-/* Passkey provider */
+"create_passkey_button_confirm" = "Создание ключа доступа";
 "passkey" = "Ключ доступа";
 "loading_passkeys" = "Загрузка ключей доступа...";
 "no_passkeys_found" = "Ключи доступа не найдены";
 "no_passkeys_match" = "Подходящие ключи доступа не найдены.﻿";
 "select_passkey" = "Выбрать ключ доступа";
 "passkeys_load_error" = "Не удалось загрузить ключи доступа. Откройте приложение AliasVault, чтобы проверить обновления.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Создать новый ключ доступа";
 "select_passkey_to_replace" = "Или замените существующий ключ доступа";
 "replace_passkey" = "Заменить ключ доступа";
 "replace_passkey_explanation" = "Существующий ключ доступа будет заменен на новый. Обратите внимание, что старый ключ будет перезаписан и станет недоступен. Если вы хотите создать отдельный ключ доступа, вернитесь на предыдущий экран.";
 "create_passkey_explanation" = "Будет создан новый ключ доступа, который сохранится в вашем хранилище. Он будет автоматически синхронизирован со всеми вашими устройствами, на которых используется AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Или добавьте ключ к существующей записи";
 "add_passkey" = "Добавить ключ доступа";
 "merge_passkey_explanation" = "Это добавит ключ доступа к существующей записи. Ваш пароль и другие данные будут сохранены.";
-
-/* PIN Unlock */
 "unlock_vault" = "Разблокировать хранилище";
 "enter_pin_to_unlock_vault" = "Введите ПИН-код для разблокировки хранилища";
 "pin_locked_max_attempts" = "ПИН-код заблокирован: слишком много попыток ввода";
 "pin_incorrect_attempts_remaining" = "Неверный PIN-код. Осталось попыток: %d";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Введите свой мастер-пароль";
 "unlock" = "Разблокировать";
 "incorrect_password" = "Неверный пароль. Повторите попытку.";
 "attempts_warning" = "Неверный пароль. Вы выйдете из системы, если ошибетесь еще %d раз.";
 "max_attempts_reached" = "Слишком много неудачных попыток. Выход из системы выполнен в целях безопасности.";
-
-/* PIN Setup */
 "pin_setup_title" = "Настройка PIN-кода";
 "pin_setup_subtitle" = "Придумайте PIN-код для разблокировки хранилища";
 "pin_confirm_title" = "Подтвердите ПИН-код﻿";

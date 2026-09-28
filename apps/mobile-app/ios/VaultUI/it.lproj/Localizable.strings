@@ -1,21 +1,20 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Errore";
 "cancel" = "Annulla";
 "back" = "Indietro";
 "next" = "Avanti";
 "edit" = "Modifica";
 "website" = "Sito Web";
-"username" = "Nome Utente";
+"username" = "Nome utente";
 "title" = "Titolo";
-"unknown_error" = "Si è verificato un errore sconosciuto";
-
+"unknown_error" = "Si è verificato un errore sconosciuto.";
 "loading_items" = "Caricamento elementi...";
 "no_items_found" = "Nessun elemento trovato";
 "no_items_match" = "Nessun elemento esistente corrisponde alla tua ricerca";
 "create_new_item" = "Crea Nuovo Elemento";
 "open_aliasvault" = "Apri AliasVault";
 "untitled_credential" = "queste credenziali";
-"link_url_prompt_title" = "Collega alle credenziali?";
+"link_url_prompt_title" = "Collegamento alle credenziali?";
 "link_url_prompt_message" = "Aggiungi \"{{url}}\" ad {{name}} così che AliasVault possa riconoscere questa app o sito web la prossima volta?";
 "link_url_prompt_link_action" = "Collega e riempi";
 "link_url_prompt_skip_action" = "Solo riempimento";
@@ -30,8 +29,6 @@
 "password" = "Password";
 "items_load_error" = "Il caricamento degli elementi non è andato a buon fine. Si prega di aprire l'app AliasVault per controllare gli aggiornamenti.";
 "no_item_selected" = "Nessun elemento selezionato.";
-
-/* Context menu strings */
 "copy_username" = "Copia Nome Utente";
 "copy_password" = "Copia Password";
 "copy_email" = "Copia E-mail";
@@ -42,49 +39,33 @@
 "email_copied" = "Email copiata";
 "totp_code_copied" = "Codice TOTP copiato";
 "totp_code" = "Codice TOTP";
-
-/* Search bar */
 "search_items" = "Ricerca elementi...";
-
-/* Passkey registration */
 "create_passkey_title" = "Crea Nuova Passkey";
 "create_passkey_subtitle" = "Registra una nuova passkey per questo sito. Sarà memorizzata in modo sicuro nella tua cassaforte e sincronizzata automaticamente tra i tuoi dispositivi con AliasVault.";
 "create_passkey_button_confirm" = "Crea Passkey";
-
-/* Passkey provider */
 "passkey" = "Passkey";
 "loading_passkeys" = "Caricamento passkey...";
 "no_passkeys_found" = "Nessuna passkey trovata";
 "no_passkeys_match" = "Nessun passkey esistente corrisponde alla ricerca";
 "select_passkey" = "Seleziona Passkey";
 "passkeys_load_error" = "Il caricamento delle credenziali non è andato a buon fine. Si prega di aprire l'app AliasVault per controllare gli aggiornamenti.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Crea Nuova Passkey";
 "select_passkey_to_replace" = "Oppure, sostituire un passkey esistente";
 "replace_passkey" = "Sostituire Passkey";
 "replace_passkey_explanation" = "Questo sostituirà la passkey esistente con una nuova. Tieni presente che la tua vecchia passkey sarà sovrascritta e non sarà più accessibile. Se invece si desidera creare una passkey separata, tornare alla schermata precedente.";
 "create_passkey_explanation" = "Questo crea una nuova passkey e la memorizza nella tua cassaforte. Sarà sincronizzata automaticamente su tutti i tuoi dispositivi che usano AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Oppure, aggiungi passkey a un elemento esistente";
 "add_passkey" = "Aggiungi Passkey";
 "merge_passkey_explanation" = "Questo aggiungerà una passkey al tuo elemento esistente. La tua password e altri dati saranno preservati.";
-
-/* PIN Unlock */
 "unlock_vault" = "Sblocca Cassaforte";
 "enter_pin_to_unlock_vault" = "Inserisci il PIN per sbloccare la cassaforte";
 "pin_locked_max_attempts" = "PIN bloccato dopo troppi tentativi falliti";
 "pin_incorrect_attempts_remaining" = "PIN errato, %d tentativi rimasti";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Inserisci la tua password principale";
 "unlock" = "Sblocca";
 "incorrect_password" = "Password errata. Riprovare.";
 "attempts_warning" = "Password errata. Sarai disconnesso se inserisci la password errata %d altre volte.";
 "max_attempts_reached" = "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza.";
-
-/* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
 "pin_setup_subtitle" = "Scegli un PIN per sbloccare la cassaforte";
 "pin_confirm_title" = "Conferma PIN";

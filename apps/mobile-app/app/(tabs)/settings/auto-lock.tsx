@@ -31,10 +31,10 @@ export default function AutoLockScreen() : React.ReactNode {
   }, [getAutoLockTimeout]);
 
   const timeoutOptions = [
-    { label: t('settings.autoLockOptions.never'), value: 0 },
-    { label: t('settings.autoLockOptions.5seconds'), value: 5 },
-    { label: t('settings.autoLockOptions.15seconds'), value: 15 },
-    { label: t('settings.autoLockOptions.30seconds'), value: 30 },
+    { label: t('common.never'), value: 0 },
+    { label: t('common.duration.5seconds'), value: 5 },
+    { label: t('common.duration.15seconds'), value: 15 },
+    { label: t('common.duration.30seconds'), value: 30 },
     { label: t('settings.autoLockOptions.1minute'), value: 60 },
     { label: t('settings.autoLockOptions.5minutes'), value: 300 },
     { label: t('settings.autoLockOptions.15minutes'), value: 900 },

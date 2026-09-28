@@ -618,7 +618,7 @@ export default function UpgradeScreen() : React.ReactNode {
                     style={styles.logoutButton}
                     onPress={handleLogout}
                   >
-                    <ThemedText style={styles.logoutButtonText}>{t('upgrade.logout')}</ThemedText>
+                    <ThemedText style={styles.logoutButtonText}>{t('common.logout')}</ThemedText>
                   </RobustPressable>
                 </View>
               )}

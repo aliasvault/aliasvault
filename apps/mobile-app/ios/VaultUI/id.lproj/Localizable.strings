@@ -1,14 +1,13 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Kesalahan";
 "cancel" = "Batal";
 "back" = "Kembali";
 "next" = "Berikutnya";
 "edit" = "Ubah";
 "website" = "Situs Web";
-"username" = "Username";
+"username" = "Nama Pengguna";
 "title" = "Judul";
-"unknown_error" = "Terjadi kesalahan yang tidak diketahui";
-
+"unknown_error" = "Terjadi kesalahan yang tidak diketahui.";
 "loading_items" = "Memuat item...";
 "no_items_found" = "Tidak ada item yang ditemukan";
 "no_items_match" = "Tidak ada item yang sesuai dengan pencarian anda";
@@ -30,8 +29,6 @@
 "password" = "Kata sandi";
 "items_load_error" = "Gagal memuat item. Silakan buka aplikasi AliasVault untuk memeriksa pembaruan.";
 "no_item_selected" = "No item selected.";
-
-/* Context menu strings */
 "copy_username" = "Salin Nama Pengguna";
 "copy_password" = "Salin Kata Sandi";
 "copy_email" = "Salin email";
@@ -42,49 +39,33 @@
 "email_copied" = "Email tersalin";
 "totp_code_copied" = "Kode TOTP tersalin";
 "totp_code" = "Kode TOTP";
-
-/* Search bar */
 "search_items" = "Cari item...";
-
-/* Passkey registration */
-"create_passkey_title" = "Buat Passkey baru";
+"create_passkey_title" = "Buat Kunci akses baru";
 "create_passkey_subtitle" = "Daftarkan passkey baru untuk situs web ini. Kunci tersebut akan disimpan dengan aman di brankas Anda dan secara otomatis disinkronkan ke seluruh perangkat Anda melalui AliasVault.";
-"create_passkey_button_confirm" = "Buat Passkey";
-
-/* Passkey provider */
-"passkey" = "Passkey";
+"create_passkey_button_confirm" = "Buat Kunci akses";
+"passkey" = "Kunci Akses";
 "loading_passkeys" = "Memuat passkey...";
 "no_passkeys_found" = "Tidak ada passkey ditemukan";
 "no_passkeys_match" = "Tidak ada passkey yang ada yang sesuai dengan pencarian Anda";
 "select_passkey" = "Pilih Passkey";
 "passkeys_load_error" = "Gagal memuat passkey. Silakan buka aplikasi AliasVault untuk memeriksa pembaruan.";
-
-/* Passkey replacement */
-"create_new_passkey" = "Buat Passkey baru";
+"create_new_passkey" = "Buat Kunci akses baru";
 "select_passkey_to_replace" = "Atau, ganti passkey yang sudah ada";
 "replace_passkey" = "Ganti Passkey";
 "replace_passkey_explanation" = "Tindakan ini akan mengganti passkey yang ada dengan yang baru. Harap diperhatikan bahwa passkey lama Anda akan ditimpa dan tidak dapat diakses lagi. Jika Anda ingin membuat passkey terpisah, silakan kembali ke layar sebelumnya.";
 "create_passkey_explanation" = "Tindakan ini akan membuat kunci akses baru dan menyimpannya di brankas Anda. Kunci tersebut akan secara otomatis disinkronkan ke semua perangkat Anda yang menggunakan AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Atau, tambah passkey ke item yang sudah ada";
-"add_passkey" = "Tambah Passkey";
+"add_passkey" = "Tambah Kunci akses";
 "merge_passkey_explanation" = "Tindakan ini akan menambahkan kunci akses ke item yang sudah ada. Kata sandi dan data lainnya akan tetap dipertahankan.";
-
-/* PIN Unlock */
 "unlock_vault" = "Buka Brankas";
-"enter_pin_to_unlock_vault" = "Masukkan pin untuk membuka vault";
+"enter_pin_to_unlock_vault" = "Masukkan PIN untuk membuka brankas";
 "pin_locked_max_attempts" = "PIN terkunci setelah terlalu banyak upaya yang gagal";
 "pin_incorrect_attempts_remaining" = "PIN salah. Tersisa %d kali percobaan";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Masukkan kata sandi utama Anda";
 "unlock" = "Buka";
 "incorrect_password" = "Kata sandi salah. Silakan coba lagi.";
 "attempts_warning" = "Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah %d kali lagi.";
 "max_attempts_reached" = "Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan";
-
-/* PIN Setup */
 "pin_setup_title" = "Atur Kode PIN";
 "pin_setup_subtitle" = "Pilih PIN untuk membuka kunci brankas Anda";
 "pin_confirm_title" = "Konfirmasi PIN";

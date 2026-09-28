@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Hiba";
 "cancel" = "Mégse";
 "back" = "Vissza";
@@ -7,8 +7,7 @@
 "website" = "Weblap";
 "username" = "Felhasználónév";
 "title" = "Cím";
-"unknown_error" = "Ismeretlen hiba lépett fel";
-
+"unknown_error" = "Ismeretlen hiba lépett fel.";
 "loading_items" = "Elemek betöltése...";
 "no_items_found" = "Elem nem található";
 "no_items_match" = "Egyik elem sem elégíti ki a keresést";
@@ -30,8 +29,6 @@
 "password" = "Jelszó";
 "items_load_error" = "Az elemek betöltése sikertelen. Kérem, nyissa meg az AliasVault-ot, és nézze meg van e elérhető új verzió.";
 "no_item_selected" = "Nincs kiválasztott elem.";
-
-/* Context menu strings */
 "copy_username" = "Felhasználónév másolása";
 "copy_password" = "Jelszó másolása";
 "copy_email" = "E-mail másolása";
@@ -42,49 +39,33 @@
 "email_copied" = "E-mail másolva";
 "totp_code_copied" = "TOTP kód másolva";
 "totp_code" = "TOTP kód";
-
-/* Search bar */
 "search_items" = "Elemek keresése...";
-
-/* Passkey registration */
 "create_passkey_title" = "Új azonosítókulcs létrehozása";
 "create_passkey_subtitle" = "Regisztráljon egy új azonosítókulcsot az oldalhoz. Biztonságosan tárolásra kerül széfjében, és szinkronizálódik minden eszköze között.";
 "create_passkey_button_confirm" = "Azonosítókulcs létrehozása";
-
-/* Passkey provider */
 "passkey" = "Azonosítókulcs";
 "loading_passkeys" = "Azonosítókulcsok betöltése...";
 "no_passkeys_found" = "Nem található azonosítókulcs";
 "no_passkeys_match" = "Egyik azonosítókulcs sem elégíti ki a keresést";
 "select_passkey" = "Azonosítókulcs kiválasztása";
 "passkeys_load_error" = "Az azonosítókulcsok betöltése sikertelen. Kérem, nyissa meg az AliasVault-ot, és nézze meg van e elérhető új verzió.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Új azonosítókulcs létrehozása";
 "select_passkey_to_replace" = "Vagy cserélje le már meglévő azonosítókulcsát";
 "replace_passkey" = "Azonosítókulcs cseréje";
 "replace_passkey_explanation" = "Ezzel kicserél egy már meglevő azonosítókulcsot egy újra. Ezzel elfogadja, hogy a felülírt régi azonosítókulcsa nem lesz többé elérhető. Ha egy külön azonosítókulcsot akar létrehozni, lépjen vissza az előző képernyőre.";
 "create_passkey_explanation" = "Ezzel létrehoz egy új azonosítókulcsot, és menti azt a széfjébe. Minden AliasVault-ot használó eszköze között szinkronizálódni fog.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Vagy adja hozzá egy már létező elemhez";
 "add_passkey" = "Azonosítókulcs hozzáadása";
 "merge_passkey_explanation" = "Ezzel egy már létező elemhez adja hozzá az azonosítókulcsot. A jelszava és minden más adata megmarad.";
-
-/* PIN Unlock */
 "unlock_vault" = "Széf feloldása";
 "enter_pin_to_unlock_vault" = "Adja meg PIN kódját a széf feloldáshoz";
 "pin_locked_max_attempts" = "A PIN kódos belépés tiltásra került a túl sok hibás próbálkozás miatt";
 "pin_incorrect_attempts_remaining" = "Érvénytelen PIN kód. %d próbálkozás maradt hátra";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Adja meg mester jelszavát";
 "unlock" = "Feloldás";
 "incorrect_password" = "Hibás jelszó. Próbálkozzon újra.";
 "attempts_warning" = "Hibás jelszó. Ha további %d alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.";
 "max_attempts_reached" = "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti.";
-
-/* PIN Setup */
 "pin_setup_title" = "PIN kód beállítása";
 "pin_setup_subtitle" = "Válassza ki a széf feloldó PIN kódját";
 "pin_confirm_title" = "PIN kód megerősítése";

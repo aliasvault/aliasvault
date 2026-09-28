@@ -212,10 +212,10 @@ export class AppUnlockUtility {
       }
 
       // Fallback to password
-      return 'items.password';
+      return 'common.password';
     } catch (error) {
       console.error('Failed to get auth method display key:', error);
-      return 'items.password';
+      return 'common.password';
     }
   }
 }

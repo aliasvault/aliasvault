@@ -246,7 +246,7 @@ export default function FamilySharingScreen(): React.ReactNode {
       } catch (deleteError) {
         // Local unlock key could mismatch what is actually stored on server (recent password change on other device), if so we show a incorrect password error.
         if (apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH') {
-          throw new SharingOperationError(t('auth.errors.incorrectPassword'));
+          throw new SharingOperationError(t('common.errors.wrongPassword'));
         }
 
         throw deleteError;

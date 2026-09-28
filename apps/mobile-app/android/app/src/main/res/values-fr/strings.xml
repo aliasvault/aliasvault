@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Remplissage automatique AliasVault</string>
+  <string name="autofill_service_description">Remplissage automatique AliasVault</string>
   <string name="aliasvault_icon">Icône AliasVault</string>
   <string name="common_close">Fermer</string>
   <string name="common_next">Suivant</string>
@@ -10,8 +11,8 @@
   <string name="common_show_details">Afficher les détails</string>
   <string name="common_hide_details">Masquer les détails</string>
   <string name="common_copy">Copier</string>
-  <string name="common_copied_to_clipboard">Copié dans le presse-papiers</string>
-  <string name="unknown_error">Une erreur inconnue s\'est produite</string>
+  <string name="common_copied_to_clipboard">Copier dans le presse-papiers</string>
+  <string name="unknown_error">Une erreur inconnue s\'est produite.</string>
   <string name="autofill_failed_to_retrieve">Échec de la récupération, ouvrez l\'application</string>
   <string name="autofill_no_match_found">Aucune correspondance trouvée</string>
   <string name="autofill_open_app">Ouvrir l’application</string>
@@ -28,14 +29,14 @@
   <string name="passkey_display_name_hint">Entrez un nom pour cette clé d\'accès</string>
   <string name="passkey_website_label">Site Web</string>
   <string name="passkey_username_label">Nom d\'utilisateur</string>
-  <string name="passkey_create_button">Créer clé d\'accès</string>
-  <string name="passkey_creating">Création de la clé d\'accès…</string>
-  <string name="passkey_saving">Sauvegarde dans le coffre-fort …</string>
-  <string name="passkey_syncing">Synchronisation avec le serveur…</string>
+  <string name="passkey_create_button">Créer une clé d\'accès</string>
+  <string name="passkey_creating">Création de la clé d\'accès...</string>
+  <string name="passkey_saving">Sauvegarde dans le coffre-fort ...</string>
+  <string name="passkey_syncing">Synchronisation avec le serveur...</string>
   <string name="passkey_error_title">Erreur</string>
   <string name="passkey_error_empty_name">Entrez un nom pour la clé d\'accès</string>
   <string name="passkey_creation_failed">Echec de la création de la clé d\'accès</string>
-  <string name="passkey_retry_button">Recommencer</string>
+  <string name="passkey_retry_button">Réessayer</string>
   <string name="passkey_info_icon">Icône d\'info</string>
   <string name="passkey_create_explanation">Cela crée une nouvelle clé d\'accès et la stocke dans votre coffre-fort. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.</string>
   <string name="passkey_create_new_button">Créer une nouvelle clé d\'accès</string>
@@ -43,13 +44,13 @@
   <string name="passkey_add_to_existing">Ou, ajouter la clé d\'accès à un élément existant :</string>
   <string name="passkey_replace_explanation">Cela remplacera la clé d\'accès existante par une nouvelle. Veuillez noter que votre ancienne clé d\'accès sera écrasée et ne sera plus accessible. Si vous souhaitez créer une clé d\'accès séparée, revenez à l\'écran précédent.</string>
   <string name="passkey_merge_explanation">Ceci va ajouter une clé d\'accès à votre élément existant. Votre mot de passe et d\'autres données seront préservées.</string>
-  <string name="passkey_replacing">Remplacement de la clé d\'accès …</string>
+  <string name="passkey_replacing">Remplacement de la clé d\'accès ...</string>
   <string name="add_passkey">Ajouter une clé d\'accès</string>
   <string name="add_passkey_subtitle">Ajout de la clé d\'accès à l\'élément existant</string>
-  <string name="passkey_checking_connection">Vérification de la connexion…</string>
-  <string name="passkey_retrieving">Récupération de la clé d\'accès…</string>
-  <string name="passkey_verifying">Vérification…</string>
-  <string name="passkey_authenticating">Authentification…</string>
+  <string name="passkey_checking_connection">Vérification de la connexion...</string>
+  <string name="passkey_retrieving">Récupération de la clé d\'accès...</string>
+  <string name="passkey_verifying">Vérification...</string>
+  <string name="passkey_authenticating">Authentification...</string>
   <string name="connection_error_title">Erreur de Connexion</string>
   <string name="connection_error_message">Aucune connexion au serveur ne peut être établie. Veuillez vérifier votre connexion internet et essayer de créer à nouveau la clé d\'accès.</string>
   <string name="session_expired_title">Session expirée</string>
@@ -70,8 +71,8 @@
   <string name="error_biometric_cancelled">Authentification biométrique annulée</string>
   <string name="error_encryption_key_failed">Impossible de récupérer la clé de cryptage</string>
   <string name="pin_unlock_vault">Déverrouiller le coffre-fort</string>
-  <string name="pin_enter_to_unlock">Entrez votre code PIN pour déverrouiller votre coffre-fort</string>
-  <string name="pin_locked_max_attempts">Code PIN verrouillé après trop de tentatives échouées</string>
+  <string name="pin_enter_to_unlock">Saisir votre code NIP pour déverrouiller votre coffre-fort</string>
+  <string name="pin_locked_max_attempts">Le code PIN est verrouillé après trop de tentatives échouées</string>
   <string name="pin_incorrect_attempts_remaining">Code PIN incorrect, %d tentatives restantes</string>
   <string name="pin_setup_title">Configurer le code PIN</string>
   <string name="pin_setup_description">Choisissez un code PIN pour déverrouiller votre coffre-fort</string>
@@ -79,10 +80,10 @@
   <string name="pin_confirm_description">Entrez à nouveau votre code PIN pour confirmer</string>
   <string name="pin_mismatch">Les codes PIN ne correspondent pas. Veuillez réessayer.</string>
   <string name="password_unlock_title">Déverrouiller le coffre-fort</string>
-  <string name="password_unlock_subtitle">Entrez votre mot de passe maître</string>
+  <string name="password_unlock_subtitle">Entrez votre mot de passe principal</string>
   <string name="password_unlock_password_hint">Mot de passe</string>
   <string name="password_unlock_button">Déverrouiller</string>
-  <string name="password_unlock_incorrect">Mot de passe incorrect. Veuillez réessayer.</string>
+  <string name="password_unlock_incorrect">Mot de passe incorrect, veuillez réessayer.</string>
   <string name="password_unlock_error">Échec de la vérification du mot de passe</string>
   <string name="password_unlock_attempts_warning">Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de %d fois.</string>
   <string name="password_unlock_max_attempts_reached">Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité.</string>

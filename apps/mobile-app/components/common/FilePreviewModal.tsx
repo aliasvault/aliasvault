@@ -86,7 +86,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       setFileContent(content);
     } catch (error) {
       console.error('Error reading text file:', error);
-      showAlert('Error', 'Could not read file content');
+      showAlert(t('common.error'), t('items.attachmentReadError'));
       setFileContent('Error loading file content');
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       }
     } catch (error) {
       console.error('Error downloading file:', error);
-      showAlert('Error', 'Failed to download file');
+      showAlert(t('common.error'), t('common.attachmentDownloadFailed'));
     }
   };
 

@@ -89,9 +89,9 @@ export function useLogout(): UseLogoutReturn {
     } else {
       // Show normal confirmation dialog
       showConfirm(
-        t('auth.logout'),
+        t('common.logout'),
         t('auth.confirmLogout'),
-        t('auth.logout'),
+        t('common.logout'),
         performLogout,
         { confirmStyle: 'destructive' }
       );

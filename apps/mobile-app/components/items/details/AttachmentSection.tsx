@@ -57,7 +57,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
       await openAttachment({ filePath: file.uri, fileName: attachment.Filename });
     } catch (error) {
       console.error('Error handling attachment:', error);
-      showAlert('Error', 'Failed to process attachment');
+      showAlert(t('common.error'), t('items.attachmentReadError'));
     }
   };
 
@@ -122,7 +122,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="subtitle">
-        {t('items.attachments')}
+        {t('common.attachments')}
       </ThemedText>
       {attachments.map(attachment => (
         <TouchableOpacity

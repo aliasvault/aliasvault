@@ -645,7 +645,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
         {emailView}
         {decrypted && decrypted.attachments.length > 0 && (
           <View style={styles.attachments}>
-            <ThemedText style={styles.attachmentsTitle}>{t('emails.attachments')}</ThemedText>
+            <ThemedText style={styles.attachmentsTitle}>{t('common.attachments')}</ThemedText>
             {decrypted.attachments.map((attachment, index) => (
               <RobustPressable
                 key={`${index}-${attachment.filename}`}

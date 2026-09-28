@@ -1059,9 +1059,9 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
       case FieldCategories.Login:
         return t('items.loginCredentials');
       case FieldCategories.Alias:
-        return t('items.alias');
+        return t('common.alias');
       case FieldCategories.Card:
-        return t('itemTypes.creditCard.cardInformation');
+        return t('items.cardInformation');
       default:
         return category;
     }
@@ -1546,7 +1546,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
                           >
                             <MaterialIcons name="add" size={14} color={colors.textMuted} />
                             <ThemedText style={styles.addEmailBadgeText}>
-                              {t('items.email')}
+                              {t('common.email')}
                             </ThemedText>
                           </RobustPressable>
                         )}
@@ -1584,7 +1584,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
             {/* Notes Section */}
             {notesField && visibleFieldKeys.has('notes.content') && (
               <FormSection
-                title={t('items.notes')}
+                title={t('common.notes')}
                 actions={
                   !shouldShowField(notesField) ? (
                     <RobustPressable
@@ -1608,7 +1608,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
             {/* Custom Fields Section */}
             {customFields.length > 0 && (
-              <FormSection title={t('itemTypes.customFields')}>
+              <FormSection title={t('common.customFields')}>
                 <DraggableCustomFieldsList
                   customFields={customFields}
                   fieldValues={fieldValues}
@@ -1643,7 +1643,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
             {/* Attachments Section */}
             {showAttachments && (
-              <FormSection title={t('items.attachments')}>
+              <FormSection title={t('common.attachments')}>
                 <AttachmentUploader
                   attachments={attachments}
                   onAttachmentsChange={setAttachments}

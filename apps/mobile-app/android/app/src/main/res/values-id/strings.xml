@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Pengisian otomatis AliasVault</string>
+  <string name="autofill_service_description">Pengisian otomatis AliasVault</string>
   <string name="aliasvault_icon">Ikon AliasVault</string>
   <string name="common_close">Tutup</string>
   <string name="common_next">Berikutnya</string>
@@ -10,8 +11,8 @@
   <string name="common_show_details">Tampilkan rincian</string>
   <string name="common_hide_details">Sembunyikan rincian</string>
   <string name="common_copy">Salin</string>
-  <string name="common_copied_to_clipboard">Tersalin ke papan klip</string>
-  <string name="unknown_error">Terjadi kesalahan yang tidak diketahui</string>
+  <string name="common_copied_to_clipboard">Telah disalin ke papan klip</string>
+  <string name="unknown_error">Terjadi kesalahan yang tidak diketahui.</string>
   <string name="autofill_failed_to_retrieve">Gagal mengambil, buka aplikasi</string>
   <string name="autofill_no_match_found">Tidak ada kecocokan ditemukan</string>
   <string name="autofill_open_app">Buka aplikasi</string>
@@ -20,36 +21,36 @@
   <string name="biometric_store_key_subtitle">Lakukan otentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Hal ini memungkinkan akses yang aman ke brankas Anda.</string>
   <string name="biometric_unlock_vault_title">Buka Brankas</string>
   <string name="biometric_unlock_vault_subtitle">Otentikasi untuk mengakses brankas Anda</string>
-  <string name="passkey_registration_title">Buat Passkey</string>
-  <string name="create_passkey_title">Buat Passkey baru</string>
+  <string name="passkey_registration_title">Buat Kunci akses</string>
+  <string name="create_passkey_title">Buat Kunci akses baru</string>
   <string name="create_passkey_subtitle">Daftarkan passkey baru untuk situs web ini. Kunci tersebut akan disimpan dengan aman di brankas Anda dan secara otomatis disinkronkan ke seluruh perangkat Anda melalui AliasVault.</string>
   <string name="replace_passkey">Ganti Passkey</string>
   <string name="passkey_display_name_label">Nama Kunci akses</string>
-  <string name="passkey_display_name_hint">Masukkan nama untuk Passkey ini</string>
+  <string name="passkey_display_name_hint">Masukkan nama untuk Kunci akses ini</string>
   <string name="passkey_website_label">Situs Web</string>
-  <string name="passkey_username_label">Username</string>
-  <string name="passkey_create_button">Buat Passkey</string>
-  <string name="passkey_creating">Membuat Kunci akses…</string>
-  <string name="passkey_saving">Menyimpan ke brankas…</string>
-  <string name="passkey_syncing">Menyinkronkan ke server…</string>
+  <string name="passkey_username_label">Nama Pengguna</string>
+  <string name="passkey_create_button">Buat Kunci akses</string>
+  <string name="passkey_creating">Membuat Kunci akses...</string>
+  <string name="passkey_saving">Menyimpan ke brankas...</string>
+  <string name="passkey_syncing">Menyinkronkan ke server...</string>
   <string name="passkey_error_title">Kesalahan</string>
   <string name="passkey_error_empty_name">Silakan masukkan nama untuk kunci akses</string>
   <string name="passkey_creation_failed">Gagal membuat kunci sandi</string>
   <string name="passkey_retry_button">Coba lagi</string>
   <string name="passkey_info_icon">Info ikon</string>
   <string name="passkey_create_explanation">Tindakan ini akan membuat kunci akses baru dan menyimpannya di brankas Anda. Kunci tersebut akan secara otomatis disinkronkan ke semua perangkat Anda yang menggunakan AliasVault.</string>
-  <string name="passkey_create_new_button">Buat Passkey baru</string>
+  <string name="passkey_create_new_button">Buat Kunci akses baru</string>
   <string name="passkey_select_to_replace">Atau, ganti kunci akses yang sudah ada:</string>
   <string name="passkey_add_to_existing">Atau, tambahkan kunci akses ke item yang sudah ada:</string>
   <string name="passkey_replace_explanation">Tindakan ini akan mengganti passkey yang ada dengan yang baru. Harap diperhatikan bahwa passkey lama Anda akan ditimpa dan tidak dapat diakses lagi. Jika Anda ingin membuat passkey terpisah, silakan kembali ke layar sebelumnya.</string>
   <string name="passkey_merge_explanation">Tindakan ini akan menambahkan kunci akses ke item yang sudah ada. Kata sandi dan data lainnya akan tetap dipertahankan.</string>
-  <string name="passkey_replacing">Mengganti kunci akses…</string>
-  <string name="add_passkey">Tambah Passkey</string>
+  <string name="passkey_replacing">Mengganti kunci akses...</string>
+  <string name="add_passkey">Tambah Kunci akses</string>
   <string name="add_passkey_subtitle">Menambahkan kata sandi ke item yang sudah ada</string>
-  <string name="passkey_checking_connection">Memeriksa sambungan…</string>
-  <string name="passkey_retrieving">Mengambil kunci akses…</string>
-  <string name="passkey_verifying">Memverifikasi…</string>
-  <string name="passkey_authenticating">Sedang melakukan otentikasi…</string>
+  <string name="passkey_checking_connection">Memeriksa sambungan...</string>
+  <string name="passkey_retrieving">Mengambil kunci akses...</string>
+  <string name="passkey_verifying">Memverifikasi...</string>
+  <string name="passkey_authenticating">Sedang melakukan otentikasi...</string>
   <string name="connection_error_title">Koneksi bermasalah</string>
   <string name="connection_error_message">Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda dan coba buat kembali kunci akses.</string>
   <string name="session_expired_title">Sesi Telah Berakhir</string>
@@ -70,7 +71,7 @@
   <string name="error_biometric_cancelled">Otentikasi Biometrik dibatalkan</string>
   <string name="error_encryption_key_failed">Gagal mengambil kunci enkripsi</string>
   <string name="pin_unlock_vault">Buka Brankas</string>
-  <string name="pin_enter_to_unlock">Masukkan pin untuk membuka vault</string>
+  <string name="pin_enter_to_unlock">Masukkan PIN untuk membuka brankas</string>
   <string name="pin_locked_max_attempts">PIN terkunci setelah terlalu banyak upaya yang gagal</string>
   <string name="pin_incorrect_attempts_remaining">PIN salah. Tersisa %d kali percobaan</string>
   <string name="pin_setup_title">Atur Kode PIN</string>
@@ -85,5 +86,5 @@
   <string name="password_unlock_incorrect">Kata sandi salah. Silakan coba lagi.</string>
   <string name="password_unlock_error">Gagal memverifikasi kata sandi</string>
   <string name="password_unlock_attempts_warning">Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah %d kali lagi.</string>
-  <string name="password_unlock_max_attempts_reached">Terlalu banyak upaya membuka kunci yang gagal. Anda telah dikeluarkan dari sistem demi alasan keamanan.</string>
+  <string name="password_unlock_max_attempts_reached">Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan</string>
 </resources>

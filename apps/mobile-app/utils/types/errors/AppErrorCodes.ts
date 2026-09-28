@@ -217,12 +217,12 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     // Authentication errors
     [AppErrorCode.AUTHENTICATION_FAILED]: 'auth.errors.sessionExpired',
     [AppErrorCode.SESSION_EXPIRED]: 'auth.errors.sessionExpired',
-    [AppErrorCode.PASSWORD_CHANGED]: 'vault.errors.passwordChanged',
+    [AppErrorCode.PASSWORD_CHANGED]: 'common.errors.passwordChanged',
 
     // Network errors
-    [AppErrorCode.SERVER_UNAVAILABLE]: 'auth.errors.serverError',
+    [AppErrorCode.SERVER_UNAVAILABLE]: 'common.errors.serverError',
     [AppErrorCode.NETWORK_ERROR]: 'auth.errors.networkError',
-    [AppErrorCode.SERVER_ERROR]: 'auth.errors.serverError',
+    [AppErrorCode.SERVER_ERROR]: 'common.errors.serverError',
 
     // Version errors
     [AppErrorCode.CLIENT_VERSION_NOT_SUPPORTED]: 'vault.errors.versionNotSupported',
@@ -253,7 +253,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.BIOMETRIC_NOT_AVAILABLE]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.BIOMETRIC_NOT_ENROLLED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.BIOMETRIC_LOCKOUT]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.UNLOCK_KEY_REJECTED]: 'auth.errors.incorrectPassword',
+    [AppErrorCode.UNLOCK_KEY_REJECTED]: 'common.errors.wrongPassword',
     [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.KEY_OUT_OF_SYNC]: 'auth.errors.sessionExpired',
     [AppErrorCode.SERVER_VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVaultin automaattinen täyttö</string>
+  <string name="autofill_service_description">AliasVaultin automaattinen täyttö</string>
   <string name="aliasvault_icon">AliasVault-kuvake</string>
   <string name="common_close">Sulje</string>
   <string name="common_next">Seuraava</string>
@@ -11,7 +12,7 @@
   <string name="common_hide_details">Piilota tiedot</string>
   <string name="common_copy">Copy</string>
   <string name="common_copied_to_clipboard">Kopioitu leikepöydälle</string>
-  <string name="unknown_error">Tapahtui tuntematon virhe</string>
+  <string name="unknown_error">Tapahtui tuntematon virhe.</string>
   <string name="autofill_failed_to_retrieve">Nouto epäonnistui, avaa sovellus</string>
   <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Avaa sovellus</string>
@@ -20,25 +21,25 @@
   <string name="biometric_store_key_subtitle">Todenna tallentaaksesi salausavaimesi turvallisesti Android Keystoreen. Tämä mahdollistaa turvallisen pääsyn holviisi.</string>
   <string name="biometric_unlock_vault_title">Avaa holvin lukitus</string>
   <string name="biometric_unlock_vault_subtitle">Todenna päästäksesi holviisi</string>
-  <string name="passkey_registration_title">Luo todennusavain</string>
-  <string name="create_passkey_title">Luo uusi todennusavain</string>
+  <string name="passkey_registration_title">Luo Passkey, todennusavain</string>
+  <string name="create_passkey_title">Luo uusi sala-avain</string>
   <string name="create_passkey_subtitle">Rekisteröi uusi todennusavain tälle sivustolle. Se tallennetaan turvallisesti holveen ja synkronoidaan automaattisesti eri laitteissa AliasVaultin kanssa.</string>
   <string name="replace_passkey">Korvaa sala-avain</string>
   <string name="passkey_display_name_label">Todennusavaimen nimi</string>
-  <string name="passkey_display_name_hint">Anne nimi tälle todennusavaimelle</string>
+  <string name="passkey_display_name_hint">Anna nimi tälle todennusavaimelle</string>
   <string name="passkey_website_label">Verkkosivusto</string>
   <string name="passkey_username_label">Käyttäjänimi</string>
-  <string name="passkey_create_button">Luo todennusavain, Passkey</string>
+  <string name="passkey_create_button">Luo Passkey, todennusavain</string>
   <string name="passkey_creating">Luodaan todennusavainta...</string>
-  <string name="passkey_saving">Tallennetaan holviin…</string>
-  <string name="passkey_syncing">Synkronoidaan palvelimeen…</string>
+  <string name="passkey_saving">Tallennetaan holviin...</string>
+  <string name="passkey_syncing">Synkronoidaan palvelimeen...</string>
   <string name="passkey_error_title">Virhe</string>
   <string name="passkey_error_empty_name">Ole hyvä ja syötä todennusavaimen nimi</string>
   <string name="passkey_creation_failed">Todennusavaimen luonti epäonnistui</string>
   <string name="passkey_retry_button">Yritä uudelleen</string>
   <string name="passkey_info_icon">Info-ikoni</string>
   <string name="passkey_create_explanation">Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.</string>
-  <string name="passkey_create_new_button">Luo uusi todennusavain, Passkey</string>
+  <string name="passkey_create_new_button">Luo uusi sala-avain</string>
   <string name="passkey_select_to_replace">Tai korvaa olemassa oleva todennusavain:</string>
   <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.</string>
@@ -48,18 +49,18 @@
   <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Tarkistetaan yhteyttä</string>
   <string name="passkey_retrieving">Noudetaan todennusavainta...</string>
-  <string name="passkey_verifying">Tarkistetaan…</string>
-  <string name="passkey_authenticating">Todennetaan…</string>
+  <string name="passkey_verifying">Tarkistetaan...</string>
+  <string name="passkey_authenticating">Todennetaan...</string>
   <string name="connection_error_title">Yhteysvirhe</string>
-  <string name="connection_error_message">Yhteyttä palvelimeen ei voida luoda. Tarkista internet-yhteytesi ja yritä luoda todennusavain uudelleen.</string>
+  <string name="connection_error_message">Palvelimeen ei saada yhteyttä. Tarkista internetyhteytesi ja yritä luoda sala-avain uudelleen.</string>
   <string name="session_expired_title">Istunto vanhentunut</string>
   <string name="session_expired_message">Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.</string>
   <string name="password_changed_title">Salasana vaihdettu</string>
   <string name="password_changed_message">Salasanasi on vaihdettu. Kirjaudu sisään uudelleen.</string>
   <string name="version_not_supported_title">Päivitys vaaditaan</string>
   <string name="version_not_supported_message">Sovelluksesi versio ei ole enää tuettu. Päivitä uusimpaan versioon.</string>
-  <string name="server_unavailable_title">Palvelin ei ole käytettävissä</string>
-  <string name="server_unavailable_message">Palvelin ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</string>
+  <string name="server_unavailable_title">Palvelin ei saatavilla</string>
+  <string name="server_unavailable_message">Palvelin ei ole tällä hetkellä saattavilla. Yritä myöhemmin uudelleen.</string>
   <string name="network_error_title">Verkkovirhe</string>
   <string name="network_error_message">Verkkovirhe tapahtui. Tarkista yhteytesi ja yritä uudelleen.</string>
   <string name="server_version_not_supported_title">Palvelimen päivtys vaaditaan</string>
@@ -80,7 +81,7 @@
   <string name="pin_mismatch">PIN-koodit eivät täsmää. Yritä uudelleen.</string>
   <string name="password_unlock_title">Avaa holvin lukitus</string>
   <string name="password_unlock_subtitle">Syötä pääsalasanasi</string>
-  <string name="password_unlock_password_hint">Salasana:</string>
+  <string name="password_unlock_password_hint">Salasana</string>
   <string name="password_unlock_button">Avaa lukitus</string>
   <string name="password_unlock_incorrect">Virheellinen salasana. Yritä uudelleen. </string>
   <string name="password_unlock_error">Failed to verify password</string>

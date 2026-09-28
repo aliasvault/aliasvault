@@ -193,7 +193,7 @@ export default function IosAutofillScreen() : React.ReactNode {
         </View>
 
         <View style={styles.instructionContainer}>
-          <ThemedText style={styles.instructionTitle}>{t('settings.iosAutofillSettings.howToEnable')}</ThemedText>
+          <ThemedText style={styles.instructionTitle}>{t('settings.autofillSetup.howToEnable')}</ThemedText>
           <ThemedText style={styles.instructionStep}>
             {t('settings.iosAutofillSettings.step1')}
           </ThemedText>
@@ -226,7 +226,7 @@ export default function IosAutofillScreen() : React.ReactNode {
                 onPress={handleAlreadyConfigured}
               >
                 <ThemedText style={styles.secondaryButtonText}>
-                  {t('settings.iosAutofillSettings.alreadyConfigured')}
+                  {t('settings.autofillSetup.alreadyConfigured')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

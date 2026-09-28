@@ -59,7 +59,7 @@ export default function SecuritySettingsScreen() : React.ReactNode {
   return (
     <ThemedContainer testID="security-settings-screen">
       <ThemedScrollView>
-        <SettingsHeader title={t('settings.securitySettings.title')} description={t('settings.securitySettings.description')} icon="shield-checkmark" />
+        <SettingsHeader title={t('settings.security')} description={t('settings.securitySettings.description')} icon="shield-checkmark" />
         <View style={styles.section}>
           <TouchableOpacity
             testID="change-password-link"
@@ -112,7 +112,7 @@ export default function SecuritySettingsScreen() : React.ReactNode {
               <Ionicons name="trash" size={20} color={colors.primary} />
             </View>
             <View style={styles.settingItemContent}>
-              <ThemedText style={[styles.settingItemText, { color: colors.primary }]}>{t('settings.securitySettings.deleteAccountTitle')}</ThemedText>
+              <ThemedText style={[styles.settingItemText, { color: colors.primary }]}>{t('settings.securitySettings.deleteAccount.deleteAccount')}</ThemedText>
               <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>

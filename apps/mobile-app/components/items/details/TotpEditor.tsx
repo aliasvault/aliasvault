@@ -255,7 +255,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
    */
   const initiateTotpDelete = (totpCode: TotpCode): void => {
     showConfirm(
-      t('common.deleteItemConfirmTitle'),
+      t('items.deleteItem'),
       t('common.deleteItemConfirmDescription'),
       t('common.delete'),
       () => confirmDeleteTotpCode(totpCode),

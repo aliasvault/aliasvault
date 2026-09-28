@@ -131,10 +131,10 @@ export default function DeleteAccountScreen(): React.ReactNode {
   const handleDeleteAccountPress = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      setLoadingStatus(t('settings.securitySettings.deleteAccount.verifyingPassword'));
+      setLoadingStatus(t('common.verifyingPassword'));
       const currentPasswordHashBase64 = await verifyPassword(password);
       if (!currentPasswordHashBase64) {
-        showAlert(t('common.error'), t('settings.securitySettings.deleteAccount.currentPasswordIncorrect'));
+        showAlert(t('common.error'), t('settings.securitySettings.changePassword.currentPasswordIncorrect'));
         return;
       }
 
@@ -258,7 +258,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
                   </ThemedText>
                   {renderWarningItem(t('settings.securitySettings.deleteAccount.irreversibleWarning'))}
                   <View style={styles.inputContainer}>
-                    <ThemedText style={styles.label}>{t('settings.securitySettings.deleteAccount.password')}</ThemedText>
+                    <ThemedText style={styles.label}>{t('common.password')}</ThemedText>
                     <ThemedTextInput
                       secureTextEntry
                       value={password}

@@ -1,14 +1,13 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Error";
 "cancel" = "Cancelar";
 "back" = "Atrás";
 "next" = "Siguiente";
 "edit" = "Editar";
 "website" = "Sitio Web";
-"username" = "Usuario";
+"username" = "Nombre de usuario";
 "title" = "Título";
-"unknown_error" = "Se produjo un error desconocido";
-
+"unknown_error" = "Se produjo un error desconocido.";
 "loading_items" = "Cargando ítems...";
 "no_items_found" = "No hay elementos";
 "no_items_match" = "Ningún elemento existente coincide con tu búsqueda";
@@ -22,7 +21,7 @@
 "linking_url" = "Vinculando...";
 "select_item" = "Seleccionar Elemento";
 "select_text_to_insert" = "Seleccionar texto a insertar";
-"choose_username" = "Escoge un nombre de usuario";
+"choose_username" = "Elige nombre de usuario";
 "select_text_to_insert_message" = "Seleccione el texto a insertar en el campo de entrada resaltado";
 "choose_username_message" = "Este sitio web puede requerir su nombre de usuario o correo electrónico para iniciar sesión";
 "username_prefix" = "Usuario: ";
@@ -30,11 +29,9 @@
 "password" = "Contraseña";
 "items_load_error" = "Error al cargar elementos. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
 "no_item_selected" = "Ningún elemento seleccionado.";
-
-/* Context menu strings */
 "copy_username" = "Copiar nombre de usuario";
 "copy_password" = "Copiar Contraseña";
-"copy_email" = "Copiar email";
+"copy_email" = "Copiar correo";
 "copy_totp_code" = "Copiar código TOTP";
 "view_details" = "Ver detalles";
 "username_copied" = "Usuario copiado";
@@ -42,49 +39,33 @@
 "email_copied" = "Email copiado";
 "totp_code_copied" = "Código TOTP copiado";
 "totp_code" = "Código TOTP";
-
-/* Search bar */
 "search_items" = "Buscar elementos...";
-
-/* Passkey registration */
-"create_passkey_title" = "Crear Nueva llave";
+"create_passkey_title" = "Crear nueva llave de acceso";
 "create_passkey_subtitle" = "Registre una nueva llave de acceso para este sitio web. Se almacenará de forma segura en su bóveda y se sincronizará automáticamente en todos sus dispositivos con AliasVault.";
 "create_passkey_button_confirm" = "Crear llave de acceso";
-
-/* Passkey provider */
 "passkey" = "Llave de acceso";
 "loading_passkeys" = "Cargando llaves de acceso...";
 "no_passkeys_found" = "No se encontraron claves de acceso";
 "no_passkeys_match" = "Ninguna llave de acceso existente coincide con la búsqueda";
 "select_passkey" = "Seleccionar la clave de acceso";
 "passkeys_load_error" = "Error al cargar las credenciales. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Crear nueva llave de acceso";
 "select_passkey_to_replace" = "O, reemplazar una llave de acceso existente";
 "replace_passkey" = "Reemplazar llave de acceso";
 "replace_passkey_explanation" = "Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.";
 "create_passkey_explanation" = "Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "O, añadir llave de acceso a un elemento existente";
 "add_passkey" = "Añadir llave de acceso";
 "merge_passkey_explanation" = "Esto añadirá una llave de acceso a su elemento existente. Su contraseña y otros datos se conservarán.";
-
-/* PIN Unlock */
 "unlock_vault" = "Desbloquear bóveda";
 "enter_pin_to_unlock_vault" = "Introduzca su PIN para desbloquear su bóveda";
 "pin_locked_max_attempts" = "PIN bloqueado tras demasiados intentos fallidos";
 "pin_incorrect_attempts_remaining" = "PIN incorrecto, %d intentos restantes";
-
-/* Password Unlock */
-"enter_password_to_unlock" = "Ingrese su contraseña maestra";
+"enter_password_to_unlock" = "Ingrese tu contraseña maestra";
 "unlock" = "Desbloquear";
 "incorrect_password" = "Contraseña incorrecta. Por favor, inténtelo de nuevo.";
 "attempts_warning" = "Contraseña incorrecta. Se cerrará la sesión si introduce la contraseña incorrecta %d veces más.";
 "max_attempts_reached" = "Demasiados intentos de desbloqueo fallidos. Se ha cerrado la sesión por razones de seguridad.";
-
-/* PIN Setup */
 "pin_setup_title" = "Configurar PIN";
 "pin_setup_subtitle" = "Elija un PIN para desbloquear su bóveda";
 "pin_confirm_title" = "Confirmar PIN";

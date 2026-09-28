@@ -225,7 +225,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
               }
 
               markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
-              setError(t(`apiErrors.${apiErrorResponse?.code}`));
+              setError(t(`apiErrors.${apiErrorResponse?.code}`, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
               return;
             }
           } catch (err) {
@@ -358,9 +358,9 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
     return (
       <ThemedView style={styles.section}>
         <View style={styles.titleContainer}>
-          <ThemedText type="title" style={styles.title}>{t('items.recentEmails')}</ThemedText>
+          <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
         </View>
-        <ThemedText style={styles.placeholderText}>{t('items.offlineEmailsMessage')}</ThemedText>
+        <ThemedText style={styles.placeholderText}>{t('emails.offlineMessage')}</ThemedText>
       </ThemedView>
     );
   }
@@ -369,7 +369,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
     return (
       <ThemedView style={styles.section}>
         <View style={styles.titleContainer}>
-          <ThemedText type="title" style={styles.title}>{t('items.recentEmails')}</ThemedText>
+          <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
         </View>
         <View style={styles.errorContainer}>
           <ThemedText style={styles.errorText}>{error}</ThemedText>
@@ -382,10 +382,10 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
     return (
       <ThemedView style={styles.section}>
         <View style={styles.titleContainer}>
-          <ThemedText type="title" style={styles.title}>{t('items.recentEmails')}</ThemedText>
+          <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
           <PulseDot />
         </View>
-        <ThemedText style={styles.placeholderText}>{t('items.loadingEmails')}</ThemedText>
+        <ThemedText style={styles.placeholderText}>{t('common.loadingEmails')}</ThemedText>
       </ThemedView>
     );
   }
@@ -394,7 +394,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
     return (
       <ThemedView style={styles.section}>
         <View style={styles.titleContainer}>
-          <ThemedText type="title" style={styles.title}>{t('items.recentEmails')}</ThemedText>
+          <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
           <PulseDot />
         </View>
         <ThemedText style={styles.placeholderText}>{t('items.noEmailsYet')}</ThemedText>
@@ -405,7 +405,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   return (
     <ThemedView style={styles.section}>
       <View style={styles.titleContainer}>
-        <ThemedText type="title" style={styles.title}>{t('items.recentEmails')}</ThemedText>
+        <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
         <PulseDot />
       </View>
       {displayedEmails.map((mail) => (

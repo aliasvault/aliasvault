@@ -64,11 +64,11 @@ export default function SettingsScreen() : React.ReactNode {
         let display = t('common.never');
 
         if (autoLockTimeout === 5) {
-          display = t('settings.autoLockOptions.5seconds');
+          display = t('common.duration.5seconds');
         } else if (autoLockTimeout === 15) {
-          display = t('settings.autoLockOptions.15seconds');
+          display = t('common.duration.15seconds');
         } else if (autoLockTimeout === 30) {
-          display = t('settings.autoLockOptions.30seconds');
+          display = t('common.duration.30seconds');
         } else if (autoLockTimeout === 60) {
           display = t('settings.autoLockOptions.1minute');
         } else if (autoLockTimeout === 300) {
@@ -98,13 +98,13 @@ export default function SettingsScreen() : React.ReactNode {
         let display = t('common.never');
 
         if (clipboardTimeout === 5) {
-          display = t('settings.clipboardClearOptions.5seconds');
+          display = t('common.duration.5seconds');
         } else if (clipboardTimeout === 10) {
           display = t('settings.clipboardClearOptions.10seconds');
         } else if (clipboardTimeout === 15) {
-          display = t('settings.clipboardClearOptions.15seconds');
+          display = t('common.duration.15seconds');
         } else if (clipboardTimeout === 30) {
-          display = t('settings.clipboardClearOptions.30seconds');
+          display = t('common.duration.30seconds');
         }
 
         setClipboardClearDisplay(display);
@@ -154,7 +154,7 @@ export default function SettingsScreen() : React.ReactNode {
        * @returns {React.ReactNode} The header component
        */
       headerTitle: (): React.ReactNode => (
-        <AndroidHeader title={t('settings.title')} onLogoPress={registerTap} />
+        <AndroidHeader title={t('common.settings')} onLogoPress={registerTap} />
       ),
     });
   }, [navigation, registerTap, t]);
@@ -388,7 +388,7 @@ export default function SettingsScreen() : React.ReactNode {
   return (
     <ThemedContainer testID="settings-screen">
       <CollapsibleHeader
-        title={t('settings.title')}
+        title={t('common.settings')}
         scrollY={scrollY}
         showNavigationHeader={false}
       />
@@ -403,7 +403,7 @@ export default function SettingsScreen() : React.ReactNode {
         scrollIndicatorInsets={{ bottom: 40 }}
         style={styles.scrollView}
       >
-        <TitleContainer title={t('settings.title')} onLogoPress={registerTap} />
+        <TitleContainer title={t('common.settings')} onLogoPress={registerTap} />
         <UsernameDisplay />
         {hasCapability(CapabilityKeys.VaultSharing) && (
           <View style={styles.section}>
@@ -622,7 +622,7 @@ export default function SettingsScreen() : React.ReactNode {
               <Ionicons name="log-out" size={20} color={colors.primary} />
             </View>
             <View style={styles.settingItemContent}>
-              <ThemedText style={[styles.settingItemText, { color: colors.primary }]}>{t('auth.logout')}</ThemedText>
+              <ThemedText style={[styles.settingItemText, { color: colors.primary }]}>{t('common.logout')}</ThemedText>
             </View>
           </TouchableOpacity>
         </View>

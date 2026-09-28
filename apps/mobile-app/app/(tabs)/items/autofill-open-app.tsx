@@ -191,7 +191,7 @@ export default function AutofillOpenAppScreen(): React.ReactNode {
             </View>
             <View style={styles.actionTextWrapper}>
               <ThemedText style={styles.actionTitle}>
-                {t('items.autofillOpenApp.findExistingTitle')}
+                {t('items.autofillLinkExisting.title')}
               </ThemedText>
               <ThemedText style={styles.actionDescription}>
                 {t('items.autofillOpenApp.findExistingDescription')}
