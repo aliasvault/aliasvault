@@ -20,10 +20,14 @@ const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
 };
 
 /**
- * The Rust core, streamed into WebAssembly.instantiateStreaming; it also hosts the SQLite engine. The wasm URL is
- * content hashed by Vite, so a new build never loads a cached binary from an older release.
+ * The Rust core, streamed into WebAssembly.instantiateStreaming; it also hosts the SQLite engine.
  */
-const rustCore = createWasmRustCore(async (): Promise<Response> => fetch(wasmUrl));
+const rustCore = createWasmRustCore(async (): Promise<Response> => {
+  const host = window as { __aliasvaultCoreWasm?: Promise<Response> };
+  const early = host.__aliasvaultCoreWasm;
+  host.__aliasvaultCoreWasm = undefined;
+  return early ? early.catch(() => fetch(wasmUrl)) : fetch(wasmUrl);
+});
 
 /**
  * The platform the web app registers with the client core.

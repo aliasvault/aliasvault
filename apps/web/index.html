@@ -85,6 +85,7 @@
             </div>
             <h2 id="loading-title" class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">AliasVault is loading</h2>
             <p id="loading-message" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.</p>
+            <div id="loading-progress-text" class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-4"></div>
             <div class="mt-4 text-center">
               <p id="security-quote" class="text-sm text-primary-600 italic"></p>
             </div>
@@ -133,13 +134,36 @@
       var text = getTranslation(entry.key);
       if (element && text) { element.textContent = text; }
     });
-    var securityQuotes = getTranslation('quotes.security');
-    if (securityQuotes && securityQuotes.length > 0) {
+    var quoteSource = getTranslation('quotes.security') || {};
+    var securityQuotes = Array.isArray(quoteSource) ? quoteSource : Object.keys(quoteSource).map(function (key) { return quoteSource[key]; });
+    if (securityQuotes.length > 0) {
       var quoteElement = document.getElementById('security-quote');
       var randomIndex = Math.floor(Math.random() * securityQuotes.length);
       if (quoteElement) { quoteElement.textContent = '"' + securityQuotes[randomIndex] + '"'; }
     }
   }
+  var minDisplayTime = 400;
+  (function () {
+    var progressElement = document.getElementById('loading-progress-text');
+    var downloadPercent = 0;
+    var hasProgress = false;
+    function render() {
+      var timePercent = Math.min(100, performance.now() / minDisplayTime * 100);
+      var shown = Math.floor(Math.min(downloadPercent, timePercent));
+      progressElement.textContent = shown + '%';
+      if (shown < 100) { requestAnimationFrame(render); }
+    }
+    function onProgress(loaded, total) {
+      if (!progressElement || !total) { return; }
+      downloadPercent = Math.min(100, loaded / total * 100);
+      if (!hasProgress) {
+        hasProgress = true;
+        requestAnimationFrame(render);
+      }
+    }
+    window.__onLoadingProgress = onProgress;
+    if (window.__loadingProgress) { onProgress(window.__loadingProgress.loaded, window.__loadingProgress.total); }
+  })();
   var loadingScreen = document.getElementById('loading-screen');
   var errorMessageElement = document.getElementById('error-message');
   var refreshButton = document.getElementById('refresh-button');
@@ -162,7 +186,6 @@
   }
   function manageLoadingScreen() {
     var startTime = new Date().getTime();
-    var minDisplayTime = 500;
     var checkInterval = 200;
     var refreshButtonTimeout = 20000;
     var appElement = document.getElementById('app');

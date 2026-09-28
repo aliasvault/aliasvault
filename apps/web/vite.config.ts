@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
@@ -33,21 +33,59 @@ function loadingScreenLocales(): Plugin {
 }
 
 /**
- * Preload the content hashed Rust core wasm from index.html, so its download runs in parallel with the app bundle.
+ * Add loading progress tracking to index.html, showing a percentage of the download as indicator on the loading screen.
  */
-function preloadCoreWasm(): Plugin {
+function loadingProgress(): Plugin {
   return {
-    name: 'preload-core-wasm',
-    apply: 'build',
+    name: 'loading-progress',
     transformIndexHtml(_html, context) {
-      const wasm = Object.values(context.bundle ?? {}).find((chunk) => chunk.type === 'asset' && /aliasvault_core_bg-.*\.wasm$/.test(chunk.fileName));
-      if (!wasm) {
-        throw new Error('The Rust core wasm asset is missing from the bundle.');
+      if (!context.bundle) {
+        const wasmFile = path.join(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm');
+        const devAssets = [{ url: `/@fs${wasmFile}`, size: statSync(wasmFile).size, wasm: true }];
+        return [{ tag: 'script', children: `window.__loadingAssets=${JSON.stringify(devAssets)};${EARLY_LOAD_SCRIPT}`, injectTo: 'head-prepend' }];
       }
-      return [{ tag: 'link', attrs: { rel: 'preload', href: `/${wasm.fileName}`, as: 'fetch', type: 'application/wasm', crossorigin: 'anonymous' }, injectTo: 'head' }];
+      const bundle = Object.values(context.bundle);
+      const wasm = bundle.find((item) => item.type === 'asset' && /aliasvault_core_bg-.*\.wasm$/.test(item.fileName));
+      const entry = bundle.find((item) => item.type === 'chunk' && item.isEntry);
+      if (!wasm || wasm.type !== 'asset' || !entry || entry.type !== 'chunk') {
+        throw new Error('The entry chunk or the Rust core wasm asset is missing from the bundle.');
+      }
+      const sizeOf = (fileName: string): number => {
+        const item = context.bundle?.[fileName];
+        if (!item) {
+          return 0;
+        }
+        return item.type === 'chunk' ? Buffer.byteLength(item.code) : typeof item.source === 'string' ? Buffer.byteLength(item.source) : item.source.byteLength;
+      };
+      const files = [entry.fileName, ...entry.imports, ...(entry.viteMetadata?.importedCss ?? [])];
+      const assets: { url: string; size: number; wasm?: boolean }[] = [...new Set(files)].map((fileName) => ({ url: `/${fileName}`, size: sizeOf(fileName) }));
+      assets.push({ url: `/${wasm.fileName}`, size: sizeOf(wasm.fileName), wasm: true });
+      return [{ tag: 'script', children: `window.__loadingAssets=${JSON.stringify(assets)};${EARLY_LOAD_SCRIPT}`, injectTo: 'head-prepend' }];
     },
   };
 }
+
+/*
+ * Runs in the head of index.html: downloads the wasm while counting bytes, and counts the other files once the browser
+ * reports them as loaded.
+ */
+const EARLY_LOAD_SCRIPT = `(function(){
+var assets=window.__loadingAssets,loaded={},total=0;
+assets.forEach(function(a){total+=a.size;});
+function report(){var done=0;assets.forEach(function(a){done+=Math.min(loaded[a.url]||0,a.size);});window.__loadingProgress={loaded:done,total:total};if(window.__onLoadingProgress){window.__onLoadingProgress(done,total);}}
+var wasm=assets.filter(function(a){return a.wasm;})[0];
+if(wasm&&window.fetch&&window.ReadableStream){
+window.__aliasvaultCoreWasm=fetch(wasm.url).then(function(response){
+if(!response.ok||!response.body){return response;}
+var reader=response.body.getReader(),chunks=[];
+function pump(){return reader.read().then(function(r){
+if(r.done){loaded[wasm.url]=wasm.size;report();return new Response(new Blob(chunks),{status:response.status,headers:{'Content-Type':'application/wasm'}});}
+chunks.push(r.value);loaded[wasm.url]=(loaded[wasm.url]||0)+r.value.byteLength;report();return pump();});}
+return pump();});
+}
+if(window.PerformanceObserver){try{new PerformanceObserver(function(list){list.getEntries().forEach(function(e){var p;try{p=new URL(e.name).pathname;}catch(x){return;}assets.forEach(function(a){if(!a.wasm&&a.url===p){loaded[a.url]=a.size;}});});report();}).observe({type:'resource',buffered:true});}catch(x){}}
+report();
+})();`;
 
 /**
  * Minify index.html (markup, inline scripts and styles) as the last transform, keeping only the header comment.
@@ -97,7 +135,7 @@ export default defineConfig({
   plugins: [
     react(),
     loadingScreenLocales(),
-    preloadCoreWasm(),
+    loadingProgress(),
     minifyIndexHtml(),
   ],
 });
