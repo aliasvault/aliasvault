@@ -61,7 +61,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ item, currentLogo, we
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('items.logo.chooseLogo')}</h2>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300" title={t('sharedResources.Close')} aria-label={t('sharedResources.Close')}>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300" title={t('common.close')} aria-label={t('common.close')}>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>

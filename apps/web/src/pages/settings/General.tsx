@@ -29,8 +29,8 @@ const GeneralSettings: React.FC = () => {
   const { t, i18n } = useTranslation();
   const dbContext = useDb();
   const { executeVaultMutationInBackground } = useVaultMutate();
-  const tk = 'pages.main.settings.general';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.general.pageTitle'));
 
   const [privateDomains, setPrivateDomains] = useState<string[]>([]);
   const [publicDomains, setPublicDomains] = useState<string[]>([]);
@@ -115,39 +115,39 @@ const GeneralSettings: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
+      <PageHeader breadcrumbItems={[{ displayName: t('settings.general.pageTitle') }]} title={t('settings.general.pageTitle')} description={t('settings.general.pageDescription')} />
 
       <PageContent>
         <Card>
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.AppLanguageTitle`)}</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t('settings.general.appLanguageTitle')}</h3>
           <div className="mb-4">
-            <FormLabel htmlFor="appLanguage">{t(`${tk}.AppLanguageLabel`)}</FormLabel>
+            <FormLabel htmlFor="appLanguage">{t('settings.language')}</FormLabel>
             <Select id="appLanguage" value={appLanguage} onChange={e => void updateAppLanguage(e.target.value)}>
               {AVAILABLE_LANGUAGES.map(language => <option key={language.code} value={language.code}>{language.flag} {language.nativeName}</option>)}
             </Select>
-            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AppLanguageDescription`)}</span>
+            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t('settings.general.appLanguageDescription')}</span>
           </div>
         </Card>
 
         <Card>
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.EmailSettingsTitle`)}</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t('settings.general.emailSettingsTitle')}</h3>
           <div className="mb-4">
-            <FormLabel htmlFor="defaultEmailDomain">{t(`${tk}.DefaultEmailDomainLabel`)}</FormLabel>
+            <FormLabel htmlFor="defaultEmailDomain">{t('settings.general.defaultEmailDomainLabel')}</FormLabel>
             <Select id="defaultEmailDomain" value={defaultEmailDomain} onChange={(e) => {
               setDefaultEmailDomain(e.target.value);
               void updateSetting('DefaultEmailDomain', e.target.value);
             }}>
-              <optgroup label={t(`${tk}.PrivateDomainsLabel`)}>
+              <optgroup label={t('settings.general.privateDomainsLabel')}>
                 {hasValidPrivateDomains(privateDomains)
                   ? privateDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)
-                  : <option disabled value="_">{t(`${tk}.PrivateDomainsDisabledLabel`)}</option>}
+                  : <option disabled value="_">{t('settings.general.privateDomainsDisabledLabel')}</option>}
               </optgroup>
-              <optgroup label={t(`${tk}.PublicDomainsLabel`)}>
+              <optgroup label={t('settings.general.publicDomainsLabel')}>
                 {publicDomains.map(domain => <option key={domain} value={domain}>{domain}</option>)}
               </optgroup>
             </Select>
             <span className="block text-sm font-normal text-gray-500 dark:text-gray-400 mt-2">
-              {t(`${tk}.DefaultEmailDomainDescription`)} {t(`${tk}.DefaultEmailDomainDescriptionNote`)} <a href="https://docs.aliasvault.com/misc/private-vs-public-email.html" className="text-primary-500 hover:text-primary-700 hover:underline" target="_blank" rel="noopener noreferrer">{t(`${tk}.DefaultEmailDomainLearnMore`)}</a>.
+              {t('settings.general.defaultEmailDomainDescription')} {t('settings.general.defaultEmailDomainDescriptionNote')} <a href="https://docs.aliasvault.com/misc/private-vs-public-email.html" className="text-primary-500 hover:text-primary-700 hover:underline" target="_blank" rel="noopener noreferrer">{t('settings.general.defaultEmailDomainLearnMore')}</a>.
             </span>
           </div>
 
@@ -156,71 +156,71 @@ const GeneralSettings: React.FC = () => {
               setAutoEmailRefresh(e.target.checked);
               void updateSetting('AutoEmailRefresh', e.target.checked ? 'True' : 'False');
             }} className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-            <label htmlFor="autoEmailRefresh" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{t(`${tk}.AutoEmailRefreshLabel`)}</label>
+            <label htmlFor="autoEmailRefresh" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{t('settings.general.autoEmailRefreshLabel')}</label>
           </div>
         </Card>
 
         <Card>
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.AliasSettingsTitle`)}</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t('settings.general.aliasSettingsTitle')}</h3>
 
           <div className="mb-4">
-            <FormLabel htmlFor="defaultIdentityLanguage">{t(`${tk}.AliasGenerationLanguageLabel`)}</FormLabel>
+            <FormLabel htmlFor="defaultIdentityLanguage">{t('settings.language')}</FormLabel>
             <Select id="defaultIdentityLanguage" value={identityLanguage} onChange={(e) => {
               setIdentityLanguage(e.target.value);
               void updateSetting('DefaultIdentityLanguage', e.target.value);
             }}>
               {identityLanguages.map(code => <option key={code} value={code}>{getLanguageInfo(code).flag} {getLanguageInfo(code).label}</option>)}
             </Select>
-            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationLanguageDescription`)}</span>
+            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t('settings.general.aliasGenerationLanguageDescription')}</span>
           </div>
 
           <div className="mb-4">
-            <FormLabel htmlFor="defaultIdentityGender">{t(`${tk}.AliasGenerationGenderLabel`)}</FormLabel>
+            <FormLabel htmlFor="defaultIdentityGender">{t('fieldLabels.alias.gender')}</FormLabel>
             <Select id="defaultIdentityGender" value={identityGender} onChange={(e) => {
               setIdentityGender(e.target.value);
               void updateSetting('DefaultIdentityGender', e.target.value);
             }}>
-              <option value="random">{t(`${tk}.RandomOption`)}</option>
-              <option value="male">{t(`${tk}.MaleOption`)}</option>
-              <option value="female">{t(`${tk}.FemaleOption`)}</option>
+              <option value="random">{t('settings.identityGeneratorSettings.genderOptions.random')}</option>
+              <option value="male">{t('settings.identityGeneratorSettings.genderOptions.male')}</option>
+              <option value="female">{t('settings.identityGeneratorSettings.genderOptions.female')}</option>
             </Select>
-            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationGenderDescription`)}</span>
+            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t('settings.general.aliasGenerationGenderDescription')}</span>
           </div>
 
           <div className="mb-4">
-            <FormLabel htmlFor="defaultIdentityAgeRange">{t(`${tk}.AliasGenerationAgeRangeLabel`)}</FormLabel>
+            <FormLabel htmlFor="defaultIdentityAgeRange">{t('settings.identityGeneratorSettings.ageRangeSection')}</FormLabel>
             <Select id="defaultIdentityAgeRange" value={identityAgeRange} onChange={(e) => {
               setIdentityAgeRange(e.target.value);
               void updateSetting('DefaultIdentityAgeRange', e.target.value);
             }}>
-              {ageRanges.map(range => <option key={range} value={range}>{range === 'random' ? t(`${tk}.RandomOption`) : range}</option>)}
+              {ageRanges.map(range => <option key={range} value={range}>{range === 'random' ? t('settings.identityGeneratorSettings.genderOptions.random') : range}</option>)}
             </Select>
-            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t(`${tk}.AliasGenerationAgeRangeDescription`)}</span>
+            <span className="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">{t('settings.general.aliasGenerationAgeRangeDescription')}</span>
           </div>
         </Card>
 
         <Card>
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.ClipboardSettingsTitle`)}</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t('settings.clipboardSettings')}</h3>
           <div className="mb-4">
-            <FormLabel htmlFor="clipboardClearSeconds">{t(`${tk}.ClipboardClearSecondsLabel`)}</FormLabel>
+            <FormLabel htmlFor="clipboardClearSeconds">{t('settings.general.clipboardClearSecondsLabel')}</FormLabel>
             <Select id="clipboardClearSeconds" value={clipboardClearSeconds} onChange={(e) => {
               setClipboardClearSeconds(e.target.value);
               void updateSetting('ClipboardClearSeconds', e.target.value);
             }}>
-              <option value="0">{t(`${tk}.ClipboardClearDisabledOption`)}</option>
-              <option value="5">{t(`${tk}.ClipboardClear5SecondsOption`)}</option>
-              <option value="10">{t(`${tk}.ClipboardClear10SecondsOption`)}</option>
-              <option value="15">{t(`${tk}.ClipboardClear15SecondsOption`)}</option>
+              <option value="0">{t('common.disabled')}</option>
+              <option value="5">{t('common.duration.5seconds')}</option>
+              <option value="10">{t('settings.clipboardClearOptions.10seconds')}</option>
+              <option value="15">{t('common.duration.15seconds')}</option>
             </Select>
-            <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t(`${tk}.ClipboardClearSecondsDescription`)}</span>
+            <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t('settings.general.clipboardClearSecondsDescription')}</span>
             <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">{t(`${tk}.ClipboardClearLimitationNote`)}</p>
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">{t('settings.general.clipboardClearLimitationNote')}</p>
             </div>
           </div>
         </Card>
 
         <Card>
-          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.PasswordSettingsTitle`)}</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">{t('items.passwordSettings')}</h3>
           <DefaultPasswordSettings />
         </Card>
       </PageContent>

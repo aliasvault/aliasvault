@@ -18,8 +18,8 @@ import { usePageTitle } from '@/hooks/usePageTitle';
  */
 const SecuritySettings: React.FC = () => {
   const { t } = useTranslation();
-  const tk = 'pages.main.settings.security.security';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.securitySettings.pageTitle'));
   const twoFactorRef = useRef<SectionHandle>(null);
   const quickUnlockRef = useRef<SectionHandle>(null);
   const sessionsRef = useRef<SectionHandle>(null);
@@ -36,7 +36,7 @@ const SecuritySettings: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} customActions={<RefreshButton onClick={() => void loadData()} buttonText={t(`${tk}.RefreshButton`)} />} />
+      <PageHeader breadcrumbItems={[{ displayName: t('settings.securitySettings.pageTitle') }]} title={t('settings.securitySettings.pageTitle')} description={t('settings.securitySettings.pageDescription')} customActions={<RefreshButton onClick={() => void loadData()} buttonText={t('common.refresh')} />} />
 
       <PageContent>
         <PasswordChangeSection />

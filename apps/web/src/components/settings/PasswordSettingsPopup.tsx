@@ -76,7 +76,11 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
   const { settings, previewPassword, dicewareLanguages, handleSettingChange, handleRefreshPreview } = usePasswordConfig({ ...passwordSettings });
   const [sliderValue, setSliderValue] = useState(lengthToSlider(passwordSettings.Length));
   const isDiceware = settings.Type === 'diceware';
-  const tk = 'components.main.settings.passwordSettingsPopup';
+
+  /**
+   * The label of a passphrase option value, e.g. dicewareSeparatorOption.Dash; "None" is shared.
+   */
+  const optionLabel = (group: 'Capitalization' | 'Separator' | 'Salt', value: string): string => (value === 'None' ? t('common.none') : t(`items.diceware${group}Option.${value}`));
 
   // The "auto" language shown when the user has not picked one explicitly, resolved like the Rust core does.
   const effectiveLanguage = useMemo(() => resolveDefaultLanguage(i18n.language, dicewareLanguages), [dicewareLanguages, i18n.language]);
@@ -98,7 +102,7 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
     } finally {
       hideLoading();
     }
-    notifications.addSuccessMessage(t(`${tk}.SettingsUpdatedMessage`), true);
+    notifications.addSuccessMessage(t('items.passwordSettingsPopup.settingsUpdatedMessage'), true);
     onSaveSettings(settings, previewPassword);
     onClose();
   };
@@ -143,13 +147,13 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
     <Modal id="passwordSettingsModal" onBackdropClick={onClose} panelClassName="p-5 pt-0 w-96 max-w-full">
       <div className="m-2">
         <div className="flex border-b border-gray-200 dark:border-gray-700">
-          <button type="button" onClick={() => handleSettingChange('Type', 'basic')} className={tabClasses('basic')}>{t(`${tk}.PasswordTypeBasic`)}</button>
-          <button type="button" onClick={() => handleSettingChange('Type', 'diceware')} className={tabClasses('diceware')}>{t(`${tk}.PasswordTypeDiceware`)}</button>
+          <button type="button" onClick={() => handleSettingChange('Type', 'basic')} className={tabClasses('basic')}>{t('common.password')}</button>
+          <button type="button" onClick={() => handleSettingChange('Type', 'diceware')} className={tabClasses('diceware')}>{t('items.passwordTypeDiceware')}</button>
         </div>
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t(`${tk}.PreviewLabel`)}</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('items.passwordSettingsPopup.previewLabel')}</label>
             <div className="mt-1 flex">
               <div className="flex-grow"><CopyPasteFormRow id="preview-password" value={previewPassword} /></div>
               <button type="button" className="ml-2 px-3 py-2 text-sm text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-md dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" onClick={handleRefreshPreview}>
@@ -163,7 +167,7 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
           {!isDiceware ? (
             <>
               <div>
-                <label htmlFor="password-length" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t(`${tk}.PasswordLengthLabel`, { 0: settings.Length })}</label>
+                <label htmlFor="password-length" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('items.passwordSettingsPopup.passwordLengthLabel', { length: settings.Length })}</label>
                 <input type="range" id="password-length" min={SLIDER_MIN} max={SLIDER_MAX} step="0.1" className="mt-1 w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 av-range-slider" value={sliderValue} onChange={(e) => {
                   const value = Number.parseFloat(e.target.value);
                   setSliderValue(value);
@@ -172,41 +176,41 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" className={toggleClasses(settings.UseLowercase)} title={t(`${tk}.IncludeLowercaseLabel`)} onClick={() => handleSettingChange('UseLowercase', !settings.UseLowercase)}><span className="font-mono text-base">a-z</span></button>
-                <button type="button" className={toggleClasses(settings.UseUppercase)} title={t(`${tk}.IncludeUppercaseLabel`)} onClick={() => handleSettingChange('UseUppercase', !settings.UseUppercase)}><span className="font-mono text-base">A-Z</span></button>
-                <button type="button" className={toggleClasses(settings.UseNumbers)} title={t(`${tk}.IncludeNumbersLabel`)} onClick={() => handleSettingChange('UseNumbers', !settings.UseNumbers)}><span className="font-mono text-base">0-9</span></button>
-                <button type="button" className={toggleClasses(settings.UseSpecialChars)} title={t(`${tk}.IncludeSpecialCharsLabel`)} onClick={() => handleSettingChange('UseSpecialChars', !settings.UseSpecialChars)}><span className="font-mono text-base">!@#</span></button>
+                <button type="button" className={toggleClasses(settings.UseLowercase)} title={t('items.passwordSettingsPopup.includeLowercaseLabel')} onClick={() => handleSettingChange('UseLowercase', !settings.UseLowercase)}><span className="font-mono text-base">a-z</span></button>
+                <button type="button" className={toggleClasses(settings.UseUppercase)} title={t('items.passwordSettingsPopup.includeUppercaseLabel')} onClick={() => handleSettingChange('UseUppercase', !settings.UseUppercase)}><span className="font-mono text-base">A-Z</span></button>
+                <button type="button" className={toggleClasses(settings.UseNumbers)} title={t('items.passwordSettingsPopup.includeNumbersLabel')} onClick={() => handleSettingChange('UseNumbers', !settings.UseNumbers)}><span className="font-mono text-base">0-9</span></button>
+                <button type="button" className={toggleClasses(settings.UseSpecialChars)} title={t('items.passwordSettingsPopup.includeSpecialCharsLabel')} onClick={() => handleSettingChange('UseSpecialChars', !settings.UseSpecialChars)}><span className="font-mono text-base">!@#</span></button>
               </div>
 
               <div className="flex items-center">
                 <input id="use-non-ambiguous" type="checkbox" className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600" checked={settings.UseNonAmbiguousChars} onChange={e => handleSettingChange('UseNonAmbiguousChars', e.target.checked)} />
-                <label htmlFor="use-non-ambiguous" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">{t(`${tk}.AvoidAmbiguousCharsLabel`)}</label>
+                <label htmlFor="use-non-ambiguous" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">{t('items.passwordSettingsPopup.avoidAmbiguousCharsLabel')}</label>
               </div>
             </>
           ) : (
             <>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="diceware-word-count" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t(`${tk}.WordCountLabel`)}</label>
+                  <label htmlFor="diceware-word-count" className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('items.wordCount')}</label>
                   <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">{settings.WordCount}</span>
                 </div>
                 <input type="range" id="diceware-word-count" min={MIN_WORD_COUNT} max={MAX_WORD_COUNT} step="1" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 av-range-slider" value={settings.WordCount} onChange={e => handleSettingChange('WordCount', Number.parseInt(e.target.value, 10))} />
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <button type="button" className={optionClasses(settings.Capitalization !== DEFAULT_CAPITALIZATION)} title={t(`${tk}.Capitalization${settings.Capitalization ?? DEFAULT_CAPITALIZATION}`)} onClick={() => handleSettingChange('Capitalization', cycle(CAPITALIZATION_OPTIONS, settings.Capitalization))}>
+                <button type="button" className={optionClasses(settings.Capitalization !== DEFAULT_CAPITALIZATION)} title={optionLabel('Capitalization', settings.Capitalization ?? DEFAULT_CAPITALIZATION)} onClick={() => handleSettingChange('Capitalization', cycle(CAPITALIZATION_OPTIONS, settings.Capitalization))}>
                   <span className="font-mono text-base">{capitalizationGlyph(settings.Capitalization)}</span>
                 </button>
-                <button type="button" className={optionClasses(settings.Separator !== DEFAULT_SEPARATOR)} title={`${t(`${tk}.SeparatorLabel`)}: ${t(`${tk}.Separator${settings.Separator ?? DEFAULT_SEPARATOR}`)}`} onClick={() => handleSettingChange('Separator', cycle(SEPARATOR_OPTIONS, settings.Separator))}>
+                <button type="button" className={optionClasses(settings.Separator !== DEFAULT_SEPARATOR)} title={`${t('items.separator')}: ${optionLabel('Separator', settings.Separator ?? DEFAULT_SEPARATOR)}`} onClick={() => handleSettingChange('Separator', cycle(SEPARATOR_OPTIONS, settings.Separator))}>
                   <span className="font-mono text-base">{separatorGlyph(settings.Separator)}</span>
                 </button>
-                <button type="button" className={optionClasses(settings.Salt !== DEFAULT_SALT)} title={`${t(`${tk}.SaltLabel`)}: ${t(`${tk}.Salt${settings.Salt ?? DEFAULT_SALT}`)}`} onClick={() => handleSettingChange('Salt', cycle(SALT_OPTIONS, settings.Salt))}>
+                <button type="button" className={optionClasses(settings.Salt !== DEFAULT_SALT)} title={`${t('items.salt')}: ${optionLabel('Salt', settings.Salt ?? DEFAULT_SALT)}`} onClick={() => handleSettingChange('Salt', cycle(SALT_OPTIONS, settings.Salt))}>
                   <span className="font-mono text-base">{saltGlyph(settings.Salt)}</span>
                 </button>
               </div>
 
               <div>
-                <label htmlFor="diceware-language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t(`${tk}.LanguageLabel`)}</label>
+                <label htmlFor="diceware-language" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('items.passphraseLanguage')}</label>
                 <select id="diceware-language" className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500" value={selectedLanguage} onChange={e => handleSettingChange('Language', e.target.value)}>
                   {dicewareLanguages.map(language => <option key={language} value={language}>{getLanguageInfo(language).label}</option>)}
                 </select>
@@ -217,11 +221,11 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
           <div className="flex justify-end pt-4 gap-2">
             {isTemporary && (
               <button type="button" className="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500" onClick={onSaveTemporary}>
-                {t(`${tk}.UseJustOnceButton`)}
+                {t('items.passwordSettingsPopup.useJustOnceButton')}
               </button>
             )}
             <button type="button" id="save-button" className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600" onClick={() => void onSaveGlobal()}>
-              {t(`${tk}.SaveGloballyButton`)}
+              {t('items.passwordSettingsPopup.saveGloballyButton')}
             </button>
           </div>
         </div>

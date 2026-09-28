@@ -55,17 +55,17 @@ const TopMenu: React.FC = () => {
               <img src="/img/logo-cropped.png" className="mr-3 h-8 w-10" alt="AliasVault Logo" />
               <span className="self-center hidden sm:flex text-2xl font-semibold content-start align-top whitespace-nowrap dark:text-white">
                 AliasVault
-                <span className="text-primary-500 text-[10px] ml-1 font-normal hidden sm:inline-block">{t('layout.topMenu.BetaLabel')}</span>
+                <span className="text-primary-500 text-[10px] ml-1 font-normal hidden sm:inline-block">{t('web.topMenu.betaLabel')}</span>
               </span>
             </NavLink>
 
             <div className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-col mt-4 space-x-6 text-sm font-medium lg:flex-row xl:space-x-8 lg:mt-0">
                 <NavLink to="/items" end className={({ isActive }) => navLinkClass(isActive, DESKTOP_LINK)}>
-                  {t('layout.topMenu.VaultNav')}
+                  {t('navigation.vault')}
                 </NavLink>
                 <NavLink to="/emails" end className={({ isActive }) => navLinkClass(isActive, DESKTOP_LINK)}>
-                  {t('layout.topMenu.EmailsNav')}
+                  {t('emails.title')}
                 </NavLink>
               </ul>
             </div>
@@ -80,7 +80,7 @@ const TopMenu: React.FC = () => {
             <DbLockButton />
             <DbStatusIndicator />
             <button ref={toggleRef} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} type="button" id="toggleMobileMenuButton" className="items-center p-2 text-gray-500 rounded-lg md:ml-2 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded={isMobileMenuOpen}>
-              <span className="sr-only">{t('layout.topMenu.OpenMenuLabel')}</span>
+              <span className="sr-only">{t('web.topMenu.openMenuLabel')}</span>
               <svg className="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
             </button>
           </div>
@@ -89,12 +89,12 @@ const TopMenu: React.FC = () => {
             <ul className="lg:hidden py-1 text-gray-700 dark:text-gray-400">
               <li>
                 <NavLink to="/items" className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.VaultNav')}
+                  {t('navigation.vault')}
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/emails" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.EmailsNav')}
+                  {t('emails.title')}
                 </NavLink>
               </li>
             </ul>
@@ -116,32 +116,32 @@ const TopMenu: React.FC = () => {
             <ul className="py-1 text-gray-700 dark:text-gray-400">
               <li>
                 <NavLink to="/settings/general" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.GeneralSettingsNav')}
+                  {t('settings.general.pageTitle')}
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/settings/security" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.SecuritySettingsNav')}
+                  {t('settings.securitySettings.pageTitle')}
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/settings/storage-insights" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.StorageInsightsNav')}
+                  {t('settings.storageInsights.breadcrumbTitle')}
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/settings/import-export" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.ImportExportNav')}
+                  {t('settings.importExport')}
                 </NavLink>
               </li>
               <li className="border-t border-b border-gray-100 dark:border-gray-600">
                 <NavLink to="/settings/apps" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('layout.topMenu.ExtensionsAppsNav')}
+                  {t('settings.apps.pageTitle')}
                 </NavLink>
               </li>
               <li>
                 <button id="theme-toggle" type="button" onClick={toggleTheme} className="w-full text-start py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">
-                  {isDarkMode ? t('layout.topMenu.EnableLightMode') : t('layout.topMenu.EnableDarkMode')}
+                  {isDarkMode ? t('web.topMenu.enableLightMode') : t('web.topMenu.enableDarkMode')}
                   {isDarkMode ? (
                     <svg id="theme-toggle-light-icon" className="w-5 h-5 align-middle inline-block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path></svg>
                   ) : (
@@ -151,7 +151,7 @@ const TopMenu: React.FC = () => {
               </li>
               <li>
                 <NavLink to="/user/logout" className={({ isActive }) => `block py-2 px-4 font-bold text-sm text-primary-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-200 dark:hover:text-white ${isActive ? 'text-primary-700 dark:text-primary-500' : ''}`}>
-                  {t('layout.topMenu.LogOut')}
+                  {t('web.topMenu.logOut')}
                 </NavLink>
               </li>
             </ul>

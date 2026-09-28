@@ -16,7 +16,7 @@ const SupportContact: React.FC<{ report?: string | null; className?: string }> =
     return null;
   }
 
-  const [before, after] = t('common.errors.contactSupportAt', { 0: EMAIL_MARKER }).split(EMAIL_MARKER);
+  const [before, after] = t('common.errors.contactSupportAt', { email: EMAIL_MARKER }).split(EMAIL_MARKER);
   const href = report ? `mailto:${supportEmail}?body=${encodeURIComponent(report)}` : `mailto:${supportEmail}`;
   return (
     <p id="support-contact" className={`text-sm text-gray-500 dark:text-gray-400 ${className}`.trim()}>

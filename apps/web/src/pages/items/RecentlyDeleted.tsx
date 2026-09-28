@@ -20,8 +20,6 @@ import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 import type { ItemWithDeletedAt } from '@aliasvault/client/database/mappers/ItemMapper';
 import type { ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 
-const tk = 'pages.main.items.recentlyDeleted';
-
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
@@ -54,7 +52,7 @@ const RecentlyDeleted: React.FC = () => {
   const dbContext = useDb();
   const notifications = useNotifications();
   const { executeVaultMutationAsync } = useVaultMutate();
-  usePageTitle(t(`${tk}.PageTitle`));
+  usePageTitle(t('items.recentlyDeleted.title'));
 
   const [items, setItems] = useState<ItemWithDeletedAt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,11 +89,11 @@ const RecentlyDeleted: React.FC = () => {
       await executeVaultMutationAsync(async () => {
         await client.items.restore(item);
       });
-      notifications.addSuccessMessage(t(`${tk}.RestoreSuccess`));
+      notifications.addSuccessMessage(t('items.trash.restoreSuccess'));
       navigate('/items');
     } catch (error) {
       console.error('Failed to restore item:', error);
-      notifications.addErrorMessage(t(`${tk}.RestoreFailed`), true);
+      notifications.addErrorMessage(t('items.trash.restoreFailed'), true);
     } finally {
       setIsBusy(false);
     }
@@ -114,10 +112,10 @@ const RecentlyDeleted: React.FC = () => {
       await executeVaultMutationAsync(async () => {
         await client.items.permanentlyDelete(itemToDelete);
       });
-      notifications.addSuccessMessage(t(`${tk}.DeleteSuccess`));
+      notifications.addSuccessMessage(t('items.recentlyDeleted.itemDeleted'));
     } catch (error) {
       console.error('Failed to delete item:', error);
-      notifications.addErrorMessage(t(`${tk}.DeleteFailed`), true);
+      notifications.addErrorMessage(t('items.trash.deleteFailed'), true);
     } finally {
       setIsBusy(false);
       setItemToDelete(null);
@@ -147,13 +145,13 @@ const RecentlyDeleted: React.FC = () => {
         }
       });
       if (failed > 0) {
-        notifications.addErrorMessage(t(`${tk}.EmptyAllPartialFailed`, { 0: failed }), true);
+        notifications.addErrorMessage(t('items.trash.emptyAllPartialFailed', { count: failed }), true);
       } else {
-        notifications.addSuccessMessage(t(`${tk}.EmptyAllSuccess`));
+        notifications.addSuccessMessage(t('items.recentlyDeleted.allItemsDeleted'));
       }
     } catch (error) {
       console.error('Failed to empty the trash:', error);
-      notifications.addErrorMessage(t(`${tk}.DeleteFailed`), true);
+      notifications.addErrorMessage(t('items.trash.deleteFailed'), true);
     } finally {
       setIsBusy(false);
       setShowEmptyAllModal(false);
@@ -164,12 +162,12 @@ const RecentlyDeleted: React.FC = () => {
   return (
     <>
       <PageHeader
-        breadcrumbItems={[{ displayName: t('pages.main.items.home.PageTitle'), url: '/items' }, { displayName: t(`${tk}.PageTitle`) }]}
-        title={t(`${tk}.PageTitle`)}
-        description={t(`${tk}.PageDescription`)}
+        breadcrumbItems={[{ displayName: t('navigation.vault'), url: '/items' }, { displayName: t('items.recentlyDeleted.title') }]}
+        title={t('items.recentlyDeleted.title')}
+        description={t('items.trash.pageDescription')}
         titleActions={(
           <ItemFilterDropdown
-            title={t(`${tk}.PageTitle`)}
+            title={t('items.recentlyDeleted.title')}
             count={items.length}
             activeFilter={null}
             isRecentlyDeletedActive={true}
@@ -183,7 +181,7 @@ const RecentlyDeleted: React.FC = () => {
         )}
         customActions={items.length > 0 && (
           <button type="button" onClick={() => setShowEmptyAllModal(true)} className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
-            {t(`${tk}.EmptyAll`)}
+            {t('items.trash.emptyAll')}
           </button>
         )}
       />
@@ -194,10 +192,10 @@ const RecentlyDeleted: React.FC = () => {
         <PageContent className="mx-4">
           <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {items.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">{t(`${tk}.NoItems`)}</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('items.trash.noItems')}</p>
             ) : (
               <>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t(`${tk}.Description`)}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('items.trash.description')}</p>
                 <ul className="space-y-2">
                   {items.map(item => {
                     const daysRemaining = getDaysRemaining(item.DeletedAt);
@@ -208,19 +206,19 @@ const RecentlyDeleted: React.FC = () => {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <ItemIcon item={item} sizeClass="w-6 h-6" />
-                                <span data-item-name className="font-medium text-gray-900 dark:text-white truncate">{item.Name || t(`${tk}.Untitled`)}</span>
+                                <span data-item-name className="font-medium text-gray-900 dark:text-white truncate">{item.Name || t('items.untitled')}</span>
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {daysRemaining > 0 ? t(`${tk}.DaysRemaining`, { 0: daysRemaining }) : <span className="text-red-500">{t(`${tk}.ExpiringSoon`)}</span>}
+                                {daysRemaining > 0 ? t('items.trash.daysRemaining', { days: daysRemaining }) : <span className="text-red-500">{t('items.recentlyDeleted.expiringSoon')}</span>}
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2">
                               <button type="button" data-action="restore" disabled={isBusy} onClick={() => void restoreItem(item)} className="px-3 py-1 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50 disabled:opacity-50">
-                                {t(`${tk}.Restore`)}
+                                {t('items.recentlyDeleted.restore')}
                               </button>
                               <button type="button" data-action="delete" disabled={isBusy} onClick={() => setItemToDelete({ Id: item.Id, ManifestId: item.ManifestId })} className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50 disabled:opacity-50">
-                                {t('sharedResources.Delete')}
+                                {t('common.delete')}
                               </button>
                             </div>
                           </div>
@@ -237,30 +235,30 @@ const RecentlyDeleted: React.FC = () => {
 
       <FormModal
         isOpen={itemToDelete !== null}
-        title={t(`${tk}.ConfirmDeleteTitle`)}
+        title={t('items.trash.confirmDeleteTitle')}
         icon={<DeleteIcon />}
         iconBackgroundClass="bg-red-100 dark:bg-red-900/30"
-        confirmText={t(`${tk}.DeletePermanently`)}
-        cancelText={t('sharedResources.Cancel')}
+        confirmText={t('items.recentlyDeleted.deletePermanently')}
+        cancelText={t('common.cancel')}
         confirmButtonClass="bg-red-600 hover:bg-red-700"
         isLoading={isBusy}
         onConfirm={() => void confirmDelete()}
         onClose={() => !isBusy && setItemToDelete(null)}>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.ConfirmDeleteMessage`)}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('items.trash.confirmDeleteMessage')}</p>
       </FormModal>
 
       <FormModal
         isOpen={showEmptyAllModal}
-        title={t(`${tk}.ConfirmEmptyAllTitle`)}
+        title={t('items.trash.confirmEmptyAllTitle')}
         icon={<DeleteIcon />}
         iconBackgroundClass="bg-red-100 dark:bg-red-900/30"
-        confirmText={t(`${tk}.EmptyAll`)}
-        cancelText={t('sharedResources.Cancel')}
+        confirmText={t('items.trash.emptyAll')}
+        cancelText={t('common.cancel')}
         confirmButtonClass="bg-red-600 hover:bg-red-700"
         isLoading={isBusy}
         onConfirm={() => void confirmEmptyAll()}
         onClose={() => !isBusy && setShowEmptyAllModal(false)}>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.ConfirmEmptyAllMessage`, { 0: items.length })}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('items.trash.confirmEmptyAllMessage', { count: items.length })}</p>
       </FormModal>
     </>
   );

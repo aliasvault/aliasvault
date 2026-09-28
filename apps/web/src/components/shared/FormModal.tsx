@@ -109,13 +109,13 @@ const FormModal: React.FC<FormModalProps> = ({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               )}
-              {confirmText ?? t('sharedResources.Confirm')}
+              {confirmText ?? t('common.confirm')}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
-              {cancelText ?? t('sharedResources.Cancel')}
+              {cancelText ?? t('common.cancel')}
             </button>
           </div>
         )}

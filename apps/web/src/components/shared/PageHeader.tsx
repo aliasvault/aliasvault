@@ -18,7 +18,7 @@ type PageHeaderProps = {
  */
 const PageHeader: React.FC<PageHeaderProps> = ({ breadcrumbItems = [], title, description = '', titleActions, titleSuffix, customActions }) => {
   const { t } = useTranslation();
-  const items: BreadcrumbItem[] = [{ displayName: t('sharedResources.Home'), url: '/', showHomeIcon: true }, ...breadcrumbItems];
+  const items: BreadcrumbItem[] = [{ displayName: t('common.home'), url: '/', showHomeIcon: true }, ...breadcrumbItems];
 
   return (
     <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">

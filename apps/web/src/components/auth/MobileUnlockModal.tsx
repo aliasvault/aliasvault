@@ -22,7 +22,7 @@ type MobileUnlockModalProps = {
 const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onClose, onSuccess }) => {
   const { t } = useTranslation();
   const webApi = useWebApi();
-  const tk = 'pages.auth.mobileUnlockModal';
+  
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [error, setError] = useState<MobileLoginErrorCode | null>(null);
@@ -109,11 +109,11 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
   const getErrorMessage = (errorCode: MobileLoginErrorCode): string => {
     switch (errorCode) {
       case MobileLoginErrorCode.TIMEOUT:
-        return t('mobileLogin.ErrorTimeout');
+        return t('common.errors.mobileLoginRequestExpired');
       case MobileLoginErrorCode.DECLINED:
-        return t('mobileLogin.ErrorDeclined');
+        return t('common.errors.mobileLoginRequestDeclined');
       default:
-        return t('sharedResources.ErrorUnknown');
+        return t('common.errors.unknownErrorTryAgain');
     }
   };
 
@@ -125,17 +125,17 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
   return (
     <FormModal
       isOpen={isOpen}
-      title={mode === 'unlock' ? t(`${tk}.UnlockTitle`) : t(`${tk}.PageTitle`)}
+      title={mode === 'unlock' ? t('auth.unlockWithMobile') : t('auth.loginWithMobile')}
       maxWidth="md"
       submitOnEnter={false}
       onClose={onClose}
       footerContent={(
         <button type="button" onClick={onClose} className="inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
-          {t('sharedResources.Cancel')}
+          {t('common.cancel')}
         </button>
       )}>
       <div className="flex items-start justify-between gap-3 mb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.ScanQrCodeDescription`)}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{t('auth.mobileUnlock.scanQrCodeDescription')}</p>
         {qrCodeUrl && (
           <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-medium tabular-nums text-gray-600 dark:text-gray-300">
             {formatTime(timeRemaining)}
@@ -147,13 +147,13 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
 
       {qrCodeUrl && (
         <div className="flex flex-col items-center w-full max-w-[300px] mx-auto">
-          <img src={qrCodeUrl} alt="QR Code" className="w-full bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600 mb-3" />
+          <img src={qrCodeUrl} alt={t('common.qrCode')} className="w-full bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600 mb-3" />
           {verificationCode && (
             <div className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
               <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-primary-500 bg-white dark:bg-gray-800 text-2xl font-bold text-gray-900 dark:text-white">
                 {verificationCode}
               </div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t(`${tk}.VerificationCodeDescription`)}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('auth.mobileUnlockVerificationCode')}</p>
             </div>
           )}
         </div>

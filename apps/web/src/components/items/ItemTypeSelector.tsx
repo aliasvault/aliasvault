@@ -33,10 +33,10 @@ const TypeIcon: React.FC<{ itemType: ItemType; className?: string }> = ({ itemTy
  */
 const typeNameKey = (itemType: ItemType): string => {
   switch (itemType) {
-    case ItemTypes.Login: return 'components.main.items.itemTypeSelector.TypeLogin';
-    case ItemTypes.Alias: return 'components.main.items.itemTypeSelector.TypeAlias';
-    case ItemTypes.CreditCard: return 'components.main.items.itemTypeSelector.TypeCreditCard';
-    default: return 'components.main.items.itemTypeSelector.TypeNote';
+    case ItemTypes.Login: return 'itemTypes.login.title';
+    case ItemTypes.Alias: return 'itemTypes.alias.title';
+    case ItemTypes.CreditCard: return 'itemTypes.creditCard.title';
+    default: return 'itemTypes.secureNote';
   }
 };
 
@@ -66,7 +66,7 @@ export const ItemTypePill: React.FC<ItemTypePillProps> = ({ itemType, onClick, i
     <button type="button" onClick={onClick} className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
       <span className="shrink-0 text-primary-600 dark:text-primary-400"><TypeIcon itemType={itemType} className="w-3.5 h-3.5" /></span>
       <span className="text-xs font-medium whitespace-nowrap text-primary-700 dark:text-primary-300">{t(typeNameKey(itemType))}</span>
-      <span className="ml-1 text-xs whitespace-nowrap text-primary-600/70 dark:text-primary-400/70">{t('sharedResources.ItemTypeLabel')}</span>
+      <span className="ml-1 text-xs whitespace-nowrap text-primary-600/70 dark:text-primary-400/70">{t('itemTypes.typeLabel')}</span>
       <svg className={`w-3 h-3 shrink-0 text-primary-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
       </svg>

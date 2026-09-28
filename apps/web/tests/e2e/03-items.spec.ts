@@ -29,7 +29,7 @@ test.describe('3. Items', () => {
     });
 
     await test.step('the view page shows the new name', async () => {
-      await expect(page.getByText('Item updated successfully.')).toBeVisible();
+      await expect(page.getByText('Item updated successfully')).toBeVisible();
       await app.expectItemView('Item service after');
       await expect(page.getByText('Item service before')).toHaveCount(0);
     });

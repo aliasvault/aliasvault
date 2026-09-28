@@ -78,13 +78,13 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
           <div className="py-1">
             <div className={`flex items-center justify-between px-4 py-2 ${isActive(ItemFilter.All) ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
               <button onClick={() => pickFilter(ItemFilter.All)} className={`text-left text-sm hover:text-gray-900 dark:hover:text-white ${isActive(ItemFilter.All) ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                {t('pages.main.items.home.FilterAllOption')}
+                {t('items.title')}
               </button>
               {showFoldersToggle && (
                 <button onClick={(e) => {
                   e.stopPropagation(); setIsOpen(false); onToggleShowFolders(); 
                 }} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <span>{t('pages.main.items.home.ShowFoldersOption')}</span>
+                  <span>{t('items.filters.showFolders')}</span>
                   <svg className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     {showFolders && <polyline points="7 12 10 15 17 8" />}
@@ -98,37 +98,37 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
               <svg className={iconClass(ItemFilter.Login)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
-              {t('components.main.items.itemTypeSelector.TypeLogin')}
+              {t('itemTypes.login.title')}
             </button>
             <button onClick={() => pickFilter(ItemFilter.Alias)} className={rowClass(ItemFilter.Alias, true)}>
               <svg className={iconClass(ItemFilter.Alias)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              {t('components.main.items.itemTypeSelector.TypeAlias')}
+              {t('itemTypes.alias.title')}
             </button>
             <button onClick={() => pickFilter(ItemFilter.CreditCard)} className={rowClass(ItemFilter.CreditCard, true)}>
               <svg className={iconClass(ItemFilter.CreditCard)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
-              {t('components.main.items.itemTypeSelector.TypeCreditCard')}
+              {t('itemTypes.creditCard.title')}
             </button>
             <button onClick={() => pickFilter(ItemFilter.Note)} className={rowClass(ItemFilter.Note, true)}>
               <svg className={iconClass(ItemFilter.Note)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {t('components.main.items.itemTypeSelector.TypeNote')}
+              {t('itemTypes.secureNote')}
             </button>
 
             <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
             <button onClick={() => pickFilter(ItemFilter.Passkeys)} className={rowClass(ItemFilter.Passkeys, false)}>
-              {t('pages.main.items.home.FilterPasskeysOption')}
+              {t('common.passkeys')}
             </button>
             <button onClick={() => pickFilter(ItemFilter.Attachments)} className={rowClass(ItemFilter.Attachments, false)}>
-              {t('pages.main.items.home.FilterAttachmentsOption')}
+              {t('common.attachments')}
             </button>
             <button onClick={() => pickFilter(ItemFilter.Totp)} className={rowClass(ItemFilter.Totp, false)}>
-              {t('pages.main.items.home.FilterTotpOption')}
+              {t('items.filters.totp')}
             </button>
 
             <div className="border-t border-gray-200 dark:border-gray-600 my-1"></div>
@@ -136,7 +136,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
             <button onClick={() => {
               setIsOpen(false); onSelectRecentlyDeleted(); 
             }} className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-between ${isRecentlyDeletedActive ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
-              <span>{t('pages.main.items.home.FilterRecentlyDeletedOption')}</span>
+              <span>{t('items.recentlyDeleted.title')}</span>
               {recentlyDeletedCount > 0 && (
                 <span className={isRecentlyDeletedActive ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}>{recentlyDeletedCount}</span>
               )}

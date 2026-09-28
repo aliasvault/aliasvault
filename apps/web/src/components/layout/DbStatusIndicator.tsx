@@ -110,7 +110,7 @@ const DbStatusIndicator: React.FC = () => {
           notifications.addErrorMessage(errorMessage, true);
         }
       } else if (await hasUnsyncedUserChanges()) {
-        notifications.addErrorMessage(t('sharedResources.VaultSaveError'), true);
+        notifications.addErrorMessage(t('common.vaultSaveError'), true);
       }
     } finally {
       setIsRefreshing(false);
@@ -122,15 +122,15 @@ const DbStatusIndicator: React.FC = () => {
    */
   const getStatusTitle = (): string => {
     if (dbContext.isUploading) {
-      return t('sharedResources.SyncingChanges');
+      return t('common.syncingChanges');
     }
     if (dbContext.isSyncing) {
-      return t('sharedResources.LoadingVault');
+      return t('common.loadingVault');
     }
     if (showSyncError) {
-      return t('sharedResources.VaultSaveError');
+      return t('common.vaultSaveError');
     }
-    return t('sharedResources.SyncVaultData');
+    return t('common.syncVaultData');
   };
 
   return (

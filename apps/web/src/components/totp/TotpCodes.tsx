@@ -74,7 +74,6 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
   const [editSecret, setEditSecret] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
-  const tk = 'components.main.components.totpCodes.totpCodes';
 
   /**
    * Show an empty add form.
@@ -92,11 +91,11 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
    */
   const addTotpCode = (): void => {
     if (newSecret.trim().length === 0) {
-      setSecretError(t('validationMessages.SecretKeyRequired'));
+      setSecretError(t('validation.secretKeyRequired'));
       return;
     }
     try {
-      const sanitized = sanitizeSecretKey(newSecret, newName, t('sharedResources.ErrorSecretKeyRequired'));
+      const sanitized = sanitizeSecretKey(newSecret, newName, t('validation.secretKeyRequired'));
       const code: TotpCode = { Id: crypto.randomUUID(), Name: sanitized.name, SecretKey: sanitized.secretKey, Algorithm: sanitized.algorithm, Digits: sanitized.digits, Period: sanitized.period, ItemId: '' };
       onTotpCodesChange([...totpCodes, code]);
       setIsAddFormVisible(false);
@@ -109,7 +108,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
    * Delete a code after confirmation: original codes are soft deleted, new ones dropped.
    */
   const deleteTotpCode = async (code: TotpCode): Promise<void> => {
-    const confirmed = await showConfirmation(t(`${tk}.DeleteTotpCodeTitle`), t(`${tk}.DeleteTotpCodeConfirmation`), t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('totp.deleteCodeTitle'), t('totp.deleteCodeConfirmation'), t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -168,18 +167,18 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
       <Card variant="section" className="relative">
         <div className="flex justify-between items-start">
           <div>
-            <SectionTitle className="">{t(`${tk}.TwoFactorAuthenticationTitle`)}</SectionTitle>
+            <SectionTitle className="">{t('common.twoFactorAuthentication')}</SectionTitle>
           </div>
           <div className="flex items-center gap-2">
             {visibleCodes.length > 0 && !isAddFormVisible && (
-              <button id="add-totp-code" onClick={showAddForm} type="button" className="text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-2 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-xs w-8 h-8 flex items-center justify-center dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800" title={t(`${tk}.AddTotpCodeDescription`)}>
+              <button id="add-totp-code" onClick={showAddForm} type="button" className="text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-2 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-xs w-8 h-8 flex items-center justify-center dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800" title={t('totp.addTotpCodeDescription')}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
               </button>
             )}
             {canRemove && (
-              <button type="button" onClick={onRemove} className="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center" title={t('sharedResources.Delete')}>
+              <button type="button" onClick={onRemove} className="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center" title={t('common.delete')}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -197,33 +196,33 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
               }
             }}>
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white">{t(`${tk}.AddTotpCodeModalTitle`)}</h4>
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white">{t('totp.addTotpCodeModalTitle')}</h4>
                 {visibleCodes.length > 0 && (
                   <button onClick={() => setIsAddFormVisible(false)} type="button" className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
                     <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                       <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                     </svg>
-                    <span className="sr-only">{t(`${tk}.CloseFormButton`)}</span>
+                    <span className="sr-only">{t('totp.closeFormButton')}</span>
                   </button>
                 )}
               </div>
-              <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.TotpInstructions`)}</p>
+              <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t('totp.totpInstructions')}</p>
               <div className="mb-4">
-                <FormLabel htmlFor="totp-secret">{t(`${tk}.SecretKeyLabel`)}</FormLabel>
+                <FormLabel htmlFor="totp-secret">{t('totp.secretKey')}</FormLabel>
                 <input id="totp-secret" type="text" value={newSecret} onChange={(e) => {
                   setNewSecret(e.target.value);
                   setSecretError('');
-                }} className={INPUT_CLASSES} placeholder={t(`${tk}.SecretKeyPlaceholder`)} />
+                }} className={INPUT_CLASSES} placeholder={t('totp.secretKeyPlaceholder')} />
                 {secretError.length > 0 && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{secretError}</div>}
               </div>
               {showNameField ? (
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <label htmlFor="totp-name" className="text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.NameOptionalLabel`)}</label>
+                    <label htmlFor="totp-name" className="text-sm font-medium text-gray-900 dark:text-white">{t('totp.nameOptional')}</label>
                     <button id="remove-totp-name" type="button" onClick={() => {
                       setNewName('');
                       setShowNameField(false);
-                    }} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('sharedResources.Remove')}>
+                    }} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('common.remove')}>
                       {removeIcon}
                     </button>
                   </div>
@@ -232,12 +231,12 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
               ) : (
                 <div className="mb-4">
                   <button id="add-totp-name" type="button" onClick={() => setShowNameField(true)} className="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400">
-                    {t(`${tk}.AddNameButton`)}
+                    {t('totp.addName')}
                   </button>
                 </div>
               )}
               <div className="flex justify-end">
-                <button id="save-totp-code" type="button" onClick={addTotpCode} className={SAVE_BUTTON_CLASSES}>{t(`${tk}.SaveButton`)}</button>
+                <button id="save-totp-code" type="button" onClick={addTotpCode} className={SAVE_BUTTON_CLASSES}>{t('common.save')}</button>
               </div>
             </div>
           </div>
@@ -248,13 +247,13 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
             <div key={code.Id} className="p-2 ps-3 pe-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
               <div className="flex justify-between items-center gap-2">
                 <div className="flex items-center flex-1">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">{code.Name.length > 0 ? code.Name : t('sharedResources.TotpDefaultName')}</h4>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">{code.Name.length > 0 ? code.Name : t('totp.defaultName')}</h4>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex flex-col items-end">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{t(`${tk}.SaveToViewCodeMessage`)}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('totp.saveToViewCode')}</div>
                   </div>
-                  <button type="button" onClick={() => showEditModal(code)} className="edit-totp-code text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title={t('sharedResources.Edit')}>
+                  <button type="button" onClick={() => showEditModal(code)} className="edit-totp-code text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title={t('common.edit')}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
@@ -271,23 +270,23 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
         </div>
       </Card>
 
-      <FormModal isOpen={editingCode !== null} title={t('sharedResources.Edit')} showDefaultFooter={false} maxWidth="lg" onClose={() => setEditingCode(null)} submitOnEnter={false}>
+      <FormModal isOpen={editingCode !== null} title={t('common.edit')} showDefaultFooter={false} maxWidth="lg" onClose={() => setEditingCode(null)} submitOnEnter={false}>
         <div className="space-y-4">
           {editingCode && (
             <div className="space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.SecretKeyLabel`)}</label>
-                  <button type="button" onClick={() => setShowQrCode(v => !v)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1" title={`${showQrCode ? t('sharedResources.Hide') : t('sharedResources.Show')} QR Code`}>
+                  <label className="text-sm font-medium text-gray-900 dark:text-white">{t('totp.secretKey')}</label>
+                  <button type="button" onClick={() => setShowQrCode(v => !v)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1" title={`${showQrCode ? t('common.hide') : t('common.show')} QR Code`}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                     </svg>
                   </button>
                 </div>
-                <input type="text" value={editSecret} onChange={e => setEditSecret(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono" placeholder={t(`${tk}.SecretKeyLabel`)} />
+                <input type="text" value={editSecret} onChange={e => setEditSecret(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono" placeholder={t('totp.secretKey')} />
                 {showQrCode && qrCodeDataUrl && (
                   <div className="flex justify-center mt-3">
-                    <img src={qrCodeDataUrl} alt="QR code" className="w-64 h-64" />
+                    <img src={qrCodeDataUrl} alt={t('common.qrCode')} className="w-64 h-64" />
                   </div>
                 )}
               </div>
@@ -295,23 +294,23 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
               {showEditNameField ? (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-900 dark:text-white">{t(`${tk}.NameOptionalLabel`)}</label>
+                    <label className="text-sm font-medium text-gray-900 dark:text-white">{t('totp.nameOptional')}</label>
                     <button type="button" onClick={() => {
                       setEditName('');
                       setShowEditNameField(false);
-                    }} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('sharedResources.Remove')}>
+                    }} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('common.remove')}>
                       {removeIcon}
                     </button>
                   </div>
-                  <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder={t(`${tk}.NameOptionalLabel`)} />
+                  <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder={t('totp.nameOptional')} />
                 </div>
               ) : (
                 <button type="button" onClick={() => setShowEditNameField(true)} className="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400">
-                  {t(`${tk}.AddNameButton`)}
+                  {t('totp.addName')}
                 </button>
               )}
 
-              <button type="button" onClick={saveEditedTotpCode} className={`w-full ${SAVE_BUTTON_CLASSES}`}>{t('sharedResources.Save')}</button>
+              <button type="button" onClick={saveEditedTotpCode} className={`w-full ${SAVE_BUTTON_CLASSES}`}>{t('common.save')}</button>
             </div>
           )}
         </div>

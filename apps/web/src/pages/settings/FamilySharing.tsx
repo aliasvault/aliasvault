@@ -269,8 +269,8 @@ const FamilySharing: React.FC = () => {
   const removeAccess = async (group: GroupInfo, manifest: SharedManifestInfo, member: GroupMemberInfo, isSelf: boolean): Promise<void> => {
     const vault = vaultLabel(manifest);
     const confirmed = isSelf
-      ? await showConfirmation(familySharingText.leaveVault, familySharingText.leaveVaultConfirm(vault), familySharingText.leaveVault, t('sharedResources.Cancel'))
-      : await showConfirmation(familySharingText.revoke, `${familySharingText.revokeAccessConfirm(member.username, vault)}\n\n${familySharingText.revokeAccessWarning}`, familySharingText.revoke, t('sharedResources.Cancel'));
+      ? await showConfirmation(familySharingText.leaveVault, familySharingText.leaveVaultConfirm(vault), familySharingText.leaveVault, t('common.cancel'))
+      : await showConfirmation(familySharingText.revoke, `${familySharingText.revokeAccessConfirm(member.username, vault)}\n\n${familySharingText.revokeAccessWarning}`, familySharingText.revoke, t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -286,7 +286,7 @@ const FamilySharing: React.FC = () => {
    * @param target - the shared manifest to delete.
    */
   const startVaultDelete = async (target: ManifestTarget): Promise<void> => {
-    const confirmed = await showConfirmation(familySharingText.deleteVault, familySharingText.deleteVaultConfirm(vaultLabel(target.manifest)), t('sharedResources.Delete'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(familySharingText.deleteVault, familySharingText.deleteVaultConfirm(vaultLabel(target.manifest)), t('common.delete'), t('common.cancel'));
     if (confirmed) {
       setDeletePasswordError('');
       setPendingVaultDelete(target);
@@ -351,7 +351,7 @@ const FamilySharing: React.FC = () => {
         breadcrumbItems={[{ displayName: familySharingText.title }]}
         title={familySharingText.title}
         description={familySharingText.description}
-        customActions={<RefreshButton onClick={refresh} buttonText={t('sharedResources.Refresh')} />}
+        customActions={<RefreshButton onClick={refresh} buttonText={t('common.refresh')} />}
         titleSuffix={<span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 uppercase tracking-wide">{familySharingText.beta}</span>}
       />
 
@@ -451,7 +451,7 @@ const FamilySharing: React.FC = () => {
                               <button
                                 disabled={busy}
                                 onClick={() => setOpenVaultMenuId(previous => (previous === manifest.manifestId ? null : manifest.manifestId))}
-                                aria-label={t('sharedResources.Edit')}
+                                aria-label={t('common.edit')}
                                 className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,7 +473,7 @@ const FamilySharing: React.FC = () => {
                                         }}
                                         className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
                                       >
-                                        {t('components.folders.folderModal.EditFolderTitle')}
+                                        {t('items.folders.editFolder')}
                                       </button>
                                     )}
                                     <button

@@ -1,5 +1,6 @@
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Card from '@/components/shared/Card';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -47,11 +48,12 @@ const DownloadIcon: React.FC = () => (
  * Lists the attachments of an item as download tiles.
  */
 const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
+  const { t } = useTranslation();
   const visible = attachments.filter(a => !a.IsDeleted);
 
   return (
     <Card variant="section">
-      <SectionTitle>Attachments</SectionTitle>
+      <SectionTitle>{t('common.attachments')}</SectionTitle>
       {visible.length > 0 ? (
         <div className="space-y-2">
           {visible.map((attachment) => {
@@ -63,7 +65,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
                 type="button"
                 disabled={!available}
                 onClick={() => available && downloadBytes(attachment.Filename, attachment.Blob!)}
-                title={available ? attachment.Filename : 'Attachment data unavailable'}
+                title={available ? attachment.Filename : t('items.attachmentUnavailable')}
                 className="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left transition-colors duration-200 enabled:hover:border-gray-300 enabled:hover:bg-gray-100 disabled:cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:enabled:hover:border-gray-700 dark:enabled:hover:bg-gray-700"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-500 transition-colors duration-200 group-enabled:group-hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:group-enabled:group-hover:bg-gray-600">
@@ -74,7 +76,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
                     {attachment.Filename}
                   </span>
                   <span className="block text-xs text-gray-500 dark:text-gray-400">
-                    {available ? formatSize(size) : 'Unavailable'}
+                    {available ? formatSize(size) : t('common.unavailable')}
                   </span>
                 </span>
                 {available && (
@@ -87,7 +89,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
           })}
         </div>
       ) : (
-        <p className="text-gray-500 dark:text-gray-400">No attachments available.</p>
+        <p className="text-gray-500 dark:text-gray-400">{t('items.noAttachments')}</p>
       )}
     </Card>
   );

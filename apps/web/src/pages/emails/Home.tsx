@@ -65,7 +65,7 @@ const EmailsHome: React.FC = () => {
   const webApi = useWebApi();
   const notifications = useNotifications();
   const { showConfirmation } = useConfirmModal();
-  usePageTitle(t('pages.main.emails.home.PageTitle'));
+  usePageTitle(t('emails.title'));
 
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 300);
   const [emailList, setEmailList] = useState<MailListEntry[]>([]);
@@ -151,7 +151,7 @@ const EmailsHome: React.FC = () => {
       if (!dbContext.isSyncing && !await hasUnsyncedUserChanges()) {
         const apiError = error as { apiError?: ApiErrorResponse };
         if (apiError.apiError?.code === 'CLAIM_DOES_NOT_EXIST') {
-          notifications.addErrorMessage(t('pages.main.emails.home.ClaimDoesNotExistError'), true);
+          notifications.addErrorMessage(t('emails.home.claimDoesNotExistError'), true);
         } else {
           notifications.addErrorMessage(error instanceof Error ? error.message : t('common.errors.unknownError'), true);
         }
@@ -363,10 +363,10 @@ const EmailsHome: React.FC = () => {
       return;
     }
     const confirmed = await showConfirmation(
-      t('pages.main.emails.home.BulkDeleteEmailTitle'),
-      t('pages.main.emails.home.BulkDeleteEmailConfirmation', { 0: checkedEmailIds.size }),
-      t('sharedResources.Confirm'),
-      t('sharedResources.Cancel'),
+      t('emails.home.bulkDeleteEmailTitle'),
+      t('emails.home.bulkDeleteEmailConfirmation', { count: checkedEmailIds.size }),
+      t('common.confirm'),
+      t('common.cancel'),
     );
     if (!confirmed) {
       return;
@@ -379,7 +379,7 @@ const EmailsHome: React.FC = () => {
         body: JSON.stringify({ ids: [...checkedEmailIds] }),
       });
       const deletedIds = response?.successfulEmailIds ?? [];
-      notifications.addSuccessMessage(t('pages.main.emails.home.BulkDeleteEmailSuccess', { 0: deletedIds.length }), true);
+      notifications.addSuccessMessage(t('emails.home.bulkDeleteEmailSuccess', { count: deletedIds.length }), true);
       handleEmailsDeleted(deletedIds);
     } catch (error) {
       notifications.addErrorMessage(error instanceof Error ? error.message : t('common.errors.unknownError'), true);
@@ -425,16 +425,16 @@ const EmailsHome: React.FC = () => {
       )}
 
       <PageHeader
-        title={t('pages.main.emails.home.PageTitle')}
-        description={t('pages.main.emails.home.PageDescription')}
+        title={t('emails.title')}
+        description={t('emails.home.pageDescription')}
         customActions={(
           <>
             {autoRefreshEnabled && currentPage === 1 && (
-              <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('pages.main.emails.home.AutoRefreshEnabledTooltip')}></div>
+              <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('emails.home.autoRefreshEnabledTooltip')}></div>
             )}
-            <RefreshButton onClick={() => refreshData()} buttonText={t('pages.main.emails.home.RefreshButton')} />
+            <RefreshButton onClick={() => refreshData()} buttonText={t('common.refresh')} />
             {checkedEmailIds.size > 0 && (
-              <DeleteAllSelectedButton onClick={showBulkDeleteConfirmation} buttonText={t('pages.main.emails.home.DeleteSelectedEmails', { 0: checkedEmailIds.size })} />
+              <DeleteAllSelectedButton onClick={showBulkDeleteConfirmation} buttonText={t('emails.home.deleteSelectedEmails', { count: checkedEmailIds.size })} />
             )}
           </>
         )} />
@@ -465,7 +465,7 @@ const EmailsHome: React.FC = () => {
         ) : noEmailClaims ? (
           <div className="p-4 mx-4 mt-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div className="px-4 py-2 text-gray-400 rounded">
-              <p className="text-gray-500 dark:text-gray-400">{t('pages.main.emails.home.NoEmailClaimsMessage')}</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('emails.home.noEmailClaimsMessage')}</p>
             </div>
           </div>
         ) : (
@@ -477,7 +477,7 @@ const EmailsHome: React.FC = () => {
                 <ul className="divide-y divide-gray-200 dark:divide-gray-600">
                   {emailList.length === 0 ? (
                     <li className="p-4 text-center text-gray-500 dark:text-gray-300">
-                      {t('pages.main.emails.home.NoEmailsReceivedMessage')}
+                      {t('emails.home.noEmailsReceivedMessage')}
                     </li>
                   ) : renderRows(emailId => void openEmailModal(emailId), false)}
                 </ul>
@@ -488,7 +488,7 @@ const EmailsHome: React.FC = () => {
               {emailList.length === 0 ? (
                 <div className="w-full bg-white border rounded-lg dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
                   <div className="p-4 text-center text-gray-500 dark:text-gray-300">
-                    {t('pages.main.emails.home.NoEmailsReceivedMessage')}
+                    {t('emails.home.noEmailsReceivedMessage')}
                   </div>
                 </div>
               ) : (
@@ -509,10 +509,10 @@ const EmailsHome: React.FC = () => {
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                   </svg>
-                                  {t('pages.main.emails.home.LoadingText')}
+                                  {t('common.loading')}
                                 </span>
                               ) : (
-                                <span>{t('pages.main.emails.home.LoadMoreButtonText', { 0: totalRecords - emailList.length })}</span>
+                                <span>{t('emails.loadMore', { count: totalRecords - emailList.length })}</span>
                               )}
                             </button>
                           </li>

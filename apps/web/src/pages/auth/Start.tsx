@@ -55,24 +55,24 @@ const Start: React.FC = () => {
             <div className="w-full max-w-xl space-y-4">
               <Logo />
               <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
-                {t('pages.auth.start.MainTitle')}
+                {t('auth.start.mainTitle')}
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                {t('pages.auth.start.TaglineText')}
+                {t('auth.start.taglineText')}
               </p>
               {isHttpWarning && (
-                <MessageInfo title={t('pages.auth.start.HttpsWarningTitle')}>
-                  {t('pages.auth.start.HttpsWarningMessage')}
+                <MessageInfo title={t('auth.start.httpsWarningTitle')}>
+                  {t('auth.start.httpsWarningMessage')}
                 </MessageInfo>
               )}
               <div className="space-y-4">
                 {getAppConfig().publicRegistrationEnabled && (
                   <Link to="/user/setup" className="block w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out text-center">
-                    {t('pages.auth.start.CreateNewVaultButton')}
+                    {t('auth.createNewVault')}
                   </Link>
                 )}
                 <Link to="/user/login" className="block w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 text-gray-800 dark:text-white font-semibold rounded-lg transition duration-300 ease-in-out text-center">
-                  {t('pages.auth.start.LoginExistingAccountButton')}
+                  {t('auth.start.loginExistingAccountButton')}
                 </Link>
               </div>
             </div>

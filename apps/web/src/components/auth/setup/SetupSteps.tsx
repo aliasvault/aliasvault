@@ -52,19 +52,18 @@ const StepFrame: React.FC<{ isLoading: boolean; children: React.ReactNode }> = (
 export const TermsAndConditionsStep: React.FC<{ agreedToTerms: boolean; onAgreedToTermsChange: (agreed: boolean) => void }> = ({ agreedToTerms, onAgreedToTermsChange }) => {
   const { t } = useTranslation();
   const isLoading = useStepLoading();
-  const tk = 'components.auth.setup.termsAndConditionsStep';
 
   return (
     <StepFrame isLoading={isLoading}>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg lg:shadow-none p-6">
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t(`${tk}.PleaseReadAndAgree`)}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{t('auth.setup.termsStep.pleaseReadAndAgree')}</p>
         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-8 h-80 overflow-y-auto">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t(`${tk}.TermsAndConditionsTitle`)}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{t(`${tk}.TermsContent`)}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('auth.register.termsAndConditionsLink')}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-line">{t('auth.setup.termsStep.termsContent')}</p>
         </div>
         <div className="flex items-center">
           <input type="checkbox" id="agreeTerms" checked={agreedToTerms} onChange={e => onAgreedToTermsChange(e.target.checked)} className="mr-2" />
-          <label htmlFor="agreeTerms" className="text-sm font-bold text-gray-600 dark:text-gray-400">{t(`${tk}.AgreementCheckboxLabel`)}</label>
+          <label htmlFor="agreeTerms" className="text-sm font-bold text-gray-600 dark:text-gray-400">{t('auth.setup.termsStep.agreementCheckboxLabel')}</label>
         </div>
       </div>
     </StepFrame>
@@ -83,7 +82,6 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
   const [isValid, setIsValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tk = 'components.auth.setup.usernameStep';
 
   /**
    * Ask the server whether the username can be used.
@@ -92,7 +90,7 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
     if (value.trim().length === 0) {
       setIsValidating(false);
       setIsValid(false);
-      setErrorMessage(t(`${tk}.UsernameRequiredError`));
+      setErrorMessage(t('apiErrors.USERNAME_REQUIRED'));
       onUsernameChange('');
       return;
     }
@@ -103,7 +101,7 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
       onUsernameChange(value);
     } catch (error) {
       setIsValid(false);
-      setErrorMessage(error instanceof ApiRequestError ? apiErrorMessage(error, t, t(`${tk}.ServerCommunicationError`)) : t(`${tk}.ServerCommunicationError`));
+      setErrorMessage(error instanceof ApiRequestError ? apiErrorMessage(error, t, t('auth.setup.usernameStep.serverCommunicationError')) : t('auth.setup.usernameStep.serverCommunicationError'));
       onUsernameChange('');
     } finally {
       setIsValidating(false);
@@ -143,27 +141,27 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg lg:shadow-none p-6 mb-6">
         <div className="flex items-start mb-4">
           <div className="flex-shrink-0">
-            <img className="h-10 w-10" src="/img/logo.svg" alt={t(`${tk}.AssistantAvatarAlt`)} />
+            <img className="h-10 w-10" src="/img/logo.svg" alt={t('auth.setup.usernameStep.assistantAvatarAlt')} />
           </div>
           <div className="ml-3 bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
-            <p className="text-sm text-gray-900 dark:text-white">{t(`${tk}.GreatNowLetsSetupUsername`)}</p>
-            <p className="text-sm text-gray-900 dark:text-white mt-3">{t(`${tk}.EnterUsernameInstructions`)}</p>
-            <p className="text-sm text-gray-900 dark:text-white mt-3 font-semibold">{t(`${tk}.RememberUsernameNote`)}</p>
+            <p className="text-sm text-gray-900 dark:text-white">{t('auth.setup.usernameStep.greatNowLetsSetupUsername')}</p>
+            <p className="text-sm text-gray-900 dark:text-white mt-3">{t('auth.setup.usernameStep.enterUsernameInstructions')}</p>
+            <p className="text-sm text-gray-900 dark:text-white mt-3 font-semibold">{t('auth.setup.usernameStep.rememberUsernameNote')}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
-          <EditFormRow id="username" label={t(`${tk}.UsernameLabel`)} value={username} onChange={onChange} placeholder={t(`${tk}.UsernamePlaceholder`)} onFocus={() => {
+          <EditFormRow id="username" label={t('common.username')} value={username} onChange={onChange} placeholder={t('auth.setup.usernameStep.usernamePlaceholder')} onFocus={() => {
             setIsValid(false);
             setIsValidating(false);
             setErrorMessage('');
           }} />
           {isValidating
-            ? <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.ValidatingUsernameMessage`)}</div>
+            ? <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('auth.setup.usernameStep.validatingUsernameMessage')}</div>
             : isValid
-              ? <div className="mt-2 text-sm text-green-600 dark:text-green-400">{t(`${tk}.UsernameAvailableMessage`)}</div>
+              ? <div className="mt-2 text-sm text-green-600 dark:text-green-400">{t('apiErrors.USERNAME_AVAILABLE')}</div>
               : errorMessage.length > 0 && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</div>}
         </div>
       </div>
@@ -181,7 +179,6 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tk = 'components.auth.setup.passwordStep';
 
   // Autofocus the password input.
   useEffect(() => {
@@ -195,7 +192,7 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
    */
   const validate = (value: string, confirm: string): void => {
     if (value.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
-      setErrorMessage(t('validationMessages.PasswordMinLengthGeneric', { 0: MIN_ACCEPTED_PASSWORD_LENGTH }));
+      setErrorMessage(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       onPasswordChange('');
       return;
     }
@@ -205,7 +202,7 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
       return;
     }
     if (value !== confirm) {
-      setErrorMessage(t('validationMessages.PasswordsDoNotMatchGeneric'));
+      setErrorMessage(t('common.errorPasswordMismatch'));
       onPasswordChange('');
       return;
     }
@@ -238,35 +235,35 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg lg:shadow-none p-6">
         <div className="flex items-start mb-4">
           <div className="flex-shrink-0">
-            <img className="h-10 w-10" src="/img/logo.svg" alt="AliasVault Assistant" />
+            <img className="h-10 w-10" src="/img/logo.svg" alt={t('auth.setup.usernameStep.assistantAvatarAlt')} />
           </div>
           <div className="ml-3 bg-blue-100 dark:bg-blue-900 rounded-lg p-3">
-            <p className="text-sm text-gray-900 dark:text-white">{t(`${tk}.WelcomeMessage`)}</p>
+            <p className="text-sm text-gray-900 dark:text-white">{t('auth.setup.passwordStep.welcomeMessage')}</p>
           </div>
         </div>
       </div>
 
       <div className="p-4 mb-6 bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-900 dark:text-gray-100">
-        <p className="text-sm font-semibold">{t(`${tk}.ImportantNote`)}</p>
+        <p className="text-sm font-semibold">{t('auth.setup.passwordStep.importantNote')}</p>
         <ul className="text-sm mt-3 list-disc list-inside">
-          <li>{t(`${tk}.SecurityPoint1`)}</li>
-          <li>{t(`${tk}.SecurityPoint2`)}</li>
-          <li>{t(`${tk}.SecurityPoint3`)}</li>
+          <li>{t('auth.setup.passwordStep.securityPoint1')}</li>
+          <li>{t('auth.setup.passwordStep.securityPoint2')}</li>
+          <li>{t('auth.setup.passwordStep.securityPoint3')}</li>
         </ul>
       </div>
 
       <div className="space-y-4">
         <div>
           <div>
-            <FormLabel htmlFor="password">{t(`${tk}.MasterPasswordLabel`)}</FormLabel>
-            <PasswordInputField id="password" value={password} onValueChange={onPasswordInput} placeholder={t(`${tk}.MasterPasswordPlaceholder`)} />
+            <FormLabel htmlFor="password">{t('auth.masterPassword')}</FormLabel>
+            <PasswordInputField id="password" value={password} onValueChange={onPasswordInput} placeholder={t('auth.setup.passwordStep.masterPasswordPlaceholder')} />
           </div>
 
           <PasswordStrengthIndicator password={password} />
 
           <div className="mt-4">
-            <FormLabel htmlFor="confirmPassword">{t(`${tk}.ConfirmMasterPasswordLabel`)}</FormLabel>
-            <PasswordInputField id="confirmPassword" value={confirmPassword} onValueChange={onConfirmInput} placeholder={t(`${tk}.ConfirmMasterPasswordPlaceholder`)} />
+            <FormLabel htmlFor="confirmPassword">{t('auth.setup.passwordStep.confirmMasterPasswordLabel')}</FormLabel>
+            <PasswordInputField id="confirmPassword" value={confirmPassword} onValueChange={onConfirmInput} placeholder={t('auth.setup.passwordStep.confirmMasterPasswordPlaceholder')} />
           </div>
           {errorMessage.length > 0 && <div className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</div>}
         </div>
@@ -302,7 +299,7 @@ export const CreatingStep: React.FC<{ username: string; password: string; onDone
       } catch (error) {
         console.error('Registration failed:', error);
         setIsLoading(false);
-        notifications.addErrorMessage(apiErrorMessage(error, t, t('components.auth.register.RegistrationErrorMessage')), true);
+        notifications.addErrorMessage(apiErrorMessage(error, t, t('auth.register.registrationErrorMessage')), true);
       }
     };
     void completeSetup();

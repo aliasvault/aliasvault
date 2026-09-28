@@ -16,7 +16,6 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
   const auth = useAuth();
   const notifications = useNotifications();
   const [enabled, setEnabled] = useState(() => WebAuthnService.isEnabled());
-  const tk = 'components.main.settings.security.quickVaultUnlockSection';
 
   const loadData = useCallback(async (): Promise<void> => {
     setEnabled(WebAuthnService.isEnabled());
@@ -29,13 +28,13 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
   const enable = async (): Promise<void> => {
     try {
       await WebAuthnService.enable(auth.username ?? '');
-      notifications.addSuccessMessage(t(`${tk}.SuccessEnabledMessage`), true);
+      notifications.addSuccessMessage(t('settings.securitySettings.passkeyUnlock.successEnabledMessage'), true);
     } catch (error) {
       if (error instanceof WebAuthnNotSupportedError) {
-        notifications.addErrorMessage(t(`${tk}.WebAuthnNotSupportedError`), true);
+        notifications.addErrorMessage(t('settings.securitySettings.passkeyUnlock.webAuthnNotSupportedError'), true);
       } else {
         console.info('An error occurred while trying to enable WebAuthn.', error);
-        notifications.addErrorMessage(t(`${tk}.EnableErrorMessage`), true);
+        notifications.addErrorMessage(t('settings.securitySettings.passkeyUnlock.enableErrorMessage'), true);
       }
       return;
     }
@@ -47,22 +46,22 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
    */
   const disable = async (): Promise<void> => {
     WebAuthnService.disable();
-    notifications.addSuccessMessage(t(`${tk}.SuccessDisabledMessage`), true);
+    notifications.addSuccessMessage(t('settings.securitySettings.passkeyUnlock.successDisabledMessage'), true);
     await loadData();
   };
 
   return (
-    <SecuritySection title={t(`${tk}.Title`)}>
+    <SecuritySection title={t('settings.securitySettings.passkeyUnlock.title')}>
       {enabled ? (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.EnabledDescription`)}</div>
-          <Button color="danger" onClick={() => void disable()}>{t(`${tk}.DisableButton`)}</Button>
+          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.enabledDescription')}</div>
+          <Button color="danger" onClick={() => void disable()}>{t('settings.securitySettings.passkeyUnlock.disableButton')}</Button>
         </>
       ) : (
         <>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.DisabledDescription`)}</div>
-          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t(`${tk}.ExperimentalWarning`)}</div>
-          <Button color="success" onClick={() => void enable()}>{t(`${tk}.EnableButton`)}</Button>
+          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.disabledDescription')}</div>
+          <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.passkeyUnlock.experimentalWarning')}</div>
+          <Button color="success" onClick={() => void enable()}>{t('settings.securitySettings.passkeyUnlock.enableButton')}</Button>
         </>
       )}
     </SecuritySection>

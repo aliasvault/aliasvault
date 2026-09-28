@@ -15,7 +15,7 @@ import { devError, devLog, devWarn } from '@/utils/DevLogger';
  * Which translation key backs each of the core's own messages.
  */
 const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
-  [TranslatableMessage.ClientOutdated]: 'sharedResources.ClientVersionUnsupported',
+  [TranslatableMessage.ClientOutdated]: 'common.clientVersionUnsupported',
   [TranslatableMessage.VaultUpgradeRequired]: 'content.vaultUpgradeRequired',
 };
 

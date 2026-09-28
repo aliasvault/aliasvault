@@ -31,33 +31,33 @@ const AppRow: React.FC<{ app: AppInfo; buttonText: string; comingSoonText: strin
  */
 const AppsSettings: React.FC = () => {
   const { t } = useTranslation();
-  const tk = 'pages.main.settings.apps';
-  usePageTitle(t(`${tk}.PageTitle`));
+  
+  usePageTitle(t('settings.apps.pageTitle'));
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t(`${tk}.BreadcrumbTitle`) }]} title={t(`${tk}.PageTitle`)} description={t(`${tk}.PageDescription`)} />
+      <PageHeader breadcrumbItems={[{ displayName: t('settings.apps.pageTitle') }]} title={t('settings.apps.pageTitle')} description={t('settings.apps.pageDescription')} />
 
       <PageContent>
         <Card>
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t(`${tk}.BrowserExtensionsTitle`)}</h3>
-            <p className="text-gray-600 dark:text-gray-400">{t(`${tk}.BrowserExtensionsDescription`)}</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('settings.apps.browserExtensionsTitle')}</h3>
+            <p className="text-gray-600 dark:text-gray-400">{t('settings.apps.browserExtensionsDescription')}</p>
           </div>
 
           <div className="mb-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {BROWSER_EXTENSIONS.map(app => <AppRow key={app.name} app={app} buttonText={t(`${tk}.InstallButton`)} comingSoonText={t(`${tk}.ComingSoonText`)} />)}
+              {BROWSER_EXTENSIONS.map(app => <AppRow key={app.name} app={app} buttonText={t('settings.apps.installButton')} comingSoonText={t('settings.apps.comingSoonText')} />)}
             </div>
           </div>
 
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t(`${tk}.MobileAppsTitle`)}</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{t(`${tk}.MobileAppsDescription`)}</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('settings.apps.mobileAppsTitle')}</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t('settings.apps.mobileAppsDescription')}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {MOBILE_APPS.map(app => <AppRow key={app.name} app={app} buttonText={t(`${tk}.DownloadButton`)} comingSoonText={t(`${tk}.ComingSoonText`)} />)}
+            {MOBILE_APPS.map(app => <AppRow key={app.name} app={app} buttonText={t('settings.apps.downloadButton')} comingSoonText={t('settings.apps.comingSoonText')} />)}
           </div>
         </Card>
       </PageContent>

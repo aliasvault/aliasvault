@@ -30,8 +30,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import type { ImportedCredential } from '@aliasvault/client/transfer/import/models/ImportedCredential';
 import type { ImportFileResult } from '@aliasvault/client/transfer/import/models/ImportFileResult';
 
-const tk = 'components.main.settings.importExport.importServices';
-
 /**
  * One paragraph of a service's import instructions.
  */
@@ -87,8 +85,8 @@ const ImportServiceAliasVault: React.FC = () => {
   });
 
   return (
-    <ImportServiceCard serviceName="AliasVault" description={t(`${tk}.AliasVaultDescription`)} logoUrl="/img/logo.svg" acceptedFileExtensions={['.avex', '.avux', '.csv']} processFile={processFile}>
-      <Instruction>{t(`${tk}.AliasVaultInstructionsPart1`)}</Instruction>
+    <ImportServiceCard serviceName="AliasVault" description={t('importExport.services.aliasVaultDescription')} logoUrl="/img/logo.svg" acceptedFileExtensions={['.avex', '.avux', '.csv']} processFile={processFile}>
+      <Instruction>{t('importExport.services.aliasVaultInstructionsPart1')}</Instruction>
     </ImportServiceCard>
   );
 };
@@ -105,21 +103,21 @@ type FileImportService = {
 };
 
 const FILE_IMPORT_SERVICES: FileImportService[] = [
-  { serviceName: '1Password', logoUrl: '/img/importers/1password.svg', descriptionKey: 'OnePasswordDescription', instructionKeys: ['OnePasswordInstructionsPart1', 'OnePasswordInstructionsPart2'], parsers: { '.1pux': importOnePassword1pux, '.csv': csv(importOnePasswordCsv) } },
-  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'BitwardenDescription', instructionKeys: ['BitwardenInstructionsPart1', 'BitwardenInstructionsPart2'], parsers: { '.zip': importBitwardenZip, '.csv': csv(importBitwardenCsv) } },
-  { serviceName: 'Chrome', logoUrl: '/img/importers/chrome.svg', descriptionKey: 'ChromeDescription', instructionKeys: ['ChromeInstructionsPart1', 'ChromeInstructionsPart2'], parsers: { '.csv': csv(importChromeCsv) } },
-  { serviceName: 'Dashlane', logoUrl: '/img/importers/dashlane.svg', descriptionKey: 'DashlaneDescription', instructionKeys: ['DashlaneInstructionsPart1', 'DashlaneInstructionsPart2'], parsers: { '.csv': csv(importDashlaneCsv) } },
-  { serviceName: 'Dropbox Passwords', logoUrl: '/img/importers/dropbox.svg', descriptionKey: 'DropboxDescription', instructionKeys: ['DropboxInstructionsPart1', 'UploadFileInstructionCommon'], parsers: { '.csv': csv(importDropboxCsv) } },
-  { serviceName: 'Edge', logoUrl: '/img/importers/edge.svg', descriptionKey: 'EdgeDescription', instructionKeys: ['EdgeInstructionsPart1', 'EdgeInstructionsPart2'], parsers: { '.csv': csv(importEdgeCsv) } },
-  { serviceName: 'Enpass', logoUrl: '/img/importers/enpass.svg', descriptionKey: 'EnpassDescription', instructionKeys: ['EnpassInstructionsPart1', 'EnpassInstructionsPart2'], parsers: { '.csv': csv(importEnpassCsv) } },
-  { serviceName: 'Firefox', logoUrl: '/img/importers/firefox.svg', descriptionKey: 'FirefoxDescription', instructionKeys: ['FirefoxInstructionsPart1', 'FirefoxInstructionsPart2'], parsers: { '.csv': csv(importFirefoxCsv) } },
-  { serviceName: 'KeePass', logoUrl: '/img/importers/keepass.svg', descriptionKey: 'KeePassDescription', instructionKeys: ['KeePassInstructionsPart1', 'KeePassInstructionsPart2'], parsers: { '.csv': csv(importKeePassCsv) } },
-  { serviceName: 'KeePassXC', logoUrl: '/img/importers/keepassxc.svg', descriptionKey: 'KeePassXCDescription', instructionKeys: ['KeePassXCInstructionsPart1', 'KeePassXCInstructionsPart2'], parsers: { '.csv': csv(importKeePassXcCsv) } },
-  { serviceName: 'LastPass', logoUrl: '/img/importers/lastpass.svg', descriptionKey: 'LastPassDescription', instructionKeys: ['LastPassInstructionsPart1', 'LastPassInstructionsPart2'], parsers: { '.csv': csv(importLastPassCsv) } },
-  { serviceName: 'NordPass', logoUrl: '/img/importers/nordpass.svg', descriptionKey: 'NordPassDescription', instructionKeys: ['NordPassInstructionsPart1', 'NordPassInstructionsPart2'], parsers: { '.csv': csv(importNordPassCsv) } },
-  { serviceName: 'Proton Pass', logoUrl: '/img/importers/protonpass.svg', descriptionKey: 'ProtonPassDescription', instructionKeys: ['ProtonPassInstructionsPart1', 'ProtonPassInstructionsPart2'], parsers: { '.zip': importProtonPassZip, '.csv': csv(importProtonPassCsv) } },
-  { serviceName: 'RoboForm', logoUrl: '/img/importers/roboform.svg', descriptionKey: 'RoboformDescription', instructionKeys: ['RoboformInstructionsPart1', 'RoboformInstructionsPart2'], parsers: { '.csv': csv(importRoboformCsv) } },
-  { serviceName: 'Strongbox', logoUrl: '/img/importers/strongbox.svg', descriptionKey: 'StrongboxDescription', instructionKeys: ['StrongboxInstructionsPart1', 'StrongboxInstructionsPart2'], parsers: { '.csv': csv(importStrongboxCsv) } },
+  { serviceName: '1Password', logoUrl: '/img/importers/1password.svg', descriptionKey: 'importExport.services.onePasswordDescription', instructionKeys: ['importExport.services.onePasswordInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.1pux': importOnePassword1pux, '.csv': csv(importOnePasswordCsv) } },
+  { serviceName: 'Bitwarden', logoUrl: '/img/importers/bitwarden.svg', descriptionKey: 'importExport.services.bitwardenDescription', instructionKeys: ['importExport.services.bitwardenInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importBitwardenZip, '.csv': csv(importBitwardenCsv) } },
+  { serviceName: 'Chrome', logoUrl: '/img/importers/chrome.svg', descriptionKey: 'importExport.services.chromeDescription', instructionKeys: ['importExport.services.chromeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importChromeCsv) } },
+  { serviceName: 'Dashlane', logoUrl: '/img/importers/dashlane.svg', descriptionKey: 'importExport.services.dashlaneDescription', instructionKeys: ['importExport.services.dashlaneInstructionsPart1', 'importExport.services.dashlaneInstructionsPart2'], parsers: { '.csv': csv(importDashlaneCsv) } },
+  { serviceName: 'Dropbox Passwords', logoUrl: '/img/importers/dropbox.svg', descriptionKey: 'importExport.services.dropboxDescription', instructionKeys: ['importExport.services.dropboxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importDropboxCsv) } },
+  { serviceName: 'Edge', logoUrl: '/img/importers/edge.svg', descriptionKey: 'importExport.services.edgeDescription', instructionKeys: ['importExport.services.edgeInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importEdgeCsv) } },
+  { serviceName: 'Enpass', logoUrl: '/img/importers/enpass.svg', descriptionKey: 'importExport.services.enpassDescription', instructionKeys: ['importExport.services.enpassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importEnpassCsv) } },
+  { serviceName: 'Firefox', logoUrl: '/img/importers/firefox.svg', descriptionKey: 'importExport.services.firefoxDescription', instructionKeys: ['importExport.services.firefoxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importFirefoxCsv) } },
+  { serviceName: 'KeePass', logoUrl: '/img/importers/keepass.svg', descriptionKey: 'importExport.services.keePassDescription', instructionKeys: ['importExport.services.keePassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importKeePassCsv) } },
+  { serviceName: 'KeePassXC', logoUrl: '/img/importers/keepassxc.svg', descriptionKey: 'importExport.services.keePassXCDescription', instructionKeys: ['importExport.services.keePassXCInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importKeePassXcCsv) } },
+  { serviceName: 'LastPass', logoUrl: '/img/importers/lastpass.svg', descriptionKey: 'importExport.services.lastPassDescription', instructionKeys: ['importExport.services.lastPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importLastPassCsv) } },
+  { serviceName: 'NordPass', logoUrl: '/img/importers/nordpass.svg', descriptionKey: 'importExport.services.nordPassDescription', instructionKeys: ['importExport.services.nordPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importNordPassCsv) } },
+  { serviceName: 'Proton Pass', logoUrl: '/img/importers/protonpass.svg', descriptionKey: 'importExport.services.protonPassDescription', instructionKeys: ['importExport.services.protonPassInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.zip': importProtonPassZip, '.csv': csv(importProtonPassCsv) } },
+  { serviceName: 'RoboForm', logoUrl: '/img/importers/roboform.svg', descriptionKey: 'importExport.services.roboformDescription', instructionKeys: ['importExport.services.roboformInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importRoboformCsv) } },
+  { serviceName: 'Strongbox', logoUrl: '/img/importers/strongbox.svg', descriptionKey: 'importExport.services.strongboxDescription', instructionKeys: ['importExport.services.strongboxInstructionsPart1', 'importExport.services.uploadInstructions'], parsers: { '.csv': csv(importStrongboxCsv) } },
 ];
 
 /**
@@ -128,8 +126,8 @@ const FILE_IMPORT_SERVICES: FileImportService[] = [
 const ImportServiceFromFile: React.FC<{ service: FileImportService }> = ({ service }) => {
   const { t } = useTranslation();
   return (
-    <ImportServiceCard serviceName={service.serviceName} description={t(`${tk}.${service.descriptionKey}`)} logoUrl={service.logoUrl} acceptedFileExtensions={Object.keys(service.parsers)} processFile={parseByExtension(service.parsers)}>
-      {service.instructionKeys.map(key => <Instruction key={key}>{t(`${tk}.${key}`)}</Instruction>)}
+    <ImportServiceCard serviceName={service.serviceName} description={t(service.descriptionKey)} logoUrl={service.logoUrl} acceptedFileExtensions={Object.keys(service.parsers)} processFile={parseByExtension(service.parsers)}>
+      {service.instructionKeys.map(key => <Instruction key={key}>{t(key)}</Instruction>)}
     </ImportServiceCard>
   );
 };
@@ -149,7 +147,7 @@ const ImportServiceGenericCsv: React.FC = () => {
       downloadBytes('aliasvault-import-template.csv', getGenericCsvTemplate(), 'text/csv');
     } catch (error) {
       console.error('[Import] Error downloading CSV template:', error);
-      notifications.addErrorMessage(t(`${tk}.GenericCsvTemplateDownloadError`), true);
+      notifications.addErrorMessage(t('importExport.services.genericCsvTemplateDownloadError'), true);
     }
   };
 
@@ -164,13 +162,13 @@ const ImportServiceGenericCsv: React.FC = () => {
   );
 
   return (
-    <ImportServiceCard serviceName="Generic CSV" description={t(`${tk}.GenericCsvDescription`)} logoUrl="/img/importers/generic-csv.svg" acceptedFileExtensions={['.csv']} processFile={parseByExtension({ '.csv': csv(importGenericCsv) })}>
-      <Instruction>{t(`${tk}.GenericCsvInstructionsPart1`)}</Instruction>
+    <ImportServiceCard serviceName="Generic CSV" description={t('importExport.services.genericCsvDescription')} logoUrl="/img/importers/generic-csv.svg" acceptedFileExtensions={['.csv']} processFile={parseByExtension({ '.csv': csv(importGenericCsv) })}>
+      <Instruction>{t('importExport.services.genericCsvInstructionsPart1')}</Instruction>
       <ol className="text-sm text-gray-700 dark:text-gray-300 space-y-2 mb-4">
-        {step(1, <>{t(`${tk}.GenericCsvStep1`)} <button type="button" onClick={downloadTemplate} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 underline">template</button></>)}
-        {step(2, t(`${tk}.GenericCsvStep2`))}
-        {step(3, t(`${tk}.GenericCsvStep3`))}
-        {step(4, t(`${tk}.GenericCsvStep4`))}
+        {step(1, <>{t('importExport.services.genericCsvStep1')} <button type="button" onClick={downloadTemplate} className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 underline">{t('importExport.services.template')}</button></>)}
+        {step(2, t('importExport.services.genericCsvStep2'))}
+        {step(3, t('importExport.services.genericCsvStep3'))}
+        {step(4, t('importExport.services.genericCsvStep4'))}
       </ol>
     </ImportServiceCard>
   );

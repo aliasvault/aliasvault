@@ -19,7 +19,7 @@ type PasswordConfirmationModalProps = {
  */
 const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ isOpen, title, description, errorMessage = '', onPasswordSubmitted, onClose }) => {
   const { t } = useTranslation();
-  const tk = 'components.main.shared.passwordConfirmationModal';
+  
   const [password, setPassword] = useState('');
 
   // Start empty every time the modal opens.
@@ -53,8 +53,8 @@ const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ i
       isOpen={isOpen}
       title={title}
       maxWidth="sm"
-      confirmText={t(`${tk}.ConfirmButton`)}
-      cancelText={t('sharedResources.Cancel')}
+      confirmText={t('common.confirm')}
+      cancelText={t('common.cancel')}
       confirmDisabled={password.length === 0}
       onConfirm={handleConfirm}
       onClose={handleClose}
@@ -70,8 +70,8 @@ const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ i
       {errorMessage.length > 0 && <AlertMessageError message={errorMessage} hasTopMargin={false} />}
 
       <div className="mt-4">
-        <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t('sharedResources.Password')}</label>
-        <PasswordInputField id="password-confirm" value={password} onValueChange={setPassword} placeholder={t(`${tk}.EnterPasswordPlaceholder`)} autoFocus={true} />
+        <label htmlFor="password-confirm" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">{t('common.password')}</label>
+        <PasswordInputField id="password-confirm" value={password} onValueChange={setPassword} placeholder={t('auth.passwordPlaceholder')} autoFocus={true} />
       </div>
     </FormModal>
   );

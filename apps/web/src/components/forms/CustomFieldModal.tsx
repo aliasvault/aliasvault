@@ -15,15 +15,15 @@ type CustomFieldModalProps = {
 
 /** The field types a custom field can have, with their translation keys. */
 const FIELD_TYPE_OPTIONS: [string, string][] = [
-  [FieldTypes.Text, 'FieldTypeText'],
-  [FieldTypes.Password, 'FieldTypePassword'],
-  [FieldTypes.Hidden, 'FieldTypeHidden'],
-  [FieldTypes.TextArea, 'FieldTypeTextArea'],
-  [FieldTypes.URL, 'FieldTypeUrl'],
-  [FieldTypes.Email, 'FieldTypeEmail'],
-  [FieldTypes.Phone, 'FieldTypePhone'],
-  [FieldTypes.Number, 'FieldTypeNumber'],
-  [FieldTypes.Date, 'FieldTypeDate'],
+  [FieldTypes.Text, 'itemTypes.fieldTypes.text'],
+  [FieldTypes.Password, 'itemTypes.fieldTypes.password'],
+  [FieldTypes.Hidden, 'itemTypes.fieldTypes.hidden'],
+  [FieldTypes.TextArea, 'itemTypes.fieldTypes.textArea'],
+  [FieldTypes.URL, 'itemTypes.fieldTypes.url'],
+  [FieldTypes.Email, 'itemTypes.fieldTypes.email'],
+  [FieldTypes.Phone, 'itemTypes.fieldTypes.phone'],
+  [FieldTypes.Number, 'itemTypes.fieldTypes.number'],
+  [FieldTypes.Date, 'itemTypes.fieldTypes.date'],
 ];
 
 /**
@@ -62,9 +62,9 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, isEditMode 
   return (
     <FormModal
       isOpen={isOpen}
-      title={isEditMode ? t('components.main.items.addFieldMenu.EditCustomField') : t('components.main.items.addFieldMenu.AddCustomField')}
-      confirmText={isEditMode ? t('sharedResources.Save') : t('components.main.items.addFieldMenu.Add')}
-      cancelText={t('components.main.items.addFieldMenu.Cancel')}
+      title={isEditMode ? t('itemTypes.editCustomField') : t('itemTypes.addCustomField')}
+      confirmText={isEditMode ? t('common.save') : t('common.add')}
+      cancelText={t('common.cancel')}
       confirmButtonClass="bg-primary-600 hover:bg-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
       maxWidth="md"
       onClose={onClose}
@@ -77,13 +77,13 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, isEditMode 
     >
       <div className="space-y-4">
         <div>
-          <label htmlFor="custom-field-label-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('components.main.items.addFieldMenu.FieldLabel')}</label>
-          <input ref={inputRef} type="text" id="custom-field-label-input" value={label} onChange={e => setLabel(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white" placeholder={t('components.main.items.addFieldMenu.EnterFieldName')} />
+          <label htmlFor="custom-field-label-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('itemTypes.fieldLabel')}</label>
+          <input ref={inputRef} type="text" id="custom-field-label-input" value={label} onChange={e => setLabel(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white" placeholder={t('itemTypes.enterFieldName')} />
         </div>
         <div>
-          <label htmlFor="custom-field-type-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('components.main.items.addFieldMenu.FieldType')}</label>
+          <label htmlFor="custom-field-type-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('itemTypes.fieldType')}</label>
           <select id="custom-field-type-select" value={fieldType} onChange={e => setFieldType(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
-            {FIELD_TYPE_OPTIONS.map(([value, key]) => <option key={value} value={value}>{t(`components.main.items.addFieldMenu.${key}`)}</option>)}
+            {FIELD_TYPE_OPTIONS.map(([value, key]) => <option key={value} value={value}>{t(key)}</option>)}
           </select>
         </div>
       </div>

@@ -39,7 +39,7 @@ const Unlock: React.FC = () => {
   const notifications = useNotifications();
   const { showLoading, hideLoading } = useLoading();
   const srpUtil = useMemo(() => new SrpLoginService(webApi), [webApi]);
-  usePageTitle(t('pages.auth.unlock.UnlockButton'));
+  usePageTitle(t('auth.unlockPage.unlockButton'));
 
   const { skipWebAuthn } = useParams<{ skipWebAuthn?: string }>();
   const [isLoading, setIsLoading] = useState(true);
@@ -66,7 +66,7 @@ const Unlock: React.FC = () => {
       navigate('/sync', { replace: true });
     } catch (err) {
       if (err instanceof WebAuthnNotSupportedError) {
-        notifications.addErrorMessage(t('pages.auth.unlock.WebAuthnNotSupportedError'), true);
+        notifications.addErrorMessage(t('auth.unlockPage.webAuthnNotSupportedError'), true);
       } else if (!(err instanceof DOMException && err.name === 'NotAllowedError')) {
         console.error('An error occurred while trying to unlock the vault with WebAuthn.', err);
       }
@@ -88,7 +88,7 @@ const Unlock: React.FC = () => {
      */
     const statusCheck = async (): Promise<void> => {
       if (!auth.isLoggedIn) {
-        notifications.addErrorMessage(t('pages.auth.unlock.SessionTimedOutError'));
+        notifications.addErrorMessage(t('auth.unlockPage.sessionTimedOutError'));
         navigate('/user/login', { replace: true });
         return;
       }
@@ -110,7 +110,7 @@ const Unlock: React.FC = () => {
           await auth.logout({ errorMessage: t('common.errors.clientVersionNotSupported') });
           return;
         }
-        setErrors([t('pages.auth.unlock.ConnectionFailedError')]);
+        setErrors([t('auth.unlockPage.connectionFailedError')]);
       }
 
       setIsLoading(false);
@@ -146,7 +146,7 @@ const Unlock: React.FC = () => {
     if (!username) {
       return;
     }
-    showLoading(t('pages.auth.unlock.UnlockingVaultMessage'));
+    showLoading(t('app.status.unlockingVault'));
     setErrors([]);
 
     try {
@@ -154,7 +154,7 @@ const Unlock: React.FC = () => {
       if (dbContext.getIsOffline()) {
         const params = await MasterPasswordService.getStoredDerivationParams();
         if (!params) {
-          throw new Error(t('pages.auth.unlock.ConnectionFailedError'));
+          throw new Error(t('auth.unlockPage.connectionFailedError'));
         }
         const prepared = await SrpAuthService.prepareCredentials(password, params.salt, params.encryptionSettings);
         unlockKey = prepared.passwordHashBase64;
@@ -175,14 +175,14 @@ const Unlock: React.FC = () => {
       console.error('Unlock error:', err);
       const code = err instanceof Error ? extractErrorCode(err.message) : null;
       if (await VaultKeyService.isWrongUnlockKey(code)) {
-        setErrors([t('pages.auth.unlock.IncorrectPasswordError')]);
+        setErrors([t('auth.unlockPage.incorrectPasswordError')]);
       } else if (code) {
         // A coded failure keeps its code, so the user can report it.
-        setErrors([translateCodedError(err, t) ?? t('pages.auth.unlock.GenericUnlockError')]);
+        setErrors([translateCodedError(err, t) ?? t('auth.loginForm.loginErrorMessage')]);
       } else if (import.meta.env.DEV && err instanceof Error) {
         setErrors([err.message]);
       } else {
-        setErrors([t('pages.auth.unlock.GenericUnlockError')]);
+        setErrors([t('auth.loginForm.loginErrorMessage')]);
       }
     } finally {
       hideLoading();
@@ -193,7 +193,7 @@ const Unlock: React.FC = () => {
    * Replace the session with the one the mobile app approved and open the vault with the unlock key it sent.
    */
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
-    showLoading(t('pages.auth.unlock.UnlockingVaultMessage'));
+    showLoading(t('app.status.unlockingVault'));
     setErrors([]);
     setShowMobileUnlockModal(false);
 
@@ -224,7 +224,7 @@ const Unlock: React.FC = () => {
       } else if (import.meta.env.DEV && err instanceof Error) {
         setErrors([err.message]);
       } else {
-        setErrors([t('pages.auth.unlock.GenericUnlockError')]);
+        setErrors([t('auth.loginForm.loginErrorMessage')]);
       }
     } finally {
       hideLoading();
@@ -245,7 +245,7 @@ const Unlock: React.FC = () => {
       <>
         <ServerValidationErrors errors={errors} />
         <BoldLoadingIndicator />
-        <p className="mt-6 text-center font-normal text-gray-500 dark:text-gray-400">{t('pages.auth.unlock.LoggingInWithWebAuthn')}</p>
+        <p className="mt-6 text-center font-normal text-gray-500 dark:text-gray-400">{t('auth.unlockPage.loggingInWithWebAuthn')}</p>
       </>
     );
   }
@@ -253,7 +253,7 @@ const Unlock: React.FC = () => {
   // A coded error is critical: it replaces the form.
   const criticalError = errors.find(error => extractErrorCode(error) !== null);
   if (criticalError) {
-    const logoutLink = <>{t('pages.auth.unlock.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.auth.unlock.LogOutLink')}</Link></>;
+    const logoutLink = <>{t('auth.switchAccounts')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('web.topMenu.logOut')}</Link></>;
     return <CriticalErrorPanel report={criticalError} onBack={() => setErrors([])} footer={logoutLink} />;
   }
 
@@ -270,36 +270,36 @@ const Unlock: React.FC = () => {
 
       {showWebAuthnButton ? (
         <div className="mb-6">
-          <p className="text-base font-normal text-gray-500 dark:text-gray-400 mb-4">{t('pages.auth.unlock.QuickUnlockDescription')}</p>
+          <p className="text-base font-normal text-gray-500 dark:text-gray-400 mb-4">{t('auth.unlockPage.quickUnlockDescription')}</p>
 
           <ServerValidationErrors errors={errors} className="mb-4" />
 
           <div className="flex space-x-4">
             <button type="button" onClick={() => void unlockWithWebAuthn()} className="flex-grow inline-flex items-center justify-center px-5 py-2 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
               <svg className="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd"></path></svg>
-              {t('pages.auth.unlock.UnlockWithWebAuthn')}
+              {t('auth.unlockPage.unlockWithWebAuthn')}
             </button>
             <button type="button" onClick={showPasswordUnlock} className="inline-flex items-center justify-center px-5 py-2 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-              {t('pages.auth.unlock.UnlockWithPassword')}
+              {t('auth.unlockWithPassword')}
             </button>
           </div>
         </div>
       ) : (
         <>
           <p className="text-base font-normal text-gray-500 dark:text-gray-400 mb-4">
-            {t('pages.auth.unlock.EnterMasterPasswordDescription')}
+            {t('auth.unlockPage.enterMasterPasswordDescription')}
           </p>
 
           <ServerValidationErrors errors={errors} />
 
           <form onSubmit={unlockSubmit} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
             <div>
-              <FormLabel htmlFor="password">{t('pages.auth.unlock.YourPasswordLabel')}</FormLabel>
+              <FormLabel htmlFor="password">{t('auth.register.passwordLabel')}</FormLabel>
               <PasswordInputField ref={passwordRef} id="password" value={password} onValueChange={setPassword} placeholder="••••••••" />
             </div>
 
             <button type="submit" id="unlock-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
-              {t('pages.auth.unlock.UnlockButton')}
+              {t('auth.unlockPage.unlockButton')}
             </button>
           </form>
         </>
@@ -310,12 +310,12 @@ const Unlock: React.FC = () => {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
           </svg>
-          {t('pages.auth.unlock.UnlockWithMobileButton')}
+          {t('auth.unlockPage.unlockWithMobileButton')}
         </button>
       )}
 
       <div className="text-sm text-center font-medium text-gray-500 dark:text-gray-400 mt-6">
-        {t('pages.auth.unlock.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.auth.unlock.LogOutLink')}</Link>
+        {t('auth.switchAccounts')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('web.topMenu.logOut')}</Link>
       </div>
 
       <FooterLogin />

@@ -86,7 +86,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
     if (!email) {
       return;
     }
-    const confirmed = await showConfirmation(t('components.main.email.emailModal.DeleteEmailTitle'), t('components.main.email.emailModal.DeleteEmailConfirmation'), t('sharedResources.Confirm'), t('sharedResources.Cancel'));
+    const confirmed = await showConfirmation(t('emails.deleteEmail'), t('emails.modal.deleteEmailConfirmation'), t('common.confirm'), t('common.cancel'));
     if (!confirmed) {
       return;
     }
@@ -95,19 +95,19 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
       if (email.isSpamOk) {
         const response = await spamOk.request('DELETE', `Email/${encodeURIComponent(email.toLocal)}/${email.id}`);
         if (!response.ok) {
-          notifications.addErrorMessage(`${t('components.main.email.emailModal.EmailDeleteFailed')}: ${await response.text()}`, true);
+          notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${await response.text()}`, true);
           return;
         }
         onEmailDeleted(email.id);
-        notifications.addSuccessMessage(t('components.main.email.emailModal.EmailDeletedSuccess'), true);
+        notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
         onClose();
       } else {
         await webApi.delete(`Email/${email.id}`);
         onEmailDeleted(email.id);
-        notifications.addSuccessMessage(t('components.main.email.emailModal.EmailDeletedSuccess'), true);
+        notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
       }
     } catch (error) {
-      notifications.addErrorMessage(`${t('components.main.email.emailModal.EmailDeleteFailed')}: ${error instanceof Error ? error.message : String(error)}`, true);
+      notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${error instanceof Error ? error.message : String(error)}`, true);
     }
   };
 
@@ -121,12 +121,12 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
     try {
       const bytes = await getAttachmentBytes(webApi, dbContext.sqliteClient, email, attachment);
       if (!bytes) {
-        notifications.addErrorMessage(t('components.main.email.emailModal.AttachmentDownloadFailed'), true);
+        notifications.addErrorMessage(t('common.attachmentDownloadFailed'), true);
         return;
       }
       downloadBytes(attachment.filename, bytes, attachment.mimeType);
     } catch (error) {
-      notifications.addErrorMessage(`${t('components.main.email.emailModal.AttachmentDownloadError')}: ${error instanceof Error ? error.message : String(error)}`, true);
+      notifications.addErrorMessage(`${t('emails.modal.attachmentDownloadError')}: ${error instanceof Error ? error.message : String(error)}`, true);
     }
   };
 
@@ -143,16 +143,16 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
           </h2>
           <div className="flex items-center gap-1 flex-shrink-0">
             {availableModes.length > 1 && (
-              <ModalHeaderAction onClick={cycleViewMode} title={t('sharedResources.EmailFormatSwitchTitle')}>{formatLabel}</ModalHeaderAction>
+              <ModalHeaderAction onClick={cycleViewMode} title={t('emails.formatSwitchTitle')}>{formatLabel}</ModalHeaderAction>
             )}
             {email !== null && (
-              <ModalHeaderAction onClick={() => void showDeleteConfirmation()} title={t('components.main.email.emailModal.DeleteButton')} variant="danger">
+              <ModalHeaderAction onClick={() => void showDeleteConfirmation()} title={t('common.delete')} variant="danger">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </ModalHeaderAction>
             )}
-            <ModalHeaderAction onClick={onClose} title={t('sharedResources.Close')}>
+            <ModalHeaderAction onClick={onClose} title={t('common.close')}>
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -174,20 +174,20 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
           ) : (
             <>
               <div className="space-y-1">
-                <p>{t('components.main.email.emailModal.FromLabel')} {email.fromLocal}@{email.fromDomain}</p>
-                <p>{t('components.main.email.emailModal.ToLabel')} {email.toLocal}@{email.toDomain}</p>
+                <p>{t('emails.from')} {email.fromLocal}@{email.fromDomain}</p>
+                <p>{t('emails.to')} {email.toLocal}@{email.toDomain}</p>
               </div>
               <div className="space-y-1 mt-1 sm:mt-0">
-                <p>{t('components.main.email.emailModal.DateLabel')} {new Date(email.dateSystem).toLocaleString()}</p>
+                <p>{t('emails.date')} {new Date(email.dateSystem).toLocaleString()}</p>
                 {showItemLink && (item !== null && item.name.length > 0 ? (
                   <p>
-                    <span className="font-medium">{t('sharedResources.EmailItemLabel')}</span>{' '}
+                    <span className="font-medium">{t('common.emailItemLabel')}</span>{' '}
                     <button type="button" onClick={() => navigate(itemRoute(item.ref))} className="text-primary-600 hover:underline dark:text-primary-400 cursor-pointer">{item.name}</button>
                   </p>
                 ) : (
                   <p>
-                    <span className="font-medium">{t('sharedResources.EmailItemLabel')}</span>{' '}
-                    <span className="text-gray-400 dark:text-gray-500">{t('sharedResources.EmailItemNone')}</span>
+                    <span className="font-medium">{t('common.emailItemLabel')}</span>{' '}
+                    <span className="text-gray-400 dark:text-gray-500">{t('common.none')}</span>
                   </p>
                 ))}
               </div>
@@ -209,14 +209,14 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
             </div>
           ) : (
             <div>
-              <iframe title="email" className="w-full overscroll-y-auto bg-white rounded" style={{ height: '500px' }} srcDoc={emailBody} sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
+              <iframe title={t('common.email')} className="w-full overscroll-y-auto bg-white rounded" style={{ height: '500px' }} srcDoc={emailBody} sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
             </div>
           )}
         </div>
         <div className="mt-4">
           {email !== null && email.attachments.length > 0 && (
             <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('components.main.email.emailModal.AttachmentsLabel')}</h3>
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('common.attachments')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {email.attachments.map((attachment) => (
                   <div key={attachment.index} className="flex items-center space-x-2">
