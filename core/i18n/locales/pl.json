@@ -2,10 +2,10 @@
   "apiErrors": {
     "ACCOUNT_BLOCKED": "Twoje konto zostało zablokowane. Jeśli uważasz, że to pomyłka, skontaktuj się z pomocą techniczną.",
     "ACCOUNT_LOCKED": "Konto zostało tymczasowo zablokowane z powodu zbyt wielu nieudanych prób. Spróbuj ponownie później.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Konto zostało pomyślnie usunięte.",
-    "CLAIM_DOES_NOT_EXIST": "Wystąpił błąd podczas próby załadowania wiadomości e-mail. Spróbuj edytować i zapisać dane uwierzytelniające, aby zsynchronizować bazę danych, a następnie spróbuj ponownie.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Wybrany adres e-mail jest już używany. Proszę zmienić adres e-mail, edytując te dane uwierzytelniające.",
-    "INTERNAL_SERVER_ERROR": "Wystąpił wewnętrzny błąd serwera.",
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Konto zostało usunięte.",
+    "CLAIM_DOES_NOT_EXIST": "Wystąpił błąd podczas próby załadowania wiadomości e-mail. Spróbuj edytować i zapisać dane logowania, aby zsynchronizować bazę danych, a następnie spróbuj ponownie.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Obecnie wybrany adres e-mail jest już używany. Proszę zmienić adres e-mail, edytując te dane logowania.",
+    "INTERNAL_SERVER_ERROR": "Wewnętrzny błąd serwera.",
     "INVALID_AUTHENTICATOR_CODE": "Nieprawidłowy kod uwierzytelniający. Spróbuj ponownie.",
     "INVALID_RECOVERY_CODE": "Nieprawidłowy kod odzyskiwania. Spróbuj ponownie.",
     "INVALID_REFRESH_TOKEN": "Nieprawidłowy token odświeżania.",
@@ -100,7 +100,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "Jeśli niedawno zmieniłeś hasło i masz trudności z zalogowaniem się przy użyciu nowego hasła, pamiętaj, że administrator serwera może być w stanie odzyskać wcześniejszą kopię zapasową Twojego sejfu, aby Ci pomóc. W takim przypadku skontaktuj się z administratorem serwera.",
-      "contactSupportWithEmail": "Jeśli niedawno zmieniłeś hasło i masz trudności z zalogowaniem się, skontaktuj się z pomocą techniczną pod adresem {{email}}, aby uzyskać pomoc.",
+      "contactSupportWithEmail": "If you've recently changed your password and are experiencing difficulties signing in, please contact support at {{email}} for assistance.",
       "lostPasswordTitle": "Nie pamiętasz hasła",
       "newAccountRequired": "Jeśli nie pamiętasz hasła, musisz utworzyć nowe konto. Pamiętaj, że spowoduje to utratę wszystkich danych.",
       "noRecoveryExplanation": "Niestety, jeśli utraciłeś hasło, nie ma możliwości jego odzyskania. AliasVault stosuje kompleksowe szyfrowanie wszystkich danych, zapewniając, że nikt oprócz Ciebie nie ma do nich dostępu.",
@@ -187,7 +187,7 @@
       "mainTitle": "Menedżer haseł i aliasów (adresów e-mail)",
       "taglineText": "Twoja prywatność jest chroniona."
     },
-    "switchAccounts": "Przełącz konto",
+    "switchAccounts": "Przełączyć konto?",
     "twoFactorTitle": "Wprowadź kod uwierzytelniający z aplikacji uwierzytelniającej.",
     "unlockPage": {
       "connectionFailedError": "Połączenie z serwerami AliasVault nie powiodło się. Spróbuj ponownie (później).",
@@ -219,7 +219,7 @@
   },
   "common": {
     "add": "Dodaj",
-    "alias": "Tożsamość (Alias)",
+    "alias": "Alias",
     "attachmentDownloadFailed": "Nie udało się pobrać załącznika",
     "attachments": "Załączniki",
     "back": "Powrót",
@@ -233,14 +233,14 @@
     "confirm": "Potwierdź",
     "continue": "Dalej",
     "copied": "Skopiowano do schowka",
-    "copiedShort": "Skopiowano",
+    "copiedShort": "Skopiowano!",
     "copyToClipboard": "Skopiuj do schowka",
     "create": "Utwórz",
     "credentials": "Dane logowania",
     "customFields": "Pola niestandardowe",
     "delete": "Usuń",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
-    "disabled": "Wyłączone",
+    "disabled": "Nie aktywne",
     "dismiss": "Odrzuć",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
@@ -253,7 +253,7 @@
     "edit": "Edytuj",
     "email": "Adres e-mail",
     "emailItemLabel": "Element:",
-    "enabled": "Włączone",
+    "enabled": "Aktywne",
     "error": "Błąd",
     "errorGeneric": "Wystąpił błąd. Spróbuj ponownie.",
     "errorPasswordMismatch": "Hasła się nie zgadzają.",
@@ -293,7 +293,7 @@
     "hidePassword": "Ukryj hasło",
     "home": "Panel główny",
     "loadMore": "Załaduj więcej",
-    "loading": "Wczytywanie…",
+    "loading": "Wczytywanie...",
     "loadingAttachments": "Ładowanie załączników...",
     "loadingEmails": "Ładowanie wiadomości e-mail...",
     "loadingTotpCodes": "Ładowanie kodów TOTP...",
@@ -306,7 +306,7 @@
     "no": "Nie",
     "none": "Brak",
     "notes": "Notatki",
-    "notice": "Notatka",
+    "notice": "Uwaga",
     "offlineMode": "Praca w trybie offline",
     "ok": "Ok",
     "openInNewWindow": "Otwórz w nowym oknie.",
@@ -421,7 +421,7 @@
       "hoursAgo_single": "{{count}} godzinę temu",
       "justNow": "przed chwilą",
       "minutesAgo_plural": "{{count}} minut temu",
-      "minutesAgo_single": "{{count}} minutę temu",
+      "minutesAgo_single": "{{count}} minut temu",
       "yesterday": "wczoraj"
     },
     "title": "Wiadomości e-mail",
@@ -445,7 +445,7 @@
       "pin": "Kod PIN"
     },
     "login": {
-      "email": "Skrzynka odbiorcza",
+      "email": "Adres e-mail",
       "password": "Hasło",
       "url": "URL strony internetowej",
       "username": "Nazwa użytkownika"
@@ -484,40 +484,40 @@
     "passwordVerificationFailed": "Wystąpił błąd podczas weryfikacji hasła. Spróbuj ponownie.",
     "recommendedLabel": "Zalecane",
     "serviceCard": {
-      "attachmentsDetected": "{{count}} załącznik(y), {{size}}",
-      "confirmImportText": "Czy na pewno chcesz zaimportować poświadczenia ({{count}})? Uwaga: proces importu może potrwać chwilę.",
+      "attachmentsDetected": "{{count}} attachment(s), {{size}}",
+      "confirmImportText": "Are you sure you want to import ({{count}}) credentials? Note: the import process can take a short while.",
       "decryptAndContinueButton": "Odszyfruj i kontynuuj",
       "decryptingFile": "Odszyfrowywanie pliku...",
       "decryptionErrorGeneric": "Nie udało się odszyfrować pliku. Sprawdź, czy plik nie jest uszkodzony i spróbuj ponownie.",
       "decryptionPasswordHint": "To jest hasło ustawione podczas tworzenia zaszyfrowanego eksportu (plik .avex), a nie Twoje hasło główne sejfu.",
       "decryptionPasswordLabel": "Hasło deszyfrowania",
-      "duplicateCredentialsWarning": "Znaleziono {{count}} zduplikowanych danych logowania i nie zostaną zaimportowane.",
+      "duplicateCredentialsWarning": "{{count}} duplicate credential(s) were found and will not be imported.",
       "encryptedFilePasswordPrompt": "Ten plik jest zaszyfrowany. Wprowadź hasło, którego użyłeś podczas tworzenia eksportu.",
       "extractFaviconsLabel": "Wyodrębnij faviconów dla usług z adresami URL",
-      "extractingFavicons": "Rozpakowywanie favikonów... {{current}} / {{total}}",
+      "extractingFavicons": "Extracting favicons... {{current}} / {{total}}",
       "faviconExtractionNote": "Uwaga: Rozpakowywanie Favicon jest włączone. Ten proces może potrwać kilka minut w zależności od liczby poświadczeń z adresami URL. Proszę zachować otwartą stronę.",
-      "foldersDetected": "Wykryto {{count}} folder(ów)",
+      "foldersDetected": "{{count}} folder(s) detected",
       "importAttachmentsLabel": "Import wykrytych załączników",
       "importButton": "Import",
       "importErrorCopyDetailsButton": "Kopiuj dane",
       "importErrorDetailsIntro": "Proszę skopiować dane poniżej i udostępnić je podczas zgłaszania tego problemu.",
-      "importErrorFileTooLarge": "Rozmiar pliku przekracza limit {{size}}MB.",
+      "importErrorFileTooLarge": "File size exceeds {{size}}MB limit.",
       "importErrorGeneric": "Wystąpił błąd podczas importu. Proszę spróbować ponownie.",
       "importErrorInvalidFile": "Proszę wybrać prawidłowy plik eksportu do zaimportowania.",
-      "importErrorUnsupportedFormat": "Nieobsługiwany format pliku. Obsługiwane formaty: {{formats}}",
+      "importErrorUnsupportedFormat": "Unsupported file format. Supported formats: {{formats}}",
       "importFoldersLabel": "Importuj foldery",
-      "importFromServiceTitle": "Importuj z {{service}}",
-      "importPartialFailureWarning": "{{count}} element(ów) nie można przeanalizować i zostaną pominięte.",
-      "importSuccessMessage": "Pomyślnie zaimportowano {{count}} dane logowania.",
-      "moreCredentials": "... i {{count}} więcej danych logowania",
+      "importFromServiceTitle": "Import from {{service}}",
+      "importPartialFailureWarning": "{{count}} item(s) could not be parsed and will be skipped.",
+      "importSuccessMessage": "Successfully imported {{count}} credentials.",
+      "moreCredentials": "... and {{count}} more credentials",
       "noLogoText": "Bez logo",
       "noNewCredentials": "Nie znaleziono nowych danych logowania do zaimportowania.",
       "previewInstructions": "Sprawdź, czy następujące dane logowania wyglądają poprawnie przed kontynuowaniem:",
-      "savingCredentials": "Zapisywanie danych logowania do sejfu ... {{current}} / {{total}}",
+      "savingCredentials": "Saving credentials to vault... {{current}} / {{total}}",
       "serviceColumn": "Usługa",
       "supportedFormats": "Obsługiwane formaty",
       "syncingVault": "Synchronizuję sejf z serwerem...",
-      "uploadExportFileText": "Prześlij plik sejfu {{service}}:"
+      "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
       "aliasVaultDescription": "Importuj z kopii zapasowej AliasVault",
@@ -568,10 +568,10 @@
     "addCustomField": "Dodaj pole niestandardowe",
     "addField": "Dodaj pole",
     "alias": {
-      "title": "Tożsamość (Alias)"
+      "title": "Alias"
     },
     "creditCard": {
-      "title": "Karta kredytowa"
+      "title": "Karta płatnicza"
     },
     "deleteCustomField": "Delete custom field",
     "editCustomField": "Edit Custom Field",
@@ -580,21 +580,21 @@
     "fieldType": "Typ pola",
     "fieldTypes": {
       "date": "Data",
-      "email": "Skrzynka odbiorcza",
+      "email": "Adres e-mail",
       "hidden": "Ukryte",
       "hiddenMasked": "Ukryty (zamaskowany tekst)",
       "number": "Numer",
       "password": "Hasło",
-      "phone": "Telefon",
+      "phone": "Numer telefonu",
       "text": "Tekst",
       "textArea": "Obszar tekst",
       "url": "adres URL"
     },
     "login": {
-      "title": "Zaloguj się"
+      "title": "Logowanie"
     },
     "note": {
-      "title": "Uwagi"
+      "title": "Uwaga"
     },
     "secureNote": "Bezpieczna notatka",
     "typeLabel": "Typ elementu"
@@ -612,7 +612,7 @@
       "serviceNamePlaceholder": "np. Facebook"
     },
     "addFieldMenu": {
-      "defaultFieldLabel": "Pole {{number}}"
+      "defaultFieldLabel": "Field {{number}}"
     },
     "addItem": "Dodaj element",
     "addNewItem": "Dodaj nowy element",
@@ -622,7 +622,7 @@
     "attachmentUnavailable": "Attachment data unavailable",
     "autofillLinkExisting": {
       "confirmMessage": "Czy na pewno chcesz połączyć \"{{url}}\" z tym kontem?",
-      "confirmTitle": "Link do logowania?",
+      "confirmTitle": "Link to credential?",
       "intro": "Wybierz istniejące dane logowania ze swojego sejfu aby połączyć się z \"{{target}}\".",
       "title": "Link do istniejącego konta"
     },
@@ -642,21 +642,21 @@
     "avoidAmbiguousChars": "Unikaj niejednoznacznych znaków",
     "birthDatePlaceholder": "RRRR-MM-DD",
     "capitalization": "Stosowanie wielkich liter",
-    "cardInformation": "Dane karty",
+    "cardInformation": "Informacje o karcie",
     "changePasswordComplexity": "Zmień komplikację hasła",
-    "clearFilter": "Wyczyść filtr",
+    "clearFilter": "Usuń filtr",
     "clearSearch": "Wyczyść wyszukiwanie",
     "contextMenu": {
-      "copyEmail": "Skopiuj adres e-mail",
-      "copyPassword": "Skopiuj hasło",
+      "copyEmail": "Kopiuj adres e-mail",
+      "copyPassword": "Kopiuj hasło",
       "copyTotpCode": "Kopiuj kod TOTP",
-      "copyUsername": "Skopiuj nazwę użytkownika",
+      "copyUsername": "Kopiuj nazwę użytkownika",
       "title": "Opcje elementu"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
     "currentSiteMatch": "Dla {{domain}}",
     "delete": {
-      "deleteItemDescription": "Czy na pewno chcesz usunąć ten element? Zostanie on przeniesiony do ostatnio usuniętych elementów i trwale usunięty po {{days}} dniach.",
+      "deleteItemDescription": "Are you sure you want to delete this item? It will be moved to the recently deleted items and permanently deleted after {{days}} days.",
       "deleteItemNotFoundError": "Błąd podczas usuwania. Nie znaleziono danych logowania.",
       "deleteSuccessMessage": "Element został pomyślnie usunięty.",
       "noCancelButton": "Nie, anuluj",
@@ -712,9 +712,9 @@
       "deleteFolderKeepItems": "Usuń tylko folder",
       "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione do folderu nadrzędnego.",
       "deleteModal": {
-        "deleteFolderAndContentsDescription": "Przenieś elementy {{count}} do kosza",
+        "deleteFolderAndContentsDescription": "Move {{count}} item(s) to trash",
         "deleteFolderAndContentsTitle": "Usuń folder i wszystkie elementy",
-        "deleteFolderDescription": "Jak chcesz usunąć folder \"{{name}}\"?"
+        "deleteFolderDescription": "How would you like to delete the folder \"{{name}}\"?"
       },
       "editFolder": "Edytuj folder",
       "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
@@ -807,7 +807,7 @@
       "includeNumbersLabel": "Uwzględnij cyfry (0–9)",
       "includeSpecialCharsLabel": "Uwzględnij znaki specjalne (!@#$%^&*)",
       "includeUppercaseLabel": "Uwzględnij wielkie litery (A-Z)",
-      "passwordLengthLabel": "Długość hasła: {{length}}",
+      "passwordLengthLabel": "Password Length: {{length}}",
       "previewLabel": "Podgląd",
       "saveGloballyButton": "Zapisz dla wszystkich",
       "settingsUpdatedMessage": "Ustawienia generowania hasła zaktualizowane globalnie.",
@@ -832,12 +832,12 @@
       "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nowy",
       "typeCard": "Karta",
-      "typeLogin": "Zaloguj się"
+      "typeLogin": "Logowanie"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Wszystkie elementy zostały trwale usunięte",
       "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
-      "confirmDeleteTitle": "Usuń bezpowrotnie?",
+      "confirmDeleteTitle": "Usunąć trwale?",
       "confirmEmptyAllMessage": "Wszystkie elementy {{count}} zostaną trwale usunięte i nie mogą zostać odzyskane.",
       "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
       "daysRemaining_one": "Pozostało {{count}} dni",
@@ -859,7 +859,7 @@
       "noResultsFoundMessage": "Nie znaleziono wyników",
       "searchHelpText": "Wpisz wyszukiwane hasło, może to być nazwa usługi, opis lub adres e-mail.",
       "searchTooShortMessage": "Wpisz więcej znaków",
-      "searchingForMessage": "Wyszukiwanie „{{search}}”",
+      "searchingForMessage": "Searching for \"{{search}}\"",
       "searchingMessage": "Wyszukiwanie..."
     },
     "searchPlaceholder": "Wyszukaj w sejfie...",
@@ -889,13 +889,13 @@
     "trash": {
       "confirmDeleteMessage": "Tej czynności nie można cofnąć. Element zostanie trwale usunięty z Twojego sejfu.",
       "confirmDeleteTitle": "Czy usunąć trwale ten element?",
-      "confirmEmptyAllMessage": "Spowoduje to trwałe usunięcie elementów {{count}}. Tej akcji nie można cofnąć.",
+      "confirmEmptyAllMessage": "This will permanently delete {{count}} item(s). This action cannot be undone.",
       "confirmEmptyAllTitle": "Opróżnij kosz?",
-      "daysRemaining": "Trwale usunięte w dniu {{days}} dni",
+      "daysRemaining": "Permanently deleted in {{days}} days",
       "deleteFailed": "Nie udało się usunąć elementu.",
       "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
       "emptyAll": "Opróżnij kosz",
-      "emptyAllPartialFailed": "Nie udało się usunąć elementu(ów).",
+      "emptyAllPartialFailed": "Failed to delete {{count}} item(s).",
       "noItems": "Brak ostatnio usuniętych elementów",
       "pageDescription": "Pozycje, które zostały usunięte, mogą zostać przywrócone w ciągu 30 dni.",
       "restoreFailed": "Nie udało się przywrócić elementu.",
@@ -906,7 +906,7 @@
       "message": "Masz niezapisane zmiany. Czy na pewno chcesz je odrzucić?",
       "title": "Odrzucić zmiany?"
     },
-    "untitled": "Bez tytułu",
+    "untitled": "Bez nazwy",
     "urlContextMenu": {
       "copyLink": "Kopiuj link",
       "openLink": "Otwórz link",
@@ -965,7 +965,7 @@
     "NSFaceIDUsageDescription": "AliasVault używa Face ID, aby bezpiecznie przechowywać klucz szyfrowania, umożliwiając dostęp do zaszyfrowanych danych za pomocą uwierzytelniania twarzy.",
     "addPasskeySubtitle": "Dodawanie klucza dostępu do istniejącego elementu",
     "aliasvaultIcon": "AliasVault ikona",
-    "attemptsWarning": "Nieprawidłowe hasło. Zostaniesz wylogowany, jeśli wprowadzisz nieprawidłowe hasło {{count}} więcej razy.",
+    "attemptsWarning": "Incorrect password. You will be logged out if you enter the wrong password {{count}} more times.",
     "authRequired": "Wymagane uwierzytelnienie",
     "authRequiredMessage": "Aby korzystać z funkcji autouzupełniania, włącz metodę odblokowania za pomocą danych biometrycznych lub kodu PIN w głównej aplikacji AliasVault.",
     "autofillFailedToRetrieve": "Nie udało się pobrać, otwórz aplikację",
@@ -1015,28 +1015,28 @@
     "openAliasvault": "Otwórz AliasVault",
     "passkeyAddToExisting": "Lub dodaj klucz dostępu do istniejącego elementu",
     "passkeyAddToExistingLabel": "Lub dodaj klucz dostępu do istniejącego elementu:",
-    "passkeyAuthenticating": "Uwierzytelnianie...",
-    "passkeyCheckingConnection": "Sprawdzanie połączenia...",
-    "passkeyCreating": "Generowanie klucz dostępu...",
+    "passkeyAuthenticating": "Authenticating...",
+    "passkeyCheckingConnection": "Checking connection...",
+    "passkeyCreating": "Creating passkey...",
     "passkeyCreationFailed": "Nie udało się utworzyć klucza dostępu",
     "passkeyDisplayNameLabel": "Nazwa klucza dostępu",
     "passkeyErrorEmptyName": "Wprowadź nazwę klucza dostępu",
     "passkeyInfoIcon": "Ikona",
-    "passkeyReplacing": "Zastępowanie klucza dostępu...",
-    "passkeyRetrieving": "Pobieranie klucza dostępu...",
-    "passkeySaving": "Zapisywanie sejfu...",
+    "passkeyReplacing": "Replacing passkey...",
+    "passkeyRetrieving": "Retrieving passkey...",
+    "passkeySaving": "Saving to vault...",
     "passkeySelectToReplace": "Lub zastąp istniejący klucz dostępu:",
-    "passkeySyncing": "Synchronizacja sejfu...",
-    "passkeyVerifying": "Weryfikacja...",
+    "passkeySyncing": "Syncing with server...",
+    "passkeyVerifying": "Verifying...",
     "passkeysLoadError": "Nie udało się załadować kluczy dostępu. Otwórz aplikację AliasVault, aby sprawdzić dostępność aktualizacji.",
     "passwordChangedMessage": "Twoje hasło zostało zmienione. Zaloguj się ponownie.",
     "passwordChangedTitle": "Hasło zostało zmienione",
     "passwordCopied": "Hasło skopiowane",
     "passwordUnlockError": "Nie udało się zweryfikować hasła",
     "pinConfirmSubtitle": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-    "pinIncorrectAttemptsRemaining": "Nieprawidłowy kod PIN. Pozostało {{count}} prób.",
+    "pinIncorrectAttemptsRemaining": "Incorrect PIN. {{count}} attempts remaining",
     "pinLockedMaxAttempts": "PIN zablokowany po zbyt wielu nieudanych próbach",
-    "pinMismatch": "Kody PIN nie pasują. Spróbuj jeszcze raz.",
+    "pinMismatch": "PINs do not match. Please try again.",
     "pinSetupSubtitle": "Wybierz kod PIN, aby odblokować sejf",
     "pinSetupTitle": "Ustaw kod PIN",
     "replacePasskey": "Zamień klucz dostępu",
@@ -1062,7 +1062,7 @@
     "versionNotSupportedMessage": "Twoja wersja aplikacji nie jest już obsługiwana. Zaktualizuj ją do najnowszej wersji.",
     "versionNotSupportedTitle": "Wymagana aktualizacja",
     "viewDetails": "Zobacz szczegóły",
-    "website": "Strona internetowa"
+    "website": "Strona www"
   },
   "navigation": {
     "vault": "Sejf"
@@ -1097,12 +1097,12 @@
     "helpText": "Klucze dostępu są tworzone na stronie internetowej po wyświetleniu monitu. Nie można ich edytować ręcznie. Aby usunąć ten klucz dostępu, można go usunąć z tych poświadczeń. Aby zastąpić ten klucz dostępu lub utworzyć nowy, należy odwiedzić stronę internetową i postępować zgodnie z wyświetlanymi instrukcjami.",
     "passkey": "Klucz dostępu",
     "passkeyMarkedForDeletion": "Klucz dostępu oznaczony do usunięcia",
-    "passkeyWillBeDeleted": "Ten klucz dostępu zostanie usunięty po zapisaniu tych danych.",
+    "passkeyWillBeDeleted": "To hasło zostanie usunięte po zapisaniu tych danych logowania.",
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",
       "passkeyProviderOn": "Dostawca klucza dostępu włączony "
     },
-    "site": "Strona internetowa",
+    "site": "Witryna",
     "useBrowserPasskey": "Użyj klucza dostępu przeglądarki"
   },
   "settings": {
@@ -1247,7 +1247,7 @@
     },
     "importExport": "Import / Eksport",
     "importSectionDescription": "Zaimportuj swoje hasła z innych menedżerów haseł lub z poprzedniego eksportu AliasVault.",
-    "importSectionTitle": "Importowanie",
+    "importSectionTitle": "Import",
     "importWebNote": "Aby zaimportować dane logowania z istniejących menedżerów haseł, zaloguj się do aplikacji internetowej. Funkcja importowania jest obecnie dostępna tylko w wersji internetowej.",
     "iosAutofillSettings": {
       "headerText": "Możesz skonfigurować AliasVault, aby zapewnić natywną funkcję automatycznego wypełniania haseł i kluczy dostępu w systemie iOS. Aby ją włączyć, postępuj zgodnie z poniższymi instrukcjami.",
@@ -1300,7 +1300,7 @@
     },
     "resetAllSiteSettings": "Zresetuj wszystkie ustawienia witryny",
     "resetVault": {
-      "pageTitle": "Resetuj sejf",
+      "pageTitle": "Zresetuj sejf",
       "resetVaultConfirmButton": "Resetuj mój sejf",
       "resetVaultConfirmUsernameLabel": "Aby kontynuować, wpisz swoją nazwę użytkownika w celu potwierdzenia",
       "resetVaultContinueButton": "Kontynuuj resetowanie sejfu",
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "Nie znaleziono żadnych aktywnych sesji.",
         "revoke": "Unieważnij",
         "revokeConfirmation": "Czy na pewno chcesz anulować tę sesję? Spowoduje to wylogowanie z wybranego urządzenia.",
-        "revokeExceptionMessage": "Nie udało się unieważnić sesji: {{error}}.",
+        "revokeExceptionMessage": "Failed to revoke session: {{error}}.",
         "revokeSession": "Unieważnij sesję",
         "revokeSuccessMessage": "Sesja została pomyślnie anulowana.",
         "sessionRevoked": "Sesja została pomyślnie unieważniona"
@@ -1351,7 +1351,7 @@
         "ipAddress": "Adres IP",
         "noLogs": "Nie znaleziono żadnych dzienników uwierzytelniania",
         "noLogsMessage": "Nie znaleziono żadnych dzienników uwierzytelniania.",
-        "success": "Sukces",
+        "success": "Gotowe",
         "time": "Czas",
         "timestampColumn": "Znacznik czasu"
       },
@@ -1372,7 +1372,7 @@
         "initiatingChange": "Rozpoczynanie zmiany hasła...",
         "newPassword": "Nowe hasło",
         "passwordChangedSuccessfully": "Hasło zostało pomyślnie zmienione",
-        "passwordTooShort": "Hasło musi mieć conajmniej {{minLength}} znaków.",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Nowe hasła nie są zgodne",
         "userNotAuthenticated": "Użytkownik nie został zweryfikowany"
       },
@@ -1426,7 +1426,7 @@
         "verifyAndEnableButton": "Zweryfikuj i włącz"
       },
       "pageDescription": "Skonfiguruj ustawienia bezpieczeństwa.",
-      "pageTitle": "Ustawienia bezpieczeństwa",
+      "pageTitle": "Ustawienie bezpieczeństwa",
       "passkeyUnlock": {
         "disableButton": "Wyłącz odblokowywanie kluczem dostępu",
         "disabledDescription": "Domyślnie, ponowne załadowanie strony lub karty AliasVault wymaga ponownego wprowadzenia hasła głównego. Dzięki kluczowi dostępu możesz odblokować swój sejf natychmiastowo. Po włączeniu hasło główne jest szyfrowane lokalnie za pomocą rozszerzenia PRF klucza dostępu. Uwaga: klucz dostępu będzie działał tylko na bieżącym urządzeniu i przeglądarce, na której go włączysz.",
@@ -1523,8 +1523,8 @@
       "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "biometrics": "Biometria",
       "description": "Wybierz sposób odblokowania sejfu.",
-      "faceId": "Rozpoznawanie twarzy",
-      "faceIdTouchId": "Rozpoznawanie twarzy / Odcisk palca",
+      "faceId": "Identyfikacja twarzy",
+      "faceIdTouchId": "Identyfikacja twarzy / Touch ID",
       "featureRequiresPasscode": "Ta funkcja wymaga włączenia kodu PIN na twoim urządzeniu.",
       "keystoreAndroid": "Android Keystore",
       "keystoreIOS": "iOS Keychain",
@@ -1554,7 +1554,7 @@
     "pending": "Oczekuje na synchronizację",
     "stillOffline": "Wciąż offline",
     "syncFailed": "Synchronizacja nieudana",
-    "syncing": "Trwa synchronizacja...",
+    "syncing": "Synchronizowanie...",
     "tapToRetry": "Dotknij, aby ponowić synchronizację",
     "versionNotSupported": {
       "contactSupport": "If the issue persists, contact our support team for help.",
@@ -1580,7 +1580,7 @@
       "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
     },
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
-    "nameOptional": "Nazwa (opcjonalnie)",
+    "nameOptional": "Imię i nazwisko (opcjonalnie)",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "scanQrCode": "Skanuj kod QR",
     "secretKey": "Tajny klucz",
@@ -1593,14 +1593,14 @@
   "upgrade": {
     "alerts": {
       "continueUpgrade": "Kontynuuj aktualizację",
-      "failedToApplyMigration": "Nie udało się zastosować migracji danych ({{current}} z {{total}})",
-      "selfHostedServer": "Własny serwer",
-      "selfHostedWarning": "Jeśli korzystasz z własnego serwera, pamiętaj, aby zaktualizować również swoją instancję własną, ponieważ w przeciwnym razie logowanie do klienta internetowego przestanie działać.",
+      "failedToApplyMigration": "Nie udało się zastosować migracji ({{current}} of {{total}})",
+      "selfHostedServer": "Serwer własny",
+      "selfHostedWarning": "Jeśli używasz własnego serwera, upewnij się, że zaktualizujesz swoją samodzielną instancję, ponieważ w przeciwnym razie logowanie się do klienta internetowego przestanie działać.",
       "unableToGetVersionInfo": "Nie można uzyskać informacji o wersji. Spróbuj ponownie.",
       "upgradeFailed": "Aktualizacja nie powiodła się"
     },
     "newVersion": "Nowa dostępna wersja:",
-    "noDescriptionAvailable": "Brak opisu dla tej wersji.",
+    "noDescriptionAvailable": "Brak dostępnego opisu dla tej wersji.",
     "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
     "startUpgradeButton": "Rozpocznij proces aktualizacji",
     "status": {
@@ -1616,18 +1616,18 @@
     "upgrade": "Aktualizacja",
     "upgradeDescription": "Wersja AliasVault jest nieaktualna i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.",
     "upgradeFailedError": "Aktualizacja bazy danych nie powiodła się. Spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
-    "upgradeRequiredDescription": "Aby wprowadzić następujące zmiany, wymagana jest aktualizacja: {{changes}}",
+    "upgradeRequiredDescription": "An upgrade is required to support the following changes: {{changes}}",
     "upgradeSuccessMessage": "Aktualizacja sejfu zakończona sukcesem.",
-    "upgrading": "Akltualizowanie...",
+    "upgrading": "Aktualizacja...",
     "versionInformation": "Informacje o wersji",
     "whatsNew": "Co nowego",
-    "whatsNewDescription": "Aby wprowadzić poniższe zmiany, konieczna jest aktualizacja:",
-    "yourVault": "Twoja wersja sejfu:"
+    "whatsNewDescription": "Uaktualnienie jest wymagane do obsługi następujących zmian:",
+    "yourVault": "Wersja Twojego sejfu:"
   },
   "validation": {
     "passwordRequired": "Wymagane jest podanie hasła",
     "required": "To pole jest wymagane",
-    "secretKeyRequired": "Wymagany jest sekretny klucz",
+    "secretKeyRequired": "Wymagany jest tajny klucz",
     "serviceNameRequired": "Nazwa usługi jest wymagana"
   },
   "vault": {
@@ -1668,7 +1668,7 @@
       "extensionsAppsTipContent": "Zainstaluj rozszerzenie przeglądarki AliasVault i aplikację mobilną, aby tworzyć aliasy i automatycznie wypełniać formularze bezpośrednio z przeglądarki i smartfona.",
       "extensionsAppsTipTitle": "Rozszerzenia przeglądarki i aplikacje mobilne",
       "finishingTutorialMessage": "Kończenie samouczka...",
-      "getStartedButton": "Zacznij",
+      "getStartedButton": "Rozpocznij",
       "howAliasVaultWorksStepTitle": "Jak działa AliasVault",
       "howItWorksIntro": "Kiedy musisz zarejestrować się w nowej usłudze:",
       "howItWorksStep1": "AliasVault generuje losową tożsamość z bezpiecznym prywatnym adresem e-mail",
