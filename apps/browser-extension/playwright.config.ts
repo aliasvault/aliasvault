@@ -31,7 +31,7 @@ export default defineConfig({
 
   // Amount of parallel tests to run
   // Reduce workers in CI to prevent resource exhaustion when multi-client tests
-  // spawn multiple browser contexts under xvfb
+  // spawn multiple browser contexts
   workers: process.env.CI ? 1 : 4,
 
   // Reporter configuration

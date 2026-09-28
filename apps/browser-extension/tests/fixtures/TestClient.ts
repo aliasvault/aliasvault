@@ -11,11 +11,8 @@
  * ```
  */
 import type { BrowserContext, Page } from '@playwright/test';
-import { chromium } from '@playwright/test';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-import { expect } from './fixtures';
+import { createFreshContext, expect } from './fixtures';
 import { completeVaultUpgrade } from './helpers';
 import { FieldSelectors, ButtonSelectors } from './selectors';
 import {
@@ -29,10 +26,6 @@ import {
   waitForPopupReady,
   Timeouts,
 } from './waits';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const EXTENSION_PATH = path.join(__dirname, '..', '..', 'dist', 'chrome-mv3');
 
 /**
  * TestClient provides a fluent API for E2E testing of the browser extension.
@@ -52,22 +45,7 @@ export class TestClient {
    * Create a new TestClient with a fresh browser context.
    */
   static async create(): Promise<TestClient> {
-    const context = await chromium.launchPersistentContext('', {
-      headless: false,
-      args: [
-        `--disable-extensions-except=${EXTENSION_PATH}`,
-        `--load-extension=${EXTENSION_PATH}`,
-        '--no-first-run',
-        '--disable-gpu',
-      ],
-    });
-
-    // Wait for service worker and get extension ID
-    let [background] = context.serviceWorkers();
-    if (!background) {
-      background = await context.waitForEvent('serviceworker');
-    }
-    const extensionId = background.url().split('/')[2];
+    const { context, extensionId } = await createFreshContext();
 
     // Open popup
     const popup = await context.newPage();

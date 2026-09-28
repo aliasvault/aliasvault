@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:build": "node scripts/run-e2e.mjs",
+    "test:e2e:headed": "node scripts/run-e2e.mjs --headed --workers=1",
     "lint": "eslint src",
     "lint:custom": "eslint",
     "lint:fix": "eslint src --fix",
