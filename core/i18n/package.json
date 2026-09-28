@@ -12,6 +12,9 @@
         "./locales/*": "./locales/*"
     },
     "scripts": {
+        "compile": "tsc --noEmit",
+        "lint": "eslint src",
+        "lint:fix": "eslint src --fix",
         "test": "vitest run",
         "export:native": "node scripts/export-native.mjs",
         "export:native:check": "node scripts/export-native.mjs --check",
@@ -19,6 +22,15 @@
         "hints:push:dry-run": "node scripts/sync-hints.mjs --dry-run"
     },
     "devDependencies": {
+        "@types/node": "^22.13.10",
+        "@typescript-eslint/eslint-plugin": "^8.65.0",
+        "@typescript-eslint/parser": "^8.65.0",
+        "eslint": "^9.39.5",
+        "eslint-import-resolver-typescript": "^4.4.3",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-jsdoc": "^50.6.3",
+        "globals": "^16.5.0",
+        "typescript": "^5.6.3",
         "vitest": "^5.0.1"
     }
 }
