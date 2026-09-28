@@ -480,7 +480,7 @@ const FamilySharingSettings: React.FC = () => {
                                       }}
                                       className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                     >
-                                      {t('items.editFolder')}
+                                      {t('items.folders.editFolder')}
                                     </button>
                                   )}
                                   <button

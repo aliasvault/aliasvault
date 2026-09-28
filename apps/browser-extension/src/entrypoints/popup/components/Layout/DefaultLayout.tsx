@@ -86,9 +86,9 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
         isOpen={syncError !== null}
         onClose={clearSyncError}
         onConfirm={clearSyncError}
-        title={t('sync.syncErrorTitle')}
+        title={t('sync.syncFailed')}
         message={syncError ?? ''}
-        confirmText={t('sync.syncErrorDismiss')}
+        confirmText={t('common.dismiss')}
         variant="danger"
       />
     </div>

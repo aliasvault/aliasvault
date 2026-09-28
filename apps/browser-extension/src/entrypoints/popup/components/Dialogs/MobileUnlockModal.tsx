@@ -198,7 +198,7 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
 
       {qrCodeUrl && (
         <div className="flex flex-col items-center w-full max-w-[300px] mx-auto">
-          <img src={qrCodeUrl} alt="QR Code" className="w-full border-4 border-gray-200 dark:border-gray-600 rounded mb-3" />
+          <img src={qrCodeUrl} alt={t('common.qrCode')} className="w-full border-4 border-gray-200 dark:border-gray-600 rounded mb-3" />
           {verificationCode && (
             <div className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
               <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full border-2 border-primary-500 bg-white dark:bg-gray-800 text-2xl font-bold text-gray-900 dark:text-white">

@@ -149,7 +149,7 @@ const VaultUnlockSettings: React.FC = () => {
       setPinSetupStep(1);
       setNewPin('');
       setConfirmPin('');
-      setSuccess(t('settings.unlockMethod.enableSuccess'));
+      setSuccess(t('settings.vaultUnlockSettings.pinEnabled'));
       hideLoading();
     } catch (err: unknown) {
       logFailure('Failed to enable PIN', err);
@@ -186,7 +186,7 @@ const VaultUnlockSettings: React.FC = () => {
 
   return (
     <>
-      <PageTitle>{t('settings.unlockMethod.title')}</PageTitle>
+      <PageTitle>{t('settings.vaultUnlock')}</PageTitle>
       <div className="flex items-start gap-2">
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {t('settings.unlockMethod.introText')}
@@ -217,7 +217,7 @@ const VaultUnlockSettings: React.FC = () => {
                   </svg>
                   <div>
                     <div className="flex items-center">
-                      <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.pin')}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{t('settings.vaultUnlockSettings.pin')}</p>
                       <HelpModal
                         title={t('common.notice')}
                         content={t('settings.unlockMethod.pinSecurityWarning')}
@@ -256,7 +256,7 @@ const VaultUnlockSettings: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.password')}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{t('auth.masterPassword')}</p>
                   </div>
                 </div>
                 <div className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 cursor-not-allowed">

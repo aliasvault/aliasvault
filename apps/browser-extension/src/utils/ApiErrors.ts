@@ -11,7 +11,7 @@ import type { TFunction } from 'i18next';
 export function apiErrorMessage(error: unknown, t: TFunction, fallback: string): string {
   const code = apiErrorCodeOf(error);
   if (code) {
-    const key = `common.apiErrors.${code}`;
+    const key = `apiErrors.${code}`;
     const translated = t(key);
     return translated === key ? fallback : translated;
   }

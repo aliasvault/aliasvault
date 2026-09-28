@@ -156,7 +156,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
                     </span>
                     <div className="text-xs">
                       {copiedId === totpCode.Id ? (
-                        <span className="text-green-600 dark:text-green-400">{t('common.copied')}</span>
+                        <span className="text-green-600 dark:text-green-400">{t('common.copiedShort')}</span>
                       ) : (
                         <span className="text-gray-500 dark:text-gray-400">{getTotpRemainingSeconds(totpCode)}s</span>
                       )}

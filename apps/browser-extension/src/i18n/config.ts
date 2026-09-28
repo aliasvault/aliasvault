@@ -1,109 +1,9 @@
 /**
- * Central configuration for i18n languages
- * Add new languages here to make them available throughout the application
+ * The UI languages of the browser extension. The translations live in core/i18n (@aliasvault/i18n).
  */
 
-import { getLanguageInfo } from '@aliasvault/models/defaults';
-
-import daTranslations from './locales/da.json';
-import deTranslations from './locales/de.json';
-import enTranslations from './locales/en.json';
-import esTranslations from './locales/es.json';
-import fiTranslations from './locales/fi.json';
-import frTranslations from './locales/fr.json';
-import gaTranslations from './locales/ga.json';
-import heTranslations from './locales/he.json';
-import huTranslations from './locales/hu.json';
-import idTranslations from './locales/id.json';
-import itTranslations from './locales/it.json';
-import nlTranslations from './locales/nl.json';
-import plTranslations from './locales/pl.json';
-import ptTranslations from './locales/pt.json';
-import roTranslations from './locales/ro.json';
-import ruTranslations from './locales/ru.json';
-import svTranslations from './locales/sv.json';
-import ukTranslations from './locales/uk.json';
-import zhTranslations from './locales/zh.json';
-
-/**
- * Create a map of all available languages and their resources for i18n.
- * When adding a new language, add the translation JSON file to the locales folder and add the language to the map here.
- */
-export const LANGUAGE_RESOURCES = {
-  da: {
-    translation: daTranslations
-  },
-  de: {
-    translation: deTranslations
-  },
-  en: {
-    translation: enTranslations
-  },
-  es: {
-    translation: esTranslations
-  },
-  fi: {
-    translation: fiTranslations
-  },
-  fr: {
-    translation: frTranslations
-  },
-  ga: {
-    translation: gaTranslations
-  },
-  he: {
-    translation: heTranslations
-  },
-  hu: {
-    translation: huTranslations
-  },
-  id: {
-    translation: idTranslations
-  },
-  it: {
-    translation: itTranslations
-  },
-  nl: {
-    translation: nlTranslations
-  },
-  pl: {
-    translation: plTranslations
-  },
-  pt: {
-    translation: ptTranslations
-  },
-  ro: {
-    translation: roTranslations
-  },
-  ru: {
-    translation: ruTranslations
-  },
-  sv: {
-    translation: svTranslations
-  },
-  uk: {
-    translation: ukTranslations
-  },
-  zh: {
-    translation: zhTranslations
-  },
-};
-
-/**
- * List of all available UI languages with their code, native name and flag.
- */
-export const AVAILABLE_LANGUAGES: ILanguageConfig[] =
-  (Object.keys(LANGUAGE_RESOURCES) as Array<keyof typeof LANGUAGE_RESOURCES>).map((code) => {
-    const info = getLanguageInfo(code);
-    return { code, nativeName: info.label, flag: info.flag };
-  });
-
-/**
- * Default language that is used when no language is set in the browser or when a localized string is not found for the current language.
- */
-export const DEFAULT_LANGUAGE = 'en';
-
-export const LANGUAGE_CODES = AVAILABLE_LANGUAGES.map(lang => lang.code);
+import { type TranslationTree } from '@aliasvault/i18n';
+import { DEFAULT_LANGUAGE as CORE_DEFAULT_LANGUAGE, LANGUAGE_CODES as CORE_LANGUAGE_CODES, UI_LANGUAGES } from '@aliasvault/i18n/languages';
 
 export interface ILanguageConfig {
     code: string;
@@ -112,64 +12,57 @@ export interface ILanguageConfig {
   }
 
 /**
+ * List of all available UI languages with their code, native name and flag.
+ */
+export const AVAILABLE_LANGUAGES: ILanguageConfig[] = UI_LANGUAGES.map(({ code, label, flag }) => ({ code, nativeName: label, flag }));
+
+/**
+ * Default language that is used when no language is set in the browser or when a localized string is not found for the current language.
+ */
+export const DEFAULT_LANGUAGE = CORE_DEFAULT_LANGUAGE;
+
+export const LANGUAGE_CODES: string[] = [...CORE_LANGUAGE_CODES];
+
+/**
  * Type for content translations
  */
-export type ContentTranslations = {
-  [key: string]: string | ContentTranslations;
+export type ContentTranslations = TranslationTree;
+
+/*
+ * The background and content scripts cannot load code on demand and are injected into every page, so they bundle
+ * the translations for the top-level namespaces they translate, for every language.
+ */
+const STANDALONE_NAMESPACES = {
+  common: import.meta.glob<TranslationTree>('../../../../core/i18n/locales/*.json', { eager: true, import: 'common' }),
+  content: import.meta.glob<TranslationTree>('../../../../core/i18n/locales/*.json', { eager: true, import: 'content' }),
+  items: import.meta.glob<TranslationTree>('../../../../core/i18n/locales/*.json', { eager: true, import: 'items' }),
+  apiErrors: import.meta.glob<TranslationTree>('../../../../core/i18n/locales/*.json', { eager: true, import: 'apiErrors' }),
 };
 
 /**
- * Cache for loaded translations to avoid repeated file reads
+ * Cache for loaded translations to avoid rebuilding them
  */
 const translationCache = new Map<string, ContentTranslations>();
 
 /**
- * Load translations for a specific language
+ * Load the translations the background and content scripts use for a specific language
  */
 export async function loadTranslations(language: string): Promise<ContentTranslations> {
-  const cacheKey = `all:${language}`;
-
-  // Check cache first
-  if (translationCache.has(cacheKey)) {
-    return translationCache.get(cacheKey)!;
+  const code = LANGUAGE_CODES.includes(language) ? language : DEFAULT_LANGUAGE;
+  const cached = translationCache.get(code);
+  if (cached) {
+    return cached;
   }
 
-  // Get translations from pre-loaded resources
-  if (LANGUAGE_RESOURCES[language as keyof typeof LANGUAGE_RESOURCES]) {
-    const translationData = LANGUAGE_RESOURCES[language as keyof typeof LANGUAGE_RESOURCES].translation;
-    translationCache.set(cacheKey, translationData);
-    return translationData;
-  }
-
-  // Fallback to English if available
-  if (language !== DEFAULT_LANGUAGE && LANGUAGE_RESOURCES[DEFAULT_LANGUAGE]) {
-    console.warn(`Translations not found for ${language}, falling back to ${DEFAULT_LANGUAGE}`);
-    const fallbackData = LANGUAGE_RESOURCES[DEFAULT_LANGUAGE].translation;
-    translationCache.set(cacheKey, fallbackData);
-    return fallbackData;
-  }
-
-  // Return empty object as last resort
-  console.warn(`No translations found for ${language} and no fallback available`);
-  return {};
-}
-
-/**
- * Load all available translations for i18next
- */
-export async function loadAllTranslations(): Promise<Record<string, { translation: ContentTranslations }>> {
-  const resources: Record<string, { translation: ContentTranslations }> = {};
-
-  for (const language of AVAILABLE_LANGUAGES) {
-    try {
-      const translations = await loadTranslations(language.code);
-      resources[language.code] = { translation: translations };
-    } catch (error) {
-      console.warn(`Failed to load translations for ${language.code}:`, error);
+  const translations: ContentTranslations = {};
+  for (const [namespace, modules] of Object.entries(STANDALONE_NAMESPACES)) {
+    const entry = Object.entries(modules).find(([file]) => file.endsWith(`/${code}.json`));
+    if (entry) {
+      translations[namespace] = entry[1];
     }
   }
-
-  return resources;
+  translationCache.set(code, translations);
+  return translations;
 }
 
 /**

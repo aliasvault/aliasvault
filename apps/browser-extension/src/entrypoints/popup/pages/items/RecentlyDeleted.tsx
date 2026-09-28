@@ -153,7 +153,7 @@ const RecentlyDeleted: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <ItemFilterDropdown
-          title={t('recentlyDeleted.title')}
+          title={t('items.recentlyDeleted.title')}
           count={items.length}
           activeFilter="deleted"
           recentlyDeletedCount={items.length}
@@ -167,20 +167,20 @@ const RecentlyDeleted: React.FC = () => {
             onClick={() => setShowConfirmEmptyAll(true)}
             className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
           >
-            {t('recentlyDeleted.emptyAll')}
+            {t('items.recentlyDeleted.emptyAll')}
           </button>
         )}
       </div>
 
       {items.length === 0 ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
-          <p>{t('recentlyDeleted.noItems')}</p>
-          <p className="text-sm">{t('recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}</p>
+          <p>{t('items.recentlyDeleted.noItems')}</p>
+          <p className="text-sm">{t('items.recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}</p>
         </div>
       ) : (
         <>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {t('recentlyDeleted.description', { days: TRASH_RETENTION_DEFAULT_DAYS })}
+            {t('items.recentlyDeleted.description', { days: TRASH_RETENTION_DEFAULT_DAYS })}
           </p>
 
           <ul className="space-y-2">
@@ -203,9 +203,9 @@ const RecentlyDeleted: React.FC = () => {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {daysRemaining > 0 ? (
-                            t('recentlyDeleted.daysRemaining', { count: daysRemaining })
+                            t('items.recentlyDeleted.daysRemaining', { count: daysRemaining })
                           ) : (
-                            <span className="text-red-500">{t('recentlyDeleted.expiringSoon')}</span>
+                            <span className="text-red-500">{t('items.recentlyDeleted.expiringSoon')}</span>
                           )}
                         </div>
                       </div>
@@ -216,7 +216,7 @@ const RecentlyDeleted: React.FC = () => {
                           onClick={() => handleRestore(item)}
                           className="px-3 py-1 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50"
                         >
-                          {t('recentlyDeleted.restore')}
+                          {t('items.recentlyDeleted.restore')}
                         </button>
                         <button
                           onClick={() => {
@@ -242,9 +242,9 @@ const RecentlyDeleted: React.FC = () => {
         isOpen={showConfirmDelete && !!selectedItem}
         onClose={handleCloseDeleteModal}
         onConfirm={handlePermanentDelete}
-        title={t('recentlyDeleted.confirmDeleteTitle')}
-        message={t('recentlyDeleted.confirmDeleteMessage')}
-        confirmText={t('recentlyDeleted.deletePermanently')}
+        title={t('items.recentlyDeleted.confirmDeleteTitle')}
+        message={t('items.recentlyDeleted.confirmDeleteMessage')}
+        confirmText={t('items.recentlyDeleted.deletePermanently')}
       />
 
       {/* Confirm Empty All Modal */}
@@ -252,9 +252,9 @@ const RecentlyDeleted: React.FC = () => {
         isOpen={showConfirmEmptyAll}
         onClose={() => setShowConfirmEmptyAll(false)}
         onConfirm={handleEmptyAll}
-        title={t('recentlyDeleted.confirmEmptyAllTitle')}
-        message={t('recentlyDeleted.confirmEmptyAllMessage', { count: items.length })}
-        confirmText={t('recentlyDeleted.emptyAll')}
+        title={t('items.recentlyDeleted.confirmEmptyAllTitle')}
+        message={t('items.recentlyDeleted.confirmEmptyAllMessage', { count: items.length })}
+        confirmText={t('items.recentlyDeleted.emptyAll')}
       />
     </div>
   );

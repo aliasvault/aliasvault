@@ -243,7 +243,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
       </div>
 
       {/* Folder Selection Modal */}
-      <ModalWrapper isOpen={showFolderModal} onClose={handleCloseFolderModal} title={t('items.folder')} maxWidth="max-w-sm">
+      <ModalWrapper isOpen={showFolderModal} onClose={handleCloseFolderModal} title={t('items.folders.folder')} maxWidth="max-w-sm">
         {/* Folder Options - Tree View */}
         <div className="space-y-1 max-h-64 overflow-y-auto">
           {/* No Folder Option */}

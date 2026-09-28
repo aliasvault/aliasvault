@@ -43,7 +43,7 @@ export async function getCurrentLanguage(): Promise<string> {
 /**
  * Translation function for non-React contexts
  *
- * @param key - Translation key (supports nested keys like 'auth.loginButton' or 'common.errors.networkError')
+ * @param key - Translation key (supports nested keys like 'auth.login' or 'common.errors.unknownError')
  * @param fallback - Fallback text if translation is not found
  * @returns Promise<string> - Translated text
  */
@@ -55,7 +55,7 @@ export async function t(
     const language = await getCurrentLanguage();
     const translations = await loadTranslations(language);
 
-    // Support nested keys like 'auth.loginButton' or 'common.errors.networkError'
+    // Support nested keys like 'auth.login' or 'common.errors.unknownError'
     const value = getNestedValue(translations, key);
 
     if (value && typeof value === 'string') {

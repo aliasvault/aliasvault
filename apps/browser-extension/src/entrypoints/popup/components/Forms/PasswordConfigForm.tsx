@@ -1,5 +1,6 @@
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/models/defaults';
+import { getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/i18n/languages';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -131,7 +132,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
-              {mode === 'basic' ? t('items.passwordTypeBasic') : t('items.passwordTypeDiceware')}
+              {mode === 'basic' ? t('common.password') : t('items.passwordTypeDiceware')}
             </button>
           );
         })}
@@ -195,7 +196,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
-                title={t('items.includeLowercase')}
+                title={t('items.includeLowercaseLetters')}
               >
                 <span className="font-mono text-base">a-z</span>
               </button>
@@ -209,7 +210,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
-                title={t('items.includeUppercase')}
+                title={t('items.includeUppercaseLetters')}
               >
                 <span className="font-mono text-base">A-Z</span>
               </button>
@@ -223,7 +224,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
-                title={t('items.includeNumbers')}
+                title={t('items.includeDigits')}
               >
                 <span className="font-mono text-base">0-9</span>
               </button>
@@ -237,7 +238,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                 }`}
-                title={t('items.includeSpecialChars')}
+                title={t('items.includeSpecialCharacters')}
               >
                 <span className="font-mono text-base">!@#</span>
               </button>
@@ -253,7 +254,7 @@ const PasswordConfigForm: React.FC<IPasswordConfigFormProps> = ({
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
               />
               <label htmlFor="use-non-ambiguous" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                {t('items.avoidAmbiguousChars')}
+                {t('items.avoidAmbiguousCharacters')}
               </label>
             </div>
           </div>

@@ -49,7 +49,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         return false;
       }
 
-      onStatus?.(t('common.checkingVaultUpdates'));
+      onStatus?.(t('vault.checkingForVaultUpdates'));
 
       /*
        * Delegate to the background script for the full sync orchestration.
@@ -98,7 +98,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       // If we got a new vault, reload database into memory
       if (result.hasNewVault) {
-        onStatus?.(t('common.syncingUpdatedVault'));
+        onStatus?.(t('vault.syncingUpdatedVault'));
         await dbContext.loadStoredDatabase();
       }
 

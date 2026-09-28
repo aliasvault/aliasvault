@@ -28,7 +28,7 @@ const SecuritySettings: React.FC = () => {
   const entries: SecurityMenuEntry[] = [
     {
       id: 'change-password-button',
-      label: t('settings.securitySettings.changePassword.title'),
+      label: t('settings.securitySettings.changePassword.changePassword'),
       path: '/settings/security/change-password',
       disabled: dbContext.isOffline,
       disabledReason: t('common.errors.serverNotAvailable'),
@@ -36,7 +36,7 @@ const SecuritySettings: React.FC = () => {
     },
     {
       id: 'active-sessions-button',
-      label: t('settings.securitySettings.activeSessions.title'),
+      label: t('settings.securitySettings.activeSessionsTitle'),
       path: '/settings/security/active-sessions',
       disabled: dbContext.isOffline,
       disabledReason: t('common.errors.serverNotAvailable'),
@@ -44,7 +44,7 @@ const SecuritySettings: React.FC = () => {
     },
     {
       id: 'auth-logs-button',
-      label: t('settings.securitySettings.authLogs.title'),
+      label: t('settings.securitySettings.recentAuthLogs'),
       path: '/settings/security/auth-logs',
       disabled: dbContext.isOffline,
       disabledReason: t('common.errors.serverNotAvailable'),
@@ -55,7 +55,7 @@ const SecuritySettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <PageTitle>{t('settings.securitySettings.title')}</PageTitle>
+        <PageTitle>{t('settings.security')}</PageTitle>
         <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.description')}</p>
       </div>
 

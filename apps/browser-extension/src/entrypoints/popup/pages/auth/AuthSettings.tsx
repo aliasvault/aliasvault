@@ -334,7 +334,7 @@ const AuthSettings: React.FC = () => {
       <div className="space-y-4 pb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-            {t('settings.languageSettings', 'Language')}
+            {t('settings.language', 'Language')}
           </h2>
         </div>
 

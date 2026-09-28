@@ -780,7 +780,7 @@ const PasskeyCreate: React.FC = () => {
                   ? t('passkeys.create.confirmReplace')
                   : selectedItemToAttach
                     ? t('passkeys.create.attachPasskey')
-                    : t('passkeys.create.createButton')}
+                    : t('passkeys.create.title')}
               </Button>
 
               {(existingPasskeys.length > 0 || matchingItems.length > 0) ? (

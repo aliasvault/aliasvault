@@ -41,15 +41,15 @@ const AutoLockSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageTitle>{t('settings.autoLockTimeout')}</PageTitle>
+      <PageTitle>{t('settings.autoLock')}</PageTitle>
       <section>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div>
               <div className="flex items-center mb-2">
-                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoLock')}</p>
                 <HelpModal
-                  title={t('settings.autoLockTimeout')}
+                  title={t('settings.autoLock')}
                   content={t('settings.autoLockTimeoutHelp')}
                   className="ml-2"
                 />
@@ -60,17 +60,17 @@ const AutoLockSettings: React.FC = () => {
                 onChange={(e) => setAutoLockTimeoutSetting(Number(e.target.value))}
                 className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
               >
-                <option value="0">{t('settings.autoLockNever')}</option>
-                <option value="15">{t('settings.autoLock15Seconds')}</option>
-                <option value="30">{t('settings.autoLock30Seconds')}</option>
-                <option value="60">{t('settings.autoLock1Minute')}</option>
-                <option value="300">{t('settings.autoLock5Minutes')}</option>
-                <option value="900">{t('settings.autoLock15Minutes')}</option>
-                <option value="1800">{t('settings.autoLock30Minutes')}</option>
-                <option value="3600">{t('settings.autoLock1Hour')}</option>
-                <option value="14400">{t('settings.autoLock4Hours')}</option>
-                <option value="28800">{t('settings.autoLock8Hours')}</option>
-                <option value="86400">{t('settings.autoLock24Hours')}</option>
+                <option value="0">{t('common.never')}</option>
+                <option value="15">{t('common.duration.15seconds')}</option>
+                <option value="30">{t('common.duration.30seconds')}</option>
+                <option value="60">{t('settings.autoLockOptions.1minute')}</option>
+                <option value="300">{t('settings.autoLockOptions.5minutes')}</option>
+                <option value="900">{t('settings.autoLockOptions.15minutes')}</option>
+                <option value="1800">{t('settings.autoLockOptions.30minutes')}</option>
+                <option value="3600">{t('settings.autoLockOptions.1hour')}</option>
+                <option value="14400">{t('settings.autoLockOptions.4hours')}</option>
+                <option value="28800">{t('settings.autoLockOptions.8hours')}</option>
+                <option value="86400">{t('settings.autoLockOptions.24hours')}</option>
               </select>
             </div>
           </div>

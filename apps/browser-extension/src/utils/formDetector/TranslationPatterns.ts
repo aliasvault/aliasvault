@@ -3,21 +3,19 @@
  * It looks at common.email, common.username, and common.password translations
  * across all supported languages to help detect form fields in any language.
  *
- * This module dynamically imports all translation files, so adding a new language
- * automatically extends form detection support without any code changes.
+ * It imports the common namespace of every shared translation file (core/i18n), so adding a new
+ * language automatically extends form detection support without any code changes.
  */
 
 /**
- * Dynamically import all translation JSON files from the locales directory
+ * The common namespace of every language in the shared translation files; only that namespace is bundled.
  */
-const translationModules = import.meta.glob('../../i18n/locales/*.json', { eager: true });
+const translationModules = import.meta.glob('../../../../../core/i18n/locales/*.json', { eager: true, import: 'common' });
 
 /**
- * Extract all translation objects from the imported modules
+ * All translation objects, shaped like a locale file (only common is present).
  */
-const allTranslations = Object.values(translationModules).map((module: unknown) => {
-  return (module as { default: unknown }).default;
-});
+const allTranslations = Object.values(translationModules).map((common: unknown) => ({ common }));
 
 /**
  * Extract unique, lowercase field patterns from all translations

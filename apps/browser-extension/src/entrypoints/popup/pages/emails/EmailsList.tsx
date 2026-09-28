@@ -179,26 +179,26 @@ const EmailsList: React.FC = () => {
     const secondsAgo = Math.floor((now.getTime() - emailDate.getTime()) / 1000);
 
     if (secondsAgo < 60) {
-      return t('emails.dateFormat.justNow');
+      return t('emails.time.justNow');
     } else if (secondsAgo < 3600) {
       // Less than 1 hour ago
       const minutes = Math.floor(secondsAgo / 60);
       if (minutes === 1) {
-        return t('emails.dateFormat.minutesAgo_single', { count: minutes });
+        return t('emails.time.minutesAgo_single', { count: minutes });
       } else {
-        return t('emails.dateFormat.minutesAgo_plural', { count: minutes });
+        return t('emails.time.minutesAgo_plural', { count: minutes });
       }
     } else if (secondsAgo < 86400) {
       // Less than 24 hours ago
       const hours = Math.floor(secondsAgo / 3600);
       if (hours === 1) {
-        return t('emails.dateFormat.hoursAgo_single', { count: hours });
+        return t('emails.time.hoursAgo_single', { count: hours });
       } else {
-        return t('emails.dateFormat.hoursAgo_plural', { count: hours });
+        return t('emails.time.hoursAgo_plural', { count: hours });
       }
     } else if (secondsAgo < 172800) {
       // Less than 48 hours ago
-      return t('emails.dateFormat.yesterday');
+      return t('emails.time.yesterday');
     } else {
       // Older than 48 hours
       return emailDate.toLocaleDateString('en-GB', {
@@ -245,7 +245,7 @@ const EmailsList: React.FC = () => {
         </div>
         <div className="text-gray-500 dark:text-gray-400 space-y-2">
           <p className="text-sm">
-            {t('emails.noEmailsDescription')}
+            {t('emails.emptyMessage')}
           </p>
         </div>
       </div>

@@ -256,7 +256,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
  * Matches the styling of the regular autofill popup.
  */
 async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement, recentlySelected?: ItemRef | null) : Promise<void> {
-  const searchPlaceholder = await t('content.searchVault');
+  const searchPlaceholder = await t('items.searchPlaceholder');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
   const noTotpItemsText = await t('content.noTotpItemsFound');
@@ -842,7 +842,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
 
   // Get all translations first
   const newText = await t('content.new');
-  const searchPlaceholder = await t('content.searchVault');
+  const searchPlaceholder = await t('items.searchPlaceholder');
   const hideFor1HourText = await t('content.hideFor1Hour');
   const hidePermanentlyText = await t('content.hidePermanently');
   const noMatchesText = await t('content.noMatchesFound');

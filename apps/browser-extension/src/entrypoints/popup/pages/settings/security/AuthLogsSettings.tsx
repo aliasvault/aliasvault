@@ -39,8 +39,8 @@ const AuthLogsSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <PageTitle>{t('settings.securitySettings.authLogs.title')}</PageTitle>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.authLogs.description')}</p>
+        <PageTitle>{t('settings.securitySettings.recentAuthLogs')}</PageTitle>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.authLogs.headerText')}</p>
       </div>
 
       {error && <AlertMessage type="error" message={error} />}

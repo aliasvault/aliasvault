@@ -562,7 +562,7 @@ const Unlock: React.FC = () => {
     try {
       // Check if the approval belongs to the same account as the current session.
       if (authContext.username && result.username.toLowerCase() !== authContext.username.toLowerCase()) {
-        setError(t('common.apiErrors.USERNAME_MISMATCH'));
+        setError(t('apiErrors.USERNAME_MISMATCH'));
         return;
       }
 
@@ -724,7 +724,7 @@ const Unlock: React.FC = () => {
               onChange={(e) => handlePinChange(e.target.value.replace(/\D/g, ''))}
               className="w-0 h-0 opacity-0 absolute"
               autoFocus
-              aria-label="PIN input"
+              aria-label={t('auth.pinInput')}
             />
 
             {/* On-Screen Numpad */}
@@ -755,7 +755,7 @@ const Unlock: React.FC = () => {
                   type="button"
                   onClick={handleBackspace}
                   className="h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
-                  aria-label="Backspace"
+                  aria-label={t('common.backspace')}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />

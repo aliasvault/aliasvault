@@ -226,7 +226,7 @@ const Login: React.FC = () => {
       <>
         <HeaderButton
           onClick={() => PopoutUtility.openInNewPopup()}
-          title="Open in new window"
+          title={t('common.openInNewWindow')}
           iconType={HeaderIconType.EXPAND}
         />
       </>
@@ -237,7 +237,7 @@ const Login: React.FC = () => {
     return () => {
       setHeaderButtons(null);
     };
-  }, [setHeaderButtons]);
+  }, [setHeaderButtons, t]);
 
   /*
    * Cross-window login sync: reload when another window unlocks/logs in.
@@ -440,7 +440,7 @@ const Login: React.FC = () => {
               type="text"
               value={twoFactorCode}
               onChange={(e) => setTwoFactorCode(e.target.value)}
-              placeholder={t('auth.authCodePlaceholder')}
+              placeholder={t('auth.enterAuthCode')}
               required
             />
           </div>
@@ -471,7 +471,7 @@ const Login: React.FC = () => {
             </Button>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-            {t('auth.twoFactorNote')}
+            {t('auth.authCodeNote')}
           </p>
         </form>
       </div>
@@ -550,7 +550,7 @@ const Login: React.FC = () => {
 
           <Button type="submit">
             <div className="flex items-center justify-center gap-2">
-              {t('auth.loginButton')}
+              {t('auth.login')}
             </div>
           </Button>
 
@@ -567,14 +567,14 @@ const Login: React.FC = () => {
           </button>
 
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            {t('auth.noAccount')}{' '}
+            {t('auth.noAccountYet')}{' '}
             <a
               href={clientUrl ?? ''}
               target="_blank"
               rel="noopener noreferrer"
               className="text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-500"
             >
-              {t('auth.createVault')}
+              {t('auth.createNewVault')}
             </a>
           </div>
         </form>

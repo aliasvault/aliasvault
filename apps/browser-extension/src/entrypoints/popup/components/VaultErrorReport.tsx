@@ -94,7 +94,7 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
                 </>
               )}
             </svg>
-            {copied ? t('common.copied') : t('common.copyToClipboard')}
+            {copied ? t('common.copiedShort') : t('common.copyToClipboard')}
           </button>
         </>
       )}

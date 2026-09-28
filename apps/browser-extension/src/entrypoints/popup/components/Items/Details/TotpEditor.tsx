@@ -148,7 +148,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
     // Validate required fields
     if (!formData.secretKey) {
-      setFormError(t('items.validation.required'));
+      setFormError(t('validation.required'));
       return;
     }
 
@@ -534,7 +534,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                 {showQrCode && qrCodeDataUrl && (
                   <div className="flex justify-center mt-3">
                     <div className="bg-white border-2 border-white rounded-lg">
-                      <img src={qrCodeDataUrl} alt="TOTP QR Code" className="w-64 h-64" />
+                      <img src={qrCodeDataUrl} alt={t('common.qrCode')} className="w-64 h-64" />
                     </div>
                   </div>
                 )}

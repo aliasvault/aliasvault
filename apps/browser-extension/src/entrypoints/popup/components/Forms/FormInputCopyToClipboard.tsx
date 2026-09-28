@@ -152,7 +152,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
             <button
               type="button"
               className="p-1 text-green-500 dark:text-green-400 transition-colors duration-200"
-              title={t('common.copied')}
+              title={t('common.copiedShort')}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <Icon name="check" />
