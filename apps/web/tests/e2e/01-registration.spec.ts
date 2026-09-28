@@ -21,7 +21,7 @@ test.describe('1. Registration', () => {
 
     await test.step('choose a username, checked against the server', async () => {
       await page.locator('#username').fill(credentials.username);
-      await expect(page.getByText('Username is available!')).toBeVisible();
+      await expect(page.getByText('Username is available')).toBeVisible();
       await continueButton.click();
     });
 

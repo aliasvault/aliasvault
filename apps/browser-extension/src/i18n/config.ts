@@ -2,8 +2,9 @@
  * The UI languages of the browser extension. The translations live in core/i18n (@aliasvault/i18n).
  */
 
-import { type TranslationTree } from '@aliasvault/i18n';
 import { DEFAULT_LANGUAGE as CORE_DEFAULT_LANGUAGE, LANGUAGE_CODES as CORE_LANGUAGE_CODES, UI_LANGUAGES } from '@aliasvault/i18n/languages';
+
+import type { TranslationTree } from '@aliasvault/i18n';
 
 export interface ILanguageConfig {
     code: string;
