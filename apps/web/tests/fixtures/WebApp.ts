@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * Page object for the web app: the user-level flows tests are written in.
@@ -53,6 +53,17 @@ export class WebApp {
   public async expectVaultOpen(username: string): Promise<void> {
     await expect(this.page).toHaveURL(/\/items$/);
     await expect(this.page.locator('#mobileMenuDropdown').getByText(username, { exact: true })).toBeAttached();
+  }
+
+  /**
+   * Stop here and open the Playwright Inspector to look at the page, only in a `npm run test:e2e:pause` run; a no-op otherwise.
+   */
+  public async pause(): Promise<void> {
+    if (!process.env.E2E_PAUSE) {
+      return;
+    }
+    test.info().setTimeout(0);
+    await this.page.pause();
   }
 
   /**

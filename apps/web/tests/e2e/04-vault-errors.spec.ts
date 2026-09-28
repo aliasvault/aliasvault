@@ -31,6 +31,9 @@ test.describe('4. Vault errors', () => {
     await app.page.goto('/user/login');
     await app.submitLogin(testUser.username, testUser.password);
 
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
+
     await expect(app.page).toHaveURL(/\/sync$/);
     await expectCriticalError(app.page, VAULT_DATA_UNREADABLE_MESSAGE, 'E-503');
     await expect(app.page.locator('#critical-error-report')).toContainText('AES-GCM decryption failed');
@@ -43,6 +46,9 @@ test.describe('4. Vault errors', () => {
     await app.page.goto('/user/login');
     await app.submitLogin(testUser.username, testUser.password);
 
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
+
     await expect(app.page).toHaveURL(/\/sync$/);
     await expectCriticalError(app.page, VAULT_DATA_UNREADABLE_MESSAGE, 'E-508');
     await expect(app.page.locator('#critical-error-report')).toContainText('NOT NULL constraint failed');
@@ -53,6 +59,9 @@ test.describe('4. Vault errors', () => {
 
     await app.page.goto('/user/login');
     await app.submitLogin(user.username, user.password);
+
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
 
     // The error replaces the login form instead of landing on the unlock page without explanation.
     await expect(app.page).toHaveURL(/\/user\/login$/);
@@ -86,6 +95,9 @@ test.describe('4. Vault errors', () => {
 
     await app.page.locator('#password').fill(testUser.password);
     await app.page.locator('#unlock-button').click();
+
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
 
     await expect(app.page).toHaveURL(/\/unlock$/);
     await expectCriticalError(app.page, KEY_CHAIN_UNREADABLE_MESSAGE, 'E-207');

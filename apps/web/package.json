@@ -13,8 +13,12 @@
     "compile": "tsc --noEmit && tsc --noEmit -p tests",
     "lint": "eslint src tests playwright.config.ts",
     "lint:fix": "eslint src tests playwright.config.ts --fix",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed --workers=1"
+    "test:e2e": "node tests/run-e2e.mjs",
+    "test:e2e:headed": "node tests/run-e2e.mjs --headed --workers=1",
+    "test:e2e:h": "node tests/run-e2e.mjs --headed --workers=1",
+    "test:e2e:pause": "node tests/run-e2e.mjs --pause",
+    "test:e2e:p": "node tests/run-e2e.mjs --pause"
+
   },
   "dependencies": {
     "@aliasvault/client": "file:../../core/client",
