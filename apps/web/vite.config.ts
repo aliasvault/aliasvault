@@ -3,7 +3,6 @@ import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
 const LOCALES_DIR = path.resolve(import.meta.dirname, 'src/i18n/locales');
@@ -28,6 +27,23 @@ function loadingScreenLocales(): Plugin {
       // Escape "<" so no string can close the script element.
       const json = JSON.stringify(translations).replace(/</g, '\\u003c');
       return [{ tag: 'script', attrs: { type: 'application/json', id: 'loading-screen-translations' }, children: json, injectTo: 'body-prepend' }];
+    },
+  };
+}
+
+/**
+ * Preload the content hashed Rust core wasm from index.html, so its download runs in parallel with the app bundle.
+ */
+function preloadCoreWasm(): Plugin {
+  return {
+    name: 'preload-core-wasm',
+    apply: 'build',
+    transformIndexHtml(_html, context) {
+      const wasm = Object.values(context.bundle ?? {}).find((chunk) => chunk.type === 'asset' && /aliasvault_core_bg-.*\.wasm$/.test(chunk.fileName));
+      if (!wasm) {
+        throw new Error('The Rust core wasm asset is missing from the bundle.');
+      }
+      return [{ tag: 'link', attrs: { rel: 'preload', href: `/${wasm.fileName}`, as: 'fetch', type: 'application/wasm', crossorigin: 'anonymous' }, injectTo: 'head' }];
     },
   };
 }
@@ -58,10 +74,6 @@ export default defineConfig({
   plugins: [
     react(),
     loadingScreenLocales(),
-    viteStaticCopy({
-      targets: [
-        { src: path.resolve(CORE_DIR, 'client/wasm/aliasvault_core_bg.wasm'), dest: 'wasm' },
-      ],
-    }),
+    preloadCoreWasm(),
   ],
 });

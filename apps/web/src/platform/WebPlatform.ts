@@ -5,6 +5,7 @@
 import { createRustSqliteEngine } from '@aliasvault/client/database/RustSqliteEngine';
 import { type IClientPlatform, TranslatableMessage } from '@aliasvault/client/platform';
 import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
+import wasmUrl from '@aliasvault/client/wasm/aliasvault_core_bg.wasm?url';
 
 import i18n from '@/i18n/i18n';
 import { WebKeyValueStore } from '@/platform/WebKeyValueStore';
@@ -19,17 +20,10 @@ const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
 };
 
 /**
- * Where the wasm binary is served from (copied there by vite.config.ts).
- * @param file - the file name
+ * The Rust core, streamed into WebAssembly.instantiateStreaming; it also hosts the SQLite engine. The wasm URL is
+ * content hashed by Vite, so a new build never loads a cached binary from an older release.
  */
-function wasmUrl(file: string): string {
-  return `${import.meta.env.BASE_URL}wasm/${file}`;
-}
-
-/**
- * The Rust core, streamed into WebAssembly.instantiateStreaming; it also hosts the SQLite engine.
- */
-const rustCore = createWasmRustCore(async (): Promise<Response> => fetch(wasmUrl('aliasvault_core_bg.wasm')));
+const rustCore = createWasmRustCore(async (): Promise<Response> => fetch(wasmUrl));
 
 /**
  * The platform the web app registers with the client core.

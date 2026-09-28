@@ -1,5 +1,6 @@
 import '@/platform/ClientServices';
 
+import { getPlatform } from '@aliasvault/client/platform';
 import ReactDOM from 'react-dom/client';
 
 import App from '@/App';
@@ -41,12 +42,14 @@ const renderApp = (): void => {
 };
 
 /**
- * Load the runtime config and the translations before the first render; the loading screen in index.html stays
- * up until the app has painted.
+ * Load the Rust core wasm, the runtime config and the translations before the first render. The loading screen in
+ * index.html stays up until the app has painted, and shows its error state when any of these fail.
  */
 const bootstrap = async (): Promise<void> => {
-  await loadAppConfig();
-  await initI18n();
+  await Promise.all([
+    getPlatform().rustCore.init(),
+    loadAppConfig().then(initI18n),
+  ]);
   renderApp();
 };
 
