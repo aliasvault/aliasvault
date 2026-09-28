@@ -22,60 +22,45 @@ WORKDIR /src
 # Copy core library source files
 COPY core/ ./core/
 
-# Build core libraries (only browser target needed for server apps)
+# Build core libraries
 RUN cd ./core && \
     chmod +x build-and-distribute.sh && \
     ./build-and-distribute.sh --web
 
 # ============================================
-# Stage 2: Build .NET applications
+# Stage 2: Build the web app
+# ============================================
+FROM --platform=$BUILDPLATFORM node:20-bookworm-slim AS web-builder
+WORKDIR /src
+
+COPY --from=core-builder /src/core/ ./core/
+COPY apps/web/ ./apps/web/
+
+WORKDIR /src/apps/web
+RUN npm ci --no-audit --no-fund && npm run build
+
+# ============================================
+# Stage 3: Build .NET applications
 # ============================================
 FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-builder
-
-# Install Python (required for WASM compilation) and Node.js (required by JS bundler)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip curl ca-certificates && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
 # Copy all source files
 COPY apps/server/ ./apps/server/
 
-# Copy built core libraries from core-builder stage
-COPY --from=core-builder /src/core/ ./core/
-
-# Copy Rust WASM output to Client wwwroot/wasm/
-RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/wasm && \
-    cp ./core/rust/dist/wasm/aliasvault_core_bg.wasm ./apps/server/AliasVault.Client/wwwroot/wasm/ && \
-    cp ./core/rust/dist/wasm/aliasvault_core.js ./apps/server/AliasVault.Client/wwwroot/wasm/
-
-# Copy TypeScript core packages to Client wwwroot/js/dist/core/
-RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault && \
-    cp -r ./core/vault/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault/
-
-# Install required .NET workloads and restore packages once for the entire solution
 WORKDIR /src/apps/server
 
-# Install workloads and restore packages once for the entire solution
-RUN dotnet workload install wasm-tools && \
-    dotnet restore aliasvault.sln
+# Restore only the published projects explicitly (not the legacy Blazor WASM client)
+RUN for project in AliasVault.Api/AliasVault.Api.csproj AliasVault.Admin/AliasVault.Admin.csproj Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj; do \
+        dotnet restore "$project" || exit 1; \
+    done
 
 # Build each application in separate layers to avoid lock contention
 
 # Build API
 RUN dotnet publish AliasVault.Api/AliasVault.Api.csproj \
         -c Release -o /app/api --no-restore
-
-# Build Client (contains WASM which can be slow)
-# Note: Must run build first before publish, to trigger index.html generation for correct fingerprinting
-RUN dotnet build AliasVault.Client/AliasVault.Client.csproj \
-        -c Release --no-restore && \
-    dotnet publish AliasVault.Client/AliasVault.Client.csproj \
-        -c Release -o /app/client --no-restore
 
 # Build Admin
 RUN dotnet publish AliasVault.Admin/AliasVault.Admin.csproj \
@@ -100,7 +85,7 @@ RUN find /app -name "*.pdb" -delete && \
     find /app -name "web.config" -delete
 
 # ============================================
-# Stage 3: Download s6-overlay separately
+# Stage 4: Download s6-overlay separately
 # ============================================
 FROM alpine:3.19 AS s6-downloader
 ARG S6_OVERLAY_VERSION=3.2.0.2
@@ -113,7 +98,7 @@ RUN ARCH="${TARGETARCH}"; \
     mv s6-overlay-${ARCH}.tar.xz s6-overlay-arch.tar.xz
 
 # ============================================
-# Stage 4: Final runtime image
+# Stage 5: Final runtime image
 # ============================================
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble
 
@@ -179,12 +164,13 @@ RUN apt-get update && \
         /var/run/postgresql \
         /etc/s6-overlay/s6-rc.d/user/contents.d
 
-# Copy built applications and all configuration files from builder stage
+# Copy built applications and all configuration files from builder stages
 COPY --from=dotnet-builder /app /app
+COPY --from=web-builder /src/apps/web/dist /app/client/wwwroot
 
 # Copy all scripts from scripts directory to /usr/local/bin
 COPY dockerfiles/all-in-one/scripts/ /usr/local/bin/
-COPY apps/server/AliasVault.Client/nginx.conf /app/client/nginx.conf
+COPY apps/web/nginx.conf /app/client/nginx.conf
 COPY dockerfiles/all-in-one/config/nginx-80-443.conf /etc/nginx/nginx-80-443.conf
 COPY dockerfiles/all-in-one/config/nginx-443.conf /etc/nginx/nginx-443.conf
 COPY apps/server/status.html /usr/share/nginx/html/status.html

@@ -147,9 +147,9 @@ jobs:
         uses: ./.github/actions/build-docker-image
         with:
           image: client
-          dockerfile: apps/server/AliasVault.Client/Dockerfile
+          dockerfile: apps/web/Dockerfile
           title: AliasVault Client
-          description: Blazor WebAssembly client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
+          description: React web client UI for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           version: ${{ needs.detect-version.outputs.version }}
           tag_latest: ${{ needs.detect-version.outputs.tag_latest }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

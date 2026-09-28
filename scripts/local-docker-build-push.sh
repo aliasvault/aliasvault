@@ -106,7 +106,7 @@ build_multi() {
     local images=(
         "postgres:apps/server/Databases/AliasServerDb/Dockerfile"
         "api:apps/server/AliasVault.Api/Dockerfile"
-        "client:apps/server/AliasVault.Client/Dockerfile"
+        "client:apps/web/Dockerfile"
         "admin:apps/server/AliasVault.Admin/Dockerfile"
         "reverse-proxy:apps/server/Dockerfile"
         "smtp:apps/server/Services/AliasVault.SmtpService/Dockerfile"

@@ -5,6 +5,8 @@ on:
     branches: [ "main" ]
     paths:
       - 'apps/server/**'
+      - 'apps/web/**'
+      - 'core/**'
       - 'dockerfiles/**'
       - 'docker-compose.yml'
       - 'install.sh'
@@ -13,6 +15,8 @@ on:
     branches: [ "main" ]
     paths:
       - 'apps/server/**'
+      - 'apps/web/**'
+      - 'core/**'
       - 'dockerfiles/**'
       - 'docker-compose.yml'
       - 'install.sh'

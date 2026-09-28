@@ -20,8 +20,6 @@ services:
 
     client:
         image: ghcr.io/aliasvault/client:latest
-        volumes:
-            - ./logs/msbuild:/apps/server/msbuild-logs:rw
         expose:
             - "3000"
         restart: always
