@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  DEFAULT_LANGUAGE_CODE,
+  DEFAULT_LANGUAGE,
   LANGUAGES,
   getLanguageInfo,
   matchAvailableLanguage,
   normalizeLanguageCode,
   resolveDefaultLanguage,
-} from '../Languages';
+} from '../languages';
 
 /** The identity generator's supported subset, used to exercise restricted matching. */
 const IDENTITY_CODES = ['da', 'de', 'en', 'es', 'fr', 'it', 'nl', 'ro', 'sv', 'ur', 'fa'];
@@ -106,7 +106,7 @@ describe('Languages', () => {
     });
 
     it('falls back to English when there are no available codes', () => {
-      expect(resolveDefaultLanguage('nl', [])).toBe(DEFAULT_LANGUAGE_CODE);
+      expect(resolveDefaultLanguage('nl', [])).toBe(DEFAULT_LANGUAGE);
     });
   });
 });

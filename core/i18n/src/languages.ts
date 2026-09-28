@@ -1,7 +1,10 @@
 /**
- * Generic, cross-platform language reference: maps a two-letter ISO 639-1 code to a flag, a native
- * display label, and the alternative locale codes (BCP-47 region variants) that map onto it
+ * Language reference shared by all AliasVault clients. ../languages.json is the single list of known languages:
+ * flag, native label, the BCP-47 region variants that map onto each code, and whether the apps offer it as a UI
+ * language (`ui`). Languages with `ui: false` are only used by features such as the identity generator.
  */
+
+import languages from '../languages.json';
 
 /**
  * Display metadata for a single language.
@@ -13,40 +16,40 @@ export interface ILanguageInfo {
   flag: string;
   /** Native display label. */
   label: string;
+  /** Whether the apps offer this language as UI language (translated in Crowdin). */
+  ui?: boolean;
   /** Alternative locale codes (BCP-47 language-region tags) that map onto this language. */
   alternativeCodes?: string[];
 }
 
-/** Default ISO language code used as the universal fallback. */
-export const DEFAULT_LANGUAGE_CODE = 'en';
+/**
+ * The language every app falls back to.
+ */
+export const DEFAULT_LANGUAGE = 'en';
 
 /**
- * Known languages keyed by ISO 639-1 code, with a flag, native label, and the region-variant locale
- * codes that map onto each.
+ * Every known language.
  */
-export const LANGUAGES: ILanguageInfo[] = [
-  { code: 'en', flag: '🇺🇸', label: 'English', alternativeCodes: ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-NZ', 'en-IE', 'en-ZA', 'en-SG', 'en-IN'] },
-  { code: 'nl', flag: '🇳🇱', label: 'Nederlands', alternativeCodes: ['nl-NL', 'nl-BE'] },
-  { code: 'de', flag: '🇩🇪', label: 'Deutsch', alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI'] },
-  { code: 'fr', flag: '🇫🇷', label: 'Français', alternativeCodes: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC'] },
-  { code: 'es', flag: '🇪🇸', label: 'Español', alternativeCodes: ['es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-PE', 'es-VE', 'es-EC', 'es-GT', 'es-CU', 'es-BO', 'es-DO', 'es-HN', 'es-PY', 'es-SV', 'es-NI', 'es-CR', 'es-PA', 'es-UY', 'es-PR'] },
-  { code: 'it', flag: '🇮🇹', label: 'Italiano', alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA'] },
-  { code: 'da', flag: '🇩🇰', label: 'Dansk', alternativeCodes: ['da-DK'] },
-  { code: 'fi', flag: '🇫🇮', label: 'Suomi', alternativeCodes: ['fi-FI'] },
-  { code: 'he', flag: '🇮🇱', label: 'עברית', alternativeCodes: ['he-IL'] },
-  { code: 'pl', flag: '🇵🇱', label: 'Polski', alternativeCodes: ['pl-PL'] },
-  { code: 'pt', flag: '🇧🇷', label: 'Português Brasileiro', alternativeCodes: ['pt-BR', 'pt-PT'] },
-  { code: 'ro', flag: '🇷🇴', label: 'Română', alternativeCodes: ['ro-RO', 'ro-MD'] },
-  { code: 'ru', flag: '🇷🇺', label: 'Русский', alternativeCodes: ['ru-RU', 'ru-BY', 'ru-KZ', 'ru-UA'] },
-  { code: 'sv', flag: '🇸🇪', label: 'Svenska', alternativeCodes: ['sv-SE', 'sv-FI'] },
-  { code: 'uk', flag: '🇺🇦', label: 'Українська', alternativeCodes: ['uk-UA'] },
-  { code: 'zh', flag: '🇨🇳', label: '简体中文', alternativeCodes: ['zh-CN', 'zh-SG', 'zh-Hans', 'zh-TW', 'zh-HK', 'zh-MO', 'zh-Hant'] },
-  { code: 'ur', flag: '🇵🇰', label: 'اردو', alternativeCodes: ['ur-PK', 'ur-IN'] },
-  { code: 'fa', flag: '🇮🇷', label: 'فارسی', alternativeCodes: ['fa-IR', 'fa-AF'] },
-  { code: 'hu', flag: '🇭🇺', label: 'Magyar', alternativeCodes: ['hu-HU'] },
-  { code: 'ga', flag: '🇮🇪', label: 'Gaeilge', alternativeCodes: ['ga-IE'] },
-  { code: 'id', flag: '🇮🇩', label: 'Bahasa Indonesia', alternativeCodes: ['id-ID'] },
-];
+export const LANGUAGES: ILanguageInfo[] = languages;
+
+/**
+ * The UI languages the apps offer, English first. Keep in sync with the target languages in the Crowdin project
+ * settings.
+ */
+export const UI_LANGUAGES: ILanguageInfo[] = LANGUAGES.filter((language) => language.ui);
+
+/**
+ * The codes of the UI languages.
+ */
+export const LANGUAGE_CODES: string[] = UI_LANGUAGES.map((language) => language.code);
+
+/**
+ * Whether a code is one of the UI languages.
+ * @param code - the language code
+ */
+export function isLanguageCode(code: string | null | undefined): code is string {
+  return !!code && LANGUAGE_CODES.includes(code);
+}
 
 /**
  * Normalize an app/UI language tag to a two-letter lowercase ISO code (e.g. 'nl-NL' -> 'nl').
@@ -85,10 +88,7 @@ export function getLanguageInfo(code: string): ILanguageInfo {
  * matchAvailableLanguage('de-CH', ['de', 'en']) // 'de'
  * matchAvailableLanguage('ja', ['en', 'nl'])    // null
  */
-export function matchAvailableLanguage(
-  appLanguage: string | null | undefined,
-  availableCodes: string[]
-): string | null {
+export function matchAvailableLanguage(appLanguage: string | null | undefined, availableCodes: string[]): string | null {
   if (!appLanguage) {
     return null;
   }
@@ -133,5 +133,5 @@ export function matchAvailableLanguage(
  * @returns The resolved ISO code.
  */
 export function resolveDefaultLanguage(appLanguage: string | null | undefined, availableCodes: string[]): string {
-  return matchAvailableLanguage(appLanguage, availableCodes) ?? availableCodes[0] ?? DEFAULT_LANGUAGE_CODE;
+  return matchAvailableLanguage(appLanguage, availableCodes) ?? availableCodes[0] ?? DEFAULT_LANGUAGE;
 }

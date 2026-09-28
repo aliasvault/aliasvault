@@ -3,7 +3,7 @@
  *
  * Algorithms (URL matching, credential filtering, domain extraction, the vault codec) live in `core/rust`.
  */
-import { resolveDefaultLanguage } from '@aliasvault/models/defaults';
+import { resolveDefaultLanguage } from '@aliasvault/i18n/languages';
 import { FieldKey } from '@aliasvault/models/vault';
 
 import { getPlatform } from '../platform/ClientPlatform';

@@ -6,7 +6,7 @@
  *   node core/i18n/scripts/export-native.mjs           # write the files
  *   node core/i18n/scripts/export-native.mjs --check   # exit 1 when a generated file is out of date
  *
- * Languages are the UI languages of LANGUAGE_CODES in src/index.ts. A missing translation falls back to English.
+ * Languages are the UI languages (`ui: true`) in core/i18n/languages.json. A missing translation falls back to English.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -18,11 +18,7 @@ const REPO_ROOT = path.resolve(I18N_DIR, '../..');
 const CHECK = process.argv.includes('--check');
 const GENERATED_NOTE = 'Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead.';
 
-const codesMatch = /LANGUAGE_CODES = \[([^\]]+)\]/.exec(readFileSync(path.join(I18N_DIR, 'src/index.ts'), 'utf8'));
-if (!codesMatch) {
-  throw new Error('LANGUAGE_CODES not found in src/index.ts');
-}
-const languages = [...codesMatch[1].matchAll(/'([a-z]{2})'/g)].map((m) => m[1]);
+const languages = JSON.parse(readFileSync(path.join(I18N_DIR, 'languages.json'), 'utf8')).filter((language) => language.ui).map((language) => language.code);
 const { targets } = JSON.parse(readFileSync(path.join(I18N_DIR, 'exports/mobile-native.json'), 'utf8'));
 const locales = Object.fromEntries(languages.map((lang) => [lang, JSON.parse(readFileSync(path.join(I18N_DIR, `locales/${lang}.json`), 'utf8'))]));
 

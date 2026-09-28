@@ -1,4 +1,5 @@
-import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT, DEFAULT_LANGUAGE_CODE, matchAvailableLanguage } from '@aliasvault/models/defaults';
+import { DEFAULT_LANGUAGE, matchAvailableLanguage } from '@aliasvault/i18n/languages';
+import { DEFAULT_PASSWORD_LENGTH, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 
 import { deviceLanguage } from '../../platform/DeviceLanguage';
 import { getIdentityLanguages } from '../../rust/RustCore';
@@ -125,7 +126,7 @@ export class SettingsRepository extends BaseRepository {
     if (storedLanguage) {
       return storedLanguage;
     }
-    return matchAvailableLanguage(deviceLanguage(), await getIdentityLanguages()) ?? DEFAULT_LANGUAGE_CODE;
+    return matchAvailableLanguage(deviceLanguage(), await getIdentityLanguages()) ?? DEFAULT_LANGUAGE;
   }
 
   /**
