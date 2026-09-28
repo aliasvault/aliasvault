@@ -28,7 +28,7 @@ export type VaultExportData = {
 type ChildRow = { ItemId: string; ManifestId: string };
 
 /** The tables a vault reset empties, dependents first. */
-const RESET_TABLES = ['Attachments', 'FieldValues', 'FieldHistories', 'TotpCodes', 'Passkeys', 'ItemTags', 'FieldDefinitions', 'Tags', 'Items', 'Logos', 'Folders'];
+const RESET_TABLES = ['Attachments', 'FieldValues', 'FieldHistories', 'TotpCodes', 'Passkeys', 'ItemTags', 'ItemStats', 'FieldDefinitions', 'Tags', 'Items', 'Logos', 'Folders'];
 
 /**
  * Repository for the import/export logic: reads whole item graphs for an export and writes imported item graphs
