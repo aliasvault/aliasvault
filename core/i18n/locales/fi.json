@@ -1,28 +1,28 @@
 {
   "apiErrors": {
-    "ACCOUNT_BLOCKED": "Tilisi on poistettu käytöstä. Jos uskot, että tämä on virhe, ota yhteyttä tukeen.",
-    "ACCOUNT_LOCKED": "Tili on tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi. Yritä myöhemmin uudelleen.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Tili poistettu onnistuneesti.",
-    "CLAIM_DOES_NOT_EXIST": "Tapahtui virhe ladattaessa sähköposteja. Yritä muokata ja tallentaa tunnistetiedot synkronoidaksesi tietokannan, ja yritä sitten uudelleen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Nykyinen valittu sähköpostiosoite on jo käytössä. Ole hyvä ja vaihda sähköpostiosoite muokkaamalla tätä tunnusta.",
+    "ACCOUNT_BLOCKED": "Tilisi on poistettu käytöstä. Jos uskot tämän olevan virhe, ota yhteyttä tukeen.",
+    "ACCOUNT_LOCKED": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi. Yritä myöhemmin uudelleen.",
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Tili poistettu.",
+    "CLAIM_DOES_NOT_EXIST": "Sähköpostien lataamisen yrittäessä tapahtui virhe. Yritä muokata ja tallentaa tunnistetietomerkintä synkronoidaksesi tietokannan ja yritä sitten uudelleen.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Nykyinen valittu sähköpostiosoite on jo käytössä. Vaihda sähköpostiosoite muokkaamalla tätä tunnistetietoa.",
     "INTERNAL_SERVER_ERROR": "Sisäinen palvelinvirhe.",
-    "INVALID_AUTHENTICATOR_CODE": "Virheellinen todennuskoodi. Yritä uudelleen.",
-    "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Ole hyvä ja yritä uudelleen.",
-    "INVALID_REFRESH_TOKEN": "Virheellinen päivitetty tunniste.",
+    "INVALID_AUTHENTICATOR_CODE": "Virheellinen tunnistautumiskoodi. Yritä uudelleen.",
+    "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Yritä uudelleen.",
+    "INVALID_REFRESH_TOKEN": "Virheellinen virkistyspoletti.",
     "PASSWORD_MISMATCH": "Annettu salasana ei vastaa nykyistä salasanaasi.",
     "PENDING_MIGRATIONS": "On vireillä olevia siirtoja. Ole hyvä ja suorita 'dotnet ef database update' hakeaksesi ne.",
     "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
-    "REFRESH_TOKEN_REQUIRED": "Päivitetty tunniste tarvitaan",
+    "REFRESH_TOKEN_REQUIRED": "Päivitysvarmenne vaaditaan.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
     "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
-    "USERNAME_AVAILABLE": "Käyttäjänimi on käytettävissä.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Käyttäjänimi ei voi olla tyhjä tai annetun muotoinen.",
-    "USERNAME_INVALID_CHARACTERS": "Käyttäjänimi on vihreellinen - voi sisältää vain kirjaimia tai numeroita.",
+    "USERNAME_AVAILABLE": "Käyttäjänimi on saatavilla.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Käyttäjänimi ei voi olla tyhjä eikä siinä voi olla välilyöntejä.",
+    "USERNAME_INVALID_CHARACTERS": "Käyttäjänimi on virheellinen - siinä voi olla kirjaimia ja numeroita.",
     "USERNAME_INVALID_EMAIL": "Virheellinen sähköpostiosoite. ",
-    "USERNAME_MISMATCH": "Käyttäjätunnus ei vastaa nykyistä käyttäjää.",
-    "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan",
-    "USERNAME_TOO_LONG": "Käyttäjänimi liian pitkä. Nimi ei voi olla pidempi kuin 40 merkkiä.",
-    "USERNAME_TOO_SHORT": "Käyttäjänimi liian lyhyt. Nimen on oltava vähintään 3 merkinmittainen. ",
+    "USERNAME_MISMATCH": "Käyttäjänimi ei vastaa nykyistä käyttäjää.",
+    "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan.",
+    "USERNAME_TOO_LONG": "Käyttäjänimi liian pitkä: ei saa olla yli 40 merkkiä pidempi.",
+    "USERNAME_TOO_SHORT": "Käyttäjänimi liian lyhyt: sen on oltava vähintään 3 merkkiä pitkä.",
     "USER_NOT_FOUND": "Virheellinen käyttäjänimi tai salasana. Yritä uudelleen.",
     "VAULT_ERROR": "Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen.",
     "VAULT_NOT_UP_TO_DATE": "Holvisi ei ole ajan tasalla. Synkronoi holvisi ja yritä uudelleen."
@@ -100,7 +100,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "Jos olet äskettäin vaihtanut salasanasi ja sinulla on vaikeuksia kirjautua sisään uudella salasanallasi, otathan huomioon, että palvelimen ylläpitäjä voi ehkä palauttaa holvisi aiemman varmuuskopion auttaaksesi sinua. Jos näin on, ota yhteyttä palvelimen ylläpitäjään.",
-      "contactSupportWithEmail": "Jos olet äskettäin vaihtanut salasanasi ja sinulla on vaikeuksia kirjautua sisään, otathan yhteyttä tukeen {{email}} saadaksesi apua.",
+      "contactSupportWithEmail": "If you've recently changed your password and are experiencing difficulties signing in, please contact support at {{email}} for assistance.",
       "lostPasswordTitle": "Kadonnut salasana",
       "newAccountRequired": "Jos et muista salasanaasi, sinun on luotava uusi tili. Huomaathan, että tämä johtaa kaikkien tietojesi menetykseen.",
       "noRecoveryExplanation": "Valitettavasti, jos olet kadottanut salasanasi, sitä ei voi palauttaa. AliasVault käyttää päästä päähän -salausta kaikille tiedoillesi, mikä varmistaa, että kukaan muu kuin sinä ei pääse käsiksi tietoihisi.",
@@ -144,7 +144,7 @@
       "passwordPlaceholder": "••••••••",
       "registrationErrorMessage": "Rekisteröinnin aikana tapahtui virhe.",
       "termsAndConditionsLink": "Käyttöehdot",
-      "usernameOrEmailLabel": "Käyttäjänimesi tai sähköpostiosoitteesi"
+      "usernameOrEmailLabel": "Käyttäjänimesi tai sähköpostisi"
     },
     "rememberMe": "Muista minut",
     "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
@@ -207,7 +207,7 @@
     "unlockVault": "Avaa holvin lukitus",
     "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
-    "unlockWithPassword": "Avaa lukitus salasanalla",
+    "unlockWithPassword": "Unlock with Password",
     "unlockWithPin": "Avaa PIN-koodilla",
     "unlocking": "Lukitusta avataan...",
     "useMasterPassword": "Käytä pääsalasanaa",
@@ -267,7 +267,7 @@
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen.",
-      "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
+      "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä selainlaajennusta. Ota yhteyttä tukeen, jos tarvitset apua.",
@@ -305,14 +305,14 @@
     "next": "Seuraava",
     "no": "Ei",
     "none": "Ei mitään",
-    "notes": "Huomautukset",
+    "notes": "Muistiinpanot",
     "notice": "Huomautus",
     "offlineMode": "Operating in offline mode",
-    "ok": "Hyvä on",
+    "ok": "OK",
     "openInNewWindow": "Avaa uudessa ikkunassa",
     "or": "tai",
     "pageNavigation": "Page navigation",
-    "passkeys": "Sala-avaimet",
+    "passkeys": "Todennusavaimet",
     "password": "Salasana",
     "passwordStrength": {
       "fair": "Good",
@@ -339,11 +339,11 @@
     "success": "Onnistui",
     "syncVaultData": "Synkronoi holvin tiedot",
     "syncingChanges": "Synkronoidaan muutoksia...",
-    "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
+    "twoFactorAuthentication": "Kaksivaiheinen todennus",
     "unavailable": "Unavailable",
     "undo": "Kumoa",
     "use": "Käytä",
-    "username": "Käyttäjänimi",
+    "username": "Käyttäjätunnus",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
     "verifyingPassword": "Varmistetaan salasanaa...",
     "yes": "Kyllä"
@@ -370,7 +370,7 @@
   },
   "emails": {
     "date": "Päiväys:",
-    "dateColumn": "Päivämäärä",
+    "dateColumn": "Päiväys",
     "deleteEmail": "Poista sähköposti",
     "deleteEmailConfirm": "Oletko varma, että haluat poistaa tämän sähköpostiviestin? Toiminto on pysyvä eikä sitä voi peruuttaa.",
     "emailContent": "Sähköpostin sisältö",
@@ -395,7 +395,7 @@
       "pageDescription": "Voit tarkastella alla kaikkia sähköpostiviestejä, jotka on vastaanotettu yksityisellä sähköpostiosoitteellasi."
     },
     "item": "Tieto",
-    "loadMore": "Lataa lisää ({{count}} jäljellä)",
+    "loadMore": "Load More ({{count}} remaining)",
     "modal": {
       "attachmentDownloadError": "Liitteen lataamisessa epäonnistui",
       "deleteEmailConfirmation": "Oletko varma, että haluat poistaa tämän sähköpostin? Tätä toimia ei voi kumota.",
@@ -418,7 +418,7 @@
     "sizeKB": "kB",
     "time": {
       "hoursAgo_plural": "{{count}} tuntia sitten",
-      "hoursAgo_single": "{{count}} h sitten",
+      "hoursAgo_single": "{{count}} tunti sitten",
       "justNow": "juuri nyt",
       "minutesAgo_plural": "{{count}} minuuttia sitten",
       "minutesAgo_single": "{{count}} min sitten",
@@ -431,7 +431,7 @@
   },
   "fieldLabels": {
     "alias": {
-      "birthdate": "Syntymäpäivä",
+      "birthdate": "Syntymäaika",
       "first_name": "Etunimi",
       "gender": "Sukupuoli",
       "last_name": "Sukunimi"
@@ -448,10 +448,10 @@
       "email": "Sähköposti",
       "password": "Salasana",
       "url": "Web-sivuston URL-osoite",
-      "username": "Käyttäjänimi"
+      "username": "Käyttäjätunnus"
     },
     "notes": {
-      "content": "Huomautukset"
+      "content": "Muistiinpanot"
     }
   },
   "importExport": {
@@ -469,7 +469,7 @@
     "exportEncryptedWarningMessage": "This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.\n\nAre you sure you want to continue?",
     "exportPasswordConfirmTitle": "Confirm Export",
     "exportPasswordModal": {
-      "confirmExportPasswordLabel": "Vahvista salasana",
+      "confirmExportPasswordLabel": "Confirm Password",
       "createEncryptedExportButton": "Create Encrypted Export",
       "exportPasswordLabel": "Encryption Password"
     },
@@ -506,7 +506,7 @@
       "importErrorInvalidFile": "Please select a valid export file to import.",
       "importErrorUnsupportedFormat": "Unsupported file format. Supported formats: {{formats}}",
       "importFoldersLabel": "Import folders",
-      "importFromServiceTitle": "Tuo kohteesta {{service}}",
+      "importFromServiceTitle": "Import from {{service}}",
       "importPartialFailureWarning": "{{count}} item(s) could not be parsed and will be skipped.",
       "importSuccessMessage": "Successfully imported {{count}} credentials.",
       "moreCredentials": "... and {{count}} more credentials",
@@ -517,7 +517,7 @@
       "serviceColumn": "Palvelu",
       "supportedFormats": "Supported formats",
       "syncingVault": "Syncing vault to server...",
-      "uploadExportFileText": "Lataa {{service}} vientitiedostosi ulospäin:"
+      "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
       "aliasVaultDescription": "Import from AliasVault backup",
@@ -561,7 +561,7 @@
       "strongboxDescription": "Tuo salasanat Strongboxista",
       "strongboxInstructionsPart1": "Tuodaksesi StrongBox holvisi, sinun pitää tallentaa se CSV-tiedostona. Voit tehdä sen menemällä valikkoon > \"File\" ja valitsemalla \"Export Database (to CSV\".",
       "template": "template",
-      "uploadInstructions": "Kun olet tallentanut tiedoston, voit ladata sen alta."
+      "uploadInstructions": "Kun olet vienyt tiedoston, voit ladata sen ulospäin alta."
     }
   },
   "itemTypes": {
@@ -579,12 +579,12 @@
     "fieldLabel": "Kentän otsikko",
     "fieldType": "Kentän tyyppi",
     "fieldTypes": {
-      "date": "Päivämäärä",
+      "date": "Päiväys",
       "email": "Sähköposti",
       "hidden": "Piilotettu",
       "hiddenMasked": "Hidden (masked text)",
       "number": "Numero",
-      "password": "Salasana:",
+      "password": "Salasana",
       "phone": "Puhelin",
       "text": "Teksti",
       "textArea": "Tekstialue",
@@ -807,7 +807,7 @@
       "includeNumbersLabel": "Sisällytä numerot (0-9)",
       "includeSpecialCharsLabel": "Sisällytä erikoismerkit (!@#$%^&*)",
       "includeUppercaseLabel": "Sisällytä isot kirjaimet (A-Ö)",
-      "passwordLengthLabel": "Salasanan pituus: {{length}}",
+      "passwordLengthLabel": "Password Length: {{length}}",
       "previewLabel": "Esikatselu",
       "saveGloballyButton": "Yleisesti tallenna",
       "settingsUpdatedMessage": "Salasanaluonnin asetukset yleisesti päivitetty.",
@@ -859,17 +859,17 @@
       "noResultsFoundMessage": "Tuloksia ei löytynyt",
       "searchHelpText": "Kirjoita haettava termi; tämä voi olla palvelun nimi, kuvaus tai sähköpostiosoite.",
       "searchTooShortMessage": "Syötäthän lisää merkkejä",
-      "searchingForMessage": "Etsitään \"{{search}}\"",
+      "searchingForMessage": "Searching for \"{{search}}\"",
       "searchingMessage": "Etsitään..."
     },
-    "searchPlaceholder": "Etsitään holvia...",
+    "searchPlaceholder": "Etsi holvi...",
     "selectEmailDomain": "Valitse sähköpostiverkkotunnus",
     "separator": "Separator",
     "serviceUrl": "Palvelun URL-osoite",
     "sort": {
       "alphabetical": "Alphabetical (A-Z)",
-      "newestFirst": "Uusin ensin",
-      "oldestFirst": "Vanhin ensin",
+      "newestFirst": "Newest first",
+      "oldestFirst": "Oldest first",
       "title": "Sort by"
     },
     "suggestions": "Suggestions",
@@ -880,7 +880,7 @@
       "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
       "itemCreated": "Tieto luotu onnistuneesti",
       "itemDeleted": "Item deleted successfully",
-      "itemUpdated": "Tieto päivitetty onnistuneesti. ",
+      "itemUpdated": "Item updated successfully",
       "passwordCopied": "Salasana kopioitu leikepöydälle",
       "totpCodeCopied": "TOTP code copied to clipboard",
       "urlCopied": "URL copied to clipboard",
@@ -1015,26 +1015,26 @@
     "openAliasvault": "Open AliasVault",
     "passkeyAddToExisting": "Or, add passkey to an existing item",
     "passkeyAddToExistingLabel": "Or, add passkey to an existing item:",
-    "passkeyAuthenticating": "Todennetaan...",
-    "passkeyCheckingConnection": "Tarkistetaan yhteyttä",
-    "passkeyCreating": "Luodaan todennusavainta...",
+    "passkeyAuthenticating": "Authenticating...",
+    "passkeyCheckingConnection": "Checking connection...",
+    "passkeyCreating": "Creating passkey...",
     "passkeyCreationFailed": "Todennusavaimen luonti epäonnistui",
     "passkeyDisplayNameLabel": "Todennusavaimen nimi",
     "passkeyErrorEmptyName": "Ole hyvä ja syötä todennusavaimen nimi",
     "passkeyInfoIcon": "Info-ikoni",
-    "passkeyReplacing": "Korvataan todennusavainta...",
-    "passkeyRetrieving": "Noudetaan todennusavainta...",
-    "passkeySaving": "Tallennetaan holviin...",
+    "passkeyReplacing": "Replacing passkey...",
+    "passkeyRetrieving": "Retrieving passkey...",
+    "passkeySaving": "Saving to vault...",
     "passkeySelectToReplace": "Tai korvaa olemassa oleva todennusavain:",
-    "passkeySyncing": "Synkronoidaan palvelimeen...",
-    "passkeyVerifying": "Tarkistetaan...",
+    "passkeySyncing": "Syncing with server...",
+    "passkeyVerifying": "Verifying...",
     "passkeysLoadError": "Todennusavainten lataaminen epäonnistui. Ole hyvä ja avaa AliasVault-sovellus tarkistaaksesi päivitykset.",
     "passwordChangedMessage": "Salasanasi on vaihdettu. Kirjaudu sisään uudelleen.",
     "passwordChangedTitle": "Salasana vaihdettu",
     "passwordCopied": "Salasana kopioitu",
     "passwordUnlockError": "Failed to verify password",
     "pinConfirmSubtitle": "Syötä PIN-koodi uudelleen vahvistaaksesi",
-    "pinIncorrectAttemptsRemaining": "Virheellinen PIN, {{count}} yritystä jäljellä",
+    "pinIncorrectAttemptsRemaining": "Incorrect PIN. {{count}} attempts remaining",
     "pinLockedMaxAttempts": "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen",
     "pinMismatch": "PIN-koodit eivät täsmää. Yritä uudelleen.",
     "pinSetupSubtitle": "Syötä PIN-koodi avataksesi holvisi",
@@ -1130,7 +1130,7 @@
       "mobileAppsDescription": "AliasVault-mobiilisovelluksen avulla voit käyttää aliaksiasi ja identiteettejäsi välittömästi, tarkastella ja hallita vastaanotettuja sähköposteja sekä luoda uusia aliaksia milloin tahansa. Tietosi ovat täysin suojattuja laitteella tapahtuvalla biometrisellä todennuksella.",
       "mobileAppsTitle": "Mobiilisovellukset",
       "pageDescription": "Asenna selainlaajennukset ja mobiilisovellukset päästäksesi käsiksi holvisi kaikista laitteistasi ja täyttääksesi automaattisesti tunnistetiedot verkkosivustoilla.",
-      "pageTitle": "Laajennukset & Sovellukset"
+      "pageTitle": "Laajennukset & sovellukset"
     },
     "autoCopyTotpOnAutofill": "Auto-copy 2FA to clipboard",
     "autoCopyTotpOnAutofillDescription": "Automatically copy the first 2FA code to clipboard after autofilling credentials",
@@ -1187,7 +1187,7 @@
     "clipboardLocalOnly": "Local Clipboard Only",
     "clipboardLocalOnlyDescription": "Keep copied credentials on this device instead of syncing them to your other Apple devices via Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "With this off, copied credentials can sync to your other Apple devices (Mac, iPad, etc.) through Universal Clipboard.",
-    "clipboardSettings": "Leikepöydän asetukset",
+    "clipboardSettings": "Leikepöytä-asetukset",
     "contextMenuDescription": "Oikea-napsauta syöttökenttiä päästäksesi AliasVaultin vaihtoehtoihin",
     "contextMenuSettings": "Kontekstivalikon asetukset",
     "copyTotpOnFill": "Copy TOTP code on autofill",
@@ -1280,7 +1280,7 @@
     "passwordGenerator": "Salasanan luonti",
     "passwordGeneratorSettings": {
       "configureButton": "Määritä",
-      "description": "Määritä oletusasetukset, joita käytetään uusia salasanoja luotaessa. Näitä asetuksia käytetään kaikissa uusissa salasanoissa, ellei niitä ylikirjoiteta tietyille merkinnöille.",
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
       "passwordGeneratorSettingsLabel": "Salasanan oletusluontiasetukset"
     },
     "qrScanner": {
@@ -1318,7 +1318,7 @@
       "resetVaultSuccessMessage": "Your vault has been successfully reset. All items have been deleted and you can now start fresh.",
       "resetVaultUsernameDoesNotMatch": "Syötämäsi käyttäjänimi ei vastaa tilisi käyttäjänimeä.",
       "section": {
-        "description": "Tämän vaihtoehdon avulla voit tyhjentää holvisi kokonaan, kun pidät tilisi ja sähköpostin aliakset. Käytä tätä, jos haluat aloittaa tuoreen datan tuonnin jälkeen toisesta salasananhallinnasta tai jos haluat poistaa kaikki olemassa olevat käyttäjätunnukset aloittaaksesi toiminnan."
+        "description": "Tämän vaihtoehdon avulla voit tyhjentää holvisi kokonaan, kun pidät tilisi ja sähköpostin aliakset. Käytä tätä, jos haluat aloittaa tuoreen datan tuonnin jälkeen toisesta salasananhallinnasta tai jos haluat poistaa kaikki olemassa olevat tunnistetiedot aloittaaksesi toiminnan."
       }
     },
     "rightClickContextMenu": "Oikea-napsauta kontekstivalikkoa",
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "Aktiivisia istuntoja ei löytynyt.",
         "revoke": "Peruuta",
         "revokeConfirmation": "Oletko varma, että haluat peruuttaa tämän istunnon? Tämä kirjautuu ulos valitusta laitteesta.",
-        "revokeExceptionMessage": "Istunnon peruuttaminen epäonnistui: {{error}}.",
+        "revokeExceptionMessage": "Failed to revoke session: {{error}}.",
         "revokeSession": "Peruuta Istunto",
         "revokeSuccessMessage": "Istunto peruttu.",
         "sessionRevoked": "Istunto peruutettu onnistuneesti"
@@ -1523,8 +1523,8 @@
       "biometricUnavailableHelpAndroid": "Biometrics are not available for your device. Android requires strong (Class 3) biometrics, such as a fingerprint or supported secure face recognition.",
       "biometrics": "Biometriset tiedot",
       "description": "Valitse, miten haluat avata holvisi.",
-      "faceId": "FaceID",
-      "faceIdTouchId": "FaceID / TouchID",
+      "faceId": "Kasvotunniste",
+      "faceIdTouchId": "Kasvotunniste / Kosketustunniste",
       "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "keystoreAndroid": "Android Keystore",
       "keystoreIOS": "iOS Avainketju",
@@ -1533,7 +1533,7 @@
       "pinDescription": "Käytä mukautettua PIN-koodia avataksesi holvisi nopeammin.",
       "pinDisabled": "PIN-lukituksen avaus on poistettu käytöstä",
       "pinEnabled": "PIN-lukituksen avaus käytössä onnistuneesti",
-      "touchId": "TouchID"
+      "touchId": "Kosketustunniste"
     },
     "version": "Versio"
   },
@@ -1581,9 +1581,9 @@
     },
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "nameOptional": "Nimi (valinnainen)",
-    "saveToViewCode": "Tallenna nähdäksesi koodin",
+    "saveToViewCode": "Tallenna nähdäksesi koodi",
     "scanQrCode": "Scan QR Code",
-    "secretKey": "Salainen avain",
+    "secretKey": "Sala-avain",
     "secretKeyPlaceholder": "Syötä sala-avain (manuaalinen syöttö)",
     "totpInstructions": "Jos sivusto tarjoaa tai vaatii tilillesi 2FA, kopioi sala-avain tai QR-koodi URI ja liitä se alle.",
     "viewer": {
@@ -1593,14 +1593,14 @@
   "upgrade": {
     "alerts": {
       "continueUpgrade": "Jatka päivitystä",
-      "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui.",
-      "selfHostedServer": "Itse",
-      "selfHostedWarning": "Jos käytät itseylläpidettyä  palvelinta (Self-hosted), varmista että päivität myös itseylläpidetyn yksikkösi, koska muuten kirjautuminen web-palveluun ja sovellukseen voivat lakata toimimasta.",
-      "unableToGetVersionInfo": "Versiotietoja ei löytynyt. Yritä uudelleen.",
+      "failedToApplyMigration": "Siirron käyttöönotto epäonnistui ({{current}} / {{total}})",
+      "selfHostedServer": "Itseisännöity palvelin",
+      "selfHostedWarning": "Jos käytät itseisännöityä palvelinta, muista päivittää myös itseisännöity instanssisi, koska muuten verkkoasiakassovellukseen kirjautuminen lakkaa toimimasta.",
+      "unableToGetVersionInfo": "Versiotietojen hakeminen epäonnistui. Yritä uudelleen.",
       "upgradeFailed": "Päivitys epäonnistui"
     },
     "newVersion": "Uusi saatavilla oleva versio:",
-    "noDescriptionAvailable": "Kuvausta ei ole saatavilla tälle versiolle.",
+    "noDescriptionAvailable": "Tälle versiolle ei ole saatavilla kuvausta.",
     "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
     "startUpgradeButton": "Aloita päivitysprosessi",
     "status": {
@@ -1612,22 +1612,22 @@
     "subtitle": "AliasVault on päivitetty ja holvisi on päivitettävä. Tämän pitäisi kestää vain muutama sekunti.",
     "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
     "successTitle": "Vault upgraded",
-    "title": "Päivitä Holvi",
+    "title": "Päivitä holvi",
     "upgrade": "Päivitä",
     "upgradeDescription": "AliasVault on päivitetty ja holvisi on päivitettävä. Tämän pitäisi kestää vain muutama sekunti.",
     "upgradeFailedError": "Tietokannan päivitys epäonnistui. Yritä uudelleen tai ota yhteyttä tukeen.",
-    "upgradeRequiredDescription": "Päivitys vaaditaan seuraavien muutosten tukemiseksi: {{changes}}",
+    "upgradeRequiredDescription": "An upgrade is required to support the following changes: {{changes}}",
     "upgradeSuccessMessage": "Holvin päivitys onnistui.",
     "upgrading": "Päivitetään...",
     "versionInformation": "Versiotiedot",
     "whatsNew": "Mitä uutta?",
-    "whatsNewDescription": "Päivitys on tarpeen, jotta voidaan tukea seuraavia muutoksia:",
+    "whatsNewDescription": "Päivitys vaaditaan seuraavien muutosten tukemiseksi:",
     "yourVault": "Holvisi versio:"
   },
   "validation": {
-    "passwordRequired": "Salasanaa tarvitaan",
+    "passwordRequired": "Salasana vaaditaan",
     "required": "Tämä kenttä on pakollinen.",
-    "secretKeyRequired": "Salainen avain vaaditaan",
+    "secretKeyRequired": "Turva-arvain vaaditaan",
     "serviceNameRequired": "Palvelun nimi on pakollinen"
   },
   "vault": {
