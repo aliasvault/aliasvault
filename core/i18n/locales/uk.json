@@ -100,7 +100,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
-      "contactSupportWithEmail": "If you've recently changed your password and are experiencing difficulties signing in, please contact support at {{email}} for assistance.",
+      "contactSupportWithEmail": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему, зверніться по допомогу до служби підтримки за адресою {{email}}.",
       "lostPasswordTitle": "Забули пароль",
       "newAccountRequired": "Якщо ви не пам’ятаєте свій пароль, вам потрібно буде створити новий обліковий запис. Зверніть увагу, що це призведе до втрати всіх ваших даних.",
       "noRecoveryExplanation": "На жаль, якщо ви втратили пароль, його неможливо відновити. AliasVault використовує наскрізне шифрування для всіх ваших даних, гарантуючи, що ніхто, крім вас, не зможе отримати доступ до ваших даних.",
@@ -506,7 +506,7 @@
       "importErrorInvalidFile": "Please select a valid export file to import.",
       "importErrorUnsupportedFormat": "Unsupported file format. Supported formats: {{formats}}",
       "importFoldersLabel": "Import folders",
-      "importFromServiceTitle": "Import from {{service}}",
+      "importFromServiceTitle": "Імпорт з {{service}}",
       "importPartialFailureWarning": "{{count}} item(s) could not be parsed and will be skipped.",
       "importSuccessMessage": "Successfully imported {{count}} credentials.",
       "moreCredentials": "... and {{count}} more credentials",
@@ -517,7 +517,7 @@
       "serviceColumn": "Сервіс",
       "supportedFormats": "Supported formats",
       "syncingVault": "Syncing vault to server...",
-      "uploadExportFileText": "Upload your {{service}} export file:"
+      "uploadExportFileText": "Завантажте свій {{service}} експортний файл:"
     },
     "services": {
       "aliasVaultDescription": "Import from AliasVault backup",
@@ -807,7 +807,7 @@
       "includeNumbersLabel": "Включити цифри (0-9)",
       "includeSpecialCharsLabel": "Включити спеціальні символи (!@#$%^&*)",
       "includeUppercaseLabel": "Включити великі літери (A-Z)",
-      "passwordLengthLabel": "Password Length: {{length}}",
+      "passwordLengthLabel": "Довжина пароля: {{length}}",
       "previewLabel": "Попередній перегляд",
       "saveGloballyButton": "Зберегти глобально",
       "settingsUpdatedMessage": "Налаштування генерації паролів оновлено глобально.",
@@ -859,7 +859,7 @@
       "noResultsFoundMessage": "Результатів не знайдено",
       "searchHelpText": "Введіть термін для пошуку, це може бути назва служби, опис або адреса електронної пошти.",
       "searchTooShortMessage": "Будь ласка, введіть більше символів",
-      "searchingForMessage": "Searching for \"{{search}}\"",
+      "searchingForMessage": "Пошук для \"{{search}}\"",
       "searchingMessage": "Пошук..."
     },
     "searchPlaceholder": "Пошук сховища...",
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "Активних сеансів не знайдено.",
         "revoke": "Закінчити",
         "revokeConfirmation": "Ви впевнені, що хочете скасувати цей сеанс? Це призведе до виходу з вибраного пристрою.",
-        "revokeExceptionMessage": "Failed to revoke session: {{error}}.",
+        "revokeExceptionMessage": "Не вдалося закінчити сеанс: {{error}}.",
         "revokeSession": "Завершити сеанс",
         "revokeSuccessMessage": "Сеанс успішно закінчено.",
         "sessionRevoked": "Сеанс успішно закінчено"
