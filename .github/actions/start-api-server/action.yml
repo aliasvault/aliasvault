@@ -1,0 +1,56 @@
+name: "Start API Server"
+description: "Sets up .NET, builds AliasVault.Api and starts it in the background on port 5100 against an existing PostgreSQL database"
+inputs:
+  database:
+    description: "Name of the PostgreSQL database the API uses (created by EF migrations on startup if it does not exist)"
+    required: true
+  db-port:
+    description: "Port PostgreSQL listens on (5109 for ./scripts/dev.sh db-start, 5432 for a runner-installed PostgreSQL)"
+    required: false
+    default: "5109"
+
+outputs:
+  log-file:
+    description: "Path of the API server log"
+    value: /tmp/api-server.log
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build API server
+      shell: bash
+      working-directory: apps/server
+      run: dotnet build AliasVault.Api
+
+    - name: Start API server
+      shell: bash
+      working-directory: apps/server/AliasVault.Api
+      run: |
+        dotnet run --no-build > /tmp/api-server.log 2>&1 &
+        echo "Waiting for API to start..."
+        for i in {1..30}; do
+          # Any HTTP response, even a 404, means the server is up.
+          if curl -s -o /dev/null http://localhost:5100/; then
+            echo "API is ready!"
+            exit 0
+          fi
+          echo "Attempt $i: API not ready yet..."
+          sleep 2
+        done
+        echo "::error::API did not start within 60 seconds"
+        tail -n 100 /tmp/api-server.log
+        exit 1
+      env:
+        ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=${{ inputs.db-port }};Database=${{ inputs.database }};Username=aliasvault;Password=password"
+        JWT_KEY: "12345678901234567890123456789012"
+        DATA_PROTECTION_CERT_PASS: "Development"
+        PUBLIC_REGISTRATION_ENABLED: "true"
+        ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+        ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+        # All interfaces, so the Android emulator can reach it via 10.0.2.2.
+        ASPNETCORE_URLS: "http://0.0.0.0:5100"
