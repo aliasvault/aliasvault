@@ -55,10 +55,14 @@ async function listAll(url) {
   }
 }
 
-const file = (await listAll(`/projects/${projectId}/files`)).find((f) => f.path === SOURCE_FILE);
-if (!file) {
-  throw new Error(`${SOURCE_FILE} is not a source file of the Crowdin project (yet).`);
+/* The GitHub integration puts synced files under a Crowdin branch folder, e.g. /main/core/i18n/locales/en.json. */
+const files = await listAll(`/projects/${projectId}/files`);
+const candidates = files.filter((f) => f.path === SOURCE_FILE || f.path.endsWith(SOURCE_FILE));
+if (candidates.length !== 1) {
+  const enFiles = files.filter((f) => f.path.endsWith('/en.json')).map((f) => f.path);
+  throw new Error(`Expected one Crowdin source file matching ${SOURCE_FILE}, found ${candidates.length}. en.json files in the project: ${enFiles.join(', ') || 'none'}`);
 }
+const file = candidates[0];
 
 /* Crowdin shows nested JSON keys as "a.b" or "a -> b" depending on the parser; accept both. */
 const keyOf = (identifier) => identifier.replace(/\s*->\s*/g, '.');
