@@ -8,6 +8,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-ios.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   pull_request:
     branches: [ "main" ]
@@ -15,6 +16,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-ios.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   workflow_dispatch:
 
@@ -47,16 +49,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -66,11 +58,10 @@ jobs:
       - name: Install CocoaPods
         run: sudo gem install cocoapods
 
-      - name: Build core libraries for iOS
-        run: |
-          cd ../../core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --ios
+      - name: Build core libraries
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: ios
 
       - name: Install mobile app dependencies
         run: npm ci

@@ -9,6 +9,7 @@ on:
       - 'apps/server/AliasVault.Api/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-web.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   pull_request:
     branches: [ "main" ]
@@ -17,6 +18,7 @@ on:
       - 'apps/server/AliasVault.Api/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-web.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   workflow_dispatch:
 
@@ -38,27 +40,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/web/package-lock.json
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack --locked
-
-      - name: Install clang (compiles SQLite for wasm32)
-        run: sudo apt-get update && sudo apt-get install -y clang
-
       - name: Build core libraries
-        run: |
-          cd ./core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --web
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: web
 
       - name: Start dev database
         run: ./scripts/dev.sh db-start

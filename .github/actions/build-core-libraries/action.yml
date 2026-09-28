@@ -1,10 +1,13 @@
 name: "Build Core Libraries"
-description: "Builds and distributes all core libraries including TypeScript packages and Rust WASM"
+description: "Sets up Node.js and the Rust toolchain for one platform, then builds and distributes the core libraries for it"
 inputs:
-  working-directory:
-    description: "Working directory (default: repository root)"
+  target:
+    description: "Platform to build the Rust core for: web, browser-extension, android or ios"
+    required: true
+  check-generated:
+    description: "Fail when the build changes committed generated files (models, registry), meaning a source edit was committed without running the generators"
     required: false
-    default: "."
+    default: "false"
 
 runs:
   using: "composite"
@@ -14,30 +17,51 @@ runs:
       with:
         node-version: '24'
 
+    - name: Resolve Rust targets
+      id: resolve
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        case "$TARGET" in
+          web|browser-extension) echo "rust-targets=wasm32-unknown-unknown" >> "$GITHUB_OUTPUT"; echo "wasm=true" >> "$GITHUB_OUTPUT" ;;
+          android) echo "rust-targets=aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android" >> "$GITHUB_OUTPUT" ;;
+          ios) echo "rust-targets=aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::Unknown target '$TARGET', expected web, browser-extension, android or ios"; exit 1 ;;
+        esac
+
     - name: Setup Rust toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
-        targets: wasm32-unknown-unknown
+        targets: ${{ steps.resolve.outputs.rust-targets }}
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: core/rust
 
     - name: Install wasm-pack
+      if: steps.resolve.outputs.wasm == 'true'
       shell: bash
-      run: cargo install wasm-pack --locked
+      run: command -v wasm-pack || cargo install wasm-pack --locked
 
     - name: Install clang (compiles SQLite for wasm32)
+      if: steps.resolve.outputs.wasm == 'true' && runner.os == 'Linux'
       shell: bash
       run: sudo apt-get update && sudo apt-get install -y clang
 
     - name: Build and distribute core libraries
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
+      working-directory: core
+      env:
+        TARGET: ${{ inputs.target }}
       run: |
-        cd ./core
         chmod +x build-and-distribute.sh
-        ./build-and-distribute.sh
+        ./build-and-distribute.sh "--$TARGET"
 
     - name: Fail on stale generated files
+      if: inputs.check-generated == 'true'
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
       run: |
         # The build above which (re)builds both Git committed files as well as non-committed files, should not result in any changes to the files listed below.
         # If there are Git changes, it means a source edit was committed without running the generators which could lead to inconsistencies.
@@ -60,13 +84,11 @@ runs:
         echo "Generated files are in sync with their sources."
 
     - name: Verify core library distribution
+      if: steps.resolve.outputs.wasm == 'true'
       shell: bash
-      working-directory: ${{ inputs.working-directory }}
       run: |
-        # Verify critical rust WASM files exist
         if [ ! -f "core/client/wasm/aliasvault_core_bg.wasm" ]; then
           echo "Error: Rust WASM files not found in core/client/wasm"
           exit 1
         fi
-
         echo "Core library distribution verified"

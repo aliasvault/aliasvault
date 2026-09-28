@@ -9,6 +9,7 @@ on:
       - 'core/**'
       - 'install.sh'
       - '.github/workflows/e2e-tests-server.yml'
+      - '.github/actions/build-core-libraries/**'
   pull_request:
     branches: [ "main" ]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'core/**'
       - 'install.sh'
       - '.github/workflows/e2e-tests-server.yml'
+      - '.github/actions/build-core-libraries/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -77,32 +79,10 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack --locked
-
-      - name: Install clang (compiles SQLite for wasm32)
-        run: sudo apt-get update && sudo apt-get install -y clang
-
       - name: Build core libraries
-        run: |
-          cd ./core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --web
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: web
 
       - name: Install dependencies
         working-directory: apps/server

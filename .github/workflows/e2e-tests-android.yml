@@ -8,6 +8,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-android.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   pull_request:
     branches: [ "main" ]
@@ -15,6 +16,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-android.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
   workflow_dispatch:
 
@@ -59,16 +61,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
@@ -80,11 +72,10 @@ jobs:
       - name: Install Android NDK
         run: sdkmanager --install "ndk;26.1.10909125"
 
-      - name: Build core libraries for Android
-        run: |
-          cd ../../core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --android
+      - name: Build core libraries
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: android
 
       - name: Install mobile app dependencies
         run: npm ci
