@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import react from '@vitejs/plugin-react';
+import { minify } from 'html-minifier-terser';
 import { defineConfig, type Plugin } from 'vite';
 
 const CORE_DIR = path.resolve(import.meta.dirname, '../../core');
@@ -48,6 +49,28 @@ function preloadCoreWasm(): Plugin {
   };
 }
 
+/**
+ * Minify index.html (markup, inline scripts and styles) as the last transform, keeping only the header comment.
+ */
+function minifyIndexHtml(): Plugin {
+  return {
+    name: 'minify-index-html',
+    transformIndexHtml: {
+      order: 'post',
+      handler: async (html) => {
+        const minified = await minify(html, {
+          collapseWhitespace: true,
+          removeComments: true,
+          ignoreCustomComments: [/AliasVault/],
+          minifyCSS: true,
+          minifyJS: true,
+        });
+        return minified.replace(/^(<!--[\s\S]*?-->)\s*/, '$1\n');
+      },
+    },
+  };
+}
+
 // See https://vite.dev/config/
 export default defineConfig({
   define: {
@@ -75,5 +98,6 @@ export default defineConfig({
     react(),
     loadingScreenLocales(),
     preloadCoreWasm(),
+    minifyIndexHtml(),
   ],
 });
