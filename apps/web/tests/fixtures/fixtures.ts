@@ -1,7 +1,7 @@
 import { test as base } from '@playwright/test';
 
 import { resolveApiUrl } from '../helpers/api-url';
-import { createTestUser, generateTestUsername, TEST_PASSWORD } from '../helpers/test-api';
+import { createTestUser, generateTestUsername, TEST_PASSWORD, type TestUser } from '../helpers/test-api';
 
 import { WebApp } from './WebApp';
 
@@ -20,7 +20,7 @@ type TestFixtures = {
   apiUrl: string;
   app: WebApp;
   credentials: TestCredentials;
-  testUser: TestCredentials;
+  testUser: TestUser;
 };
 
 /**

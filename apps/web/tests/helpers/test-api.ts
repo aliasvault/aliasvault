@@ -3,6 +3,7 @@
  */
 
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
+import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 
 import './client-platform';
@@ -21,9 +22,19 @@ export function generateTestUsername(): string {
 }
 
 /**
+ * An account registered via the API, with the session and key a test needs to reach its vault directly.
+ */
+export type TestUser = {
+  username: string;
+  password: string;
+  token: string;
+  vaultEncryptionKey: string;
+};
+
+/**
  * Register an account via the API, skipping the setup wizard. The first login writes its empty vault.
  */
-export async function createTestUser(apiUrl: string): Promise<{ username: string; password: string }> {
+export async function createTestUser(apiUrl: string): Promise<TestUser> {
   const username = generateTestUsername();
   const baseUrl = WebApiService.versionedBaseUrl(apiUrl);
   const api = {
@@ -32,7 +43,29 @@ export async function createTestUser(apiUrl: string): Promise<{ username: string
      */
     rawFetch: (endpoint: string, options?: RequestInit): Promise<Response> => fetch(`${baseUrl}${endpoint}`, options),
   };
-  await new SrpLoginService(api).register(username, TEST_PASSWORD);
+  const { token, keys } = await new SrpLoginService(api).register(username, TEST_PASSWORD);
+  return { username, password: TEST_PASSWORD, token: token.token, vaultEncryptionKey: keys.vaultEncryptionKey };
+}
+
+/**
+ * Register an account whose server key chain is damaged: the password opens the account key, but the vault
+ * encryption key stored under it does not decrypt.
+ */
+export async function createTestUserWithDamagedKeyChain(apiUrl: string): Promise<{ username: string; password: string }> {
+  const username = generateTestUsername();
+  const prepared = await SrpAuthService.prepareRegistration(username, TEST_PASSWORD);
+  const encryptedVek = Buffer.from(prepared.request.encryptedVek, 'base64');
+  encryptedVek[encryptedVek.length - 1] ^= 0xff;
+  const request = { ...prepared.request, encryptedVek: encryptedVek.toString('base64') };
+
+  const response = await fetch(`${WebApiService.versionedBaseUrl(apiUrl)}Auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    throw new Error(`Register failed with status ${response.status}: ${await response.text()}`);
+  }
   return { username, password: TEST_PASSWORD };
 }
 

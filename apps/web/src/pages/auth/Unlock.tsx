@@ -1,4 +1,4 @@
-import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { extractErrorCode, translateCodedError } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
@@ -173,6 +174,19 @@ const Unlock: React.FC = () => {
       const code = err instanceof Error ? extractErrorCode(err.message) : null;
       if (await VaultKeyService.isWrongUnlockKey(code)) {
         setErrors([t('pages.auth.unlock.IncorrectPasswordError')]);
+      } else if (code) {
+        // A coded failure keeps its code, so the user can report it.
+        setErrors([translateCodedError(err, t) ?? t('pages.auth.unlock.GenericUnlockError')]);
+      } else if (import.meta.env.DEV && err instanceof Error) {
+        setErrors([err.message]);
+      } else {
+        setErrors([t('pages.auth.unlock.GenericUnlockError')]);
+      }
+    } finally {
+      hideLoading();
+    }
+  };
+
       } else if (import.meta.env.DEV && err instanceof Error) {
         setErrors([err.message]);
       } else {
@@ -200,6 +214,13 @@ const Unlock: React.FC = () => {
         <p className="mt-6 text-center font-normal text-gray-500 dark:text-gray-400">{t('pages.auth.unlock.LoggingInWithWebAuthn')}</p>
       </>
     );
+  }
+
+  // A coded error is critical: it replaces the form.
+  const criticalError = errors.find(error => extractErrorCode(error) !== null);
+  if (criticalError) {
+    const logoutLink = <>{t('pages.auth.unlock.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.auth.unlock.LogOutLink')}</Link></>;
+    return <CriticalErrorPanel report={criticalError} onBack={() => setErrors([])} footer={logoutLink} />;
   }
 
   return (

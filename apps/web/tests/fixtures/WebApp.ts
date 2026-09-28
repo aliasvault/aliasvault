@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * Page object for the web app: the user-level flows tests are written in.
@@ -34,11 +34,17 @@ export class WebApp {
     await this.page.getByRole('link', { name: 'Log in with existing account' }).click();
     await expect(this.page).toHaveURL(/\/user\/login$/);
 
+    await this.submitLogin(username, password);
+    await this.expectVaultOpen(username);
+  }
+
+  /**
+   * Fill in and submit the login form on the current page, without waiting for the result.
+   */
+  public async submitLogin(username: string, password: string): Promise<void> {
     await this.page.locator('#email').fill(username);
     await this.page.locator('#password').fill(password);
     await this.page.locator('#login-button').click();
-
-    await this.expectVaultOpen(username);
   }
 
   /**
@@ -49,4 +55,44 @@ export class WebApp {
     await expect(this.page.locator('#mobileMenuDropdown').getByText(username, { exact: true })).toBeAttached();
   }
 
+  /**
+   * Create a login item with only a name via the top bar widget, and wait for its view page.
+   */
+  public async createItem(name: string): Promise<void> {
+    await this.page.locator('#quickIdentityButton').click();
+    await this.page.locator('#serviceName').fill(name);
+    await this.page.locator('#quickIdentitySubmit').click();
+    await expect(this.page.locator('#service-name')).toHaveValue(name);
+    await this.saveItemButton().click();
+    await expect(this.page.getByText('Item created successfully.')).toBeVisible();
+    await this.expectItemView(name);
+  }
+
+  /**
+   * Open the vault list via the top menu; a full page load (goto, reload) would lock the vault.
+   */
+  public async openVault(): Promise<void> {
+    await this.page.getByRole('link', { name: 'Vault', exact: true }).click();
+    await expect(this.page).toHaveURL(/\/items(\?.*)?$/);
+  }
+
+  /**
+   * Wait until the view page of the item with the given name shows.
+   */
+  public async expectItemView(name: string): Promise<void> {
+    await expect(this.page).toHaveURL(ITEM_VIEW_URL);
+    await expect(this.page.getByRole('heading', { name, exact: true })).toBeVisible();
+  }
+
+  /**
+   * The Save Item button of the add/edit page.
+   */
+  public saveItemButton(): Locator {
+    return this.page.getByRole('button', { name: 'Save Item' }).first();
+  }
 }
+
+/**
+ * The view page of an item: /items/{manifestId}/{id}.
+ */
+export const ITEM_VIEW_URL = /\/items\/[0-9a-f-]{36}\/[0-9a-f-]{36}$/;

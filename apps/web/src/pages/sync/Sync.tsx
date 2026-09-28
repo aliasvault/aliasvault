@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
+import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
@@ -204,18 +205,6 @@ const Sync: React.FC = () => {
    */
   const renderStatus = (): React.ReactNode => {
     switch (status) {
-      case 'decryption-failed':
-        return (
-          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
-            <div className="text-center">
-              <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorTitle')}</h2>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorDescription')}</p>
-            </div>
-            {errorDetails && (
-              <pre id="vault-error-report" className="mt-4 max-h-48 overflow-auto rounded bg-gray-100 dark:bg-gray-800 p-3 text-left text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all select-all">{errorDetails}</pre>
-            )}
-          </div>
-        );
       case 'version-unrecognized':
         return (
           <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
@@ -294,12 +283,24 @@ const Sync: React.FC = () => {
     }
   };
 
+  const logoutLink = (
+    <>
+      {t('pages.main.sync.sync.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.main.sync.sync.LogoutLink')}</Link>
+    </>
+  );
+
+  if (status === 'decryption-failed') {
+    return errorDetails
+      ? <CriticalErrorPanel report={errorDetails} footer={logoutLink} />
+      : <CriticalErrorPanel title={t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorTitle')} description={t('pages.main.sync.statusMessages.errorVaultDecrypt.ErrorDescription')} footer={logoutLink} />;
+  }
+
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center px-6 pt-8 pb-8 h-full w-full">
       {renderStatus()}
 
       <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-6">
-        {t('pages.main.sync.sync.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.main.sync.sync.LogoutLink')}</Link>
+        {logoutLink}
       </div>
     </div>
   );

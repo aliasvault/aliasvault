@@ -1,5 +1,5 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { getErrorMessage, hasErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { extractErrorCode, translateCodedError } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
@@ -10,6 +10,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
+import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
@@ -68,7 +69,12 @@ const Login: React.FC = () => {
   // Show the message a forced logout left behind, and prefill the username it kept.
   useEffect(() => {
     if (auth.globalMessage) {
-      notifications.addErrorMessage(auth.globalMessage, true);
+      // A coded message shows as a critical error in place of the form.
+      if (extractErrorCode(auth.globalMessage)) {
+        setErrors([auth.globalMessage]);
+      } else {
+        notifications.addErrorMessage(auth.globalMessage, true);
+      }
       auth.clearGlobalMessage();
     }
     getPlatform().storage.get<string>(StorageKeys.USERNAME).then((saved) => {
@@ -101,8 +107,9 @@ const Login: React.FC = () => {
     if (apiErrorCodeOf(err)) {
       return [apiErrorMessage(err, t, t('components.auth.login.LoginErrorMessage'))];
     }
-    if (hasErrorCode(err)) {
-      return [getErrorMessage(err, t('components.auth.login.LoginErrorMessage'))];
+    const codedError = translateCodedError(err, t);
+    if (codedError) {
+      return [codedError];
     }
     if (import.meta.env.DEV && err instanceof Error) {
       return [err.message];
@@ -211,6 +218,19 @@ const Login: React.FC = () => {
 
   const inputClass = 'bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500';
   const submitClass = 'w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
+
+  // A coded error is critical: it replaces the form.
+  const criticalError = errors.find(error => extractErrorCode(error) !== null);
+  if (criticalError) {
+    /**
+     * Dismiss the error and start the login over.
+     */
+    const backToLogin = (): void => {
+      setErrors([]);
+      setStep('credentials');
+    };
+    return <CriticalErrorPanel report={criticalError} onBack={backToLogin} />;
+  }
 
   if (step === 'two-factor') {
     return (
