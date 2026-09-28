@@ -523,12 +523,11 @@ export class ImportExportRepository extends BaseRepository {
    */
   private *deleteAllRows(): DbOp<void> {
     const personalManifestId = yield* this.personalManifestId();
+    if (!personalManifestId) {
+      throw new Error('This client has no personal manifest recorded yet; sync once before resetting the vault.');
+    }
     for (const table of RESET_TABLES) {
-      if (personalManifestId) {
-        yield* this.execute(`DELETE FROM ${table} WHERE ManifestId = ?`, [personalManifestId]);
-      } else {
-        yield* this.execute(`DELETE FROM ${table}`);
-      }
+      yield* this.execute(`DELETE FROM ${table} WHERE ManifestId = ?`, [personalManifestId]);
     }
   }
 }
