@@ -100,7 +100,7 @@
     },
     "forgotPassword": {
       "contactAdministrator": "אם החלפת את הסיסמה שלך לאחרונה ועולים כעת קשיים בכניסה למערכת עם הסיסמה החדשה שלך, נא לשים לב שמנהלי השרת יוכלו כפי הנראה לשחזר גיבוי מוקדם יותר של הכספת שלך כדי לעזור לך. אם זה המצב, נא ליצור קשר עם מנהלי השרת.",
-      "contactSupportWithEmail": "אם החלפת את הסיסמה שלך לאחרונה ועולים כעת קשיים בכניסה למערכת, נא ליצור קשר עם התמיכה דרך {{email}} לקבלת עזרה.",
+      "contactSupportWithEmail": "If you've recently changed your password and are experiencing difficulties signing in, please contact support at {{email}} for assistance.",
       "lostPasswordTitle": "סיסמה שנשכחה",
       "newAccountRequired": "אם שכחת את הסיסמה שלך, צריך ליצור חשבון חדש. נא לשים לב שהפעולה הזאת תגרום לאובדן כל הנתונים שלך.",
       "noRecoveryExplanation": "לרוע המזל, אם הסיסמה שלך הלכה לאיבוד, אין דרך לשחזר אותה. AliasVault מחייבת הצפנה מקצה לקצה לכל הנתונים שלך, כדי לוודא שאף אחד מלבדך, יוכל לגשת לנתונים שלך.",
@@ -207,7 +207,7 @@
     "unlockVault": "שחרור נעילת כספת",
     "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithMobile": "Unlock using Mobile App",
-    "unlockWithPassword": "שחרור נעילה עם סיסמה",
+    "unlockWithPassword": "Unlock with Password",
     "unlockWithPin": "שחרור נעילה עם קוד אישי",
     "unlocking": "הנעילת משוחררת…",
     "useMasterPassword": "להשתמש בסיסמה על",
@@ -395,7 +395,7 @@
       "pageDescription": "אפשר לצפות בכל הודעות הדוא״ל שמגיעות לכתובות הדוא״ל הפרטיות שלך להלן."
     },
     "item": "Item",
-    "loadMore": "לטעון עוד (נותרו {{count}})",
+    "loadMore": "Load More ({{count}} remaining)",
     "modal": {
       "attachmentDownloadError": "שגיאה בהורדת הצרופה",
       "deleteEmailConfirmation": "למחוק את הודעת הדוא״ל הזאת? הפעולה הזאת היא בלתי הפיכה.",
@@ -469,7 +469,7 @@
     "exportEncryptedWarningMessage": "This will create an encrypted export of your entire vault. You will need to provide a password to encrypt the export file.\n\nAre you sure you want to continue?",
     "exportPasswordConfirmTitle": "Confirm Export",
     "exportPasswordModal": {
-      "confirmExportPasswordLabel": "אישור הסיסמה",
+      "confirmExportPasswordLabel": "Confirm Password",
       "createEncryptedExportButton": "Create Encrypted Export",
       "exportPasswordLabel": "Encryption Password"
     },
@@ -506,7 +506,7 @@
       "importErrorInvalidFile": "Please select a valid export file to import.",
       "importErrorUnsupportedFormat": "Unsupported file format. Supported formats: {{formats}}",
       "importFoldersLabel": "Import folders",
-      "importFromServiceTitle": "ייבוא מתוך {{service}}",
+      "importFromServiceTitle": "Import from {{service}}",
       "importPartialFailureWarning": "{{count}} item(s) could not be parsed and will be skipped.",
       "importSuccessMessage": "Successfully imported {{count}} credentials.",
       "moreCredentials": "... and {{count}} more credentials",
@@ -517,7 +517,7 @@
       "serviceColumn": "שירות",
       "supportedFormats": "Supported formats",
       "syncingVault": "Syncing vault to server...",
-      "uploadExportFileText": "העלאת קובץ הייצוא שלך מ־{{service}}:"
+      "uploadExportFileText": "Upload your {{service}} export file:"
     },
     "services": {
       "aliasVaultDescription": "Import from AliasVault backup",
@@ -807,7 +807,7 @@
       "includeNumbersLabel": "לכלול מספרים (0-‏9)",
       "includeSpecialCharsLabel": "לכלול תווים מיוחדים (!@#$%^&*)",
       "includeUppercaseLabel": "לכלול אותיות גדולות (A-Z)",
-      "passwordLengthLabel": "אורך הסיסמה: {{length}}",
+      "passwordLengthLabel": "Password Length: {{length}}",
       "previewLabel": "תצוגה מקדימה",
       "saveGloballyButton": "שמירה מקיפה",
       "settingsUpdatedMessage": "הגדרות יצירת סיסמאות עודכנו באופן מקיף.",
@@ -859,7 +859,7 @@
       "noResultsFoundMessage": "לא נמצאו תוצאות",
       "searchHelpText": "נא להקליד מונח לחיפוש, זה יכול להיות שם שירות, תיאור או כתובת דוא״ל.",
       "searchTooShortMessage": "נא להקליד תווים נוספים",
-      "searchingForMessage": "מתבצע חיפוש אחר „{{search}}”",
+      "searchingForMessage": "Searching for \"{{search}}\"",
       "searchingMessage": "מתבצע חיפוש…"
     },
     "searchPlaceholder": "חיפוש בכספת…",
@@ -868,8 +868,8 @@
     "serviceUrl": "כתובת השירות",
     "sort": {
       "alphabetical": "Alphabetical (A-Z)",
-      "newestFirst": "החדש קודם",
-      "oldestFirst": "הישן קודם",
+      "newestFirst": "Newest first",
+      "oldestFirst": "Oldest first",
       "title": "Sort by"
     },
     "suggestions": "Suggestions",
@@ -1016,7 +1016,7 @@
     "passkeyAddToExisting": "Or, add passkey to an existing item",
     "passkeyAddToExistingLabel": "Or, add passkey to an existing item:",
     "passkeyAuthenticating": "Authenticating...",
-    "passkeyCheckingConnection": "החיבור נבדק...",
+    "passkeyCheckingConnection": "Checking connection...",
     "passkeyCreating": "Creating passkey...",
     "passkeyCreationFailed": "Failed to create passkey",
     "passkeyDisplayNameLabel": "Passkey Name",
@@ -1024,9 +1024,9 @@
     "passkeyInfoIcon": "סמל פרטים",
     "passkeyReplacing": "Replacing passkey...",
     "passkeyRetrieving": "Retrieving passkey...",
-    "passkeySaving": "מתבצעת שמירה לכספת...",
+    "passkeySaving": "Saving to vault...",
     "passkeySelectToReplace": "Or, replace an existing passkey:",
-    "passkeySyncing": "סנכרון מול השרת...",
+    "passkeySyncing": "Syncing with server...",
     "passkeyVerifying": "Verifying...",
     "passkeysLoadError": "Failed to load passkeys. Please open the AliasVault app to check for updates.",
     "passwordChangedMessage": "הסיסמה שלך הוחלפה. נא להיכנס שוב.",
@@ -1034,7 +1034,7 @@
     "passwordCopied": "הסיסמה הועתקה",
     "passwordUnlockError": "Failed to verify password",
     "pinConfirmSubtitle": "נא למלא את הקוד האישי שלך מחדש לאישור",
-    "pinIncorrectAttemptsRemaining": "קוד אישי שגוי, נותרו {{count}} ניסיונות",
+    "pinIncorrectAttemptsRemaining": "Incorrect PIN. {{count}} attempts remaining",
     "pinLockedMaxAttempts": "הקוד האישי ננעל אחרי יותר מדי ניסיונות כושלים",
     "pinMismatch": "הקודים האישיים לא תואמים. נא לנסות שוב.",
     "pinSetupSubtitle": "נא לבחור קוד אישי לשחרור נעילת הכספת שלך",
@@ -1280,7 +1280,7 @@
     "passwordGenerator": "יוצר סיסמאות",
     "passwordGeneratorSettings": {
       "configureButton": "הגדרה",
-      "description": "הגדרת תצורת ברירת המחדל לשימוש בעת יצירת סיסמאות חדשות. ההגדרות האלו תשמשנה לכל הסיסמאות החדשות אלא אם כן ההגדרות האלו נדרסו עבור רשומות מסוימות.",
+      "description": "Configure the default password generator settings for newly created items, including password length, character sets, and passphrase language.",
       "passwordGeneratorSettingsLabel": "הגדרות ברירת מחדל של מייצר סיסמאות"
     },
     "qrScanner": {
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "לא נמצאו הפעלות פעילות.",
         "revoke": "שלילה",
         "revokeConfirmation": "לשלול את ההפעלה הזאת? הפעולה הזאת תוציא את המשתמש שלך מהמכשיר הנבחר.",
-        "revokeExceptionMessage": "שלילת הפעלה נכשלה: {{error}}.",
+        "revokeExceptionMessage": "Failed to revoke session: {{error}}.",
         "revokeSession": "שלילת הפעלה",
         "revokeSuccessMessage": "ההפעלה נשללה בהצלחה.",
         "sessionRevoked": "ההפעלה נשללה בהצלחה"
@@ -1351,7 +1351,7 @@
         "ipAddress": "כתובת IP",
         "noLogs": "לא נמצאו יומני אימות",
         "noLogsMessage": "לא נמצאו יומני אימות.",
-        "success": "הצלחה",
+        "success": "הצליח",
         "time": "זמן",
         "timestampColumn": "חותמת זמן"
       },
@@ -1529,7 +1529,7 @@
       "keystoreAndroid": "Android Keystore (אחסון מפתחות)",
       "keystoreIOS": "iOS Keychain (צרור מפתחות)",
       "passwordHelp": "נא למלא מחדש את סיסמת העל המלאה שלך כדי לשחרר את נעילת הכספת שלך. זה תמיד מופעל כאפשרות גיבוי.",
-      "pin": "קוד גישה אישי",
+      "pin": "קוד אישי",
       "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
       "pinDisabled": "PIN unlock has been disabled",
       "pinEnabled": "שחרור קוד אישי הופעל בהצלחה",
@@ -1616,7 +1616,7 @@
     "upgrade": "שדרוג",
     "upgradeDescription": "AliasVault התעדכן וצריך לשדרג את הכספת שלך. הפעולה הזאת אמורה לארוך מספר שניות.",
     "upgradeFailedError": "שדרוג מסד הנתונים נכשל. נא לנסות שוב או ליצור קשר עם התמיכה.",
-    "upgradeRequiredDescription": "יש לשדרג כדי שתהיה תמיכה בשינויים הבאים: {{changes}}",
+    "upgradeRequiredDescription": "An upgrade is required to support the following changes: {{changes}}",
     "upgradeSuccessMessage": "שדרוג הכספת הצליח.",
     "upgrading": "משתדרגת…",
     "versionInformation": "פרטי גרסה",
@@ -1627,7 +1627,7 @@
   "validation": {
     "passwordRequired": "סיסמה חובה",
     "required": "שדה חובה",
-    "secretKeyRequired": "מפתח סודי חובה",
+    "secretKeyRequired": "מפתח סודי הכרחי",
     "serviceNameRequired": "שם השירות חובה"
   },
   "vault": {
