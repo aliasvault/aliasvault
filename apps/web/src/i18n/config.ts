@@ -1,21 +1,9 @@
 /**
- * Central configuration for i18n languages.
+ * The UI languages of the web app. The translations live in core/i18n (@aliasvault/i18n).
  */
 
+import { DEFAULT_LANGUAGE as CORE_DEFAULT_LANGUAGE, LANGUAGE_CODES as CORE_LANGUAGE_CODES } from '@aliasvault/i18n';
 import { getLanguageInfo } from '@aliasvault/models/defaults';
-
-import enTranslations from './locales/en.json';
-
-/**
- * Create a map of all available languages and their resources for i18n.
- * When adding a new language, add the translation JSON file to the locales folder and add the language to the map here.
- * TODO: add all languages here once the Crowdin integration is (re)enabled for this web app.
- */
-export const LANGUAGE_RESOURCES = {
-  en: {
-    translation: enTranslations
-  },
-};
 
 /**
  * A UI language.
@@ -29,18 +17,17 @@ export interface ILanguageConfig {
 /**
  * List of all available UI languages with their code, native name and flag.
  */
-export const AVAILABLE_LANGUAGES: ILanguageConfig[] =
-  (Object.keys(LANGUAGE_RESOURCES) as Array<keyof typeof LANGUAGE_RESOURCES>).map((code) => {
-    const info = getLanguageInfo(code);
-    return { code, nativeName: info.label, flag: info.flag };
-  });
+export const AVAILABLE_LANGUAGES: ILanguageConfig[] = CORE_LANGUAGE_CODES.map((code) => {
+  const info = getLanguageInfo(code);
+  return { code, nativeName: info.label, flag: info.flag };
+});
 
 /**
  * Default language that is used when no language is set in the browser or when a localized string is not found for the current language.
  */
-export const DEFAULT_LANGUAGE = 'en';
+export const DEFAULT_LANGUAGE = CORE_DEFAULT_LANGUAGE;
 
-export const LANGUAGE_CODES = AVAILABLE_LANGUAGES.map(lang => lang.code);
+export const LANGUAGE_CODES: string[] = [...CORE_LANGUAGE_CODES];
 
 /**
  * Get language config by code.

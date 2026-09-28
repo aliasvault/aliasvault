@@ -18,7 +18,27 @@ export const DEFAULT_LANGUAGE = 'en';
 /**
  * The UI languages the apps offer. Keep in sync with the target languages in the Crowdin project settings.
  */
-export const LANGUAGE_CODES = ['en', 'da', 'de', 'es', 'fi', 'fr', 'ga', 'he', 'hu', 'id', 'it', 'nl', 'pl', 'pt', 'ro', 'ru', 'sv', 'uk', 'zh'] as const;
+export const LANGUAGE_CODES = [
+  'en', // English
+  'da', // Danish
+  'de', // German
+  'es', // Spanish
+  'fi', // Finnish
+  'fr', // French
+  'ga', // Irish
+  'he', // Hebrew
+  'hu', // Hungarian
+  'id', // Indonesian
+  'it', // Italian
+  'nl', // Dutch
+  'pl', // Polish
+  'pt', // Portuguese
+  'ro', // Romanian
+  'ru', // Russian
+  'sv', // Swedish
+  'uk', // Ukrainian
+  'zh', // Chinese
+] as const;
 
 /**
  * A UI language code.
