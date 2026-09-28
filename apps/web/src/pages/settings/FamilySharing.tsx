@@ -33,8 +33,15 @@ import { vaultStore } from '@/vault/VaultStore';
 import type { SharingOperationResult } from '@aliasvault/client/sync/VaultSync';
 import type { GroupInfo, GroupMemberInfo, GroupOverviewResponse, ReceivedManifestInvitation, SharedManifestInfo } from '@aliasvault/models/webapi';
 type ManifestTarget = { group: GroupInfo; manifest: SharedManifestInfo };
+
+/**
+ * Error thrown by a failed sharing operation.
+ */
 class SharingOperationError extends Error {}
 
+/**
+ * Props for the invitation card.
+ */
 type InvitationCardProps = {
   vaultName: string;
   inviterUsername: string;
