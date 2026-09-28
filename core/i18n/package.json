@@ -1,0 +1,19 @@
+{
+    "name": "@aliasvault/i18n",
+    "version": "0.31.0",
+    "description": "Translations shared by the AliasVault web app, browser extension and mobile app.",
+    "type": "module",
+    "private": true,
+    "license": "AGPL-3.0",
+    "exports": {
+        ".": "./src/index.ts",
+        "./all": "./src/all.ts",
+        "./locales/*": "./locales/*"
+    },
+    "scripts": {
+        "export:native": "node scripts/export-native.mjs",
+        "export:native:check": "node scripts/export-native.mjs --check",
+        "hints:push": "node scripts/sync-hints.mjs",
+        "hints:push:dry-run": "node scripts/sync-hints.mjs --dry-run"
+    }
+}
