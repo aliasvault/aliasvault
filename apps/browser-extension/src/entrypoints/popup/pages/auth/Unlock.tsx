@@ -36,9 +36,10 @@ import {
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
-import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
+
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 
 /**
  * Concrete unlock screens the page can render. Mobile-app unlock is shown

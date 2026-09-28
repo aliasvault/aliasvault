@@ -1,14 +1,12 @@
+import { isMobileLoginErrorCode, MOBILE_LOGIN_REQUEST_LIFETIME_SECONDS, MobileLoginErrorCode, MobileLoginService } from '@aliasvault/client/auth/MobileLoginService';
 import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
-import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginErrorCode';
-import { MobileLoginUtility } from '@/entrypoints/popup/utils/MobileLoginUtility';
-
-import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import type { WebApiService } from '@aliasvault/client/api/WebApiService';
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 
 interface IMobileUnlockModalProps {
   isOpen: boolean;
@@ -32,8 +30,8 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [error, setError] = useState<MobileLoginErrorCode | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState<number>(120); // 2 minutes in seconds
-  const mobileLoginRef = useRef<MobileLoginUtility | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(MOBILE_LOGIN_REQUEST_LIFETIME_SECONDS)
+  const mobileLoginRef = useRef<MobileLoginService | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
@@ -45,8 +43,6 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
         return t('common.errors.mobileLoginRequestExpired');
       case MobileLoginErrorCode.DECLINED:
         return t('common.errors.mobileLoginRequestDeclined');
-      case MobileLoginErrorCode.SERVER_OUTDATED:
-        return t('common.errors.serverVersionNotSupported');
       case MobileLoginErrorCode.GENERIC:
       default:
         return t('common.errors.unknownError');
@@ -90,11 +86,11 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
         setError(null);
         setQrCodeUrl(null);
         setVerificationCode(null);
-        setTimeRemaining(120);
+        setTimeRemaining(MOBILE_LOGIN_REQUEST_LIFETIME_SECONDS);
 
         // Initialize mobile login utility
         if (!mobileLoginRef.current) {
-          mobileLoginRef.current = new MobileLoginUtility(webApi);
+          mobileLoginRef.current = new MobileLoginService(webApi);
         }
 
         // Initiate mobile login and get the QR code text plus the number the user taps in the mobile app
@@ -108,7 +104,7 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
         setVerificationCode(code);
 
         // Start polling for response
-        await mobileLoginRef.current.startPolling(
+        mobileLoginRef.current.startPolling(
           async (result: MobileLoginResult) => {
             try {
               // Call success callback (parent handles loading state)
@@ -129,11 +125,7 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
         );
       } catch (err) {
         // err is a MobileLoginErrorCode thrown by initiate()
-        if (typeof err === 'string' && Object.values(MobileLoginErrorCode).includes(err as MobileLoginErrorCode)) {
-          setError(err as MobileLoginErrorCode);
-        } else {
-          setError(MobileLoginErrorCode.GENERIC);
-        }
+        setError(isMobileLoginErrorCode(err) ? err : MobileLoginErrorCode.GENERIC);
       }
     };
 
@@ -163,7 +155,7 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
     }
     setQrCodeUrl(null);
     setError(null);
-    setTimeRemaining(120);
+    setTimeRemaining(MOBILE_LOGIN_REQUEST_LIFETIME_SECONDS);
     onClose();
   };
 

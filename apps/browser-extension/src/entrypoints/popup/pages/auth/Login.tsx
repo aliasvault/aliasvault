@@ -29,10 +29,10 @@ import { apiErrorMessage } from '@/utils/ApiErrors';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
