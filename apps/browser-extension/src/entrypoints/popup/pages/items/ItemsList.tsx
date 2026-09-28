@@ -898,7 +898,7 @@ const ItemsList: React.FC = () => {
             <div className="flex items-center gap-1 shrink-0">
               <button
                 onClick={() => setShowEditFolderModal(true)}
-                title={t('items.editFolder')}
+                title={t('items.folders.editFolder')}
                 className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -907,7 +907,7 @@ const ItemsList: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowDeleteFolderModal(true)}
-                title={t('items.deleteFolder')}
+                title={t('items.folders.deleteFolder')}
                 className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -983,7 +983,7 @@ const ItemsList: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={`${t('content.searchVault')}`}
+            placeholder={`${t('items.searchPlaceholder')}`}
             autoFocus
             role="combobox"
             aria-controls="items-list"
@@ -1098,7 +1098,7 @@ const ItemsList: React.FC = () => {
             </div>
           )}
           <div className="text-gray-500 dark:text-gray-400 text-sm">
-            <p>{t('items.allItemsInFolders')}</p>
+            <p>{t('items.allItemsInFoldersClick')}</p>
           </div>
         </>
       ) : (
@@ -1140,7 +1140,7 @@ const ItemsList: React.FC = () => {
                      * Only show text when there are no folders yet
                      * if there are folders we hide the text to save on UI space
                      */
-                    <span>{t('items.newFolder')}</span>
+                    <span>{t('items.folders.newFolder')}</span>
                   )}
                 </button>
               )}
@@ -1216,8 +1216,8 @@ const ItemsList: React.FC = () => {
         isOpen={deleteItem !== null}
         onClose={() => setDeleteItem(null)}
         onConfirm={handleConfirmDeleteItem}
-        title={t('items.deleteItemTitle')}
-        message={t('items.deleteItemConfirm')}
+        title={t('items.deleteItem')}
+        message={t('common.deleteItemConfirmDescription')}
         confirmText={t('common.delete')}
       />
 

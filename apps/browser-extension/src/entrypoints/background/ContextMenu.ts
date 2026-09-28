@@ -145,7 +145,7 @@ export function handleContextMenuClick(info: Browser.contextMenus.OnClickData, t
       void (async (): Promise<void> => {
         const settings = await getPasswordSettingsOrDefault();
         const password = await RustCore.generatePassword(settings);
-        const message = await t('content.passwordCopiedToClipboard');
+        const message = await t('items.toasts.passwordCopied');
         browser.scripting.executeScript({
           target: { tabId },
           func: copyPasswordToClipboard,

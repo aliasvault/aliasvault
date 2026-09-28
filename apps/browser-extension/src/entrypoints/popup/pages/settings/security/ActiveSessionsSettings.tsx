@@ -75,8 +75,8 @@ const ActiveSessionsSettings: React.FC = () => {
 
       <div className="space-y-6">
         <div>
-          <PageTitle>{t('settings.securitySettings.activeSessions.title')}</PageTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.activeSessions.description')}</p>
+          <PageTitle>{t('settings.securitySettings.activeSessionsTitle')}</PageTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.activeSessions.headerText')}</p>
         </div>
 
         {error && <AlertMessage type="error" message={error} />}

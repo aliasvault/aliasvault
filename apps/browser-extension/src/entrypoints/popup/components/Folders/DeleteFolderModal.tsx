@@ -69,7 +69,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={handleClose}
-      title={t('items.deleteFolder')}
+      title={t('items.folders.deleteFolder')}
       footer={
         <div className="flex justify-end">
           <button
@@ -102,10 +102,10 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {t('items.deleteFolderKeepItems')}
+                  {t('items.folders.deleteFolderKeepItems')}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('items.deleteFolderKeepItemsDescription')}
+                  {t('items.folders.deleteFolderKeepItemsDescription')}
                 </p>
               </div>
             </div>
@@ -128,10 +128,10 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
                 </div>
                 <div>
                   <p className="font-medium text-red-600 dark:text-red-400">
-                    {t('items.deleteFolderAndItems')}
+                    {t('items.folders.deleteFolderAndItems')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('items.deleteFolderAndItemsDescription', { count: itemCount })}
+                    {t('items.folders.deleteFolderAndItemsDescription', { count: itemCount })}
                   </p>
                 </div>
               </div>

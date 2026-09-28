@@ -200,7 +200,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
               }
 
               markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
-              setError(t('emails.apiErrors.' + apiErrorResponse?.code));
+              setError(t('apiErrors.' + apiErrorResponse?.code, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
               return;
             }
           } catch (err) {

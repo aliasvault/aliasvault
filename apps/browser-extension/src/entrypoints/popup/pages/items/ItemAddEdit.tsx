@@ -1121,7 +1121,7 @@ const ItemAddEdit: React.FC = () => {
         {isEditMode && (
           <HeaderButton
             onClick={() => setShowDeleteModal(true)}
-            title={t('items.deleteItemTitle')}
+            title={t('items.deleteItem')}
             iconType={HeaderIconType.DELETE}
             variant="danger"
             disabled={isSaving}
@@ -1610,8 +1610,8 @@ const ItemAddEdit: React.FC = () => {
         <Modal
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
-          title={t('items.deleteItemTitle')}
-          message={t('items.deleteItemConfirm')}
+          title={t('items.deleteItem')}
+          message={t('common.deleteItemConfirmDescription')}
           confirmText={t('common.delete')}
           cancelText={t('common.cancel')}
           onConfirm={handleDelete}

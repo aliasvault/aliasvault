@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
@@ -13,6 +14,7 @@ type HelpModalProps = {
  * Shows a modal popup with help information when clicked.
  */
 const HelpModal: React.FC<HelpModalProps> = ({ title, content, className = '' }) => {
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -21,7 +23,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ title, content, className = '' })
         onClick={() => setShowModal(true)}
         className={`${className}`}
         type="button"
-        aria-label="Help"
+        aria-label={t('common.help')}
       >
         <svg
           className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help"

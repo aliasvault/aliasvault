@@ -205,12 +205,12 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const handleDownloadParsedAttachment = async (attachment: ParsedEmailAttachment, index: number): Promise<void> => {
     try {
       if (!sourceBytes) {
-        setError('Email source not available');
+        setError(t('common.errors.unknownError'));
         return;
       }
 
       if (!dbContext?.sqliteClient || !email) {
-        setError('Database context or email not available');
+        setError(t('common.errors.unknownError'));
         return;
       }
 
@@ -248,7 +248,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         )}
         <HeaderButton
           onClick={() => setShowDeleteModal(true)}
-          title={t('emails.deleteEmailTitle')}
+          title={t('emails.deleteEmail')}
           iconType={HeaderIconType.DELETE}
           variant="danger"
         />
@@ -289,7 +289,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           setShowDeleteModal(false);
           void handleDelete();
         }}
-        title={t('emails.deleteEmailTitle')}
+        title={t('emails.deleteEmail')}
         message={t('emails.deleteEmailConfirm')}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
@@ -338,9 +338,9 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           </div>
           {showMetadata && (
             <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
-              <p><span className="font-bold">{t('emails.from')}</span> <span title={email.fromLocal + "@" + email.fromDomain}>{email.fromDisplay}</span></p>
-              <p><span className="font-bold">{t('emails.to')}</span> <span title={email.toLocal + "@" + email.toDomain}>{email.toLocal}@{email.toDomain}</span></p>
-              <p><span className="font-bold">{t('emails.date')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
+              <p><span className="font-bold">{t('emails.fromColumn')}</span> <span title={email.fromLocal + "@" + email.fromDomain}>{email.fromDisplay}</span></p>
+              <p><span className="font-bold">{t('emails.toColumn')}</span> <span title={email.toLocal + "@" + email.toDomain}>{email.toLocal}@{email.toDomain}</span></p>
+              <p><span className="font-bold">{t('emails.dateColumn')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
               {credential && (
                 <p>
                   <span className="font-bold">{t('emails.item')}</span>{' '}

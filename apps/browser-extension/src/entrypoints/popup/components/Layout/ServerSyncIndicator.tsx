@@ -199,7 +199,7 @@ const ServerSyncIndicator: React.FC = () => {
     return (
       <div
         className="flex items-center gap-1.5 mx-2 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-md text-xs font-medium"
-        title={t('common.syncingVault')}
+        title={t('vault.syncingVault')}
       >
         <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

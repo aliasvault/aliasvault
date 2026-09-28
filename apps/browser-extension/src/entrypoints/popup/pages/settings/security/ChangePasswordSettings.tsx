@@ -133,7 +133,7 @@ const ChangePasswordSettings: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setSuccess(t('settings.securitySettings.changePassword.success'));
+      setSuccess(t('settings.securitySettings.changePassword.passwordChangedSuccessfully'));
     } catch (err) {
       logFailure('Password change failed', err);
       setError(errorMessage(err));
@@ -148,7 +148,7 @@ const ChangePasswordSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <PageTitle>{t('settings.securitySettings.changePassword.title')}</PageTitle>
+        <PageTitle>{t('settings.securitySettings.changePassword.changePassword')}</PageTitle>
         <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.changePassword.description')}</p>
       </div>
 
@@ -166,7 +166,7 @@ const ChangePasswordSettings: React.FC = () => {
             <PasswordInput id="confirm-password" label={t('settings.securitySettings.changePassword.confirmNewPassword')} value={confirmPassword} setValue={setConfirmPassword} visible={showConfirmPassword} setVisible={setShowConfirmPassword} />
 
             <Button type="submit">
-              {t('settings.securitySettings.changePassword.title')}
+              {t('settings.securitySettings.changePassword.changePassword')}
             </Button>
           </form>
         </div>

@@ -451,7 +451,7 @@ const Settings: React.FC = () => {
                   <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round"  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.unlockMethod.title')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.vaultUnlock')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -483,7 +483,7 @@ const Settings: React.FC = () => {
                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLockTimeout')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLock')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -673,7 +673,7 @@ const Settings: React.FC = () => {
                   <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.securitySettings.title')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.security')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -764,7 +764,7 @@ const Settings: React.FC = () => {
         </section>
 
         <div className="text-center text-[13px] text-gray-400 dark:text-gray-600">
-          <div><span className="font-bold">{t('settings.versionPrefix')}:</span> {AppInfo.VERSION}</div>
+          <div><span className="font-bold">{t('settings.appVersion')}:</span> {AppInfo.VERSION}</div>
           {serverVersion && (
             <div><span className="font-bold">{t('settings.serverVersion')}:</span> {serverVersion} ({getDisplayUrl()})</div>
           )}

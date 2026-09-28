@@ -1,3 +1,4 @@
+import { englishTranslations, loadTranslations, type TranslationTree } from '@aliasvault/i18n';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -6,8 +7,7 @@ import { logFailure } from '@/utils/Diagnostics';
 
 import {
   DEFAULT_LANGUAGE,
-  LANGUAGE_CODES,
-  LANGUAGE_RESOURCES
+  LANGUAGE_CODES
 } from './config';
 
 import { storage } from '#imports';
@@ -29,15 +29,29 @@ const detectLanguage = async (): Promise<string> => {
 };
 
 /**
+ * Load the translations of a language into i18next before switching to it. Each language is a separate chunk.
+ * @param code - the language code
+ */
+export const ensureLanguageLoaded = async (code: string): Promise<void> => {
+  if (!i18n.hasResourceBundle(code, 'translation')) {
+    i18n.addResourceBundle(code, 'translation', await loadTranslations(code));
+  }
+};
+
+/**
  * Initialize i18n with async language detection
  */
 const initI18n = async (): Promise<void> => {
   const language = await detectLanguage();
+  const resources: Record<string, { translation: TranslationTree }> = { [DEFAULT_LANGUAGE]: { translation: englishTranslations } };
+  if (language !== DEFAULT_LANGUAGE) {
+    resources[language] = { translation: await loadTranslations(language) };
+  }
 
   await i18n
     .use(initReactI18next)
     .init({
-      resources: LANGUAGE_RESOURCES,
+      resources,
       lng: language,
       fallbackLng: DEFAULT_LANGUAGE,
 

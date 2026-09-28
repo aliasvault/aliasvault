@@ -152,6 +152,7 @@ export default defineConfig({
     includeSources: [
       'apps/browser-extension/**/*',
       'core/client/**/*',
+      'core/i18n/**/*',
       'core/models/**/*',
       'core/vault/**/*',
       'core/scripts/**/*',
