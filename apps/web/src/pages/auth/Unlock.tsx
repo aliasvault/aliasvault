@@ -10,6 +10,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
+import MobileUnlockModal from '@/components/auth/MobileUnlockModal';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
@@ -23,6 +24,8 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { WebAuthnNotSupportedError, WebAuthnService } from '@/utils/WebAuthnService';
 import { vaultStore } from '@/vault/VaultStore';
+
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 
 /**
  * Unlock page: derive the vault key from the master password again after a lock or page reload.
@@ -44,6 +47,7 @@ const Unlock: React.FC = () => {
   const [showWebAuthnButton, setShowWebAuthnButton] = useState(false);
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
+  const [showMobileUnlockModal, setShowMobileUnlockModal] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
   const hasInitialized = useRef(false);
 
@@ -63,10 +67,9 @@ const Unlock: React.FC = () => {
     } catch (err) {
       if (err instanceof WebAuthnNotSupportedError) {
         notifications.addErrorMessage(t('pages.auth.unlock.WebAuthnNotSupportedError'), true);
-      } else {
+      } else if (!(err instanceof DOMException && err.name === 'NotAllowedError')) {
         console.error('An error occurred while trying to unlock the vault with WebAuthn.', err);
       }
-    } finally {
       setIsWebAuthnLoading(false);
     }
   }, [navigate, notifications, t]);
@@ -123,17 +126,16 @@ const Unlock: React.FC = () => {
   }, [auth, dbContext, webApi, notifications, navigate, t, skipWebAuthn, unlockWithWebAuthn]);
 
   useEffect(() => {
-    if (!isLoading && !isWebAuthnLoading) {
+    if (!isLoading && !isWebAuthnLoading && !showWebAuthnButton) {
       return focusWhenVisible(() => passwordRef.current);
     }
-  }, [isLoading, isWebAuthnLoading]);
+  }, [isLoading, isWebAuthnLoading, showWebAuthnButton]);
 
   /**
-   * Hide the passkey option and move focus to the password field.
+   * Switch from the passkey option to the password form.
    */
   const showPasswordUnlock = (): void => {
     setShowWebAuthnButton(false);
-    passwordRef.current?.focus();
   };
 
   /**
@@ -187,6 +189,38 @@ const Unlock: React.FC = () => {
     }
   };
 
+  /**
+   * Replace the session with the one the mobile app approved and open the vault with the unlock key it sent.
+   */
+  const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
+    showLoading(t('pages.auth.unlock.UnlockingVaultMessage'));
+    setErrors([]);
+    setShowMobileUnlockModal(false);
+
+    try {
+      // The approval must belong to the account of the current session.
+      if (username && result.username.toLowerCase() !== username.toLowerCase()) {
+        setErrors([t('apiErrors.USERNAME_MISMATCH')]);
+        return;
+      }
+
+      // Revoke the tokens of the current session before storing the new ones.
+      await webApi.revokeCurrentTokens();
+      await auth.setAuthTokens(result.username, result.token, result.refreshToken);
+
+      // Throws an unlock-key-rejected (E-206) error if the key does not open the key chain.
+      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+      await vaultStore.storeUnlockKeyDerivationParams({ salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings });
+      await vaultStore.storeUnlockKey(result.unlockKey);
+      navigate('/sync', { replace: true });
+    } catch (err) {
+      console.error('Mobile unlock error:', err);
+      const codedError = translateCodedError(err, t);
+      if (err instanceof ClientUpgradeRequiredError) {
+        await auth.logout({ errorMessage: t('common.errors.clientVersionNotSupported') });
+      } else if (codedError) {
+        // A coded failure keeps its code, so the user can report it.
+        setErrors([codedError]);
       } else if (import.meta.env.DEV && err instanceof Error) {
         setErrors([err.message]);
       } else {
@@ -257,25 +291,36 @@ const Unlock: React.FC = () => {
           </p>
 
           <ServerValidationErrors errors={errors} />
+
+          <form onSubmit={unlockSubmit} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
+            <div>
+              <FormLabel htmlFor="password">{t('pages.auth.unlock.YourPasswordLabel')}</FormLabel>
+              <PasswordInputField ref={passwordRef} id="password" value={password} onValueChange={setPassword} placeholder="••••••••" />
+            </div>
+
+            <button type="submit" id="unlock-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
+              {t('pages.auth.unlock.UnlockButton')}
+            </button>
+          </form>
         </>
       )}
 
-      <form onSubmit={unlockSubmit} className="mt-4 space-y-6" av-enable="true" av-suppress-save="true">
-        <div>
-          <FormLabel htmlFor="password">{t('pages.auth.unlock.YourPasswordLabel')}</FormLabel>
-          <PasswordInputField ref={passwordRef} id="password" value={password} onValueChange={setPassword} placeholder="••••••••" />
-        </div>
-
-        <button type="submit" id="unlock-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
-          {t('pages.auth.unlock.UnlockButton')}
+      {!dbContext.isOffline && (
+        <button type="button" id="mobile-unlock-button" onClick={() => setShowMobileUnlockModal(true)} className="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2 mt-4">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+          {t('pages.auth.unlock.UnlockWithMobileButton')}
         </button>
-      </form>
+      )}
 
       <div className="text-sm text-center font-medium text-gray-500 dark:text-gray-400 mt-6">
         {t('pages.auth.unlock.SwitchAccountsText')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('pages.auth.unlock.LogOutLink')}</Link>
       </div>
 
       <FooterLogin />
+
+      <MobileUnlockModal isOpen={showMobileUnlockModal} mode="unlock" onClose={() => setShowMobileUnlockModal(false)} onSuccess={handleMobileUnlockSuccess} />
     </>
   );
 };

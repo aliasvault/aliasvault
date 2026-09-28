@@ -12,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
+import MobileUnlockModal from '@/components/auth/MobileUnlockModal';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
 import FormLabel from '@/components/shared/FormLabel';
@@ -27,6 +28,8 @@ import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
 
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse, ValidateLoginResponse } from '@aliasvault/models/webapi';
 
 /** Which step of the login the page shows. */
@@ -56,12 +59,14 @@ const Login: React.FC = () => {
   const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
   const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
   const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
+  const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
   const twoFactorRef = useRef<HTMLInputElement>(null);
+  const isCompletingLogin = useRef(false);
 
   // Already authenticated: go home.
   useEffect(() => {
-    if (auth.isInitialized && auth.isLoggedIn) {
+    if (auth.isInitialized && auth.isLoggedIn && !isCompletingLogin.current) {
       navigate('/', { replace: true });
     }
   }, [auth.isInitialized, auth.isLoggedIn, navigate]);
@@ -120,21 +125,56 @@ const Login: React.FC = () => {
   /**
    * Store the tokens and the unlock key, then continue to the sync page which loads the vault.
    */
+  const completeLogin = async (loginUsername: string, accessToken: string, refreshToken: string, unlockKey: string, params: UnlockKeyDerivationParams): Promise<void> => {
+    isCompletingLogin.current = true;
+    try {
+      await auth.setAuthTokens(SrpAuthService.normalizeUsername(loginUsername), accessToken, refreshToken);
+
+      // Fetch the key chain, check the unlock key opens it and cache it; the vault key is derived from the two on demand.
+      try {
+        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+      } catch (err) {
+        // Without a usable key chain the session is useless; end it so the error shows on this form.
+        await auth.logout();
+        throw err;
+      }
+      await vaultStore.storeUnlockKeyDerivationParams(params);
+      await vaultStore.storeUnlockKey(unlockKey);
+
+      notifications.clearMessages();
+      navigate('/sync', { replace: true });
+    } finally {
+      isCompletingLogin.current = false;
+    }
+  };
+
+  /**
+   * Finish a password login once the server accepted it.
+   */
   const processLoginVerify = async (validateLoginResponse: ValidateLoginResponse, hashBase64: string, response: LoginResponse): Promise<void> => {
     if (!validateLoginResponse.token) {
       throw new Error(t('components.auth.login.LoginRequestErrorMessage'));
     }
+    const params = { salt: response.salt, encryptionType: response.encryptionType, encryptionSettings: response.encryptionSettings };
+    await completeLogin(username, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken, hashBase64, params);
+  };
 
-    const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    await auth.setAuthTokens(normalizedUsername, validateLoginResponse.token.token, validateLoginResponse.token.refreshToken);
+  /**
+   * Finish a login the mobile app approved: the mobile app sends the unlock key.
+   */
+  const handleMobileLoginSuccess = async (result: MobileLoginResult): Promise<void> => {
+    showLoading(t('components.auth.login.LoggingInMessage'));
+    setErrors([]);
+    setShowMobileLoginModal(false);
 
-    // Fetch the key chain, check the unlock key opens it and cache it; the vault key is derived from the two on demand.
-    await VaultKeyService.refreshKeyChain(hashBase64, webApi);
-    await vaultStore.storeUnlockKeyDerivationParams({ salt: response.salt, encryptionType: response.encryptionType, encryptionSettings: response.encryptionSettings });
-    await vaultStore.storeUnlockKey(hashBase64);
-
-    notifications.clearMessages();
-    navigate('/sync', { replace: true });
+    try {
+      const params = { salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings };
+      await completeLogin(result.username, result.token, result.refreshToken, result.unlockKey, params);
+    } catch (err) {
+      setErrors(toErrorMessages(err));
+    } finally {
+      hideLoading();
+    }
   };
 
   /**
@@ -337,7 +377,12 @@ const Login: React.FC = () => {
           <button type="submit" id="login-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
             {t('components.auth.login.LoginButton')}
           </button>
-          {/* TODO: mobile app login (QR code) is not implemented yet. */}
+          <button type="button" id="mobile-login-button" onClick={() => setShowMobileLoginModal(true)} className="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            {t('components.auth.login.MobileDeviceLink')}
+          </button>
         </div>
 
         {getAppConfig().publicRegistrationEnabled && (
@@ -348,6 +393,8 @@ const Login: React.FC = () => {
       </form>
 
       <FooterLogin />
+
+      <MobileUnlockModal isOpen={showMobileLoginModal} mode="login" onClose={() => setShowMobileLoginModal(false)} onSuccess={handleMobileLoginSuccess} />
     </>
   );
 };
