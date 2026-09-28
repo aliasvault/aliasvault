@@ -1,8 +1,9 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { buildFolderTree, getFolderIdPath, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
+import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import FolderIcon from '@/components/folders/FolderIcon';
 import FormModal from '@/components/shared/FormModal';
 import { useDb } from '@/context/DbContext';
 
@@ -30,6 +31,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set());
   const [showFolderModal, setShowFolderModal] = useState(false);
   const tk = 'components.main.items.folderSelector';
+  const personalManifestId = dbContext.sqliteClient?.getPersonalManifestId() ?? null;
 
   useEffect(() => {
     const client = dbContext.sqliteClient;
@@ -147,9 +149,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
           : 'text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-500'}`}
       >
         {selectedFolder ? (
-          <svg className="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-          </svg>
+          <FolderIcon isShared={selectedFolderRow !== undefined && isSharedFolder(selectedFolderRow, personalManifestId)} className="w-4 h-4 text-orange-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
         ) : (
           <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -205,9 +205,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
                 <button type="button" onClick={() => selectFolder(node)} disabled={isDisabled} className={buttonClass(key, isDisabled, hasChildren)}>
                   <div className="flex items-center gap-3 flex-1">
-                    <svg className={iconClass(key, isDisabled)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
+                    <FolderIcon variant="outline" isShared={isSharedFolder(node, personalManifestId)} className={iconClass(key, isDisabled)} />
                     <span className="font-medium">{node.Name}</span>
                     {count > 0 && <span className="text-xs text-gray-400 dark:text-gray-500">({count})</span>}
                   </div>

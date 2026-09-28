@@ -1,3 +1,4 @@
+import { isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { FieldCategories, FieldKey, ItemTypes, TRASH_RETENTION_DEFAULT_DAYS, getFieldValue, type Attachment, type Item, type Passkey, type TotpCode } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import AttachmentViewer from '@/components/attachments/AttachmentViewer';
 import RecentEmails from '@/components/email/RecentEmails';
+import FolderIcon from '@/components/folders/FolderIcon';
 import CopyPasteFormRow from '@/components/forms/CopyPasteFormRow';
 import { type DisplayField, getUrlValues, groupDisplayFields, shouldBeFullWidth } from '@/components/items/DisplayField';
 import FieldBlock from '@/components/items/FieldBlock';
@@ -200,9 +202,7 @@ const ItemView: React.FC = () => {
                   ))}
                   {folder && (
                     <Link to={folderRoute(folder)} className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                      <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-                      </svg>
+                      <FolderIcon isShared={isSharedFolder(folder, dbContext.sqliteClient?.getPersonalManifestId())} className="w-4 h-4 text-orange-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
                       <span>{folder.Name}</span>
                     </Link>
                   )}

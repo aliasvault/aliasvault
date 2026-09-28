@@ -1,6 +1,6 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
-import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, isItemInFolder } from '@aliasvault/client/items/FolderUtils';
+import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -229,6 +229,7 @@ const ItemsHome: React.FC = () => {
    * Folders at the current level with their (recursive) filtered item counts.
    */
   const currentLevelFolders = useMemo((): FolderWithCount[] => {
+    const personalManifestId = dbContext.sqliteClient?.getPersonalManifestId() ?? null;
     const typeFiltered = new Set(applyTypeFilter(items.map(e => e.item), filterType).map(i => scopedKey(i.ManifestId, i.Id)));
     // At the root the top-level folders of every manifest show; inside a folder its children, which share its manifest.
     return allFolders
@@ -241,9 +242,10 @@ const ItemsHome: React.FC = () => {
           name: f.Name,
           parentFolderId: f.ParentFolderId ?? null,
           itemCount: items.filter(e => e.manifestId === f.ManifestId && e.folderId !== null && folderIds.has(e.folderId) && typeFiltered.has(scopedKey(e.manifestId, e.id))).length,
+          isShared: isSharedFolder(f, personalManifestId),
         };
       });
-  }, [allFolders, folderRef, items, filterType]);
+  }, [allFolders, folderRef, items, filterType, dbContext.sqliteClient]);
 
   const canCreateSubfolder = !folderRef || (allFolders.length > 0 && canHaveSubfolders(folderRef, allFolders));
 
