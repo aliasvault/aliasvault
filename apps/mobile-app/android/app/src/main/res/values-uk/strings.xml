@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Автозаповнення AliasVault</string>
+  <string name="autofill_service_description">Автозаповнення AliasVault</string>
   <string name="aliasvault_icon">Піктограма AliasVault</string>
   <string name="common_close">Закрити</string>
   <string name="common_next">Далі</string>
@@ -11,14 +12,14 @@
   <string name="common_hide_details">Приховати подробиці</string>
   <string name="common_copy">Copy</string>
   <string name="common_copied_to_clipboard">Скопійовано до буфера обміну</string>
-  <string name="unknown_error">Сталася невідома помилка</string>
+  <string name="unknown_error">Сталася невідома помилка.</string>
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
   <string name="autofill_no_match_found">No match found</string>
   <string name="autofill_open_app">Відкрити додаток</string>
   <string name="autofill_vault_locked">Vault заблоковано</string>
   <string name="biometric_store_key_title">Зберегти ключ шифрування</string>
   <string name="biometric_store_key_subtitle">Автентифікуйтеся, щоб надійно зберігати ключ шифрування в сховищі ключів Android. Це забезпечує безпечний доступ до сховища.</string>
-  <string name="biometric_unlock_vault_title">Vault розблоковано</string>
+  <string name="biometric_unlock_vault_title">Розблокувати Vault</string>
   <string name="biometric_unlock_vault_subtitle">Автентифікуйтеся, щоб отримати доступ до сховища</string>
   <string name="passkey_registration_title">Create Passkey</string>
   <string name="create_passkey_title">Create New Passkey</string>
@@ -27,11 +28,11 @@
   <string name="passkey_display_name_label">Passkey Name</string>
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
   <string name="passkey_website_label">Вебсайт</string>
-  <string name="passkey_username_label">Username</string>
+  <string name="passkey_username_label">Ім\'я користувача</string>
   <string name="passkey_create_button">Create Passkey</string>
-  <string name="passkey_creating">Creating passkey…</string>
-  <string name="passkey_saving">Saving to vault…</string>
-  <string name="passkey_syncing">Syncing with server…</string>
+  <string name="passkey_creating">Creating passkey...</string>
+  <string name="passkey_saving">Saving to vault...</string>
+  <string name="passkey_syncing">Syncing with server...</string>
   <string name="passkey_error_title">Помилка</string>
   <string name="passkey_error_empty_name">Please enter a name for the passkey</string>
   <string name="passkey_creation_failed">Failed to create passkey</string>
@@ -43,13 +44,13 @@
   <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
   <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
-  <string name="passkey_replacing">Replacing passkey…</string>
+  <string name="passkey_replacing">Replacing passkey...</string>
   <string name="add_passkey">Add Passkey</string>
   <string name="add_passkey_subtitle">Adding passkey to existing item</string>
-  <string name="passkey_checking_connection">Checking connection…</string>
-  <string name="passkey_retrieving">Retrieving passkey…</string>
-  <string name="passkey_verifying">Verifying…</string>
-  <string name="passkey_authenticating">Authenticating…</string>
+  <string name="passkey_checking_connection">Checking connection...</string>
+  <string name="passkey_retrieving">Retrieving passkey...</string>
+  <string name="passkey_verifying">Verifying...</string>
+  <string name="passkey_authenticating">Authenticating...</string>
   <string name="connection_error_title">Connection Error</string>
   <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
   <string name="session_expired_title">Session Expired</string>

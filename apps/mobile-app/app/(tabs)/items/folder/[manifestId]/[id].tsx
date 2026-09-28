@@ -114,7 +114,7 @@ export default function FolderViewScreen(): React.ReactNode {
   const getFilterTitle = useCallback((): string => {
     switch (filterType) {
       case ItemFilter.Passkeys:
-        return t('items.filters.passkeys');
+        return t('common.passkeys');
       case ItemFilter.Attachments:
         return t('common.attachments');
       case ItemFilter.All:
@@ -672,7 +672,7 @@ export default function FolderViewScreen(): React.ReactNode {
               styles.filterMenuItemText,
               filterType === ItemFilter.All && styles.filterMenuItemTextActive
             ]}>
-              {t('items.filters.all')}
+              {t('items.title')}
             </ThemedText>
           </TouchableOpacity>
 
@@ -724,7 +724,7 @@ export default function FolderViewScreen(): React.ReactNode {
               styles.filterMenuItemText,
               filterType === ItemFilter.Passkeys && styles.filterMenuItemTextActive
             ]}>
-              {t('items.filters.passkeys')}
+              {t('common.passkeys')}
             </ThemedText>
           </TouchableOpacity>
 

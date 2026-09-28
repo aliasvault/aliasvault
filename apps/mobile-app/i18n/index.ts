@@ -2,47 +2,9 @@ import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import da from './locales/da.json';
-import de from './locales/de.json';
-import en from './locales/en.json';
-import es from './locales/es.json';
-import fi from './locales/fi.json';
-import fr from './locales/fr.json';
-import ga from './locales/ga.json';
-import he from './locales/he.json';
-import hu from './locales/hu.json';
-import id from './locales/id.json';
-import it from './locales/it.json';
-import nl from './locales/nl.json';
-import pl from './locales/pl.json';
-import pt from './locales/pt.json';
-import ro from './locales/ro.json';
-import ru from './locales/ru.json';
-import sv from './locales/sv.json';
-import uk from './locales/uk.json';
-import zh from './locales/zh.json';
+import { ALL_TRANSLATIONS } from '@aliasvault/i18n/all';
 
-const resources = {
-  da: { translation: da },
-  de: { translation: de },
-  en: { translation: en },
-  es: { translation: es },
-  fi: { translation: fi },
-  fr: { translation: fr },
-  ga: { translation: ga },
-  he: { translation: he },
-  hu: { translation: hu },
-  id: { translation: id },
-  nl: { translation: nl },
-  it: { translation: it },
-  pl: { translation: pl },
-  pt: { translation: pt },
-  ro: { translation: ro },
-  ru: { translation: ru },
-  sv: { translation: sv },
-  uk: { translation: uk },
-  zh: { translation: zh },
-};
+const resources = Object.fromEntries(Object.entries(ALL_TRANSLATIONS).map(([code, translation]) => [code, { translation }]));
 
 /**
  * Initialize i18n configuration

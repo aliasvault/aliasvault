@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Riempimento Automatico AliasVault</string>
+  <string name="autofill_service_description">Riempimento Automatico AliasVault</string>
   <string name="aliasvault_icon">AliasVault icona</string>
   <string name="common_close">Chiudi</string>
   <string name="common_next">Avanti</string>
@@ -11,7 +12,7 @@
   <string name="common_hide_details">Nascondi dettagli</string>
   <string name="common_copy">Copia</string>
   <string name="common_copied_to_clipboard">Copiato negli appunti</string>
-  <string name="unknown_error">Si è verificato un errore sconosciuto</string>
+  <string name="unknown_error">Si è verificato un errore sconosciuto.</string>
   <string name="autofill_failed_to_retrieve">Impossibile recuperare, aprire l\'app</string>
   <string name="autofill_no_match_found">Nessuna corrispondenza trovata</string>
   <string name="autofill_open_app">Apri app</string>
@@ -27,11 +28,11 @@
   <string name="passkey_display_name_label">Nome Passkey</string>
   <string name="passkey_display_name_hint">Inserisci un nome per questa passkey</string>
   <string name="passkey_website_label">Sito Web</string>
-  <string name="passkey_username_label">Nome Utente</string>
+  <string name="passkey_username_label">Nome utente</string>
   <string name="passkey_create_button">Crea Passkey</string>
-  <string name="passkey_creating">Creazione passkey…</string>
-  <string name="passkey_saving">Salvataggio nella cassaforte…</string>
-  <string name="passkey_syncing">Sincronizzazione con il server…</string>
+  <string name="passkey_creating">Creazione passkey...</string>
+  <string name="passkey_saving">Salvataggio nella cassaforte...</string>
+  <string name="passkey_syncing">Sincronizzazione con il server...</string>
   <string name="passkey_error_title">Errore</string>
   <string name="passkey_error_empty_name">Inserisci un nome per la passkey</string>
   <string name="passkey_creation_failed">Impossibile creare passkey</string>
@@ -41,22 +42,22 @@
   <string name="passkey_create_new_button">Crea Nuova Passkey</string>
   <string name="passkey_select_to_replace">Oppure, sostituire un passkey esistente:</string>
   <string name="passkey_add_to_existing">Oppure, aggiungi passkey a un elemento esistente:</string>
-  <string name="passkey_replace_explanation">Questo sostituirà la passkey esistente con una nuova. Si prega di notare che la vecchia passkey sarà sovrascritta e non sarà più accessibile. Se si desidera invece creare una passkey separata, tornare alla schermata precedente.</string>
+  <string name="passkey_replace_explanation">Questo sostituirà la passkey esistente con una nuova. Tieni presente che la tua vecchia passkey sarà sovrascritta e non sarà più accessibile. Se invece si desidera creare una passkey separata, tornare alla schermata precedente.</string>
   <string name="passkey_merge_explanation">Questo aggiungerà una passkey al tuo elemento esistente. La tua password e altri dati saranno preservati.</string>
-  <string name="passkey_replacing">Sostituzione passkey…</string>
+  <string name="passkey_replacing">Sostituzione passkey...</string>
   <string name="add_passkey">Aggiungi Passkey</string>
   <string name="add_passkey_subtitle">Aggiunta passkey all\'elemento esistente</string>
-  <string name="passkey_checking_connection">Controllo connessione…</string>
-  <string name="passkey_retrieving">Recupero passkey…</string>
-  <string name="passkey_verifying">Verifica…</string>
-  <string name="passkey_authenticating">Autenticazione…</string>
+  <string name="passkey_checking_connection">Controllo connessione...</string>
+  <string name="passkey_retrieving">Recupero passkey...</string>
+  <string name="passkey_verifying">Verifica...</string>
+  <string name="passkey_authenticating">Autenticazione...</string>
   <string name="connection_error_title">Errore Di Connessione</string>
   <string name="connection_error_message">Non è possibile effettuare alcuna connessione al server. Controlla la tua connessione internet e prova a creare nuovamente la passkey.</string>
   <string name="session_expired_title">Sessione Scaduta</string>
   <string name="session_expired_message">La sessione è scaduta: è necessario accedere nuovamente.</string>
   <string name="password_changed_title">Password Modificata</string>
   <string name="password_changed_message">La tua password è stata cambiata. Accedi di nuovo.</string>
-  <string name="version_not_supported_title">Aggiornamento necessario</string>
+  <string name="version_not_supported_title">Aggiornamento richiesto</string>
   <string name="version_not_supported_message">La versione dell\'app non è più supportata. Si prega di aggiornare all\'ultima versione.</string>
   <string name="server_unavailable_title">Server Non Disponibile</string>
   <string name="server_unavailable_message">Il server non è al momento disponibile. Riprova più tardi.</string>
@@ -79,7 +80,7 @@
   <string name="pin_confirm_description">Reinserisci il tuo PIN per confermare.</string>
   <string name="pin_mismatch">I PIN non corrispondono. Riprova.</string>
   <string name="password_unlock_title">Sblocca Cassaforte</string>
-  <string name="password_unlock_subtitle">Inserisci la password principale</string>
+  <string name="password_unlock_subtitle">Inserisci la tua password principale</string>
   <string name="password_unlock_password_hint">Password</string>
   <string name="password_unlock_button">Sblocca</string>
   <string name="password_unlock_incorrect">Password errata. Riprovare.</string>

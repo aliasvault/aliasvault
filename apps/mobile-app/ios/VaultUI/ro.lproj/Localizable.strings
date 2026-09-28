@@ -1,14 +1,13 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Eroare";
 "cancel" = "Anulează";
 "back" = "Înapoi";
 "next" = "Înainte";
 "edit" = "Editează";
 "website" = "Site web";
-"username" = "Nume utilizator";
+"username" = "Utilizator";
 "title" = "Titlu";
-"unknown_error" = "A apărut o eroare necunoscută";
-
+"unknown_error" = "A apărut o eroare necunoscută.";
 "loading_items" = "Se încarcă elementele...";
 "no_items_found" = "Nu s-au găsit elemente";
 "no_items_match" = "Niciun element existent nu corespunde căutării tale";
@@ -30,9 +29,7 @@
 "password" = "Parolă";
 "items_load_error" = "Încărcarea elementelor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
 "no_item_selected" = "Niciun element selectat.";
-
-/* Context menu strings */
-"copy_username" = "Copiază numele de utilizator";
+"copy_username" = "Copiază utilizatorul";
 "copy_password" = "Copiază parola";
 "copy_email" = "Copiază e-mailul";
 "copy_totp_code" = "Copiază codul TOTP";
@@ -42,51 +39,35 @@
 "email_copied" = "E-mail copiat";
 "totp_code_copied" = "Cod TOTP copiat";
 "totp_code" = "Cod TOTP";
-
-/* Search bar */
 "search_items" = "Caută elemente...";
-
-/* Passkey registration */
-"create_passkey_title" = "Creează Passkey nou";
+"create_passkey_title" = "Creează Passkey Nou";
 "create_passkey_subtitle" = "Înregistrează un Passkey nou pentru acest site web. Acesta va fi stocat în siguranță în seif și sincronizat automat pe toate dispozitivele tale prin AliasVault.";
 "create_passkey_button_confirm" = "Creează Passkey";
-
-/* Passkey provider */
 "passkey" = "Passkey";
 "loading_passkeys" = "Se încarcă Passkey-urile...";
 "no_passkeys_found" = "Nu s-au găsit Passkey-uri";
 "no_passkeys_match" = "Niciun Passkey existent nu corespunde căutării tale";
 "select_passkey" = "Selectează passkey-ul";
 "passkeys_load_error" = "Încărcarea passkey-urilor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
-
-/* Passkey replacement */
-"create_new_passkey" = "Creează Passkey nou";
+"create_new_passkey" = "Creează Passkey Nou";
 "select_passkey_to_replace" = "Sau înlocuiește un Passkey existent";
 "replace_passkey" = "Înlocuiește Passkey";
 "replace_passkey_explanation" = "Această acțiune va înlocui Passkey-ul existent cu unul nou. Reține că vechiul Passkey va fi suprascris și nu va mai putea fi accesat. Dacă dorești să creezi un Passkey separat, revino la ecranul anterior.";
 "create_passkey_explanation" = "Această acțiune creează un Passkey nou și îl stochează în seif. Acesta va fi sincronizat automat pe toate dispozitivele tale care utilizează AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Sau adaugă Passkey la un element existent";
 "add_passkey" = "Adaugă Passkey";
 "merge_passkey_explanation" = "Această acțiune va adăuga un Passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.";
-
-/* PIN Unlock */
 "unlock_vault" = "Deblochează seiful";
-"enter_pin_to_unlock_vault" = "Introdu PIN-ul pentru a debloca seiful";
+"enter_pin_to_unlock_vault" = "Introdu codul PIN pentru a debloca seiful";
 "pin_locked_max_attempts" = "PIN blocat după prea multe încercări eșuate";
 "pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Introdu parola principală";
 "unlock" = "Deblochează";
 "incorrect_password" = "Parolă incorectă. Încearcă din nou.";
 "attempts_warning" = "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă %d ori.";
 "max_attempts_reached" = "Prea multe încercări eșuate de deblocare. Ai fost deconectat din motive de securitate.";
-
-/* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
 "pin_setup_subtitle" = "Alege un PIN pentru a-ți debloca seiful";
-"pin_confirm_title" = "Confirmă PIN-ul";
+"pin_confirm_title" = "Confirmă PIN";
 "pin_confirm_subtitle" = "Reintrodu PIN-ul pentru confirmare";
 "pin_mismatch" = "Codurile PIN nu coincid. Încearcă din nou.";

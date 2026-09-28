@@ -466,7 +466,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
               styles.switcherButton,
               isCustomDomain ? styles.switcherButtonActive : styles.switcherButtonInactive
             ]}>
-              {t('items.email')}
+              {t('common.email')}
             </Text>
           </TouchableOpacity>
           <Text style={styles.switcherSeparator}>/</Text>
@@ -478,7 +478,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
               styles.switcherButton,
               !isCustomDomain ? styles.switcherButtonActive : styles.switcherButtonInactive
             ]}>
-              {t('items.alias')}
+              {t('common.alias')}
             </Text>
           </TouchableOpacity>
           {required && <Text style={styles.requiredAsterisk}> *</Text>}

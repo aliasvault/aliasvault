@@ -292,7 +292,7 @@ export default function VaultErrorScreen() : React.ReactNode {
               testID="logout-button"
             >
               <ThemedText style={styles.logoutButtonText}>
-                {t('auth.logout')}
+                {t('common.logout')}
               </ThemedText>
             </RobustPressable>
           </View>

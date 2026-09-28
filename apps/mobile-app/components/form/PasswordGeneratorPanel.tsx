@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import type { PasswordSettings, DicewareCapitalization, DicewareSeparator, DicewareSalt } from '@aliasvault/models/vault';
-import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT, getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/models/defaults';
+import { getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/i18n/languages';
+import { MIN_WORD_COUNT, MAX_WORD_COUNT, DEFAULT_WORD_COUNT } from '@aliasvault/models/defaults';
 import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@aliasvault/client/utilities/PasswordLengthSlider';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 
@@ -303,7 +304,7 @@ export function PasswordGeneratorPanel({ initialSettings, onSettingsChange, onPr
               activeOpacity={0.7}
             >
               <ThemedText style={[styles.tabText, active && styles.tabTextActive]}>
-                {mode === 'basic' ? t('items.passwordTypeBasic') : t('items.passwordTypeDiceware')}
+                {mode === 'basic' ? t('common.password') : t('items.passwordTypeDiceware')}
               </ThemedText>
             </TouchableOpacity>
           );

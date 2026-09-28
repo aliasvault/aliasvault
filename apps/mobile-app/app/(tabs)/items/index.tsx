@@ -210,7 +210,7 @@ export default function ItemsScreen(): React.ReactNode {
   const getFilterTitle = useCallback((): string => {
     switch (filterType) {
       case ItemFilter.Passkeys:
-        return t('items.filters.passkeys');
+        return t('common.passkeys');
       case ItemFilter.Attachments:
         return t('common.attachments');
       case ItemFilter.Totp:

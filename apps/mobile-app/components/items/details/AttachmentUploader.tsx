@@ -193,7 +193,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
                 onPress={() => deleteAttachment(attachment)}
               >
                 <ThemedText style={styles.deleteButtonText}>
-                  {t('items.deleteAttachment')}
+                  {t('common.delete')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

@@ -180,7 +180,7 @@ export function ItemFilterMenu({
         <View style={[styles.item, styles.itemWithToggle, isActive(ItemFilter.All) && styles.itemActive]}>
           <TouchableOpacity style={styles.itemLabel} onPress={() => handlePickFilter(ItemFilter.All)}>
             <ThemedText style={[styles.itemText, isActive(ItemFilter.All) && styles.itemTextActive]}>
-              {t('items.filters.all')}
+              {t('items.title')}
             </ThemedText>
           </TouchableOpacity>
           {showFoldersToggle && onToggleShowFolders && (
@@ -231,7 +231,7 @@ export function ItemFilterMenu({
           onPress={() => handlePickFilter(ItemFilter.Passkeys)}
         >
           <ThemedText style={[styles.itemText, isActive(ItemFilter.Passkeys) && styles.itemTextActive]}>
-            {t('items.filters.passkeys')}
+            {t('common.passkeys')}
           </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity

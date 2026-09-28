@@ -447,7 +447,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         showFooterBorder={false}
       >
         <View style={styles.modalHeader}>
-          <ThemedText style={styles.modalTitle}>{t('items.changePasswordComplexity')}</ThemedText>
+          <ThemedText style={styles.modalTitle}>{t('items.passwordSettings')}</ThemedText>
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => setShowSettingsModal(false)}

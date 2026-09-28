@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Fel";
 "cancel" = "Avbryt";
 "back" = "Tillbaka";
@@ -7,8 +7,7 @@
 "website" = "Webbplats";
 "username" = "Användarnamn";
 "title" = "Titel";
-"unknown_error" = "Ett okänt fel har inträffat";
-
+"unknown_error" = "Ett okänt fel har inträffat.";
 "loading_items" = "Laddar objekt...";
 "no_items_found" = "Inga objekt hittades";
 "no_items_match" = "Inga befintliga objekt matchar din sökning";
@@ -30,8 +29,6 @@
 "password" = "Lösenord";
 "items_load_error" = "Inläsning av uppgifter gick fel. Vänligen öppna AliasVault-appen för att söka efter uppdateringar.";
 "no_item_selected" = "Inga objekt markerade";
-
-/* Context menu strings */
 "copy_username" = "Kopiera användarnamn";
 "copy_password" = "Kopiera lösenord";
 "copy_email" = "Kopiera e-postadress";
@@ -42,49 +39,33 @@
 "email_copied" = "E-postadress kopierad";
 "totp_code_copied" = "TOTP-kod kopierad";
 "totp_code" = "TOTP-kod";
-
-/* Search bar */
 "search_items" = "Sök objekt...";
-
-/* Passkey registration */
 "create_passkey_title" = "Skapa ny Passkey";
 "create_passkey_subtitle" = "Registrera ett nytt passkey för denna webbplats. Det lagras säkert i ditt valv och synkroniseras automatiskt mellan dina enheter med AliasVault.";
 "create_passkey_button_confirm" = "Skapa Passkey";
-
-/* Passkey provider */
 "passkey" = "Passkey";
 "loading_passkeys" = "Laddar Passkeys...";
 "no_passkeys_found" = "Inga Passkeys hittades";
 "no_passkeys_match" = "Inga befintliga passkeys matchar din sökning";
 "select_passkey" = "Välj Passkey";
 "passkeys_load_error" = "Det gick inte att läsa in passkeys. Vänligen öppna AliasVault-appen för att söka efter uppdateringar.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Skapa ny Passkey";
 "select_passkey_to_replace" = "Eller, ersätt en befintlig passkey";
 "replace_passkey" = "Ersätt Passkey";
 "replace_passkey_explanation" = "Detta kommer att ersätta din befintliga passkey med ett nytt. Tänk på att din gamla passkey kommer att skrivas över och inte längre vara tillgängligt. Om du vill skapa en separat passkey istället, gå tillbaka till föregående skärm.";
 "create_passkey_explanation" = "Detta skapar en ny passkey och lagrar den i ditt valv. Den synkroniseras automatiskt mellan alla dina enheter som använder AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Eller, lägg till passkey till ett befintligt objekt";
 "add_passkey" = "Lägg till Passkey";
 "merge_passkey_explanation" = "Detta kommer att lägga till en passkey till ditt befintliga objekt. Ditt lösenord och andra data kommer att bevaras.";
-
-/* PIN Unlock */
 "unlock_vault" = "Lås upp valv";
-"enter_pin_to_unlock_vault" = "Ange PIN-koden för att låsa upp ditt valv";
+"enter_pin_to_unlock_vault" = "Ange din PIN-kod för att låsa upp valvet";
 "pin_locked_max_attempts" = "PIN-koden låst efter för många misslyckade försök";
 "pin_incorrect_attempts_remaining" = "Felaktig PIN-kod. %d försök återstår";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Ange ditt huvudlösenord";
 "unlock" = "Lås upp";
 "incorrect_password" = "Felaktigt lösenord. Försök igen.";
 "attempts_warning" = "Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord %d gång(er) till.";
 "max_attempts_reached" = "För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl.";
-
-/* PIN Setup */
 "pin_setup_title" = "Ställ in PIN-kod";
 "pin_setup_subtitle" = "Välj en PIN-kod att låsa upp ditt valv med";
 "pin_confirm_title" = "Bekräfta PIN-kod";

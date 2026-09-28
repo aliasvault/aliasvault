@@ -422,7 +422,7 @@ export default function LoginScreen() : React.ReactNode {
         throw new Error('Login failed -- no token returned');
       }
 
-      setLoginStatus(t('auth.syncingVault'));
+      setLoginStatus(t('vault.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
 
       await processVaultResponse(
@@ -438,7 +438,7 @@ export default function LoginScreen() : React.ReactNode {
         setError(t('vault.errors.versionNotSupported'));
       } else if (apiErrorCodeOf(err)) {
         console.error('Login refused:', err);
-        setError(apiErrorMessage(err, t, t('auth.errors.serverError')));
+        setError(apiErrorMessage(err, t, t('common.errors.serverError')));
       } else if (err instanceof LocalAuthError) {
         console.error('Network/SSL error:', err);
         setError((err as LocalAuthError).message);
@@ -446,7 +446,7 @@ export default function LoginScreen() : React.ReactNode {
         console.error('Login error:', err);
         // Check if self-hosted to show appropriate server error message
         const isSelfHosted = await webApi.isSelfHosted();
-        setError(isSelfHosted ? t('auth.errors.serverErrorSelfHosted') : t('auth.errors.serverError'));
+        setError(isSelfHosted ? t('auth.errors.serverErrorSelfHosted') : t('common.errors.serverError'));
       }
       setIsLoading(false);
       setLoginStatus(null);
@@ -469,7 +469,7 @@ export default function LoginScreen() : React.ReactNode {
 
       const code = twoFactorCode.trim();
       if (!/^\d{6}$/.test(code)) {
-        throw new LocalAuthError(t('auth.errors.invalidAuthCode'));
+        throw new LocalAuthError(t('common.errors.invalidCode'));
       }
 
       const validationResponse = await srpUtil.validateLogin2Fa(
@@ -484,7 +484,7 @@ export default function LoginScreen() : React.ReactNode {
         throw new Error('Login failed -- no token returned');
       }
 
-      setLoginStatus(t('auth.syncingVault'));
+      setLoginStatus(t('vault.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
 
       await processVaultResponse(
@@ -499,13 +499,13 @@ export default function LoginScreen() : React.ReactNode {
         // Server refused this app version; show the notice translated, keyed on its error code.
         setError(t('vault.errors.versionNotSupported'));
       } else if (apiErrorCodeOf(err)) {
-        setError(apiErrorMessage(err, t, t('auth.errors.serverError')));
+        setError(apiErrorMessage(err, t, t('common.errors.serverError')));
       } else if (err instanceof LocalAuthError) {
         setError((err as Error).message);
       } else {
         // Check if self-hosted to show appropriate server error message
         const isSelfHosted = await webApi.isSelfHosted();
-        setError(t(isSelfHosted ? 'auth.errors.serverErrorSelfHosted' : 'auth.errors.serverError'));
+        setError(t(isSelfHosted ? 'auth.errors.serverErrorSelfHosted' : 'common.errors.serverError'));
       }
       setIsLoading(false);
     }
@@ -784,7 +784,7 @@ export default function LoginScreen() : React.ReactNode {
                       testID="username-input"
                     />
                   </View>
-                  <Text style={styles.label}>{t('auth.password')}</Text>
+                  <Text style={styles.label}>{t('common.password')}</Text>
                   <View style={styles.inputContainer}>
                     <MaterialIcons
                       name="lock"

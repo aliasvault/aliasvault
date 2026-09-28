@@ -239,7 +239,7 @@ export default function AndroidAutofillScreen() : React.ReactNode {
         </View>
 
         <View style={styles.instructionContainer}>
-          <ThemedText style={styles.instructionTitle}>{t('settings.androidAutofillSettings.howToEnable')}</ThemedText>
+          <ThemedText style={styles.instructionTitle}>{t('settings.autofillSetup.howToEnable')}</ThemedText>
           <ThemedText style={styles.instructionStep}>
             {t('settings.androidAutofillSettings.step1')}
           </ThemedText>
@@ -269,7 +269,7 @@ export default function AndroidAutofillScreen() : React.ReactNode {
                 onPress={handleAlreadyConfigured}
               >
                 <ThemedText style={styles.secondaryButtonText}>
-                  {t('settings.androidAutofillSettings.alreadyConfigured')}
+                  {t('settings.autofillSetup.alreadyConfigured')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

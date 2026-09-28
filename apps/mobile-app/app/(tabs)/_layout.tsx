@@ -114,7 +114,7 @@ export default function TabLayout() : React.ReactNode {
         <Tabs.Screen
           name="emails"
           options={{
-            title: t('navigation.emails'),
+            title: t('emails.title'),
             tabBarTestID: 'tab-emails',
             /**
              * Icon for the emails tab.
@@ -125,7 +125,7 @@ export default function TabLayout() : React.ReactNode {
         <Tabs.Screen
           name="settings"
           options={{
-            title: t('navigation.settings'),
+            title: t('common.settings'),
             tabBarTestID: 'tab-settings',
             /**
              * Icon for the settings tab.

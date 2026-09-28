@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Помилка";
 "cancel" = "Скасувати";
 "back" = "Назад";
@@ -7,8 +7,7 @@
 "website" = "Вебсайт";
 "username" = "Ім'я користувача";
 "title" = "Заголовок";
-"unknown_error" = "Сталася невідома помилка";
-
+"unknown_error" = "Сталася невідома помилка.";
 "loading_items" = "Loading items...";
 "no_items_found" = "No items found";
 "no_items_match" = "No existing items match your search";
@@ -22,7 +21,7 @@
 "linking_url" = "Linking...";
 "select_item" = "Select Item";
 "select_text_to_insert" = "Вибрати текст для вставки";
-"choose_username" = "Обрати ім'я користувача";
+"choose_username" = "Оберіть ім'я користувача";
 "select_text_to_insert_message" = "Виберіть текст, який потрібно вставити в поле введення";
 "choose_username_message" = "Для входу на цей вебсайт може знадобитися ваше ім’я користувача або електронна адреса";
 "username_prefix" = "Ім'я користувача: ";
@@ -30,8 +29,6 @@
 "password" = "Пароль";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
-
-/* Context menu strings */
 "copy_username" = "Копіювати ім'я користувача";
 "copy_password" = "Копіювати пароль";
 "copy_email" = "Копіювати електронну адресу";
@@ -42,49 +39,33 @@
 "email_copied" = "Адреса ел. пошти скопійована";
 "totp_code_copied" = "TOTP code copied";
 "totp_code" = "Код TOTP";
-
-/* Search bar */
 "search_items" = "Search items...";
-
-/* Passkey registration */
 "create_passkey_title" = "Create New Passkey";
 "create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
 "create_passkey_button_confirm" = "Create Passkey";
-
-/* Passkey provider */
 "passkey" = "Ключ доступу";
 "loading_passkeys" = "Loading passkeys...";
 "no_passkeys_found" = "No passkeys found";
 "no_passkeys_match" = "No existing passkeys match your search";
 "select_passkey" = "Select Passkey";
 "passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Create New Passkey";
 "select_passkey_to_replace" = "Or, replace an existing passkey";
 "replace_passkey" = "Replace Passkey";
 "replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
 "create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Or, add passkey to an existing item";
 "add_passkey" = "Add Passkey";
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
-
-/* PIN Unlock */
 "unlock_vault" = "Розблокувати Vault";
 "enter_pin_to_unlock_vault" = "Введіть свій ПІН-код, щоб розблокувати сховище";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Введіть ваш головний пароль";
 "unlock" = "Розблокувати";
 "incorrect_password" = "Невірний пароль. Будь ласка, спробуйте ще раз.";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
-
-/* PIN Setup */
 "pin_setup_title" = "Налаштування PIN-коду";
 "pin_setup_subtitle" = "Виберіть PIN-код, щоб розблокувати сховище";
 "pin_confirm_title" = "Підтвердити ПІН-код";

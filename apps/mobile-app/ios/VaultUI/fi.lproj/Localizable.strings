@@ -1,4 +1,4 @@
-/* English localization strings for VaultUI */
+/* Strings of the VaultUI framework. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "error" = "Virhe";
 "cancel" = "Peruuta";
 "back" = "Takaisin";
@@ -7,8 +7,7 @@
 "website" = "Verkkosivusto";
 "username" = "Käyttäjänimi";
 "title" = "Otsikko";
-"unknown_error" = "Tapahtui tuntematon virhe";
-
+"unknown_error" = "Tapahtui tuntematon virhe.";
 "loading_items" = "Loading items...";
 "no_items_found" = "No items found";
 "no_items_match" = "No existing items match your search";
@@ -30,8 +29,6 @@
 "password" = "Salasana";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
-
-/* Context menu strings */
 "copy_username" = "Kopioi käyttäjänimi";
 "copy_password" = "Kopioi salasana";
 "copy_email" = "Kopioi sähköposti";
@@ -42,49 +39,33 @@
 "email_copied" = "Sähköposti kopioitu";
 "totp_code_copied" = "TOTP code copied";
 "totp_code" = "TOTP-koodi";
-
-/* Search bar */
 "search_items" = "Search items...";
-
-/* Passkey registration */
 "create_passkey_title" = "Luo uusi sala-avain";
 "create_passkey_subtitle" = "Rekisteröi uusi todennusavain tälle sivustolle. Se tallennetaan turvallisesti holveen ja synkronoidaan automaattisesti eri laitteissa AliasVaultin kanssa.";
-"create_passkey_button_confirm" = "Luo sala-avain";
-
-/* Passkey provider */
-"passkey" = "Sala-avain";
+"create_passkey_button_confirm" = "Luo Passkey, todennusavain";
+"passkey" = "Todennusavain";
 "loading_passkeys" = "Ladataan sala-avaimia...";
 "no_passkeys_found" = "Sala-avaimia ei löytynyt";
 "no_passkeys_match" = "Hakusi ei vastaa olemassa olevia sala-avaimia";
 "select_passkey" = "Valitse sala-avain";
 "passkeys_load_error" = "Todennusavainten lataaminen epäonnistui. Ole hyvä ja avaa AliasVault-sovellus tarkistaaksesi päivitykset.";
-
-/* Passkey replacement */
 "create_new_passkey" = "Luo uusi sala-avain";
 "select_passkey_to_replace" = "Tai korvaa olemassa oleva sala-avain";
 "replace_passkey" = "Korvaa sala-avain";
 "replace_passkey_explanation" = "Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.";
 "create_passkey_explanation" = "Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.";
-
-/* Passkey merge with existing item */
 "passkey_add_to_existing" = "Or, add passkey to an existing item";
 "add_passkey" = "Add Passkey";
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
-
-/* PIN Unlock */
 "unlock_vault" = "Avaa holvin lukitus";
 "enter_pin_to_unlock_vault" = "Syötä PIN-koodi avataksesi holvisi";
 "pin_locked_max_attempts" = "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen";
 "pin_incorrect_attempts_remaining" = "Virheellinen PIN, %d yritystä jäljellä";
-
-/* Password Unlock */
 "enter_password_to_unlock" = "Syötä pääsalasanasi";
 "unlock" = "Avaa lukitus";
 "incorrect_password" = "Virheellinen salasana. Yritä uudelleen. ";
 "attempts_warning" = "Incorrect password. You will be logged out if you enter the wrong password %d more times.";
 "max_attempts_reached" = "Too many failed unlock attempts. You have been logged out for security reasons.";
-
-/* PIN Setup */
 "pin_setup_title" = "Aseta PIN-koodi";
 "pin_setup_subtitle" = "Syötä PIN-koodi avataksesi holvisi";
 "pin_confirm_title" = "Vahvista PIN";

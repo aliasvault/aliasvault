@@ -94,18 +94,18 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
     const { name } = event.nativeEvent;
 
     switch (name) {
-      case t('items.contextMenu.edit'):
+      case t('common.edit'):
         navigate(() => {
           Keyboard.dismiss();
           router.push(itemEditRoute(item));
         });
         break;
-      case t('items.contextMenu.duplicate'):
+      case t('common.duplicate'):
         if (onItemDuplicate) {
           await onItemDuplicate({ Id: item.Id, ManifestId: item.ManifestId });
         }
         break;
-      case t('items.contextMenu.delete'):
+      case t('common.delete'):
         Keyboard.dismiss();
         showConfirm(
           t('items.deleteItem'),
@@ -203,7 +203,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
   }[] => {
     const actions: { title: string; systemIcon: string; destructive?: boolean }[] = [
       {
-        title: t('items.contextMenu.edit'),
+        title: t('common.edit'),
         systemIcon: Platform.select({
           ios: 'pencil',
           android: 'baseline_edit',
@@ -211,7 +211,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
         }),
       },
       {
-        title: t('items.contextMenu.duplicate'),
+        title: t('common.duplicate'),
         systemIcon: Platform.select({
           ios: 'plus.square.on.square',
           android: 'baseline_content_copy',
@@ -219,7 +219,7 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
         }),
       },
       {
-        title: t('items.contextMenu.delete'),
+        title: t('common.delete'),
         systemIcon: Platform.select({
           ios: 'trash',
           android: 'baseline_delete',

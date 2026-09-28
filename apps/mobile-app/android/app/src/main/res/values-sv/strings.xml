@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Strings of the Android app, autofill service and passkey provider. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. -->
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFyll</string>
+  <string name="autofill_service_description">AliasVault AutoFyll</string>
   <string name="aliasvault_icon">AliasVault ikon</string>
   <string name="common_close">Stäng</string>
   <string name="common_next">Nästa</string>
@@ -11,7 +12,7 @@
   <string name="common_hide_details">Dölj detaljer</string>
   <string name="common_copy">Kopiera</string>
   <string name="common_copied_to_clipboard">Kopierat till urklipp</string>
-  <string name="unknown_error">Ett okänt fel har inträffat</string>
+  <string name="unknown_error">Ett okänt fel har inträffat.</string>
   <string name="autofill_failed_to_retrieve">Det gick inte att hämta, öppna app</string>
   <string name="autofill_no_match_found">Inga träffar hittades</string>
   <string name="autofill_open_app">Öppna app</string>
@@ -29,9 +30,9 @@
   <string name="passkey_website_label">Webbplats</string>
   <string name="passkey_username_label">Användarnamn</string>
   <string name="passkey_create_button">Skapa Passkey</string>
-  <string name="passkey_creating">Skapar passkey…</string>
-  <string name="passkey_saving">Sparar till valv…</string>
-  <string name="passkey_syncing">Synkroniserar med servern…</string>
+  <string name="passkey_creating">Skapar passkey...</string>
+  <string name="passkey_saving">Sparar till valv...</string>
+  <string name="passkey_syncing">Synkroniserar med servern...</string>
   <string name="passkey_error_title">Fel</string>
   <string name="passkey_error_empty_name">Ange ett namn för denna Passkey</string>
   <string name="passkey_creation_failed">Kunde inte skapa Passkey</string>
@@ -43,13 +44,13 @@
   <string name="passkey_add_to_existing">Eller, lägg till passkey till ett befintligt objekt:</string>
   <string name="passkey_replace_explanation">Detta kommer att ersätta din befintliga passkey med ett nytt. Tänk på att din gamla passkey kommer att skrivas över och inte längre vara tillgängligt. Om du vill skapa en separat passkey istället, gå tillbaka till föregående skärm.</string>
   <string name="passkey_merge_explanation">Detta kommer att lägga till en passkey till ditt befintliga objekt. Ditt lösenord och andra data kommer att bevaras.</string>
-  <string name="passkey_replacing">Ersätter passkey…</string>
+  <string name="passkey_replacing">Ersätter passkey...</string>
   <string name="add_passkey">Lägg till Passkey</string>
   <string name="add_passkey_subtitle">Lägger till passkey till befintligt objekt</string>
-  <string name="passkey_checking_connection">Kontrollerar anslutningen…</string>
-  <string name="passkey_retrieving">Hämtar passkey…</string>
-  <string name="passkey_verifying">Verifierar…</string>
-  <string name="passkey_authenticating">Autentiserar…</string>
+  <string name="passkey_checking_connection">Kontrollerar anslutningen...</string>
+  <string name="passkey_retrieving">Hämtar passkey...</string>
+  <string name="passkey_verifying">Verifierar...</string>
+  <string name="passkey_authenticating">Autentiserar...</string>
   <string name="connection_error_title">Anslutningsfel</string>
   <string name="connection_error_message">Ingen anslutning till servern kan göras. Kontrollera din internetanslutning och försök skapa din passkey igen.</string>
   <string name="session_expired_title">Sessionen har löpt ut</string>
@@ -70,7 +71,7 @@
   <string name="error_biometric_cancelled">Biometrisk autentisering avbruten</string>
   <string name="error_encryption_key_failed">Det gick inte att hämta krypteringsnyckeln</string>
   <string name="pin_unlock_vault">Lås upp valv</string>
-  <string name="pin_enter_to_unlock">Ange PIN-koden för att låsa upp ditt valv</string>
+  <string name="pin_enter_to_unlock">Ange din PIN-kod för att låsa upp valvet</string>
   <string name="pin_locked_max_attempts">PIN-koden låst efter för många misslyckade försök</string>
   <string name="pin_incorrect_attempts_remaining">Felaktig PIN-kod. %d försök återstår</string>
   <string name="pin_setup_title">Ställ in PIN-kod</string>
