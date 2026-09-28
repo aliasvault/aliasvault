@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
@@ -16,6 +16,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+import { FolderIcon } from '@/components/folders/FolderIcon';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
@@ -97,7 +98,7 @@ export default function FamilySharingScreen(): React.ReactNode {
       return actionError.message;
     }
 
-    const code = actionError instanceof ApiRequestError ? actionError.apiErrorCode : null;
+    const code = apiErrorCodeOf(actionError);
     const knownError = sharingErrorMessage(code);
     if (knownError) {
       return knownError;
@@ -244,7 +245,7 @@ export default function FamilySharingScreen(): React.ReactNode {
         await SharingService.deleteSharedManifest(webApi, group.groupId, manifest.manifestId, challenge => NativeVaultManager.deriveSrpProof(challenge.salt, challenge.srpIdentity, challenge.serverEphemeral));
       } catch (deleteError) {
         // Local unlock key could mismatch what is actually stored on server (recent password change on other device), if so we show a incorrect password error.
-        if (deleteError instanceof ApiRequestError && deleteError.apiErrorCode === 'PASSWORD_MISMATCH') {
+        if (apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH') {
           throw new SharingOperationError(t('auth.errors.incorrectPassword'));
         }
 
@@ -275,8 +276,12 @@ export default function FamilySharingScreen(): React.ReactNode {
   const onRefresh = async (): Promise<void> => {
     HapticsUtility.impact();
     setIsRefreshing(true);
-    await loadOverview();
-    setIsRefreshing(false);
+    try {
+      await syncVault();
+      await loadOverview();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const styles = StyleSheet.create({
@@ -370,6 +375,15 @@ export default function FamilySharingScreen(): React.ReactNode {
       color: colors.textMuted,
       flex: 1,
       fontSize: 13,
+    },
+    invitationCard: {
+      borderColor: colors.primary,
+      borderWidth: 1.5,
+    },
+    invitationTitleRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
     },
     memberName: {
       color: colors.text,
@@ -470,8 +484,11 @@ export default function FamilySharingScreen(): React.ReactNode {
               <View style={styles.section}>
                 <ThemedText style={styles.sectionTitle}>{familySharingText.invitations}</ThemedText>
                 {receivedInvitations.map(invitation => (
-                  <View key={invitation.id} style={styles.card}>
-                    <ThemedText style={styles.cardTitle}>{invitationNames[invitation.id] ?? familySharingText.sharedVault}</ThemedText>
+                  <View key={invitation.id} style={[styles.card, styles.invitationCard]}>
+                    <View style={styles.invitationTitleRow}>
+                      <FolderIcon isShared size={20} color={colors.tint} />
+                      <ThemedText style={styles.cardTitle} numberOfLines={1}>{invitationNames[invitation.id] ?? familySharingText.sharedVault}</ThemedText>
+                    </View>
                     <ThemedText style={styles.mutedText}>{familySharingText.invitedBy(invitation.inviterUsername)}</ThemedText>
                     <View style={styles.buttonRow}>
                       {renderAction(familySharingText.accept, () => acceptInvitation(invitation.id))}

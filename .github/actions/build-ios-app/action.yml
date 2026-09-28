@@ -25,11 +25,9 @@ runs:
         cache-dependency-path: apps/mobile-app/package-lock.json
 
     - name: Build core libraries
-      shell: bash
-      run: |
-        cd ./core
-        chmod +x build-and-distribute.sh
-        ./build-and-distribute.sh
+      uses: ./.github/actions/build-core-libraries
+      with:
+        target: ios
 
     - name: Install dependencies
       run: npm ci

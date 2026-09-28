@@ -31,6 +31,9 @@ jobs:
 
       - name: Build Core Libraries
         uses: ./.github/actions/build-core-libraries
+        with:
+          target: browser-extension
+          check-generated: "true"
 
   build-chrome-extension:
     needs: build-core-libraries

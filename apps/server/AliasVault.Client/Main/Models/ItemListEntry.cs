@@ -83,9 +83,4 @@ public sealed class ItemListEntry
     /// Gets or sets the folder ID this item belongs to.
     /// </summary>
     public Guid? FolderId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the folder name this item belongs to.
-    /// </summary>
-    public string? FolderName { get; set; }
 }

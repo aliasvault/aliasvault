@@ -1,7 +1,8 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import { getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
-import { applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
-import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
+import { ItemFilter, applyTypeFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -43,14 +44,13 @@ import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
-import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { ItemType } from '@aliasvault/models/vault';
 
 /**
  * Item type filter option configuration.
  */
 type ItemTypeOption = {
-  type: ItemType;
+  type: ItemFilterType;
   titleKey: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
 };
@@ -59,10 +59,10 @@ type ItemTypeOption = {
  * Available item type filter options with icons.
  */
 const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
-  { type: ItemTypes.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
-  { type: ItemTypes.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
-  { type: ItemTypes.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
-  { type: ItemTypes.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
+  { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
+  { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
+  { type: ItemFilter.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
+  { type: ItemFilter.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
 ];
 
 /**
@@ -91,9 +91,9 @@ export default function ItemsScreen(): React.ReactNode {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<ItemFilterType>('all');
+  const [filterType, setFilterType] = useState<ItemFilterType>(ItemFilter.All);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('NewestFirst');
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(CredentialSortOrder.NewestFirst);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFolderItems, setShowFolderItems] = useState(true);
 
@@ -209,13 +209,13 @@ export default function ItemsScreen(): React.ReactNode {
    */
   const getFilterTitle = useCallback((): string => {
     switch (filterType) {
-      case 'passkeys':
+      case ItemFilter.Passkeys:
         return t('items.filters.passkeys');
-      case 'attachments':
+      case ItemFilter.Attachments:
         return t('common.attachments');
-      case 'totp':
+      case ItemFilter.Totp:
         return t('items.filters.totp');
-      case 'all':
+      case ItemFilter.All:
         return t('items.title');
       default:
         if (isItemTypeFilter(filterType)) {
@@ -278,15 +278,15 @@ export default function ItemsScreen(): React.ReactNode {
   const sortedItems = useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {
-      case 'NewestFirst':
+      case CredentialSortOrder.NewestFirst:
         return itemsCopy.sort((a, b) =>
           new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
         );
-      case 'Alphabetical':
+      case CredentialSortOrder.Alphabetical:
         return itemsCopy.sort((a, b) =>
           (a.Name || '').localeCompare(b.Name || '')
         );
-      case 'OldestFirst':
+      case CredentialSortOrder.OldestFirst:
       default:
         return itemsCopy.sort((a, b) =>
           new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
@@ -833,7 +833,7 @@ export default function ItemsScreen(): React.ReactNode {
      */
     const getMessage = (): string => {
       // Both search and filter active
-      if (searchQuery && filterType !== 'all') {
+      if (searchQuery && filterType !== ItemFilter.All) {
         return t('items.noMatchingItemsWithFilter', { filter: getFilterTitle(), search: searchQuery });
       }
       // Only search active
@@ -841,7 +841,7 @@ export default function ItemsScreen(): React.ReactNode {
         return t('items.noMatchingItemsSearch', { search: searchQuery });
       }
       // Only filter active (no search)
-      if (filterType !== 'all') {
+      if (filterType !== ItemFilter.All) {
         return t('items.noMatchingItems');
       }
       // All items are in folders - show helpful message
@@ -852,7 +852,7 @@ export default function ItemsScreen(): React.ReactNode {
       return t('items.noItemsFound');
     };
 
-    const showClearButtons = searchQuery || filterType !== 'all';
+    const showClearButtons = searchQuery || filterType !== ItemFilter.All;
 
     return (
       <View style={styles.emptyContainer}>
@@ -870,10 +870,10 @@ export default function ItemsScreen(): React.ReactNode {
                 <Text style={styles.clearSearchButtonText}>{t('items.clearSearch')}</Text>
               </TouchableOpacity>
             )}
-            {filterType !== 'all' && (
+            {filterType !== ItemFilter.All && (
               <TouchableOpacity
                 style={styles.clearFilterButton}
-                onPress={() => setFilterType('all')}
+                onPress={() => setFilterType(ItemFilter.All)}
               >
                 <MaterialIcons name="close" size={16} color={colors.primary} />
                 <Text style={styles.clearFilterButtonText}>{t('items.clearFilter')}</Text>
@@ -891,7 +891,7 @@ export default function ItemsScreen(): React.ReactNode {
    */
   const renderListFooter = (): React.ReactNode => {
     // Don't show footer if loading, no items, or no active filter/search
-    if (isLoadingItems || filteredItems.length === 0 || (filterType === 'all' && !searchQuery)) {
+    if (isLoadingItems || filteredItems.length === 0 || (filterType === ItemFilter.All && !searchQuery)) {
       return null;
     }
 
@@ -906,10 +906,10 @@ export default function ItemsScreen(): React.ReactNode {
             <Text style={styles.clearSearchButtonText}>{t('items.clearSearch')}</Text>
           </TouchableOpacity>
         )}
-        {filterType !== 'all' && (
+        {filterType !== ItemFilter.All && (
           <TouchableOpacity
             style={styles.clearFilterButton}
-            onPress={() => setFilterType('all')}
+            onPress={() => setFilterType(ItemFilter.All)}
           >
             <MaterialIcons name="close" size={16} color={colors.primary} />
             <Text style={styles.clearFilterButtonText}>{t('items.clearFilter')}</Text>

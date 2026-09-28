@@ -1,10 +1,10 @@
-import { getFieldValue, getFieldValues } from '@aliasvault/models/vault';
 import { Ionicons } from '@expo/vector-icons';
-import { Directory, File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
+import { getExportDirectory } from '@/utils/FileUtility';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -17,36 +17,6 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
 
-import type { Item } from '@aliasvault/models/vault';
-
-/**
- * CSV record for Item objects (matching server ItemCsvRecord format).
- * Must match the column order and types from AliasVault.ImportExport.ItemCsvService.
- */
-interface IItemCsvRecord {
-  ServiceName: string;
-  FolderPath: string;
-  ServiceUrl: string;
-  Username: string;
-  CurrentPassword: string;
-  AliasEmail: string;
-  TwoFactorSecret: string;
-  AliasGender: string;
-  AliasFirstName: string;
-  AliasLastName: string;
-  AliasNickName: string;
-  AliasBirthDate: string;
-  CardholderName: string;
-  CardNumber: string;
-  CardExpiryMonth: string;
-  CardExpiryYear: string;
-  CardCvv: string;
-  CardPin: string;
-  Notes: string;
-  CreatedAt: string;
-  UpdatedAt: string;
-}
-
 /**
  * Import/Export settings screen.
  * @returns The Import/Export settings screen component.
@@ -57,201 +27,6 @@ export default function ImportExportScreen(): React.ReactNode {
   const dbContext = useDb();
   const { showAlert, showConfirm } = useDialog();
   const [isExporting, setIsExporting] = useState(false);
-
-  /**
-   * Format date to match server format (MM/DD/YYYY HH:mm:ss).
-   */
-  const formatDate = (dateStr: string | null | undefined): string => {
-    if (!dateStr) {
-      const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
-    }
-
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) {
-        // If invalid date, return empty string
-        return '';
-      }
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
-    } catch {
-      // Return empty string if parsing fails
-      return '';
-    }
-  };
-
-  /**
-   * Helper to extract a single string value from field (handles string | string[] return type).
-   */
-  const getFieldValueAsString = (item: Item, fieldKey: string): string => {
-    const value = getFieldValue(item, fieldKey);
-    if (Array.isArray(value)) {
-      return value[0] ?? '';
-    }
-    return value ?? '';
-  };
-
-  /**
-   * Helper to extract all values of a multi-value field as a comma separated string.
-   */
-  const getFieldValuesAsString = (item: Item, fieldKey: string): string => {
-    return getFieldValues(item, fieldKey)
-      .map(value => value?.trim() ?? '')
-      .filter(value => value.length > 0)
-      .join(',');
-  };
-
-  /**
-   * Convert items to CSV format.
-   * Matches the server's ItemCsvService.ExportItemsToCsv format.
-   */
-  const itemsToCsv = async (items: Item[]): Promise<string> => {
-    const records: IItemCsvRecord[] = [];
-
-    /*
-     * Get all items with their TOTP codes
-     */
-    for (const item of items) {
-      // Get TOTP codes for this item
-      const totpCodes = await dbContext.sqliteClient?.items.getTotpCodesForItem(item) ?? [];
-      const totpSecret = totpCodes.length > 0 ? totpCodes[0].SecretKey : '';
-
-      /*
-       * Build folder path (hierarchical with "/" separator)
-       * FolderPath is an array like ["Work", "Projects", "Active"]
-       */
-      const folderPath = item.FolderPath?.join('/') ?? '';
-
-      // Get field values using the same FieldKey constants as server
-      const serviceUrl = getFieldValuesAsString(item, 'login.url');
-      const username = getFieldValueAsString(item, 'login.username');
-      const password = getFieldValueAsString(item, 'login.password');
-      const aliasEmail = getFieldValueAsString(item, 'login.email');
-      const aliasGender = getFieldValueAsString(item, 'alias.gender');
-      const aliasFirstName = getFieldValueAsString(item, 'alias.firstName');
-      const aliasLastName = getFieldValueAsString(item, 'alias.lastName');
-      const aliasBirthdate = getFieldValueAsString(item, 'alias.birthdate');
-      const notes = getFieldValueAsString(item, 'notes.content');
-      const cardholderName = getFieldValueAsString(item, 'card.cardholder_name');
-      const cardNumber = getFieldValueAsString(item, 'card.number');
-      const cardExpiryMonth = getFieldValueAsString(item, 'card.expiry_month');
-      const cardExpiryYear = getFieldValueAsString(item, 'card.expiry_year');
-      const cardCvv = getFieldValueAsString(item, 'card.cvv');
-      const cardPin = getFieldValueAsString(item, 'card.pin');
-
-      // Parse birthdate to formatted string (server expects MM/DD/YYYY format in CSV)
-      const formattedBirthDate = aliasBirthdate ? formatDate(aliasBirthdate) : '';
-
-      const record: IItemCsvRecord = {
-        ServiceName: item.Name ?? '',
-        FolderPath: folderPath,
-        ServiceUrl: serviceUrl,
-        Username: username,
-        CurrentPassword: password,
-        AliasEmail: aliasEmail,
-        TwoFactorSecret: totpSecret,
-        AliasGender: aliasGender,
-        AliasFirstName: aliasFirstName,
-        AliasLastName: aliasLastName,
-        AliasNickName: '', // NickName is no longer stored as a separate field
-        AliasBirthDate: formattedBirthDate,
-        CardholderName: cardholderName,
-        CardNumber: cardNumber,
-        CardExpiryMonth: cardExpiryMonth,
-        CardExpiryYear: cardExpiryYear,
-        CardCvv: cardCvv,
-        CardPin: cardPin,
-        Notes: notes,
-        CreatedAt: formatDate(item.CreatedAt),
-        UpdatedAt: formatDate(item.UpdatedAt)
-      };
-
-      records.push(record);
-    }
-
-    // Generate CSV header (matching server format)
-    const headers = [
-      'ServiceName',
-      'FolderPath',
-      'ServiceUrl',
-      'Username',
-      'CurrentPassword',
-      'AliasEmail',
-      'TwoFactorSecret',
-      'AliasGender',
-      'AliasFirstName',
-      'AliasLastName',
-      'AliasNickName',
-      'AliasBirthDate',
-      'CardholderName',
-      'CardNumber',
-      'CardExpiryMonth',
-      'CardExpiryYear',
-      'CardCvv',
-      'CardPin',
-      'Notes',
-      'CreatedAt',
-      'UpdatedAt'
-    ];
-
-    /**
-     * Escape CSV value.
-     * @param {string} value - The value to escape.
-     * @returns {string} The escaped value.
-     */
-    const escapeCsvValue = (value: string): string => {
-      // If value contains comma, newline, or quote, wrap in quotes
-      if (value.includes(',') || value.includes('\n') || value.includes('"') || value.includes('\r')) {
-        // Escape quotes by doubling them and wrap in quotes
-        return `"${value.replace(/"/g, '""')}"`;
-      }
-      return value;
-    };
-
-    // Generate CSV content
-    const csvLines: string[] = [headers.join(',')];
-
-    for (const record of records) {
-      const values = [
-        escapeCsvValue(record.ServiceName),
-        escapeCsvValue(record.FolderPath),
-        escapeCsvValue(record.ServiceUrl),
-        escapeCsvValue(record.Username),
-        escapeCsvValue(record.CurrentPassword),
-        escapeCsvValue(record.AliasEmail),
-        escapeCsvValue(record.TwoFactorSecret),
-        escapeCsvValue(record.AliasGender),
-        escapeCsvValue(record.AliasFirstName),
-        escapeCsvValue(record.AliasLastName),
-        escapeCsvValue(record.AliasNickName),
-        escapeCsvValue(record.AliasBirthDate),
-        escapeCsvValue(record.CardholderName),
-        escapeCsvValue(record.CardNumber),
-        escapeCsvValue(record.CardExpiryMonth),
-        escapeCsvValue(record.CardExpiryYear),
-        escapeCsvValue(record.CardCvv),
-        escapeCsvValue(record.CardPin),
-        escapeCsvValue(record.Notes),
-        escapeCsvValue(record.CreatedAt),
-        escapeCsvValue(record.UpdatedAt)
-      ];
-      csvLines.push(values.join(','));
-    }
-
-    return csvLines.join('\n');
-  };
 
   /**
    * Show export confirmation dialog, then password verification.
@@ -298,31 +73,24 @@ export default function ImportExportScreen(): React.ReactNode {
       return;
     }
 
-    /*
-     * Note: when updating this CSV export logic, make sure to update the
-     * unittest "ImportCredentialsFromAliasVaultMobileAppCsv" in the .NET solution as well.
-     */
-
     setIsExporting(true);
 
+    let file: File | null = null;
     try {
       const dateStr = new Date().toISOString().split('T')[0];
 
-      // Export as CSV. Only personal manifest entries are exported.
-      const personalManifestId = await dbContext.sqliteClient?.getPersonalManifestId();
-      if (!personalManifestId) {
-        throw new Error('No personal manifest id is recorded; the vault has not been loaded yet.');
+      if (!dbContext.sqliteClient) {
+        throw new Error('Vault is not available');
       }
-      const items = await dbContext.sqliteClient?.items.getAllInManifest(personalManifestId) ?? [];
-      const csvContent = await itemsToCsv(items);
+      const csvContent = await dbContext.sqliteClient.importExport.exportToCsv();
 
       const filename = `aliasvault-export-${dateStr}.csv`;
-      const downloadsDir = new Directory(Paths.document, 'Exports');
-      if (!downloadsDir.exists) {
-        downloadsDir.create({ intermediates: true });
+      const exportDir = getExportDirectory();
+      if (!exportDir.exists) {
+        exportDir.create({ intermediates: true });
       }
 
-      const file = new File(downloadsDir, filename);
+      file = new File(exportDir, filename);
       if (file.exists) {
         file.delete();
       }
@@ -330,28 +98,24 @@ export default function ImportExportScreen(): React.ReactNode {
       file.write(csvContent);
 
       // Share the file using the system share dialog
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
+      if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(file.uri, {
           dialogTitle: filename,
           mimeType: 'text/csv',
         });
-
-        // Clean up the temporary file after sharing
-        setTimeout(() => {
-          try {
-            if (file.exists) {
-              file.delete();
-            }
-          } catch (error) {
-            console.error('Error cleaning up export file:', error);
-          }
-        }, 5000);
       }
     } catch (error) {
       console.error('Export error:', error);
       showAlert(t('common.error'), t('common.errors.unknownError'));
     } finally {
+      // Cleanup temporary export file if it still exists.
+      try {
+        if (file?.exists) {
+          file.delete();
+        }
+      } catch (error) {
+        console.error('Error cleaning up export file:', error);
+      }
       setIsExporting(false);
     }
   };

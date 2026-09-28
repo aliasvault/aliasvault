@@ -1,0 +1,102 @@
+# Web app (React) E2E tests
+name: E2E Tests - Web App
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/web/**'
+      - 'apps/server/AliasVault.Api/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-web.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/web/**'
+      - 'apps/server/AliasVault.Api/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-web.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-playwright-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Build core libraries
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: web
+
+      - name: Start dev database
+        run: ./scripts/dev.sh db-start
+
+      - name: Start API server
+        uses: ./.github/actions/start-api-server
+        with:
+          database: aliasdb_e2e_web
+
+      - name: Install web app dependencies
+        run: npm ci
+        working-directory: apps/web
+
+      - name: Type check web app
+        run: npm run compile
+        working-directory: apps/web
+
+      - name: Run linting
+        run: npm run lint
+        working-directory: apps/web
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+        working-directory: apps/web
+        timeout-minutes: 10
+
+      - name: Build and run E2E tests
+        run: npm run test:e2e
+        working-directory: apps/web
+        env:
+          ALIASVAULT_API_URL: "http://localhost:5100"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-playwright-test-results
+          path: apps/web/tests/test-results/
+          retention-days: 30
+
+      - name: Upload API server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-api-server-log
+          path: /tmp/api-server.log
+          retention-days: 30
+          if-no-files-found: ignore

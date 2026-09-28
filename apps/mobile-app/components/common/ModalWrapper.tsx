@@ -12,44 +12,29 @@ import {
   StatusBar,
 } from 'react-native';
 
+import { ModalBackdrop } from '@/components/common/ModalBackdrop';
 import { useColors } from '@/hooks/useColorScheme';
 
 interface IModalWrapperProps {
-  /** Whether the modal is visible. */
   isOpen: boolean;
-  /** Callback when the modal is requested to close. */
   onClose: () => void;
-  /** Whether closing is disabled (e.g., during submission). */
   isSubmitting?: boolean;
-  /** Optional modal title. */
   title?: string;
-  /** Modal body content. */
   children: React.ReactNode;
-  /** Optional footer content (e.g., buttons). */
   footer?: React.ReactNode;
-  /** Whether to enable keyboard avoiding behavior. Default: false. */
   keyboardAvoiding?: boolean;
-  /** Whether the content should be scrollable. Default: false. */
   scrollable?: boolean;
-  /** Maximum height for scrollable content. Default: 400. */
   maxScrollHeight?: number;
-  /** Animation type for the modal. Default: 'fade'. */
   animationType?: 'fade' | 'slide' | 'none';
-  /** Custom max width for the container. Default: 400. */
   maxWidth?: number;
-  /** Custom width percentage. Default: '90%'. */
   width?: string;
-  /** Whether to show header border. Default: true (only when title is provided). */
   showHeaderBorder?: boolean;
-  /** Whether to show footer border. Default: true (only when footer is provided). */
   showFooterBorder?: boolean;
-  /** Whether tapping the backdrop (outside the content) closes the modal. Default: false. */
   closeOnBackdropPress?: boolean;
 }
 
 /**
  * A generic modal wrapper component that provides consistent behavior:
- * - Themed backdrop (dark/light mode support)
  * - Consistent container styling
  * - Optional title with header
  * - Optional scrollable content
@@ -87,8 +72,6 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
   const styles = StyleSheet.create({
     backdrop: {
       alignItems: 'center',
-      // Lighter backdrop in dark mode for better contrast against black background
-      backgroundColor: 'rgba(0, 0, 0, 0.65)',
       flex: 1,
       justifyContent: 'center',
     },
@@ -209,6 +192,7 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
           barStyle="light-content"
         />
       )}
+      <ModalBackdrop />
       {renderBackdrop()}
     </Modal>
   );

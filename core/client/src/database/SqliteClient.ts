@@ -5,7 +5,7 @@ import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompa
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { TranslatableMessage } from '../platform/TranslatableMessage';
-import { base64ToBytes, bytesToBase64 } from '../utilities/Base64';
+import { bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
 import { detectImageMimeType } from '../utilities/ImageType';
 
@@ -19,6 +19,8 @@ import {
   SettingsRepository,
   EncryptionKeyRepository,
   LogoRepository,
+  ImportExportRepository,
+  StorageInsightsRepository
 } from './index';
 
 import type { ISyncDatabaseClient, SqliteBindValue } from './BaseRepository';
@@ -60,6 +62,8 @@ export class SqliteClient implements ISyncDatabaseClient {
   private _settings: SyncRepository<SettingsRepository> | null = null;
   private _encryptionKeys: SyncRepository<EncryptionKeyRepository> | null = null;
   private _logos: SyncRepository<LogoRepository> | null = null;
+  private _importExport: SyncRepository<ImportExportRepository> | null = null;
+  private _storageInsights: SyncRepository<StorageInsightsRepository> | null = null;
   private _logoRepository: LogoRepository | null = null;
 
   /**
@@ -141,7 +145,27 @@ export class SqliteClient implements ISyncDatabaseClient {
   }
 
   /**
-   * The logo repository itself, which the item repository calls into.
+   * Repository for the import/export logic.
+   */
+  public get importExport(): SyncRepository<ImportExportRepository> {
+    if (!this._importExport) {
+      this._importExport = syncRepository(new ImportExportRepository(this, this.logoRepository), this);
+    }
+    return this._importExport;
+  }
+
+  /**
+   * Repository for the storage statistics of the local vault.
+   */
+  public get storageInsights(): SyncRepository<StorageInsightsRepository> {
+    if (!this._storageInsights) {
+      this._storageInsights = syncRepository(new StorageInsightsRepository(this), this);
+    }
+    return this._storageInsights;
+  }
+
+  /**
+   * The logo repository itself, which the item and import/export repositories call into.
    */
   private get logoRepository(): LogoRepository {
     if (!this._logoRepository) {
@@ -157,14 +181,6 @@ export class SqliteClient implements ISyncDatabaseClient {
    */
   public getDb(): ISqliteDatabase | null {
     return this.db;
-  }
-
-  /**
-   * Initialize the SQLite database from a base64 string.
-   * @param base64String - Base64 encoded SQLite database
-   */
-  public async initializeFromBase64(base64String: string): Promise<void> {
-    return this.initializeFromBytes(base64ToBytes(base64String));
   }
 
   /**
@@ -185,6 +201,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       this._folders = null;
       this._settings = null;
       this._logos = null;
+      this._importExport = null;
     } catch (error) {
       logDefect('[Sqlite] Initializing the database failed', error);
       throw error;

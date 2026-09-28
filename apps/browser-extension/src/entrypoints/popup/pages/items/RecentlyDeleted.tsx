@@ -1,5 +1,5 @@
-import { TRASH_RETENTION_DAYS } from '@aliasvault/client/constants/Vault';
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
+import { TRASH_RETENTION_DEFAULT_DAYS } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,10 +21,10 @@ import type { Item } from '@aliasvault/models/vault';
 /**
  * Calculate days remaining until permanent deletion.
  * @param deletedAt - ISO timestamp when item was deleted
- * @param retentionDays - Number of days to retain (defaults to TRASH_RETENTION_DAYS)
+ * @param retentionDays - Number of days to retain (defaults to TRASH_RETENTION_DEFAULT_DAYS)
  * @returns Number of days remaining, or 0 if already expired
  */
-const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETENTION_DAYS): number => {
+const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETENTION_DEFAULT_DAYS): number => {
   const deletedDate = new Date(deletedAt);
   const expiryDate = new Date(deletedDate.getTime() + retentionDays * 24 * 60 * 60 * 1000);
   const now = new Date();
@@ -175,19 +175,19 @@ const RecentlyDeleted: React.FC = () => {
       {items.length === 0 ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
           <p>{t('recentlyDeleted.noItems')}</p>
-          <p className="text-sm">{t('recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DAYS })}</p>
+          <p className="text-sm">{t('recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}</p>
         </div>
       ) : (
         <>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {t('recentlyDeleted.description', { days: TRASH_RETENTION_DAYS })}
+            {t('recentlyDeleted.description', { days: TRASH_RETENTION_DEFAULT_DAYS })}
           </p>
 
           <ul className="space-y-2">
             {items.map(item => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const deletedAt = (item as any).DeletedAt;
-              const daysRemaining = deletedAt ? getDaysRemaining(deletedAt) : TRASH_RETENTION_DAYS;
+              const daysRemaining = deletedAt ? getDaysRemaining(deletedAt) : TRASH_RETENTION_DEFAULT_DAYS;
 
               return (
                 <li key={scopedKey(item.ManifestId, item.Id)} className="relative">

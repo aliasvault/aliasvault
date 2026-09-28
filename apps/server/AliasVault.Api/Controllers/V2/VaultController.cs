@@ -233,6 +233,55 @@ public class VaultController(
     }
 
     /// <summary>
+    /// Exact encrypted storage per accessible manifest: the current manifest, buckets and referenced blobs.
+    /// </summary>
+    /// <returns>Storage statistics DTO.</returns>
+    [HttpGet("storage")]
+    public async Task<IActionResult> GetStorageStatistics()
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+        var manifests = await AccessibleManifests(context, accessScope)
+            .Select(m => new { m.ManifestId, m.OwnerGroupId, ManifestBytes = m.ManifestBlob != null ? (long)m.ManifestBlob.Length : 0 })
+            .ToListAsync();
+        var manifestIds = manifests.Select(m => m.ManifestId).ToList();
+
+        var bucketBytes = await context.VaultDataBuckets
+            .Where(b => manifestIds.Contains(b.ManifestId))
+            .GroupBy(b => b.ManifestId)
+            .Select(g => new { ManifestId = g.Key, Bytes = g.Sum(b => (long)b.EncryptedData.Length) })
+            .ToDictionaryAsync(x => x.ManifestId, x => x.Bytes);
+
+        // Blobs referenced by the current revision of each manifest.
+        var currentBlobs = await context.VaultBlobReferences
+            .Where(r => manifestIds.Contains(r.ManifestId) && context.VaultManifests.Any(m => m.ManifestId == r.ManifestId && m.RevisionNumber == r.RevisionNumber))
+            .Join(context.VaultBlobObjects, r => new { r.ManifestId, Hash = r.BlobHash }, b => new { b.ManifestId, b.Hash }, (r, b) => new { b.ManifestId, b.Category, b.SizeBytes })
+            .GroupBy(x => new { x.ManifestId, x.Category })
+            .Select(g => new { g.Key.ManifestId, g.Key.Category, Count = g.Count(), Bytes = g.Sum(x => (long)x.SizeBytes) })
+            .ToListAsync();
+
+        var response = new StorageStatisticsResponse
+        {
+            Manifests = manifests.Select(m => new ManifestStorageStatistics
+            {
+                ManifestId = m.ManifestId,
+                IsPersonal = m.OwnerGroupId == user.PersonalGroupId,
+                ManifestBytes = m.ManifestBytes,
+                BucketBytes = bucketBytes.GetValueOrDefault(m.ManifestId),
+                Blobs = currentBlobs.Where(b => b.ManifestId == m.ManifestId).Select(b => new BlobCategoryStatistics { Category = b.Category, Count = b.Count, Bytes = b.Bytes }).ToList(),
+            }).ToList(),
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Unified atomic write. Applies any number of changed manifests (personal and/or shared) and changed data buckets in a single
     /// all-or-nothing DB transaction. Blobs are uploaded beforehand through POST v2/Vault/blobs.
     /// </summary>

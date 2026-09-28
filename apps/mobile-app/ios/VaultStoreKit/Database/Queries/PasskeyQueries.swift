@@ -150,11 +150,10 @@ public struct LogoQueries {
         LIMIT 1
         """
 
-    /// The kind and key of an existing logo.
+    /// The kind and key of an item's logo, bound as [logoId, item manifest]; it always lives in the item's own manifest.
     public static let getById = """
         SELECT Id, Kind, Source, Name FROM Logos
-        WHERE Id = ? AND IsDeleted = 0
-        LIMIT 1
+        WHERE Id = ? AND ManifestId = ? AND IsDeleted = 0
         """
 
     /// Insert or update a logo, bound as [id, kind, source, manifestId, fileData, mimeType, name, now, now].

@@ -1,3 +1,4 @@
+import { EMAIL_ALLOWED_TAGS } from '@aliasvault/client/email/EmailHtmlPolicy';
 import sanitizeHtml from 'sanitize-html';
 
 /**
@@ -10,16 +11,7 @@ const EMAIL_SANITIZER_CONFIG: sanitizeHtml.IOptions = {
   // Disable style parsing as it requires PostCSS which doesn't work in React Native
   // See: https://github.com/apostrophecms/sanitize-html/issues/547
   parseStyleAttributes: false,
-  allowedTags: [
-    'div', 'span', 'p', 'br', 'hr',
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'ul', 'ol', 'li',
-    'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
-    'a', 'img',
-    'b', 'i', 'u', 's', 'strike', 'strong', 'em', 'small', 'sub', 'sup',
-    'blockquote', 'pre', 'code',
-    'font', 'center'
-  ],
+  allowedTags: EMAIL_ALLOWED_TAGS,
   allowedAttributes: {
     '*': ['style', 'class', 'id'],
     'table': ['width', 'height', 'align', 'valign', 'bgcolor', 'border', 'cellpadding', 'cellspacing'],

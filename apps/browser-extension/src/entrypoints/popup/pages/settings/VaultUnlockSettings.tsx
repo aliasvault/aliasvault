@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
+import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -78,6 +79,17 @@ const VaultUnlockSettings: React.FC = () => {
     setNewPin('');
     setConfirmPin('');
     setShowPinSetup(true);
+  };
+
+  /**
+   * Close the PIN setup modal and reset its state.
+   */
+  const closePinSetup = (): void => {
+    setShowPinSetup(false);
+    setPinSetupStep(1);
+    setNewPin('');
+    setConfirmPin('');
+    setError(null);
   };
 
   /**
@@ -256,89 +268,67 @@ const VaultUnlockSettings: React.FC = () => {
         </section>
 
         {/* PIN Setup Modal */}
-        {showPinSetup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 relative">
-              {/* Cancel button in top right corner */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowPinSetup(false);
-                  setPinSetupStep(1);
-                  setNewPin('');
-                  setConfirmPin('');
-                  setError(null);
-                }}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-                aria-label="Cancel"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+        <ModalWrapper isOpen={showPinSetup} onClose={closePinSetup} bodyClassName="p-6">
+          {/* Step 1: Enter PIN */}
+          {pinSetupStep === 1 && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
+                {t('settings.unlockMethod.setupPin')}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {t('settings.unlockMethod.enterNewPinDescription')}
+              </p>
+              <form onSubmit={handlePinSetupNext}>
+                <div className="mb-4">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={8}
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
+                    autoFocus
+                  />
+                </div>
+                {error && <AlertMessage type="error" message={error} className="mb-4" />}
+                <Button type="submit">
+                  {t('common.next')}
+                </Button>
+              </form>
+            </>
+          )}
 
-              {/* Step 1: Enter PIN */}
-              {pinSetupStep === 1 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
-                    {t('settings.unlockMethod.setupPin')}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {t('settings.unlockMethod.enterNewPinDescription')}
-                  </p>
-                  <form onSubmit={handlePinSetupNext}>
-                    <div className="mb-4">
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={8}
-                        value={newPin}
-                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
-                        autoFocus
-                      />
-                    </div>
-                    {error && <AlertMessage type="error" message={error} className="mb-4" />}
-                    <Button type="submit">
-                      {t('common.next')}
-                    </Button>
-                  </form>
-                </>
-              )}
-
-              {/* Step 2: Confirm PIN */}
-              {pinSetupStep === 2 && (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
-                    {t('settings.unlockMethod.confirmPin')}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    {t('settings.unlockMethod.confirmPinDescription')}
-                  </p>
-                  <form onSubmit={handlePinSetupSubmit}>
-                    <div className="mb-4">
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={8}
-                        value={confirmPin}
-                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
-                        autoFocus
-                      />
-                    </div>
-                    {error && <AlertMessage type="error" message={error} className="mb-4" />}
-                    <Button type="submit">
-                      {t('common.confirm')}
-                    </Button>
-                  </form>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+          {/* Step 2: Confirm PIN */}
+          {pinSetupStep === 2 && (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
+                {t('settings.unlockMethod.confirmPin')}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {t('settings.unlockMethod.confirmPinDescription')}
+              </p>
+              <form onSubmit={handlePinSetupSubmit}>
+                <div className="mb-4">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={8}
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
+                    autoFocus
+                  />
+                </div>
+                {error && <AlertMessage type="error" message={error} className="mb-4" />}
+                <Button type="submit">
+                  {t('common.confirm')}
+                </Button>
+              </form>
+            </>
+          )}
+        </ModalWrapper>
       </div>
     </>
   );

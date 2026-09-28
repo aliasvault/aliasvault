@@ -1,0 +1,19 @@
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
+
+import type { TFunction } from 'i18next';
+
+/**
+ * The message for a failed API call: the translated API error code when the server sent one, else the fallback.
+ * @param error - the thrown error
+ * @param t - the translation function
+ * @param fallback - the message when no known code is present
+ */
+export function apiErrorMessage(error: unknown, t: TFunction, fallback: string): string {
+  const code = apiErrorCodeOf(error);
+  if (code) {
+    const key = `common.apiErrors.${code}`;
+    const translated = t(key);
+    return translated === key ? fallback : translated;
+  }
+  return fallback;
+}

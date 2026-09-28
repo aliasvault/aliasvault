@@ -1,8 +1,8 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
-import { applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ItemFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
-import { getFieldValue, FieldKey, ItemTypes } from '@aliasvault/models/vault';
+import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -51,7 +51,7 @@ import type { ItemType } from '@aliasvault/models/vault';
  * Item type filter option configuration.
  */
 type ItemTypeOption = {
-  type: ItemType;
+  type: ItemFilterType;
   titleKey: string;
   iconName: keyof typeof MaterialIcons.glyphMap;
 };
@@ -60,10 +60,10 @@ type ItemTypeOption = {
  * Available item type filter options with icons.
  */
 const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
-  { type: ItemTypes.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
-  { type: ItemTypes.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
-  { type: ItemTypes.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
-  { type: ItemTypes.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
+  { type: ItemFilter.Login, titleKey: 'itemTypes.login.title', iconName: 'key' },
+  { type: ItemFilter.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
+  { type: ItemFilter.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
+  { type: ItemFilter.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
 ];
 
 /**
@@ -109,15 +109,15 @@ export default function FolderViewScreen(): React.ReactNode {
 
   /**
    * Get the title based on the active filter.
-   * Shows "Items" for 'all' filter since folder name is already in the navigation header.
+   * Shows "Items" for the All filter since folder name is already in the navigation header.
    */
   const getFilterTitle = useCallback((): string => {
     switch (filterType) {
-      case 'passkeys':
+      case ItemFilter.Passkeys:
         return t('items.filters.passkeys');
-      case 'attachments':
+      case ItemFilter.Attachments:
         return t('common.attachments');
-      case 'all':
+      case ItemFilter.All:
         return t('items.title');
       default:
         if (isItemTypeFilter(filterType)) {
@@ -661,16 +661,16 @@ export default function FolderViewScreen(): React.ReactNode {
           <TouchableOpacity
             style={[
               styles.filterMenuItem,
-              filterType === 'all' && styles.filterMenuItemActive
+              filterType === ItemFilter.All && styles.filterMenuItemActive
             ]}
             onPress={() => {
-              setFilterType('all');
+              setFilterType(ItemFilter.All);
               setShowFilterMenu(false);
             }}
           >
             <ThemedText style={[
               styles.filterMenuItemText,
-              filterType === 'all' && styles.filterMenuItemTextActive
+              filterType === ItemFilter.All && styles.filterMenuItemTextActive
             ]}>
               {t('items.filters.all')}
             </ThemedText>
@@ -713,16 +713,16 @@ export default function FolderViewScreen(): React.ReactNode {
           <TouchableOpacity
             style={[
               styles.filterMenuItem,
-              filterType === 'passkeys' && styles.filterMenuItemActive
+              filterType === ItemFilter.Passkeys && styles.filterMenuItemActive
             ]}
             onPress={() => {
-              setFilterType('passkeys');
+              setFilterType(ItemFilter.Passkeys);
               setShowFilterMenu(false);
             }}
           >
             <ThemedText style={[
               styles.filterMenuItemText,
-              filterType === 'passkeys' && styles.filterMenuItemTextActive
+              filterType === ItemFilter.Passkeys && styles.filterMenuItemTextActive
             ]}>
               {t('items.filters.passkeys')}
             </ThemedText>
@@ -732,16 +732,16 @@ export default function FolderViewScreen(): React.ReactNode {
           <TouchableOpacity
             style={[
               styles.filterMenuItem,
-              filterType === 'attachments' && styles.filterMenuItemActive
+              filterType === ItemFilter.Attachments && styles.filterMenuItemActive
             ]}
             onPress={() => {
-              setFilterType('attachments');
+              setFilterType(ItemFilter.Attachments);
               setShowFilterMenu(false);
             }}
           >
             <ThemedText style={[
               styles.filterMenuItemText,
-              filterType === 'attachments' && styles.filterMenuItemTextActive
+              filterType === ItemFilter.Attachments && styles.filterMenuItemTextActive
             ]}>
               {t('common.attachments')}
             </ThemedText>

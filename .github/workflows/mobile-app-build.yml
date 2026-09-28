@@ -7,6 +7,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/build-android-app/**'
       - '.github/actions/build-ios-app/**'
   pull_request:
@@ -15,6 +16,7 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-core-libraries/**'
       - '.github/actions/build-android-app/**'
       - '.github/actions/build-ios-app/**'
   workflow_dispatch:
@@ -55,11 +57,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
 
-      - name: Build and distribute core libraries
-        run: |
-          cd ../../core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --android
+      - name: Build core libraries
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: android
 
       - name: Install dependencies
         run: npm ci
@@ -84,10 +85,9 @@ jobs:
           cache-dependency-path: apps/mobile-app/package-lock.json
 
       - name: Build core libraries
-        run: |
-          cd ../../core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --android
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: android
 
       - name: Install dependencies
         run: npm ci

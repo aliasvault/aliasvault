@@ -8,12 +8,16 @@ on:
       - 'apps/browser-extension/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-browser-extension.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'apps/browser-extension/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-browser-extension.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
   workflow_dispatch:
 
 concurrency:
@@ -37,27 +41,10 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack --locked
-
-      - name: Install clang (compiles SQLite for wasm32)
-        run: sudo apt-get update && sudo apt-get install -y clang
-
       - name: Build core libraries
-        run: |
-          cd ./core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --browser-extension
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: browser-extension
 
       - name: Install .NET dependencies
         working-directory: apps/server
@@ -100,11 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 9.0.x
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -112,60 +94,18 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/browser-extension/package-lock.json
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
-      - name: Install wasm-pack
-        run: cargo install wasm-pack --locked
-
-      - name: Install clang (compiles SQLite for wasm32)
-        run: sudo apt-get update && sudo apt-get install -y clang
-
       - name: Build core libraries
-        run: |
-          cd ./core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --browser-extension
-
-      - name: Install .NET dependencies
-        working-directory: apps/server
-        run: dotnet workload install wasm-tools
-
-      - name: Build API server
-        working-directory: apps/server
-        run: dotnet build AliasVault.Api
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: browser-extension
 
       - name: Start dev database
         run: ./scripts/dev.sh db-start
 
       - name: Start API server
-        working-directory: apps/server/AliasVault.Api
-        run: |
-          dotnet run --no-build &
-          # Wait for API to be ready
-          echo "Waiting for API to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5100/v1/Auth/status > /dev/null 2>&1; then
-              echo "API is ready!"
-              break
-            fi
-            echo "Attempt $i: API not ready yet..."
-            sleep 2
-          done
-        env:
-          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5109;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
-          JWT_KEY: "12345678901234567890123456789012"
-          DATA_PROTECTION_CERT_PASS: "Development"
-          PUBLIC_REGISTRATION_ENABLED: "true"
-          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
-          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+        uses: ./.github/actions/start-api-server
+        with:
+          database: aliasdb_e2e_extension
 
       - name: Install browser extension dependencies
         run: npm ci
@@ -181,7 +121,7 @@ jobs:
         with:
           timeout_minutes: 60
           max_attempts: 3
-          command: cd apps/browser-extension && xvfb-run --auto-servernum npm run test:e2e:build
+          command: cd apps/browser-extension && npm run test:e2e:build
         env:
           ALIASVAULT_API_URL: "http://localhost:5100"
 
@@ -200,3 +140,12 @@ jobs:
           name: browser-extension-playwright-test-results
           path: apps/browser-extension/tests/test-results/
           retention-days: 30
+
+      - name: Upload API server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-extension-api-server-log
+          path: /tmp/api-server.log
+          retention-days: 30
+          if-no-files-found: ignore

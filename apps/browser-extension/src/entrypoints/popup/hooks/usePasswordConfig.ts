@@ -9,17 +9,11 @@ import type { PasswordSettings } from '@aliasvault/models/vault';
  * Value returned by {@link usePasswordConfig}.
  */
 export interface IPasswordConfig {
-  /** The current password settings being edited. */
   settings: PasswordSettings;
-  /** The live preview password/passphrase for the current settings. */
   previewPassword: string;
-  /** The Diceware wordlist language codes available from the core. */
   dicewareLanguages: string[];
-  /** Update a single setting, regenerating the preview with the stable seed. */
   handleSettingChange: (key: keyof PasswordSettings, value: boolean | number | string) => void;
-  /** Draw a fresh seed and regenerate the preview (genuinely new password). */
   handleRefreshPreview: () => void;
-  /** Re-initialize from the given settings with a fresh seed (e.g. when a dialog reopens). */
   reset: (settings: PasswordSettings) => void;
 }
 

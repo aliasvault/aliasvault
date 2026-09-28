@@ -8,12 +8,16 @@ on:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-android.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'apps/mobile-app/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-android.yml'
+      - '.github/actions/build-core-libraries/**'
+      - '.github/actions/start-api-server/**'
   workflow_dispatch:
 
 concurrency:
@@ -57,21 +61,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core/rust
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
@@ -83,18 +72,13 @@ jobs:
       - name: Install Android NDK
         run: sdkmanager --install "ndk;26.1.10909125"
 
-      - name: Build core libraries for Android
-        run: |
-          cd ../../core
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh --android
+      - name: Build core libraries
+        uses: ./.github/actions/build-core-libraries
+        with:
+          target: android
 
       - name: Install mobile app dependencies
         run: npm ci
-
-      - name: Build API server
-        working-directory: apps/server
-        run: dotnet build AliasVault.Api
 
       - name: Start PostgreSQL
         run: |
@@ -104,28 +88,10 @@ jobs:
           sudo -u postgres createdb -O aliasvault aliasdb_e2e_android || true
 
       - name: Start API server
-        working-directory: apps/server/AliasVault.Api
-        run: |
-          dotnet run --no-build > /tmp/api-server.log 2>&1 &
-          # Wait for API to be ready
-          echo "Waiting for API to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5100/v1/ > /dev/null 2>&1; then
-              echo "API is ready!"
-              break
-            fi
-            echo "Attempt $i: API not ready yet..."
-            sleep 2
-          done
-        env:
-          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5432;Database=aliasdb_e2e_android;Username=aliasvault;Password=password"
-          JWT_KEY: "12345678901234567890123456789012"
-          DATA_PROTECTION_CERT_PASS: "Development"
-          PUBLIC_REGISTRATION_ENABLED: "true"
-          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
-          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
-          # Bind to all interfaces (IPv4 and IPv6)
-          ASPNETCORE_URLS: "http://0.0.0.0:5100"
+        uses: ./.github/actions/start-api-server
+        with:
+          database: aliasdb_e2e_android
+          db-port: "5432"
 
       - name: Enable KVM
         run: |

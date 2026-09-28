@@ -30,6 +30,20 @@
             }
         },
         {
+            "label": "Build and watch Web App",
+            "type": "shell",
+            "command": "./scripts/dev.sh",
+            "args": ["web"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
             "label": "Build and watch Admin",
             "type": "shell",
             "command": "./scripts/dev.sh",
@@ -108,6 +122,18 @@
             "options": {
                 "cwd": "${workspaceFolder}/apps/server/AliasVault.Admin"
             },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build and watch Web App (API + Web)",
+            "dependsOn": [
+                "Build and watch API",
+                "Build and watch Web App"
+            ],
+            "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true

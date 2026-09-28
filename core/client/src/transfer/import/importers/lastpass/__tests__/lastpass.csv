@@ -1,0 +1,14 @@
+url,username,password,totp,extra,name,grouping,fav
+https://example.com,Exampleusername,examplepassword,,Examplenotes,Examplename,examplefolder,0
+http://,userwithouturlornotes,userpass,,,Userwithouturlornotes,,0
+http://sn,,,,Securenotecontent here,securenote1,,0
+http://,,,,,Emptytitleonly,,0
+http://sn,,,,"NoteType:Credit Card
+Language:en-US
+Name on Card:Cardname
+Type:Creditcard
+Number:123456781234
+Security Code:1234
+Start Date:February,2001
+Expiration Date:May,2008
+Notes:Creditcardnotes here",Paymentcard1,,0

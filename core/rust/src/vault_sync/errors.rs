@@ -142,6 +142,9 @@ pub enum SyncError {
     /// The server's snapshot is inconsistent and cannot be assembled.
     #[error("Server snapshot cannot be assembled: {0}")]
     Snapshot(String),
+    /// The vault data decrypted and decoded, but its rows do not load into the database.
+    #[error("Vault data does not load into the database: {0}")]
+    VaultDataRejected(String),
     /// The server kept refusing the write as outdated after the re-sync limit.
     #[error("The server keeps refusing the write as outdated")]
     ResyncLimitReached,
@@ -187,6 +190,7 @@ impl SyncError {
             SyncError::KeyOutOfSync => Failure::Coded(ErrorCode::KeyOutOfSync),
             SyncError::ServerVaultUnreadable(_) => Failure::Coded(ErrorCode::SyncVaultDecryptFailed),
             SyncError::Snapshot(_) => Failure::Coded(ErrorCode::SyncVaultFetchFailed),
+            SyncError::VaultDataRejected(_) => Failure::Coded(ErrorCode::SyncCodecFailed),
             SyncError::ResyncLimitReached => Failure::Coded(ErrorCode::MergeConflict),
             SyncError::UploadRejected(_) | SyncError::MissingBlobs(_) => Failure::Coded(ErrorCode::UploadFailed),
             SyncError::LegacyUpgradePending => Failure::Coded(ErrorCode::MigrationCheckFailed),
@@ -234,6 +238,7 @@ mod tests {
     fn engine_internal_failures_carry_their_own_codes() {
         assert_eq!(SyncError::Other("no rule".to_string()).failure(), Failure::Coded(ErrorCode::SyncEngineFailed));
         assert_eq!(SyncError::Core(VaultError::General("codec".to_string())).failure(), Failure::Coded(ErrorCode::SyncCodecFailed));
+        assert_eq!(SyncError::VaultDataRejected("NOT NULL".to_string()).failure(), Failure::Coded(ErrorCode::SyncCodecFailed));
         assert_eq!(serde_json::from_str::<serde_json::Value>("nope").map_err(SyncError::Json).unwrap_err().failure(), Failure::Coded(ErrorCode::SyncResponseInvalid));
         assert_eq!(serde_json::to_string(&ErrorCode::SyncEngineFailed).unwrap(), "\"E-509\"");
     }

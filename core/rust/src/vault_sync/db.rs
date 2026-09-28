@@ -190,18 +190,26 @@ pub(crate) async fn insert_materialized(host: &Host, materialized: &Materialized
             let placeholders = vec!["?"; columns.len()].join(", ");
             batch.push(SqlStatement { sql: format!("INSERT INTO \"{}\" ({}) VALUES ({})", table.name, quoted.join(", "), placeholders), params });
             if batch.len() >= INSERT_BATCH_ROWS {
-                exec(host, Db::Staging, std::mem::take(&mut batch)).await?;
+                exec(host, Db::Staging, std::mem::take(&mut batch)).await.map_err(|e| rows_rejected(&table.name, e))?;
             }
         }
-        exec(host, Db::Staging, batch).await?;
+        exec(host, Db::Staging, batch).await.map_err(|e| rows_rejected(&table.name, e))?;
     }
 
     let violations = query(host, Db::Staging, "PRAGMA foreign_key_check", vec![]).await?;
     if !violations.is_empty() {
         let sample: Vec<String> = violations.iter().take(5).map(|v| format!("{} row {} > missing parent in {}", cell_string(v, "table"), cell_string(v, "rowid"), cell_string(v, "parent"))).collect();
-        return Err(SyncError::Other(format!("VaultCodec: materialized database fails foreign key check ({} violations): {}", violations.len(), sample.join("; "))));
+        return Err(SyncError::VaultDataRejected(format!("foreign key check fails ({} violations): {}", violations.len(), sample.join("; "))));
     }
     Ok(())
+}
+
+/// A failed insert into the fresh staging database is a row the schema refuses (the vault data), not a storage failure.
+fn rows_rejected(table: &str, error: SyncError) -> SyncError {
+    match error {
+        SyncError::Host { message, .. } => SyncError::VaultDataRejected(format!("table {}: {}", table, message)),
+        other => other,
+    }
 }
 
 /// A materialized cell as a bind parameter: blob markers become bytes (NULL while the bytes are not loaded; the row's

@@ -10,9 +10,13 @@ import type { DbOp } from '../DbOp';
 import type { PasswordSettings } from '@aliasvault/models/vault';
 
 /**
- * Sort order options for credentials list.
+ * Sort order options for the items list. The values are stored as-is in the synced vault Settings table.
  */
-export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
+export enum CredentialSortOrder {
+  OldestFirst = 'OldestFirst',
+  NewestFirst = 'NewestFirst',
+  Alphabetical = 'Alphabetical',
+}
 
 /**
  * Repository for the vault's user preferences: the manifest-scoped key/value rows of the Settings table.
@@ -130,12 +134,8 @@ export class SettingsRepository extends BaseRepository {
    * @returns The sort order preference
    */
   public *getCredentialsSortOrder(): DbOp<CredentialSortOrder> {
-    const value = yield* this.getSetting('CredentialsSortOrder', 'NewestFirst');
-    // Validate the value is a valid sort order
-    if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
-      return value;
-    }
-    return 'NewestFirst';
+    const value = yield* this.getSetting('CredentialsSortOrder', CredentialSortOrder.NewestFirst);
+    return Object.values(CredentialSortOrder).includes(value as CredentialSortOrder) ? value as CredentialSortOrder : CredentialSortOrder.NewestFirst;
   }
 
   /**

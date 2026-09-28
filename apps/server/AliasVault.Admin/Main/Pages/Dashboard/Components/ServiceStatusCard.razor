@@ -16,20 +16,20 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @foreach (var service in Services)
             {
-                <div class="@service.TileClasses p-4 rounded-lg">
+                <div class="@TileClasses(service.Level) p-4 rounded-lg">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">@service.DisplayName</p>
                     <div class="flex items-center gap-2">
-                        <span class="@service.DotClasses w-3 h-3 rounded-full"></span>
+                        @StatusIcon(service.Level)
                         <h4 class="text-2xl font-bold text-gray-900 dark:text-white">@service.Label</h4>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-400" title="@service.Description">Last heartbeat: @RelativeTimeFormatter.Format(service.LastHeartbeat)</p>
                 </div>
             }
         </div>
-        <a href="maintenance" class="@Maintenance.TileClasses block p-4 mt-4 rounded-lg hover:opacity-90 transition-opacity">
+        <a href="maintenance" class="@TileClasses(Maintenance.Level) block p-4 mt-4 rounded-lg hover:opacity-90 transition-opacity">
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Last maintenance run</p>
             <div class="flex items-center gap-2">
-                <span class="@Maintenance.DotClasses w-3 h-3 rounded-full"></span>
+                @StatusIcon(Maintenance.Level)
                 <h4 class="text-2xl font-bold text-gray-900 dark:text-white">@Maintenance.Label</h4>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400" title="@Maintenance.Tooltip">@Maintenance.Description</p>
@@ -117,20 +117,20 @@
     {
         if (entry is null)
         {
-            return new ServiceState(displayName, "Unknown", "No heartbeat has been recorded for this service yet.", null, "bg-gray-50 dark:bg-gray-700/50", "bg-gray-400");
+            return new ServiceState(displayName, "Unknown", "No heartbeat has been recorded for this service yet.", null, StatusLevel.Unknown);
         }
 
         if (DateTime.UtcNow - entry.Heartbeat > HeartbeatTimeout)
         {
-            return new ServiceState(displayName, "Offline", "The service has not sent a heartbeat recently.", entry.Heartbeat, "bg-red-50 dark:bg-red-900/30", "bg-red-500");
+            return new ServiceState(displayName, "Offline", "The service has not sent a heartbeat recently.", entry.Heartbeat, StatusLevel.Error);
         }
 
         return entry.CurrentStatus switch
         {
-            nameof(Status.Started) => new ServiceState(displayName, "Running", "All workers of the service are running.", entry.Heartbeat, "bg-green-50 dark:bg-green-900/30", "bg-green-500"),
-            nameof(Status.Starting) => new ServiceState(displayName, "Starting", "The service is alive but not all of its workers are running yet.", entry.Heartbeat, "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
-            nameof(Status.Stopped) => new ServiceState(displayName, "Stopped", "The service shut down.", entry.Heartbeat, "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
-            _ => new ServiceState(displayName, entry.CurrentStatus, "The service reported an unknown status.", entry.Heartbeat, "bg-gray-50 dark:bg-gray-700/50", "bg-gray-400"),
+            nameof(Status.Started) => new ServiceState(displayName, "Running", "All workers of the service are running.", entry.Heartbeat, StatusLevel.Ok),
+            nameof(Status.Starting) => new ServiceState(displayName, "Starting", "The service is alive but not all of its workers are running yet.", entry.Heartbeat, StatusLevel.Warning),
+            nameof(Status.Stopped) => new ServiceState(displayName, "Stopped", "The service shut down.", entry.Heartbeat, StatusLevel.Error),
+            _ => new ServiceState(displayName, entry.CurrentStatus, "The service reported an unknown status.", entry.Heartbeat, StatusLevel.Unknown),
         };
     }
 
@@ -141,7 +141,7 @@
     {
         if (job is null)
         {
-            return new MaintenanceState("Never", "No maintenance run has been recorded yet.", null, "bg-red-50 dark:bg-red-900/30", "bg-red-500");
+            return new MaintenanceState("Never", "No maintenance run has been recorded yet.", null, StatusLevel.Error);
         }
 
         var startedAt = job.RunDate.Date + job.StartTime.ToTimeSpan();
@@ -151,14 +151,51 @@
 
         return job.Status switch
         {
-            TaskRunnerJobStatus.Error => new MaintenanceState(label, "The last run failed.", $"{tooltip}. {job.ErrorMessage}", "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
-            TaskRunnerJobStatus.Canceled => new MaintenanceState(label, "The last run was canceled.", $"{tooltip}. {job.ErrorMessage}", "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
-            TaskRunnerJobStatus.Running when isOverdue => new MaintenanceState(label, "Running (overdue).", tooltip, "bg-red-50 dark:bg-red-900/30", "bg-red-500"),
-            TaskRunnerJobStatus.Running => new MaintenanceState(label, "A maintenance run is currently in progress.", tooltip, "bg-blue-50 dark:bg-blue-900/30", "bg-blue-500"),
-            _ when isOverdue => new MaintenanceState(label, "Maintenance has not run in the last 24 hours.", tooltip, "bg-yellow-50 dark:bg-yellow-900/30", "bg-yellow-400"),
-            _ => new MaintenanceState(label, "The last run completed successfully.", tooltip, "bg-green-50 dark:bg-green-900/30", "bg-green-500"),
+            TaskRunnerJobStatus.Error => new MaintenanceState(label, "The last run failed.", $"{tooltip}. {job.ErrorMessage}", StatusLevel.Error),
+            TaskRunnerJobStatus.Canceled => new MaintenanceState(label, "The last run was canceled.", $"{tooltip}. {job.ErrorMessage}", StatusLevel.Warning),
+            TaskRunnerJobStatus.Running when isOverdue => new MaintenanceState(label, "Running (overdue).", tooltip, StatusLevel.Error),
+            TaskRunnerJobStatus.Running => new MaintenanceState(label, "A maintenance run is currently in progress.", tooltip, StatusLevel.Info),
+            _ when isOverdue => new MaintenanceState(label, "Maintenance has not run in the last 24 hours.", tooltip, StatusLevel.Warning),
+            _ => new MaintenanceState(label, "The last run completed successfully.", tooltip, StatusLevel.Ok),
         };
     }
+
+    /// <summary>
+    /// Tinted tile background for a status level.
+    /// </summary>
+    private static string TileClasses(StatusLevel level) => level switch
+    {
+        StatusLevel.Ok => "bg-green-50 dark:bg-green-900/20",
+        StatusLevel.Warning => "bg-yellow-50 dark:bg-yellow-900/20",
+        StatusLevel.Error => "bg-red-50 dark:bg-red-900/20",
+        StatusLevel.Info => "bg-blue-50 dark:bg-blue-900/20",
+        _ => "bg-gray-50 dark:bg-gray-700/50",
+    };
+
+    /// <summary>
+    /// Outline icon for a status level: check, cross, exclamation, info or question mark.
+    /// </summary>
+    private static RenderFragment StatusIcon(StatusLevel level) => __builder =>
+    {
+        switch (level)
+        {
+            case StatusLevel.Ok:
+                <svg class="w-6 h-6 shrink-0 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                break;
+            case StatusLevel.Warning:
+                <svg class="w-6 h-6 shrink-0 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                break;
+            case StatusLevel.Error:
+                <svg class="w-6 h-6 shrink-0 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                break;
+            case StatusLevel.Info:
+                <svg class="w-6 h-6 shrink-0 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+                break;
+            default:
+                <svg class="w-6 h-6 shrink-0 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
+                break;
+        }
+    };
 
     /// <summary>
     /// Polls the heartbeat records until the card is disposed.
@@ -180,12 +217,24 @@
     }
 
     /// <summary>
+    /// Severity of a status, drives the tile color and icon.
+    /// </summary>
+    private enum StatusLevel
+    {
+        Ok,
+        Warning,
+        Error,
+        Info,
+        Unknown,
+    }
+
+    /// <summary>
     /// What the card shows for one service.
     /// </summary>
-    private sealed record ServiceState(string DisplayName, string Label, string Description, DateTime? LastHeartbeat, string TileClasses, string DotClasses);
+    private sealed record ServiceState(string DisplayName, string Label, string Description, DateTime? LastHeartbeat, StatusLevel Level);
 
     /// <summary>
     /// What the card shows for the last maintenance run.
     /// </summary>
-    private sealed record MaintenanceState(string Label, string Description, string? Tooltip, string TileClasses, string DotClasses);
+    private sealed record MaintenanceState(string Label, string Description, string? Tooltip, StatusLevel Level);
 }

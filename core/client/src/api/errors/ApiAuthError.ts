@@ -1,5 +1,5 @@
 /**
- * Custom error class for API authentication-related errors.
+ * Thrown when the session is no longer valid (token refresh refused), which logs the user out.
  */
 export class ApiAuthError extends Error {
   /**

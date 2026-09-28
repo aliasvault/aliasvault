@@ -30,6 +30,14 @@
     "or": "or",
     "retry": "Retry",
     "resizeField": "Drag to resize field",
+    "passwordStrength": {
+      "title": "Password Strength",
+      "veryWeak": "Keep going",
+      "weak": "Getting better",
+      "fair": "Good",
+      "good": "Great",
+      "strong": "Excellent"
+    },
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -274,6 +282,7 @@
         "changePassword": "Change Password",
         "fillAllFields": "Please fill in all fields",
         "passwordsDoNotMatch": "New passwords do not match",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "userNotAuthenticated": "User not authenticated",
         "initiatingChange": "Initiating password change...",
         "currentPasswordIncorrect": "Current password is not correct",
@@ -333,6 +342,7 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "Another device is asking to log in with your account. It will get full access to your vault. Only continue if you started this login yourself.",
         "selectCode": "Tap the number shown on the other device",
+        "approve": "Approve login",
         "openedFromLink": "Only continue if you just scanned this QR code with your own camera. If you got here by tapping a link or a button, decline.",
         "codeMismatch": "The number does not match. The login request was declined.",
         "successDescription": "The remote device has been successfully logged in.",

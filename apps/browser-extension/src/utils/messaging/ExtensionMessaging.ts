@@ -26,7 +26,6 @@ import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCh
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
 import type { ItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
-import type { VaultResponse } from '@/utils/types/messaging/VaultResponse';
 import type { VaultSyncPhase } from '@/utils/types/messaging/VaultSyncPhase';
 import type { VaultSyncState } from '@/utils/types/messaging/VaultSyncState';
 
@@ -37,6 +36,15 @@ import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationSc
 import type { FullVaultSyncResult, SharedManifestDetails, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse } from '@aliasvault/models/webapi';
+
+/**
+ * How the background stores an encrypted vault blob, sent along with its last chunk (see VaultBlobTransfer).
+ */
+export type VaultBlobStoreOptions = {
+  markDirty?: boolean;
+  expectedMutationSeq?: number;
+  scopes?: VaultMutationScope[];
+};
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -76,7 +84,6 @@ export interface IExtensionMessageProtocol {
   GET_SYNC_STATE(): VaultSyncState;
   GET_TOTP_SECRETS(data: { items: ItemRef[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
   GET_TWO_FACTOR_STATE(): TwoFactorState | null;
-  GET_VAULT(): VaultResponse;
   GET_VAULT_MIGRATION_STATUS(): VaultMigrationKind;
   GET_WEBAUTHN_SETTINGS(data: any): WebAuthnSettingsResponse;
   GROUP_CREATE_VAULT(data: { groupId: string; name: string }): { success: boolean; error?: string; apiErrorCode?: string };
@@ -92,7 +99,6 @@ export interface IExtensionMessageProtocol {
   OPEN_POPUP_WITH_ITEM(data: { itemId: string; manifestId: string }): BoolResponse;
   PASSKEY_POPUP_RESPONSE(data: any): { success: boolean };
   PERSIST_FORM_VALUES(data: any): void;
-  PING(): boolean;
   POPUP_HEARTBEAT(): void;
   RECORD_ITEM_USAGE(data: { itemId: string; manifestId: string; action: ItemUsageAction }): { success: boolean };
   RESET_AUTO_LOCK_TIMER(): void;
@@ -101,7 +107,7 @@ export interface IExtensionMessageProtocol {
   SET_AUTO_LOCK_TIMEOUT(data: number): boolean;
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
   SET_RECENTLY_SELECTED(data: { itemId: string; manifestId: string; domain: string }): { success: boolean };
-  STORE_ENCRYPTED_VAULT(data: { vaultBlob: string; markDirty?: boolean; expectedMutationSeq?: number; scopes?: VaultMutationScope[] }): { success: boolean; mutationSequence: number };
+  STORE_ENCRYPTED_VAULT(data: { transferId: string; index: number; chunk: string; commit?: VaultBlobStoreOptions }): { success: boolean; mutationSequence: number } | null;
   STORE_UNLOCK_KEY(data: string): BoolResponse;
   STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };

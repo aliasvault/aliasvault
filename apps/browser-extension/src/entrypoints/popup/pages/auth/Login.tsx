@@ -1,4 +1,4 @@
-import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
@@ -7,6 +7,7 @@ import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -24,14 +25,14 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import { apiErrorMessage } from '@/utils/ApiErrors';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { syncErrorMessage } from '@/utils/SyncError';
-import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
+import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
@@ -105,9 +106,9 @@ const Login: React.FC = () => {
     } else if (err instanceof VaultProcessingError) {
       // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
       setVaultError(err);
-    } else if (err instanceof ApiAuthError) {
-      // Show API authentication errors as-is.
-      setError(t('common.apiErrors.' + err.message));
+    } else if (apiErrorCodeOf(err)) {
+      // The server refused the login with a coded reason (wrong password, account locked).
+      setError(apiErrorMessage(err, t, t('common.errors.serverError')));
     } else if (hasErrorCode(err)) {
       // Error contains an error code (E-XXX), show the formatted message.
       setError(getErrorMessage(err, t('common.errors.serverError')));

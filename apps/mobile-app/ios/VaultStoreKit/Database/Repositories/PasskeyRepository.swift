@@ -265,9 +265,9 @@ public class PasskeyRepository: BaseRepository {
         let name: String?
     }
 
-    /// The kind and key of an existing logo, or nil when it no longer exists.
-    private func getLogo(byId logoId: String) throws -> (kind: String, source: String)? {
-        guard let row = try client.executeQuery(LogoQueries.getById, params: [logoId]).first, let kind = row["Kind"] as? String, let source = row["Source"] as? String else {
+    /// The kind and key of an item's logo in the item's manifest, or nil when it no longer exists.
+    private func getLogo(byId logoId: String, manifestId: String) throws -> (kind: String, source: String)? {
+        guard let row = try client.executeQuery(LogoQueries.getById, params: [logoId, manifestId]).first, let kind = row["Kind"] as? String, let source = row["Source"] as? String else {
             return nil
         }
         return (kind, source)
@@ -289,7 +289,7 @@ public class PasskeyRepository: BaseRepository {
     /// a built-in or uploaded logo the user chose is kept, a favicon already on file for this domain is reused, fresh
     /// bytes go under the domain's own row, and without a derivable domain the logo is left as it is.
     private func resolveLogoId(existingLogoId: String?, manifestId: String, rpId: String, logo: Data?, now: String) throws -> String? {
-        let existing = try existingLogoId.flatMap { try getLogo(byId: $0) }
+        let existing = try existingLogoId.flatMap { try getLogo(byId: $0, manifestId: manifestId) }
         if let existing = existing, existing.kind != "favicon" {
             return try ensureInScope(LogoKey(manifestId: manifestId, kind: existing.kind, source: existing.source), now: now)
         }

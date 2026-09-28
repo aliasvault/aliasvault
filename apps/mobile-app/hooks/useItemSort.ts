@@ -1,15 +1,15 @@
 import { useState, useMemo, useCallback } from 'react';
 
-import type { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
+import { CredentialSortOrder } from '@aliasvault/client/database/repositories/SettingsRepository';
 import type { Item } from '@aliasvault/models/vault';
 
 /**
  * Sort order options with their translation keys.
  */
 export const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
-  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
-  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
-  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
+  { value: CredentialSortOrder.OldestFirst, labelKey: 'items.sort.oldestFirst' },
+  { value: CredentialSortOrder.NewestFirst, labelKey: 'items.sort.newestFirst' },
+  { value: CredentialSortOrder.Alphabetical, labelKey: 'items.sort.alphabetical' },
 ];
 
 /**
@@ -46,10 +46,10 @@ export interface UseItemSortReturn {
  * Hook to manage item sorting state and logic.
  * Can be used by both the main items screen and folder view.
  *
- * @param initialSortOrder - Optional initial sort order (default: 'NewestFirst')
+ * @param initialSortOrder - Optional initial sort order (default: NewestFirst)
  * @returns Sort state and functions
  */
-export function useItemSort(initialSortOrder: CredentialSortOrder = 'NewestFirst'): UseItemSortReturn {
+export function useItemSort(initialSortOrder: CredentialSortOrder = CredentialSortOrder.NewestFirst): UseItemSortReturn {
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>(initialSortOrder);
   const [showSortMenu, setShowSortMenu] = useState(false);
 
@@ -67,15 +67,15 @@ export function useItemSort(initialSortOrder: CredentialSortOrder = 'NewestFirst
   const sortItems = useCallback((items: Item[]): Item[] => {
     const itemsCopy = [...items];
     switch (sortOrder) {
-      case 'NewestFirst':
+      case CredentialSortOrder.NewestFirst:
         return itemsCopy.sort((a, b) =>
           new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
         );
-      case 'Alphabetical':
+      case CredentialSortOrder.Alphabetical:
         return itemsCopy.sort((a, b) =>
           (a.Name || '').localeCompare(b.Name || '')
         );
-      case 'OldestFirst':
+      case CredentialSortOrder.OldestFirst:
       default:
         return itemsCopy.sort((a, b) =>
           new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
@@ -105,15 +105,15 @@ export function useSortedItems<T extends Item>(filteredItems: T[], sortOrder: Cr
   return useMemo(() => {
     const itemsCopy = [...filteredItems];
     switch (sortOrder) {
-      case 'NewestFirst':
+      case CredentialSortOrder.NewestFirst:
         return itemsCopy.sort((a, b) =>
           new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
         );
-      case 'Alphabetical':
+      case CredentialSortOrder.Alphabetical:
         return itemsCopy.sort((a, b) =>
           (a.Name || '').localeCompare(b.Name || '')
         );
-      case 'OldestFirst':
+      case CredentialSortOrder.OldestFirst:
       default:
         return itemsCopy.sort((a, b) =>
           new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()

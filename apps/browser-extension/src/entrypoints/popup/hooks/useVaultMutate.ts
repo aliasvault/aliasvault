@@ -8,6 +8,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { devLog } from '@/utils/devLogger/DevLogger';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import { storeEncryptedVault } from '@/utils/messaging/VaultBlobTransfer';
 
 /** How many unanswered sync-state polls in a row before the poll gives up on the background context. */
 const MAX_POLL_FAILURES = 10;
@@ -57,11 +58,7 @@ export function useVaultMutate(): {
       const encryptedVaultBlob = await encryptVaultBlob(dbContext.sqliteClient!.exportToBytes(), encryptionKey);
 
       // Store the updated vault locally, mark dirty, increment mutation sequence.
-      await sendMessage('STORE_ENCRYPTED_VAULT', {
-        vaultBlob: encryptedVaultBlob,
-        markDirty: true,
-        scopes
-      });
+      await storeEncryptedVault(encryptedVaultBlob, { markDirty: true, scopes });
     } catch (error) {
       /*
        * Storing failed, but the write itself is still in the local database and the next mutation that does

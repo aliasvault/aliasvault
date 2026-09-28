@@ -1,5 +1,5 @@
-import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
+import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,12 +7,13 @@ import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
-import PasswordStrengthIndicator, { MIN_GOOD_PASSWORD_LENGTH } from '@/entrypoints/popup/components/PasswordStrengthIndicator';
+import PasswordStrengthIndicator from '@/entrypoints/popup/components/PasswordStrengthIndicator';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
+import { apiErrorMessage } from '@/utils/ApiErrors';
 import { logFailure } from '@/utils/Diagnostics';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
@@ -65,7 +66,7 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ id, label, value, setValu
  * Change master password settings page.
  */
 const ChangePasswordSettings: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const dbContext = useDb();
   const webApi = useWebApi();
   const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
@@ -95,10 +96,7 @@ const ChangePasswordSettings: React.FC = () => {
     if (err instanceof PasswordChangedElsewhereError) {
       return t('common.errors.passwordChanged');
     }
-    if (err instanceof ApiRequestError && err.apiErrorCode && i18n.exists(`common.apiErrors.${err.apiErrorCode}`)) {
-      return t(`common.apiErrors.${err.apiErrorCode}`);
-    }
-    return t('common.errors.unknownErrorTryAgain');
+    return apiErrorMessage(err, t, t('common.errors.unknownErrorTryAgain'));
   };
 
   /**
@@ -118,8 +116,8 @@ const ChangePasswordSettings: React.FC = () => {
       setError(t('settings.securitySettings.changePassword.passwordsDoNotMatch'));
       return;
     }
-    if (newPassword.length < MIN_GOOD_PASSWORD_LENGTH) {
-      setError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_GOOD_PASSWORD_LENGTH }));
+    if (newPassword.length < MIN_ACCEPTED_PASSWORD_LENGTH) {
+      setError(t('settings.securitySettings.changePassword.passwordTooShort', { minLength: MIN_ACCEPTED_PASSWORD_LENGTH }));
       return;
     }
 

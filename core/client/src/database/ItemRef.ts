@@ -11,6 +11,16 @@ export type ItemRef = {
 };
 
 /**
+ * Whether two references name the same item: same id inside the same manifest.
+ * @param a - One item
+ * @param b - The other item
+ * @returns True when both halves match
+ */
+export function isSameItem(a: ItemRef, b: ItemRef): boolean {
+  return a.Id === b.Id && a.ManifestId === b.ManifestId;
+}
+
+/**
  * The grouping key for a manifest-scoped row: its manifest and its id, separated by a pipe symbol.
  * @param manifestId - The owning manifest's id
  * @param id - The row's id within that manifest

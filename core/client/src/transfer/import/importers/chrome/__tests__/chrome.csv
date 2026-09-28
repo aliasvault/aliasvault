@@ -1,0 +1,4 @@
+name,url,username,password,note
+example.com,https://example.com/,usernamegoogle,passwordgoogle,Note for example password from Google
+facebook.com,https://facebook.com/,facebookuser,facebookpass,Facebook comment
+youtube.com,https://youtube.com/,youtubeusername,youtubepassword,

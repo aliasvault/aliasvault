@@ -25,6 +25,10 @@
 			"path": "../apps/mobile-app"
 		},
 		{
+			"name": "web",
+			"path": "../apps/web"
+		},
+		{
 			"path": "../scripts"
 		},
 		{

@@ -1,4 +1,4 @@
-import { LogoKinds } from '@aliasvault/models/vault';
+import { FieldKey, LogoKinds } from '@aliasvault/models/vault';
 
 import { vaultCodecLogoContentHash, vaultCodecLogoIdFor } from '../../rust/RustCore';
 import { logExpected } from '../../utilities/Diagnostics';
@@ -7,6 +7,15 @@ import { LogoQueries } from '../queries/LogoQueries';
 
 import type { DbOp } from '../DbOp';
 import type { ItemLogo, LogoKind } from '@aliasvault/models/vault';
+
+/**
+ * An item whose favicon a bulk refresh may replace (has no favicon yet).
+ */
+export type FaviconRefreshCandidate = {
+  ItemId: string;
+  Urls: string[];
+  CurrentSource: string | null;
+};
 
 /**
  * Repository for item logo operations.
@@ -128,6 +137,75 @@ export class LogoRepository extends BaseRepository {
   public async storeUpload(manifestId: string, fileData: Uint8Array, currentDateTime: string, options: { mimeType?: string | null; name?: string | null } = {}): Promise<string> {
     const contentHash = await vaultCodecLogoContentHash(fileData);
     return this.getOrCreate(manifestId, LogoKinds.Custom, contentHash, fileData, currentDateTime, options);
+  }
+
+  /**
+   * The items of the personal vault a bulk favicon refresh applies to, every active item except those showing a
+   * built-in or uploaded logo, which the user chose on purpose.
+   * @returns The items to refresh
+   */
+  public *getFaviconRefreshCandidates(): DbOp<FaviconRefreshCandidate[]> {
+    const manifestId = yield* this.writeManifestId();
+    const items = yield* this.query<{ Id: string; LogoKind: LogoKind | null; LogoSource: string | null; LogoId: string | null }>(LogoQueries.GET_ITEMS_WITH_LOGO_KIND, [manifestId]);
+    const urlRows = yield* this.query<{ ItemId: string; Value: string }>(LogoQueries.GET_FIELD_VALUES_FOR_MANIFEST, [manifestId, FieldKey.LoginUrl]);
+
+    const urlsByItem = new Map<string, string[]>();
+    for (const row of urlRows) {
+      const urls = urlsByItem.get(row.ItemId) ?? [];
+      urls.push(row.Value);
+      urlsByItem.set(row.ItemId, urls);
+    }
+
+    return items
+      .filter(item => !item.LogoId || !item.LogoKind || item.LogoKind === LogoKinds.Favicon)
+      .map(item => ({ ItemId: item.Id, Urls: urlsByItem.get(item.Id) ?? [], CurrentSource: item.LogoKind ? item.LogoSource : null }));
+  }
+
+  /**
+   * Point every candidate at the favicon of its current domain: freshly fetched bytes win, otherwise the vault's
+   * stored favicon for that domain, otherwise none. Never the favicon of a previous domain.
+   * @param assignments - Each candidate with the domain its favicon comes from, or null when it has no usable URL
+   * @param favicons - The fetched favicon bytes by domain
+   * @returns The number of items whose logo changed
+   */
+  public async applyFaviconRefresh(assignments: { candidate: FaviconRefreshCandidate; source: string | null }[], favicons: Map<string, Uint8Array>): Promise<number> {
+    return this.withTransaction(async () => {
+      const manifestId = await this.run(this.writeManifestId());
+      const currentDateTime = this.now();
+      const logoIdBySource = new Map<string, string | null>();
+      let changed = 0;
+
+      for (const { candidate, source } of assignments) {
+        let logoId: string | null = null;
+        if (source) {
+          if (!logoIdBySource.has(source)) {
+            const bytes = favicons.get(source);
+            logoIdBySource.set(source, bytes
+              ? await this.getOrCreate(manifestId, LogoKinds.Favicon, source, bytes, currentDateTime, { mimeType: 'image/x-icon' })
+              : await this.ensureInScope(manifestId, LogoKinds.Favicon, source, currentDateTime));
+          }
+          logoId = logoIdBySource.get(source) ?? null;
+        }
+
+        const currentLogoId = candidate.CurrentSource === null ? null : await this.run(this.getIdForKey(manifestId, LogoKinds.Favicon, candidate.CurrentSource));
+        if (logoId !== currentLogoId) {
+          await this.run(this.execute(LogoQueries.SET_ITEM_LOGO, [logoId, currentDateTime, candidate.ItemId, manifestId]));
+          changed++;
+        }
+      }
+
+      return changed;
+    });
+  }
+
+  /**
+   * Remove the favicon of every item in the personal vault. Built-in and uploaded logos stay; the favicon rows
+   * themselves are pruned before the next push, once nothing points at them.
+   * @returns The number of items whose favicon was removed
+   */
+  public async deleteAllFavicons(): Promise<number> {
+    const manifestId = await this.run(this.writeManifestId());
+    return this.run(this.execute(LogoQueries.UNLINK_FAVICONS, [this.now(), manifestId, manifestId, LogoKinds.Favicon]));
   }
 
   /**

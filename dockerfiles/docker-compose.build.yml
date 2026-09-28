@@ -9,7 +9,7 @@ services:
         image: aliasvault-client
         build:
             context: .
-            dockerfile: apps/server/AliasVault.Client/Dockerfile
+            dockerfile: apps/web/Dockerfile
 
     api:
         image: aliasvault-api

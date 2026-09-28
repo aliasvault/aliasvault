@@ -1,4 +1,5 @@
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
 import { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { VaultSqlGenerator } from '@aliasvault/vault';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -23,7 +24,6 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { syncErrorMessage } from '@/utils/SyncError';
 
 import type { VaultVersion } from '@aliasvault/vault';
 

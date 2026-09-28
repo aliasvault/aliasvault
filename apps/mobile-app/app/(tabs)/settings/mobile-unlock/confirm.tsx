@@ -38,6 +38,11 @@ const CODE_CHOICE_COUNT = 4;
 const RECENT_UNLOCK_GRACE_SECONDS = 10;
 
 /**
+ * Seconds the approve button stays disabled for a request opened from a link to force user to read the warning.
+ */
+const LINK_APPROVE_DELAY_SECONDS = 3;
+
+/**
  * The numbers the user picks from, which includes the real code as well as fakes that are shown on the originating device's screen,
  * this requires the user to visually verify the originating device with the mobile app unlock attempt.
  */
@@ -77,6 +82,8 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   const [scan] = useState<PendingMobileLoginRequest | null>(() => MobileLoginScanHandoff.take());
   const [request, setRequest] = useState<VerifiedRequest | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [approveDelay, setApproveDelay] = useState(scan?.source === 'link' ? LINK_APPROVE_DELAY_SECONDS : 0);
   const hasLoadedRequest = useRef(false);
 
   /*
@@ -119,6 +126,17 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
     loadRequest();
   }, [scan, webApi, showAlert, t]);
 
+  /*
+   * Count down the approve delay once the request is shown.
+   */
+  useEffect(() => {
+    if (!request || approveDelay <= 0) {
+      return;
+    }
+    const timer = setTimeout(() => setApproveDelay(delay => delay - 1), 1000);
+    return () : void => clearTimeout(timer);
+  }, [request, approveDelay]);
+
   /**
    * Decline the request.
    */
@@ -134,10 +152,10 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   };
 
   /**
-   * Handle a tapped number: check it, re-authenticate the user, then hand over the unlock key.
+   * Handle approve: check the selected number, re-authenticate the user, then hand over the unlock key.
    */
-  const handleCodeChoice = async (chosenCode: string) : Promise<void> => {
-    if (!scan || !request) {
+  const handleApprove = async () : Promise<void> => {
+    if (!scan || !request || !selectedCode || approveDelay > 0) {
       return;
     }
 
@@ -145,7 +163,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
 
     try {
       // A wrong confirmation number results in a automatic decline for the mobile login request attempt.
-      if (chosenCode !== request.verificationCode) {
+      if (selectedCode !== request.verificationCode) {
         await declineRequest();
         showResult(false, 'codeMismatch');
         return;
@@ -268,23 +286,46 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
       justifyContent: 'center',
       maxWidth: 72,
     },
+    codeChoiceSelected: {
+      backgroundColor: colors.primary,
+    },
     codeChoiceText: {
       fontSize: 24,
       fontWeight: 'bold',
       lineHeight: 30,
     },
-    declineButton: {
+    codeChoiceTextSelected: {
+      color: colors.primarySurfaceText,
+    },
+    approveButton: {
       alignItems: 'center',
-      backgroundColor: colors.destructive + '10',
-      borderColor: colors.destructive,
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
       borderRadius: 8,
       borderWidth: 1,
-      marginTop: 'auto',
+      marginBottom: 8,
+      paddingVertical: 12,
+      width: '100%',
+    },
+    approveButtonDisabled: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+    },
+    approveButtonText: {
+      color: colors.primarySurfaceText,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    approveButtonTextDisabled: {
+      color: colors.textMuted,
+    },
+    declineButton: {
+      alignItems: 'center',
       paddingVertical: 12,
       width: '100%',
     },
     declineButtonText: {
-      color: colors.destructive,
+      color: colors.textMuted,
       fontSize: 16,
       fontWeight: '500',
     },
@@ -302,6 +343,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   }
 
   const { details } = request;
+  const canApprove = selectedCode !== null && approveDelay <= 0;
   const clientDescription = [details.clientName, [details.browser, details.operatingSystem].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
   const ipDescription = [details.ipAddress, details.location ? `(${details.location})` : null].filter(Boolean).join(' ');
 
@@ -313,13 +355,6 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
         <ThemedText style={styles.message}>
           {t('settings.qrScanner.mobileLogin.confirmMessage')}
         </ThemedText>
-        {/* Show an additional warning if the request was opened from a link (e.g. native camera app) as this could be a phishing attempt. */}
-        {scan?.source === 'link' && (
-          <View style={styles.linkWarning}>
-            <Ionicons name="warning" size={20} color={colors.warning} />
-            <ThemedText style={styles.linkWarningText}>{t('settings.qrScanner.mobileLogin.openedFromLink')}</ThemedText>
-          </View>
-        )}
         <View style={styles.detailsContainer}>
           {clientDescription.length > 0 && (
             <View style={styles.detailRow}>
@@ -343,11 +378,33 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
         </ThemedText>
         <View style={styles.codeChoiceRow}>
           {request.codeChoices.map(choice => (
-            <RobustPressable key={choice} style={styles.codeChoice} onPress={() => handleCodeChoice(choice)} testID={`mobile-login-code-choice-${choice}`}>
-              <ThemedText style={styles.codeChoiceText}>{choice}</ThemedText>
+            <RobustPressable
+              key={choice}
+              style={[styles.codeChoice, choice === selectedCode && styles.codeChoiceSelected]}
+              onPress={() => setSelectedCode(choice)}
+              testID={`mobile-login-code-choice-${choice}`}
+            >
+              <ThemedText style={[styles.codeChoiceText, choice === selectedCode && styles.codeChoiceTextSelected]}>{choice}</ThemedText>
             </RobustPressable>
           ))}
         </View>
+        {/* Show additional phishing warning when the request was opened from a link (e.g. the native camera app). */}
+        {scan?.source === 'link' && (
+          <View style={styles.linkWarning}>
+            <Ionicons name="warning" size={20} color={colors.warning} />
+            <ThemedText style={styles.linkWarningText}>{t('settings.qrScanner.mobileLogin.openedFromLink')}</ThemedText>
+          </View>
+        )}
+        <RobustPressable
+          style={[styles.approveButton, !canApprove && styles.approveButtonDisabled]}
+          onPress={handleApprove}
+          disabled={!canApprove}
+          testID="mobile-login-approve"
+        >
+          <ThemedText style={[styles.approveButtonText, !canApprove && styles.approveButtonTextDisabled]}>
+            {approveDelay > 0 ? `${t('settings.qrScanner.mobileLogin.approve')} (${approveDelay})` : t('settings.qrScanner.mobileLogin.approve')}
+          </ThemedText>
+        </RobustPressable>
         <RobustPressable style={styles.declineButton} onPress={handleDecline} testID="mobile-login-decline">
           <ThemedText style={styles.declineButtonText}>{t('common.cancel')}</ThemedText>
         </RobustPressable>

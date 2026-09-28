@@ -23,3 +23,5 @@ export { SettingsRepository } from './repositories/SettingsRepository';
 export { EncryptionKeyRepository } from './repositories/EncryptionKeyRepository';
 export { LogoRepository } from './repositories/LogoRepository';
 export { ItemStatsRepository, type ItemUsageAction } from './repositories/ItemStatsRepository';
+export { ImportExportRepository, type VaultExportData } from './repositories/ImportExportRepository';
+export { StorageInsightsRepository, type StorageCounts, type AttachmentSizeRow, type LogoSizeRow } from './repositories/StorageInsightsRepository';

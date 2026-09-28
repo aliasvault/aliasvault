@@ -39,3 +39,9 @@ certificates/
 
 # Exclude local built web app index.html, must be generated fresh during Docker build for correct fingerprinting
 apps/server/AliasVault.Client/wwwroot/index.html
+
+# Exclude local web app build, test and dev output
+apps/web/dist
+apps/web/playwright-report
+apps/web/tests/test-results
+apps/web/public/appsettings.Development.json

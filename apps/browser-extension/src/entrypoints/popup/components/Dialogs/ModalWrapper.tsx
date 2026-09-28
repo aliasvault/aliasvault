@@ -23,8 +23,6 @@ type ModalWrapperProps = {
  * A generic modal wrapper component that provides consistent behavior:
  * - Click outside to close (on backdrop)
  * - Escape key to close
- * - Dark overlay background
- * - Consistent styling and animations
  */
 const ModalWrapper: React.FC<ModalWrapperProps> = ({
   isOpen,
@@ -75,65 +73,59 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-80 transition-opacity"
-        onMouseDown={onClose}
-      />
+    <div className="fixed inset-0 z-50">
+      <div className="fixed inset-0 bg-gray-600/50 backdrop-blur-sm dark:bg-black/70" />
+      <div className="fixed inset-0 overflow-y-auto">
+        {/* Pressing outside the panel closes the modal */}
+        <div className="flex min-h-full items-center justify-center p-4" onMouseDown={handleContainerMouseDown}>
+          <div className={`relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800 dark:shadow-2xl w-full ${maxWidth}`}>
+            {/* Header */}
+            {title && (
+              <div className={`px-6 py-4 flex items-center justify-between ${showHeaderBorder ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {title}
+                </h2>
+                {showCloseButton && (
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                    onClick={onClose}
+                  >
+                    <span className="sr-only">{t('common.close')}</span>
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
 
-      {/* Modal container - pressing here (outside modal content) also closes */}
-      <div
-        className="fixed inset-0 flex items-center justify-center p-4"
-        onMouseDown={handleContainerMouseDown}
-      >
-        <div className={`relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all w-full ${maxWidth} mx-4`}>
-          {/* Header - only show as block if title exists */}
-          {title && (
-            <div className={`px-6 py-4 flex items-center justify-between ${showHeaderBorder ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {title}
-              </h2>
-              {showCloseButton && (
-                <button
-                  type="button"
-                  className="text-gray-400 hover:text-gray-500 focus:outline-none"
-                  onClick={onClose}
-                >
-                  <span className="sr-only">{t('common.close')}</span>
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
+            {/* Floating close button when no title */}
+            {!title && showCloseButton && (
+              <button
+                type="button"
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-500 focus:outline-none z-10"
+                onClick={onClose}
+              >
+                <span className="sr-only">{t('common.close')}</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+
+            {/* Body */}
+            <div className={bodyClassName}>
+              {children}
             </div>
-          )}
 
-          {/* Floating close button when no title */}
-          {!title && showCloseButton && (
-            <button
-              type="button"
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-500 focus:outline-none z-10"
-              onClick={onClose}
-            >
-              <span className="sr-only">{t('common.close')}</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-
-          {/* Body */}
-          <div className={bodyClassName}>
-            {children}
+            {/* Footer */}
+            {footer && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                {footer}
+              </div>
+            )}
           </div>
-
-          {/* Footer */}
-          {footer && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              {footer}
-            </div>
-          )}
         </div>
       </div>
     </div>

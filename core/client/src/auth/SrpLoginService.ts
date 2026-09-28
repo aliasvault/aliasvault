@@ -1,11 +1,12 @@
-import { ApiAuthError } from '../api/errors/ApiAuthError';
+import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { throwIfServerPredatesV2Api } from '../sync/LegacyStorageModelMigration';
 
 import { SrpAuthService } from './SrpAuthService';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { AccountKeyHierarchy } from '../crypto/AccountKeys';
-import type { BadRequestResponse, LoginResponse, TokenModel, ValidateLoginRequest, ValidateLoginRequest2Fa, ValidateLoginResponse } from '@aliasvault/models/webapi';
+import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
+import type { LoginResponse, TokenModel, ValidateLoginRequest, ValidateLoginRequest2Fa, ValidateLoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * The part of an API client the auth requests need.
@@ -13,12 +14,21 @@ import type { BadRequestResponse, LoginResponse, TokenModel, ValidateLoginReques
 export type SrpLoginApi = Pick<WebApiService, 'rawFetch'>;
 
 /**
+ * The recovery code variant of the validate request.
+ */
+type ValidateLoginRequestRecoveryCode = ValidateLoginRequest & {
+  recoveryCode: string;
+};
+
+/**
  * A registered account: its session tokens plus the key material the caller keeps client-side.
  */
 export type RegistrationResult = {
+  username: string;
   token: TokenModel;
   keys: AccountKeyHierarchy;
   derivedKey: string;
+  derivationParams: UnlockKeyDerivationParams;
 };
 
 /**
@@ -32,16 +42,18 @@ export class SrpLoginService {
   public constructor(private readonly api: SrpLoginApi) {}
 
   /**
-   * Register a new account with its SRP verifier and account key hierarchy, both created client-side.
+   * Register a new account with its SRP verifier and account key hierarchy, both created client-side. The server
+   * holds no vault content yet; the first sync writes the empty vault.
    * @param username - The username
    * @param password - The master password
-   * @returns The session tokens and key material of the new account
-   * @throws {ApiAuthError} when the server refuses the registration
+   * @returns The normalized username, session tokens and key material of the new account
+   * @throws {ApiRequestError} with the server's error code when the server refuses the registration
    */
   public async register(username: string, password: string): Promise<RegistrationResult> {
     const prepared = await SrpAuthService.prepareRegistration(username, password);
     const token = await this.parseAuthResponse<TokenModel>(await this.post('Auth/register', prepared.request));
-    return { token, keys: prepared.keys, derivedKey: prepared.derivedKey };
+    const { salt, encryptionType, encryptionSettings } = prepared.request;
+    return { username: prepared.request.username, token, keys: prepared.keys, derivedKey: prepared.derivedKey, derivationParams: { salt, encryptionType, encryptionSettings } };
   }
 
   /**
@@ -86,15 +98,30 @@ export class SrpLoginService {
   }
 
   /**
-   * Parse an auth response, turning a 400 into an ApiAuthError carrying the server's error code.
+   * Validate login with a 2FA recovery code.
+   * @param username - The username
+   * @param passwordHashString - The password hash as uppercase hex
+   * @param rememberMe - Whether to request an extended token lifetime
+   * @param loginResponse - The initiate response
+   * @param recoveryCode - The recovery code
+   * @returns The validate response
+   */
+  public async validateLoginRecoveryCode(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse, recoveryCode: string): Promise<ValidateLoginResponse> {
+    const normalizedUsername = SrpAuthService.normalizeUsername(username);
+    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
+    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...proof, recoveryCode };
+    return this.parseAuthResponse<ValidateLoginResponse>(await this.post('Auth/validate-recovery-code', model));
+  }
+
+  /**
+   * Parse an auth response, turning a failure into an ApiRequestError carrying the server's error code.
    * @param response - The raw response
    * @returns The parsed body
    */
   private async parseAuthResponse<T>(response: Response): Promise<T> {
     await throwIfServerPredatesV2Api(response.status, this.api);
-    if (response.status === 400) {
-      const badRequestResponse = await response.json() as BadRequestResponse;
-      throw new ApiAuthError(badRequestResponse.title);
+    if (!response.ok) {
+      throw await ApiRequestError.fromResponse(response);
     }
     return await response.json() as T;
   }

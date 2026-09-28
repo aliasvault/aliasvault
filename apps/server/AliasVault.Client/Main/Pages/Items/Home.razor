@@ -108,7 +108,7 @@ else
         }
 
         @* Folders section - show at root OR inside folders to display subfolders *@
-        @if (!IsSearching && ShowFolders)
+        @if (ShowFolders)
         {
             <div class="flex flex-wrap items-center gap-2 mb-4">
                 @foreach (var folder in CurrentLevelFolders)
@@ -198,7 +198,7 @@ else
                 }
                 @foreach (var item in FilteredAndSortedItems)
                 {
-                    <ItemCard @key="item.Id" Obj="@item" ShowFolderPath="@IsSearching" OnMutated="LoadItemsAsync" />
+                    <ItemCard @key="item.Id" Obj="@item" OnMutated="LoadItemsAsync" />
                 }
             </div>
         }
@@ -381,11 +381,6 @@ else
     private int RecentlyDeletedCount { get; set; }
 
     /// <summary>
-    /// Gets or sets the search term.
-    /// </summary>
-    private string SearchTerm { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the filter type for the items.
     /// </summary>
     private ItemFilterType FilterType { get; set; } = ItemFilterType.All;
@@ -459,11 +454,6 @@ else
     private bool IsInFolder => FolderId.HasValue;
 
     /// <summary>
-    /// Gets whether we're currently searching.
-    /// </summary>
-    private bool IsSearching => !string.IsNullOrEmpty(SearchTerm);
-
-    /// <summary>
     /// Gets whether all items are in folders (no items at root level but items exist in folders).
     /// </summary>
     private bool HasItemsInFoldersOnly => Items.Count > 0 && Items.All(x => x.FolderId != null);
@@ -488,7 +478,7 @@ else
                 // Show only items in this folder
                 filtered = filtered.Where(x => x.FolderId == FolderId);
             }
-            else if (!IsSearching && ShowFolders)
+            else if (ShowFolders)
             {
                 // When showing folders (checkbox ON): only show root items (exclude items in folders)
                 // When not showing folders (checkbox OFF): show all items flat

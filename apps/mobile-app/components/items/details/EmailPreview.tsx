@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
+import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
@@ -17,6 +18,9 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
+
+/** Client for the SpamOK mailboxes of the public email domains. */
+const spamOk = new SpamOkClient('av-mobile', AppInfo.VERSION);
 
 type EmailPreviewProps = {
   email: string | undefined;
@@ -157,25 +161,12 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
         if (isPublic) {
           // For public domains (SpamOK), use the SpamOK API directly
           const emailPrefix = email.split('@')[0];
-          const response = await fetch(`https://api.spamok.com/v2/EmailBox/${emailPrefix}`, {
-            headers: {
-              'X-Asdasd-Platform-Id': 'av-mobile',
-              'X-Asdasd-Platform-Version': AppInfo.VERSION,
-            }
-          });
-
-          if (!response.ok) {
-            markPollFailed(`The mailbox request returned HTTP ${response.status}`);
+          const allMails = await spamOk.getMailbox(emailPrefix);
+          if (!allMails) {
+            markPollFailed('The mailbox request failed');
             setError(t('items.emailLoadError'));
             return;
           }
-
-          const data = await response.json();
-
-          // Store all emails, sorted by date
-          const allMails = data?.mails
-            ?.sort((a: MailboxEmail, b: MailboxEmail) =>
-              new Date(b.dateSystem).getTime() - new Date(a.dateSystem).getTime()) ?? [];
 
           if (loading && allMails.length > 0) {
             setLastEmailId(allMails[0].id);
@@ -427,7 +418,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
           onPress={() => {
             if (isSpamOk) {
               const emailPrefix = email.split('@')[0];
-              Linking.openURL(`https://spamok.com/${emailPrefix}/${mail.id}`);
+              Linking.openURL(`https://spamok.com/${encodeURIComponent(emailPrefix)}/${mail.id}`);
             } else {
               router.push(`/(tabs)/items/email/${mail.id}`);
             }

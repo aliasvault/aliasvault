@@ -1,4 +1,5 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
+import { TRASH_RETENTION_DEFAULT_DAYS } from '@aliasvault/models/vault';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +23,6 @@ import { ItemIcon } from '@/components/items/ItemIcon';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { TRASH_RETENTION_DAYS } from '@/constants/vault';
 import { useDb } from '@/context/DbContext';
 
 import type { ItemWithDeletedAt } from '@aliasvault/client/database/mappers/ItemMapper';
@@ -30,10 +30,10 @@ import type { ItemWithDeletedAt } from '@aliasvault/client/database/mappers/Item
 /**
  * Calculate days remaining until permanent deletion.
  * @param deletedAt - ISO timestamp when item was deleted
- * @param retentionDays - Number of days to retain (defaults to TRASH_RETENTION_DAYS)
+ * @param retentionDays - Number of days to retain (defaults to TRASH_RETENTION_DEFAULT_DAYS)
  * @returns Number of days remaining, or 0 if already expired
  */
-const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETENTION_DAYS): number => {
+const getDaysRemaining = (deletedAt: string, retentionDays: number = TRASH_RETENTION_DEFAULT_DAYS): number => {
   const deletedDate = new Date(deletedAt);
   const expiryDate = new Date(deletedDate.getTime() + retentionDays * 24 * 60 * 60 * 1000);
   const now = new Date();
@@ -272,7 +272,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
    * Render an item card.
    */
   const renderItem = (item: DisplayItem<ItemWithDeletedAt>): React.ReactElement => {
-    const daysRemaining = item.DeletedAt ? getDaysRemaining(item.DeletedAt) : TRASH_RETENTION_DAYS;
+    const daysRemaining = item.DeletedAt ? getDaysRemaining(item.DeletedAt) : TRASH_RETENTION_DEFAULT_DAYS;
 
     return (
       <View key={scopedKey(item.ManifestId, item.Id)} style={styles.itemCard}>
@@ -347,7 +347,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
                 </TouchableOpacity>
               </View>
               <ThemedText style={styles.headerText}>
-                {t('items.recentlyDeleted.description', { days: TRASH_RETENTION_DAYS })}
+                {t('items.recentlyDeleted.description', { days: TRASH_RETENTION_DEFAULT_DAYS })}
               </ThemedText>
               {items.map(renderItem)}
             </>
@@ -357,7 +357,7 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
                 {t('items.recentlyDeleted.noItems')}
               </ThemedText>
               <ThemedText style={styles.emptyDescription}>
-                {t('items.recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DAYS })}
+                {t('items.recentlyDeleted.noItemsDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}
               </ThemedText>
             </View>
           )}

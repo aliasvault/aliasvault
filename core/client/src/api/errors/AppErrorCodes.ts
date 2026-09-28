@@ -23,7 +23,7 @@
 export enum AppErrorCode {
   // Generic errors (E-0xx)
   UNKNOWN_ERROR = 'E-001',
-  BACKGROUND_UNRESPONSIVE = 'E-002', // Background service worker did not answer a PING in time
+  BACKGROUND_UNRESPONSIVE = 'E-002', // Background service worker did not answer in time
 
   // Auth status check errors (E-1xx) - handleCheckAuthStatus
   AUTH_STATUS_CHECK_FAILED = 'E-101',
@@ -35,7 +35,6 @@ export enum AppErrorCode {
   VAULT_LOCKED = 'E-202', // No encryption key available
   VAULT_DECRYPT_FAILED = 'E-203', // The locally stored vault does not decrypt with the session key
   VAULT_METADATA_READ_FAILED = 'E-204', // Failed to read vault metadata
-  VAULT_LOAD_TIMEOUT = 'E-205', // Background did not return the vault in time
   UNLOCK_KEY_REJECTED = 'E-206', // The unlock key does not open the account key (wrong password)
   KEY_CHAIN_UNREADABLE = 'E-207', // The account key opened, the vault encryption key under it did not
   KEY_OUT_OF_SYNC = 'E-208', // The session key does not open the key chain the server holds (re-login needed)
@@ -128,70 +127,81 @@ export function formatErrorWithCode(message: string, code: AppErrorCode): string
 export function getErrorTranslationKey(code: AppErrorCode): string {
   const codeToKeyMap: Record<AppErrorCode, string> = {
     // Generic errors (E-0xx)
-    [AppErrorCode.UNKNOWN_ERROR]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.UNKNOWN_ERROR]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.BACKGROUND_UNRESPONSIVE]: 'common.errors.backgroundUnresponsive',
 
     // Auth status check errors (E-1xx)
-    [AppErrorCode.AUTH_STATUS_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.AUTH_STATUS_MIGRATION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.AUTH_VERSION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.AUTH_STATUS_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.AUTH_STATUS_MIGRATION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.AUTH_VERSION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
 
     // Vault retrieval errors (E-2xx)
     [AppErrorCode.VAULT_NOT_FOUND]: 'common.errors.vaultNotAvailable',
     [AppErrorCode.VAULT_LOCKED]: 'common.errors.vaultIsLocked',
-    [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.VAULT_METADATA_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.VAULT_LOAD_TIMEOUT]: 'common.errors.vaultLoadTimeout',
+    [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
+    [AppErrorCode.VAULT_METADATA_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.UNLOCK_KEY_REJECTED]: 'common.errors.wrongPassword',
-    [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.keyChainUnreadable',
     [AppErrorCode.KEY_OUT_OF_SYNC]: 'common.errors.sessionExpired',
 
     // Item/credential operations (E-3xx)
-    [AppErrorCode.ITEM_CREATE_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.ITEM_UPDATE_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.ITEM_DELETE_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.ITEM_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.ITEM_CREATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.ITEM_UPDATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.ITEM_DELETE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.ITEM_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
 
     // Passkey operations (E-4xx)
-    [AppErrorCode.PASSKEY_CREATE_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.PASSKEY_GET_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.PASSKEY_CREATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.PASSKEY_GET_FAILED]: 'common.errors.unexpectedErrorContactSupport',
 
     // Sync operations (E-5xx)
-    [AppErrorCode.SYNC_STATUS_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_VAULT_DECRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_STATUS_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.vaultDataUnreadable',
+    [AppErrorCode.SYNC_VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
+    [AppErrorCode.SYNC_STORE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.SYNC_SERVER_UNREACHABLE]: 'common.errors.serverNotAvailable',
-    [AppErrorCode.SYNC_SERVER_ERROR]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_RESPONSE_INVALID]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.SYNC_ENGINE_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.SYNC_SERVER_ERROR]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.SYNC_RESPONSE_INVALID]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.vaultDataUnreadable',
+    [AppErrorCode.SYNC_ENGINE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
 
     // Storage read/write errors (E-6xx)
-    [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.STORAGE_WRITE_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.DATABASE_INIT_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.STORAGE_WRITE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.DATABASE_INIT_FAILED]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.ENCRYPTION_KEY_NOT_FOUND]: 'common.errors.vaultIsLocked',
 
     // Merge operations (E-7xx)
     [AppErrorCode.MERGE_FAILED]: 'common.errors.mergeFailed',
     [AppErrorCode.MERGE_CONFLICT]: 'common.errors.syncConflictMaxRetries',
-    [AppErrorCode.MERGE_UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.MERGE_UPLOAD_FAILED]: 'common.errors.unexpectedErrorContactSupport',
 
     // Upload operations (E-8xx)
-    [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.UPLOAD_OUTDATED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.UPLOAD_ENCRYPT_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.UPLOAD_OUTDATED]: 'common.errors.unexpectedErrorContactSupport',
+    [AppErrorCode.UPLOAD_ENCRYPT_FAILED]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
     [AppErrorCode.UPLOAD_TIMEOUT]: 'common.errors.vaultSyncTimeout',
 
     // Migration/version errors (E-9xx)
-    [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
     [AppErrorCode.VERSION_INCOMPATIBLE]: 'common.errors.browserExtensionOutdated',
     [AppErrorCode.SERVER_UPDATE_REQUIRED]: 'common.errors.serverVersionNotSupported',
   };
 
-  return codeToKeyMap[code] || 'common.errors.unknownErrorTryAgain';
+  return codeToKeyMap[code] || 'common.errors.unexpectedErrorContactSupport';
+}
+
+/**
+ * The translated message for an error that carries a code, with the code appended, or null when it carries none.
+ *
+ * @param err - The error (can be Error, string, or unknown)
+ * @param t - The renderer's translation function
+ */
+export function translateCodedError(err: unknown, t: (key: string) => string): string | null {
+  const message = err instanceof Error ? err.message : typeof err === 'string' ? err : null;
+  const code = message ? extractErrorCode(message) : null;
+  return code ? formatErrorWithCode(t(getErrorTranslationKey(code)), code) : null;
 }
 
 /**

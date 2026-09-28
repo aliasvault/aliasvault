@@ -3,14 +3,23 @@ import { ItemTypes } from '@aliasvault/models/vault';
 import type { Item, ItemType } from '@aliasvault/models/vault';
 
 /**
- * Filter types for the items list.
- * - 'all': Show all items
- * - 'passkeys': Show only items with passkeys
- * - 'attachments': Show only items with attachments
- * - 'totp': Show only items with 2FA codes
- * - ItemType values: Filter by specific item type (Login, Alias, CreditCard, Note)
+ * Filters for the items list: feature filters plus one per item type. The values appear as-is in route params.
  */
-export type ItemFilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
+export const ItemFilter = {
+  All: 'all',
+  Passkeys: 'passkeys',
+  Attachments: 'attachments',
+  Totp: 'totp',
+  Login: ItemTypes.Login,
+  Alias: ItemTypes.Alias,
+  CreditCard: ItemTypes.CreditCard,
+  Note: ItemTypes.Note,
+} as const;
+
+/**
+ * A filter value for the items list.
+ */
+export type ItemFilterType = typeof ItemFilter[keyof typeof ItemFilter];
 
 /**
  * Check if a filter is an item type filter (Login, Alias, CreditCard, Note).
@@ -20,20 +29,17 @@ export function isItemTypeFilter(filter: ItemFilterType): filter is ItemType {
 }
 
 /**
- * Parse a filter value from a URL/route param. Returns 'all' if the value is missing
+ * Parse a filter value from a URL/route param. Returns `ItemFilter.All` if the value is missing
  * or doesn't match a known filter, so an unexpected param can't break the screen.
  */
 export function parseItemFilterType(value: string | null | undefined): ItemFilterType {
   if (!value) {
-    return 'all';
+    return ItemFilter.All;
   }
-  if (value === 'all' || value === 'passkeys' || value === 'attachments' || value === 'totp') {
-    return value;
+  if (Object.values(ItemFilter).includes(value as ItemFilterType)) {
+    return value as ItemFilterType;
   }
-  if (isItemTypeFilter(value as ItemFilterType)) {
-    return value as ItemType;
-  }
-  return 'all';
+  return ItemFilter.All;
 }
 
 /**
@@ -47,18 +53,18 @@ export type FilterableItem = Pick<Item, 'ItemType' | 'HasPasskey' | 'HasAttachme
  * stay consistent when a filter is active, folder counts only include matching items.
  */
 export function applyTypeFilter<T extends FilterableItem>(items: T[], filterType: ItemFilterType): T[] {
-  if (filterType === 'all') {
+  if (filterType === ItemFilter.All) {
     return items;
   }
 
   return items.filter((item: T) => {
-    if (filterType === 'passkeys') {
+    if (filterType === ItemFilter.Passkeys) {
       return item.HasPasskey === true;
     }
-    if (filterType === 'attachments') {
+    if (filterType === ItemFilter.Attachments) {
       return item.HasAttachment === true;
     }
-    if (filterType === 'totp') {
+    if (filterType === ItemFilter.Totp) {
       return item.HasTotp === true;
     }
     if (isItemTypeFilter(filterType)) {
