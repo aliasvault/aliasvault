@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Directory, File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
+import { getExportDirectory } from '@/utils/FileUtility';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -74,6 +75,7 @@ export default function ImportExportScreen(): React.ReactNode {
 
     setIsExporting(true);
 
+    let file: File | null = null;
     try {
       const dateStr = new Date().toISOString().split('T')[0];
 
@@ -83,12 +85,12 @@ export default function ImportExportScreen(): React.ReactNode {
       const csvContent = await dbContext.sqliteClient.importExport.exportToCsv();
 
       const filename = `aliasvault-export-${dateStr}.csv`;
-      const downloadsDir = new Directory(Paths.document, 'Exports');
-      if (!downloadsDir.exists) {
-        downloadsDir.create({ intermediates: true });
+      const exportDir = getExportDirectory();
+      if (!exportDir.exists) {
+        exportDir.create({ intermediates: true });
       }
 
-      const file = new File(downloadsDir, filename);
+      file = new File(exportDir, filename);
       if (file.exists) {
         file.delete();
       }
@@ -96,28 +98,24 @@ export default function ImportExportScreen(): React.ReactNode {
       file.write(csvContent);
 
       // Share the file using the system share dialog
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
+      if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(file.uri, {
           dialogTitle: filename,
           mimeType: 'text/csv',
         });
-
-        // Clean up the temporary file after sharing
-        setTimeout(() => {
-          try {
-            if (file.exists) {
-              file.delete();
-            }
-          } catch (error) {
-            console.error('Error cleaning up export file:', error);
-          }
-        }, 5000);
       }
     } catch (error) {
       console.error('Export error:', error);
       showAlert(t('common.error'), t('common.errors.unknownError'));
     } finally {
+      // Cleanup temporary export file if it still exists.
+      try {
+        if (file?.exists) {
+          file.delete();
+        }
+      } catch (error) {
+        console.error('Error cleaning up export file:', error);
+      }
       setIsExporting(false);
     }
   };

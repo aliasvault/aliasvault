@@ -10,6 +10,7 @@ import { install } from 'react-native-quick-crypto';
 
 import '@/platform/MobilePlatform';
 import { resolveDeepLink } from '@/utils/DeepLinkResolver';
+import { clearExportDirectories } from '@/utils/FileUtility';
 
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 
@@ -52,6 +53,9 @@ function RootLayoutNav() : React.ReactNode {
       return;
     }
     hasBooted.current = true;
+
+    // Remove plaintext exports an interrupted share left behind.
+    clearExportDirectories();
 
     /**
      * Initialize i18n and inspect the cold-start deep link in parallel.

@@ -1,4 +1,4 @@
-import { Directory, File } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 
 /*
  * Sanitize filenames for attachments so they are accepted by mobile OS filesystems.
@@ -33,4 +33,25 @@ const sanitizeFilename = (filename: string): string => {
 export const getFileForFilename = (directory: Directory, filename: string): File => {
   const directoryUri = directory.uri.endsWith('/') ? directory.uri : `${directory.uri}/`;
   return new File(`${directoryUri}${encodeURIComponent(sanitizeFilename(filename))}`);
+};
+
+/**
+ * The directory vault exports are written to before sharing.
+ * @returns The export directory.
+ */
+export const getExportDirectory = (): Directory => new Directory(Paths.cache, 'Exports');
+
+/**
+ * Deletes export files left behind by an interrupted share, including the Documents folder older builds wrote to.
+ */
+export const clearExportDirectories = (): void => {
+  for (const directory of [getExportDirectory(), new Directory(Paths.document, 'Exports')]) {
+    try {
+      if (directory.exists) {
+        directory.delete();
+      }
+    } catch (error) {
+      console.error('Error clearing export directory:', error);
+    }
+  }
 };
