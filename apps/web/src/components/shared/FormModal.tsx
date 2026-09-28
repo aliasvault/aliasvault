@@ -49,8 +49,9 @@ const FormModal: React.FC<FormModalProps> = ({
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // Focus the panel for keyboard handling, unless a field inside it already took focus via autoFocus.
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !panelRef.current?.contains(document.activeElement)) {
       panelRef.current?.focus();
     }
   }, [isOpen]);
