@@ -10,16 +10,6 @@ import type { FieldDefinitionEntity, ItemEntity, TotpCodeEntity } from '../../sh
 import type { ImportedCredential } from '../models/ImportedCredential';
 
 /**
- * Convert imported credentials to vault items.
- * @param credentials - The imported credentials
- * @param folderPathToId - Folder paths to folder ids, or null
- * @returns The items
- */
-export function convertToItems(credentials: ImportedCredential[], folderPathToId?: Map<string, string> | null): ItemEntity[] {
-  return credentials.map(credential => convertToItem(credential, folderPathToId ?? null));
-}
-
-/**
  * Convert one imported credential to a vault item with all its child fields.
  * @param credential - The imported credential
  * @param folderPathToId - Folder paths to folder ids, or null

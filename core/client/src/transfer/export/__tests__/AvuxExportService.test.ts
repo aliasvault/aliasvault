@@ -1,9 +1,8 @@
 import { FieldKey, FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { byName, itemByName } from '../../import/__tests__/testHelpers';
+import { byName, convertToItems, itemByName } from '../../import/__tests__/testHelpers';
 import { AvuxImportService } from '../../import/importers/aliasvault/AvuxImportService';
-import { convertToItems } from '../../import/writers/ItemConverter';
 import { ZipArchive } from '../../shared/ZipArchive';
 import { AvuxExportService } from '../AvuxExportService';
 

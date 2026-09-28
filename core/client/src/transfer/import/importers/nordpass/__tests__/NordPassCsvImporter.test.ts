@@ -1,9 +1,8 @@
 import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { readFixtureText, byName } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, readFixtureText } from '../../../__tests__/testHelpers';
 import { collectHierarchicalFolderPaths } from '../../../writers/ImportDuplicateDetection';
-import { convertToItems } from '../../../writers/ItemConverter';
 import { importNordPassCsv } from '../NordPassCsvImporter';
 
 describe('NordPassCsvImporter', () => {

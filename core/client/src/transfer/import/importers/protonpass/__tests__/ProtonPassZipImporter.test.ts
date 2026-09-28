@@ -1,8 +1,7 @@
 import { ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { readFixtureBytes, byName, itemByName } from '../../../__tests__/testHelpers';
-import { convertToItems } from '../../../writers/ItemConverter';
+import { byName, convertToItems, itemByName, readFixtureBytes } from '../../../__tests__/testHelpers';
 import { importProtonPassZip } from '../ProtonPassZipImporter';
 
 describe('ProtonPassZipImporter', () => {

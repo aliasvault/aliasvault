@@ -1,12 +1,11 @@
 import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { itemByName } from '../../__tests__/testHelpers';
-import { convertToItems } from '../ItemConverter';
+import { convertToItems, itemByName } from '../../__tests__/testHelpers';
 
 import type { ImportedCredential } from '../../models/ImportedCredential';
 
-describe('convertToItems', () => {
+describe('convertToItem', () => {
   it('keeps the TOTP parameters of an imported otpauth URI', () => {
     const credentials: ImportedCredential[] = [
       { ServiceName: 'Sha512Service', TwoFactorSecret: 'otpauth://totp/Sha512Service:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Sha512Service&algorithm=SHA512&digits=8&period=60' },

@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { convertToItem } from '../writers/ItemConverter';
+
 import type { ItemEntity } from '../../shared/VaultEntities';
 import type { ImportedCredential } from '../models/ImportedCredential';
 
@@ -54,6 +56,16 @@ export function itemByName(items: ItemEntity[], name: string): ItemEntity {
     throw new Error(`No item named '${name}'`);
   }
   return item;
+}
+
+/**
+ * Convert imported credentials to vault items, the way the import writer does one by one.
+ * @param credentials - The imported credentials
+ * @param folderPathToId - Folder paths to folder ids, or null
+ * @returns The items
+ */
+export function convertToItems(credentials: ImportedCredential[], folderPathToId: Map<string, string> | null = null): ItemEntity[] {
+  return credentials.map(credential => convertToItem(credential, folderPathToId));
 }
 
 /**

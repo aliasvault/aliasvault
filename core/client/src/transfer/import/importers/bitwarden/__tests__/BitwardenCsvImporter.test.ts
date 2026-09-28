@@ -2,9 +2,8 @@ import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it, vi } from 'vitest';
 
 import { parseFolderPath } from '../../../../shared/FolderPaths';
-import { readFixtureText, byName, itemByName } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, itemByName, readFixtureText } from '../../../__tests__/testHelpers';
 import { collectHierarchicalFolderPaths } from '../../../writers/ImportDuplicateDetection';
-import { convertToItems } from '../../../writers/ItemConverter';
 import { importBitwardenCsv } from '../BitwardenCsvImporter';
 
 import type { ImportedCredential } from '../../../models/ImportedCredential';

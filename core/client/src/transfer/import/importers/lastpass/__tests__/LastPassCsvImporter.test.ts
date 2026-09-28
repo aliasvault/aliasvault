@@ -1,8 +1,7 @@
 import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { readFixtureText, byName, itemByName } from '../../../__tests__/testHelpers';
-import { convertToItems } from '../../../writers/ItemConverter';
+import { byName, convertToItems, itemByName, readFixtureText } from '../../../__tests__/testHelpers';
 import { importLastPassCsv } from '../LastPassCsvImporter';
 
 describe('LastPassCsvImporter', () => {

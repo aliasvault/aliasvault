@@ -1,9 +1,8 @@
 import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { byName, itemByName, utc } from '../../import/__tests__/testHelpers';
+import { byName, convertToItems, itemByName, utc } from '../../import/__tests__/testHelpers';
 import { AliasVaultCsvImportService } from '../../import/importers/aliasvault/AliasVaultCsvImportService';
-import { convertToItems } from '../../import/writers/ItemConverter';
 import { AliasVaultCsvExportService } from '../AliasVaultCsvExportService';
 
 import { addFieldValue, addTotpCode, createTestItem, csvText } from './testHelpers';

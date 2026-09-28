@@ -2,9 +2,8 @@ import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
 import { createZipArchive, textToZipBytes } from '../../../../shared/ZipArchive';
-import { readFixtureBytes, byName, itemByName } from '../../../__tests__/testHelpers';
+import { byName, convertToItems, itemByName, readFixtureBytes } from '../../../__tests__/testHelpers';
 import { ImportException, ImportStage } from '../../../models/ImportException';
-import { convertToItems } from '../../../writers/ItemConverter';
 import { importBitwardenZip } from '../BitwardenZipImporter';
 
 describe('BitwardenZipImporter', () => {
