@@ -3,3 +3,7 @@ dist
 stats.html
 *.log
 public/appsettings.Development.json
+
+# E2E test output
+playwright-report
+tests/test-results

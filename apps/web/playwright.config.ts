@@ -33,10 +33,8 @@ export default defineConfig({
     ['list'],
   ],
 
-  // Registration and login run Argon2 key derivation in the browser, so allow for slower CI machines.
-  timeout: 90000,
   expect: {
-    timeout: 15000,
+    timeout: 10000,
   },
 
   use: {
@@ -58,7 +56,6 @@ export default defineConfig({
     command: `npx vite build && npx vite preview --port ${PREVIEW_PORT} --strictPort`,
     url: WEB_URL,
     reuseExistingServer: false,
-    timeout: 60000,
   },
 
   outputDir: 'tests/test-results',
