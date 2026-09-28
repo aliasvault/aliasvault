@@ -3,15 +3,18 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { canAdministerGroup, describeMemberAccess, familySharingText, holdsManifestKey, ownUserIdIn, roleLabel, sharingErrorMessage } from '@aliasvault/client/sharing/FamilySharingView';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -47,6 +50,8 @@ const FamilySharingSettings: React.FC = () => {
   const webApi = useWebApi();
   const { sqliteClient, loadStoredDatabase } = useDb();
   const { setIsInitialLoading } = useLoading();
+  const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
 
   const [overview, setOverview] = useState<GroupOverviewResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,8 +81,27 @@ const FamilySharingSettings: React.FC = () => {
   }, [webApi, sqliteClient, setIsInitialLoading]);
 
   useEffect(() => {
-    loadOverview();
-  }, [loadOverview]);
+    loadOverview().then(() => {
+      if (!hasLoadedRef.current) {
+        hasLoadedRef.current = true;
+        setIsLoading(false);
+      }
+    });
+  }, [loadOverview, setIsLoading]);
+
+  /**
+   * Sync the vault and reload the overview, to pick up what other family members changed.
+   */
+  const refresh = useCallback(async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await sendMessage('FULL_VAULT_SYNC', {});
+      await loadStoredDatabase();
+      await loadOverview();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadStoredDatabase, loadOverview, setIsLoading]);
 
   /**
    * Run one action.
@@ -281,6 +305,14 @@ const FamilySharingSettings: React.FC = () => {
   const groups = overview?.groups ?? [];
   const dialog = removalDialog();
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <ConfirmDeleteModal
@@ -320,11 +352,14 @@ const FamilySharingSettings: React.FC = () => {
       />
 
       <div>
-        <div className="flex items-center gap-2">
-          <PageTitle>{familySharingText.title}</PageTitle>
-          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 uppercase tracking-wide">
-            {familySharingText.beta}
-          </span>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <PageTitle>{familySharingText.title}</PageTitle>
+            <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 uppercase tracking-wide">
+              {familySharingText.beta}
+            </span>
+          </div>
+          <ReloadButton onClick={() => void refresh()} />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">{familySharingText.description}</p>
       </div>
@@ -335,12 +370,15 @@ const FamilySharingSettings: React.FC = () => {
       {receivedInvitations.length > 0 && (
         <section>
           <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2">{familySharingText.invitations}</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="space-y-2">
             {receivedInvitations.map(invitation => (
-              <div key={invitation.id} className="p-3 space-y-2">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{invitationNames[invitation.id] ?? familySharingText.sharedVault}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invitedBy(invitation.inviterUsername)}</p>
+              <div key={invitation.id} className="p-3 space-y-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-primary-400 dark:border-primary-500 ring-2 ring-primary-200 dark:ring-primary-900/60">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">{invitationNames[invitation.id] ?? familySharingText.sharedVault}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invitedBy(invitation.inviterUsername)}</p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button
