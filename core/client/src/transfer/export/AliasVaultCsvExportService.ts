@@ -1,6 +1,7 @@
 import { FieldKey, normalizeTotpAlgorithm, normalizeTotpDigits, normalizeTotpPeriod, TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 
 import { parseDateExact } from '../shared/DateTimeUtils';
+import { formatTotpUri } from '../shared/TotpUri';
 
 import { writeCsv } from './CsvWriter';
 
@@ -124,9 +125,7 @@ export class AliasVaultCsvExportService {
       return totpCode.SecretKey;
     }
 
-    const name = totpCode.Name ?? '';
-    const label = encodeURIComponent(name.trim().length === 0 ? 'AliasVault' : name);
-    return `otpauth://totp/${label}?secret=${totpCode.SecretKey}&algorithm=${algorithm}&digits=${digits}&period=${period}`;
+    return formatTotpUri(totpCode, 'AliasVault');
   }
 
   /**

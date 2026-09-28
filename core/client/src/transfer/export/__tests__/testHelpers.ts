@@ -1,6 +1,6 @@
 import { AvuxExportService } from '../AvuxExportService';
 
-import type { FieldDefinitionEntity, FieldValueEntity, ItemEntity, LogoEntity } from '../../shared/VaultEntities';
+import type { FieldDefinitionEntity, FieldValueEntity, ItemEntity, LogoEntity, TotpCodeEntity } from '../../shared/VaultEntities';
 import type { ItemType } from '@aliasvault/models/vault';
 
 /*
@@ -92,9 +92,10 @@ export function addCustomFieldValue(item: ItemEntity, definition: FieldDefinitio
  * Add a TOTP code to an item.
  * @param item - The item
  * @param secretKey - The Base32 secret
+ * @param options - Name and RFC 6238 parameters, defaulting to a named SHA1/6/30 code
  */
-export function addTotpCode(item: ItemEntity, secretKey: string): void {
-  item.TotpCodes.push({ Id: crypto.randomUUID(), ItemId: item.Id, Name: 'Test TOTP', SecretKey: secretKey, Algorithm: 'SHA1', Digits: 6, Period: 30, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt, IsDeleted: false });
+export function addTotpCode(item: ItemEntity, secretKey: string, options: Partial<Pick<TotpCodeEntity, 'Name' | 'Algorithm' | 'Digits' | 'Period'>> = {}): void {
+  item.TotpCodes.push({ Id: crypto.randomUUID(), ItemId: item.Id, Name: 'Test TOTP', SecretKey: secretKey, Algorithm: 'SHA1', Digits: 6, Period: 30, ...options, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt, IsDeleted: false });
 }
 
 /**

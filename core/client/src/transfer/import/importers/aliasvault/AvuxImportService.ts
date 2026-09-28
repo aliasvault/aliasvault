@@ -3,6 +3,7 @@ import { FieldTypes, isItemType, ItemTypes, type FieldType } from '@aliasvault/m
 import { base64ToBytes } from '../../../../utilities/Base64';
 import { parseDateTime } from '../../../shared/DateTimeUtils';
 import { buildFolderPath } from '../../../shared/FolderPaths';
+import { formatTotpUri } from '../../../shared/TotpUri';
 import { ZipArchive } from '../../../shared/ZipArchive';
 import { parseJson } from '../../readers/JsonReader';
 
@@ -81,9 +82,10 @@ export class AvuxImportService {
 
       AvuxImportService.extractFieldValues(credential, item.fieldValues, fieldDefinitionsById);
 
-      // The import format carries one TOTP per item.
+      // The import format carries one TOTP per item, as a URI so its name and parameters survive.
       if (item.totpCodes.length > 0) {
-        credential.TwoFactorSecret = item.totpCodes[0].secretKey;
+        const totpCode = item.totpCodes[0];
+        credential.TwoFactorSecret = formatTotpUri({ Name: totpCode.name, SecretKey: totpCode.secretKey, Algorithm: totpCode.algorithm, Digits: totpCode.digits, Period: totpCode.period });
       }
 
       if (item.passkeys.length > 0) {

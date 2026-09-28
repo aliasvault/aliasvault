@@ -1,7 +1,7 @@
 import { FieldKey, FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { byName } from '../../import/__tests__/testHelpers';
+import { byName, itemByName } from '../../import/__tests__/testHelpers';
 import { AvuxImportService } from '../../import/importers/aliasvault/AvuxImportService';
 import { convertToItems } from '../../import/writers/ItemConverter';
 import { ZipArchive } from '../../shared/ZipArchive';
@@ -61,7 +61,7 @@ describe('AvuxExportService', () => {
     const twoFa = byName(imported, 'Import 2FA');
     expect(twoFa.Username).toBe('user2fa');
     expect(twoFa.Password).toBe('pass2fa');
-    expect(twoFa.TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+    expect(convertToItems([twoFa])[0].TotpCodes[0]).toMatchObject({ Name: 'Test TOTP', SecretKey: 'JBSWY3DPEHPK3PXP' });
 
     const creditCard = imported.find(c => c.ItemType === ItemTypes.CreditCard)!;
     expect(creditCard.Creditcard).toBeDefined();
@@ -91,8 +91,20 @@ describe('AvuxExportService', () => {
     expect(credential.Notes).toBe('Reimport notes');
     expect(credential.Alias?.FirstName).toBe('John');
     expect(credential.Alias?.LastName).toBe('Doe');
-    expect(credential.TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+    expect(convertToItems([credential])[0].TotpCodes[0]).toMatchObject({ Name: 'Test TOTP', SecretKey: 'JBSWY3DPEHPK3PXP' });
     expect(credential.CreatedAt?.getTime()).toBe(original.CreatedAt.getTime());
+  });
+
+  it('preserves the TOTP name and parameters when re-importing an .avux export', () => {
+    const sha512 = createTestItem('Sha512', ItemTypes.Login, {});
+    addTotpCode(sha512, 'JBSWY3DPEHPK3PXP', { Name: 'GitHub: user@example.com', Algorithm: 'SHA512', Digits: 8, Period: 60 });
+    const sha256 = createTestItem('Sha256', ItemTypes.Login, {});
+    addTotpCode(sha256, 'JBSWY3DPEHPK3PXP', { Name: '', Algorithm: 'SHA256', Digits: 7, Period: 45 });
+
+    const items = convertToItems(AvuxImportService.importFromAvux(exportItems([sha512, sha256])));
+
+    expect(itemByName(items, 'Sha512').TotpCodes[0]).toMatchObject({ Name: 'GitHub: user@example.com', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA512', Digits: 8, Period: 60 });
+    expect(itemByName(items, 'Sha256').TotpCodes[0]).toMatchObject({ Name: '', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA256', Digits: 7, Period: 45 });
   });
 
   it('preserves custom fields when re-importing an .avux export', () => {

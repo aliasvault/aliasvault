@@ -1,7 +1,7 @@
 import { FieldKey, ItemTypes } from '@aliasvault/models/vault';
 import { describe, expect, it } from 'vitest';
 
-import { byName, utc } from '../../import/__tests__/testHelpers';
+import { byName, itemByName, utc } from '../../import/__tests__/testHelpers';
 import { AliasVaultCsvImportService } from '../../import/importers/aliasvault/AliasVaultCsvImportService';
 import { convertToItems } from '../../import/writers/ItemConverter';
 import { AliasVaultCsvExportService } from '../AliasVaultCsvExportService';
@@ -110,5 +110,23 @@ describe('AliasVaultCsvExportService', () => {
 
     expect(imported[0].FolderPath).toBe('Work/Projects');
     expect(imported[0].TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+  });
+
+  it('writes a non-default TOTP code as an otpauth URI that re-imports with its name and parameters', () => {
+    const sha512 = createTestItem('Sha512', ItemTypes.Login, {});
+    addTotpCode(sha512, 'JBSWY3DPEHPK3PXP', { Name: 'GitHub: user@example.com', Algorithm: 'SHA512', Digits: 8, Period: 60 });
+    const sha256 = createTestItem('Sha256', ItemTypes.Login, {});
+    addTotpCode(sha256, 'JBSWY3DPEHPK3PXP', { Name: 'Work account', Algorithm: 'SHA256', Digits: 6, Period: 30 });
+    const sha1 = createTestItem('Sha1', ItemTypes.Login, {});
+    addTotpCode(sha1, 'JBSWY3DPEHPK3PXP');
+
+    const imported = AliasVaultCsvImportService.importItemsFromCsv(csvText(AliasVaultCsvExportService.exportItemsToCsv([sha512, sha256, sha1])));
+    const items = convertToItems(imported);
+
+    expect(byName(imported, 'Sha1').TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
+    expect(byName(imported, 'Sha512').TwoFactorSecret).toMatch(/^otpauth:\/\/totp\//);
+    expect(itemByName(items, 'Sha512').TotpCodes[0]).toMatchObject({ Name: 'GitHub: user@example.com', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA512', Digits: 8, Period: 60 });
+    expect(itemByName(items, 'Sha256').TotpCodes[0]).toMatchObject({ Name: 'Work account', SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA256', Digits: 6, Period: 30 });
+    expect(itemByName(items, 'Sha1').TotpCodes[0]).toMatchObject({ SecretKey: 'JBSWY3DPEHPK3PXP', Algorithm: 'SHA1', Digits: 6, Period: 30 });
   });
 });
