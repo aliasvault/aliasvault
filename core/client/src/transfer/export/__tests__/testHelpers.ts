@@ -1,10 +1,7 @@
-import { FieldTypes } from '@aliasvault/models/vault';
-
-import { toStandardFormat } from '../../../utilities/DateFormatter';
 import { AvuxExportService } from '../AvuxExportService';
 
 import type { FieldDefinitionEntity, FieldValueEntity, ItemEntity, LogoEntity } from '../../shared/VaultEntities';
-import type { Item, ItemType } from '@aliasvault/models/vault';
+import type { ItemType } from '@aliasvault/models/vault';
 
 /*
  * Item builders for the export tests.
@@ -17,35 +14,6 @@ import type { Item, ItemType } from '@aliasvault/models/vault';
  */
 export function csvText(bytes: Uint8Array): string {
   return new TextDecoder().decode(bytes);
-}
-
-/**
- * Build a test item as the app reads it from the vault.
- * @param name - The item name
- * @param itemType - The item type
- * @param fields - System field values by key; an array for a multi-value field, in display order
- * @returns The item
- */
-export function createAppItem(name: string, itemType: ItemType, fields: Record<string, string | string[]>): Item {
-  const now = toStandardFormat(new Date());
-  return {
-    Id: crypto.randomUUID(),
-    ManifestId: crypto.randomUUID(),
-    Name: name,
-    ItemType: itemType,
-    CreatedAt: now,
-    UpdatedAt: now,
-    Fields: Object.entries(fields).map(([fieldKey, value], index) => ({
-      FieldKey: fieldKey,
-      Label: fieldKey,
-      FieldType: FieldTypes.Text,
-      Value: value,
-      IsHidden: false,
-      DisplayOrder: index,
-      IsCustomField: false,
-      EnableHistory: false,
-    })),
-  };
 }
 
 /**

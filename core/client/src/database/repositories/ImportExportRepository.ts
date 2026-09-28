@@ -1,5 +1,6 @@
 import { LogoKinds, type ItemType } from '@aliasvault/models/vault';
 
+import { AliasVaultCsvExportService } from '../../transfer/export/AliasVaultCsvExportService';
 import { fromStandardFormat, toStandardFormat } from '../../utilities/DateFormatter';
 import { BaseRepository } from '../BaseRepository';
 import { scopedKey } from '../ItemRef';
@@ -44,17 +45,45 @@ export class ImportExportRepository extends BaseRepository {
   }
 
   /**
-   * Read every live item with its child rows, plus the folders, tags, custom field definitions and logos the
-   * items use. Trashed items are left out, archived items are included.
+   * The manifest every vault export reads: always the personal manifest.
+   *
+   * Note: shared manifests are not part of a regular vault export. Exporting a shared manifest is a separate,
+   * admin-only flow in the family sharing UI.
+   * @returns The personal manifest id
+   */
+  private *exportManifestId(): DbOp<string> {
+    const manifestId = yield* this.personalManifestId();
+    if (!manifestId) {
+      throw new Error('This client has no personal manifest recorded yet; sync once before exporting.');
+    }
+    return manifestId;
+  }
+
+  /**
+   * Export the personal manifest's live items, archived ones included, as an AliasVault CSV file (built from {@link getExportData}).
+   * @returns The CSV file as UTF-8 bytes
+   */
+  public *exportToCsv(): DbOp<Uint8Array> {
+    const data = yield* this.getExportData();
+    return AliasVaultCsvExportService.exportItemsToCsv(data.items, data.folders);
+  }
+
+  /**
+   * Read every live item of the personal manifest with its child rows, plus the folders, tags, custom field definitions
+   * and logos the items use. Archived items are included, deleted items (in trash) are not.
    * @returns The vault data
    */
   public *getExportData(): DbOp<VaultExportData> {
+    const manifestId = yield* this.exportManifestId();
+
     const itemRows = yield* this.query<{ Id: string; ManifestId: string; Name: string | null; ItemType: string; FolderId: string | null; LogoId: string | null; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT Id, ManifestId, Name, ItemType, FolderId, LogoId, CreatedAt, UpdatedAt FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL ORDER BY CreatedAt'
+      'SELECT Id, ManifestId, Name, ItemType, FolderId, LogoId, CreatedAt, UpdatedAt FROM Items WHERE IsDeleted = 0 AND DeletedAt IS NULL AND ManifestId = ? ORDER BY CreatedAt',
+      [manifestId]
     );
 
     const fieldDefinitionRows = yield* this.query<{ Id: string; ManifestId: string; FieldType: string; Label: string; IsMultiValue: number; IsHidden: number; EnableHistory: number; Weight: number; ApplicableToTypes: string | null; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT Id, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt FROM FieldDefinitions WHERE IsDeleted = 0'
+      'SELECT Id, ManifestId, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt FROM FieldDefinitions WHERE IsDeleted = 0 AND ManifestId = ?',
+      [manifestId]
     );
     const fieldDefinitions = fieldDefinitionRows.map((row): FieldDefinitionEntity & { ManifestId: string } => ({
       Id: row.Id,
@@ -73,7 +102,8 @@ export class ImportExportRepository extends BaseRepository {
     const definitionsByKey = new Map(fieldDefinitions.map(definition => [scopedKey(definition.ManifestId, definition.Id), definition]));
 
     const fieldValueRows = yield* this.query<ChildRow & { Id: string; FieldKey: string | null; FieldDefinitionId: string | null; Value: string | null; Weight: number; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT fv.Id, fv.ItemId, fv.ManifestId, fv.FieldKey, fv.FieldDefinitionId, fv.Value, fv.Weight, fv.CreatedAt, fv.UpdatedAt FROM FieldValues fv INNER JOIN Items i ON i.Id = fv.ItemId AND i.ManifestId = fv.ManifestId WHERE fv.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL ORDER BY fv.Weight, fv.ValueIndex'
+      'SELECT fv.Id, fv.ItemId, fv.ManifestId, fv.FieldKey, fv.FieldDefinitionId, fv.Value, fv.Weight, fv.CreatedAt, fv.UpdatedAt FROM FieldValues fv INNER JOIN Items i ON i.Id = fv.ItemId AND i.ManifestId = fv.ManifestId WHERE fv.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ? ORDER BY fv.Weight, fv.ValueIndex',
+      [manifestId]
     );
     const fieldValuesByItem = ImportExportRepository.groupByItem(fieldValueRows, (row): FieldValueEntity => ({
       Id: row.Id,
@@ -89,7 +119,8 @@ export class ImportExportRepository extends BaseRepository {
     }));
 
     const attachmentRows = yield* this.query<ChildRow & { Id: string; Filename: string; Blob: Uint8Array | null; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT a.Id, a.ItemId, a.ManifestId, a.Filename, a.Blob, a.CreatedAt, a.UpdatedAt FROM Attachments a INNER JOIN Items i ON i.Id = a.ItemId AND i.ManifestId = a.ManifestId WHERE a.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL'
+      'SELECT a.Id, a.ItemId, a.ManifestId, a.Filename, a.Blob, a.CreatedAt, a.UpdatedAt FROM Attachments a INNER JOIN Items i ON i.Id = a.ItemId AND i.ManifestId = a.ManifestId WHERE a.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
+      [manifestId]
     );
     const attachmentsByItem = ImportExportRepository.groupByItem(attachmentRows, (row): AttachmentEntity => ({
       Id: row.Id,
@@ -102,7 +133,8 @@ export class ImportExportRepository extends BaseRepository {
     }));
 
     const totpRows = yield* this.query<ChildRow & { Id: string; Name: string; SecretKey: string; Algorithm: string | null; Digits: number | null; Period: number | null; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT t.Id, t.ItemId, t.ManifestId, t.Name, t.SecretKey, t.Algorithm, t.Digits, t.Period, t.CreatedAt, t.UpdatedAt FROM TotpCodes t INNER JOIN Items i ON i.Id = t.ItemId AND i.ManifestId = t.ManifestId WHERE t.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL'
+      'SELECT t.Id, t.ItemId, t.ManifestId, t.Name, t.SecretKey, t.Algorithm, t.Digits, t.Period, t.CreatedAt, t.UpdatedAt FROM TotpCodes t INNER JOIN Items i ON i.Id = t.ItemId AND i.ManifestId = t.ManifestId WHERE t.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
+      [manifestId]
     );
     const totpCodesByItem = ImportExportRepository.groupByItem(totpRows, (row): TotpCodeEntity => ({
       Id: row.Id,
@@ -118,7 +150,8 @@ export class ImportExportRepository extends BaseRepository {
     }));
 
     const passkeyRows = yield* this.query<ChildRow & { Id: string; RpId: string; UserHandle: Uint8Array | null; PublicKey: string; PrivateKey: string; PrfKey: Uint8Array | null; DisplayName: string; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT p.Id, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.CreatedAt, p.UpdatedAt FROM Passkeys p INNER JOIN Items i ON i.Id = p.ItemId AND i.ManifestId = p.ManifestId WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL'
+      'SELECT p.Id, p.ItemId, p.ManifestId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey, p.DisplayName, p.CreatedAt, p.UpdatedAt FROM Passkeys p INNER JOIN Items i ON i.Id = p.ItemId AND i.ManifestId = p.ManifestId WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL AND i.ManifestId = ?',
+      [manifestId]
     );
     const passkeysByItem = ImportExportRepository.groupByItem(passkeyRows, (row): PasskeyEntity => ({
       Id: row.Id,
@@ -153,7 +186,8 @@ export class ImportExportRepository extends BaseRepository {
     });
 
     const folderRows = yield* this.query<{ Id: string; Name: string; ParentFolderId: string | null; Weight: number; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT Id, Name, ParentFolderId, Weight, CreatedAt, UpdatedAt FROM Folders WHERE IsDeleted = 0'
+      'SELECT Id, Name, ParentFolderId, Weight, CreatedAt, UpdatedAt FROM Folders WHERE IsDeleted = 0 AND ManifestId = ?',
+      [manifestId]
     );
     const folders = folderRows.map((row): FolderEntity => ({
       Id: row.Id,
@@ -166,7 +200,8 @@ export class ImportExportRepository extends BaseRepository {
     }));
 
     const tagRows = yield* this.query<{ Id: string; Name: string; Color: string | null; DisplayOrder: number; CreatedAt: string; UpdatedAt: string }>(
-      'SELECT Id, Name, Color, DisplayOrder, CreatedAt, UpdatedAt FROM Tags WHERE IsDeleted = 0'
+      'SELECT Id, Name, Color, DisplayOrder, CreatedAt, UpdatedAt FROM Tags WHERE IsDeleted = 0 AND ManifestId = ?',
+      [manifestId]
     );
     const tags = tagRows.map((row): TagEntity => ({
       Id: row.Id,
@@ -178,13 +213,14 @@ export class ImportExportRepository extends BaseRepository {
       IsDeleted: false,
     }));
 
-    const itemTagRows = yield* this.query<{ ItemId: string; TagId: string }>('SELECT ItemId, TagId FROM ItemTags WHERE IsDeleted = 0');
+    const itemTagRows = yield* this.query<{ ItemId: string; TagId: string }>('SELECT ItemId, TagId FROM ItemTags WHERE IsDeleted = 0 AND ManifestId = ?', [manifestId]);
     const itemTags = itemTagRows.map((row): ItemTagEntity => ({ ItemId: row.ItemId, TagId: row.TagId, IsDeleted: false }));
 
     // Only the logos the exported items point at.
     const logoIds = new Set(items.map(item => item.LogoId).filter((id): id is string => id !== null));
     const logoRows = yield* this.query<{ Id: string; Source: string; FileData: Uint8Array | null; MimeType: string | null; UpdatedAt: string }>(
-      'SELECT Id, Source, FileData, MimeType, UpdatedAt FROM Logos WHERE IsDeleted = 0'
+      'SELECT Id, Source, FileData, MimeType, UpdatedAt FROM Logos WHERE IsDeleted = 0 AND ManifestId = ?',
+      [manifestId]
     );
     const logos = logoRows.filter(row => logoIds.has(row.Id)).map((row): LogoEntity => ({
       Id: row.Id,

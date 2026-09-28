@@ -1,4 +1,3 @@
-import { AliasVaultCsvExportService } from '@aliasvault/client/transfer/export/AliasVaultCsvExportService';
 import { AvexExportService } from '@aliasvault/client/transfer/export/AvexExportService';
 import { AvuxExportService } from '@aliasvault/client/transfer/export/AvuxExportService';
 import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
@@ -96,8 +95,7 @@ const ImportExport: React.FC = () => {
       if (!sqliteClient) {
         throw new Error('Vault is not available');
       }
-      const items = [...sqliteClient.items.getAll(), ...sqliteClient.items.getArchived()];
-      downloadBytes(getExportFileName('csv'), AliasVaultCsvExportService.exportItemsToCsv(items, item => sqliteClient.items.getTotpCodesForItem(item)), 'text/csv');
+      downloadBytes(getExportFileName('csv'), sqliteClient.importExport.exportToCsv(), 'text/csv');
       notifications.addSuccessMessage(t(`${tk}.ExportSuccessMessage`), true);
     } catch (error) {
       console.error('[Export] Error downloading file:', error);

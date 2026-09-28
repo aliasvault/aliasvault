@@ -6,11 +6,11 @@ import { AliasVaultCsvImportService } from '../../import/importers/aliasvault/Al
 import { convertToItems } from '../../import/writers/ItemConverter';
 import { AliasVaultCsvExportService } from '../AliasVaultCsvExportService';
 
-import { createAppItem, csvText } from './testHelpers';
+import { addFieldValue, addTotpCode, createTestItem, csvText } from './testHelpers';
 
 describe('AliasVaultCsvExportService', () => {
   it('re-imports an exported item from CSV unchanged', () => {
-    const item = createAppItem('Test Service', ItemTypes.Login, {
+    const item = createTestItem('Test Service', ItemTypes.Login, {
       [FieldKey.LoginUsername]: 'testuser',
       [FieldKey.NotesContent]: 'Test notes',
       [FieldKey.LoginUrl]: 'https://testservice.com',
@@ -31,8 +31,8 @@ describe('AliasVaultCsvExportService', () => {
     expect(credential.ServiceUrls?.[0]).toBe('https://testservice.com');
     expect(credential.Username).toBe('testuser');
     expect(credential.Notes).toBe('Test notes');
-    expect(credential.CreatedAt?.toISOString().substring(0, 10)).toBe(item.CreatedAt.substring(0, 10));
-    expect(credential.UpdatedAt?.toISOString().substring(0, 10)).toBe(item.UpdatedAt.substring(0, 10));
+    expect(credential.CreatedAt?.toISOString().substring(0, 10)).toBe(item.CreatedAt.toISOString().substring(0, 10));
+    expect(credential.UpdatedAt?.toISOString().substring(0, 10)).toBe(item.UpdatedAt.toISOString().substring(0, 10));
     expect(credential.Alias!.Gender).toBe('Male');
     expect(credential.Alias!.FirstName).toBe('John');
     expect(credential.Alias!.LastName).toBe('Doe');
@@ -41,8 +41,8 @@ describe('AliasVaultCsvExportService', () => {
   });
 
   it('re-imports an exported credit card item from CSV unchanged', () => {
-    const loginItem = createAppItem('Login service', ItemTypes.Login, { [FieldKey.LoginUsername]: 'loginuser', [FieldKey.LoginPassword]: 'loginpass' });
-    const cardItem = createAppItem('My Visa', ItemTypes.CreditCard, {
+    const loginItem = createTestItem('Login service', ItemTypes.Login, { [FieldKey.LoginUsername]: 'loginuser', [FieldKey.LoginPassword]: 'loginpass' });
+    const cardItem = createTestItem('My Visa', ItemTypes.CreditCard, {
       [FieldKey.CardCardholderName]: 'John Doe',
       [FieldKey.CardNumber]: '4111111111111111',
       [FieldKey.CardExpiryMonth]: '12',
@@ -79,10 +79,10 @@ describe('AliasVaultCsvExportService', () => {
   });
 
   it('re-imports multiple service URLs', () => {
-    const item = createAppItem('Multi url service', ItemTypes.Login, {
-      [FieldKey.LoginUsername]: 'testuser',
-      [FieldKey.LoginUrl]: ['https://www.aliasvault.com', 'https://app.aliasvault.com', 'https://downloads.aliasvault.com'],
-    });
+    const item = createTestItem('Multi url service', ItemTypes.Login, { [FieldKey.LoginUsername]: 'testuser' });
+    addFieldValue(item, FieldKey.LoginUrl, 'https://www.aliasvault.com', 0);
+    addFieldValue(item, FieldKey.LoginUrl, 'https://app.aliasvault.com', 1);
+    addFieldValue(item, FieldKey.LoginUrl, 'https://downloads.aliasvault.com', 2);
 
     const csv = csvText(AliasVaultCsvExportService.exportItemsToCsv([item]));
     const imported = AliasVaultCsvImportService.importItemsFromCsv(csv);
@@ -94,5 +94,21 @@ describe('AliasVaultCsvExportService', () => {
     const convertedItem = convertToItems(imported)[0];
     const urlFieldValues = convertedItem.FieldValues.filter(fv => fv.FieldKey === FieldKey.LoginUrl).sort((a, b) => a.Weight - b.Weight);
     expect(urlFieldValues.map(fv => fv.Value)).toEqual(['https://www.aliasvault.com', 'https://app.aliasvault.com', 'https://downloads.aliasvault.com']);
+  });
+
+  it('writes the folder path and the first 2FA secret', () => {
+    const item = createTestItem('In a folder', ItemTypes.Login, { [FieldKey.LoginUsername]: 'testuser' });
+    addTotpCode(item, 'JBSWY3DPEHPK3PXP');
+    const now = new Date();
+    const folders = [
+      { Id: 'PARENT', Name: 'Work', ParentFolderId: null, Weight: 0, CreatedAt: now, UpdatedAt: now, IsDeleted: false },
+      { Id: 'CHILD', Name: 'Projects', ParentFolderId: 'PARENT', Weight: 0, CreatedAt: now, UpdatedAt: now, IsDeleted: false },
+    ];
+    item.FolderId = 'CHILD';
+
+    const imported = AliasVaultCsvImportService.importItemsFromCsv(csvText(AliasVaultCsvExportService.exportItemsToCsv([item], folders)));
+
+    expect(imported[0].FolderPath).toBe('Work/Projects');
+    expect(imported[0].TwoFactorSecret).toBe('JBSWY3DPEHPK3PXP');
   });
 });
