@@ -1287,6 +1287,10 @@
   "sync": {
     "tapToRetry": "Tap to retry sync"
   },
+  "upgrade": {
+    "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
+    "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well."
+  },
   "validationMessages": {
     "FieldRequired": "This field is required",
     "MustAcceptTerms": "You must accept the terms and conditions.",

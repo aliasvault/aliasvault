@@ -1,4 +1,5 @@
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
 import { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMigration';
 import { VaultSqlGenerator, type VaultVersion } from '@aliasvault/vault';
@@ -22,7 +23,7 @@ const MINIMUM_LOADING_TIME_MS = 800;
 const DISALLOWED_RETURN_URLS = ['/sync', '/unlock', '/user/logout'];
 
 /** Sync statuses this page displays. */
-type SyncStatus = 'loading' | 'decryption-failed' | 'version-unrecognized' | 'pending-migrations';
+type SyncStatus = 'loading' | 'decryption-failed' | 'version-unrecognized' | 'pending-migrations' | 'upgrade-success';
 
 /** Which type of pending migration is required. */
 type UpgradeKind = 'legacy-sqlite-blob' | 'storage-format';
@@ -67,8 +68,9 @@ const Sync: React.FC = () => {
 
   /**
    * Open the stored vault and decide whether it needs an upgrade before it can be used.
+   * @param afterStorageFormatUpgrade - stop on a confirmation instead of continuing, so the user reads that their other apps need updating
    */
-  const openVault = useCallback(async (): Promise<void> => {
+  const openVault = useCallback(async (afterStorageFormatUpgrade = false): Promise<void> => {
     let client;
     try {
       client = await dbContext.loadStoredDatabase();
@@ -109,6 +111,11 @@ const Sync: React.FC = () => {
         return;
       }
       await dbContext.loadStoredDatabase();
+    }
+
+    if (afterStorageFormatUpgrade) {
+      setStatus('upgrade-success');
+      return;
     }
 
     await navigateToHome();
@@ -191,7 +198,7 @@ const Sync: React.FC = () => {
       // Re-open the migrated vault and continue (the manifest migration may still be pending after the legacy chain).
       hasStarted.current = false;
       setStatus('loading');
-      await openVault();
+      await openVault(upgradeKind === 'storage-format');
     } catch (error) {
       console.error('Vault upgrade failed:', error);
       setUpgradeError(error instanceof Error ? error.message : t('pages.main.sync.statusMessages.pendingMigrations.UpgradeFailedError'));
@@ -207,7 +214,7 @@ const Sync: React.FC = () => {
     switch (status) {
       case 'version-unrecognized':
         return (
-          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
+          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center">
               <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">Vault version not supported</h2>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -222,7 +229,7 @@ const Sync: React.FC = () => {
         );
       case 'pending-migrations':
         return (
-          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
+          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center">
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.pendingMigrations.UpgradeVaultTitle')}</h2>
@@ -230,7 +237,7 @@ const Sync: React.FC = () => {
                   {t('pages.main.sync.statusMessages.pendingMigrations.UpgradeDescription')}
                 </p>
                 {upgradeKind === 'legacy-sqlite-blob' && (
-                  <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                  <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
                     <div className="flex items-center justify-center mb-3">
                       <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{t('pages.main.sync.statusMessages.pendingMigrations.VersionInformationTitle')}</h3>
                       <button onClick={() => setShowVersionDescription(!showVersionDescription)} className="ml-2 w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
@@ -256,6 +263,13 @@ const Sync: React.FC = () => {
                     </div>
                   </div>
                 )}
+                {upgradeKind === 'storage-format' && (
+                  <div className="rounded-lg dark:bg-gray-900">
+                    <div className="p-4 text-sm text-left bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg text-orange-800 dark:text-orange-300">
+                      {t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}
+                    </div>
+                  </div>
+                )}
                 <div>
                   {upgradeError && <AlertMessageError message={upgradeError} />}
                   {isUpgrading ? (
@@ -267,6 +281,21 @@ const Sync: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      case 'upgrade-success':
+        return (
+          <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
+            <div className="text-center space-y-4">
+              <svg className="w-12 h-12 mx-auto text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('pages.main.sync.statusMessages.pendingMigrations.UpgradeSuccessMessage')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('upgrade.successOtherDevices')}</p>
+              <button onClick={() => void navigateToHome()} type="button" id="upgrade-continue-button" className="px-4 mt-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">
+                {t('sharedResources.Continue')}
+              </button>
             </div>
           </div>
         );
