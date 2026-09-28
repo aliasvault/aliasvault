@@ -42,7 +42,7 @@ AliasVault uses [Crowdin](https://crowdin.com/) for translation management. It's
 
 Once you have access:
 1. Select your language from the list
-2. Browse through the different sections (Web App, Mobile App, Browser Extension)
+2. Open the translation file: one file holds the texts of all apps, grouped by topic (for example `auth`, `items`, `settings`)
 3. Start translating!
 
 ### Step 3: Translate
@@ -61,7 +61,7 @@ Other contributors may review and approve your translations. This helps ensure q
 
 ## What Gets Translated?
 
-The Crowdin project covers translations for all client apps in one place:
+The Crowdin project covers translations for all client apps in one place. A text that appears in more than one app is translated once:
 - Web app (https://app.aliasvault.com)
 - Browser extension
 - Mobile App (iOS and Android)

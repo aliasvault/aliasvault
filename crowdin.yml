@@ -23,41 +23,10 @@ notifications:
 pull_request:
   title: Update translations from Crowdin
   body: This PR contains updated translations from Crowdin. Please review and merge if everything looks correct.
-languages:
-  - nl
-  - de
-  - fr
-  - es
-  - it
-  - pt
-  - uk
-  - zh
-  - ja
-  - ko
-  - hu
-  - ga
-  - id
 base_path: ./
 preserve_hierarchy: 1
 files:
-  - source: /apps/server/AliasVault.Client/wwwroot/locales/en.json
-    translation: /apps/server/AliasVault.Client/wwwroot/locales/%two_letters_code%.json
+  - source: /core/i18n/locales/en.json
+    translation: /core/i18n/locales/%two_letters_code%.json
     type: json
-  - source: /apps/server/AliasVault.Client/Resources/**/*.en.resx
-    translation: /%original_path%/%file_name%.%two_letters_code%.resx
-    type: resx
-    translation_replace:
-      .en: ''
-  - source: /apps/browser-extension/src/i18n/locales/en.json
-    translation: /apps/browser-extension/src/i18n/locales/%two_letters_code%.json
-    type: json
-  - source: /apps/mobile-app/i18n/locales/en.json
-    translation: /apps/mobile-app/i18n/locales/%two_letters_code%.json
-    type: json
-  - source: /apps/mobile-app/ios/**/en.lproj/*.strings
-    translation: /apps/mobile-app/ios/**/%two_letters_code%.lproj/%original_file_name%
-    type: macosx
-  - source: /apps/mobile-app/android/app/src/main/res/values/strings.xml
-    translation: /apps/mobile-app/android/app/src/main/res/values-%two_letters_code%/strings.xml
-    type: android
 commit_message: 'Update translations from Crowdin [ci skip]'
