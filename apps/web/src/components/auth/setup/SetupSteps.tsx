@@ -114,10 +114,15 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
     if (defaultUsername.trim().length > 0) {
       void validateUsername(defaultUsername);
     }
-    const timer = setTimeout(() => document.getElementById('username')?.focus(), 100);
-    return (): void => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Autofocus the username input.
+  useEffect(() => {
+    if (!isLoading) {
+      document.getElementById('username')?.focus();
+    }
+  }, [isLoading]);
 
   /**
    * Validate after a typing pause.
@@ -178,10 +183,12 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tk = 'components.auth.setup.passwordStep';
 
+  // Autofocus the password input.
   useEffect(() => {
-    const timer = setTimeout(() => document.getElementById('password')?.focus(), 100);
-    return (): void => clearTimeout(timer);
-  }, []);
+    if (!isLoading) {
+      document.getElementById('password')?.focus();
+    }
+  }, [isLoading]);
 
   /**
    * Length and match checks.
