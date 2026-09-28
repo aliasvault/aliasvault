@@ -5,45 +5,14 @@
 
 import en from '../locales/en.json';
 
+import { isLanguageCode } from './languages';
+
+export * from './languages';
+
 /**
  * A (nested) translation tree as loaded from a locale file.
  */
 export type TranslationTree = { [key: string]: string | TranslationTree };
-
-/**
- * The language every app falls back to.
- */
-export const DEFAULT_LANGUAGE = 'en';
-
-/**
- * The UI languages the apps offer. Keep in sync with the target languages in the Crowdin project settings.
- */
-export const LANGUAGE_CODES = [
-  'en', // English
-  'da', // Danish
-  'de', // German
-  'es', // Spanish
-  'fi', // Finnish
-  'fr', // French
-  'ga', // Irish
-  'he', // Hebrew
-  'hu', // Hungarian
-  'id', // Indonesian
-  'it', // Italian
-  'nl', // Dutch
-  'pl', // Polish
-  'pt', // Portuguese
-  'ro', // Romanian
-  'ru', // Russian
-  'sv', // Swedish
-  'uk', // Ukrainian
-  'zh', // Chinese
-] as const;
-
-/**
- * A UI language code.
- */
-export type LanguageCode = typeof LANGUAGE_CODES[number];
 
 /**
  * The English translations, bundled so there always is a fallback.
@@ -53,7 +22,7 @@ export const englishTranslations: TranslationTree = en;
 /*
  * One loader per language, so bundlers that support code splitting only load the language in use.
  */
-const LOADERS: Record<LanguageCode, () => Promise<{ default: TranslationTree }>> = {
+const LOADERS: Record<string, () => Promise<{ default: TranslationTree }>> = {
   en: async () => ({ default: en }),
   da: () => import('../locales/da.json'),
   de: () => import('../locales/de.json'),
@@ -76,19 +45,12 @@ const LOADERS: Record<LanguageCode, () => Promise<{ default: TranslationTree }>>
 };
 
 /**
- * Whether a code is one of the UI languages.
- * @param code - the language code
- */
-export function isLanguageCode(code: string | null | undefined): code is LanguageCode {
-  return !!code && (LANGUAGE_CODES as readonly string[]).includes(code);
-}
-
-/**
  * Load the translations of one language, English for an unknown code.
  * @param code - the language code
  */
 export async function loadTranslations(code: string): Promise<TranslationTree> {
-  return isLanguageCode(code) ? (await LOADERS[code]()).default : en;
+  const loader = isLanguageCode(code) ? LOADERS[code] : undefined;
+  return loader ? (await loader()).default : en;
 }
 
 /**

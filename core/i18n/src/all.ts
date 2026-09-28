@@ -22,9 +22,9 @@ import sv from '../locales/sv.json';
 import uk from '../locales/uk.json';
 import zh from '../locales/zh.json';
 
-import type { LanguageCode, TranslationTree } from './index';
+import type { TranslationTree } from './index';
 
 /**
  * The translations of every UI language.
  */
-export const ALL_TRANSLATIONS: Record<LanguageCode, TranslationTree> = { da, de, en, es, fi, fr, ga, he, hu, id, it, nl, pl, pt, ro, ru, sv, uk, zh };
+export const ALL_TRANSLATIONS: Record<string, TranslationTree> = { da, de, en, es, fi, fr, ga, he, hu, id, it, nl, pl, pt, ro, ru, sv, uk, zh };

@@ -8,12 +8,17 @@
     "exports": {
         ".": "./src/index.ts",
         "./all": "./src/all.ts",
+        "./languages": "./src/languages.ts",
         "./locales/*": "./locales/*"
     },
     "scripts": {
+        "test": "vitest run",
         "export:native": "node scripts/export-native.mjs",
         "export:native:check": "node scripts/export-native.mjs --check",
         "hints:push": "node scripts/sync-hints.mjs",
         "hints:push:dry-run": "node scripts/sync-hints.mjs --dry-run"
+    },
+    "devDependencies": {
+        "vitest": "^5.0.1"
     }
 }

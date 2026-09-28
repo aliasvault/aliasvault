@@ -4,6 +4,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "Preserve",
     "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
     "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,

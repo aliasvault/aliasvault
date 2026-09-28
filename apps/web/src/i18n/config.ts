@@ -2,8 +2,7 @@
  * The UI languages of the web app. The translations live in core/i18n (@aliasvault/i18n).
  */
 
-import { DEFAULT_LANGUAGE as CORE_DEFAULT_LANGUAGE, LANGUAGE_CODES as CORE_LANGUAGE_CODES } from '@aliasvault/i18n';
-import { getLanguageInfo } from '@aliasvault/models/defaults';
+import { DEFAULT_LANGUAGE as CORE_DEFAULT_LANGUAGE, LANGUAGE_CODES as CORE_LANGUAGE_CODES, UI_LANGUAGES } from '@aliasvault/i18n/languages';
 
 /**
  * A UI language.
@@ -17,10 +16,7 @@ export interface ILanguageConfig {
 /**
  * List of all available UI languages with their code, native name and flag.
  */
-export const AVAILABLE_LANGUAGES: ILanguageConfig[] = CORE_LANGUAGE_CODES.map((code) => {
-  const info = getLanguageInfo(code);
-  return { code, nativeName: info.label, flag: info.flag };
-});
+export const AVAILABLE_LANGUAGES: ILanguageConfig[] = UI_LANGUAGES.map(({ code, label, flag }) => ({ code, nativeName: label, flag }));
 
 /**
  * Default language that is used when no language is set in the browser or when a localized string is not found for the current language.

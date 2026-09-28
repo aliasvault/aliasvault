@@ -1,5 +1,5 @@
 import { getIdentityAgeRanges, getIdentityLanguages } from '@aliasvault/client/rust/RustCore';
-import { getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/models/defaults';
+import { getLanguageInfo, resolveDefaultLanguage } from '@aliasvault/i18n/languages';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
