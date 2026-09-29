@@ -1,13 +1,13 @@
 {
   "apiErrors": {
     "ACCOUNT_BLOCKED": "A fiókja letiltásra került. Ha úgy gondolja, hogy indokolatlan volt, vegye fel a kapcsolatot az ügyfélszolgálattal.",
-    "ACCOUNT_LOCKED": "A fiók ideiglenesen zárolásra került a túlzott sikertelen próbálkozás miatt. Kérem próbálja meg később.",
+    "ACCOUNT_LOCKED": "A fiók ideiglenesen zárolásra került a túl sok sikertelen próbálkozás miatt. Kérem próbálja meg később.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "A fiók sikeresen törlésre került.",
-    "CLAIM_DOES_NOT_EXIST": "Hiba lépett fel az e-mailek betöltésénél. Kérem próbálja meg szerkeszteni és újra menteni a bejegyzést az adatbázis szinkronizáláshoz, és próbálja újra.",
-    "CLAIM_DOES_NOT_MATCH_USER": "A kiválasztott e-mail cím már használatban van. Kérem változtassa meg az e-mail címet a bejegyzés módosításával.",
+    "CLAIM_DOES_NOT_EXIST": "Hiba lépett fel az e-mailek betöltése során. Próbálja meg szerkeszteni majd menteni a bejegyzéseket az adatbázis szinkronizáláshoz, majd próbálkozzon újra.",
+    "CLAIM_DOES_NOT_MATCH_USER": "A kiválasztott e-mail cím már használatban van. Változtassa meg az e-mail a bejegyzések módosításával.",
     "INTERNAL_SERVER_ERROR": "Belső szerver hiba.",
     "INVALID_AUTHENTICATOR_CODE": "Helytelen hitelesítő kód. Kérem próbálja meg újra.",
-    "INVALID_RECOVERY_CODE": "Helytelen helyreállító kód. Kérem próbálja meg újra.",
+    "INVALID_RECOVERY_CODE": "Helytelen helyreállító kód. Kérem, próbálja meg újra.",
     "INVALID_REFRESH_TOKEN": "Helytelen frissítő token.",
     "PASSWORD_MISMATCH": "A megadott jelszó nem egyezik meg a jelenlegi jelszavával.",
     "PENDING_MIGRATIONS": "Vannak folyamatban lévő migrációk. Kérem futtassa a 'dotnet ef database update' frissítést az alkalmazáshoz.",
@@ -24,7 +24,7 @@
     "USERNAME_TOO_LONG": "A felhasználónév túl hosszú: nem lehet több mint 40 karakter.",
     "USERNAME_TOO_SHORT": "A felhasználónév túl rövid: legalább 3 karakter hosszúnak kell lennie.",
     "USER_NOT_FOUND": "Helytelen felhasználónév vagy jelszó. Kérem próbálja meg újra.",
-    "VAULT_ERROR": "A helyi széf nem friss. Szinkronizálja széfjét az oldal frissítésével, majd próbálja újra.",
+    "VAULT_ERROR": "A helyi széf nem friss. Kérem, szinkronizálja széfjét az oldal frissítésével, majd próbálja újra.",
     "VAULT_NOT_UP_TO_DATE": "A széfje nem friss. Kérem, szinkronizálja széfjét és próbálja újra."
   },
   "app": {
@@ -135,7 +135,7 @@
       "scanQrCodeDescription": "Olvassa be ezt a QR kódot az AliasVault applikációjával a bejelentkezéshez és széf feloldáshoz."
     },
     "mobileUnlockVerificationCode": "When the app asks for it, input this number.",
-    "noAccountYet": "Nincs még fiókja?",
+    "noAccountYet": "Még nincs fiókja?",
     "passwordAttemptsWarning": "Hibás jelszó. Ha további {{remainingAttempts}} alkalommal rossz jelszót ad meg, kijelentkezteti a rendszer.",
     "passwordPlaceholder": "Adja meg jalszavát",
     "pinInput": "PIN input",
@@ -227,10 +227,10 @@
     "cancel": "Mégse",
     "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
-      "clearClipboardButton": "Vágólap törlése"
+      "clearClipboardButton": "Vágólap ürítése"
     },
     "close": "Bezár",
-    "confirm": "Megerősít",
+    "confirm": "Megerősítés",
     "continue": "Folytatás",
     "copied": "Vágólapra másolva",
     "copiedShort": "Másolva!",
@@ -267,11 +267,11 @@
       "mergeFailed": "A széf változtatások összevonása sikertelen. Kérem, próbálja meg újra.",
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
       "mobileLoginRequestExpired": "A mobil belépési kérelem lejárt. Kérem, frissítse az oldalt, és próbálja újra.",
-      "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Jelentkezzen be újra biztonsági okokból.",
-      "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
+      "passwordChanged": "A jelszava megváltozott a legutóbbi bejelentkezés óta. Kérem, jelentkezzen be újra biztonsági okokból.",
+      "serverError": "Az AliasVault szerverek nem elérhetőek. Kérem, próbálkozzon később, vagy keresse fel az ügyfélszolgálatot ha a probléma továbbra is fent áll.",
       "serverNotAvailable": "Az AliasVault szerver nem elérhető. Kérem próbálkozzon újra később, és forduljon az ügyfélszolgálathoz ha továbbra is fennáll a hiba.",
       "serverVersionNotSupported": "A bővítmény használatához a szervert frissíteni kell. Vegye fel az ügyfélszolgálattal a kapcsolatot, ha szüksége van segítségre.",
-      "serverVersionTooOld": "Az AliasVault szerverét frissíteni kell egy új verzióra ha akarja használni ezt a funkciót. Kérem lépjen kapcsolatba szerver adminjával további segítségért.",
+      "serverVersionTooOld": "A funkció használatához az AliasVault szerverét frissíteni kell egy új verzióra. Kérem, lépjen kapcsolatba szerver rendszergazdájával a további segítségért.",
       "sessionExpired": "A munkamenete lejárt. Kérem, jelentkezzen be újra.",
       "syncConflictMaxRetries": "Többszöri próbálkozást követően sem szinkronizálható a széf. Kérem, próbálja meg később újra.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -283,8 +283,8 @@
       "vaultLoadErrorTitle": "Your vault could not be loaded",
       "vaultNotAvailable": "Széf nem elérhető",
       "vaultSyncTimeout": "A széf szinkronizálás időtúllépés miatt leállt. Ez akkor fordulhat elő, ha az internet lassú vagy a széf túl nagy. Kérem próbálja újra.",
-      "vaultTooLarge": "Túl nagy a széf a befogadásra. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
-      "wrongPassword": "Hibás jelszó. Próbálkozzon újra."
+      "vaultTooLarge": "A széf túl nagy a szerver számára. Próbáljon meg eltávolítani egyes elemeket vagy csatolmányokat a méret csökkentéséhez, majd próbálja újra.",
+      "wrongPassword": "Hibás jelszó. Kérem, próbálkozzon újra."
     },
     "generate": "Generálás",
     "help": "Help",
@@ -305,7 +305,7 @@
     "next": "Következő",
     "no": "Nem",
     "none": "Nincs",
-    "notes": "Megjegyzések",
+    "notes": "Jegyzetek",
     "notice": "Megjegyzés",
     "offlineMode": "Kapcsolat nélküli működés",
     "ok": "Rendben",
@@ -380,7 +380,7 @@
     "formatHtml": "HTML",
     "formatPlain": "Szöveg",
     "formatSource": "Forrás",
-    "formatSwitchTitle": "E-mail formátum váltása",
+    "formatSwitchTitle": "E-mail formátum felcserélése",
     "from": "Feladó:",
     "fromColumn": "Feladó:",
     "home": {
@@ -451,7 +451,7 @@
       "username": "Felhasználónév"
     },
     "notes": {
-      "content": "Megjegyzések"
+      "content": "Jegyzetek"
     }
   },
   "importExport": {
@@ -591,7 +591,7 @@
       "url": "Webcím"
     },
     "login": {
-      "title": "Belépés"
+      "title": "Bejelentkezés"
     },
     "note": {
       "title": "Megjegyzés"
@@ -698,7 +698,7 @@
     "fileSavedTo": "Fájl elmentve ide",
     "filters": {
       "showFolders": "Mappák",
-      "totp": "2FA kódok"
+      "totp": "Kétlépcsős kódok"
     },
     "folderSelector": {
       "noFolder": "Nincs kiválasztott mappa",
@@ -795,7 +795,7 @@
     "noHistoryAvailable": "Nincsenek előzmények",
     "noItemsFound": "Nem található ilyen elem. Hozzon egyet létre. Tipp: Be tud jelentkezni a webes felületen, és ott importálhat más jelszókezelőkből belépéseket.",
     "noMatchingItems": "Egyetlen elem sem felel meg a kiválasztott szűrőnek.",
-    "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" szűrőnek",
+    "noMatchingItemsSearch": "Egyetlen elem sem felel meg a \"{{search}}\" keresési feltételnek",
     "noMatchingItemsWithFilter": "A \"{{search}}\" keresésre egy {{filter}} szűrő sem érvényes",
     "numberOfItemMatchesFound": "{{count}} talált elem",
     "passphraseLanguage": "Jelmondat nyelv",
@@ -832,7 +832,7 @@
       "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Új",
       "typeCard": "Kártya",
-      "typeLogin": "Belépés"
+      "typeLogin": "Bejelentkezés"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Minden elem véglegesen törölve",
@@ -844,7 +844,7 @@
       "daysRemaining_other": "{{count}} nap van hátra",
       "deletePermanently": "Végleges törlés",
       "description": "Ezek az elemek {{days}} napot követően végleg törlésre kerülnek. Addig visszaállíthatja őket, vagy akár törölheti is végleg.",
-      "emptyAll": "Mind ürítése",
+      "emptyAll": "Összes ürítése",
       "expiringSoon": "Hamarosan lejár",
       "itemDeleted": "Elem véglegesen törölve",
       "itemRestored": "Elem helyreállítva",
@@ -868,8 +868,8 @@
     "serviceUrl": "Szolgáltatási webcím",
     "sort": {
       "alphabetical": "Betűrendben (A-Z)",
-      "newestFirst": "Legújabb először",
-      "oldestFirst": "Legrégebbi először",
+      "newestFirst": "Legújabb elől",
+      "oldestFirst": "Legrégebbi elől",
       "title": "Rendezés"
     },
     "suggestions": "Javaslatok",
@@ -1343,7 +1343,7 @@
       "activeSessionsTitle": "Aktív munkamenetek",
       "authLogs": {
         "client": "Kliens",
-        "deviceColumn": "Eszköz",
+        "deviceColumn": "Készülék",
         "eventTypeColumn": "Esemény típus",
         "failed": "Sikertelen",
         "failedToLoad": "A hitelesítési naplók nem tölthetőek be",
@@ -1351,7 +1351,7 @@
         "ipAddress": "IP cím",
         "noLogs": "Nem található hitelesítési napló",
         "noLogsMessage": "Nem található hitelesítési napló.",
-        "success": "Sikeres",
+        "success": "Siker",
         "time": "Idő",
         "timestampColumn": "Időbélyeg"
       },
@@ -1372,7 +1372,7 @@
         "initiatingChange": "Jelszó változtatás megkezdése...",
         "newPassword": "Új jelszó",
         "passwordChangedSuccessfully": "Sikeres jelszó módosítás",
-        "passwordTooShort": "A jelszó legalább {{minLength}} karakter hosszú kell legyen.",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Az új jelszavak nem egyeznek",
         "userNotAuthenticated": "Felhasználó nincs hitelesítve"
       },
@@ -1381,7 +1381,7 @@
         "confirmUsernameLabel": "Felhasználónév megerősítése",
         "confirmationMessage": "Teljesen biztos abban, hogy törölni akarja fiókját? Ez a művelet nem visszavonható.",
         "continueWithAccountDeletion": "Fiók törlés folytatása",
-        "deleteAccount": "Fiók törlése",
+        "deleteAccount": "Fiók Törlése",
         "deleteMyAccount": "Fiókom törlése",
         "deletingAccount": "Fiók törlése...",
         "deletionIrreversibleNote": "A fiók törlés nem visszafordítható és nem visszavonható. A lenti gomb megnyomásával azonnal és véglegesen törli fiókját.",
@@ -1564,7 +1564,7 @@
     }
   },
   "totp": {
-    "addCode": "2FA kód hozzáadása",
+    "addCode": "Kétlépcsős kód hozzáadása",
     "addName": "Név hozzáadása (tetszőleges)",
     "addTotpCodeDescription": "Kétlépcsős hitelesítő kód hozzáadása",
     "addTotpCodeModalTitle": "2FA TOTP kód hozzáadása",
@@ -1596,11 +1596,11 @@
       "failedToApplyMigration": "Migráció alkalmazása sikertelen ({{current}} a {{total}}-ból)",
       "selfHostedServer": "Saját üzemeltetésű szerver",
       "selfHostedWarning": "Ha saját üzemetetésű szervere van, bizonyosodjon meg, hogy naprakész szervert használ, mert máskülönben a web kliensbe való belépés nem fog működni.",
-      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Próbálja meg újra.",
+      "unableToGetVersionInfo": "Sikertelen verzió lekérés. Kérem, próbálja meg újra.",
       "upgradeFailed": "Sikertelen frissítés"
     },
     "newVersion": "Legújabb elérhető verzió:",
-    "noDescriptionAvailable": "Nem elérhető leírás ehhez a verzióhoz.",
+    "noDescriptionAvailable": "Nincs leírás ehhez a verzióhoz.",
     "otherDevicesWarning": "After this upgrade, your other AliasVault apps need version {{version}} or newer. Older apps and browser extensions sign out and ask to be updated before they can open your vault again.",
     "startUpgradeButton": "Frissítési folyamat megkezdése",
     "status": {

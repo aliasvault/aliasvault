@@ -1,18 +1,18 @@
 {
   "apiErrors": {
-    "ACCOUNT_BLOCKED": "Il tuo account è stato disabilitato. Se pensi sia un errore, contatta il supporto.",
-    "ACCOUNT_LOCKED": "Account temporaneamente bloccato per troppi tentativi falliti. Riprova più tardi.",
+    "ACCOUNT_BLOCKED": "Il tuo account è stato disabilitato. Se ritieni che questo sia un errore, contatta il supporto.",
+    "ACCOUNT_LOCKED": "Account temporaneamente bloccato a causa di troppi tentativi falliti. Riprova più tardi.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Account eliminato con successo.",
-    "CLAIM_DOES_NOT_EXIST": "Si è verificato un errore durante il caricamento delle email. Modifica e salva la credenziale per sincronizzare il database, poi riprova.",
-    "CLAIM_DOES_NOT_MATCH_USER": "L'indirizzo email scelto è già in uso. Cambia l'indirizzo modificando questa credenziale.",
+    "CLAIM_DOES_NOT_EXIST": "Si è verificato un errore durante il caricamento delle email. Modifica e salva le credenziali per sincronizzare il database, poi riprova.",
+    "CLAIM_DOES_NOT_MATCH_USER": "L'indirizzo email scelto è già in uso. Cambia l'indirizzo modificando queste credenziali.",
     "INTERNAL_SERVER_ERROR": "Errore interno del server.",
     "INVALID_AUTHENTICATOR_CODE": "Codice di autenticazione non valido. Riprova.",
-    "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Riprova.",
-    "INVALID_REFRESH_TOKEN": "Token di aggiornamento non valido.",
+    "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Per favore riprova.",
+    "INVALID_REFRESH_TOKEN": "Token di aggiornamento non valido",
     "PASSWORD_MISMATCH": "La password fornita non corrisponde alla password corrente.",
     "PENDING_MIGRATIONS": "Ci sono migrazioni in attesa. Si prega di eseguire 'dotnet ef database update' per applicarle.",
     "PUBLIC_REGISTRATION_DISABLED": "La registrazione di nuovi account è disabilitata su questo server. Contatta l'amministratore.",
-    "REFRESH_TOKEN_REQUIRED": "È richiesto il token di aggiornamento.",
+    "REFRESH_TOKEN_REQUIRED": "È necessario aggiornare il token.",
     "REGISTRATION_FAILED": "Impossibile creare l'account. Per favore riprova tra qualche minuto. Se il problema persiste, contatta l'assistenza.",
     "USERNAME_ALREADY_IN_USE": "Il nome utente è già in uso.",
     "USERNAME_AVAILABLE": "Nome utente disponibile.",
@@ -20,12 +20,12 @@
     "USERNAME_INVALID_CHARACTERS": "Il nome utente può contenere solo lettere o cifre.",
     "USERNAME_INVALID_EMAIL": "Indirizzo email non valido.",
     "USERNAME_MISMATCH": "Il nome utente non corrisponde all'utente corrente.",
-    "USERNAME_REQUIRED": "Il nome utente è obbligatorio.",
+    "USERNAME_REQUIRED": "È richiesto il nome utente.",
     "USERNAME_TOO_LONG": "Nome utente troppo lungo: massimo 40 caratteri.",
     "USERNAME_TOO_SHORT": "Nome utente troppo corto: almeno 3 caratteri.",
     "USER_NOT_FOUND": "Nome utente o password non validi. Riprova.",
-    "VAULT_ERROR": "La cassaforte locale non è aggiornata. Sincronizzala ricaricando la pagina e riprova.",
-    "VAULT_NOT_UP_TO_DATE": "La cassaforte non è aggiornata. Sincronizzala e riprova."
+    "VAULT_ERROR": "La cassaforte locale non è aggiornata. Per favore sincronizza la cassaforte aggiornando la pagina e riprova.",
+    "VAULT_NOT_UP_TO_DATE": "La tua cassaforte non è aggiornata. Per favore sincronizza la tua cassaforte e riprova."
   },
   "app": {
     "appName": "AliasVault",
@@ -126,10 +126,10 @@
       "verifyingRecoveryCodeMessage": "Verifica del codice di recupero...",
       "verifyingTwoFactorCodeMessage": "Verifica del codice 2FA..."
     },
-    "loginTitle": "Accedi ad AliasVaultriem",
+    "loginTitle": "Accedi ad AliasVault",
     "loginWithMobile": "Accedi con l'App Mobile",
     "logoutConfirm": "Sei sicuro di volerti disconnettere?",
-    "masterPassword": "Password principale",
+    "masterPassword": "Password Principale",
     "maxAttemptsReached": "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza.",
     "mobileUnlock": {
       "scanQrCodeDescription": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte."
@@ -144,9 +144,9 @@
       "passwordPlaceholder": "••••••••",
       "registrationErrorMessage": "Si è verificato un errore durante la registrazione.",
       "termsAndConditionsLink": "Termini e Condizioni",
-      "usernameOrEmailLabel": "Nome utente o email"
+      "usernameOrEmailLabel": "Il tuo nome utente o email"
     },
-    "rememberMe": "Ricordati di me",
+    "rememberMe": "Ricordami",
     "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
     "setup": {
       "createAccountButton": "Crea Account",
@@ -187,7 +187,7 @@
       "mainTitle": "Gestore di Alias Password & (Email)",
       "taglineText": "La Tua Privacy. Protetta."
     },
-    "switchAccounts": "Cambia account",
+    "switchAccounts": "Cambiare account?",
     "twoFactorTitle": "Inserisci il codice di autenticazione dalla tua app di autenticazione.",
     "unlockPage": {
       "connectionFailedError": "Connessione con i server AliasVault non riuscita. Riprova (più tardi).",
@@ -251,7 +251,7 @@
       "5seconds": "5 secondi"
     },
     "edit": "Modifica",
-    "email": "E-mail",
+    "email": "Email",
     "emailItemLabel": "Elemento:",
     "enabled": "Abilitato",
     "error": "Errore",
@@ -271,7 +271,7 @@
       "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "serverVersionNotSupported": "Il server di AliasVault necessita un aggiornamento a una versione più recente per poter usare questa estensione. Contatta il supporto se hai bisogno di assistenza.",
-      "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto.",
+      "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa app mobile. Se hai bisogno di aiuto, contatta il supporto.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -284,7 +284,7 @@
       "vaultNotAvailable": "Cassaforte non disponibile",
       "vaultSyncTimeout": "Sincronizzazione cassaforte scaduta. Questo può accadere quando la cassaforte è molto grande o la connessione internet è troppo lenta. Riprovare.",
       "vaultTooLarge": "La cassaforte è troppo grande perché il server possa accettarla. Provare a rimuovere alcuni elementi o allegati per ridurre le dimensioni e riprovare.",
-      "wrongPassword": "Password errata. Riprovare."
+      "wrongPassword": "Password errata. Riprova."
     },
     "generate": "Genera",
     "help": "Help",
@@ -293,7 +293,7 @@
     "hidePassword": "Nascondi password",
     "home": "Home",
     "loadMore": "Carica altro",
-    "loading": "Caricamento in corso...",
+    "loading": "Caricamento...",
     "loadingAttachments": "Caricamento allegati in corso...",
     "loadingEmails": "Caricamento e-mail in corso...",
     "loadingTotpCodes": "Caricamento codici TOTP in corso...",
@@ -336,7 +336,7 @@
     "show": "Mostra",
     "showDetails": "Mostra dettagli",
     "showPassword": "Mostra password",
-    "success": "Riuscito",
+    "success": "Successo",
     "syncVaultData": "Sincronizza dati cassaforte",
     "syncingChanges": "Sincronizzazione cambiamenti...",
     "twoFactorAuthentication": "Autenticazione a due fattori",
@@ -447,8 +447,8 @@
     "login": {
       "email": "Email",
       "password": "Password",
-      "url": "URL del sito",
-      "username": "Nome Utente"
+      "url": "URL Sito ",
+      "username": "Nome utente"
     },
     "notes": {
       "content": "Note"
@@ -571,13 +571,13 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Carta Di Credito"
+      "title": "Carta di Credito"
     },
     "deleteCustomField": "Elimina campo personalizzato",
     "editCustomField": "Modifica campo personalizzato",
     "enterFieldName": "Inserisci il nome del campo",
-    "fieldLabel": "Etichetta del Campo",
-    "fieldType": "Tipo di Campo",
+    "fieldLabel": "Nome Campo",
+    "fieldType": "Tipo di campo",
     "fieldTypes": {
       "date": "Data",
       "email": "Email",
@@ -587,7 +587,7 @@
       "password": "Password",
       "phone": "Telefono",
       "text": "Testo",
-      "textArea": "Area di Testo",
+      "textArea": "Area di testo",
       "url": "URL"
     },
     "login": {
@@ -596,7 +596,7 @@
     "note": {
       "title": "Nota"
     },
-    "secureNote": "Nota sicura",
+    "secureNote": "Nota Sicura",
     "typeLabel": "Tipo Elemento"
   },
   "items": {
@@ -622,7 +622,7 @@
     "attachmentUnavailable": "Attachment data unavailable",
     "autofillLinkExisting": {
       "confirmMessage": "Sei sicuro di voler collegare \"{{url}}\" a queste credenziali?",
-      "confirmTitle": "Collegamento alle credenziali?",
+      "confirmTitle": "Collega alle credenziali?",
       "intro": "Seleziona delle credenziali esistenti dalla tua cassaforte per collegare \"{{target}}\".",
       "title": "Link alle credenziali esistenti"
     },
@@ -642,7 +642,7 @@
     "avoidAmbiguousChars": "Evita caratteri ambigui",
     "birthDatePlaceholder": "AAAA-MM-GG",
     "capitalization": "Maiuscolo",
-    "cardInformation": "Informazioni della Carta",
+    "cardInformation": "Informazioni sulla scheda",
     "changePasswordComplexity": "Modifica complessità password",
     "clearFilter": "Cancella filtro",
     "clearSearch": "Cancella ricerca",
@@ -862,7 +862,7 @@
       "searchingForMessage": "Ricerca di \"{{search}}\"",
       "searchingMessage": "Ricerca in corso..."
     },
-    "searchPlaceholder": "Ricerca cassaforte ...",
+    "searchPlaceholder": "Cerca cassaforte...",
     "selectEmailDomain": "Seleziona Dominio Email",
     "separator": "Separatore",
     "serviceUrl": "URL servizio",
@@ -917,9 +917,9 @@
     "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
     "vaultUpToDate": "Cassaforte aggiornata",
     "view": {
-      "cardSection": "Dettagli Scheda",
+      "cardSection": "Dettagli della Carta",
       "generatedItemDescription": "Qui sotto puoi visualizzare e copiare le credenziali generate per questo account. Tutte le email inviate all'indirizzo mostrato appariranno automaticamente in questa pagina.",
-      "itemNotFoundError": "Questa credenziale non esiste (più). Per favore riprova.",
+      "itemNotFoundError": "Questo elemento non esiste (più). Per favore riprova.",
       "loginDetailsSection": "Dettagli di accesso",
       "passkeyHelpText": "Le passkey vengono create attraverso l'estensione del browser o applicazioni mobili quando richiesto da un sito web. Non possono essere modificate manualmente o creati tramite l'app web. Per rimuovere questa passkey, è possibile eliminarla da questa credenziale. Per sostituire o creare una nuova passkey, visitare il sito web e seguire i relativi suggerimenti.",
       "storedItemDescription": "Qui di seguito puoi visualizzare e copiare le credenziali di accesso memorizzate per questo account.",
@@ -1062,7 +1062,7 @@
     "versionNotSupportedMessage": "La versione dell'app non è più supportata. Si prega di aggiornare all'ultima versione.",
     "versionNotSupportedTitle": "Aggiornamento richiesto",
     "viewDetails": "Visualizza dettagli",
-    "website": "Sito Web"
+    "website": "Sito web"
   },
   "navigation": {
     "vault": "Cassaforte"
@@ -1187,7 +1187,7 @@
     "clipboardLocalOnly": "Solo Appunti Locali",
     "clipboardLocalOnlyDescription": "Mantieni le credenziali copiate su questo dispositivo invece di sincronizzarle con gli altri dispositivi Apple tramite Universal Clipboard.",
     "clipboardLocalOnlyDisabledWarning": "Con questo disattivato, le credenziali copiate potranno essere sincronizzare con gli altri dispositivi Apple (Mac, iPad, ecc.) tramite Universal Clipboard.",
-    "clipboardSettings": "Impostazioni appunti",
+    "clipboardSettings": "Impostazioni Appunti",
     "contextMenuDescription": "Click destro sui campi di input per accedere alle opzioni di AliasVault",
     "contextMenuSettings": "Preferenze menu contestuale",
     "copyTotpOnFill": "Copia il codice TOTP con il riempimento automatico",
@@ -1300,7 +1300,7 @@
     },
     "resetAllSiteSettings": "Reimposta tutte le impostazioni specifiche per sito",
     "resetVault": {
-      "pageTitle": "Reimposta cassaforte",
+      "pageTitle": "Reimposta Cassaforte",
       "resetVaultConfirmButton": "Reimposta la mia cassaforte",
       "resetVaultConfirmUsernameLabel": "Per continuare, digita il tuo nome utente per confermare",
       "resetVaultContinueButton": "Continua con il ripristino della cassaforte",
@@ -1312,13 +1312,13 @@
       "resetVaultIrreversibleNote": "Questa azione non può essere annullata",
       "resetVaultItemsDeletedNote": "Tutte le credenziali crittografate nella cassaforte verranno eliminate in modo permanente",
       "resetVaultPasswordIncorrect": "La password inserita non è corretta.",
-      "resetVaultPleaseNote": "Si prega di notare:",
+      "resetVaultPleaseNote": "Attenzione:",
       "resetVaultProgressMessage": "Ripristino cassaforte...",
       "resetVaultSettingsKeptNote": "Le impostazioni e le preferenze del tuo account saranno mantenute",
       "resetVaultSuccessMessage": "La tua cassaforte è stata resettata con successo. Tutte le credenziali sono state eliminate e ora puoi ricominciare da capo.",
       "resetVaultUsernameDoesNotMatch": "Il nome utente inserito non corrisponde al nome utente del tuo account.",
       "section": {
-        "description": "Questa opzione ti permette di svuotare completamente la cassaforte mantenendo il tuo account e gli alias e-mail. Usare questa opzione se si desidera iniziare di nuovo dopo aver importato dati da un altro gestore di password o se si desidera cancellare tutte le credenziali esistenti per ricominciare."
+        "description": "Questa opzione ti permette di svuotare completamente la tua cassaforte mantenendo il tuo account e gli alias e-mail. Usa questa funzione se desideri  ricominciare da capo dopo aver importato i dati da un altro gestore di password o se desideri cancellare tutte le credenziali esistenti per ricominciare."
       }
     },
     "rightClickContextMenu": "Menu contestuale clic destro",
@@ -1426,7 +1426,7 @@
         "verifyAndEnableButton": "Verifica e Abilita"
       },
       "pageDescription": "Configura le impostazioni di sicurezza.",
-      "pageTitle": "Impostazioni di sicurezza",
+      "pageTitle": "Impostazioni sicurezza",
       "passkeyUnlock": {
         "disableButton": "Disabilita Sblocco con Passkey",
         "disabledDescription": "Per impostazione predefinita, ricaricare la pagina di AliasVault o la scheda richiede di inserire nuovamente la password principale. Con una passkey, è possibile sbloccare immediatamente la cassaforte. Se abilitata, la tua password principale viene crittografata localmente usando l'estensione PRF della passkey. Nota: la passkey funzionerà solo per il dispositivo e il browser attuali su cui è attivato.",
@@ -1593,11 +1593,11 @@
   "upgrade": {
     "alerts": {
       "continueUpgrade": "Continua aggiornamento",
-      "failedToApplyMigration": "Impossibile applicare la migrazione ({{current}} di {{total}})",
-      "selfHostedServer": "Server self-hosted",
-      "selfHostedWarning": "Se usi un server self-hosted, assicurati di aggiornare anche la tua istanza self-hosted altrimenti l'accesso al client web smetterà di funzionare.",
+      "failedToApplyMigration": "Impossibile eseguire la migrazione ({{current}} di {{total}})",
+      "selfHostedServer": "Server Autospitato",
+      "selfHostedWarning": "Se usi un server autospitato, assicurati di aggiornare anche la tua istanza, altrimenti l'accesso al client web smetterà di funzionare.",
       "unableToGetVersionInfo": "Impossibile ottenere informazioni sulla versione. Riprova.",
-      "upgradeFailed": "Aggiornamento fallito"
+      "upgradeFailed": "Aggiornamento non riuscito"
     },
     "newVersion": "Nuova versione disponibile:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
@@ -1609,7 +1609,7 @@
       "committingChanges": "Modifica in corso...",
       "preparingUpgrade": "Preparazione aggiornamento..."
     },
-    "subtitle": "AliasVault è stato aggiornato e la tua cassaforte deve essere aggiornata. Ci vorranno solo pochi secondi.",
+    "subtitle": "AliasVault è stato aggiornato e la tua cassaforte deve essere aggiornata. Dovrebbe richiedere solo pochi secondi.",
     "successOtherDevices": "La cassaforte è pronta per l'uso. Assicurati di aggiornare l'app AliasVault anche sugli altri dispositivi.",
     "successTitle": "Cassaforte aggiornata",
     "title": "Aggiorna Cassaforte",
@@ -1621,7 +1621,7 @@
     "upgrading": "Aggiornamento in corso...",
     "versionInformation": "Informazioni sulla versione",
     "whatsNew": "Novità",
-    "whatsNewDescription": "È richiesto un aggiornamento per supportare i seguenti cambiamenti:",
+    "whatsNewDescription": "È richiesto un aggiornamento per supportare le seguenti modifiche:",
     "yourVault": "Versione della tua cassaforte:"
   },
   "validation": {
@@ -1668,7 +1668,7 @@
       "extensionsAppsTipContent": "Installa l'estensione del browser AliasVault e l'app per dispositivi mobili per creare alias e moduli di riempimento automatico direttamente dal tuo browser e smartphone.",
       "extensionsAppsTipTitle": "Estensioni del Browser e App Mobile",
       "finishingTutorialMessage": "Completamento del tutorial...",
-      "getStartedButton": "Per iniziare",
+      "getStartedButton": "Per Iniziare",
       "howAliasVaultWorksStepTitle": "Come Funziona AliasVault",
       "howItWorksIntro": "Quando è necessario iscriversi a un nuovo servizio:",
       "howItWorksStep1": "AliasVault genera un'identità casuale con un indirizzo email privato sicuro",

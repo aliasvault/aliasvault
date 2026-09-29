@@ -1,31 +1,31 @@
 {
   "apiErrors": {
-    "ACCOUNT_BLOCKED": "Votre compte a été désactivé. Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support.",
+    "ACCOUNT_BLOCKED": "Votre compte a été désactivé. Si vous pensez que c'est une erreur, veuillez contacter le support.",
     "ACCOUNT_LOCKED": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives infructueuses. Veuillez réessayer plus tard.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Compte supprimé avec succès.",
-    "CLAIM_DOES_NOT_EXIST": "Une erreur s'est produite en essayant de charger les e-mails. Veuillez essayer de modifier et enregistrer les identifiants pour synchroniser la base de données, puis réessayez.",
-    "CLAIM_DOES_NOT_MATCH_USER": "L'adresse e-mail choisie est déjà utilisée. Veuillez modifier l'adresse e-mail en modifiant ces identifiants.",
+    "CLAIM_DOES_NOT_EXIST": "Une erreur s'est produite en essayant de charger les emails. Veuillez essayer de modifier et enregistrer les informations d'identification pour synchroniser la base de données, puis réessayez.",
+    "CLAIM_DOES_NOT_MATCH_USER": "L'adresse email actuelle est déjà utilisée. Veuillez modifier l'adresse email en modifiant cet identifiant.",
     "INTERNAL_SERVER_ERROR": "Erreur interne du serveur.",
     "INVALID_AUTHENTICATOR_CODE": "Code d'authentification invalide. Veuillez réessayer.",
     "INVALID_RECOVERY_CODE": "Code de récupération invalide. Veuillez réessayer.",
     "INVALID_REFRESH_TOKEN": "Jeton d'actualisation invalide.",
-    "PASSWORD_MISMATCH": "Le mot de passe fourni ne correspond pas à votre mot de passe actuel.",
+    "PASSWORD_MISMATCH": "Le mot de passe indiqué ne correspond pas à votre mot de passe actuel.",
     "PENDING_MIGRATIONS": "Il y a des migrations en attente. Veuillez exécuter 'dotnet ef database update' pour les appliquer.",
-    "PUBLIC_REGISTRATION_DISABLED": "L'inscription de nouveaux comptes est actuellement désactivée sur ce serveur. Veuillez contacter l'administrateur.",
-    "REFRESH_TOKEN_REQUIRED": "Un jeton d'actualisation est requis.",
+    "PUBLIC_REGISTRATION_DISABLED": "L'enregistrement d'un nouveau compte est actuellement désactivé sur ce serveur. Veuillez contacter l'administrateur.",
+    "REFRESH_TOKEN_REQUIRED": "Le jeton d'actualisation est requis.",
     "REGISTRATION_FAILED": "Impossible de créer le compte. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez contacter le support.",
     "USERNAME_ALREADY_IN_USE": "Nom d'utilisateur déjà utilisé.",
     "USERNAME_AVAILABLE": "Ce nom d'utilisateur est disponible.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Le nom d'utilisateur ne peut pas être vide ou un espace.",
-    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur est invalide : il ne peut contenir que des lettres ou des chiffres.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Le nom d'utilisateur ne peut pas être vide ou contenir un espace.",
+    "USERNAME_INVALID_CHARACTERS": "Le nom d'utilisateur n'est pas valide, il ne peut contenir que des lettres ou des chiffres.",
     "USERNAME_INVALID_EMAIL": "Adresse e-mail invalide.",
     "USERNAME_MISMATCH": "Le nom d'utilisateur ne correspond pas à l'utilisateur actuel.",
     "USERNAME_REQUIRED": "Nom d’utilisateur requis.",
-    "USERNAME_TOO_LONG": "Le nom d'utilisateur est trop long : il ne peut pas dépasser 40 caractères.",
+    "USERNAME_TOO_LONG": "Le nom d'utilisateur est trop long : il ne peut pas contenir plus de 40 caractères.",
     "USERNAME_TOO_SHORT": "Le nom d'utilisateur est trop court : il doit comporter au moins 3 caractères.",
     "USER_NOT_FOUND": "Nom d'utilisateur ou mot de passe invalide. Veuillez réessayer.",
-    "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez.",
-    "VAULT_NOT_UP_TO_DATE": "Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre-fort et réessayer."
+    "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre en rafraîchissant la page et réessayez.",
+    "VAULT_NOT_UP_TO_DATE": "Votre coffre-fort n'est pas à jour. Veuillez synchroniser votre coffre et réessayer."
   },
   "app": {
     "appName": "AliasVault",
@@ -71,7 +71,7 @@
     "deleteSuccess": "Pièce jointe supprimée avec succès.",
     "firefoxExpandRequired": "Pour envoyer des fichiers, utilisez la fenêtre étendue.",
     "openExpandedWindow": "Ouvrir la fenêtre étendue",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Erreur lors de l'envoi du fichier : {{error}}",
     "uploadSuccess": "Fichiers envoyés avec succès.",
     "uploading": "Envoi..."
   },
@@ -135,10 +135,10 @@
       "scanQrCodeDescription": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre-fort."
     },
     "mobileUnlockVerificationCode": "Lorsque l'application le demande, saisissez ce numéro.",
-    "noAccountYet": "Pas encore de compte ?",
+    "noAccountYet": "Pas de compte ?",
     "passwordAttemptsWarning": "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de {{remainingAttempts}} fois.",
     "passwordPlaceholder": "Saisissez votre mot de passe",
-    "pinInput": "PIN input",
+    "pinInput": "Code PIN",
     "register": {
       "passwordLabel": "Votre mot de passe",
       "passwordPlaceholder": "••••••••",
@@ -223,11 +223,11 @@
     "attachmentDownloadFailed": "Échec du téléchargement de la pièce jointe",
     "attachments": "Pièces jointes",
     "back": "Retour",
-    "backspace": "Backspace",
+    "backspace": "RetArr",
     "cancel": "Annuler",
     "clientVersionUnsupported": "Cette version de l'application n'est plus supportée par le serveur. Veuillez rafraîchir la page pour charger la dernière version.",
     "clipboardCountdown": {
-      "clearClipboardButton": "Vider le presse-papiers"
+      "clearClipboardButton": "Effacer le presse-papiers"
     },
     "close": "Fermer",
     "confirm": "Confirmer",
@@ -250,7 +250,7 @@
       "30seconds": "30 secondes",
       "5seconds": "5 secondes"
     },
-    "edit": "Editer",
+    "edit": "Modifier",
     "email": "Email",
     "emailItemLabel": "Élément :",
     "enabled": "Activé",
@@ -261,9 +261,9 @@
       "backgroundUnresponsive": "Le service d'arrière-plan de l'extension ne répond pas. Veuillez fermer et rouvrir l'extension ou redémarrer votre navigateur si le problème persiste.",
       "browserExtensionOutdated": "Cette extension de navigateur est obsolète et ne peut pas être utilisée pour accéder à ce coffre-fort. Veuillez la mettre à jour pour continuer.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "contactSupportAt": "Contactez le support à {{email}}.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Votre mot de passe est correct, mais les clés de chiffrement de votre coffre n'ont pas pu être ouvertes. Veuillez contacter le support.",
       "mergeFailed": "Impossible de fusionner les modifications du coffre-fort. Veuillez réessayer.",
       "mobileLoginRequestDeclined": "La demande de connexion a été refusée sur votre appareil mobile.",
       "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer.",
@@ -274,20 +274,20 @@
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide.",
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre-fort après plusieurs tentatives. Veuillez réessayer plus tard.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "Une erreur inattendue s'est produite. Veuillez réessayer et contacter le support si le problème persiste.",
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "vaultDataUnreadable": "Les données de votre coffre n'ont pas pu être lues, vos données ne sont donc pas accessibles pour le moment. Contactez le support.",
       "vaultIsLocked": "Le coffre-fort est verrouillé",
       "vaultLoadError": "Une erreur s'est produite lors du chargement de votre coffre. Veuillez copier les détails de l'erreur ci-dessous et contacter le support pour obtenir de l'aide.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "Votre coffre n'a pas pu être chargé",
       "vaultNotAvailable": "Coffre-fort non disponible",
       "vaultSyncTimeout": "La synchronisation du coffre a expiré. Cela peut se produire lorsque le coffre est grand ou que la connexion Internet est lente. Veuillez réessayer.",
       "vaultTooLarge": "Le coffre-fort est trop grand pour que le serveur l'accepte. Essayez de supprimer certains éléments ou pièces jointes pour réduire la taille et réessayez.",
-      "wrongPassword": "Mot de passe incorrect, veuillez réessayer."
+      "wrongPassword": "Mot de passe incorrect. Veuillez réessayer."
     },
     "generate": "Générer",
-    "help": "Help",
+    "help": "Aide",
     "hide": "Masquer",
     "hideDetails": "Masquer les détails",
     "hidePassword": "Cacher le mot de passe",
@@ -300,7 +300,7 @@
     "loadingVault": "Chargement du coffre...",
     "lockVault": "Verrouiller le coffre-fort",
     "loggedIn": "Connecté(e)",
-    "logout": "Déconnexion",
+    "logout": "Se déconnecter",
     "never": "Jamais",
     "next": "Suivant",
     "no": "Non",
@@ -311,7 +311,7 @@
     "ok": "D'accord",
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
     "or": "ou",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Navigation par page",
     "passkeys": "Clés d'accès",
     "password": "Mot de passe",
     "passwordStrength": {
@@ -322,13 +322,13 @@
       "veryWeak": "Trop faible",
       "weak": "C'est mieux"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Précédent",
+    "qrCode": "Code QR",
     "recentEmails": "Emails récents",
     "refresh": "Actualiser",
     "remove": "Supprimer",
     "resizeField": "Glisser pour redimensionner le champ",
-    "retry": "Réessayer",
+    "retry": "Recommencer",
     "save": "Sauvegarder",
     "saving": "Sauvegarde...",
     "serviceName": "Nom du service",
@@ -340,7 +340,7 @@
     "syncVaultData": "Synchroniser les données du coffre-fort",
     "syncingChanges": "Synchronisation des modifications...",
     "twoFactorAuthentication": "Authentification à double facteur",
-    "unavailable": "Unavailable",
+    "unavailable": "Indisponible",
     "undo": "Annuler",
     "use": "Utiliser",
     "username": "Nom d'utilisateur",
@@ -480,7 +480,7 @@
     "importSectionDescription": "Sélectionnez un service depuis lequel importer.",
     "importSectionTitle": "Importer vos mots de passe",
     "pageDescription": "Sur cette page, vous pouvez importer et exporter votre coffre-fort.",
-    "passwordIncorrect": "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.",
+    "passwordIncorrect": "Le mot de passe que vous avez introduit est incorrect. Veuillez réessayer.",
     "passwordVerificationFailed": "Une erreur s'est produite lors de la vérification de votre mot de passe. Veuillez réessayer.",
     "recommendedLabel": "Recommandé",
     "serviceCard": {
@@ -560,7 +560,7 @@
       "roboformInstructionsPart1": "Afin d'importer vos mots de passe RoboForm, vous devez les exporter sous forme de fichier CSV. Vous pouvez le faire en ouvrant RoboForm, en allant dans le menu 'RoboForm' > 'Options' > 'Compte & Données' > 'Export' et en sélectionnant le format CSV.",
       "strongboxDescription": "Importer des mots de passe depuis Strongbox",
       "strongboxInstructionsPart1": "Afin d'importer votre coffre-fort Strongbox, vous devez l'exporter en tant que fichier CSV. Vous pouvez le faire en allant dans le menu 'Fichier' et en sélectionnant 'Exporter la base de données' (vers CSV).",
-      "template": "template",
+      "template": "modèle",
       "uploadInstructions": "Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous."
     }
   },
@@ -583,7 +583,7 @@
       "email": "Email",
       "hidden": "Masqué",
       "hiddenMasked": "Caché (texte masqué)",
-      "number": "Nombre",
+      "number": "Numéro",
       "password": "Mot de passe",
       "phone": "Téléphone",
       "text": "Texte",
@@ -591,7 +591,7 @@
       "url": "URL"
     },
     "login": {
-      "title": "Identifiant"
+      "title": "Se connecter"
     },
     "note": {
       "title": "Note"
@@ -618,8 +618,8 @@
     "addNewItem": "Ajouter un nouvel élément",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "allItemsInFoldersClick": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Impossible de lire la pièce jointe.",
+    "attachmentUnavailable": "Données de la pièce jointe indisponibles",
     "autofillLinkExisting": {
       "confirmMessage": "Êtes-vous sûr de vouloir lier «{{url}}» à cet identifiant ?",
       "confirmTitle": "Lier l'identifiant?",
@@ -682,7 +682,7 @@
       "Underscore": "Tiret bas"
     },
     "downloadToView": "Télécharger le fichier pour le voir",
-    "editItem": "Modifier l'identifiant",
+    "editItem": "Éditer l'élément",
     "editableFieldLabel": {
       "deleteField": "Supprimer le champ",
       "editLabel": "Éditer l’étiquette"
@@ -716,7 +716,7 @@
         "deleteFolderAndContentsTitle": "Supprimer le dossier et tous les éléments",
         "deleteFolderDescription": "Souhaitez-vous supprimer le dossier \"{{name}} \" ?"
       },
-      "editFolder": "Éditer un dossier",
+      "editFolder": "Éditer le dossier",
       "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et sélectionnez ce dossier.",
       "folder": "Dossier",
       "folderName": "Nom du dossier",
@@ -729,9 +729,9 @@
       "selectFolder": "Sélectionner un dossier"
     },
     "fullName": "Nom complet",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "A des pièces jointes",
+    "hasPasskey": "A une clé d'accès",
+    "hasTotp": "A un code 2FA",
     "history": "Historique",
     "home": {
       "alphabeticalOption": "Ordre alphabétique",
@@ -764,7 +764,7 @@
     "includeUppercaseLetters": "Inclure les lettres majuscules",
     "itemCreated": "Élément créé",
     "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre-fort et est prêt à être utilisé.",
-    "itemDetails": "Informations détaillées",
+    "itemDetails": "Détails de l’élément",
     "itemName": "Nom",
     "loginCredentials": "Identifiants de connexion",
     "logo": {
@@ -790,11 +790,11 @@
       "sourceFavicon": "Depuis {{domain}}",
       "sourceNone": "Pas d'icône"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Aucune pièce jointe disponible.",
     "noEmailsYet": "Pas encore d'e-mails reçus.",
     "noHistoryAvailable": "Pas d'historique disponible",
     "noItemsFound": "Aucun élément trouvé. Créez-en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
-    "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
+    "noMatchingItems": "Aucun identifiant ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "numberOfItemMatchesFound": "{{count}} résultats",
@@ -816,9 +816,9 @@
     "passwordTypeDiceware": "Phrase secrète",
     "previewNotSupported": "Aperçu non supporté",
     "privateEmailAliasVaultServer": "Serveur AliasVault",
-    "privateEmailDescription": "E2E chiffré, entièrement privé.",
+    "privateEmailDescription": "Chiffrement bout en bout, entièrement privé.",
     "privateEmailTitle": "E-mail privé",
-    "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
+    "publicEmailDescription": "Anonyme mais confidentialité limitée. Le contenu de l'email est lisible par toute personne qui connaît l'adresse.",
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "quickCreate": {
       "createItemErrorMessage": "Erreur lors de la création d'un nouvel élément. Veuillez réessayer (plus tard) ou vous déconnecter et vous reconnecter.",
@@ -832,19 +832,19 @@
       "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nouveau",
       "typeCard": "Carte",
-      "typeLogin": "Identifiant"
+      "typeLogin": "Se connecter"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Tous les éléments ont été définitivement supprimés",
       "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
       "confirmDeleteTitle": "Supprimer définitivement ?",
-      "confirmEmptyAllMessage": "Les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés.",
+      "confirmEmptyAllMessage": "Tous les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés.",
       "confirmEmptyAllTitle": "Vider récemment supprimé ?",
       "daysRemaining_one": "{{count}} jours restants",
       "daysRemaining_other": "{{count}} jours restants",
       "deletePermanently": "Supprimer définitivement",
       "description": "Ces éléments seront définitivement supprimés après {{days}} jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
-      "emptyAll": "Tout vider",
+      "emptyAll": "Vider tout",
       "expiringSoon": "Expirant bientôt",
       "itemDeleted": "Élément supprimé définitivement",
       "itemRestored": "Élément restauré",
@@ -906,7 +906,7 @@
       "message": "Vos modifications n'ont pas été enregistrées. Voulez-vous vraiment les ignorer ?",
       "title": "Annuler les modifications?"
     },
-    "untitled": "Indéfini",
+    "untitled": "Untitled",
     "urlContextMenu": {
       "copyLink": "Copier le lien",
       "openLink": "Ouvrir le lien",
@@ -919,7 +919,7 @@
     "view": {
       "cardSection": "Détails de la carte",
       "generatedItemDescription": "Ci-dessous vous pouvez voir et copier les détails générés pour cet élément. Tous les e-mails envoyés à l'adresse affichée apparaîtront automatiquement sur cette page.",
-      "itemNotFoundError": "Cet élément n'existe pas/plus. Veuillez réessayer.",
+      "itemNotFoundError": "Cet élément n'existe plus. Veuillez réessayer.",
       "loginDetailsSection": "Infos de connexion",
       "passkeyHelpText": "Les clés d'accès sont créées à partir de l'extension du navigateur ou des applications mobiles lorsque vous y êtes invité par un site web. Elles ne peuvent pas être modifiées manuellement ou créées via l'application web. Pour supprimer cette clé d'accès, utilisez le bouton de suppression ci-dessous. Pour remplacer ou créer une nouvelle clé d'accès, visitez le site web et suivez ses instructions.",
       "storedItemDescription": "Ci-dessous vous pouvez voir et copier les informations de connexion stockées pour cet élément.",
@@ -958,7 +958,7 @@
     "loggingOutDescription": "Déchargement sécurisé de vos données et déconnexion. Veuillez patienter.",
     "loggingOutTitle": "Déconnexion",
     "logoutAnyway": "Se déconnecter quand même",
-    "unsyncedChangesTitle": "Modifications non synchronisées",
+    "unsyncedChangesTitle": "Changements non synchronisés",
     "unsyncedChangesWarning": "Vous avez des modifications non synchronisées qui seront perdues si vous vous déconnectez maintenant. Êtes-vous sûr de vouloir continuer ?"
   },
   "native": {
@@ -1062,7 +1062,7 @@
     "versionNotSupportedMessage": "La version de votre application n'est plus prise en charge. Veuillez mettre à jour vers la dernière version.",
     "versionNotSupportedTitle": "Mise à jour requise",
     "viewDetails": "Voir les détails",
-    "website": "Site Web"
+    "website": "Site internet"
   },
   "navigation": {
     "vault": "Coffre-fort"
@@ -1285,7 +1285,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Approuver la connexion",
         "codeMismatch": "Le numéro ne correspond pas. La demande de connexion a été refusée.",
         "confirmMessage": "Un autre appareil demande de se connecter avec votre compte. Il aura un accès complet à votre coffre. Ne continuez que si vous avez commencé à vous connecter vous-même.",
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
@@ -1312,7 +1312,7 @@
       "resetVaultIrreversibleNote": "Cette action ne peut pas être annulée",
       "resetVaultItemsDeletedNote": "Tous les éléments chiffrés de votre coffre-fort seront définitivement supprimés",
       "resetVaultPasswordIncorrect": "Le mot de passe saisi est incorrect.",
-      "resetVaultPleaseNote": "Veuillez noter :",
+      "resetVaultPleaseNote": "Veuillez noter:",
       "resetVaultProgressMessage": "Réinitialisation du coffre-fort...",
       "resetVaultSettingsKeptNote": "Les paramètres et préférences de votre compte seront préservés",
       "resetVaultSuccessMessage": "Votre coffre-fort a été réinitialisé avec succès. Tous les éléments ont été supprimés et vous pouvez maintenant recommencer.",
@@ -1470,7 +1470,7 @@
       "deleteAllLogosButton": "Supprimer tous les logos",
       "deleteAllLogosConfirmMessage": "Cela supprime chaque logo stocké de votre coffre-fort et efface le logo sur chaque identifiant. Vous pouvez le télécharger à nouveau à tout moment. Continuer ?",
       "deleteAllLogosConfirmTitle": "Supprimer tous les logos ?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Le logo des {{count}} éléments a été supprimé.",
       "itemsWithAttachmentsLabel": "Éléments avec pièces jointes",
       "itemsWithLogosLabel": "Éléments avec un logo",
       "logoManagementDescription": "Les logos sont récupérés à partir de la favicon du site web de chaque élément. Vous pouvez supprimer tous les logos pour récupérer de l'espace, ou les télécharger à nouveau pour récupérer des versions améliorées.",
@@ -1480,9 +1480,9 @@
       "redownloadAllLogosButton": "Re-télécharger tous les logos",
       "redownloadAllLogosConfirmMessage": "Cela récupère à nouveau le favicon pour chaque identifiant ayant une URL de site web, en remplaçant le logo existant. Selon la taille de votre coffre-fort, cela peut prendre un certain temps. Continuer ?",
       "redownloadAllLogosConfirmTitle": "Re-télécharger tous les logos ?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Logo des {{count}} éléments mis à jour.",
+      "serverTotalDescription": "La taille exacte de votre coffre chiffré tel qu'il est stocké sur le serveur, y compris les pièces jointes et les logos.",
+      "serverTotalTitle": "Taille du coffre sur le serveur",
       "topAttachmentsDescription": "Top 10 des pièces jointes les plus volumineuses. Supprimez la pièce jointe si vous n'en avez plus besoin.",
       "topAttachmentsTitle": "Pièces jointes les plus volumineuses",
       "topLogosDescription": "Top 10 des logos de service les plus volumineux. Logos sont réutilisés pour les éléments avec le même domaine.",
@@ -1523,7 +1523,7 @@
       "biometricUnavailableHelpAndroid": "La biométrie n'est pas disponible pour votre appareil. Android nécessite une biométrie solide (Classe 3) telle qu'une empreinte digitale ou une reconnaissance faciale sécurisée.",
       "biometrics": "Biométrie",
       "description": "Choisissez comment vous souhaitez déverrouiller votre coffre-fort.",
-      "faceId": "Identification faciale (Face ID)",
+      "faceId": "Face ID",
       "faceIdTouchId": "Face ID / Touch ID",
       "featureRequiresPasscode": "Cette fonctionnalité nécessite un code d'accès pour être activée sur votre appareil.",
       "keystoreAndroid": "KeyStore Android",
@@ -1533,7 +1533,7 @@
       "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre-fort plus rapidement.",
       "pinDisabled": "Déverrouillage par code PIN désactivé",
       "pinEnabled": "Déverrouillage par code PIN activé avec succès",
-      "touchId": "Empreinte digitale"
+      "touchId": "Touch ID"
     },
     "version": "Version"
   },
@@ -1557,10 +1557,10 @@
     "syncing": "Synchronisation...",
     "tapToRetry": "Appuyez pour réessayer",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Si le problème persiste, contactez notre équipe d'assistance pour obtenir de l'aide.",
+      "notCompatible": "La version de ce coffre n'est pas compatible avec votre client.",
+      "title": "Version du coffre non supportée",
+      "updateInstructions": "Veuillez mettre à jour vers la dernière version de AliasVault, rafraîchissez cette page et réessayez."
     }
   },
   "totp": {
@@ -1597,7 +1597,7 @@
       "selfHostedServer": "Serveur auto-hébergé",
       "selfHostedWarning": "Si vous utilisez un serveur auto-hébergé, assurez-vous également de mettre à jour votre instance auto-hébergée, sinon la connexion au client web cessera de fonctionner.",
       "unableToGetVersionInfo": "Impossible d'obtenir les informations de version. Veuillez réessayer.",
-      "upgradeFailed": "Échec de la mise à jour"
+      "upgradeFailed": "Échec de la mise à niveau"
     },
     "newVersion": "Nouvelle version disponible :",
     "noDescriptionAvailable": "Aucune description disponible pour cette version.",
@@ -1609,7 +1609,7 @@
       "committingChanges": "Application des modifications...",
       "preparingUpgrade": "Préparation de la mise à jour..."
     },
-    "subtitle": "AliasVault a été mis à jour et votre coffre-fort doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
+    "subtitle": "AliasVault a mis à jour et votre coffre-fort doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
     "successOtherDevices": "Votre coffre est prêt à être utilisé. Assurez-vous de mettre à jour l'application AliasVault sur vos autres appareils également.",
     "successTitle": "Coffre-fort mis à jour",
     "title": "Mettre à niveau le coffre-fort",
@@ -1618,14 +1618,14 @@
     "upgradeFailedError": "La mise à jour de la base de données a échoué. Veuillez réessayer ou contacter le support.",
     "upgradeRequiredDescription": "Une mise à jour est nécessaire pour prendre en charge les modifications suivantes : {{changes}}",
     "upgradeSuccessMessage": "La mise à jour du coffre-fort est réussi.",
-    "upgrading": "Mise à jour...",
+    "upgrading": "Mise à niveau...",
     "versionInformation": "Informations de version",
     "whatsNew": "Nouveautés",
-    "whatsNewDescription": "Une mise à jour est nécessaire pour prendre en charge les modifications suivantes:",
-    "yourVault": "Version de votre coffre-fort :"
+    "whatsNewDescription": "Une mise à niveau est nécessaire pour prendre en charge les modifications suivantes :",
+    "yourVault": "Votre version de coffre-fort :"
   },
   "validation": {
-    "passwordRequired": "Mot de passe requis",
+    "passwordRequired": "Le mot de passe est requis",
     "required": "Ce champ est requis",
     "secretKeyRequired": "La clé secrète est requise",
     "serviceNameRequired": "Le nom du service est requis"
@@ -1668,7 +1668,7 @@
       "extensionsAppsTipContent": "Installez l'extension de navigateur et l'application mobile AliasVault pour créer des alias et des formulaires de saisie automatique directement à partir de votre navigateur et de votre smartphone.",
       "extensionsAppsTipTitle": "Extensions de navigateur et applications mobiles",
       "finishingTutorialMessage": "Terminer le tutoriel...",
-      "getStartedButton": "Commencer",
+      "getStartedButton": "Premiers Pas",
       "howAliasVaultWorksStepTitle": "Comment fonctionne AliasVault",
       "howItWorksIntro": "Quand vous devez vous inscrire à un nouveau service :",
       "howItWorksStep1": "AliasVault génère une identité aléatoire avec une adresse e-mail privée sécurisée",

@@ -3,19 +3,19 @@
     "ACCOUNT_BLOCKED": "Akun Anda telah dinonaktifkan. Jika Anda yakin ini adalah kesalahan, silakan hubungi layanan pelanggan.",
     "ACCOUNT_LOCKED": "Akun Anda sementara terkunci karena terlalu banyak percobaan masuk yang gagal. Silakan coba lagi nanti.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Akun berhasil dihapus.",
-    "CLAIM_DOES_NOT_EXIST": "Terjadi kesalahan saat mencoba memuat email. Silakan coba ubah dan simpan entri kredensial untuk menyinkronkan basis data, lalu coba lagi.",
+    "CLAIM_DOES_NOT_EXIST": "Terjadi kesalahan saat mencoba memuat email. Silakan coba edit dan simpan entri kredensial untuk menyinkronkan database, lalu coba lagi.",
     "CLAIM_DOES_NOT_MATCH_USER": "Alamat email yang dipilih saat ini sudah digunakan. Silakan ubah alamat email dengan mengedit kredensial ini.",
     "INTERNAL_SERVER_ERROR": "Kesalahan server internal.",
-    "INVALID_AUTHENTICATOR_CODE": "Kode autentikator salah. Mohon coba lagi.",
-    "INVALID_RECOVERY_CODE": "Kode pemulihan salah. Mohon coba lagi.",
+    "INVALID_AUTHENTICATOR_CODE": "Kode otentikasi tidak valid. Silakan coba lagi.",
+    "INVALID_RECOVERY_CODE": "Kode pemulihan tidak valid. Silakan coba lagi.",
     "INVALID_REFRESH_TOKEN": "Token refresh salah.",
     "PASSWORD_MISMATCH": "Kata sandi yang diberikan tidak sesuai dengan kata sandi Anda saat ini.",
     "PENDING_MIGRATIONS": "Ada migrasi yang masih tertunda. Silakan jalankan perintah ‘dotnet ef database update’ untuk menerapkan migrasi tersebut.",
     "PUBLIC_REGISTRATION_DISABLED": "Pendaftaran akun baru saat ini dinonaktifkan di server ini. Silakan hubungi administrator.",
     "REFRESH_TOKEN_REQUIRED": "Token refresh diperlukan.",
     "REGISTRATION_FAILED": "Tidak dapat membuat akun. Silakan coba lagi beberapa menit lagi. Jika masalah ini masih berlanjut, silakan hubungi bagian dukungan.",
-    "USERNAME_ALREADY_IN_USE": "Username sudah ada yang pakai.",
-    "USERNAME_AVAILABLE": "Username tersedia.",
+    "USERNAME_ALREADY_IN_USE": "Nama pengguna sudah ada yang pakai.",
+    "USERNAME_AVAILABLE": "Nama pengguna tersedia.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nama pengguna tidak boleh kosong atau mengandung spasi.",
     "USERNAME_INVALID_CHARACTERS": "Nama pengguna tidak valid, hanya boleh berisi huruf atau angka.",
     "USERNAME_INVALID_EMAIL": "Alamat email tidak valid.",
@@ -23,9 +23,9 @@
     "USERNAME_REQUIRED": "Username diperlukan.",
     "USERNAME_TOO_LONG": "Nama pengguna terlalu panjang: tidak boleh lebih dari 40 karakter.",
     "USERNAME_TOO_SHORT": "Nama pengguna terlalu pendek: harus minimal 3 karakter.",
-    "USER_NOT_FOUND": "Username atau password salah. Mohon coba lagi.",
+    "USER_NOT_FOUND": "Nama pengguna atau kata sandi tidak valid. Silakan coba lagi.",
     "VAULT_ERROR": "Vault lokal Anda belum diperbarui. Harap sinkronkan vault Anda dengan menyegarkan halaman dan coba lagi.",
-    "VAULT_NOT_UP_TO_DATE": "Vault Anda bukan yang terkini. Harap sinkronkan vault Anda dan coba lagi."
+    "VAULT_NOT_UP_TO_DATE": "Vault Anda belum diperbarui. Silakan sinkronkan vault Anda, lalu coba lagi."
   },
   "app": {
     "appName": "AliasVault",
@@ -83,8 +83,8 @@
     "browseVault": "Jelajahi isi Brankas",
     "closePopup": "Tutup popup ini",
     "confirmLogout": "Apakah Anda yakin ingin keluar? Anda harus masuk kembali dengan kata sandi utama Anda untuk mengakses brankas.",
-    "connectingTo": "Menyambungkan ke",
-    "createNewVault": "Buat vault baru",
+    "connectingTo": "Menghubungkan ke",
+    "createNewVault": "Buat brankas baru",
     "enableBiometric": "Aktifkan {{biometric}}?",
     "enterAuthCode": "Masukkan kode 6 digit",
     "enterPassword": "Masukkan kata sandi Anda untuk membuka kunci brankas",
@@ -130,7 +130,7 @@
     "loginWithMobile": "Masuk menggunakan Aplikasi Seluler",
     "logoutConfirm": "Apakah anda yakin ingin keluar?",
     "masterPassword": "Kata sandi utama",
-    "maxAttemptsReached": "Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan",
+    "maxAttemptsReached": "Terlalu banyak upaya membuka kunci yang gagal. Anda telah dikeluarkan dari sistem demi alasan keamanan.",
     "mobileUnlock": {
       "scanQrCodeDescription": "Pindai kode QR ini menggunakan aplikasi seluler AliasVault Anda untuk membuka brankas anda."
     },
@@ -208,7 +208,7 @@
     "unlockWithBiometric": "Buka kunci dengan {{biometric}}",
     "unlockWithMobile": "Buka kunci menggunakan Aplikasi Seluler",
     "unlockWithPassword": "Buka kunci dengan Kata Sandi",
-    "unlockWithPin": "Buka dengan PIN",
+    "unlockWithPin": "Buka kunci dengan PIN",
     "unlocking": "Membuka...",
     "useMasterPassword": "Gunakan Kata sandi utama",
     "username": "Nama pengguna atau Email",
@@ -237,7 +237,7 @@
     "copyToClipboard": "Salin ke papan klip",
     "create": "Buat",
     "credentials": "Kredensial",
-    "customFields": "Kolom Kustom",
+    "customFields": "Kolom khusus",
     "delete": "Hapus",
     "deleteItemConfirmDescription": "Apakah Anda yakin Anda ingin menghapus item ini?",
     "disabled": "Dinonaktifkan",
@@ -251,7 +251,7 @@
       "5seconds": "5 detik"
     },
     "edit": "Ubah",
-    "email": "E-mail",
+    "email": "Email",
     "emailItemLabel": "Item:",
     "enabled": "Diaktifkan",
     "error": "Kesalahan",
@@ -266,12 +266,12 @@
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
       "mergeFailed": "Gagal menggabungkan perubahan brankas. Silakan coba lagi.",
       "mobileLoginRequestDeclined": "The login request was declined on your mobile device.",
-      "mobileLoginRequestExpired": "Login mobile telah habis waktu. Mohon muat ulang halaman dan coba lagi.",
+      "mobileLoginRequestExpired": "Waktu tunggu permintaan login seluler telah habis. Silakan muat ulang halaman ini dan coba lagi.",
       "passwordChanged": "Kata sandi Anda telah berubah sejak terakhir kali Anda masuk. Silakan masuk kembali untuk alasan keamanan.",
       "serverError": "Tidak dapat menjangkau Server AliasVault. Silakan coba lagi nanti atau hubungi layanan pelanggan jika masalah berlanjut.",
       "serverNotAvailable": "Server AliasVault sedang tidak tersedia. Silakan coba lagi nanti atau hubungi bagian dukungan jika masalah ini masih berlanjut.",
       "serverVersionNotSupported": "Server AliasVault perlu diperbarui ke versi yang lebih baru agar ekstensi browser ini dapat digunakan. Silakan hubungi bagian dukungan jika Anda memerlukan bantuan.",
-      "serverVersionTooOld": "Server AliasVault perlu diperbarui ke versi yang lebih baru agar dapat menggunakan fitur ini. Silakan hubungi admin server jika Anda memerlukan bantuan.",
+      "serverVersionTooOld": "Server AliasVault perlu diperbarui ke versi yang lebih baru agar fitur ini dapat digunakan. Silakan hubungi admin server jika Anda memerlukan bantuan.",
       "sessionExpired": "Sesi Anda telah berakhir. Harap masuk kembali.",
       "syncConflictMaxRetries": "Tidak dapat menyinkronkan vault setelah beberapa kali mencoba. Silakan coba lagi nanti.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -293,7 +293,7 @@
     "hidePassword": "Sembunyikan kata sandi",
     "home": "Halaman utama",
     "loadMore": "Muat lebih banyak",
-    "loading": "Memuat",
+    "loading": "Memuat...",
     "loadingAttachments": "Memuat lampiran...",
     "loadingEmails": "Memuat Email...",
     "loadingTotpCodes": "Memuat kode TOTP...",
@@ -339,7 +339,7 @@
     "success": "Berhasil",
     "syncVaultData": "Sinkronkan data brankas",
     "syncingChanges": "Menyinkronkan perubahan...",
-    "twoFactorAuthentication": "Autentikasi dua langkah",
+    "twoFactorAuthentication": "Otentikasi dua faktor",
     "unavailable": "Unavailable",
     "undo": "Urungkan",
     "use": "Gunakan",
@@ -445,10 +445,10 @@
       "pin": "PIN"
     },
     "login": {
-      "email": "E-mail",
+      "email": "Email",
       "password": "Kata sandi",
       "url": "URL situs web",
-      "username": "Username"
+      "username": "Nama Pengguna"
     },
     "notes": {
       "content": "Catatan"
@@ -575,12 +575,12 @@
     },
     "deleteCustomField": "Hapus kolom kustom",
     "editCustomField": "Ubah Kolom Khusus",
-    "enterFieldName": "Masukkan nama field",
+    "enterFieldName": "Masukkan nama kolom",
     "fieldLabel": "Bidang Label",
-    "fieldType": "Tipe Field",
+    "fieldType": "Tipe kolom",
     "fieldTypes": {
       "date": "Tanggal",
-      "email": "E-mail",
+      "email": "Email",
       "hidden": "Tersembunyi",
       "hiddenMasked": "Tersembunyi (text disamarkan)",
       "number": "Nomor",
@@ -682,7 +682,7 @@
       "Underscore": "Garis bawah"
     },
     "downloadToView": "Unduh berkas tersebut untuk melihatnya",
-    "editItem": "Ubah item",
+    "editItem": "Edit Item",
     "editableFieldLabel": {
       "deleteField": "Hapus kolom",
       "editLabel": "Edit label"
@@ -708,7 +708,7 @@
       "createFolder": "Buat Folder",
       "deleteFolder": "Hapus folder",
       "deleteFolderAndItems": "Hapus folder dan semua item",
-      "deleteFolderAndItemsDescription": "Sebanyak {{count}} item akan dipindahkan ke Baru Dihapus.",
+      "deleteFolderAndItemsDescription": "{{count}} item akan dipindahkan ke folder “Baru Dihapus”.",
       "deleteFolderKeepItems": "Hapus folder saja",
       "deleteFolderKeepItemsDescription": "Item akan dipindahkan ke folder induk.",
       "deleteModal": {
@@ -764,7 +764,7 @@
     "includeUppercaseLetters": "Sertakan huruf kapital",
     "itemCreated": "Item telah dibuat",
     "itemCreatedMessage": "Item baru Anda telah ditambahkan ke brankas Anda dan siap digunakan.",
-    "itemDetails": "Detail Item",
+    "itemDetails": "Rincian item",
     "itemName": "Nama",
     "loginCredentials": "Kredensial login",
     "logo": {
@@ -816,10 +816,10 @@
     "passwordTypeDiceware": "Passphrase",
     "previewNotSupported": "Pratinjau tidak didukung",
     "privateEmailAliasVaultServer": "Server AliasVault",
-    "privateEmailDescription": "Terenkripsi E2E, sangat pribadi.",
+    "privateEmailDescription": "Terenkripsi ujung ke ujung, sepenuhnya privat.",
     "privateEmailTitle": "Email pribadi",
-    "publicEmailDescription": "Anonim tetapi privasi terbatas. Isi email dapat dibaca oleh siapa pun yang mengetahui alamat tersebut.",
-    "publicEmailTitle": "Penyedia Email Temp yang publik",
+    "publicEmailDescription": "Anonim namun privasi terbatas. Isi email dapat dibaca oleh siapa saja yang mengetahui alamatnya.",
+    "publicEmailTitle": "Penyedia Layanan Email Sementara Umum",
     "quickCreate": {
       "createItemErrorMessage": "Terjadi kesalahan saat membuat item baru. Silakan coba lagi (nanti) atau keluar dan masuk kembali.",
       "createNewAliasTitle": "Buat Alias Baru",
@@ -862,7 +862,7 @@
       "searchingForMessage": "Mencari “{{search}}”",
       "searchingMessage": "Mencari..."
     },
-    "searchPlaceholder": "Mencari vault...",
+    "searchPlaceholder": "Mencari brankas...",
     "selectEmailDomain": "Pilih domain email",
     "separator": "Pemisah",
     "serviceUrl": "Layanan URL",
@@ -959,7 +959,7 @@
     "loggingOutTitle": "Keluar",
     "logoutAnyway": "Tetap keluar",
     "unsyncedChangesTitle": "Perubahan Belum Disinkronkan",
-    "unsyncedChangesWarning": "Anda memiliki perubahan yang belum disinkronkan yang akan hilang jika Anda keluar sekarang. Apakah Anda yakin ingin melanjutkan?"
+    "unsyncedChangesWarning": "Anda memiliki perubahan yang belum disinkronkan dan akan hilang jika Anda keluar sekarang. Apakah Anda yakin ingin melanjutkan?"
   },
   "native": {
     "NSFaceIDUsageDescription": "Lakukan autentikasi untuk menyimpan kunci enkripsi Anda dengan aman di Android Keystore. Ini memungkinkan akses aman ke brankas Anda.",
@@ -1097,7 +1097,7 @@
     "helpText": "Kunci akses dibuat di situs web saat diminta. Kunci akses tersebut tidak dapat diedit secara manual. Untuk menghapus kunci akses ini, Anda dapat menghapusnya dari kredensial ini. Untuk mengganti kunci akses ini atau membuat yang baru, kunjungi situs web tersebut dan ikuti petunjuk yang diberikan.",
     "passkey": "Kunci Akses",
     "passkeyMarkedForDeletion": "Kunci Akses ditandai untuk dihapus",
-    "passkeyWillBeDeleted": "Kunci Akses ini akan dihapus saat Anda menyimpan kredensial ini.",
+    "passkeyWillBeDeleted": "Kunci akses ini akan dihapus saat Anda menyimpan kredensial ini.",
     "settings": {
       "passkeyProvider": "Penyedia Kunci akses",
       "passkeyProviderOn": "Penyedia Kunci akses aktif "
@@ -1300,7 +1300,7 @@
     },
     "resetAllSiteSettings": "Setel ulang semua pengaturan situs spesifik",
     "resetVault": {
-      "pageTitle": "Setel ulang brankas",
+      "pageTitle": "Reset brankas",
       "resetVaultConfirmButton": "Reset brankas saya",
       "resetVaultConfirmUsernameLabel": "Untuk melanjutkan, silakan ketik nama pengguna Anda untuk mengonfirmasi",
       "resetVaultContinueButton": "Lanjutkan dengan reset brankas",
@@ -1372,7 +1372,7 @@
         "initiatingChange": "Mulai mengubah kata sandi...",
         "newPassword": "Kata Sandi Baru",
         "passwordChangedSuccessfully": "Kata sandi berhasil diubah",
-        "passwordTooShort": "Kata sandi harus terdiri dari minimal {{minLength}} karakter.",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Kata sandi baru tidak cocok",
         "userNotAuthenticated": "Pengguna belum diautentikasi"
       },
@@ -1579,7 +1579,7 @@
       "invalidSecretKey": "Format kunci rahasia tidak valid.",
       "scanFailed": "Gagal memindai kode QR. Coba lagi."
     },
-    "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan autentikasi dua faktor.",
+    "instructions": "Masukkan kunci rahasia yang ditampilkan oleh situs web tempat Anda ingin menambahkan otentikasi dua faktor.",
     "nameOptional": "Nama (opsional)",
     "saveToViewCode": "Simpan untuk melihat kode",
     "scanQrCode": "Pindai Kode QR",
@@ -1631,7 +1631,7 @@
     "serviceNameRequired": "Nama layanan diperlukan"
   },
   "vault": {
-    "checkingForVaultUpdates": "Memeriksa pembaruan vault",
+    "checkingForVaultUpdates": "Memeriksa pembaruan brankas",
     "checkingVaultUpdates": "Memeriksa pembaruan brankas",
     "errors": {
       "appOutdated": "Aplikasi ini sudah usang dan tidak dapat digunakan untuk mengakses versi brankas yang (lebih baru) ini. Silakan perbarui aplikasi AliasVault untuk melanjutkan.",
@@ -1644,8 +1644,8 @@
     },
     "mergingVault": "Menggabungkan perubahan pada brankas...",
     "savingChangesToVault": "Menyimpan perubahan ke brankas",
-    "syncingUpdatedVault": "Menyinkronkan vault terbaru",
-    "syncingVault": "Menyinkronkan vault",
+    "syncingUpdatedVault": "Menyinkronkan brankas terbaru",
+    "syncingVault": "Menyinkronkan brankas",
     "uploadingVaultToServer": "Mengunggah brankas ke server"
   },
   "web": {

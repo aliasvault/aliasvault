@@ -4,7 +4,7 @@
     "ACCOUNT_LOCKED": "Kontot är tillfälligt låst på grund av för många misslyckade försök. Försök igen senare.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Kontot har raderats.",
     "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen.",
-    "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna post.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna posten.",
     "INTERNAL_SERVER_ERROR": "Internt serverfel.",
     "INVALID_AUTHENTICATOR_CODE": "Ogiltig autentiseringskod. Försök igen.",
     "INVALID_RECOVERY_CODE": "Ogiltig återställningskod. Försök igen.",
@@ -284,7 +284,7 @@
       "vaultNotAvailable": "Valvet är inte tillgängligt",
       "vaultSyncTimeout": "Tidsgränsen för valvsynkroniseringen överskreds. Detta kan hända när valvet är stort eller internetanslutningen är långsam. Försök igen.",
       "vaultTooLarge": "Valvet är för stort för att servern ska kunna acceptera. Försök att ta bort vissa objekt eller bilagor för att minska storleken och försök igen.",
-      "wrongPassword": "Felaktigt lösenord. Försök igen."
+      "wrongPassword": "Felaktigt lösenord. Var god försök igen."
     },
     "generate": "Generera",
     "help": "Help",
@@ -306,7 +306,7 @@
     "no": "Nej",
     "none": "Inget",
     "notes": "Anteckningar",
-    "notice": "Notis",
+    "notice": "Meddelande",
     "offlineMode": "Arbetar i offline-läge",
     "ok": "OK",
     "openInNewWindow": "Öppna i nytt fönster",
@@ -336,7 +336,7 @@
     "show": "Visa",
     "showDetails": "Visa detaljer",
     "showPassword": "Visa lösenord",
-    "success": "Utförd",
+    "success": "Lyckades",
     "syncVaultData": "Synkronisera valvdata",
     "syncingChanges": "Synkroniserar förändringar...",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
@@ -565,13 +565,13 @@
     }
   },
   "itemTypes": {
-    "addCustomField": "Lägg till anpassad fält",
+    "addCustomField": "Lägg till anpassat fält",
     "addField": "Lägg till fält",
     "alias": {
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Betalkort"
+      "title": "Kreditkort"
     },
     "deleteCustomField": "Radera anpassat fält",
     "editCustomField": "Redigera anpassat fält",
@@ -591,7 +591,7 @@
       "url": "Webbadress"
     },
     "login": {
-      "title": "Inloggning"
+      "title": "Logga in"
     },
     "note": {
       "title": "Anteckning"
@@ -709,7 +709,7 @@
       "deleteFolder": "Radera mapp",
       "deleteFolderAndItems": "Radera mapp och alla objekt",
       "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
-      "deleteFolderKeepItems": "Ta endast bort mappen",
+      "deleteFolderKeepItems": "Radera endast mappen",
       "deleteFolderKeepItemsDescription": "Objekt kommer att flyttas till den överordnade mappen.",
       "deleteModal": {
         "deleteFolderAndContentsDescription": "Flytta {{count}} objekt till papperskorg",
@@ -832,7 +832,7 @@
       "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nytt",
       "typeCard": "Kort",
-      "typeLogin": "Inloggning"
+      "typeLogin": "Logga in"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Alla objekt raderades permanent",
@@ -1097,7 +1097,7 @@
     "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna posten. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
     "passkey": "Passkey",
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
-    "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar denna inloggningsuppgift.",
+    "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "settings": {
       "passkeyProvider": "Passkey-leverantör",
       "passkeyProviderOn": "Passkey-leverantör på "
@@ -1372,7 +1372,7 @@
         "initiatingChange": "Initierar lösenordsändring...",
         "newPassword": "Nytt lösenord",
         "passwordChangedSuccessfully": "Lösenordet har ändrats.",
-        "passwordTooShort": "Lösenordet måste vara minst {{minLength}} tecken långt.",
+        "passwordTooShort": "Password must be at least {{minLength}} characters long.",
         "passwordsDoNotMatch": "Nya lösenord matchar inte",
         "userNotAuthenticated": "Användaren är inte autentiserad"
       },

@@ -1,25 +1,25 @@
 {
   "apiErrors": {
     "ACCOUNT_BLOCKED": "Contul tău a fost dezactivat. Dacă crezi că este o greșeală, contactează asistența.",
-    "ACCOUNT_LOCKED": "Contul tău este blocat temporar din cauza prea multor încercări eșuate. Reîncearcă mai târziu.",
+    "ACCOUNT_LOCKED": "Cont blocat temporar din cauza prea multor încercări eșuate. Reîncearcă mai târziu.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Cont șters cu succes.",
-    "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor tale. Editează și salvează datele tale de autentificare pentru a sincroniza baza de date, apoi reîncearcă.",
+    "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor tale. Editează și salvează datele tale de autentificare pentru sincronizarea bazei de date, apoi reîncearcă.",
     "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Schimbă adresa de e-mail prin editarea datelor tale de autentificare.",
     "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-    "INVALID_AUTHENTICATOR_CODE": "Codul de autentificare este invalid. Reîncearcă din nou.",
-    "INVALID_RECOVERY_CODE": "Codul de recuperare este invalid. Reîncearcă din nou.",
+    "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
+    "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
     "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
     "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
     "PENDING_MIGRATIONS": "Există migrări în așteptare. Rulează „dotnet ef database update” pentru a le aplica.",
-    "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea conturilor noi este momentan dezactivată pe acest server. Contactează administratorul.",
+    "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.",
     "REFRESH_TOKEN_REQUIRED": "Este necesar un token de actualizare.",
     "REGISTRATION_FAILED": "Nu s-a putut crea contul. Încercați din nou peste câteva minute. Dacă problema persistă, contactați serviciul de asistență.",
     "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja utilizat.",
     "USERNAME_AVAILABLE": "Numele de utilizator este disponibil.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi necompletat sau format doar din spații.",
-    "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, folosește doar litere sau cifre.",
+    "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, poate conține doar litere sau cifre.",
     "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
-    "USERNAME_MISMATCH": "Numele de utilizator nu se potrivește cu utilizatorul curent.",
+    "USERNAME_MISMATCH": "Numele de utilizator nu coincide cu utilizatorul curent.",
     "USERNAME_REQUIRED": "Numele de utilizator este obligatoriu.",
     "USERNAME_TOO_LONG": "Numele de utilizator este prea lung: nu poate depăși 40 de caractere.",
     "USERNAME_TOO_SHORT": "Numele de utilizator este prea scurt: trebuie să aibă cel puțin 3 caractere.",
@@ -271,7 +271,7 @@
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "serverNotAvailable": "Serverul AliasVault nu este disponibil. Încearcă mai târziu sau contactează asistența.",
       "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această extensie. Contactează asistența pentru ajutor.",
-      "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a utiliza această funcție. Contactează administratorul serverului pentru ajutor.",
+      "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această funcție. Contactează administratorul serverului.",
       "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
@@ -305,8 +305,8 @@
     "next": "Înainte",
     "no": "Nu",
     "none": "Niciunul",
-    "notes": "Note",
-    "notice": "Notă",
+    "notes": "Notițe",
+    "notice": "Notificare",
     "offlineMode": "Funcționează în modul offline",
     "ok": "OK",
     "openInNewWindow": "Deschide în fereastră nouă",
@@ -342,8 +342,8 @@
     "twoFactorAuthentication": "Autentificare cu doi factori",
     "unavailable": "Unavailable",
     "undo": "Revocă",
-    "use": "Utilizează",
-    "username": "Utilizator",
+    "use": "Folosește",
+    "username": "Nume utilizator",
     "vaultSaveError": "Nu s-au putut salva modificările în seif. Încearcă din nou.",
     "verifyingPassword": "Se verifică parola...",
     "yes": "Da"
@@ -370,7 +370,7 @@
   },
   "emails": {
     "date": "Data:",
-    "dateColumn": "Data",
+    "dateColumn": "Dată",
     "deleteEmail": "Șterge E-mail",
     "deleteEmailConfirm": "Sigur dorești să ștergi acest e-mail? Această acțiune este permanentă și ireversibilă.",
     "emailContent": "Conținut e-mail",
@@ -451,7 +451,7 @@
       "username": "Nume utilizator"
     },
     "notes": {
-      "content": "Note"
+      "content": "Notițe"
     }
   },
   "importExport": {
@@ -565,7 +565,7 @@
     }
   },
   "itemTypes": {
-    "addCustomField": "Adaugă Câmp Personalizat",
+    "addCustomField": "Adaugă câmp personalizat",
     "addField": "Adaugă Câmp",
     "alias": {
       "title": "Alias"
@@ -576,8 +576,8 @@
     "deleteCustomField": "Șterge câmpul personalizat",
     "editCustomField": "Editează câmpul personalizat",
     "enterFieldName": "Introdu numele câmpului",
-    "fieldLabel": "Etichetă Câmp",
-    "fieldType": "Tip Câmp",
+    "fieldLabel": "Etichetă câmp",
+    "fieldType": "Tip câmp",
     "fieldTypes": {
       "date": "Dată",
       "email": "E-mail",
@@ -587,14 +587,14 @@
       "password": "Parolă",
       "phone": "Telefon",
       "text": "Text",
-      "textArea": "Zonă Text",
+      "textArea": "Zonă de text",
       "url": "URL"
     },
     "login": {
       "title": "Autentificare"
     },
     "note": {
-      "title": "Notă securizată"
+      "title": "Notiță"
     },
     "secureNote": "Notă securizată",
     "typeLabel": "Tip element"
@@ -615,7 +615,7 @@
       "defaultFieldLabel": "Câmp {{number}}"
     },
     "addItem": "Adaugă element",
-    "addNewItem": "Adaugă element nou",
+    "addNewItem": "Adăugare element nou",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "allItemsInFoldersClick": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "attachmentReadError": "Could not read the attachment.",
@@ -642,7 +642,7 @@
     "avoidAmbiguousChars": "Evită caracterele ambigue",
     "birthDatePlaceholder": "AAAA-LL-ZZ",
     "capitalization": "Majusculă",
-    "cardInformation": "Informații card",
+    "cardInformation": "Informații Card",
     "changePasswordComplexity": "Schimbă complexitatea parolei",
     "clearFilter": "Șterge filtrul",
     "clearSearch": "Șterge căutarea",
@@ -650,7 +650,7 @@
       "copyEmail": "Copiază e-mailul",
       "copyPassword": "Copiază parola",
       "copyTotpCode": "Copiază codul TOTP",
-      "copyUsername": "Copiază utilizatorul",
+      "copyUsername": "Copiază numele de utilizator",
       "title": "Opțiuni element"
     },
     "createNewAliasFor": "Creează un alias nou pentru",
@@ -664,7 +664,7 @@
     },
     "deleteConfirm": "Sigur dorești să ștergi acest element? Această acțiune este ireversibilă.",
     "deleteHistoryConfirm": "Sigur ștergi această înregistrare din istoric?",
-    "deleteItem": "Șterge element",
+    "deleteItem": "Șterge elementul",
     "dicewareCapitalizationOption": {
       "Lowercase": "Litere mici",
       "TitleCase": "Majuscule inițiale",
@@ -792,7 +792,7 @@
     },
     "noAttachments": "No attachments available.",
     "noEmailsYet": "Nu ai primit niciun e-mail încă.",
-    "noHistoryAvailable": "Nu există istoric disponibil",
+    "noHistoryAvailable": "Niciun istoric disponibil",
     "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
     "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
@@ -819,7 +819,7 @@
     "privateEmailDescription": "Criptat E2E, complet privat.",
     "privateEmailTitle": "E-mail privat",
     "publicEmailDescription": "Anonim, dar cu confidențialitate limitată. Conținutul e-mailului poate fi citit de oricine cunoaște adresa.",
-    "publicEmailTitle": "Furnizori de e-mail temporar public",
+    "publicEmailTitle": "Furnizori publici de e-mail temporar",
     "quickCreate": {
       "createItemErrorMessage": "Eroare la crearea noului tău element. Reîncearcă din nou (mai târziu) sau folosește deconectarea și reconectarea la contul tău.",
       "createNewAliasTitle": "Creează un alias nou",
@@ -836,25 +836,25 @@
     },
     "recentlyDeleted": {
       "allItemsDeleted": "Toate elementele au fost șterse definitiv",
-      "confirmDeleteMessage": "Acest element va fi șters definitiv și nu va mai putea fi recuperat.",
-      "confirmDeleteTitle": "Ștergi definitiv?",
-      "confirmEmptyAllMessage": "Toate cele {{count}} elemente vor fi șterse definitiv și nu vor mai putea fi recuperate.",
-      "confirmEmptyAllTitle": "Golești Șterse Recent?",
+      "confirmDeleteMessage": "Acest element va fi șters definitiv și nu va putea fi recuperat.",
+      "confirmDeleteTitle": "Ștergi Definitiv?",
+      "confirmEmptyAllMessage": "Toate cele {{count}} elemente vor fi șterse definitiv și nu vor putea fi recuperate.",
+      "confirmEmptyAllTitle": "Golești elementele șterse recent?",
       "daysRemaining_one": "{{count}} zi rămasă",
       "daysRemaining_other": "{{count}} zile rămase",
-      "deletePermanently": "Șterge definitiv",
+      "deletePermanently": "Șterge Definitiv",
       "description": "Aceste elemente vor fi șterse definitiv după {{days}} zile. Le poți restaura sau șterge imediat.",
       "emptyAll": "Golește tot",
-      "expiringSoon": "Expiră curând",
+      "expiringSoon": "Expiră în curând",
       "itemDeleted": "Element șters definitiv",
       "itemRestored": "Element restaurat",
-      "noItems": "Nu există elemente șterse",
+      "noItems": "Niciun element șters",
       "noItemsDescription": "Elementele pe care le ștergi vor apărea aici timp de {{days}} zile înainte de a fi eliminate definitiv.",
       "restore": "Restaurează",
-      "title": "Șterse Recent"
+      "title": "Șterse recent"
     },
     "salt": "Salt",
-    "saveItem": "Salvează element",
+    "saveItem": "Salvează elementul",
     "search": {
       "noResultsFoundMessage": "Nu au fost găsite rezultate",
       "searchHelpText": "Introdu un termen de căutare, acesta poate fi numele serviciului, descrierea sau adresa de e-mail.",
@@ -925,7 +925,7 @@
       "storedItemDescription": "Mai jos poți vizualiza și copia datele de autentificare salvate pentru acest element.",
       "viewItemTitle": "Vizualizare element"
     },
-    "viewHistory": "Vezi istoricul",
+    "viewHistory": "Vezi istoric",
     "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: accesează un site web și folosește fereastra pop-up de completare automată AliasVault pentru a crea noi date de autentificare.",
     "welcomeTitle": "Bun venit în AliasVault!",
     "wordCount": "Cuvinte"
@@ -958,8 +958,8 @@
     "loggingOutDescription": "Datele tale sunt securizate în timp ce ești în starea de deconectare. Așteaptă.",
     "loggingOutTitle": "Deconectare în curs",
     "logoutAnyway": "Deconectează-te oricum",
-    "unsyncedChangesTitle": "Modificări nesincronizate",
-    "unsyncedChangesWarning": "Ai modificări nesincronizate care se vor pierde dacă te deconectezi acum. Sigur dorești să continui?"
+    "unsyncedChangesTitle": "Modificări Nesincronizate",
+    "unsyncedChangesWarning": "Ai modificări nesincronizate care se vor pierde dacă te deconectezi acum. Sigur vrei să continui?"
   },
   "native": {
     "NSFaceIDUsageDescription": "AliasVault utilizează Face ID pentru a stoca în siguranță cheia de criptare, permițând accesul la datele tale criptate prin autentificare facială.",
@@ -1062,7 +1062,7 @@
     "versionNotSupportedMessage": "Versiunea aplicației nu mai este compatibilă. Instalează cea mai recentă actualizare.",
     "versionNotSupportedTitle": "Actualizare necesară",
     "viewDetails": "Vezi detalii",
-    "website": "Site web"
+    "website": "Website"
   },
   "navigation": {
     "vault": "Seif"
@@ -1097,7 +1097,7 @@
     "helpText": "Passkey-urile sunt create pe site-uri când este solicitat. Nu pot fi editate manual. Pentru a înlocui un passkey, vizitează site-ul respectiv.",
     "passkey": "Passkey",
     "passkeyMarkedForDeletion": "Passkey marcat pentru ștergere",
-    "passkeyWillBeDeleted": "Acest passkey va fi șters atunci când salvați aceste date de autentificare.",
+    "passkeyWillBeDeleted": "Acest passkey va fi șters atunci când salvezi aceste date de autentificare.",
     "settings": {
       "passkeyProvider": "Furnizor Passkey",
       "passkeyProviderOn": "Furnizor Passkey pe "
@@ -1130,7 +1130,7 @@
       "mobileAppsDescription": "Aplicația mobilă AliasVault îți permite să îți accesezi aliasurile și identitățile de oriunde, să vizualizezi și să gestionezi e-mailurile primite și să generezi aliasuri noi oricând. Datele tale sunt protejate integral prin autentificare biometrică direct pe dispozitiv.",
       "mobileAppsTitle": "Aplicații mobile",
       "pageDescription": "Instalează extensiile de browser și aplicațiile mobile pentru a-ți accesa seiful de pe toate dispozitivele și pentru a completa automat datele de autentificare pe site-uri.",
-      "pageTitle": "Extensii și aplicații"
+      "pageTitle": "Extensii și Aplicații"
     },
     "autoCopyTotpOnAutofill": "Copiază automat codul 2FA în clipboard",
     "autoCopyTotpOnAutofillDescription": "Copiază automat primul cod 2FA în clipboard după completarea automată a datelor de autentificare",
@@ -1576,10 +1576,10 @@
     "deleteTotpCodeTitle": "Șterge codul 2FA",
     "enterManually": "Introdu cheia secretă",
     "errors": {
-      "invalidSecretKey": "Formatul cheii secrete este invalid.",
+      "invalidSecretKey": "Format cheie secretă invalid.",
       "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
     },
-    "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
+    "instructions": "Introdu cheia secretă afișată de site-ul unde dorești să activezi autentificarea cu doi factori.",
     "nameOptional": "Nume (opțional)",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "scanQrCode": "Scanează codul QR",
@@ -1595,9 +1595,9 @@
       "continueUpgrade": "Continuă Actualizarea",
       "failedToApplyMigration": "Eșec la aplicarea migrării ({{current}} din {{total}})",
       "selfHostedServer": "Server Self-Hosted",
-      "selfHostedWarning": "Dacă folosești un server self-hosted, asigură-te că actualizezi și instanța de server, altfel autentificarea în clientul web nu va mai funcționa.",
-      "unableToGetVersionInfo": "Nu s-au putut obține informațiile despre versiune. Încearcă din nou.",
-      "upgradeFailed": "Actualizarea a eșuat"
+      "selfHostedWarning": "Dacă folosești un server self-hosted, asigură-te că actualizezi și instanța serverului, altfel autentificarea în clientul web nu va mai funcționa.",
+      "unableToGetVersionInfo": "Informațiile despre versiune nu au putut fi obținute. Reîncearcă.",
+      "upgradeFailed": "Actualizare Eșuată"
     },
     "newVersion": "Versiune nouă disponibilă:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
@@ -1609,7 +1609,7 @@
       "committingChanges": "Se finalizează modificările...",
       "preparingUpgrade": "Se pregătește actualizarea..."
     },
-    "subtitle": "AliasVault a fost actualizat, iar seiful tău trebuie actualizat. Acest lucru va dura doar câteva secunde.",
+    "subtitle": "AliasVault s-a actualizat și seiful tău trebuie actualizat. Aceasta va dura doar câteva secunde.",
     "successOtherDevices": "Seiful tău este gata de utilizare. Asigură-te că actualizezi și aplicația AliasVault de pe celelalte dispozitive.",
     "successTitle": "Seif actualizat",
     "title": "Actualizare Seif",
@@ -1621,7 +1621,7 @@
     "upgrading": "Se actualizează...",
     "versionInformation": "Informații Versiune",
     "whatsNew": "Ce este nou",
-    "whatsNewDescription": "Este necesară o actualizare pentru a implementa următoarele modificări:",
+    "whatsNewDescription": "Este necesară o actualizare pentru a permite următoarele modificări:",
     "yourVault": "Versiunea seifului tău:"
   },
   "validation": {
@@ -1668,7 +1668,7 @@
       "extensionsAppsTipContent": "Instalează extensia de browser și aplicația mobilă AliasVault pentru a crea aliasuri și a completa automat câmpurile direct din browser și de pe smartphone.",
       "extensionsAppsTipTitle": "Extensii de browser și aplicații mobile",
       "finishingTutorialMessage": "Se finalizează tutorialul...",
-      "getStartedButton": "Începe acum",
+      "getStartedButton": "Să începem",
       "howAliasVaultWorksStepTitle": "Cum funcționează AliasVault",
       "howItWorksIntro": "Când trebuie să te înregistrezi la un serviciu nou:",
       "howItWorksStep1": "AliasVault generează o identitate aleatorie cu o adresă de e-mail privată securizată",
