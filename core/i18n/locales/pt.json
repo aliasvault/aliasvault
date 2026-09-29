@@ -95,8 +95,7 @@
       "httpError": "Erro HTTP: {{status}}",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
       "networkErrorSelfHosted": "Conexão falhou. Verifique sua conexão com a rede e a disponibilidade do servidor. Para instâncias self-hosted, por favor confirme que possue um certificado SSL válido instalado. Certificados self-signed não são suportados em celulares por questões de segurança.",
-      "serverErrorSelfHosted": "Não foi possível conectar à API. Para instâncias self-hosted, por favor verifique se os endpoints da API podem ser chamados através de um navegador. Ele deve mostrar 'OK'.",
-      "sessionExpired": "Sua sessão expirou. Por favor faça login novamente."
+      "serverErrorSelfHosted": "Não foi possível conectar à API. Para instâncias self-hosted, por favor verifique se os endpoints da API podem ser chamados através de um navegador. Ele deve mostrar 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Se você alterou sua senha recentemente e está tendo dificuldades ao fazer login com sua nova senha, por favor, note que o administrador do servidor pode recuperar um backup do seu cofre para você. Se este for o caso, por favor, entre em contato com o administrador do servidor.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "A conexão com os servidores do AliasVault falhou. Por favor, tente novamente (mais tarde).",
       "enterMasterPasswordDescription": "Digite sua senha mestre para desbloquear o cofre.",
-      "incorrectPasswordError": "A senha está incorreta. Por favor, tente digitar sua senha novamente, ou saia e faça login novamente.",
       "loggingInWithWebAuthn": "Fazendo login com passkey...",
       "quickUnlockDescription": "Desbloqueie seu cofre rapidamente utilizando sua passkey. Ou faça login com sua senha como alternativa.",
-      "sessionTimedOutError": "Sua sessão expirou. Por favor, faça login novamente.",
       "unlockButton": "Desbloquear",
       "unlockWithMobileButton": "Desbloquear com Dispositivo Móvel",
       "unlockWithWebAuthn": "Desbloquear com Passkey",
@@ -225,7 +222,6 @@
     "back": "Voltar",
     "backspace": "Backspace",
     "cancel": "Cancelar",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Limpar área de transferência"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Senhas não são iguais.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Esta extensão do navegador está desatualizada e não pode ser utilizada para acessar este cofre. Por favor, atualize esta extensão para continuar.",
-      "clientVersionNotSupported": "Esta versão da extensão AliasVault para o navegador não é mais suportada pelo servidor. Por favor, atualize sua extensão para a última versão.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "serverVersionNotSupported": "O servidor AliasVault precisa ser atualizado para uma nova versão para poder utilizar esta extensão de navegador. Por favor, entre em contato com o suporte caso precise de ajuda.",
-      "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Ocorreu um erro desconhecido.",
       "unknownErrorTryAgain": "Ocorreu um erro. Por favor, tente novamente.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "O cofre está bloqueado",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Autenticação de Dois Fatores",
     "unavailable": "Unavailable",
     "undo": "Desfazer",
+    "updateApp": "Update app",
     "use": "Utilizar",
     "username": "Usuário",
     "vaultSaveError": "Falha ao salvar as alterações ao cofre. Por favor, ente novamente.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Selecione o texto para inserir no campo selecionado",
     "serverUnavailableMessage": "O servidor esta indisponível no momento. Por favor, tente novamente mais tarde.",
     "serverUnavailableTitle": "Servidor Indisponível",
-    "serverVersionNotSupportedContactAdmin": "A versão do servidor está desatualizada. Por favor, entre em contato com seu administrador para atualizar o servidor.",
-    "serverVersionNotSupportedMessage": "A versão do servidor está desatualizada. Por favor, atualize seu servidor para a versão mais nova.",
     "serverVersionNotSupportedTitle": "Atualização de Servidor Necessária",
     "sessionExpiredMessage": "Sua sessão expirou. Por favor, faça login novamente.",
     "sessionExpiredTitle": "Sessão Expirada",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "esta credencial",
     "usernameCopied": "Nome de usuário copiado",
     "usernamePrefix": "Nome de Usuário: ",
-    "versionNotSupportedMessage": "A versão do seu aplicativo não tem mais suporte. Por favor, atualize para a versão mais nova.",
     "versionNotSupportedTitle": "Atualização Necessária",
     "viewDetails": "Ver Detalhes",
     "website": "Site"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Verificando atualizações do cofre",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
     "errors": {
-      "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
       "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
       "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online.",
-      "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
-      "usernameNotFound": "Usuário não encontrado",
-      "vaultOutdated": "Seu cofre está desatualizado. Por favor realize login pelo site do AliasVault e siga as instruções.",
-      "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão."
+      "usernameNotFound": "Usuário não encontrado"
     },
     "mergingVault": "Integrando mudanças do cofre...",
     "savingChangesToVault": "Salvando mudanças no cofre",
