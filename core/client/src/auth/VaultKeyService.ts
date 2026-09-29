@@ -95,7 +95,11 @@ export class VaultKeyService {
    * one direction (another device migrated since the last login), which the sync resolves by accepting the remote chain.
    */
   public static async hasLocalVaultKey(): Promise<boolean> {
-    return (await getPlatform().storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;
+    const platform = getPlatform();
+    if (platform.hasLocalVaultKey) {
+      return platform.hasLocalVaultKey();
+    }
+    return (await platform.storage.get(StorageKeys.ENCRYPTED_ACCOUNT_KEY) as string | null) !== null;
   }
 
   /**

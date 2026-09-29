@@ -1,20 +1,19 @@
+import type { TranslationKey } from '@aliasvault/i18n';
+
 /**
- * Application error codes for the browser extension.
+ * The error codes of all AliasVault clients: web app, browser extension and mobile app and the Rust sync engine.
  *
  * These codes serve two purposes:
  * 1. Enable multi-language support by mapping codes to translation keys
- * 2. Provide debugging information when users report "unknown errors"
- *
- * When displayed to users, show: "Error occurred (Code: E-XXX)"
- * This allows users to report the code for debugging while keeping messages translatable.
+ * 2. Provide debugging information for additional context when a user reports an error
  *
  * Code ranges:
  * - E-0xx: Generic errors
- * - E-1xx: Auth status check errors
- * - E-2xx: Vault retrieval errors (handleGetVault)
+ * - E-1xx: Authentication errors
+ * - E-2xx: Vault retrieval and unlock errors
  * - E-3xx: Item/credential operations
  * - E-4xx: Passkey operations
- * - E-5xx: Sync operations (handleFullVaultSync)
+ * - E-5xx: Sync operations
  * - E-6xx: Storage read/write errors
  * - E-7xx: Merge operations
  * - E-8xx: Upload operations
@@ -24,22 +23,36 @@ export enum AppErrorCode {
   // Generic errors (E-0xx)
   UNKNOWN_ERROR = 'E-001',
   BACKGROUND_UNRESPONSIVE = 'E-002', // Background service worker did not answer in time
+  NETWORK_ERROR = 'E-003', // The request did not reach the server (offline, DNS, TLS)
+  PARSE_ERROR = 'E-004', // Native glue could not encode or decode a JSON payload
 
-  // Auth status check errors (E-1xx) - handleCheckAuthStatus
+  // Authentication errors (E-1xx)
   AUTH_STATUS_CHECK_FAILED = 'E-101',
   AUTH_STATUS_MIGRATION_CHECK_FAILED = 'E-102',
   AUTH_VERSION_CHECK_FAILED = 'E-103',
+  AUTHENTICATION_FAILED = 'E-104', // The server refused the session tokens
+  SESSION_EXPIRED = 'E-105', // The session expired; log in again
+  PASSWORD_CHANGED = 'E-106', // The password was changed on another device
 
-  // Vault retrieval errors (E-2xx) - handleGetVault
+  // Vault retrieval and unlock errors (E-2xx)
   VAULT_NOT_FOUND = 'E-201', // No encrypted vault in storage
   VAULT_LOCKED = 'E-202', // No encryption key available
   VAULT_DECRYPT_FAILED = 'E-203', // The locally stored vault does not decrypt with the session key
   VAULT_METADATA_READ_FAILED = 'E-204', // Failed to read vault metadata
-  UNLOCK_KEY_REJECTED = 'E-206', // The unlock key does not open the account key (wrong password)
+  VAULT_UNLOCK_FAILED = 'E-205', // The vault could not be unlocked for a reason without its own code
+  UNLOCK_KEY_REJECTED = 'E-206', // The unlock key does not open the account key (wrong password or PIN)
   KEY_CHAIN_UNREADABLE = 'E-207', // The account key opened, the vault encryption key under it did not
   KEY_OUT_OF_SYNC = 'E-208', // The session key does not open the key chain the server holds (re-login needed)
+  BIOMETRIC_CANCELLED = 'E-209', // The user cancelled biometric authentication
+  BIOMETRIC_FAILED = 'E-210',
+  KEYSTORE_KEY_NOT_FOUND = 'E-211', // The device keystore holds no key for this vault
+  KEYCHAIN_ACCESS_DENIED = 'E-212', // iOS: keychain access denied (entitlement or access group issue)
+  KEYCHAIN_ITEM_NOT_FOUND = 'E-213', // Keychain or keystore item not found (may need re-login)
+  BIOMETRIC_NOT_AVAILABLE = 'E-214',
+  BIOMETRIC_NOT_ENROLLED = 'E-215',
+  BIOMETRIC_LOCKOUT = 'E-216', // Too many failed biometric attempts
 
-  // Item/credential operations (E-3xx) - handleCreateItem, handleUpdateItem, etc.
+  // Item/credential operations (E-3xx)
   ITEM_CREATE_FAILED = 'E-301',
   ITEM_UPDATE_FAILED = 'E-302',
   ITEM_DELETE_FAILED = 'E-303',
@@ -49,10 +62,10 @@ export enum AppErrorCode {
   PASSKEY_CREATE_FAILED = 'E-401',
   PASSKEY_GET_FAILED = 'E-402',
 
-  // Sync operations (E-5xx) - handleFullVaultSync
+  // Sync operations (E-5xx)
   SYNC_STATUS_CHECK_FAILED = 'E-501', // Failed to get server status
-  SYNC_VAULT_FETCH_FAILED = 'E-502', // Failed to fetch vault from server
-  SYNC_VAULT_DECRYPT_FAILED = 'E-503', // Failed to decrypt server vault
+  SYNC_VAULT_FETCH_FAILED = 'E-502', // The server's vault snapshot cannot be assembled into a vault
+  SYNC_VAULT_DECRYPT_FAILED = 'E-503', // A server manifest or bucket fails its hash check or does not decrypt
   SYNC_STORE_FAILED = 'E-504', // Failed to store synced vault locally
   SYNC_SERVER_UNREACHABLE = 'E-505', // Server unreachable and no local vault to fall back on
   SYNC_SERVER_ERROR = 'E-506', // The server answered a sync request with an unexpected HTTP failure
@@ -65,10 +78,17 @@ export enum AppErrorCode {
   STORAGE_WRITE_FAILED = 'E-602',
   DATABASE_INIT_FAILED = 'E-603',
   ENCRYPTION_KEY_NOT_FOUND = 'E-604',
+  MANIFEST_NOT_RECORDED = 'E-605', // A write was attempted before a personal manifest id was recorded
+  BASE64_DECODE_FAILED = 'E-606', // Base64 decode failed after decryption
+  DATABASE_TEMP_WRITE_FAILED = 'E-607',
+  DATABASE_OPEN_FAILED = 'E-608',
+  DATABASE_MEMORY_FAILED = 'E-609',
+  DATABASE_BACKUP_FAILED = 'E-610',
+  DATABASE_PRAGMA_FAILED = 'E-611',
 
   // Merge operations (E-7xx)
   MERGE_FAILED = 'E-701',
-  MERGE_CONFLICT = 'E-702',
+  MERGE_CONFLICT = 'E-702', // The server kept refusing the write as outdated after the re-sync limit
   MERGE_UPLOAD_FAILED = 'E-703',
 
   // Upload operations (E-8xx)
@@ -80,8 +100,12 @@ export enum AppErrorCode {
 
   // Migration/version errors (E-9xx)
   MIGRATION_CHECK_FAILED = 'E-901',
-  VERSION_INCOMPATIBLE = 'E-902',
+  VAULT_VERSION_INCOMPATIBLE = 'E-902', // The vault is newer than this client can read
   SERVER_UPDATE_REQUIRED = 'E-903',
+  CLIENT_VERSION_NOT_SUPPORTED = 'E-904', // The server no longer supports this client version
+  SERVER_VERSION_NOT_SUPPORTED = 'E-905', // The server is too old for this client
+  VAULT_OUTDATED = 'E-906', // The vault has to be upgraded before this client can use it
+  VAULT_MERGE_REQUIRED = 'E-907',
 }
 
 /**
@@ -109,6 +133,18 @@ export function extractErrorCode(message: string): AppErrorCode | null {
 }
 
 /**
+ * The error code an error carries: the `code` of a native module rejection, or an E-XXX code in its message.
+ * @param err - the error (can be Error, string, or unknown)
+ */
+export function getAppErrorCode(err: unknown): AppErrorCode | null {
+  if (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' && isErrorCode(err.code)) {
+    return err.code;
+  }
+  const message = err instanceof Error ? err.message : typeof err === 'string' ? err : null;
+  return message ? extractErrorCode(message) : null;
+}
+
+/**
  * Format an error message with an error code for user display.
  * This allows users to report the code for debugging while keeping the message readable.
  *
@@ -121,75 +157,50 @@ export function formatErrorWithCode(message: string, code: AppErrorCode): string
 }
 
 /**
- * Map error codes to translation keys for localized error messages.
- * Returns the translation key that should be used with t() function.
+ * The translation key of each code with a message of its own.
  */
-export function getErrorTranslationKey(code: AppErrorCode): string {
-  const codeToKeyMap: Record<AppErrorCode, string> = {
-    // Generic errors (E-0xx)
-    [AppErrorCode.UNKNOWN_ERROR]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.BACKGROUND_UNRESPONSIVE]: 'common.errors.backgroundUnresponsive',
+const ERROR_TRANSLATION_KEYS: Partial<Record<AppErrorCode, TranslationKey>> = {
+  [AppErrorCode.BACKGROUND_UNRESPONSIVE]: 'common.errors.backgroundUnresponsive',
+  [AppErrorCode.NETWORK_ERROR]: 'auth.errors.networkError',
 
-    // Auth status check errors (E-1xx)
-    [AppErrorCode.AUTH_STATUS_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.AUTH_STATUS_MIGRATION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.AUTH_VERSION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+  [AppErrorCode.AUTHENTICATION_FAILED]: 'common.errors.sessionExpired',
+  [AppErrorCode.SESSION_EXPIRED]: 'common.errors.sessionExpired',
+  [AppErrorCode.PASSWORD_CHANGED]: 'common.errors.passwordChanged',
 
-    // Vault retrieval errors (E-2xx)
-    [AppErrorCode.VAULT_NOT_FOUND]: 'common.errors.vaultNotAvailable',
-    [AppErrorCode.VAULT_LOCKED]: 'common.errors.vaultIsLocked',
-    [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
-    [AppErrorCode.VAULT_METADATA_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.UNLOCK_KEY_REJECTED]: 'common.errors.wrongPassword',
-    [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.keyChainUnreadable',
-    [AppErrorCode.KEY_OUT_OF_SYNC]: 'common.errors.sessionExpired',
+  [AppErrorCode.VAULT_NOT_FOUND]: 'common.errors.vaultNotAvailable',
+  [AppErrorCode.VAULT_LOCKED]: 'common.errors.vaultIsLocked',
+  [AppErrorCode.VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
+  [AppErrorCode.UNLOCK_KEY_REJECTED]: 'common.errors.wrongPassword',
+  [AppErrorCode.KEY_CHAIN_UNREADABLE]: 'common.errors.keyChainUnreadable',
+  [AppErrorCode.KEY_OUT_OF_SYNC]: 'common.errors.sessionExpired',
 
-    // Item/credential operations (E-3xx)
-    [AppErrorCode.ITEM_CREATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.ITEM_UPDATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.ITEM_DELETE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.ITEM_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+  [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.vaultDataUnreadable',
+  [AppErrorCode.SYNC_VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
+  [AppErrorCode.SYNC_SERVER_UNREACHABLE]: 'common.errors.serverNotAvailable',
+  [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.vaultDataUnreadable',
 
-    // Passkey operations (E-4xx)
-    [AppErrorCode.PASSKEY_CREATE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.PASSKEY_GET_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+  [AppErrorCode.ENCRYPTION_KEY_NOT_FOUND]: 'common.errors.vaultIsLocked',
 
-    // Sync operations (E-5xx)
-    [AppErrorCode.SYNC_STATUS_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.SYNC_VAULT_FETCH_FAILED]: 'common.errors.vaultDataUnreadable',
-    [AppErrorCode.SYNC_VAULT_DECRYPT_FAILED]: 'common.errors.vaultDataUnreadable',
-    [AppErrorCode.SYNC_STORE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.SYNC_SERVER_UNREACHABLE]: 'common.errors.serverNotAvailable',
-    [AppErrorCode.SYNC_SERVER_ERROR]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.SYNC_RESPONSE_INVALID]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.SYNC_CODEC_FAILED]: 'common.errors.vaultDataUnreadable',
-    [AppErrorCode.SYNC_ENGINE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+  [AppErrorCode.MERGE_FAILED]: 'common.errors.mergeFailed',
+  [AppErrorCode.MERGE_CONFLICT]: 'common.errors.syncConflictMaxRetries',
 
-    // Storage read/write errors (E-6xx)
-    [AppErrorCode.STORAGE_READ_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.STORAGE_WRITE_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.DATABASE_INIT_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.ENCRYPTION_KEY_NOT_FOUND]: 'common.errors.vaultIsLocked',
+  [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
+  [AppErrorCode.UPLOAD_TIMEOUT]: 'common.errors.vaultSyncTimeout',
 
-    // Merge operations (E-7xx)
-    [AppErrorCode.MERGE_FAILED]: 'common.errors.mergeFailed',
-    [AppErrorCode.MERGE_CONFLICT]: 'common.errors.syncConflictMaxRetries',
-    [AppErrorCode.MERGE_UPLOAD_FAILED]: 'common.errors.unexpectedErrorContactSupport',
+  [AppErrorCode.VAULT_VERSION_INCOMPATIBLE]: 'common.errors.clientOutdated',
+  [AppErrorCode.SERVER_UPDATE_REQUIRED]: 'common.errors.serverOutdated',
+  [AppErrorCode.CLIENT_VERSION_NOT_SUPPORTED]: 'common.errors.clientNotSupported',
+  [AppErrorCode.SERVER_VERSION_NOT_SUPPORTED]: 'common.errors.serverOutdated',
+  [AppErrorCode.VAULT_OUTDATED]: 'content.vaultUpgradeRequired',
+};
 
-    // Upload operations (E-8xx)
-    [AppErrorCode.UPLOAD_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.UPLOAD_OUTDATED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.UPLOAD_ENCRYPT_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.UPLOAD_TOO_LARGE]: 'common.errors.vaultTooLarge',
-    [AppErrorCode.UPLOAD_TIMEOUT]: 'common.errors.vaultSyncTimeout',
-
-    // Migration/version errors (E-9xx)
-    [AppErrorCode.MIGRATION_CHECK_FAILED]: 'common.errors.unexpectedErrorContactSupport',
-    [AppErrorCode.VERSION_INCOMPATIBLE]: 'common.errors.browserExtensionOutdated',
-    [AppErrorCode.SERVER_UPDATE_REQUIRED]: 'common.errors.serverVersionNotSupported',
-  };
-
-  return codeToKeyMap[code] || 'common.errors.unexpectedErrorContactSupport';
+/**
+ * Map an error code to the translation key of its message. Codes without a message of their own share the generic
+ * "unexpected error" message; the code shown next to it tells them apart.
+ * @param code - the error code
+ */
+export function getErrorTranslationKey(code: AppErrorCode): TranslationKey {
+  return ERROR_TRANSLATION_KEYS[code] ?? 'common.errors.unexpectedErrorContactSupport';
 }
 
 /**
@@ -199,8 +210,7 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
  * @param t - The renderer's translation function
  */
 export function translateCodedError(err: unknown, t: (key: string) => string): string | null {
-  const message = err instanceof Error ? err.message : typeof err === 'string' ? err : null;
-  const code = message ? extractErrorCode(message) : null;
+  const code = getAppErrorCode(err);
   return code ? formatErrorWithCode(t(getErrorTranslationKey(code)), code) : null;
 }
 

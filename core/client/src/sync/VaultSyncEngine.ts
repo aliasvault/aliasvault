@@ -57,6 +57,9 @@ export type VaultSyncEmailRouting = {
   publicEmailDomainList: string[];
 };
 
+/** Why a sync ended the session (the Rust `LogoutReason`). */
+export type LogoutReason = 'clientVersionNotSupported' | 'serverVersionNotSupported' | 'sessionExpired' | 'passwordChanged' | 'vaultVersionIncompatible';
+
 /** What every engine result carries. */
 export type VaultSyncEngineResultBase = {
   vaultChanged: boolean;
@@ -71,7 +74,7 @@ export type VaultSyncEngineResult = VaultSyncEngineResultBase & {
   manifestMigrationRequired: boolean;
   error?: string;
   errorCode?: string;
-  errorKey?: string;
+  logoutReason?: LogoutReason;
   requiresLogout: boolean;
   serverVersion?: string;
   capabilities?: Record<string, string>;
@@ -91,7 +94,7 @@ export type VaultSyncMigrateManifestResult = VaultSyncEngineResultBase & {
   pushed: boolean;
   error?: string;
   errorCode?: string;
-  errorKey?: string;
+  logoutReason?: LogoutReason;
   requiresLogout: boolean;
 };
 
@@ -103,7 +106,7 @@ export type VaultSyncSharingResult = VaultSyncEngineResultBase & {
   vaultUpgradeRequired: boolean;
   error?: string;
   errorCode?: string;
-  errorKey?: string;
+  logoutReason?: LogoutReason;
   requiresLogout: boolean;
 };
 

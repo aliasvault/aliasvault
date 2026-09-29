@@ -234,7 +234,7 @@ fn unknown_storage_format_is_refused_not_read_as_legacy() {
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     assert_eq!(result["success"], false, "{}", result);
-    assert_eq!(result["errorKey"], "vaultVersionIncompatible", "an app too old for the format is told to update");
+    assert_eq!(result["logoutReason"], "vaultVersionIncompatible", "an app too old for the format is told to update");
     assert!(item_names(&host.local).is_empty(), "nothing is materialized");
     assert!(host.requests_to("Vault").iter().all(|r| r.method == "GET"), "no legacy migration push");
 }
@@ -522,7 +522,7 @@ fn expired_session_requires_logout() {
 
     assert_eq!(result["success"], false);
     assert_eq!(result["requiresLogout"], true);
-    assert_eq!(result["errorKey"], "sessionExpired");
+    assert_eq!(result["logoutReason"], "sessionExpired");
 }
 
 #[test]
@@ -535,7 +535,7 @@ fn password_changed_elsewhere_requires_logout() {
     let result = host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
     assert_eq!(result["requiresLogout"], true);
-    assert_eq!(result["errorKey"], "passwordChanged");
+    assert_eq!(result["logoutReason"], "passwordChanged");
 }
 
 #[test]

@@ -4,7 +4,7 @@
  * commands into host actions.
  *
  * When updating this logic, make sure to update the same logic on the other platforms:
- * - core/client/src/sync/VaultSync.ts (shared core client for web apps)
+ * - core/client/src/sync/VaultSync.ts (shared core client for web app and browser extension)
  * - apps/mobile-app/ios/VaultStoreKit/Services/VaultSync.swift
  * - apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/VaultSync.kt
  */
@@ -16,19 +16,19 @@ import { VaultKeyService } from '../auth/VaultKeyService';
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { devError, devLog, devWarn } from '../platform/Logger';
-import { TranslatableMessage } from '../platform/TranslatableMessage';
 
 import { VaultMigrationKind } from './VaultManifestMigration';
 import { buildVaultSyncRequest, runVaultSyncEngine } from './VaultSyncEngine';
 
-import type { IVaultSyncEngineHost, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
+import type { IVaultSyncEngineHost, LogoutReason, VaultSyncEmailRouting, VaultSyncEngineRequest, VaultSyncEngineResult, VaultSyncEngineResultBase, VaultSyncMigrateManifestResult, VaultSyncMigrationStatusResult, VaultSyncOperation, VaultSyncOptions, VaultSyncSharingParams, VaultSyncSharingResult } from './VaultSyncEngine';
 import type { SqliteClient } from '../database/SqliteClient';
+import type { TranslationKey } from '@aliasvault/i18n';
 
 /**
  * What a failed sync reports, in the form the UI translates for display.
  */
 export type SyncErrorDetail = {
-  errorKey?: string;
+  logoutReason?: LogoutReason;
   errorCode?: string;
   error?: string;
 };
@@ -81,25 +81,33 @@ type PersistableSyncResult = VaultSyncEngineResultBase & {
 };
 
 /** The engine's failure fields. */
-type EngineFailure = Pick<VaultSyncEngineResult, 'error' | 'errorCode' | 'errorKey'>;
+type EngineFailure = Pick<VaultSyncEngineResult, 'error' | 'errorCode' | 'logoutReason'>;
 
 /**
- * The `common.errors` key that translates a sync logout reason.
+ * The translation key of each logout reason.
  */
-const LOGOUT_REASON_ERROR_KEYS: Record<string, string> = {
-  clientVersionNotSupported: 'clientVersionNotSupported',
-  serverVersionNotSupported: 'serverVersionNotSupported',
-  sessionExpired: 'sessionExpired',
-  passwordChanged: 'passwordChanged',
-  vaultVersionIncompatible: 'browserExtensionOutdated',
+const LOGOUT_REASON_KEYS: Record<LogoutReason, TranslationKey> = {
+  clientVersionNotSupported: 'common.errors.clientNotSupported',
+  serverVersionNotSupported: 'common.errors.serverOutdated',
+  vaultVersionIncompatible: 'common.errors.clientOutdated',
+  sessionExpired: 'common.errors.sessionExpired',
+  passwordChanged: 'common.errors.passwordChanged',
 };
+
+/**
+ * The translation key of a logout reason.
+ * @param reason - the logout reason
+ */
+export function logoutReasonKey(reason: LogoutReason): TranslationKey {
+  return LOGOUT_REASON_KEYS[reason] ?? 'common.errors.unknownError';
+}
 
 /**
  * Whether a sync outcome carries a failure the user should be told about.
  * @param detail - the sync outcome
  */
 export function hasSyncError(detail: SyncErrorDetail): boolean {
-  return detail.errorKey !== undefined || detail.errorCode !== undefined || detail.error !== undefined;
+  return detail.logoutReason !== undefined || detail.errorCode !== undefined || detail.error !== undefined;
 }
 
 /**
@@ -225,7 +233,7 @@ export class VaultSync {
       }
       if (await (await this.openVault()).requiresLegacySqliteBlobMigration()) {
         // The sqlite-blob upgrade chain has to bring the vault to 2.0.0 first; the codec cannot canonicalize what came before.
-        return { success: false, pushed: false, error: await getPlatform().translate(TranslatableMessage.VaultUpgradeRequired) };
+        return { success: false, pushed: false, error: await getPlatform().translate('content.vaultUpgradeRequired') };
       }
 
       const result = await this.run<VaultSyncMigrateManifestResult>('migrateManifest');
@@ -304,19 +312,19 @@ export class VaultSync {
   }
 
   /**
-   * The engine's failure as the UI names it: the logout reason as a translation key, or the error code of an ordinary
+   * The engine's failure as the UI names it: the logout reason, or the error code of an ordinary
    * failure. Empty when the result names no failure.
    * @param result - the engine's outcome
    */
   private static syncError(result: EngineFailure): SyncErrorDetail {
-    if (!result.error && !result.errorCode && !result.errorKey) {
+    if (!result.error && !result.errorCode && !result.logoutReason) {
       return {};
     }
 
     devWarn(`[VaultSync] Engine failure (${result.errorCode ?? 'no code'}): ${result.error ?? 'no detail'}`);
 
-    if (result.errorKey) {
-      return { errorKey: LOGOUT_REASON_ERROR_KEYS[result.errorKey] ?? 'unknownError' };
+    if (result.logoutReason) {
+      return { logoutReason: result.logoutReason };
     }
 
     return { errorCode: result.errorCode && isErrorCode(result.errorCode) ? result.errorCode : AppErrorCode.UNKNOWN_ERROR, error: result.error };
