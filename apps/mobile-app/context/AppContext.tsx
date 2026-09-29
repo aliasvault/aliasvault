@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useWebApi } from '@/context/WebApiContext';
 
-import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
+import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 
 import i18n from '@/i18n';
 
@@ -68,8 +68,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * Subscribe to logout events from WebApiService.
    */
   useEffect(() => {
-    const unsubscribe = logoutEventEmitter.subscribe(async (errorKey: string) => {
-      await logout(i18n.t(errorKey));
+    const unsubscribe = logoutEventEmitter.subscribe(async (messageKey) => {
+      await logout(i18n.t(messageKey));
     });
 
     return unsubscribe;

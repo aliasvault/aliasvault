@@ -39,7 +39,7 @@ export interface Spec extends TurboModule {
   runSharingOperation(operation: string, paramsJson: string): Promise<{ success: boolean; apiErrorCode: string | null; vaultUpgradeRequired: boolean; error: string | null; errorMessage: string | null }>;
 
   // Quick check if sync is needed
-  checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;
+  checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorCode: string | null }>;
 
   // Logs of the recent sync engine runs, for the developer tools.
   getVaultSyncLogs(): Promise<string>;

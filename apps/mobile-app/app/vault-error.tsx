@@ -5,7 +5,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Dimensions, Text, Platform } from 'react-native';
 
 import { copyToClipboard } from '@/utils/ClipboardUtility';
-import { isVaultLockedError } from '@/utils/types/errors/AppErrorCodes';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
@@ -15,6 +14,15 @@ import Logo from '@/assets/images/logo.svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
+
+/**
+ * Detect a "vault locked" error, i.e. the in-memory database has been cleared (auto-lock timeout, vault evicted from memory).
+ * @param error - the error or its message
+ */
+function isVaultLockedError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  return message.includes('Database not initialized');
+}
 
 /**
  * Vault error screen displayed when the app encounters an unrecoverable error

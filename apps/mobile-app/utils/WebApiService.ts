@@ -9,7 +9,7 @@ import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { LocalAuthError } from './types/errors/LocalAuthError';
 import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
-import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
+import { logoutEventEmitter } from '@aliasvault/client/api/LogoutEventEmitter';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 type RequestInit = globalThis.RequestInit;
@@ -88,8 +88,8 @@ export class WebApiService {
 
       // If native layer returns 401 session is truly expired (native layer already attempted token refresh automatically).
       if (response.statusCode === 401) {
-        logoutEventEmitter.emit('auth.errors.sessionExpired');
-        throw new Error(i18n.t('auth.errors.sessionExpired'));
+        logoutEventEmitter.emit('common.errors.sessionExpired');
+        throw new Error(i18n.t('common.errors.sessionExpired'));
       }
 
       // Server refused this client version.
@@ -239,8 +239,8 @@ export class WebApiService {
 
       // Handle auth errors
       if (response.statusCode === 401) {
-        logoutEventEmitter.emit('auth.errors.sessionExpired');
-        throw new Error(i18n.t('auth.errors.sessionExpired'));
+        logoutEventEmitter.emit('common.errors.sessionExpired');
+        throw new Error(i18n.t('common.errors.sessionExpired'));
       }
 
       if (response.statusCode >= 400) {
@@ -324,7 +324,7 @@ export class WebApiService {
          * If session expired, logout the user immediately as otherwise this would
          * trigger a server offline banner.
          */
-        logoutEventEmitter.emit('auth.errors.sessionExpired');
+        logoutEventEmitter.emit('common.errors.sessionExpired');
         throw error;
       }
 

@@ -85,87 +85,77 @@ public enum AppError: Error {
     case syncCodecFailed(message: String)
     case syncEngineFailed(message: String)
 
-    /// Get the error code string for React Native bridge
-    ///
-    /// Error codes use the E-XXX format for easy user reporting:
-    /// - E-1xx: Authentication errors
-    /// - E-2xx: Network/connectivity errors
-    /// - E-3xx: Version/compatibility errors
-    /// - E-4xx: Vault status errors
-    /// - E-5xx: Decryption/Encryption errors
-    /// - E-6xx: Database/Storage errors
-    /// - E-7xx: Merge errors
-    /// - E-8xx: Upload errors
-    /// - E-9xx: Native module errors
-    /// - E-0xx: Generic errors
+    /// Get the error code string for React Native bridge, in the E-XXX format for easy user reporting.
+    /// The codes are shared by every client: `AppErrorCode` in core/client/src/api/errors/AppErrorCodes.ts is the registry,
+    /// so add a new code there first and never reuse a number.
     public var code: String {
         switch self {
         case .authenticationFailed:
-            return "E-101"
+            return "E-104"
         case .sessionExpired:
-            return "E-102"
+            return "E-105"
         case .passwordChanged:
-            return "E-103"
+            return "E-106"
         case .serverUnavailable:
-            return "E-201"
-        case .networkError:
-            return "E-202"
-        case .serverError:
-            return "E-204"
-        case .clientVersionNotSupported:
-            return "E-301"
-        case .serverVersionNotSupported:
-            return "E-302"
-        case .vaultVersionIncompatible:
-            return "E-303"
-        case .serverUpdateRequired:
-            return "E-304"
-        case .vaultMergeRequired:
-            return "E-401"
-        case .vaultOutdated:
-            return "E-402"
-        case .syncVaultFetchFailed:
-            return "E-404"
-        case .vaultDecryptFailed:
-            return "E-501"
-        case .encryptionKeyNotFound:
-            return "E-502"
-        case .base64DecodeFailed:
-            return "E-503"
-        case .databaseTempWriteFailed:
-            return "E-504"
-        case .databaseOpenFailed:
             return "E-505"
-        case .databaseMemoryFailed:
+        case .networkError:
+            return "E-003"
+        case .serverError:
             return "E-506"
+        case .clientVersionNotSupported:
+            return "E-904"
+        case .serverVersionNotSupported:
+            return "E-905"
+        case .vaultVersionIncompatible:
+            return "E-902"
+        case .serverUpdateRequired:
+            return "E-903"
+        case .vaultMergeRequired:
+            return "E-907"
+        case .vaultOutdated:
+            return "E-906"
+        case .syncVaultFetchFailed:
+            return "E-502"
+        case .vaultDecryptFailed:
+            return "E-203"
+        case .encryptionKeyNotFound:
+            return "E-202"
+        case .base64DecodeFailed:
+            return "E-606"
+        case .databaseTempWriteFailed:
+            return "E-607"
+        case .databaseOpenFailed:
+            return "E-608"
+        case .databaseMemoryFailed:
+            return "E-609"
         case .databaseBackupFailed:
-            return "E-507"
+            return "E-610"
         case .databasePragmaFailed:
-            return "E-508"
+            return "E-611"
         case .biometricCancelled:
-            return "E-509"
+            return "E-209"
         case .biometricFailed:
-            return "E-510"
+            return "E-210"
         case .keystoreKeyNotFound:
-            return "E-511"
+            return "E-211"
         case .keychainAccessDenied:
-            return "E-512"
+            return "E-212"
         case .keychainItemNotFound:
-            return "E-513"
+            return "E-213"
         case .biometricNotAvailable:
-            return "E-514"
+            return "E-214"
         case .biometricNotEnrolled:
-            return "E-515"
+            return "E-215"
         case .biometricLockout:
-            return "E-516"
+            return "E-216"
         case .unlockKeyRejected:
-            return "E-517"
+            return "E-206"
         case .keyChainUnreadable:
-            return "E-518"
+            return "E-207"
         case .keyOutOfSync:
-            return "E-519"
+            return "E-208"
         case .serverVaultDecryptFailed:
-            return "E-520"
+            return "E-503"
         case .storageReadFailed:
             return "E-601"
         case .storageWriteFailed:
@@ -173,13 +163,13 @@ public enum AppError: Error {
         case .databaseInitFailed:
             return "E-603"
         case .vaultStoreFailed:
-            return "E-604"
+            return "E-504"
         case .manifestNotRecorded:
             return "E-605"
         case .vaultMergeFailed:
             return "E-701"
         case .mergeUploadFailed:
-            return "E-705"
+            return "E-703"
         case .vaultUploadFailed:
             return "E-801"
         case .vaultTooLarge:
@@ -187,19 +177,19 @@ public enum AppError: Error {
         case .vaultSyncTimeout:
             return "E-805"
         case .maxRetriesReached:
-            return "E-901"
+            return "E-702"
         case .migrationCheckFailed:
-            return "E-903"
+            return "E-901"
         case .unknownError:
             return "E-001"
         case .parseError:
-            return "E-002"
-        case .syncResponseInvalid:
-            return "E-003"
-        case .syncCodecFailed:
             return "E-004"
+        case .syncResponseInvalid:
+            return "E-507"
+        case .syncCodecFailed:
+            return "E-508"
         case .syncEngineFailed:
-            return "E-005"
+            return "E-509"
         }
     }
 
@@ -337,10 +327,5 @@ public enum AppError: Error {
         default:
             return false
         }
-    }
-
-    /// Get the translation key for this error (error code format for lookup in translation files).
-    public var translationKey: String? {
-        return code
     }
 }

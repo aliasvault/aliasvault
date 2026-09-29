@@ -745,7 +745,7 @@ public class VaultManager: NSObject {
                         "hasDirtyChanges": versionCheck.syncState.isDirty,
                         "isOffline": false,
                         "requiresLogout": false,
-                        "errorKey": NSNull()
+                        "errorCode": NSNull()
                     ]
                     resolve(response)
                 }
@@ -753,7 +753,7 @@ public class VaultManager: NSObject {
                 await MainActor.run {
                     // Check for specific error types that require logout
                     let requiresLogout = error.isAuthenticationError || error.isVersionError
-                    let errorKey = error.translationKey
+                    let errorCode = error.code
 
                     // Check if offline
                     let isOffline = error.isNetworkError
@@ -765,7 +765,7 @@ public class VaultManager: NSObject {
                             "hasDirtyChanges": syncState.isDirty,
                             "isOffline": true,
                             "requiresLogout": false,
-                            "errorKey": NSNull()
+                            "errorCode": NSNull()
                         ]
                         resolve(response)
                     } else {
@@ -775,7 +775,7 @@ public class VaultManager: NSObject {
                             "hasDirtyChanges": false,
                             "isOffline": false,
                             "requiresLogout": requiresLogout,
-                            "errorKey": errorKey as Any
+                            "errorCode": errorCode
                         ]
                         resolve(response)
                     }
@@ -788,7 +788,7 @@ public class VaultManager: NSObject {
                         "hasDirtyChanges": false,
                         "isOffline": false,
                         "requiresLogout": false,
-                        "errorKey": NSNull()
+                        "errorCode": NSNull()
                     ]
                     resolve(response)
                 }

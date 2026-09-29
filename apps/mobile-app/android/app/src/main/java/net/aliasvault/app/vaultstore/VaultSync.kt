@@ -242,7 +242,7 @@ class VaultSync(
      * The engine's failure as the native error: a forced logout by its reason, else by its error code.
      */
     private fun syncError(result: JSONObject): AppError {
-        when (result.optString("errorKey")) {
+        when (result.optString("logoutReason")) {
             "clientVersionNotSupported" -> return AppError.ClientVersionNotSupported()
             "serverVersionNotSupported" -> return AppError.ServerVersionNotSupported()
             "sessionExpired" -> return AppError.SessionExpired()

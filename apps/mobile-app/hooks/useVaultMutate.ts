@@ -13,7 +13,7 @@ import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutat
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
-import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
+import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { PayloadTooLargeError } from '@aliasvault/client/api/errors/PayloadTooLargeError';
 
 import { useApp } from '@/context/AppContext';

@@ -1,3 +1,4 @@
+import { AppErrorCode, extractErrorCode, formatErrorWithCode, getErrorTranslationKey } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { DEFAULT_VAULT_MUTATION_SCOPE } from '@aliasvault/client/sync/VaultMutationScope';
@@ -8,8 +9,6 @@ import { router } from 'expo-router';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
-
-import { AppErrorCode, extractErrorCode, formatErrorWithCode, getErrorTranslationKey } from '@/utils/types/errors/AppErrorCodes';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';

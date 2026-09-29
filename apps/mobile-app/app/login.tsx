@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer';
 
-import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,7 +10,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { apiErrorMessage } from '@/utils/ApiErrors';
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import EncryptionUtility from '@/utils/EncryptionUtility';
@@ -156,6 +154,21 @@ export default function LoginScreen() : React.ReactNode {
   const { syncVault } = useVaultSync();
 
   const srpUtil = new SrpLoginService(webApi);
+
+  /**
+   * The message for a failed login: the shared auth error message, with the self-hosted variant of the server error.
+   * @param err - the thrown error
+   */
+  const loginErrorMessage = async (err: unknown): Promise<string> => {
+    if (err instanceof LocalAuthError) {
+      return err.message;
+    }
+    const message = await describeAuthError(err);
+    if (message.key === 'common.errors.serverError' && await webApi.isSelfHosted()) {
+      return t('auth.errors.serverErrorSelfHosted');
+    }
+    return formatErrorMessage(message, t);
+  };
 
   /**
    * Process the vault response by storing the vault and logging in the user.
@@ -432,22 +445,8 @@ export default function LoginScreen() : React.ReactNode {
         initiateLoginResponse
       );
     } catch (err) {
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this app version; show the notice translated, keyed on its error code.
-        console.error('Client upgrade required:', err);
-        setError(t('vault.errors.versionNotSupported'));
-      } else if (apiErrorCodeOf(err)) {
-        console.error('Login refused:', err);
-        setError(apiErrorMessage(err, t, t('common.errors.serverError')));
-      } else if (err instanceof LocalAuthError) {
-        console.error('Network/SSL error:', err);
-        setError((err as LocalAuthError).message);
-      } else {
-        console.error('Login error:', err);
-        // Check if self-hosted to show appropriate server error message
-        const isSelfHosted = await webApi.isSelfHosted();
-        setError(isSelfHosted ? t('auth.errors.serverErrorSelfHosted') : t('common.errors.serverError'));
-      }
+      console.error('Login error:', err);
+      setError(await loginErrorMessage(err));
       setIsLoading(false);
       setLoginStatus(null);
     }
@@ -495,18 +494,7 @@ export default function LoginScreen() : React.ReactNode {
       );
     } catch (err) {
       console.error('2FA error:', err);
-      if (err instanceof ClientUpgradeRequiredError) {
-        // Server refused this app version; show the notice translated, keyed on its error code.
-        setError(t('vault.errors.versionNotSupported'));
-      } else if (apiErrorCodeOf(err)) {
-        setError(apiErrorMessage(err, t, t('common.errors.serverError')));
-      } else if (err instanceof LocalAuthError) {
-        setError((err as Error).message);
-      } else {
-        // Check if self-hosted to show appropriate server error message
-        const isSelfHosted = await webApi.isSelfHosted();
-        setError(t(isSelfHosted ? 'auth.errors.serverErrorSelfHosted' : 'common.errors.serverError'));
-      }
+      setError(await loginErrorMessage(err));
       setIsLoading(false);
     }
   };
