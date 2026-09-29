@@ -95,8 +95,7 @@
       "httpError": "HTTP-virhe: {{status}}",
       "networkError": "Verkkopyyntö epäonnistui. Tarkista internet-yhteytesi ja yritä uudelleen.",
       "networkErrorSelfHosted": "Verkkopyyntö epäonnistui. Tarkista verkkoyhteytesi ja palvelimen saatavuus. Varmista, että itseisännöidyissä instansseissa on asennettuna voimassa oleva SSL-varmenne. Itseallekirjoitettuja varmenteita ei tueta mobiililaitteilla turvallisuussyistä.",
-      "serverErrorSelfHosted": "API-rajapintaan ei saatu yhteyttä. Itseisännöityjen instanssien osalta varmista, että API-päätepiste on tavoitettavissa siirtymällä siihen selaimessa: sen pitäisi näyttää teksti 'Kaikki hyvin'.",
-      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen."
+      "serverErrorSelfHosted": "API-rajapintaan ei saatu yhteyttä. Itseisännöityjen instanssien osalta varmista, että API-päätepiste on tavoitettavissa siirtymällä siihen selaimessa: sen pitäisi näyttää teksti 'Kaikki hyvin'."
     },
     "forgotPassword": {
       "contactAdministrator": "Jos olet äskettäin vaihtanut salasanasi ja sinulla on vaikeuksia kirjautua sisään uudella salasanallasi, otathan huomioon, että palvelimen ylläpitäjä voi ehkä palauttaa holvisi aiemman varmuuskopion auttaaksesi sinua. Jos näin on, ota yhteyttä palvelimen ylläpitäjään.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Yhteys AliasVault-palvelimiin epäonnistui. Yritäthän uudelleen myöhemmin.",
       "enterMasterPasswordDescription": "Syötä pääsalasanasi avataksesi holvisi lukituksen.",
-      "incorrectPasswordError": "Salasana on virheellinen. Yritäthän syöttää salasana uudelleen tai kirjautua ulos ja kirjautua sisään uudelleen.",
       "loggingInWithWebAuthn": "Kirjaudutaan sisään todennusavaimella...",
       "quickUnlockDescription": "Avaa holvisi nopeasti todennusavaimella. Tai kirjaudu sisään salasanallasi varakeinona. ",
-      "sessionTimedOutError": "Istuntosi aikakatkaistiin. Kirjauduthan sisään uudelleen.",
       "unlockButton": "Avaa lukitus",
       "unlockWithMobileButton": "Avaa käyttämällä mobiilisovellusta",
       "unlockWithWebAuthn": "Poista lukitus todennusavaimella",
@@ -225,7 +222,6 @@
     "back": "Takaisin",
     "backspace": "Backspace",
     "cancel": "Peruuta",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Tyhjennä leikepöytä"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Salasanat eivät täsmää.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Tämä selainlaajennus on vanhentunut, eikä sillä voi saada pääsyä tähän holviin. Päivitä tämä selainlaajennus jatkaaksesi.",
-      "clientVersionNotSupported": "Palvelin ei enää tue tätä AliasVault-selainlaajennuksen versiota. Päivitä selaimen laajennus uusimpaan versioon.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä selainlaajennusta. Ota yhteyttä tukeen, jos tarvitset apua.",
-      "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Tapahtui tuntematon virhe.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Holvi on lukittu",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Kaksivaiheinen todennus",
     "unavailable": "Unavailable",
     "undo": "Kumoa",
+    "updateApp": "Update app",
     "use": "Käytä",
     "username": "Käyttäjätunnus",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Valitse teksti, joka lisätään kohdistettuun syöttökenttään",
     "serverUnavailableMessage": "Palvelin ei ole tällä hetkellä saattavilla. Yritä myöhemmin uudelleen.",
     "serverUnavailableTitle": "Palvelin ei saatavilla",
-    "serverVersionNotSupportedContactAdmin": "Palvelimen versio on vanhentunut. Ota yhteyttä järjestelmänvalvojaan päivittääksesi palvelin.",
-    "serverVersionNotSupportedMessage": "Palvelimen versio on vanhentunut. Päivitä palvelin uusimpaan versioon.",
     "serverVersionNotSupportedTitle": "Palvelimen päivtys vaaditaan",
     "sessionExpiredMessage": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
     "sessionExpiredTitle": "Istunto vanhentunut",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Käyttäjänimi kopioitu",
     "usernamePrefix": "Käyttäjänimi: ",
-    "versionNotSupportedMessage": "Sovelluksesi versio ei ole enää tuettu. Päivitä uusimpaan versioon.",
     "versionNotSupportedTitle": "Päivitys vaaditaan",
     "viewDetails": "Näytä yksityiskohdat",
     "website": "Verkkosivusto"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "checkingVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "errors": {
-      "appOutdated": "Tämä sovellus on vanhentunut, eikä sillä voi käyttää tätä (uudempaa) holviversiota. Päivitä AliasVault-sovellus jatkaaksesi.",
       "failedToGetEncryptedDatabase": "Salatun tietokannan haku epäonnistui",
       "passwordChangeRequiresOnline": "Salasanan vaihto vaatii internetyhteyden. Yritä uudelleen, kun olet verkossa.",
-      "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta tätä mobiilisovellusta voi käyttää. Ota yhteyttä tukeen, jos tarvitset apua.",
-      "usernameNotFound": "Käyttäjänimeä ei löytynyt",
-      "vaultOutdated": "Holvisi on vanhentunut. Kirjaudu sisään AliasVault-verkkosivustolle ja seuraa ohjeita.",
-      "versionNotSupported": "Palvelin ei enää tue tätä AliasVault-mobiilisovelluksen versiota. Päivitä sovelluksesi uusimpaan versioon."
+      "usernameNotFound": "Käyttäjänimeä ei löytynyt"
     },
     "mergingVault": "Yhdistetään holvin muutoksia...",
     "savingChangesToVault": "Tallennetaan muutokset holviin",
