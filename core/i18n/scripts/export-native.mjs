@@ -3,8 +3,9 @@
  * Generates the native translation files of the mobile app (iOS .strings, Android strings.xml) from the shared
  * translations in core/i18n/locales, using the map in core/i18n/exports/mobile-native.json.
  *
- *   node core/i18n/scripts/export-native.mjs           # write the files
- *   node core/i18n/scripts/export-native.mjs --check   # exit 1 when a generated file is out of date
+ *   node core/i18n/scripts/export-native.mjs                           # write the files for all platforms
+ *   node core/i18n/scripts/export-native.mjs --check                   # exit 1 when a generated file is out of date
+ *   node core/i18n/scripts/export-native.mjs --platform android/ios    # only the android or ios files, as used by the app builds
  *
  * Languages are the `uiLanguages` in core/i18n/languages.json. A missing translation falls back to English.
  */
@@ -16,10 +17,15 @@ import { fileURLToPath } from 'node:url';
 const I18N_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPO_ROOT = path.resolve(I18N_DIR, '../..');
 const CHECK = process.argv.includes('--check');
+const PLATFORM = process.argv.includes('--platform') ? process.argv[process.argv.indexOf('--platform') + 1] : undefined;
 const GENERATED_NOTE = 'Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead.';
 
 const languages = JSON.parse(readFileSync(path.join(I18N_DIR, 'languages.json'), 'utf8')).uiLanguages;
-const { targets } = JSON.parse(readFileSync(path.join(I18N_DIR, 'exports/mobile-native.json'), 'utf8'));
+const { targets: allTargets } = JSON.parse(readFileSync(path.join(I18N_DIR, 'exports/mobile-native.json'), 'utf8'));
+const targets = allTargets.filter((target) => !PLATFORM || target.platform === PLATFORM);
+if (targets.length === 0) {
+  throw new Error(`No targets for platform "${PLATFORM}"`);
+}
 const locales = Object.fromEntries(languages.map((lang) => [lang, JSON.parse(readFileSync(path.join(I18N_DIR, `locales/${lang}.json`), 'utf8'))]));
 
 /**

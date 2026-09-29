@@ -307,8 +307,17 @@ task lintCheck {
     dependsOn 'detekt'
 }
 
+// Regenerate the native strings.xml files from core/i18n to ensure native Android translations are up to date.
+def i18nDir = new File(rootDir, "../../../core/i18n").canonicalFile
+task exportNativeTranslations(type: Exec) {
+    description = "Generate res/values*/strings.xml from core/i18n"
+    group = "build"
+    commandLine "node", new File(i18nDir, "scripts/export-native.mjs").absolutePath, "--platform", "android"
+}
+
 // Add a task dependency to make ktlint run before build
 tasks.named("preBuild") {
+    dependsOn("exportNativeTranslations")
     dependsOn("lintFormat")
     dependsOn("lintCheck")
 }
