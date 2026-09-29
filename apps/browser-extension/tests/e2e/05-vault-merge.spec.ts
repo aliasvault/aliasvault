@@ -54,7 +54,8 @@ test.describe.serial('5. Vault Merge', () => {
       .then((c) => c.screenshot('5.2-client-a-credential-saved.png'))
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameA))
-      .then((c) => c.screenshot('5.2-client-a-vault.png'));
+      .then((c) => c.screenshot('5.2-client-a-vault.png'))
+      .then((c) => c.waitForServerSync());
   });
 
   test('5.3 Client B should create a credential (triggers merge with Client A changes)', async () => {

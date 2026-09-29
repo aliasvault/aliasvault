@@ -211,6 +211,15 @@ export class TestClient {
   }
 
   /**
+   * Wait until the local changes are pushed to the server. A save only pushes in the background, so another
+   * client syncing right after it can otherwise miss the change.
+   */
+  async waitForServerSync(timeout: number = Timeouts.LONG): Promise<this> {
+    await expect.poll(() => this.popup.evaluate(async () => (await chrome.storage.local.get('isDirty')).isDirty === true), { timeout }).toBe(false);
+    return this;
+  }
+
+  /**
    * Open the add credential form via the item type dropdown in the header.
    */
   async openAddCredentialForm(typeSelector: string = ButtonSelectors.ADD_ITEM_TYPE_LOGIN): Promise<this> {
