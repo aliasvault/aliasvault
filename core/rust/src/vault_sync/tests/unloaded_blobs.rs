@@ -4,7 +4,7 @@
 use serde_json::{json, Value};
 
 use super::test_host::{self, query, TestHost};
-use super::{insert_item, item_names, read_tables, request, PERSONAL_MANIFEST_ID};
+use super::{insert_delivery_key, insert_item, item_names, read_tables, request, PERSONAL_MANIFEST_ID};
 use crate::crypto;
 use crate::vault_codec::{self, CanonicalizeInput, ManifestSpec};
 use crate::vault_sync::blob_keys;
@@ -32,6 +32,7 @@ impl ServerBlob {
 fn server_db(host: &TestHost) -> rusqlite::Connection {
     let db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&db, ITEM_ID, "Server item", PERSONAL_MANIFEST_ID);
+    insert_delivery_key(&db, PERSONAL_MANIFEST_ID);
     let now = crate::common::timestamp::now_vault_datetime();
     db.execute("INSERT INTO Logos (ManifestId, Id, Source, FileData, Kind, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'bbbbbbbb-0000-4000-8000-000000000001', 'example.com', ?, 'favicon', ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, vec![1u8, 2, 3, 4], now, now]).unwrap();
     db.execute("UPDATE Items SET LogoId = 'bbbbbbbb-0000-4000-8000-000000000001'", []).unwrap();

@@ -1,0 +1,60 @@
+name: "Start SMTP Service"
+description: "Sets up .NET, builds AliasVault.SmtpService and starts it in the background on ports 25 and 587 against an existing PostgreSQL database (start the API first, it applies the migrations)"
+inputs:
+  database:
+    description: "Name of the PostgreSQL database the SMTP service stores mail in (the same one the API uses)"
+    required: true
+  db-port:
+    description: "Port PostgreSQL listens on (5109 for ./scripts/dev.sh db-start, 5432 for a runner-installed PostgreSQL)"
+    required: false
+    default: "5109"
+  private-email-domains:
+    description: "Comma-separated domains the SMTP service accepts mail for (match the API's PRIVATE_EMAIL_DOMAINS)"
+    required: true
+
+outputs:
+  log-file:
+    description: "Path of the SMTP service log"
+    value: /tmp/smtp-service.log
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build SMTP service
+      shell: bash
+      working-directory: apps/server
+      run: dotnet build Services/AliasVault.SmtpService
+
+    # The service listens on the fixed ports 25 and 587; let the non-root runner user bind them.
+    - name: Allow binding the SMTP ports
+      shell: bash
+      run: sudo sysctl -w net.ipv4.ip_unprivileged_port_start=25
+
+    - name: Start SMTP service
+      shell: bash
+      working-directory: apps/server/Services/AliasVault.SmtpService
+      run: |
+        dotnet run --no-build --no-launch-profile > /tmp/smtp-service.log 2>&1 &
+        echo "Waiting for the SMTP service to start..."
+        for i in {1..30}; do
+          # Ready once port 25 answers with the 220 greeting.
+          if timeout 2 bash -c 'exec 3<>/dev/tcp/127.0.0.1/25 && head -c 3 <&3' 2>/dev/null | grep -q 220; then
+            echo "SMTP service is ready!"
+            exit 0
+          fi
+          echo "Attempt $i: SMTP service not ready yet..."
+          sleep 2
+        done
+        echo "::error::SMTP service did not start within 60 seconds"
+        tail -n 100 /tmp/smtp-service.log
+        exit 1
+      env:
+        DOTNET_ENVIRONMENT: "Development"
+        ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=${{ inputs.db-port }};Database=${{ inputs.database }};Username=aliasvault;Password=password"
+        PRIVATE_EMAIL_DOMAINS: ${{ inputs.private-email-domains }}
+        SMTP_TLS_ENABLED: "false"

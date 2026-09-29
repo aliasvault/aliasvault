@@ -35,7 +35,15 @@ export class WebApp {
     await expect(this.page).toHaveURL(/\/user\/login$/);
 
     await this.submitLogin(username, password);
-    await expect(this.page).toHaveURL(/\/(items|welcome)$/);
+
+    /*
+     * An empty vault without the tutorial done opens on /items and moves on to /welcome once the items page loaded,
+     * so wait until the items page is done loading (or the tutorial shows) before looking at the URL.
+     */
+    await expect(async () => {
+      expect(this.page.url()).toMatch(/\/(items|welcome)$/);
+      await expect(this.page.locator('.aliasvault-spinner-inline')).toHaveCount(0, { timeout: 0 });
+    }).toPass();
     if (this.page.url().endsWith('/welcome')) {
       await this.finishTutorial();
     }

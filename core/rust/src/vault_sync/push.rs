@@ -186,7 +186,8 @@ pub(crate) async fn upload_vault(ctx: &mut Ctx, cache: Option<(u64, Canonicalize
 
     let create_vault_key = create_vault_key || !keys::has_local_vault_key(&ctx.host).await?;
     let scopes = ctx.request.dirty_scopes.clone();
-    let bucket_only = !force_full_write && !create_vault_key && !scopes.is_empty() && !scopes.iter().any(|s| s == MANIFEST_SCOPE);
+    // A missing delivery keypair is created on the full path only, as publishing it takes a manifest write.
+    let bucket_only = !force_full_write && !create_vault_key && !scopes.is_empty() && !scopes.iter().any(|s| s == MANIFEST_SCOPE) && !personal_delivery_key_missing(ctx).await?;
 
     let (status, vault_changed) = if bucket_only {
         (upload_dirty_buckets_only(ctx, &scopes).await?, false)
@@ -230,20 +231,25 @@ async fn upload_dirty_buckets_only(ctx: &mut Ctx, scopes: &[String]) -> SyncResu
     Ok(PushStatus::Ok)
 }
 
-/// Upload a new version of the vault, pruning expired trash items first. Returns the status and whether the
-/// stored vault changed (pruned or re-keyed).
+/// Upload a new version of the vault, pruning expired trash items and creating a missing personal delivery keypair
+/// first. Returns the status and whether the stored vault changed (pruned, keypair added or re-keyed).
 async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, force_full_write: bool, create_vault_key: bool) -> SyncResult<(PushStatus, bool)> {
     let key_before = ctx.encryption_key()?;
     let mut cached = cached;
-    let mut vault_pruned = false;
+    let mut vault_rewritten = false;
     match db::prune_in_place(&ctx.host, TRASH_RETENTION_DEFAULT_DAYS).await {
         Ok(0) => {}
         Ok(count) => {
             ctx.log(format!("[VaultMerge] Pruned expired items from trash ({} SQL statements executed)", count)).await;
-            vault_pruned = true;
+            vault_rewritten = true;
             cached = None;
         }
         Err(error) => ctx.warn(format!("[VaultSync] Failed to prune vault, continuing with upload: {}", error)).await,
+    }
+    if personal_delivery_key_missing(ctx).await? {
+        create_personal_delivery_key(ctx).await?;
+        vault_rewritten = true;
+        cached = None;
     }
 
     let (status, new_key) = push(ctx, cached, create_vault_key, force_full_write).await?;
@@ -255,12 +261,30 @@ async fn upload_new_vault_to_server(ctx: &mut Ctx, cached: Option<CanonicalizedS
 
     // Re-encrypt and persist locally only when the stored blob went stale or the encryption key changed.
     let key_after = ctx.encryption_key()?;
-    if vault_pruned || key_after != key_before {
+    if vault_rewritten || key_after != key_before {
         let bytes = db::export(&ctx.host, Db::Local).await?;
         ctx.store_vault(&state::encrypt_vault_blob(&bytes, &key_after)?, false, None, None).await?;
         ctx.vault_changed = true;
     }
-    Ok((status, vault_pruned))
+    Ok((status, vault_rewritten))
+}
+
+/// Whether the personal manifest has no active mail delivery keypair. Without one the server has no public key to
+/// encrypt incoming mail with, and rejects every email sent to the vault's aliases.
+async fn personal_delivery_key_missing(ctx: &Ctx) -> SyncResult<bool> {
+    let Some(personal_manifest_id) = state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await? else {
+        return Ok(false);
+    };
+    Ok(db::active_public_key_for_manifest(&ctx.host, &personal_manifest_id).await?.is_none())
+}
+
+/// Create the personal manifest's mail delivery keypair in the local vault; the manifest write publishes its public half.
+async fn create_personal_delivery_key(ctx: &Ctx) -> SyncResult<()> {
+    let personal_manifest_id = resolve_personal_manifest_id(ctx).await?;
+    let pair = crypto::generate_rsa_key_pair()?;
+    db::set_active_key_for_manifest(&ctx.host, &personal_manifest_id, &pair.public_key, &pair.private_key).await?;
+    ctx.log(format!("[V2Push] Personal manifest {} had no mail delivery keypair; created one.", personal_manifest_id)).await;
+    Ok(())
 }
 
 /// The tables of one bucket category read from the local vault, as extract_buckets takes them.
