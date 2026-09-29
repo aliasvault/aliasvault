@@ -1,7 +1,7 @@
 {
   "apiErrors": {
     "ACCOUNT_BLOCKED": "您的账户已被停用。若您认为此操作有误，请联系支持人员。",
-    "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定。请稍后重试。",
+    "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定，请稍后重试。",
     "ACCOUNT_SUCCESSFULLY_DELETED": "账户已成功删除。",
     "CLAIM_DOES_NOT_EXIST": "尝试加载邮件时出错。请尝试编辑并保存凭据条目以同步数据库，然后重试。",
     "CLAIM_DOES_NOT_MATCH_USER": "当前选择的邮箱地址已被使用。请通过编辑此凭据来更改邮箱地址。",
@@ -71,7 +71,7 @@
     "deleteSuccess": "附件删除成功。",
     "firefoxExpandRequired": "要上传文件，请使用展开的窗口。",
     "openExpandedWindow": "打开展开的窗口",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "文件上传出错：{{error}}",
     "uploadSuccess": "文件上传成功。",
     "uploading": "上传中…"
   },
@@ -138,7 +138,7 @@
     "noAccountYet": "还没有账户？",
     "passwordAttemptsWarning": "密码错误。若您再输入 {{remainingAttempts}} 次错误的密码，则会被退出登录。",
     "passwordPlaceholder": "输入您的密码",
-    "pinInput": "PIN input",
+    "pinInput": "PIN 输入",
     "register": {
       "passwordLabel": "您的密码",
       "passwordPlaceholder": "••••••••",
@@ -261,9 +261,9 @@
       "backgroundUnresponsive": "扩展的后台服务未响应。请关闭并重新打开该扩展；如果问题仍然存在，请重启浏览器。",
       "browserExtensionOutdated": "此浏览器扩展已过时，无法用于访问此密码库。请更新此浏览器扩展以继续。",
       "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "contactSupportAt": "请通过 {{email}} 联系支持人员。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "您的密码正确，但无法打开您的密码库加密密钥。请联系支持人员。",
       "mergeFailed": "合并密码库更改失败，请重试。",
       "mobileLoginRequestDeclined": "您的移动设备登录请求被拒绝。",
       "mobileLoginRequestExpired": "移动端登录请求超时，请重新加载页面后重试。",
@@ -274,20 +274,20 @@
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "发生意外错误。请重试，如果问题仍然存在，请联系支持人员。",
       "unknownError": "发生未知错误。",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "vaultDataUnreadable": "您的密码库数据无法读取，因此您目前无法访问这些数据。请联系支持人员。",
       "vaultIsLocked": "密码库已锁定",
       "vaultLoadError": "加载您的密码库时出现错误。请复制以下错误详情并联系支持人员寻求帮助。",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "您的密码库无法加载",
       "vaultNotAvailable": "密码库不可用",
       "vaultSyncTimeout": "密码库同步超时。这可能是由于密码库过大或网络连接速度较慢造成的。请重试。",
       "vaultTooLarge": "密码库过大，服务器无法接受。请尝试移除一些项目或附件以减小其大小，然后重试。",
       "wrongPassword": "密码错误，请重试。"
     },
     "generate": "生成",
-    "help": "Help",
+    "help": "帮助",
     "hide": "隐藏",
     "hideDetails": "隐藏详情",
     "hidePassword": "隐藏密码",
@@ -311,7 +311,7 @@
     "ok": "确定",
     "openInNewWindow": "在新窗口中打开",
     "or": "或",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "页面导览",
     "passkeys": "通行密钥",
     "password": "密码",
     "passwordStrength": {
@@ -322,8 +322,8 @@
       "veryWeak": "还差很多",
       "weak": "好点了"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "上一页",
+    "qrCode": "二维码",
     "recentEmails": "近期邮件",
     "refresh": "刷新",
     "remove": "移除",
@@ -340,7 +340,7 @@
     "syncVaultData": "同步密码库数据",
     "syncingChanges": "正在同步更改…",
     "twoFactorAuthentication": "两步验证",
-    "unavailable": "Unavailable",
+    "unavailable": "不可用",
     "undo": "撤销",
     "use": "使用",
     "username": "用户名",
@@ -560,7 +560,7 @@
       "roboformInstructionsPart1": "要导入您的 RoboForm 密码，您需要将其导出为 CSV 文件。您可以打开 RoboForm，依次点击“RoboForm”菜单 > “选项” > “账户和数据” > “导出”，然后选择 CSV 格式来完成此操作。",
       "strongboxDescription": "从 Strongbox 导入密码",
       "strongboxInstructionsPart1": "要导入您的 Strongbox 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出数据库”（至 CSV）来完成此操作。",
-      "template": "template",
+      "template": "模板",
       "uploadInstructions": "您可以在下方上传导出的文件。"
     }
   },
@@ -618,8 +618,8 @@
     "addNewItem": "添加新项目",
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "allItemsInFoldersClick": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "无法读取附件。",
+    "attachmentUnavailable": "附件数据不可用",
     "autofillLinkExisting": {
       "confirmMessage": "确定要将“{{url}}”链接到此凭据吗？",
       "confirmTitle": "链接到凭据？",
@@ -729,9 +729,9 @@
       "selectFolder": "选择文件夹"
     },
     "fullName": "全名",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "含附件",
+    "hasPasskey": "含通行密钥",
+    "hasTotp": "含两步验证码",
     "history": "历史记录",
     "home": {
       "alphabeticalOption": "字母顺序",
@@ -790,7 +790,7 @@
       "sourceFavicon": "从 {{domain}}",
       "sourceNone": "无图标"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "无附件。",
     "noEmailsYet": "尚未收到邮件。",
     "noHistoryAvailable": "暂无历史记录",
     "noItemsFound": "未找到项目。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
@@ -1285,7 +1285,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "批准登录",
         "codeMismatch": "数字不匹配。登录请求已被拒绝。",
         "confirmMessage": "另一台设备正在请求使用您的账户登录。它将获得您密码库的完全访问权限。请仅在您自己发起此登录操作的情况下继续。",
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
@@ -1470,7 +1470,7 @@
       "deleteAllLogosButton": "删除所有徽标",
       "deleteAllLogosConfirmMessage": "此操作会从您的密码库中删除所有存储的徽标，并清除每个凭据的徽标。您可以随时重新下载它们。是否继续？",
       "deleteAllLogosConfirmTitle": "删除所有徽标？",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "移除了 {{count}} 个项目的徽标。",
       "itemsWithAttachmentsLabel": "带附件项目",
       "itemsWithLogosLabel": "带徽标项目",
       "logoManagementDescription": "所有徽标均取自各个项目网站的 favicon。您可以删除所有徽标以释放空间，或重新下载以更新版本。",
@@ -1480,9 +1480,9 @@
       "redownloadAllLogosButton": "重新下载所有徽标",
       "redownloadAllLogosConfirmMessage": "此操作会为每个包含网站 URL 的凭据重新获取 favicon，替换现有的徽标。此过程可能需要一些时间，具体取决于您的密码库大小。是否继续？",
       "redownloadAllLogosConfirmTitle": "重新下载所有徽标？",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "更新了 {{count}} 个项目的徽标。",
+      "serverTotalDescription": "服务器上存储的加密密码库的确切大小，包括附件和徽标。",
+      "serverTotalTitle": "服务器上的密码库大小",
       "topAttachmentsDescription": "前 10 个最大的文件附件。不再需要的话可以删除。",
       "topAttachmentsTitle": "最大的附件",
       "topLogosDescription": "前 10 个最大的服务徽标。同一域名下的项目或服务会共用相同徽标。",
@@ -1557,10 +1557,10 @@
     "syncing": "同步中…",
     "tapToRetry": "点击重试同步",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "如果问题仍然存在，请联系我们的支持团队寻求帮助。",
+      "notCompatible": "此密码库版本与您的客户端不兼容。",
+      "title": "密码库版本不受支持",
+      "updateInstructions": "请将 AliasVault 更新至最新版本，刷新此页面，然后重试。"
     }
   },
   "totp": {
