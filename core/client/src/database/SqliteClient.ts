@@ -4,7 +4,6 @@ import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrati
 import { VaultVersionIncompatibleError } from '../api/errors/VaultVersionIncompatibleError';
 import { StorageKeys } from '../constants/StorageKeys';
 import { getPlatform } from '../platform/ClientPlatform';
-import { TranslatableMessage } from '../platform/TranslatableMessage';
 import { bytesToBase64 } from '../utilities/Base64';
 import { logDefect } from '../utilities/Diagnostics';
 import { detectImageMimeType } from '../utilities/ImageType';
@@ -451,7 +450,7 @@ export class SqliteClient implements ISyncDatabaseClient {
       const compatibilityResult = checkVersionCompatibility(databaseVersion);
 
       if (!compatibilityResult.isCompatible) {
-        const errorMessage = await getPlatform().translate(TranslatableMessage.ClientOutdated);
+        const errorMessage = await getPlatform().translate('common.errors.clientOutdated');
         throw new VaultVersionIncompatibleError(errorMessage);
       }
 

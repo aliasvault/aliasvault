@@ -1,6 +1,8 @@
 import { logDefect } from '../utilities/Diagnostics';
 
-type LogoutListener = (errorMessage: string) => void | Promise<void>;
+import type { TranslationKey } from '@aliasvault/i18n';
+
+type LogoutListener = (messageKey: TranslationKey) => void | Promise<void>;
 
 /**
  * Simple event emitter for logout events to avoid circular dependencies
@@ -23,12 +25,12 @@ class LogoutEventEmitter {
   /**
    * Emit a logout event to all listeners.
    *
-   * @param errorKey - The translation key of the error message to emit.
+   * @param messageKey - The translation key of the message to show on the login page.
    */
-  public emit(errorTranslationKey: string): void {
+  public emit(messageKey: TranslationKey): void {
     this.listeners.forEach(listener => {
       try {
-        listener(errorTranslationKey);
+        listener(messageKey);
       } catch (error) {
         logDefect('[Logout] A logout listener threw', error);
       }

@@ -98,14 +98,14 @@ pub struct FailureFields {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error_code: Option<ErrorCode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_key: Option<LogoutReason>,
+    pub logout_reason: Option<LogoutReason>,
     pub requires_logout: bool,
 }
 
 impl FailureFields {
     /// A forced logout for the given reason.
     pub fn logout(reason: LogoutReason) -> Self {
-        Self { error_key: Some(reason), requires_logout: true, ..Default::default() }
+        Self { logout_reason: Some(reason), requires_logout: true, ..Default::default() }
     }
 }
 
@@ -795,12 +795,12 @@ mod tests {
 
         let logout = FailureFields::logout(LogoutReason::SessionExpired);
         let migrate = serde_json::to_string(&MigrateManifestResult { failure: logout.clone(), ..Default::default() }).unwrap();
-        assert_eq!(migrate, r#"{"success":false,"pushed":false,"errorKey":"sessionExpired","requiresLogout":true,"vaultChanged":false}"#);
+        assert_eq!(migrate, r#"{"success":false,"pushed":false,"logoutReason":"sessionExpired","requiresLogout":true,"vaultChanged":false}"#);
         let round_trip: MigrateManifestResult = serde_json::from_str(&migrate).unwrap();
         assert_eq!(round_trip.failure, logout);
 
         let status = serde_json::to_value(StatusCheckResult { failure: logout.clone(), ..Default::default() }).unwrap();
-        assert_eq!(status["errorKey"], "sessionExpired");
+        assert_eq!(status["logoutReason"], "sessionExpired");
         assert_eq!(status["requiresLogout"], true);
         assert!(status.get("error").is_none() && status.get("errorCode").is_none() && status.get("failure").is_none());
         let round_trip: StatusCheckResult = serde_json::from_value(status.clone()).unwrap();

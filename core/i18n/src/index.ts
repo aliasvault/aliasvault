@@ -15,6 +15,16 @@ export * from './languages';
 export type TranslationTree = { [key: string]: string | TranslationTree };
 
 /**
+ * The dotted paths to the leaves of a translation tree.
+ */
+type LeafKeys<T> = { [K in keyof T & string]: T[K] extends string ? K : `${K}.${LeafKeys<T[K]>}` }[keyof T & string];
+
+/**
+ * A key of the English translations, e.g. 'common.errors.unknownError'.
+ */
+export type TranslationKey = LeafKeys<typeof en>;
+
+/**
  * The English translations, bundled so there always is a fallback.
  */
 export const englishTranslations: TranslationTree = en;

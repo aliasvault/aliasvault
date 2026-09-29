@@ -707,11 +707,11 @@ mod tests {
     fn failures_carry_a_code_or_a_logout_reason_never_both() {
         let coded = failure(&SyncError::Timeout("slow".to_string())).failure;
         assert_eq!(coded.error_code, Some(ErrorCode::UploadTimeout));
-        assert_eq!(coded.error_key, None);
+        assert_eq!(coded.logout_reason, None);
         assert!(!coded.requires_logout);
 
         let logout = failure(&SyncError::VaultVersionIncompatible("3.0.0".to_string())).failure;
-        assert_eq!(logout.error_key, Some(LogoutReason::VaultVersionIncompatible));
+        assert_eq!(logout.logout_reason, Some(LogoutReason::VaultVersionIncompatible));
         assert_eq!(logout.error_code, None);
         assert!(logout.requires_logout);
     }

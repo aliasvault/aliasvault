@@ -1,6 +1,6 @@
 import { AppErrorCode, formatErrorWithCode, getErrorTranslationKey, isErrorCode } from '../api/errors/AppErrorCodes';
 
-import { hasSyncError, type SyncErrorDetail } from './VaultSync';
+import { hasSyncError, logoutReasonKey, type SyncErrorDetail } from './VaultSync';
 
 /**
  * The stored sync error, tolerating the plain string an older build left behind.
@@ -23,8 +23,8 @@ export function toSyncErrorDetail(value: unknown): SyncErrorDetail | null {
  * @param t - the renderer's translation function
  */
 export function syncErrorMessage(detail: SyncErrorDetail, t: (key: string) => string): string | undefined {
-  if (detail.errorKey) {
-    return t('common.errors.' + detail.errorKey);
+  if (detail.logoutReason) {
+    return t(logoutReasonKey(detail.logoutReason));
   }
   if (detail.errorCode) {
     const code = isErrorCode(detail.errorCode) ? detail.errorCode : AppErrorCode.UNKNOWN_ERROR;

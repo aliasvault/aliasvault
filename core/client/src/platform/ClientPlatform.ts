@@ -2,8 +2,8 @@ import type { IAppIdentity } from './AppIdentity';
 import type { IKeyValueStore } from './KeyValueStore';
 import type { ILogger } from './Logger';
 import type { ISqliteEngine } from './SqliteEngine';
-import type { TranslatableMessage } from './TranslatableMessage';
 import type { IRustCore } from '../rust/RustCoreBinding';
+import type { TranslationKey } from '@aliasvault/i18n';
 
 /**
  * Everything the client core needs from the host app. Each app (browser extension, web app, mobile app) implements
@@ -26,9 +26,14 @@ export interface IClientPlatform {
   sqlite: ISqliteEngine;
 
   /**
-   * Translate one of the core's own messages into the user's language.
+   * Translate a message of the shared translations (core/i18n) into the user's language.
    */
-  translate(message: TranslatableMessage): Promise<string>;
+  translate(key: TranslationKey): Promise<string>;
+
+  /**
+   * Whether this device holds a key chain, for hosts that keep it outside {@link storage} (the mobile app keeps it in native storage).
+   */
+  hasLocalVaultKey?(): Promise<boolean>;
 
   /**
    * The device's UI language as a BCP 47 tag. Hosts without `navigator.language` provide it here.

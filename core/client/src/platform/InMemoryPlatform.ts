@@ -85,9 +85,9 @@ export function createInMemoryPlatform(overrides: Partial<IClientPlatform> = {})
     rustCore: unavailableService<IRustCore>('Rust core'),
     sqlite: unavailableService<ISqliteEngine>('SQLite engine'),
     /**
-     * Echo the message id.
+     * Echo the translation key.
      */
-    translate: async (message): Promise<string> => message,
+    translate: async (key): Promise<string> => key,
     ...overrides,
   };
 }
