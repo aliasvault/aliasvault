@@ -10,7 +10,7 @@
     "INVALID_RECOVERY_CODE": "Nieprawidłowy kod odzyskiwania. Spróbuj ponownie.",
     "INVALID_REFRESH_TOKEN": "Nieprawidłowy token odświeżania.",
     "PASSWORD_MISMATCH": "Podane hasło nie zgadza się z Twoim aktualnym hasłem.",
-    "PENDING_MIGRATIONS": "Istnieją oczekujące migracje. Aby je zastosować, uruchom polecenie „dotnet ef database update”.",
+    "PENDING_MIGRATIONS": "Istnieją oczekujące migracje. Uruchom 'dotnet ef update', aby je zastosować.",
     "PUBLIC_REGISTRATION_DISABLED": "Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.",
     "REFRESH_TOKEN_REQUIRED": "Wymagany jest token odświeżania.",
     "REGISTRATION_FAILED": "Nie można utworzyć konta. Spróbuj ponownie za kilka minut. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.",
@@ -244,7 +244,7 @@
     "dismiss": "Odrzuć",
     "duplicate": "Duplicate",
     "duplicateErrorMessage": "Failed to duplicate item.",
-    "duplicateSuccessMessage": "Item duplicated successfully.",
+    "duplicateSuccessMessage": "Element powielony pomyślnie.",
     "duration": {
       "15seconds": "15 sekund",
       "30seconds": "30 sekund",
@@ -258,7 +258,7 @@
     "errorGeneric": "Wystąpił błąd. Spróbuj ponownie.",
     "errorPasswordMismatch": "Hasła się nie zgadzają.",
     "errors": {
-      "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
+      "backgroundUnresponsive": "Usługa rozszerzenia w tle nie odpowiada. Zamknij i ponownie otwórz rozszerzenie lub zrestartuj przeglądarkę, jeśli problem będzie się powtarzał.",
       "browserExtensionOutdated": "To rozszerzenie przeglądarki jest nieaktualne i nie można go używać do uzyskania dostępu do tego sejfu. Aby kontynuować, zaktualizuj to rozszerzenie przeglądarki.",
       "clientVersionNotSupported": "Ta wersja rozszerzenia przeglądarki AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj rozszerzenie przeglądarki do najnowszej wersji.",
       "contactSupportAt": "Contact support at {{email}}.",
@@ -778,7 +778,7 @@
         "Shopping": "Shopping",
         "Social": "Social",
         "Travel": "Travel",
-        "Work": "Work"
+        "Work": "Praca"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -1611,7 +1611,7 @@
     },
     "subtitle": "Wersja AliasVault jest nieaktualna i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.",
     "successOtherDevices": "Your vault is ready to use. Make sure to update the AliasVault app on your other devices as well.",
-    "successTitle": "Vault upgraded",
+    "successTitle": "Sejf został zaktualizowany",
     "title": "Aktualizacja sejfu",
     "upgrade": "Aktualizacja",
     "upgradeDescription": "Wersja AliasVault jest nieaktualna i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.",
