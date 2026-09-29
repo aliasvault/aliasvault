@@ -272,7 +272,7 @@
       "unexpectedErrorContactSupport": "Si è verificato un errore imprevisto. Riprova o contatta l'assistenza se il problema persiste.",
       "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
-      "updateRequiredTitle": "Update required",
+      "updateRequiredTitle": "Aggiornamento richiesto",
       "vaultDataUnreadable": "I dati della tua cassaforte non possono essere letti, e non sono accessibili in questo momento. Contatta l'assistenza.",
       "vaultIsLocked": "La cassaforte è bloccata",
       "vaultLoadError": "Qualcosa è andato storto durante il caricamento della cassaforte. Si prega di copiare i dettagli dell'errore qui sotto e contattare il supporto per l'aiuto.",
@@ -386,7 +386,7 @@
       "bulkDeleteEmailSuccess": " Tutte le {{count}} mail eliminate con successo",
       "bulkDeleteEmailTitle": "Elimina email",
       "claimDoesNotExistError": "Si è verificato un errore durante il tentativo di caricare le email. Si prega di provare a modificare e salvare una qualsiasi delle credenziali per sincronizzare il database, quindi riprovare.",
-      "deleteSelectedEmails": "Elimina {{count}} email selezionate",
+      "deleteSelectedEmails": "{{count}}Elimina {{count}} email selezionate",
       "noEmailClaimsMessage": "Non stai ancora usando alcun indirizzo email privato (per ora). Crea un nuovo alias e utilizza un indirizzo email privato supportato da AliasVault. Tutte le email ricevute da questi indirizzi email privati verranno visualizzate qui.",
       "noEmailsReceivedMessage": "Nessuna email è stata ancora ricevuta.",
       "pageDescription": "Puoi visualizzare tutte le email ricevute dai tuoi indirizzi email privati qui sotto."
