@@ -30,7 +30,7 @@ updates:
           - "/apps/browser-extension"
           - "/apps/mobile-app"
           - "/apps/server/AliasVault.Admin"
-          - "/apps/server/AliasVault.Client"
+          - "/apps/web"
           - "/core/models"
           - "/core/vault"
           - "/docs"

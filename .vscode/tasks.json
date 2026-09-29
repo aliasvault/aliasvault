@@ -16,20 +16,6 @@
             }
         },
         {
-            "label": "Build and watch Client",
-            "type": "shell",
-            "command": "./scripts/dev.sh",
-            "args": ["client"],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            }
-        },
-        {
             "label": "Build and watch Web App",
             "type": "shell",
             "command": "./scripts/dev.sh",
@@ -100,20 +86,6 @@
             }
         },
         {
-            "label": "Build and watch Client CSS",
-            "type": "shell",
-            "command": "npm",
-            "args": ["run", "build:client-css"],
-            "problemMatcher": [],
-            "options": {
-                "cwd": "${workspaceFolder}/apps/server/AliasVault.Client"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
             "label": "Build and watch Admin CSS",
             "type": "shell",
             "command": "npm",
@@ -132,19 +104,6 @@
             "dependsOn": [
                 "Build and watch API",
                 "Build and watch Web App"
-            ],
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "Build and watch Client (API + Client + CSS)",
-            "dependsOn": [
-                "Build and watch API",
-                "Build and watch Client",
-                "Build and watch Client CSS"
             ],
             "problemMatcher": [],
             "group": {
@@ -261,21 +220,6 @@
             "options": {
                 "cwd": "${workspaceFolder}/docs"
             }
-        },
-        {
-            "label": "Run Client (Release mode)",
-            "type": "shell",
-            "command": "dotnet",
-            "args": ["run", "-c", "Release"],
-            "problemMatcher": [],
-            "options": {
-                "cwd": "${workspaceFolder}/apps/server/AliasVault.Client"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "dependsOn": []
         }
     ]
 }

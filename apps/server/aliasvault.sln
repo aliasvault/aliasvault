@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AliasVault.UnitTests", "Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AliasVault.Api", "AliasVault.Api\AliasVault.Api.csproj", "{B797C533-260E-4DA2-83B1-0EE4BCFE08DB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AliasVault.Client", "AliasVault.Client\AliasVault.Client.csproj", "{25248E01-5A4B-4F95-A63C-BEA01499A1C2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AliasVault.Shared", "Shared\AliasVault.Shared\AliasVault.Shared.csproj", "{15EFE0D0-F41B-47D7-86B7-8F840335CB82}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{29DE523D-EEF2-41E9-AC12-F20D8D02BEBB}"
