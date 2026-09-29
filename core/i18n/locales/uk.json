@@ -95,8 +95,7 @@
       "httpError": "Помилка HTTP: {{status}}",
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
       "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
-      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK».",
-      "sessionExpired": "Термін дії вашого сеансу закінчився. Будь ласка, увійдіть знову."
+      "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK»."
     },
     "forgotPassword": {
       "contactAdministrator": "Якщо ви нещодавно змінили пароль і не можете ввійти в систему з новим паролем, зверніться до адміністратора сервера, який, можливо, зможе відновити резервну копію вашого сховища. Якщо це так, зверніться до адміністратора сервера.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Не вдалося з’єднатися із серверами AliasVault. Спробуйте ще раз (пізніше).",
       "enterMasterPasswordDescription": "Введіть свій головний пароль, щоб розблокувати сховище.",
-      "incorrectPasswordError": "Пароль неправильний. Будь ласка, спробуйте ввести пароль ще раз або вийдіть і знову ввійдіть.",
       "loggingInWithWebAuthn": "Вхід за допомогою ключа доступу...",
       "quickUnlockDescription": "Швидко розблокуйте своє сховище за допомогою ключа доступу. Або увійдіть, використовуючи пароль як резервний варіант.",
-      "sessionTimedOutError": "Ваш сеанс вичерпано. Будь ласка, увійдіть знову.",
       "unlockButton": "Розблокувати",
       "unlockWithMobileButton": "Розблокувати за допомогою мобільного додатку",
       "unlockWithWebAuthn": "Розблокувати за допомогою ключа доступу",
@@ -225,7 +222,6 @@
     "back": "Назад",
     "backspace": "Backspace",
     "cancel": "Скасувати",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистити буфер обміну"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Паролі не збігаються.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Це розширення браузера застаріло, і його не можна використовувати для доступу до цього сховища. Щоб продовжити, оновіть це розширення браузера.",
-      "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
-      "serverVersionNotSupported": "Щоб використовувати це розширення браузера, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "serverVersionTooOld": "Щоб скористатися цією функцією, потрібно оновити сервер AliasVault до нової версії. Якщо вам потрібна допомога, будь ласка, зверніться до адміністратора сервера.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Сталася невідома помилка.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Сховище заблоковано",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "unavailable": "Unavailable",
     "undo": "Скасувати",
+    "updateApp": "Update app",
     "use": "Використовувати",
     "username": "Ім'я користувача",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Виберіть текст, який потрібно вставити в поле введення",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Ім'я користувача скопійовано",
     "usernamePrefix": "Ім'я користувача: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "Переглянути подробиці",
     "website": "Вебсайт"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Перевірка оновлень сховища",
     "checkingVaultUpdates": "Перевірка оновлень сховища",
     "errors": {
-      "appOutdated": "Ця програма застаріла і не може бути використана для доступу до цієї (новіші) версії сховища. Будь ласка, оновіть додаток AliasVault для продовження.",
       "failedToGetEncryptedDatabase": "Не вдалося отримати зашифровану базу даних",
       "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "usernameNotFound": "Ім'я користувача не знайдено",
-      "vaultOutdated": "Ваше сховище застаріло. Будь ласка, увійдіть на вебсайт AliasVault та виконайте наведені нижче дії.",
-      "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії."
+      "usernameNotFound": "Ім'я користувача не знайдено"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Збереження змін у сховищі",
