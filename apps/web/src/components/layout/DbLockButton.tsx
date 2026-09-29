@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { useDb } from '@/context/DbContext';
+import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { vaultStore } from '@/vault/VaultStore';
 
 /**
@@ -16,11 +17,13 @@ const DbLockButton: React.FC = () => {
   /**
    * Lock the vault and redirect to the unlock page.
    */
-  const onLockClick = async (): Promise<void> => {
+  const onLockClick = useCallback(async (): Promise<void> => {
     await vaultStore.lockVault();
     dbContext.clearDatabase();
     navigate('/unlock/true');
-  };
+  }, [dbContext, navigate]);
+  const lockFromShortcut = useCallback((): void => void onLockClick(), [onLockClick]);
+  useKeyboardShortcut('gl', lockFromShortcut);
 
   return (
     <div className="ms-2 items-center hidden lg:flex">

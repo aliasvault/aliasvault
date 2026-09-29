@@ -7,6 +7,7 @@ import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { removeLocalPreference } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys, StorageKeys } from '@/utils/StorageKeys';
+import { WebAuthnService } from '@/utils/WebAuthnService';
 import { vaultStore } from '@/vault/VaultStore';
 
 /**
@@ -85,8 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [clearDatabase]);
 
   /**
-   * Revoke the tokens and clear the tokens, session keys and vault. A forced logout (401, token revocation, password
-   * change) keeps the username so the login page can prefill it.
+   * Revoke the tokens and clear the tokens, session keys, passkey unlock and vault. A forced logout (401, token
+   * revocation, password change) keeps the username so the login page can prefill it.
    */
   const logout = useCallback(async (options: LogoutOptions = {}): Promise<void> => {
     if (isLoggingOutRef.current) {
@@ -95,6 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       isLoggingOutRef.current = true;
+      WebAuthnService.disable();
       try {
         await webApi.revokeTokens();
       } catch (error) {

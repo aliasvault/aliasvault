@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { delay } from '@/utils/Delay';
-import { WebAuthnService } from '@/utils/WebAuthnService';
 
 /**
  * Logs the user out and returns to the start page.
@@ -30,7 +29,6 @@ const Logout: React.FC = () => {
      * Revoke the tokens and redirect to the start page.
      */
     const run = async (): Promise<void> => {
-      WebAuthnService.disable();
       await auth.logout({ userInitiated: true });
       notifications.clearMessages();
       await delay(500);

@@ -2,7 +2,7 @@ import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView'
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 import CreateNewIdentityWidget from '@/components/layout/CreateNewIdentityWidget';
 import DbLockButton from '@/components/layout/DbLockButton';
@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCapabilities } from '@/context/CapabilityContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 
 /**
  * Class of a menu link, highlighting the active route.
@@ -29,6 +30,7 @@ const DROPDOWN_LINK = 'block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-g
 const TopMenu: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { username } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
   const hasCapability = useCapabilities();
@@ -41,6 +43,9 @@ const TopMenu: React.FC = () => {
    */
   const closeMenu = useCallback((): void => setIsMobileMenuOpen(false), []);
   useClickOutside([menuRef, toggleRef], closeMenu, isMobileMenuOpen);
+
+  const goHome = useCallback((): void => void navigate('/'), [navigate]);
+  useKeyboardShortcut('gh', goHome);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);

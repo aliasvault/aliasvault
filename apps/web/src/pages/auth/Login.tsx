@@ -49,7 +49,7 @@ const Login: React.FC = () => {
   const [step, setStep] = useState<LoginStep>('credentials');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [rememberMachine, setRememberMachine] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState('');
