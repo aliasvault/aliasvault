@@ -24,7 +24,6 @@ TARGETS_FILE="$ASSETS_DIR/targets.txt"
 # Folders that also hold content images (fastlane screenshots, docs) are mapped in targets.txt but not listed here.
 MANAGED_ROOTS=(
     "apps/web/public"
-    "apps/server/AliasVault.Client/wwwroot"
     "apps/server/AliasVault.Admin/wwwroot"
     "apps/browser-extension/public"
     "apps/browser-extension/src/assets"

@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Target options:"
-            echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
+            echo "  --web                Build WASM for the web app (size-optimized)"
             echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
             echo "  --ios                Build for iOS with Swift bindings"
             echo "  --android            Build for Android with Kotlin bindings"

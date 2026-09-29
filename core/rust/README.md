@@ -3,7 +3,7 @@
 Cross-platform core library providing shared business logic for all AliasVault clients:
 
 - **Browser Extensions** (Chrome, Firefox, Edge, Safari via WASM)
-- **Web App and Blazor Client** (via the same WASM build)
+- **Web App** (via the same WASM build)
 - **Mobile Apps** (iOS via Swift bindings, Android via Kotlin bindings)
 
 ## Core Modules
@@ -62,7 +62,7 @@ The host entry points: `wasm` (wasm-bindgen, browser) and `uniffi_api` (UniFFI, 
 ## Building
 
 ```bash
-./build.sh --web                # WASM for the web app and Blazor client
+./build.sh --web                # WASM for the web app
 ./build.sh --browser-extension  # WASM for the browser extension
 ./build.sh --ios                # iOS device + simulator with Swift bindings
 ./build.sh --android            # Android ABIs with Kotlin bindings

@@ -33,5 +33,5 @@ TypeScript models that are auto-generated to platform-specific code:
 Vault database schema and SQL utilities for:
 - Browser extension
 - Mobile apps (React Native)
-- Web client (Blazor)
+- Web app
 

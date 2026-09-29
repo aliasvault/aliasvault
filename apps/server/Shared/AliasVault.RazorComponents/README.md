@@ -4,7 +4,7 @@ This project contains shared Razor components and UI-related functionality used 
 
 ## Purpose
 
-This library provides shared Blazor components used by both the client and admin applications:
+This library provides shared Blazor components used by the admin application:
 - Reusable Razor components
 - UI-specific services
 - Component-related models
