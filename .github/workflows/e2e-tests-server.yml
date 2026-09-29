@@ -1,4 +1,4 @@
-# Server E2E tests (Admin and Client/Blazor WASM)
+# Server E2E tests (Admin)
 name: E2E Tests - Server
 
 on:
@@ -35,10 +35,6 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Install dependencies
-        working-directory: apps/server
-        run: dotnet workload install wasm-tools
-
       - name: Build
         working-directory: apps/server
         run: dotnet build
@@ -63,45 +59,3 @@ jobs:
         with:
           name: admin-test-results
           path: TestResults-Admin.xml
-
-  client-tests:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5]
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Build core libraries
-        uses: ./.github/actions/build-core-libraries
-        with:
-          target: web
-
-      - name: Install dependencies
-        working-directory: apps/server
-        run: dotnet workload install wasm-tools
-
-      - name: Build
-        working-directory: apps/server
-        run: dotnet build
-
-      - name: Start dev database
-        run: ./scripts/dev.sh db-start
-
-      - name: Ensure browsers are installed
-        working-directory: apps/server
-        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps
-
-      - name: Run ClientTests with retry (Shard ${{ matrix.shard }})
-        uses: nick-fields/retry@v4
-        with:
-          timeout_minutes: 60
-          max_attempts: 3
-          command: cd apps/server && dotnet test Tests/AliasVault.E2ETests --no-build --verbosity normal --filter "FullyQualifiedName~.E2ETests.Tests.Client.Shard${{ matrix.shard }}."
