@@ -95,8 +95,7 @@
       "httpError": "HTTP-fel: {{status}}",
       "networkError": "Nätverksförfrågan misslyckades. Kontrollera din internetanslutning och försök igen.",
       "networkErrorSelfHosted": "Nätverksförfrågan misslyckades. Kontrollera din nätverksanslutning och servertillgänglighet. För egenhostade instanser, se till att du har ett giltigt SSL-certifikat installerat. Självsignerade certifikat stöds inte på mobila enheter av säkerhetsskäl.",
-      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, vänligen kontrollera att API-slutpunkten kan nås genom att navigera till den i en webbläsare: den ska visa 'OK'.",
-      "sessionExpired": "Din session har löpt ut. Vänligen logga in igen."
+      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, vänligen kontrollera att API-slutpunkten kan nås genom att navigera till den i en webbläsare: den ska visa 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Om du nyligen ändrat ditt lösenord och har svårt att logga in med ditt nya lösenord, notera att serveradministratören kanske kan återställa en tidigare säkerhetskopia av ditt valv för att hjälpa dig. Om så är fallet, kontakta serveradministratören.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Anslutningen till AliasVault-servrarna misslyckades. Försök igen (senare).",
       "enterMasterPasswordDescription": "Ange ditt huvudlösenord för att låsa upp ditt valv.",
-      "incorrectPasswordError": "Lösenordet är felaktigt. Försök att ange ditt lösenord igen eller logga ut och logga in igen.",
       "loggingInWithWebAuthn": "Loggar in med passkey...",
       "quickUnlockDescription": "Lås snabbt upp ditt valv med din passkey. Eller logga in med ditt lösenord som reserv.",
-      "sessionTimedOutError": "Din session har löpt ut. Vänligen logga in igen.",
       "unlockButton": "Lås upp",
       "unlockWithMobileButton": "Lås upp med mobilappen",
       "unlockWithWebAuthn": "Lås upp med passkey",
@@ -225,7 +222,6 @@
     "back": "Tillbaka",
     "backspace": "Backspace",
     "cancel": "Avbryt",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Rensa urklipp"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Lösenorden matchar inte.",
     "errors": {
       "backgroundUnresponsive": "Bakgrundstjänsten för tillägg svarar inte. Stäng och öppna tillägget igen eller starta om webbläsaren om problemet kvarstår.",
-      "browserExtensionOutdated": "Detta webbläsartillägg är föråldrat och kan inte användas för att komma åt detta valv. Uppdatera detta webbläsartillägg för att fortsätta.",
-      "clientVersionNotSupported": "Denna version av webbläsartillägget AliasVault stöds inte längre av servern. Vänligen uppdatera ditt webbläsartillägg till den senaste versionen.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta support om problemet kvarstår.",
-      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda detta webbläsartillägg. Kontakta support om du behöver hjälp.",
-      "serverVersionTooOld": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda denna funktion. Vänligen kontakta serveradministratören om du behöver hjälp.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Ett okänt fel har inträffat.",
       "unknownErrorTryAgain": "Ett okänt fel inträffade. Försök igen.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Valvet är låst",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "unavailable": "Unavailable",
     "undo": "Ångra",
+    "updateApp": "Update app",
     "use": "Använd",
     "username": "Användarnamn",
     "vaultSaveError": "Det gick inte att spara ändringarna i valvet. Försök igen.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Välj text att infoga i det fokuserade inmatningsfältet",
     "serverUnavailableMessage": "Servern är inte tillgänglig för tillfället. Försök igen senare.",
     "serverUnavailableTitle": "Servern är inte tillgänglig",
-    "serverVersionNotSupportedContactAdmin": "Serverversionen är föråldrad. Kontakta administratören för att uppdatera servern.",
-    "serverVersionNotSupportedMessage": "Serverversionen är föråldrad. Vänligen uppdatera din server till den senaste versionen.",
     "serverVersionNotSupportedTitle": "Serveruppdatering krävs",
     "sessionExpiredMessage": "Din session har löpt ut. Logga in igen.",
     "sessionExpiredTitle": "Sessionen har löpt ut",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "den här posten",
     "usernameCopied": "Användarnamn kopierat",
     "usernamePrefix": "Användarnamn: ",
-    "versionNotSupportedMessage": "Din appversion stöds inte längre. Vänligen uppdatera till den senaste versionen.",
     "versionNotSupportedTitle": "Uppdatering krävs",
     "viewDetails": "Visa Detaljer",
     "website": "Webbplats"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Söker efter valvuppdateringar",
     "checkingVaultUpdates": "Söker efter valvuppdateringar",
     "errors": {
-      "appOutdated": "Denna app är föråldrad och kan inte användas för att komma åt den här (nyare) valvversionen. Vänligen uppdatera AliasVault-appen för att fortsätta.",
       "failedToGetEncryptedDatabase": "Det gick inte att hämta krypterad databas",
       "passwordChangeRequiresOnline": "Lösenordsbyte kräver en internetanslutning. Försök igen när du är online.",
-      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda mobilapp. Kontakta support om du behöver hjälp.",
-      "usernameNotFound": "Användarnamnet hittades inte",
-      "vaultOutdated": "Ditt valv är föråldrad. Logga in på AliasVault webbplats och följ stegen.",
-      "versionNotSupported": "Denna version av mobilappen AliasVault stöds inte längre av servern. Vänligen uppdatera ditt appen till den senaste versionen."
+      "usernameNotFound": "Användarnamnet hittades inte"
     },
     "mergingVault": "Sammanfogar valvförändringar...",
     "savingChangesToVault": "Sparar ändringar till valv",
