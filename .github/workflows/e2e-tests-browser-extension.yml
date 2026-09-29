@@ -6,6 +6,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'apps/browser-extension/**'
+      - 'apps/server/AliasVault.Api/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-browser-extension.yml'
       - '.github/actions/build-core-libraries/**'
@@ -14,6 +15,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'apps/browser-extension/**'
+      - 'apps/server/AliasVault.Api/**'
       - 'core/**'
       - '.github/workflows/e2e-tests-browser-extension.yml'
       - '.github/actions/build-core-libraries/**'
@@ -25,62 +27,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  browser-extension-dotnet-tests:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Build core libraries
-        uses: ./.github/actions/build-core-libraries
-        with:
-          target: browser-extension
-
-      - name: Install .NET dependencies
-        working-directory: apps/server
-        run: dotnet workload install wasm-tools
-
-      - name: Build server
-        working-directory: apps/server
-        run: dotnet build
-
-      - name: Build browser extension
-        working-directory: apps/browser-extension
-        run: |
-          npm install
-          npm run build:chrome
-
-      - name: Start dev database
-        run: ./scripts/dev.sh db-start
-
-      - name: Ensure browsers are installed
-        working-directory: apps/server
-        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps
-
-      - name: Run ExtensionTests with retry
-        uses: nick-fields/retry@v4
-        with:
-          timeout_minutes: 60
-          max_attempts: 3
-          command: cd apps/server && dotnet test Tests/AliasVault.E2ETests --no-build --verbosity normal --filter "Category=ExtensionTests"
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: extension-dotnet-test-results
-          path: TestResults-Extension.xml
-
   browser-extension-playwright-tests:
     timeout-minutes: 60
     runs-on: ubuntu-latest
