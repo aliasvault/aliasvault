@@ -57,7 +57,7 @@ public abstract class PlaywrightTest
     protected PlaywrightInputHelper InputHelper { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets base URL where the Blazor WASM app runs on including random port.
+    /// Gets or sets base URL where the app under test runs on including random port.
     /// </summary>
     protected string AppBaseUrl { get; set; } = string.Empty;
 
