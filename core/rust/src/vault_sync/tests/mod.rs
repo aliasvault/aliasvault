@@ -41,6 +41,21 @@ fn insert_item(conn: &rusqlite::Connection, id: &str, name: &str, manifest_id: &
     .unwrap();
 }
 
+/// Give a manifest the mail delivery keypair every written vault carries.
+fn insert_delivery_key(conn: &rusqlite::Connection, manifest_id: &str) {
+    let now = crate::common::timestamp::now_vault_datetime();
+    conn.execute(
+        "INSERT INTO EncryptionKeys (Id, ManifestId, PublicKey, PrivateKey, IsPrimary, CreatedAt, UpdatedAt, IsDeleted) VALUES ('dddddddd-0000-4000-8000-000000000001', ?, 'public', 'private', 1, ?, ?, 0)",
+        rusqlite::params![manifest_id, now, now],
+    )
+    .unwrap();
+}
+
+/// The active delivery keys of a manifest in a connection.
+fn active_delivery_keys(conn: &rusqlite::Connection, manifest_id: &str) -> Vec<String> {
+    query(conn, "SELECT PublicKey FROM EncryptionKeys WHERE ManifestId = ? AND IsPrimary = 1 AND IsDeleted = 0", &[json!(manifest_id)]).unwrap().iter().map(|r| r["PublicKey"].as_str().unwrap().to_string()).collect()
+}
+
 /// Read every user table of a connection into the codec's input shape.
 fn read_tables(conn: &rusqlite::Connection) -> Vec<CodecTableData> {
     let names: Vec<String> = query(conn, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name", &[]).unwrap().iter().map(|r| r["name"].as_str().unwrap().to_string()).collect();
@@ -372,6 +387,78 @@ fn no_op_mutation_clears_the_dirty_flag_without_a_write() {
     assert!(host.requests.iter().all(|r| r.method != "POST"), "no write for a no-op mutation");
     assert_eq!(host.mark_clean_calls, vec![1]);
     assert!(!host.is_dirty);
+}
+
+/// A host that pulled a server vault at revision 7 holding one item and no mail delivery keypair.
+fn host_with_keyless_vault(vek: &str) -> TestHost {
+    let mut host = TestHost::new(vek);
+    let server_db = test_host::open_schema_db(&host.schema_sql);
+    insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
+    let (status, vault) = snapshot_of(&server_db, vek, 7, &vault_codec::generate_manifest_salt());
+    host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("wrapped"));
+    host.respond("GET", "Status", status);
+    host.respond("GET", "Vault", vault);
+    host.drive(&SyncSession::new(&request("fullSync", vek, false, 0)).unwrap());
+    assert!(active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID).is_empty());
+    host
+}
+
+/// Mark the local vault changed and sync it with the given dirty scopes; returns the result and the last vault write.
+fn push_local_edit(host: &mut TestHost, vek: &str, name: &str, scopes: &[&str]) -> (Value, Value) {
+    host.local.execute("UPDATE Items SET Name = ?, UpdatedAt = '2099-01-01 00:00:00.000'", [name]).unwrap();
+    host.store_local_as_blob();
+    host.mutation_sequence += 1;
+    host.is_dirty = true;
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 8 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+    let mut sync = serde_json::from_str::<Value>(&request("fullSync", vek, true, host.mutation_sequence)).unwrap();
+    sync["dirtyScopes"] = json!(scopes);
+    let result = host.drive(&SyncSession::new(&sync.to_string()).unwrap());
+    let write = host.requests_to("Vault").into_iter().rfind(|r| r.method == "POST").map(|r| r.body.clone().unwrap()).unwrap_or(Value::Null);
+    (result, write)
+}
+
+#[test]
+fn push_creates_and_publishes_a_missing_personal_delivery_key() {
+    let vek = crypto::generate_key_base64();
+    let mut host = host_with_keyless_vault(&vek);
+
+    let (result, write) = push_local_edit(&mut host, &vek, "Renamed", &["Main"]);
+
+    assert_eq!(result["success"], true, "{}", result);
+    let keys = active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID);
+    assert_eq!(keys.len(), 1, "the push created exactly one keypair");
+    assert_eq!(write["manifests"][0]["encryptionPublicKey"], json!(keys[0]), "the write publishes the new public key");
+
+    // The keypair travels inside the manifest, so the other devices get the private half.
+    let blob = write["manifests"][0]["manifestBlob"].as_str().unwrap();
+    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
+    assert_eq!(manifest["tables"]["EncryptionKeys"].as_array().unwrap().len(), 1);
+
+    // The stored vault holds it too, so a reload does not read the keypair as deleted.
+    let stored = state::decrypt_vault_blob(host.vault_blob.as_ref().unwrap(), &host.vault_key).unwrap();
+    assert_eq!(active_delivery_keys(&test_host::open_from_bytes(&stored), PERSONAL_MANIFEST_ID), keys);
+
+    // The next push keeps the same keypair.
+    let (again, second_write) = push_local_edit(&mut host, &vek, "Renamed again", &["Main"]);
+    assert_eq!(again["success"], true, "{}", again);
+    assert_eq!(active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID), keys);
+    assert_eq!(second_write["manifests"][0]["encryptionPublicKey"], json!(keys[0]));
+}
+
+#[test]
+fn bucket_only_push_writes_the_manifest_while_the_personal_delivery_key_is_missing() {
+    let vek = crypto::generate_key_base64();
+    let mut host = host_with_keyless_vault(&vek);
+    let category = vault_codec::bucket_layout()[0].category.clone();
+
+    let (result, write) = push_local_edit(&mut host, &vek, "Renamed", &[category.as_str()]);
+
+    assert_eq!(result["success"], true, "{}", result);
+    let keys = active_delivery_keys(&host.local, PERSONAL_MANIFEST_ID);
+    assert_eq!(keys.len(), 1);
+    assert_eq!(write["manifests"][0]["encryptionPublicKey"], json!(keys[0]), "the full write publishes the key a bucket-only write could not");
 }
 
 #[test]

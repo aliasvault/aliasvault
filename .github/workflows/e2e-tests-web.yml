@@ -11,6 +11,8 @@ on:
       - '.github/workflows/e2e-tests-web.yml'
       - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
+      - '.github/actions/start-smtp-service/**'
+      - 'apps/server/Services/AliasVault.SmtpService/**'
   pull_request:
     branches: [ "main" ]
     paths:
@@ -20,6 +22,8 @@ on:
       - '.github/workflows/e2e-tests-web.yml'
       - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
+      - '.github/actions/start-smtp-service/**'
+      - 'apps/server/Services/AliasVault.SmtpService/**'
   workflow_dispatch:
 
 concurrency:
@@ -52,6 +56,12 @@ jobs:
         uses: ./.github/actions/start-api-server
         with:
           database: aliasdb_e2e_web
+
+      - name: Start SMTP service
+        uses: ./.github/actions/start-smtp-service
+        with:
+          database: aliasdb_e2e_web
+          private-email-domains: "example.tld,example2.tld,aliasvault.net,disabled.tld"
 
       - name: Install web app dependencies
         run: npm ci
@@ -98,5 +108,14 @@ jobs:
         with:
           name: web-api-server-log
           path: /tmp/api-server.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload SMTP service log on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-smtp-service-log
+          path: /tmp/smtp-service.log
           retention-days: 30
           if-no-files-found: ignore
