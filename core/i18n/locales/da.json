@@ -95,8 +95,7 @@
       "httpError": "HTTP-fejl: {{status}}",
       "networkError": "Netværksanmodning mislykkedes. Tjek venligst din internetforbindelse og prøv igen.",
       "networkErrorSelfHosted": "Netværksanmodning mislykkedes. Tjek din netværksforbindelse og serverens tilgængelighed. For selvhostede instanser skal du sikre dig, at du har installeret et gyldigt SSL-certifikat. Selvsignerede certifikater understøttes ikke på mobile enheder af sikkerhedsmæssige årsager.",
-      "serverErrorSelfHosted": "Kunne ikke få forbindelse til API'en. For selvhostede instanser skal du kontrollere, at API-endpointet er tilgængeligt ved at besøge det i en browser: det bør vise 'OK'.",
-      "sessionExpired": "Din session er udløbet. Log venligst ind igen."
+      "serverErrorSelfHosted": "Kunne ikke få forbindelse til API'en. For selvhostede instanser skal du kontrollere, at API-endpointet er tilgængeligt ved at besøge det i en browser: det bør vise 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Hvis du for nylig har ændret din adgangskode og oplever problemer med at logge ind med din nye adgangskode, skal du være opmærksom på, at serveradministratoren muligvis kan gendanne en tidligere backup af din boks (vault) for at hjælpe dig. Hvis dette er tilfældet, bedes du kontakte serveradministratoren.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Forbindelsen til AliasVault-serverne mislykkedes. Prøv venligst igen (senere).",
       "enterMasterPasswordDescription": "Indtast din hovedadgangskode for at låse din boks op.",
-      "incorrectPasswordError": "Adgangskoden er forkert. Prøv venligst at indtaste din adgangskode igen, eller log ud og log ind igen.",
       "loggingInWithWebAuthn": "Logger ind med adgangsnøgle...",
       "quickUnlockDescription": "Lås hurtigt din boks op ved hjælp af din adgangsnøgle. Eller log ind med din adgangskode som fallback.",
-      "sessionTimedOutError": "Din session er udløbet. Log venligst ind igen.",
       "unlockButton": "Lås op",
       "unlockWithMobileButton": "Lås op med mobil-app",
       "unlockWithWebAuthn": "Lås op med adgangsnøgle",
@@ -225,7 +222,6 @@
     "back": "Tilbage",
     "backspace": "Backspace",
     "cancel": "Annuller",
-    "clientVersionUnsupported": "Denne version af appen understøttes ikke længere af serveren. Opdater venligst siden for at indlæse den seneste version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Ryd udklipsholder"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Adgangskoderne er ikke ens.",
     "errors": {
       "backgroundUnresponsive": "Baggrundstjenesten for udvidelsen svarer ikke. Luk og genåbn udvidelsen, eller genstart din browser, hvis problemet fortsætter.",
-      "browserExtensionOutdated": "Denne browserudvidelse er forældet og kan ikke bruges til at få adgang til denne boks. Opdater venligst browserudvidelsen for at fortsætte.",
-      "clientVersionNotSupported": "Denne version af AliasVault-browserudvidelsen understøttes ikke længere af serveren. Opdater venligst din browserudvidelse til den nyeste version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Indtast venligst en gyldig 6-cifret autentificeringskode.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Din adgangskode er blevet ændret, siden du sidst loggede ind. Log venligst ind igen af sikkerhedsmæssige årsager.",
       "serverError": "Kunne ikke få forbindelse til AliasVault-serveren. Prøv igen senere eller kontakt support, hvis problemet fortsætter.",
       "serverNotAvailable": "AliasVault-serveren er ikke tilgængelig. Prøv venligst igen senere eller kontakt support, hvis problemet fortsætter.",
-      "serverVersionNotSupported": "AliasVault-serveren skal opdateres til en nyere version for at kunne bruge denne browserudvidelse. Kontakt venligst support, hvis du har brug for hjælp.",
-      "serverVersionTooOld": "AliasVault-serveren skal opdateres til en nyere version for at bruge denne funktion. Kontakt venligst serveradministratoren, hvis du har brug for hjælp.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Din session er udløbet. Log venligst ind igen.",
       "syncConflictMaxRetries": "Kunne ikke synkronisere boksen efter flere forsøg. Prøv venligst igen senere.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Der opstod en ukendt fejl.",
       "unknownErrorTryAgain": "Der opstod en ukendt fejl. Prøv venligst igen.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Boksen er låst",
       "vaultLoadError": "Noget gik galt under indlæsning af din boks. Kopier venligst fejloplysningerne nedenfor og kontakt support for hjælp.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "To-faktor-godkendelse",
     "unavailable": "Unavailable",
     "undo": "Fortryd",
+    "updateApp": "Update app",
     "use": "Brug",
     "username": "Brugernavn",
     "vaultSaveError": "Kunne ikke gemme ændringer i boks. Prøv venligst igen.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Vælg den tekst, der skal indsættes i det fokuserede inputfelt",
     "serverUnavailableMessage": "Serveren er i øjeblikket utilgængelig. Prøv igen senere.",
     "serverUnavailableTitle": "Server utilgængelig",
-    "serverVersionNotSupportedContactAdmin": "Server versionen er forældet. Kontakt venligst din administrator for at opdatere serveren.",
-    "serverVersionNotSupportedMessage": "Serverversionen er forældet. Opdater venligst din server til den nyeste version.",
     "serverVersionNotSupportedTitle": "Serveropdatering påkrævet",
     "sessionExpiredMessage": "Din session er udløbet. Log venligst ind igen.",
     "sessionExpiredTitle": "Session udløbet",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "disse legitimationsoplysninger",
     "usernameCopied": "Brugernavn kopieret",
     "usernamePrefix": "Brugernavn: ",
-    "versionNotSupportedMessage": "Din app-version understøttes ikke længere. Opdater venligst til den nyeste version.",
     "versionNotSupportedTitle": "Opdatering påkrævet",
     "viewDetails": "Vis detaljer",
     "website": "Websted"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Tjekker for opdateringer til boks",
     "checkingVaultUpdates": "Tjekker opdateringer til boks",
     "errors": {
-      "appOutdated": "Denne app er forældet og kan ikke bruges til at tilgå denne (nyere) boks-version. Opdater venligst AliasVault-appen for at fortsætte.",
       "failedToGetEncryptedDatabase": "Kunne ikke hente krypteret database",
       "passwordChangeRequiresOnline": "Ændring af adgangskode kræver en internetforbindelse. Prøv venligst igen, når du er online.",
-      "serverVersionNotSupported": "AliasVault-serveren skal opdateres til en nyere version for at kunne bruge denne mobilapp. Kontakt venligst support, hvis du har brug for hjælp.",
-      "usernameNotFound": "Brugernavn ikke fundet",
-      "vaultOutdated": "Din boks er forældet. Log venligst ind på AliasVault-hjemmesiden og følg trinene.",
-      "versionNotSupported": "Denne version af AliasVault-mobilappen understøttes ikke længere af serveren. Opdater venligst din app til den nyeste version."
+      "usernameNotFound": "Brugernavn ikke fundet"
     },
     "mergingVault": "Fletter ændringer i boks...",
     "savingChangesToVault": "Gemmer ændringer i boks",
