@@ -1,6 +1,6 @@
-import { hasErrorCode, getErrorMessage, extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
@@ -120,7 +120,7 @@ const Unlock: React.FC = () => {
       // Server refused this client version.
       if (err instanceof ClientUpgradeRequiredError) {
         setIsInitialLoading(false);
-        await app.logout(t('common.errors.clientVersionNotSupported'));
+        await app.logout(t('common.errors.clientNotSupported'));
         return { online: false, error: 'clientVersionNotSupported' };
       }
 
@@ -357,19 +357,17 @@ const Unlock: React.FC = () => {
     } catch (err) {
       // Server refused this client version.
       if (err instanceof ClientUpgradeRequiredError) {
-        await app.logout(t('common.errors.clientVersionNotSupported'));
+        await app.logout(t('common.errors.clientNotSupported'));
       } else if (err instanceof VaultVersionIncompatibleError) {
         // Check if it's a version incompatibility error
         await app.logout(err.message);
-      } else if (hasErrorCode(err)) {
-        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
+      } else {
+        const message = await describeAuthError(err, { uncodedIsWrongPassword: true });
+        if (message.wrongPassword) {
           await handlePasswordFailedAttempt();
         } else {
-          // Other error codes, show the formatted message as-is
-          setError(getErrorMessage(err, t('common.errors.wrongPassword')));
+          setError(formatErrorMessage(message, t));
         }
-      } else {
-        await handlePasswordFailedAttempt();
       }
       logFailure('Unlock error', err);
     } finally {
@@ -484,20 +482,16 @@ const Unlock: React.FC = () => {
       } else if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
         setPin('');
-      } else if (hasErrorCode(err)) {
-        if (await VaultKeyService.isWrongUnlockKey(extractErrorCode(getErrorMessage(err, '')))) {
+      } else {
+        const message = await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' });
+        if (message.wrongPassword) {
           // The key the PIN restored does not unlock the vault, treat as incorrect PIN
           logExpected('[Unlock] The entered PIN did not decrypt the vault', err);
           setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining: 3 }));
         } else {
-          // Other error codes: show the formatted message as-is
           logFailure('PIN unlock failed', err);
-          setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
+          setError(formatErrorMessage(message, t));
         }
-        setPin('');
-      } else {
-        logFailure('PIN unlock failed', err);
-        setError(t('common.errors.unknownErrorTryAgain'));
         setPin('');
       }
       hideLoading();
@@ -628,15 +622,12 @@ const Unlock: React.FC = () => {
     } catch (err) {
       // Server refused this client version.
       if (err instanceof ClientUpgradeRequiredError) {
-        await app.logout(t('common.errors.clientVersionNotSupported'));
+        await app.logout(t('common.errors.clientNotSupported'));
       } else if (err instanceof VaultVersionIncompatibleError) {
         // Check if it's a version incompatibility error
         await app.logout(err.message);
-      } else if (hasErrorCode(err)) {
-        // Error contains an error code (E-XXX), show the formatted message as-is
-        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
       } else {
-        setError(t('common.errors.unknownErrorTryAgain'));
+        setError(formatErrorMessage(await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' }), t));
       }
       logFailure('Mobile unlock error', err);
     } finally {

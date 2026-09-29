@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useState } from 'react';
@@ -13,7 +14,6 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
-import { apiErrorMessage } from '@/utils/ApiErrors';
 import { logFailure } from '@/utils/Diagnostics';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
 

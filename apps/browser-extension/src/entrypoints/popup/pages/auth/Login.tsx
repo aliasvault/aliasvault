@@ -1,8 +1,7 @@
-import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { hasErrorCode, getErrorMessage } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
@@ -25,7 +24,6 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import { apiErrorMessage } from '@/utils/ApiErrors';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
@@ -77,10 +75,10 @@ const Login: React.FC = () => {
    */
   const pullAndLoadVault = async (): Promise<void> => {
     const result = await sendMessage('FULL_VAULT_SYNC', { forcePull: true, reportErrorToPopup: false });
-    if (result.errorKey === 'clientVersionNotSupported') {
+    if (result.logoutReason === 'clientVersionNotSupported') {
       throw new ClientUpgradeRequiredError();
     }
-    if (result.errorKey === 'serverVersionNotSupported') {
+    if (result.logoutReason === 'serverVersionNotSupported') {
       throw new ServerUpdateRequiredError();
     }
     if (!result.success) {
@@ -95,25 +93,13 @@ const Login: React.FC = () => {
    * @param context - what failed, for the console
    * @param err - the error
    */
-  const showLoginError = (context: string, err: unknown): void => {
+  const showLoginError = async (context: string, err: unknown): Promise<void> => {
     logFailure(context, err);
-    if (err instanceof ClientUpgradeRequiredError) {
-      // Server refused this client version (HTTP 426).
-      setError(t('common.errors.clientVersionNotSupported'));
-    } else if (err instanceof ServerUpdateRequiredError) {
-      // Server does not support the v2 API, throw unsupported error.
-      setError(t('common.errors.serverVersionNotSupported'));
-    } else if (err instanceof VaultProcessingError) {
+    if (err instanceof VaultProcessingError) {
       // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
       setVaultError(err);
-    } else if (apiErrorCodeOf(err)) {
-      // The server refused the login with a coded reason (wrong password, account locked).
-      setError(apiErrorMessage(err, t, t('common.errors.serverError')));
-    } else if (hasErrorCode(err)) {
-      // Error contains an error code (E-XXX), show the formatted message.
-      setError(getErrorMessage(err, t('common.errors.serverError')));
     } else {
-      setError(t('common.errors.serverError'));
+      setError(formatErrorMessage(await describeAuthError(err), t));
     }
   };
 
@@ -139,7 +125,13 @@ const Login: React.FC = () => {
      * Fetch the account's key chain, check the unlock key opens it and cache it as-is; the vault encryption key is
      * derived from the two on demand. Legacy accounts have no chain.
      */
-    await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+    try {
+      await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+    } catch (err) {
+      // If key chain can't be fetched, logout user and show error as this is not a recoverable error.
+      await app.logout();
+      throw err;
+    }
 
     await dbContext.storeUnlockKeyDerivationParams({
       salt: derivationParams.salt,
@@ -318,7 +310,7 @@ const Login: React.FC = () => {
         loginResponse
       );
     } catch (err) {
-      showLoginError('Login error', err);
+      await showLoginError('Login error', err);
       hideLoading();
     }
   };
@@ -377,7 +369,7 @@ const Login: React.FC = () => {
       setPasswordHashBase64(null);
       setLoginResponse(null);
     } catch (err) {
-      showLoginError('2FA error', err);
+      await showLoginError('2FA error', err);
       hideLoading();
     }
   };
@@ -395,12 +387,7 @@ const Login: React.FC = () => {
       // The mobile device sends the unlock key.
       await handleSuccessfulAuth(result.username, result.token, result.refreshToken, result.unlockKey, result);
     } catch (err) {
-      if (err instanceof ServerUpdateRequiredError) {
-        // Server does not support the v2 API, throw unsupported error.
-        setError(t('common.errors.serverVersionNotSupported'));
-      } else {
-        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-      }
+      await showLoginError('Mobile login error', err);
       hideLoading();
       throw err; // Re-throw to let modal show error
     }

@@ -802,7 +802,7 @@ async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void>
   const dedicatedError = result.requiresLogout || result.wasOffline;
 
   if (hasSyncError(result) && !dedicatedError) {
-    await storage.setItem(StorageKeys.LAST_SYNC_ERROR, { errorKey: result.errorKey, errorCode: result.errorCode, error: result.error });
+    await storage.setItem(StorageKeys.LAST_SYNC_ERROR, { logoutReason: result.logoutReason, errorCode: result.errorCode, error: result.error });
   } else {
     await storage.removeItem(StorageKeys.LAST_SYNC_ERROR);
   }
