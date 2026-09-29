@@ -73,9 +73,38 @@ const Sync: React.FC = () => {
    * @param afterStorageFormatUpgrade - stop on a confirmation instead of continuing, so the user reads that their other apps need updating
    */
   const openVault = useCallback(async (afterStorageFormatUpgrade = false): Promise<void> => {
-    let client;
     try {
-      client = await dbContext.loadStoredDatabase();
+      const client = await dbContext.loadStoredDatabase();
+      if (!client) {
+        setStatus('decryption-failed');
+        return;
+      }
+
+      // Reading the version is what throws VaultVersionIncompatibleError, so it stays inside the try.
+      if (await client.requiresLegacySqliteBlobMigration()) {
+        setCurrentVersion(await client.getDatabaseVersion());
+        setLatestVersion(await client.getLatestDatabaseVersion());
+        setUpgradeKind('legacy-sqlite-blob');
+        setStatus('pending-migrations');
+        return;
+      }
+
+      if (await vaultStore.requiresManifestMigration()) {
+        const kind = await vaultStore.getVaultMigrationStatus();
+        if (kind === VaultMigrationKind.StorageFormatUpgrade) {
+          setUpgradeKind('storage-format');
+          setStatus('pending-migrations');
+          return;
+        }
+        // A local schema rebuild is invisible to the user and runs unattended.
+        const result = await vaultStore.migrateVaultManifest();
+        if (!result.success) {
+          setErrorDetails(syncErrorMessage(result, t) ?? null);
+          setStatus('decryption-failed');
+          return;
+        }
+        await dbContext.loadStoredDatabase();
+      }
     } catch (error) {
       if (error instanceof VaultVersionIncompatibleError) {
         setStatus('version-unrecognized');
@@ -84,35 +113,6 @@ const Sync: React.FC = () => {
       setErrorDetails(error instanceof Error ? error.message : String(error));
       setStatus('decryption-failed');
       return;
-    }
-    if (!client) {
-      setStatus('decryption-failed');
-      return;
-    }
-
-    if (await client.requiresLegacySqliteBlobMigration()) {
-      setCurrentVersion(await client.getDatabaseVersion());
-      setLatestVersion(await client.getLatestDatabaseVersion());
-      setUpgradeKind('legacy-sqlite-blob');
-      setStatus('pending-migrations');
-      return;
-    }
-
-    if (await vaultStore.requiresManifestMigration()) {
-      const kind = await vaultStore.getVaultMigrationStatus();
-      if (kind === VaultMigrationKind.StorageFormatUpgrade) {
-        setUpgradeKind('storage-format');
-        setStatus('pending-migrations');
-        return;
-      }
-      // A local schema rebuild is invisible to the user and runs unattended.
-      const result = await vaultStore.migrateVaultManifest();
-      if (!result.success) {
-        setErrorDetails(syncErrorMessage(result, t) ?? null);
-        setStatus('decryption-failed');
-        return;
-      }
-      await dbContext.loadStoredDatabase();
     }
 
     if (afterStorageFormatUpgrade) {
