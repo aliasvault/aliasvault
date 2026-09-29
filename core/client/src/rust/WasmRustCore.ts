@@ -72,6 +72,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     srpGenerateEphemeral: (): Promise<SrpEphemeral> => ready(() => core.srpGenerateEphemeral() as SrpEphemeral),
     srpDeriveSession: (clientSecret, serverPublic, salt, identity, privateKey): Promise<SrpSession> =>
       ready(() => core.srpDeriveSession(clientSecret, serverPublic, salt, identity, privateKey) as SrpSession),
+    srpVerifySession: (clientPublic, clientProof, sessionKey, serverProof): Promise<boolean> =>
+      ready(() => core.srpVerifySession(clientPublic, clientProof, sessionKey, serverProof)),
 
     getSyncableTableNames: (): Promise<string[]> => ready(() => core.getSyncableTableNames()),
 

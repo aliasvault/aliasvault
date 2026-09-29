@@ -26,6 +26,7 @@ import uniffi.aliasvault_core.srpDeriveSession
 import uniffi.aliasvault_core.srpDeriveVerifier
 import uniffi.aliasvault_core.srpGenerateEphemeral
 import uniffi.aliasvault_core.srpGenerateSalt
+import uniffi.aliasvault_core.srpVerifySession
 import uniffi.aliasvault_core.vaultCodecCanonicalizeFromSqlite
 import uniffi.aliasvault_core.vaultCodecGenerateManifestSalt
 import uniffi.aliasvault_core.vaultCodecLogoContentHash
@@ -84,6 +85,7 @@ object RustCoreDispatcher {
                 val session = srpDeriveSession(args.string(0), args.string(1), args.string(2), args.string(3), args.string(4))
                 JSONObject().put("proof", session.proof).put("key", session.key).toString()
             }
+            "srpVerifySession" -> srpVerifySession(args.string(0), args.string(1), args.string(2), args.string(3)).toString()
 
             "getSyncableTableNames" -> json(getSyncableTableNames())
             "pruneVaultJson" -> pruneVaultJson(args.string(0))

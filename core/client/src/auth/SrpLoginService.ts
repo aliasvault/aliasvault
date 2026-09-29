@@ -1,7 +1,7 @@
 import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { throwIfServerPredatesV2Api } from '../sync/LegacyStorageModelMigration';
 
-import { SrpAuthService } from './SrpAuthService';
+import { SrpAuthService, type SrpClientSession } from './SrpAuthService';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { AccountKeyHierarchy } from '../crypto/AccountKeys';
@@ -76,9 +76,9 @@ export class SrpLoginService {
    */
   public async validateLogin(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...proof };
-    return this.parseAuthResponse<ValidateLoginResponse>(await this.post('Auth/validate', model));
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
+    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...session.proof };
+    return this.verifiedLoginResponse(session, await this.post('Auth/validate', model));
   }
 
   /**
@@ -92,9 +92,9 @@ export class SrpLoginService {
    */
   public async validateLogin2Fa(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse, code2Fa: number): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...proof, code2Fa };
-    return this.parseAuthResponse<ValidateLoginResponse>(await this.post('Auth/validate-2fa', model));
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
+    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...session.proof, code2Fa };
+    return this.verifiedLoginResponse(session, await this.post('Auth/validate-2fa', model));
   }
 
   /**
@@ -108,9 +108,23 @@ export class SrpLoginService {
    */
   public async validateLoginRecoveryCode(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse, recoveryCode: string): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const proof = await SrpAuthService.deriveLoginProof(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...proof, recoveryCode };
-    return this.parseAuthResponse<ValidateLoginResponse>(await this.post('Auth/validate-recovery-code', model));
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
+    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...session.proof, recoveryCode };
+    return this.verifiedLoginResponse(session, await this.post('Auth/validate-recovery-code', model));
+  }
+
+  /**
+   * Parse a validate response and, once it carries tokens, check the server's session proof.
+   * @param session - The client session the request was sent with
+   * @param response - The raw response
+   * @returns The parsed body
+   */
+  private async verifiedLoginResponse(session: SrpClientSession, response: Response): Promise<ValidateLoginResponse> {
+    const result = await this.parseAuthResponse<ValidateLoginResponse>(response);
+    if (!result.requiresTwoFactor) {
+      await SrpAuthService.verifyServerProof(session, result.serverSessionProof);
+    }
+    return result;
   }
 
   /**

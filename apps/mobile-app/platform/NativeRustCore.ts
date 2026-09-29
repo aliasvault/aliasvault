@@ -61,6 +61,7 @@ export const nativeRustCore: IRustCore = {
   srpDeriveVerifier: (privateKey) => call('srpDeriveVerifier', privateKey),
   srpGenerateEphemeral: () => call('srpGenerateEphemeral'),
   srpDeriveSession: (clientSecret, serverPublic, salt, identity, privateKey) => call('srpDeriveSession', clientSecret, serverPublic, salt, identity, privateKey),
+  srpVerifySession: (clientPublic, clientProof, sessionKey, serverProof) => call('srpVerifySession', clientPublic, clientProof, sessionKey, serverProof),
 
   getSyncableTableNames: () => call('getSyncableTableNames'),
 

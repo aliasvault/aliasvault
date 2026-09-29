@@ -45,6 +45,7 @@ export interface IRustCore {
   srpDeriveVerifier(privateKey: string): Promise<string>;
   srpGenerateEphemeral(): Promise<SrpEphemeral>;
   srpDeriveSession(clientSecret: string, serverPublic: string, salt: string, identity: string, privateKey: string): Promise<SrpSession>;
+  srpVerifySession(clientPublic: string, clientProof: string, sessionKey: string, serverProof: string): Promise<boolean>;
 
   getSyncableTableNames(): Promise<string[]>;
 
