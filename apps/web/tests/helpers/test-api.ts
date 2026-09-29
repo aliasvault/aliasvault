@@ -2,6 +2,9 @@
  * Direct API calls used by the E2E suite outside the browser.
  */
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -94,5 +97,34 @@ export async function setServerSetting(apiUrl: string, key: string, value: strin
 
   if (!response.ok) {
     throw new Error(`Failed to set server setting "${key}" via ${url} (status ${response.status}). The test controller only exists in DEBUG builds running with ASPNETCORE_ENVIRONMENT=Development.`);
+  }
+}
+
+/**
+ * A vault written by an old client, with the login material of that time (core/test-fixtures/legacy-vaults).
+ */
+export type LegacyVaultFixture = {
+  password: string;
+  expectedItemNames: string[];
+  vault: Record<string, unknown>;
+};
+
+/**
+ * Read a legacy vault fixture by the client version that wrote it, e.g. "1.0.0".
+ */
+export function readLegacyVaultFixture(version: string): LegacyVaultFixture {
+  const fixturePath = path.resolve(import.meta.dirname, '..', '..', '..', '..', 'core', 'test-fixtures', 'legacy-vaults', `${version}.json`);
+  return JSON.parse(readFileSync(fixturePath, 'utf8')) as LegacyVaultFixture;
+}
+
+/**
+ * Turn an account into one that predates the unlock-key model and holds the given legacy vault, via the DEBUG-only
+ * test controller. Afterwards the account logs in with the fixture's password.
+ */
+export async function restoreLegacyVault(apiUrl: string, username: string, fixture: LegacyVaultFixture): Promise<void> {
+  const url = `${apiUrl}/v2/Test/legacy-vault/by-username/${encodeURIComponent(username)}`;
+  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fixture.vault) });
+  if (!response.ok) {
+    throw new Error(`Restoring the legacy vault via ${url} failed with status ${response.status}: ${await response.text()}`);
   }
 }

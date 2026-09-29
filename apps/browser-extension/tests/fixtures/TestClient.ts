@@ -12,7 +12,7 @@
  */
 import type { BrowserContext, Page } from '@playwright/test';
 
-import { createFreshContext, expect } from './fixtures';
+import { createFreshContext, expect, test } from './fixtures';
 import { completeVaultUpgrade } from './helpers';
 import { FieldSelectors, ButtonSelectors } from './selectors';
 import {
@@ -127,6 +127,18 @@ export class TestClient {
    */
   async completeVaultUpgrade(timeout: number = Timeouts.LONG): Promise<this> {
     await completeVaultUpgrade(this.popup, timeout);
+    return this;
+  }
+
+  /**
+   * Stop here and open the Playwright Inspector to look at the popup, only in a `npm run test:e2e:p` run; a no-op otherwise.
+   */
+  async pause(): Promise<this> {
+    if (!process.env.E2E_PAUSE) {
+      return this;
+    }
+    test.info().setTimeout(0);
+    await this.popup.pause();
     return this;
   }
 

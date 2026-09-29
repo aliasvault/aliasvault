@@ -4,6 +4,10 @@
  * This module provides utilities for interacting with the AliasVault API during E2E tests.
  */
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { WebApiService } from '@aliasvault/client/api/WebApiService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { base64ToBytes } from '@aliasvault/client/utilities/Base64';
@@ -209,4 +213,41 @@ export async function createTestUserWith2FA(apiBaseUrl: string): Promise<TestUse
     totpSecret,
     encryptionKey,
   };
+}
+
+/**
+ * A vault written by an old client, with the login material of that time (core/test-fixtures/legacy-vaults).
+ */
+export type LegacyVaultFixture = {
+  password: string;
+  expectedItemNames: string[];
+  vault: Record<string, unknown>;
+};
+
+/**
+ * Read a legacy vault fixture by the client version that wrote it, e.g. "1.0.0".
+ *
+ * @param version - The client version that wrote the vault
+ * @returns The fixture
+ */
+export function readLegacyVaultFixture(version: string): LegacyVaultFixture {
+  const helpersDir = path.dirname(fileURLToPath(import.meta.url));
+  const fixturePath = path.resolve(helpersDir, '../../../../core/test-fixtures/legacy-vaults', `${version}.json`);
+  return JSON.parse(readFileSync(fixturePath, 'utf8')) as LegacyVaultFixture;
+}
+
+/**
+ * Turn an account into one that predates the unlock-key model and holds the given legacy vault, via the DEBUG-only
+ * test controller. Afterwards the account logs in with the fixture's password.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param username - The account to change
+ * @param fixture - The legacy vault to put on it
+ */
+export async function restoreLegacyVault(apiBaseUrl: string, username: string, fixture: LegacyVaultFixture): Promise<void> {
+  const url = `${apiBaseUrl.replace(/\/$/, '')}/v2/Test/legacy-vault/by-username/${encodeURIComponent(username)}`;
+  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fixture.vault) });
+  if (!response.ok) {
+    throw new Error(`Restoring the legacy vault via ${url} failed with status ${response.status}: ${await response.text()}`);
+  }
 }
