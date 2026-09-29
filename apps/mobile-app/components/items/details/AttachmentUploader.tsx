@@ -92,7 +92,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
             }
           } catch (fileError) {
             console.error('Error reading file:', fileError);
-            setStatusMessage(`Error reading file ${file.name}.`);
+            setStatusMessage(t('attachmentUploader.uploadError', { error: file.name }));
             setTimeout(() => setStatusMessage(''), 3000);
           }
         }
@@ -102,7 +102,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       setStatusMessage('');
     } catch (error) {
       console.error('Error uploading files:', error);
-      setStatusMessage('Error uploading files.');
+      setStatusMessage(t('attachmentUploader.uploadError', { error: error instanceof Error ? error.message : String(error) }));
       setTimeout(() => setStatusMessage(''), 3000);
     }
   };
