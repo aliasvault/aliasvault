@@ -18,12 +18,12 @@ export class WebApp {
   }
 
   /**
-   * Log out via the user menu and wait for the start page.
+   * Log out via the user menu and wait for the login page.
    */
   public async logout(): Promise<void> {
     await this.page.locator('#toggleMobileMenuButton').click();
     await this.page.locator('#mobileMenuDropdown').getByRole('link', { name: 'Log out' }).click();
-    await expect(this.page).toHaveURL(/\/user\/start$/);
+    await expect(this.page).toHaveURL(/\/user\/login$/);
   }
 
   /**
