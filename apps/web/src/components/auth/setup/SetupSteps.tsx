@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { ApiRequestError } from '@aliasvault/client/api/errors/ApiRequestError';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useEffect, useRef, useState } from 'react';
@@ -12,7 +13,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { RegistrationService } from '@/services/RegistrationService';
-import { apiErrorMessage } from '@/utils/ApiErrors';
 
 const STEP_LOADING_MS = 300;
 const USERNAME_DEBOUNCE_MS = 300;

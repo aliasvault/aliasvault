@@ -128,8 +128,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Log out when the API reports the session is gone.
    */
   useEffect(() => {
-    return logoutEventEmitter.subscribe(async (errorKey: string) => {
-      await logout({ errorMessage: t(errorKey) });
+    return logoutEventEmitter.subscribe(async (messageKey) => {
+      await logout({ errorMessage: t(messageKey) });
     });
   }, [logout, t]);
 

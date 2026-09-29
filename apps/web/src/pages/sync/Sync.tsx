@@ -10,10 +10,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
+import Button from '@/components/shared/Button';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
+import { updateApp } from '@/utils/ClientUpdate';
 import { waitForMinimumDuration } from '@/utils/Delay';
 import { getLocalPreference, removeLocalPreference } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
@@ -146,7 +148,7 @@ const Sync: React.FC = () => {
 
       if (!authStatus.hasStoredVault) {
         const result = await vaultStore.fullVaultSync({ forcePull: true, reportErrorToPopup: false });
-        if (result.requiresLogout || result.errorKey) {
+        if (result.requiresLogout || result.logoutReason) {
           await auth.logout({ errorMessage: syncErrorMessage(result, t) });
           navigate('/user/login', { replace: true });
           return;
@@ -224,6 +226,7 @@ const Sync: React.FC = () => {
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                 {t('sync.versionNotSupported.contactSupport')}
               </p>
+              <Button onClick={updateApp} color="primary" additionalClasses="mt-4">{t('common.updateApp')}</Button>
             </div>
           </div>
         );

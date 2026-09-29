@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +16,6 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { apiErrorMessage } from '@/utils/ApiErrors';
 
 import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@aliasvault/models/webapi';
 
