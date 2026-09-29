@@ -9,8 +9,6 @@ export_settings:
   - pattern: '**/*.json'
     format: json
     escape_quotes: 0
-  - pattern: '**/*.resx'
-    format: resx
   - pattern: '**/*.strings'
     format: strings
   - pattern: '**/*.xml'
