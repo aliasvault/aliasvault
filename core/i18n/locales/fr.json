@@ -95,8 +95,7 @@
       "httpError": "Erreur HTTP : {{status}}",
       "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
       "networkErrorSelfHosted": "La requête réseau a échoué. Vérifiez votre connexion réseau et la disponibilité du serveur. Pour les instances auto-hébergées, veuillez vous assurer que vous avez un certificat SSL valide. Les certificats auto-signés ne sont pas pris en charge pour des raisons de sécurité.",
-      "serverErrorSelfHosted": "Impossible d'atteindre l'API. Pour les instances auto-hébergées, veuillez vérifier que le point de terminaison de l'API est accessible en naviguant vers celui-ci dans un navigateur : il devrait afficher 'OK'.",
-      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+      "serverErrorSelfHosted": "Impossible d'atteindre l'API. Pour les instances auto-hébergées, veuillez vérifier que le point de terminaison de l'API est accessible en naviguant vers celui-ci dans un navigateur : il devrait afficher 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Si vous avez récemment changé votre mot de passe et que vous rencontrez des difficultés à vous connecter avec votre nouveau mot de passe, Veuillez noter que l'administrateur du serveur pourra peut-être récupérer une sauvegarde antérieure de votre coffre-fort pour vous aider. Si c'est le cas, veuillez contacter l'administrateur du serveur.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "La connexion avec les serveurs AliasVault a échoué. Veuillez réessayer (plus tard).",
       "enterMasterPasswordDescription": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort.",
-      "incorrectPasswordError": "Le mot de passe est incorrect. Veuillez essayer de saisir votre mot de passe à nouveau, ou déconnectez-vous et reconnectez-vous.",
       "loggingInWithWebAuthn": "Connexion avec la clé d'accès...",
       "quickUnlockDescription": "Déverrouillez rapidement votre coffre-fort en utilisant votre clé d'accès. Ou connectez-vous avec votre mot de passe en guise de repli.",
-      "sessionTimedOutError": "Votre session a expiré. Veuillez vous reconnecter.",
       "unlockButton": "Déverrouiller",
       "unlockWithMobileButton": "Déverrouiller avec l'application mobile",
       "unlockWithWebAuthn": "Déverrouiller avec la clé d'accès",
@@ -225,7 +222,6 @@
     "back": "Retour",
     "backspace": "RetArr",
     "cancel": "Annuler",
-    "clientVersionUnsupported": "Cette version de l'application n'est plus supportée par le serveur. Veuillez rafraîchir la page pour charger la dernière version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Effacer le presse-papiers"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Les mots de passes ne correspondent pas.",
     "errors": {
       "backgroundUnresponsive": "Le service d'arrière-plan de l'extension ne répond pas. Veuillez fermer et rouvrir l'extension ou redémarrer votre navigateur si le problème persiste.",
-      "browserExtensionOutdated": "Cette extension de navigateur est obsolète et ne peut pas être utilisée pour accéder à ce coffre-fort. Veuillez la mettre à jour pour continuer.",
-      "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contactez le support à {{email}}.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "keyChainUnreadable": "Votre mot de passe est correct, mais les clés de chiffrement de votre coffre n'ont pas pu être ouvertes. Veuillez contacter le support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
-      "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
-      "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre-fort après plusieurs tentatives. Veuillez réessayer plus tard.",
       "unexpectedErrorContactSupport": "Une erreur inattendue s'est produite. Veuillez réessayer et contacter le support si le problème persiste.",
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Les données de votre coffre n'ont pas pu être lues, vos données ne sont donc pas accessibles pour le moment. Contactez le support.",
       "vaultIsLocked": "Le coffre-fort est verrouillé",
       "vaultLoadError": "Une erreur s'est produite lors du chargement de votre coffre. Veuillez copier les détails de l'erreur ci-dessous et contacter le support pour obtenir de l'aide.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Authentification à double facteur",
     "unavailable": "Indisponible",
     "undo": "Annuler",
+    "updateApp": "Update app",
     "use": "Utiliser",
     "username": "Nom d'utilisateur",
     "vaultSaveError": "Impossible d'enregistrer les modifications dans le coffre-fort. Veuillez réessayer.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Sélectionnez le texte à insérer dans le champ de saisie ciblé",
     "serverUnavailableMessage": "Le serveur est actuellement indisponible, veuillez réessayer plus tard.",
     "serverUnavailableTitle": "Serveur indisponible",
-    "serverVersionNotSupportedContactAdmin": "La version du serveur est obsolète. Veuillez contacter votre administrateur pour mettre à jour le serveur.",
-    "serverVersionNotSupportedMessage": "La version du serveur est obsolète. Veuillez mettre à jour votre serveur vers la dernière version.",
     "serverVersionNotSupportedTitle": "Mise à jour du serveur requise",
     "sessionExpiredMessage": "Votre session a expiré. Veuillez vous reconnecter.",
     "sessionExpiredTitle": "Session expirée",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "cet identifiant",
     "usernameCopied": "Nom d'utilisateur copié",
     "usernamePrefix": "Nom d'utilisateur : ",
-    "versionNotSupportedMessage": "La version de votre application n'est plus prise en charge. Veuillez mettre à jour vers la dernière version.",
     "versionNotSupportedTitle": "Mise à jour requise",
     "viewDetails": "Voir les détails",
     "website": "Site internet"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Vérification des mises à jour du coffre-fort",
     "checkingVaultUpdates": "Vérification des mises à jour du coffre-fort",
     "errors": {
-      "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre-fort. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
       "passwordChangeRequiresOnline": "Le changement de mot de passe nécessite une connexion internet. Veuillez réessayer une fois connecté.",
-      "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
-      "usernameNotFound": "Identifiant non trouvé",
-      "vaultOutdated": "Votre coffre-fort est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
-      "versionNotSupported": "Cette version de l'application mobile AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre application vers la dernière version."
+      "usernameNotFound": "Identifiant non trouvé"
     },
     "mergingVault": "Fusion des modifications du coffre-fort...",
     "savingChangesToVault": "Enregistrement des modifications dans le coffre-fort",
