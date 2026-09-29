@@ -20,6 +20,11 @@ type TotpViewerProps = {
 const codeOf = (totpCode: TotpCode): string => generateTotpCode(totpCode.SecretKey, totpCode) ?? '';
 
 /**
+ * A code split in two halves for readability ("123 456"); an odd length is shown as-is.
+ */
+const formatCode = (code: string): string => (code.length % 2 === 0 ? `${code.slice(0, code.length / 2)} ${code.slice(code.length / 2)}` : code);
+
+/**
  * A single TOTP row with its countdown.
  */
 const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = ({ totpCode, item, tick }) => {
@@ -40,7 +45,7 @@ const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = (
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end">
             <div className="totp-code text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-              {code}
+              {formatCode(code)}
             </div>
             <div className="text-xs">
               {copied

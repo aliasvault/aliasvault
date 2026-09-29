@@ -1,4 +1,4 @@
-import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
+import { buildOtpAuthUri, otpAuthDisplayName, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
 import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD, type TotpCode } from '@aliasvault/models/vault';
 import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
@@ -42,8 +42,8 @@ const sanitizeSecretKey = (secretInput: string, nameInput: string, invalidMessag
     algorithm = parsed.algorithm;
     digits = parsed.digits;
     period = parsed.period;
-    if (name.length === 0 && parsed.account) {
-      name = parsed.account;
+    if (name.length === 0) {
+      name = otpAuthDisplayName(parsed);
     }
   }
 
@@ -95,7 +95,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
       return;
     }
     try {
-      const sanitized = sanitizeSecretKey(newSecret, newName, t('validation.secretKeyRequired'));
+      const sanitized = sanitizeSecretKey(newSecret, newName, t('totp.errors.invalidSecretKey'));
       const code: TotpCode = { Id: crypto.randomUUID(), Name: sanitized.name, SecretKey: sanitized.secretKey, Algorithm: sanitized.algorithm, Digits: sanitized.digits, Period: sanitized.period, ItemId: '' };
       onTotpCodesChange([...totpCodes, code]);
       setIsAddFormVisible(false);
