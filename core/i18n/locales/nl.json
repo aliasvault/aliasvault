@@ -95,8 +95,7 @@
       "httpError": "HTTP fout: {{status}}",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven.",
-      "sessionExpired": "Je sessie is verlopen. Log opnieuw in."
+      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven."
     },
     "forgotPassword": {
       "contactAdministrator": "Als je onlangs je wachtwoord hebt gewijzigd en problemen hebt met inloggen met je nieuwe wachtwoord, kan de serverbeheerder mogelijk een eerdere backup van je kluis herstellen om je te helpen. Neem in dat geval contact op met de serverbeheerder.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Verbinding met de AliasVault servers is mislukt. Probeer het (later) opnieuw.",
       "enterMasterPasswordDescription": "Voer je hoofdwachtwoord in om je vault te ontgrendelen.",
-      "incorrectPasswordError": "Het wachtwoord is onjuist. Probeer je wachtwoord opnieuw in te voeren, of log uit en log opnieuw in.",
       "loggingInWithWebAuthn": "Inloggen met passkey...",
       "quickUnlockDescription": "Ontgrendel je vault snel met je passkey. Of log in met je wachtwoord als alternatief.",
-      "sessionTimedOutError": "Je sessie is verlopen. Log opnieuw in.",
       "unlockButton": "Ontgrendelen",
       "unlockWithMobileButton": "Ontgrendel met mobiele app",
       "unlockWithWebAuthn": "Ontgrendelen met passkey",
@@ -225,7 +222,6 @@
     "back": "Terug",
     "backspace": "Backspace",
     "cancel": "Annuleren",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Klembord wissen"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Wachtwoorden komen niet overeen.",
     "errors": {
       "backgroundUnresponsive": "De extensie achtergrond service reageert niet. Sluit en heropen de extensie of start je browser opnieuw op als het probleem zich blijft voordoen.",
-      "browserExtensionOutdated": "Deze browserextensie is verouderd en kan niet worden gebruikt om toegang te krijgen tot deze vault. Update deze browserextensie om door te gaan.",
-      "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Neem contact op met support via {{email}}.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "keyChainUnreadable": "Je wachtwoord is correct, maar de encryptiesleutels van je vault konden niet worden geopend. Neem contact op met support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
-      "serverVersionNotSupported": "De AliasVault server moet worden bijgewerkt naar een nieuwere versie om deze browserextensie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
       "unexpectedErrorContactSupport": "Er is een onverwachte fout opgetreden. Probeer het opnieuw of neem contact op met support als het probleem aanhoudt.",
       "unknownError": "Er is een onbekende fout opgetreden.",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Je vault gegevens konden niet worden gelezen, dus je gegevens zijn op dit moment niet toegankelijk. Neem contact op met support.",
       "vaultIsLocked": "Vault is vergrendeld",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Tweestapsverificatie",
     "unavailable": "Niet beschikbaar",
     "undo": "Ongedaan maken",
+    "updateApp": "Update app",
     "use": "Gebruik",
     "username": "Gebruikersnaam",
     "vaultSaveError": "Wijzigingen opslaan in de vault mislukt. Probeer het opnieuw.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Selecteer de tekst om in te voegen",
     "serverUnavailableMessage": "De server is momenteel niet beschikbaar. Probeer het later opnieuw.",
     "serverUnavailableTitle": "Server niet beschikbaar",
-    "serverVersionNotSupportedContactAdmin": "De server versie is verouderd. Neem contact op met de beheerder van je server om deze bij te werken.",
-    "serverVersionNotSupportedMessage": "De server versie is verouderd. Update je server naar de laatste versie of neem contact op met support.",
     "serverVersionNotSupportedTitle": "Server update vereist",
     "sessionExpiredMessage": "Je sessie is verlopen. Log opnieuw in.",
     "sessionExpiredTitle": "Sessie verlopen",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "deze credential",
     "usernameCopied": "Gebruikersnaam gekopieerd",
     "usernamePrefix": "Gebruikersnaam: ",
-    "versionNotSupportedMessage": "Deze app-versie wordt niet langer ondersteund. Update naar de nieuwste versie.",
     "versionNotSupportedTitle": "Update vereist",
     "viewDetails": "Bekijk details",
     "website": "Website"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Controleren op vault updates",
     "checkingVaultUpdates": "Controleren op vault updates",
     "errors": {
-      "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
       "failedToGetEncryptedDatabase": "Fout bij ophalen van versleutelde vault",
       "passwordChangeRequiresOnline": "Het wijzigen van je wachtwoord vereist een internetverbinding. Probeer het opnieuw wanneer je online bent.",
-      "serverVersionNotSupported": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "usernameNotFound": "Gebruikersnaam niet gevonden",
-      "vaultOutdated": "Je vault is verouderd. Log in op de AliasVault website en volg de stappen.",
-      "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie."
+      "usernameNotFound": "Gebruikersnaam niet gevonden"
     },
     "mergingVault": "Vault wijzigingen mergen...",
     "savingChangesToVault": "Wijzigingen opslaan in vault",
