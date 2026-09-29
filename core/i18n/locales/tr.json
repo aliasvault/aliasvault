@@ -95,8 +95,7 @@
       "httpError": "HTTP hatası: {{status}}",
       "networkError": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
       "networkErrorSelfHosted": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı ve sunucunun erişilebilirliğini kontrol edin. Kendi sunucunuzu kullanıyorsanız, geçerli bir SSL sertifikası yüklü olduğundan emin olun. Güvenlik nedeniyle mobil cihazlarda kendi imzaladığınız sertifikalar desteklenmez.",
-      "serverErrorSelfHosted": "API’ye ulaşılamadı. Kendi sunucunuzu kullanıyorsanız, API uç noktasına tarayıcıdan erişilebilir olduğunu kontrol edin: sayfada “Tamam” görünmelidir.",
-      "sessionExpired": "Oturumun zaman aşımına uğradı. Lütfen tekrar giriş yap."
+      "serverErrorSelfHosted": "API’ye ulaşılamadı. Kendi sunucunuzu kullanıyorsanız, API uç noktasına tarayıcıdan erişilebilir olduğunu kontrol edin: sayfada “Tamam” görünmelidir."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Connection with the AliasVault servers failed. Please try again (later).",
       "enterMasterPasswordDescription": "Enter your master password to unlock your vault.",
-      "incorrectPasswordError": "The password is incorrect. Please try entering your password again, or log out and log in again.",
       "loggingInWithWebAuthn": "Logging in with passkey...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "Your session has timed out. Please log in again.",
       "unlockButton": "Kilidi aç",
       "unlockWithMobileButton": "Unlock with Mobile App",
       "unlockWithWebAuthn": "Unlock with passkey",
@@ -225,7 +222,6 @@
     "back": "Geri",
     "backspace": "Backspace",
     "cancel": "İptal",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Panoyu Temizle"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Parolalar eşleşmiyor.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
-      "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın.",
       "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Bilinmeyen bir hata oluştu.",
       "unknownErrorTryAgain": "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Vault is locked",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "İki faktörlü kimlik doğrulama",
     "unavailable": "Unavailable",
     "undo": "Undo",
+    "updateApp": "Update app",
     "use": "Kullan",
     "username": "Kullanıcı Adı",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "Kullanıcı Adı: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "Web Sitesi"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Kasa güncellemeleri kontrol ediliyor",
     "checkingVaultUpdates": "Kasa güncellemeleri kontrol ediliyor",
     "errors": {
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "failedToGetEncryptedDatabase": "Şifrelenmiş veritabanı alınamadı",
       "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "Bu mobil uygulamayı kullanabilmek için AliasVault sunucusunun daha yeni bir sürüme güncellenmesi gerekiyor. Yardıma ihtiyacınız olursa lütfen destek ile iletişime geçin.",
-      "usernameNotFound": "Kullanıcı adı bulunamadı",
-      "vaultOutdated": "Kasınız güncel değil. Lütfen AliasVault web sitesinden giriş yapın ve gerekli adımları izleyin.",
-      "versionNotSupported": "AliasVault mobil uygulamasının bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen uygulamanızı en son sürüme güncelleyin."
+      "usernameNotFound": "Kullanıcı adı bulunamadı"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Kasadaki değişiklikler kaydediliyor",
