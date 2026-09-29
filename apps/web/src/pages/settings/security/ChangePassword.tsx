@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import { IncorrectPasswordError, MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import React, { useRef, useState } from 'react';
@@ -15,7 +16,6 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultSync } from '@/hooks/useVaultSync';
-import { apiErrorMessage } from '@/utils/ApiErrors';
 
 const VALIDATION_DEBOUNCE_MS = 800;
 

@@ -1,7 +1,5 @@
-import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
-import { extractErrorCode, translateCodedError } from '@aliasvault/client/api/errors/AppErrorCodes';
-import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
-import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
+import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
@@ -23,7 +21,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { apiErrorMessage } from '@/utils/ApiErrors';
+import { asksForClientUpdate } from '@/utils/ClientUpdate';
 import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
@@ -74,8 +72,8 @@ const Login: React.FC = () => {
   // Show the message a forced logout left behind, and prefill the username it kept.
   useEffect(() => {
     if (auth.globalMessage) {
-      // A coded message shows as a critical error in place of the form.
-      if (extractErrorCode(auth.globalMessage)) {
+      // A coded message shows as a critical error in place of the form; an update request shows with its update button.
+      if (extractErrorCode(auth.globalMessage) || asksForClientUpdate(auth.globalMessage)) {
         setErrors([auth.globalMessage]);
       } else {
         notifications.addErrorMessage(auth.globalMessage, true);
@@ -101,25 +99,13 @@ const Login: React.FC = () => {
   /**
    * Turn a failure into the message(s) the form shows.
    */
-  const toErrorMessages = (err: unknown): string[] => {
+  const toErrorMessages = async (err: unknown): Promise<string[]> => {
     console.error('Login error:', err);
-    if (err instanceof ClientUpgradeRequiredError) {
-      return [t('common.errors.clientVersionNotSupported')];
-    }
-    if (err instanceof ServerUpdateRequiredError) {
-      return [t('common.errors.serverVersionNotSupported')];
-    }
-    if (apiErrorCodeOf(err)) {
-      return [apiErrorMessage(err, t, t('auth.loginForm.loginErrorMessage'))];
-    }
-    const codedError = translateCodedError(err, t);
-    if (codedError) {
-      return [codedError];
-    }
-    if (import.meta.env.DEV && err instanceof Error) {
+    const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
+    if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
       return [err.message];
     }
-    return [t('auth.loginForm.loginErrorMessage')];
+    return [formatErrorMessage(message, t)];
   };
 
   /**
@@ -171,7 +157,7 @@ const Login: React.FC = () => {
       const params = { salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings };
       await completeLogin(result.username, result.token, result.refreshToken, result.unlockKey, params);
     } catch (err) {
-      setErrors(toErrorMessages(err));
+      setErrors(await toErrorMessages(err));
     } finally {
       hideLoading();
     }
@@ -204,7 +190,7 @@ const Login: React.FC = () => {
 
       await processLoginVerify(validateLoginResponse, prepared.passwordHashBase64, response);
     } catch (err) {
-      setErrors(toErrorMessages(err));
+      setErrors(await toErrorMessages(err));
     } finally {
       hideLoading();
     }
@@ -229,7 +215,7 @@ const Login: React.FC = () => {
       const validateLoginResponse = await srpUtil.validateLogin2Fa(username, passwordHashString, rememberMe || rememberMachine, loginResponse, parseInt(code, 10));
       await processLoginVerify(validateLoginResponse, passwordHashBase64, loginResponse);
     } catch (err) {
-      setErrors(toErrorMessages(err));
+      setErrors(await toErrorMessages(err));
     } finally {
       hideLoading();
     }
@@ -250,7 +236,7 @@ const Login: React.FC = () => {
       const validateLoginResponse = await srpUtil.validateLoginRecoveryCode(username, passwordHashString, rememberMe, loginResponse, recoveryCode.trim());
       await processLoginVerify(validateLoginResponse, passwordHashBase64, loginResponse);
     } catch (err) {
-      setErrors(toErrorMessages(err));
+      setErrors(await toErrorMessages(err));
     } finally {
       hideLoading();
     }

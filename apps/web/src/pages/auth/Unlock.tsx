@@ -1,5 +1,6 @@
-import { extractErrorCode, translateCodedError } from '@aliasvault/client/api/errors/AppErrorCodes';
+import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordService';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
@@ -88,7 +89,7 @@ const Unlock: React.FC = () => {
      */
     const statusCheck = async (): Promise<void> => {
       if (!auth.isLoggedIn) {
-        notifications.addErrorMessage(t('auth.unlockPage.sessionTimedOutError'));
+        notifications.addErrorMessage(t('common.errors.sessionExpired'));
         navigate('/user/login', { replace: true });
         return;
       }
@@ -107,7 +108,7 @@ const Unlock: React.FC = () => {
         }
       } catch (err) {
         if (err instanceof ClientUpgradeRequiredError) {
-          await auth.logout({ errorMessage: t('common.errors.clientVersionNotSupported') });
+          await auth.logout({ errorMessage: t('common.errors.clientNotSupported') });
           return;
         }
         setErrors([t('auth.unlockPage.connectionFailedError')]);
@@ -173,16 +174,11 @@ const Unlock: React.FC = () => {
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Unlock error:', err);
-      const code = err instanceof Error ? extractErrorCode(err.message) : null;
-      if (await VaultKeyService.isWrongUnlockKey(code)) {
-        setErrors([t('auth.unlockPage.incorrectPasswordError')]);
-      } else if (code) {
-        // A coded failure keeps its code, so the user can report it.
-        setErrors([translateCodedError(err, t) ?? t('auth.loginForm.loginErrorMessage')]);
-      } else if (import.meta.env.DEV && err instanceof Error) {
+      const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
+      if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
         setErrors([err.message]);
       } else {
-        setErrors([t('auth.loginForm.loginErrorMessage')]);
+        setErrors([formatErrorMessage(message, t)]);
       }
     } finally {
       hideLoading();
@@ -215,16 +211,13 @@ const Unlock: React.FC = () => {
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Mobile unlock error:', err);
-      const codedError = translateCodedError(err, t);
+      const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
       if (err instanceof ClientUpgradeRequiredError) {
-        await auth.logout({ errorMessage: t('common.errors.clientVersionNotSupported') });
-      } else if (codedError) {
-        // A coded failure keeps its code, so the user can report it.
-        setErrors([codedError]);
-      } else if (import.meta.env.DEV && err instanceof Error) {
+        await auth.logout({ errorMessage: formatErrorMessage(message, t) });
+      } else if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
         setErrors([err.message]);
       } else {
-        setErrors([t('auth.loginForm.loginErrorMessage')]);
+        setErrors([formatErrorMessage(message, t)]);
       }
     } finally {
       hideLoading();

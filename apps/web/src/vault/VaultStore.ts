@@ -248,7 +248,7 @@ async function persistSyncErrorState(result: FullVaultSyncResult): Promise<void>
   const storage = getPlatform().storage;
   const dedicatedError = result.requiresLogout || result.wasOffline;
   if (hasSyncError(result) && !dedicatedError) {
-    await storage.set(StorageKeys.LAST_SYNC_ERROR, { errorKey: result.errorKey, errorCode: result.errorCode, error: result.error });
+    await storage.set(StorageKeys.LAST_SYNC_ERROR, { logoutReason: result.logoutReason, errorCode: result.errorCode, error: result.error });
   } else {
     await storage.remove(StorageKeys.LAST_SYNC_ERROR);
   }
