@@ -23,14 +23,6 @@
 
     <ItemGroup>
       <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
-      <EmbeddedResource Include="TestData\AliasClientDb_encrypted_base64_1.0.0.txt" />
-      <EmbeddedResource Include="TestData\TestAttachment.txt" />
-      <None Remove="TestData\TestImportBitwarden.csv" />
-      <EmbeddedResource Include="TestData\TestImportBitwarden.csv" />
-      <None Remove="TestData\TestVault.avux" />
-      <EmbeddedResource Include="TestData\TestVault.avux" />
-      <None Remove="TestData\TestVault.avex" />
-      <EmbeddedResource Include="TestData\TestVault.avex" />
     </ItemGroup>
 
     <ItemGroup>
@@ -59,7 +51,6 @@
       <ProjectReference Include="..\..\Databases\AliasServerDb\AliasServerDb.csproj" />
       <ProjectReference Include="..\..\Utilities\AliasVault.TotpGenerator\AliasVault.TotpGenerator.csproj" />
       <ProjectReference Include="..\AliasVault.IntegrationTests\AliasVault.IntegrationTests.csproj" />
-      <ProjectReference Include="..\Server\AliasVault.E2ETests.Client.Server\AliasVault.E2ETests.Client.Server.csproj" />
     </ItemGroup>
 
     <ItemGroup>
