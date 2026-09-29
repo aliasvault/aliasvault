@@ -85,13 +85,12 @@ export default function LoadingIndicator({ status = '' }: LoadingIndicatorProps)
     };
   }, [status, dot1Anim, dot2Anim, dot3Anim, dot4Anim]);
 
-  /*
-   * If the status ends with a pipe character (|), don't show any dots
-   * This provides an explicit way to disable the loading dots animation
-   */
-  const statusText = status || '';
-  const statusTrimmed = statusText.endsWith('|') ? statusText.slice(0, -1) : statusText;
-  const shouldShowDots = statusText.length > 0 && !statusText.endsWith('|');
+  // A trailing pipe disables animation, otherwise any suffix dots are trimmed as they are replaced the animation itself.
+  const statusText = status ?? '';
+  const hideDots = statusText.endsWith('|');
+  const statusWithoutFlag = hideDots ? statusText.slice(0, -1) : statusText;
+  const statusTrimmed = hideDots ? statusWithoutFlag : statusWithoutFlag.replace(/(?:\s*[.\u2026])+\s*$/u, '');
+  const shouldShowDots = statusText.length > 0 && !hideDots;
 
   const backgroundColor = colorScheme === 'dark' ? 'transparent' : '#fff';
   const shadowColor = '#000';
