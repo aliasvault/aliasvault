@@ -9,6 +9,7 @@ import TopMenu from '@/components/layout/TopMenu';
 import ConfirmModal from '@/components/shared/ConfirmModal';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
+import { useVaultLanguage } from '@/hooks/useVaultLanguage';
 import { useVaultSync } from '@/hooks/useVaultSync';
 import { setLocalPreference } from '@/utils/LocalPreferences';
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
@@ -21,12 +22,13 @@ import { vaultStore } from '@/vault/VaultStore';
 const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isInitialized, isLoggedIn } = useAuth();
+  const { isInitialized, isLoggedIn, globalMessage } = useAuth();
   const { t } = useTranslation();
   const { dbInitialized, dbAvailable, syncError, clearSyncError } = useDb();
   const { syncVault } = useVaultSync();
   const [isReady, setIsReady] = useState(false);
   const hasSynced = useRef(false);
+  useVaultLanguage(isReady);
 
   useEffect(() => {
     if (!isInitialized || !dbInitialized) {
@@ -39,7 +41,8 @@ const MainLayout: React.FC = () => {
     const gate = async (): Promise<void> => {
       const status = await vaultStore.checkAuthStatus();
       if (!status.isLoggedIn || !isLoggedIn) {
-        navigate('/user/start', { replace: true });
+        // A forced logout (session expired, revoked) leaves a message for the login page to show.
+        navigate(globalMessage ? '/user/login' : '/user/start', { replace: true });
         return;
       }
       // Unlock continues via the sync page, which returns to this URL.
@@ -51,7 +54,7 @@ const MainLayout: React.FC = () => {
       setIsReady(true);
     };
     void gate();
-  }, [isInitialized, isLoggedIn, dbInitialized, dbAvailable, navigate, location.pathname, location.search]);
+  }, [isInitialized, isLoggedIn, globalMessage, dbInitialized, dbAvailable, navigate, location.pathname, location.search]);
 
   /**
    * Once the vault is open, check the server for a newer vault in the background (once per page load).

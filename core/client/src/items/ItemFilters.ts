@@ -1,6 +1,6 @@
-import { ItemTypes } from '@aliasvault/models/vault';
+import { FieldTypes, ItemTypes } from '@aliasvault/models/vault';
 
-import type { Item, ItemType } from '@aliasvault/models/vault';
+import type { Item, ItemField, ItemType } from '@aliasvault/models/vault';
 
 /**
  * Filters for the items list: feature filters plus one per item type. The values appear as-is in route params.
@@ -75,10 +75,16 @@ export function applyTypeFilter<T extends FilterableItem>(items: T[], filterType
 }
 
 /**
+ * Whether a field holds a secret (password, card number, CVV, PIN, hidden custom field) whose value search skips.
+ */
+const isSecretField = (field: ItemField): boolean => field.IsHidden || field.FieldType === FieldTypes.Password || field.FieldType === FieldTypes.Hidden;
+
+/**
  * Apply the free-text search filter to a list of items.
  * Splits the term into words and keeps items where every word appears in the name,
- * a field value or a field label. Shared with the current-site suggestion so the
- * suggested match count always equals what the search field itself returns.
+ * a field value or a field label. Secret field values are never searched, so typing part
+ * of a password cannot reveal which items hold it. Shared with the current-site suggestion
+ * so the suggested match count always equals what the search field itself returns.
  */
 export function applySearchFilter(items: Item[], searchTerm: string): Item[] {
   const searchWords = searchTerm.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
@@ -93,8 +99,10 @@ export function applySearchFilter(items: Item[], searchTerm: string): Item[] {
     ];
 
     item.Fields?.forEach(field => {
-      const value = Array.isArray(field.Value) ? field.Value.join(' ') : (field.Value ?? '');
-      searchableFields.push(value.toLowerCase());
+      if (!isSecretField(field)) {
+        const value = Array.isArray(field.Value) ? field.Value.join(' ') : (field.Value ?? '');
+        searchableFields.push(value.toLowerCase());
+      }
       searchableFields.push(field.Label?.toLowerCase() ?? '');
     });
 

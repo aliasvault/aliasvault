@@ -47,13 +47,13 @@ config.PublicRegistrationEnabled = bool.Parse(publicRegistrationEnabled);
 
 var privateEmailDomains = Environment.GetEnvironmentVariable("PRIVATE_EMAIL_DOMAINS")?
     .Split(",", StringSplitOptions.RemoveEmptyEntries)
-    .Select(d => d.Trim())
+    .Select(d => d.Trim().ToLowerInvariant())
     .Where(d => !string.IsNullOrWhiteSpace(d));
 config.PrivateEmailDomains = privateEmailDomains?.ToList() ?? new List<string>();
 
 var hiddenPrivateEmailDomains = Environment.GetEnvironmentVariable("HIDDEN_PRIVATE_EMAIL_DOMAINS")?
     .Split(",", StringSplitOptions.RemoveEmptyEntries)
-    .Select(d => d.Trim())
+    .Select(d => d.Trim().ToLowerInvariant())
     .Where(d => !string.IsNullOrWhiteSpace(d));
 config.HiddenPrivateEmailDomains = hiddenPrivateEmailDomains?.ToList() ?? new List<string>();
 

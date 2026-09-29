@@ -14,6 +14,7 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { WebApiProvider } from '@/context/WebApiContext';
 import { initI18n } from '@/i18n/i18n';
+import { cleanUpLegacyStorage } from '@/utils/LegacyStorageCleanup';
 
 /**
  * Render the application.
@@ -46,6 +47,7 @@ const renderApp = (): void => {
  * index.html stays up until the app has painted, and shows its error state when any of these fail.
  */
 const bootstrap = async (): Promise<void> => {
+  cleanUpLegacyStorage();
   await Promise.all([
     getPlatform().rustCore.init(),
     loadAppConfig().then(initI18n),
