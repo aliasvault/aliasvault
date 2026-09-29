@@ -95,8 +95,7 @@
       "httpError": "Lỗi HTTP: {{status}}",
       "networkError": "Không thể thực hiện yêu cầu mạng. Vui lòng kiểm tra kết nối Internet của bạn và thử lại.",
       "networkErrorSelfHosted": "Không thể thực hiện yêu cầu mạng. Hãy kiểm tra kết nối mạng và khả năng hoạt động của máy chủ. Đối với các phiên bản tự lưu trữ, hãy đảm bảo bạn đã cài đặt chứng chỉ SSL hợp lệ. Chứng chỉ tự ký không được hỗ trợ trên thiết bị di động vì lý do bảo mật.",
-      "serverErrorSelfHosted": "Không thể kết nối đến API. Đối với các phiên bản tự lưu trữ, vui lòng kiểm tra xem điểm cuối API có thể truy cập được hay không bằng cách mở nó trong trình duyệt: nó phải hiển thị “OK”.",
-      "sessionExpired": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại."
+      "serverErrorSelfHosted": "Không thể kết nối đến API. Đối với các phiên bản tự lưu trữ, vui lòng kiểm tra xem điểm cuối API có thể truy cập được hay không bằng cách mở nó trong trình duyệt: nó phải hiển thị “OK”."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Connection with the AliasVault servers failed. Please try again (later).",
       "enterMasterPasswordDescription": "Enter your master password to unlock your vault.",
-      "incorrectPasswordError": "The password is incorrect. Please try entering your password again, or log out and log in again.",
       "loggingInWithWebAuthn": "Logging in with passkey...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "Your session has timed out. Please log in again.",
       "unlockButton": "Unlock",
       "unlockWithMobileButton": "Unlock with Mobile App",
       "unlockWithWebAuthn": "Unlock with passkey",
@@ -225,7 +222,6 @@
     "back": "Quay lại",
     "backspace": "Backspace",
     "cancel": "Huỷ",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Clear Clipboard"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Mật khẩu không khớp.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
-      "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Mật khẩu của bạn đã thay đổi kể từ lần cuối đăng nhập. Vui lòng đăng nhập lại vì lý do bảo mật.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Đã xảy ra lỗi không xác định.",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Vault is locked",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Two-factor authentication",
     "unavailable": "Unavailable",
     "undo": "Undo",
+    "updateApp": "Update app",
     "use": "Use",
     "username": "Tên người dùng",
     "vaultSaveError": "Không thể lưu các thay đổi vào kho lưu trữ. Vui lòng thử lại.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "Username: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "Trang wed"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Checking for vault updates",
     "checkingVaultUpdates": "Đang kiểm tra các cập nhật của kho lưu trữ.",
     "errors": {
-      "appOutdated": "Ứng dụng này đã quá hạn và không thể dùng để truy cập phiên bản kho lưu trữ (mới hơn) này. Vui lòng cập nhật ứng dụng AliasVault để tiếp tục.",
       "failedToGetEncryptedDatabase": "Không thể lấy cơ sở dữ liệu đã mã hóa",
       "passwordChangeRequiresOnline": "Đổi mật khẩu yêu cầu có kết nối internet. Vui lòng thử lại khi có mạng.",
-      "serverVersionNotSupported": "Máy chủ AliasVault cần được cập nhật lên phiên bản mới hơn để sử dụng ứng dụng di động này. Vui lòng liên hệ bộ phận hỗ trợ nếu bạn cần trợ giúp.",
-      "usernameNotFound": "Không tìm thấy tên người dùng",
-      "vaultOutdated": "Kho lưu trữ của bạn đã quá hạn. Vui lòng đăng nhập trên trang web AliasVault và làm theo các bước.",
-      "versionNotSupported": "Phiên bản ứng dụng di động AliasVault này không còn được máy chủ hỗ trợ. Vui lòng cập nhật ứng dụng của bạn lên phiên bản mới nhất."
+      "usernameNotFound": "Không tìm thấy tên người dùng"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Đang lưu các thay đổi vào kho lưu trữ",
