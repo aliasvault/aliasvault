@@ -239,6 +239,12 @@ pub fn srp_derive_session(client_secret: String, server_public: String, salt: St
     crate::crypto::srp::srp_derive_session(&client_secret, &server_public, &salt, &identity, &private_key)
 }
 
+/// Whether the server's proof (M2) matches, which confirms it derived the same session key; hex inputs.
+#[uniffi::export]
+pub fn srp_verify_session(client_public: String, client_proof: String, session_key: String, server_proof: String) -> Result<bool, SrpError> {
+    crate::crypto::srp::srp_verify_session(&client_public, &client_proof, &session_key, &server_proof)
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Crypto
 // ═══════════════════════════════════════════════════════════════════════════════

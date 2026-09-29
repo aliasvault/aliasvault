@@ -36,6 +36,15 @@ export type SrpClientProof = {
 };
 
 /**
+ * A client proof plus the session key it was derived with. The key stays client-side and is used to check the
+ * server's proof, so it is kept apart from the proof that goes into the request body.
+ */
+export type SrpClientSession = {
+  proof: SrpClientProof;
+  sessionKey: string;
+};
+
+/**
  * Login credentials prepared from password derivation.
  */
 export type PreparedCredentials = {
@@ -187,11 +196,38 @@ export class SrpAuthService {
     passwordHashString: string,
     serverEphemeral: string
   ): Promise<SrpClientProof> {
+    return (await SrpAuthService.deriveClientSession(salt, srpIdentity, passwordHashString, serverEphemeral)).proof;
+  }
+
+  /**
+   * Derives the client's SRP proof and the session key, for exchanges where the server's proof is checked.
+   *
+   * @param salt - The SRP salt from the initiate response
+   * @param srpIdentity - The SRP identity from the initiate response
+   * @param passwordHashString - The password hash as uppercase hex string
+   * @param serverEphemeral - The server's public ephemeral from the initiate response
+   * @returns The proof to submit and the session key to verify the server's proof with
+   */
+  public static async deriveClientSession(salt: string, srpIdentity: string, passwordHashString: string, serverEphemeral: string): Promise<SrpClientSession> {
     const clientEphemeral = await SrpAuthService.generateEphemeral();
     const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, passwordHashString);
     const session = await SrpAuthService.deriveSession(clientEphemeral.secret, serverEphemeral, salt, srpIdentity, privateKey);
 
-    return { clientPublicEphemeral: clientEphemeral.public, clientSessionProof: session.proof };
+    return { proof: { clientPublicEphemeral: clientEphemeral.public, clientSessionProof: session.proof }, sessionKey: session.key };
+  }
+
+  /**
+   * Checks the server's session proof (M2), which confirms the server holds the verifier for this password.
+   *
+   * @param session - The client session the request was sent with
+   * @param serverSessionProof - The server's proof from the validate response
+   * @throws {Error} when the proof does not match
+   */
+  public static async verifyServerProof(session: SrpClientSession, serverSessionProof: string): Promise<void> {
+    const valid = await rustCore().srpVerifySession(session.proof.clientPublicEphemeral, session.proof.clientSessionProof, session.sessionKey, serverSessionProof);
+    if (!valid) {
+      throw new Error('Server session proof verification failed.');
+    }
   }
 
   /**
@@ -200,20 +236,20 @@ export class SrpAuthService {
    * @param loginResponse - The login initiate response holding salt, SRP identity and server ephemeral
    * @param username - The username typed by the user, used as SRP identity fallback on older servers
    * @param passwordHashString - The password hash as uppercase hex string
-   * @returns The client public ephemeral and session proof to submit to the validate endpoint
+   * @returns The proof to submit to the validate endpoint and the session key to verify the server's proof with
    */
-  public static async deriveLoginProof(
+  public static async deriveLoginSession(
     loginResponse: LoginResponse,
     username: string,
     passwordHashString: string
-  ): Promise<SrpClientProof> {
+  ): Promise<SrpClientSession> {
     /*
      * Use srpIdentity from server response if available, otherwise fall back to normalized username.
      * @todo Remove fallback after 0.26.0+ has been released.
      */
     const srpIdentity = loginResponse.srpIdentity ?? SrpAuthService.normalizeUsername(username);
 
-    return SrpAuthService.deriveClientProof(loginResponse.salt, srpIdentity, passwordHashString, loginResponse.serverEphemeral);
+    return SrpAuthService.deriveClientSession(loginResponse.salt, srpIdentity, passwordHashString, loginResponse.serverEphemeral);
   }
 
   /**

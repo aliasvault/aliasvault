@@ -1604,6 +1604,8 @@ private enum RustCoreDispatcher {
         case "srpDeriveSession":
             let session = try RustCoreFramework.srpDeriveSession(clientSecret: try args.string(0), serverPublic: try args.string(1), salt: try args.string(2), identity: try args.string(3), privateKey: try args.string(4))
             return try json(["proof": session.proof, "key": session.key])
+        case "srpVerifySession":
+            return try json(try RustCoreFramework.srpVerifySession(clientPublic: try args.string(0), clientProof: try args.string(1), sessionKey: try args.string(2), serverProof: try args.string(3)))
 
         case "getSyncableTableNames": return try json(RustCoreFramework.getSyncableTableNames())
         case "pruneVaultJson": return try RustCoreFramework.pruneVaultJson(inputJson: try args.string(0))
