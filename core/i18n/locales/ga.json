@@ -95,8 +95,7 @@
       "httpError": "Earráid HTTP: {{status}}",
       "networkError": "Theip ar an iarratas líonra. Seiceáil do nasc idirlín agus déan iarracht eile.",
       "networkErrorSelfHosted": "Theip ar an iarratas líonra. Seiceáil do nasc líonra agus infhaighteacht do fhreastalaí. I gcás cásanna féinóstáilte, cinntigh go bhfuil teastas SSL bailí suiteáilte agat. Ní thacaítear le teastais féinshínithe ar ghléasanna soghluaiste ar chúiseanna slándála.",
-      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air.",
-      "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil."
+      "serverErrorSelfHosted": "Níorbh fhéidir teacht ar an API. I gcás cásanna féinóstáilte, fíoraigh le do thoil go bhfuil teacht ar chríochphointe an API trí nascleanúint a dhéanamh chuige i mbrabhsálaí: ba chóir go mbeadh 'Ceart go leor' le feiceáil air."
     },
     "forgotPassword": {
       "contactAdministrator": "Má d’athraigh tú do phasfhocal le déanaí agus má tá deacrachtaí agat síniú isteach le do phasfhocal nua, tabhair faoi deara go mb’fhéidir go mbeidh riarthóir an fhreastalaí in ann cúltaca níos luaithe de do chruinneachán a aisghabháil chun cabhrú leat. Más amhlaidh atá, déan teagmháil le riarthóir an fhreastalaí.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Theip ar an nasc leis na freastalaithe AliasVault. Déan iarracht arís (níos déanaí).",
       "enterMasterPasswordDescription": "Cuir isteach do phasfhocal máistir chun do chruinneachán a dhíghlasáil.",
-      "incorrectPasswordError": "Tá an focal faire mícheart. Déan iarracht do phasfhocal a iontráil arís, nó logáil amach agus logáil isteach arís.",
       "loggingInWithWebAuthn": "Ag logáil isteach le pasfhocal...",
       "quickUnlockDescription": "Díghlasáil do chruinneachán go tapa ag baint úsáide as do phasfhocal. Nó logáil isteach le do phasfhocal mar rogha eile.",
-      "sessionTimedOutError": "Tá an t-am caite ag do sheisiún. Logáil isteach arís le do thoil.",
       "unlockButton": "Díghlasáil",
       "unlockWithMobileButton": "Díghlasáil le Aip Shoghluaiste",
       "unlockWithWebAuthn": "Díghlasáil le heochair phas",
@@ -225,7 +222,6 @@
     "back": "Ar ais",
     "backspace": "Backspace",
     "cancel": "Cealaigh",
-    "clientVersionUnsupported": "Ní thacaíonn an freastalaí leis an leagan seo den aip a thuilleadh. Athnuaigh an leathanach le do thoil chun an leagan is déanaí a luchtú.",
     "clipboardCountdown": {
       "clearClipboardButton": "Glan an Ghearrthaisce"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "Ní hionann na pasfhocail.",
     "errors": {
       "backgroundUnresponsive": "Níl seirbhís chúlra na síntíne ag freagairt. Dún agus athoscail an tsíntíne, le do thoil, nó athtosaigh do bhrabhsálaí má leanann an fhadhb ar aghaidh.",
-      "browserExtensionOutdated": "Tá an síneadh brabhsálaí seo as dáta agus ní féidir é a úsáid chun rochtain a fháil ar an ngloine seo. Nuashonraigh an síneadh brabhsálaí seo le leanúint ar aghaidh.",
-      "clientVersionNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo den síneadh brabhsálaí AliasVault a thuilleadh. Nuashonraigh do shíneadh brabhsálaí go dtí an leagan is déanaí.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Cuir isteach cód fíordheimhnithe 6 dhigit bailí le do thoil.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Tá do phasfhocal athraithe ó logáil tú isteach an uair dheireanach. Logáil isteach arís ar chúiseanna slándála.",
       "serverError": "Níorbh fhéidir teacht ar fhreastalaí AliasVault. Déan iarracht arís ar ball nó déan teagmháil leis an tacaíocht má leanann an fhadhb.",
       "serverNotAvailable": "Níl an freastalaí AliasVault ar fáil. Déan iarracht arís ar ball nó déan teagmháil leis an bhfoireann tacaíochta má leanann an fhadhb.",
-      "serverVersionNotSupported": "Ní mór freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an síneadh brabhsálaí seo a úsáid. Téigh i dteagmháil leis an bhfoireann tacaíochta más gá cabhair duit.",
-      "serverVersionTooOld": "Ní mór an freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an ghné seo a úsáid. Téigh i dteagmháil le riarthóir an fhreastalaí más gá duit cabhair.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Tá do sheisiún imithe in éag. Logáil isteach arís le do thoil.",
       "syncConflictMaxRetries": "Níorbh fhéidir an cruinneachán a shioncrónú tar éis roinnt iarrachtaí. Déan iarracht arís ar ball.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Tharla earráid anaithnid.",
       "unknownErrorTryAgain": "Tharla earráid anaithnid. Déan iarracht arís.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Tá an cruinneachán faoi ghlas",
       "vaultLoadError": "Tharla earráid agus do stór á luchtú. Cóipeáil sonraí na hearráide thíos le do thoil agus déan teagmháil leis an tacaíocht chun cabhair a fháil.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Fíordheimhniú dhá fhachtóir",
     "unavailable": "Unavailable",
     "undo": "Cuir ar ceal",
+    "updateApp": "Update app",
     "use": "Úsáid",
     "username": "Ainm úsáideora",
     "vaultSaveError": "Theip ar athruithe a shábháil sa chruinneachán. Déan iarracht arís.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Roghnaigh an téacs le cur isteach sa réimse ionchuir atá dírithe",
     "serverUnavailableMessage": "Níl an freastalaí ar fáil faoi láthair. Bain triail eile as ar ball.",
     "serverUnavailableTitle": "Níl an freastalaí ar fáil",
-    "serverVersionNotSupportedContactAdmin": "Tá leagan an fhreastalaí as dáta. Déan teagmháil le do riarthóir chun an freastalaí a nuashonrú.",
-    "serverVersionNotSupportedMessage": "Tá leagan an fhreastalaí as dáta. Nuashonraigh do fhreastalaí go dtí an leagan is déanaí.",
     "serverVersionNotSupportedTitle": "Nuashonrú Freastalaí ag Teastáil",
     "sessionExpiredMessage": "Tá do sheisiún imithe in éag. Sínigh isteach arís le do thoil.",
     "sessionExpiredTitle": "Seisiún in éag",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "an dintiúir seo",
     "usernameCopied": "Ainm úsáideora cóipeáilte",
     "usernamePrefix": "Ainm úsáideora: ",
-    "versionNotSupportedMessage": "Ní thacaítear le do leagan aip a thuilleadh. Nuashonraigh go dtí an leagan is déanaí le do thoil.",
     "versionNotSupportedTitle": "Nuashonrú ag Teastáil",
     "viewDetails": "Féach Sonraí",
     "website": "Suíomh Gréasáin"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Ag seiceáil le haghaidh nuashonruithe cruinneacháin",
     "checkingVaultUpdates": "Ag seiceáil nuashonruithe cruinneacháin",
     "errors": {
-      "appOutdated": "Tá an aip seo as dáta agus ní féidir í a úsáid chun rochtain a fháil ar an leagan (níos nua) seo den chruinneachán. Nuashonraigh an aip AliasVault le leanúint ar aghaidh.",
       "failedToGetEncryptedDatabase": "Theip ar an mbunachar sonraí criptithe a fháil",
       "passwordChangeRequiresOnline": "Éilíonn athrú pasfhocail nasc idirlín. Déan iarracht arís agus tú ar líne.",
-      "serverVersionNotSupported": "Ní mór freastalaí AliasVault a nuashonrú go leagan níos nuaí chun an aip shoghluaiste seo a úsáid. Téigh i dteagmháil leis an bhfoireann tacaíochta más gá cabhair duit.",
-      "usernameNotFound": "Ainm úsáideora gan aimsiú",
-      "vaultOutdated": "Tá do chruinneachán as dáta. Logáil isteach ar shuíomh gréasáin AliasVault agus lean na céimeanna.",
-      "versionNotSupported": "Ní thacaíonn an freastalaí leis an leagan seo den aip shoghluaiste AliasVault a thuilleadh. Nuashonraigh d'aip go dtí an leagan is déanaí."
+      "usernameNotFound": "Ainm úsáideora gan aimsiú"
     },
     "mergingVault": "Ag cumasc athruithe ar an chruinneachán...",
     "savingChangesToVault": "Sábháil athruithe chuig an gcruinneog",
