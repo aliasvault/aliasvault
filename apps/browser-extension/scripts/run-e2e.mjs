@@ -8,7 +8,13 @@
 // test user, so everything targets the same API.
 //
 // Usage:
-//   node scripts/run-e2e.mjs [extra playwright args]
+//   node scripts/run-e2e.mjs [test numbers] [extra playwright args]
+//
+//   npm run test:e2e:build                all tests
+//   npm run test:e2e:build 15             every test in file 15 (15.x)
+//   npm run test:e2e:build 15.1           test 15.1; also 15.1,15.2 or 15.1-15.2
+//   npm run test:e2e:h 15.1               same, in a visible browser, one test at a time
+//   npm run test:e2e:p 15.1               same, and stops at each client.pause() in the Playwright Inspector
 
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -68,6 +74,52 @@ const childEnv = {
   ALIASVAULT_API_URL: apiUrl,
 };
 
+// Test numbers become one title filter (--grep), so selections combine as "or". Any other argument goes to Playwright as-is.
+const playwrightArgs = [];
+const patterns = [];
+for (const arg of argv.slice(2)) {
+  if (arg === "--pause") {
+    childEnv.E2E_PAUSE = "1";
+    playwrightArgs.push("--headed", "--workers=1");
+    continue;
+  }
+  const selectors = arg.split(",").filter(Boolean);
+  if (selectors.length > 0 && selectors.every(isSelector)) {
+    patterns.push(...selectors.flatMap(toPatterns));
+  } else {
+    playwrightArgs.push(arg);
+  }
+}
+if (patterns.length > 0) {
+  // A test title starts with its number ("4.3 should ..."); the leading boundary keeps 4.3 from matching 14.3.
+  playwrightArgs.push("--grep", `(^|\\s)(${patterns.join("|")})\\s`);
+}
+
+/**
+ * Whether an argument selects tests: "4", "4.3" or "4.1-4.3".
+ * @param {string} value
+ */
+function isSelector(value) {
+  return /^\d+(\.\d+)?$/.test(value) || /^\d+\.\d+-\d+\.\d+$/.test(value);
+}
+
+/**
+ * The title patterns a selector stands for.
+ * @param {string} selector
+ */
+function toPatterns(selector) {
+  const range = selector.match(/^(\d+)\.(\d+)-(\d+)\.(\d+)$/);
+  if (range) {
+    const [, file, from, toFile, to] = range.map(Number);
+    if (file !== toFile || from > to) {
+      console.error(`Invalid range "${selector}": use one file, low to high, e.g. 14.1-14.3.`);
+      exit(1);
+    }
+    return Array.from({ length: to - from + 1 }, (_, i) => `${file}\\.${from + i}`);
+  }
+  return selector.includes(".") ? [selector.replace(".", "\\.")] : [`${Number(selector)}\\.\\d+`];
+}
+
 /**
  * Run a command with inherited stdio, exiting on failure.
  * @param {string} command
@@ -86,4 +138,4 @@ function run(command, commandArgs) {
 }
 
 run("npm", ["run", "build:chrome"]);
-run("npx", ["playwright", "test", ...argv.slice(2)]);
+run("npx", ["playwright", "test", ...playwrightArgs]);

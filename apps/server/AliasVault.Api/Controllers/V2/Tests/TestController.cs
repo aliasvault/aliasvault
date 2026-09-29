@@ -365,6 +365,74 @@ public class TestController(
     }
 
     /// <summary>
+    /// Turn an account into one that predates the unlock-key model and holds a legacy (sqlite-blob) vault: the v2 key
+    /// material is removed so login falls back to the salt and verifier on the vault row, and the personal vault is
+    /// overwritten with the given one.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="username">The username of the account.</param>
+    /// <param name="request">The legacy vault and the login material it was written with.</param>
+    /// <returns>OK with the manifest id of the overwritten vault.</returns>
+    [AllowAnonymous]
+    [HttpPost("legacy-vault/by-username/{username}")]
+    public async Task<IActionResult> RestoreLegacyVaultByUsername(string username, [FromBody] RestoreLegacyVaultRequest request)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        var user = await context.AliasVaultUsers.FirstOrDefaultAsync(u => u.NormalizedUserName == username.ToUpperInvariant());
+        if (user == null)
+        {
+            return NotFound($"User '{username}' not found");
+        }
+
+        // The legacy verifier was created with the identity of that time, which login hands to the client.
+        user.SrpIdentity = request.SrpIdentity;
+        context.UserUnlockKeys.RemoveRange(context.UserUnlockKeys.Where(x => x.UserId == user.Id));
+        context.UserGrantKeys.RemoveRange(context.UserGrantKeys.Where(x => x.UserId == user.Id));
+        context.VaultManifestAccessKeys.RemoveRange(context.VaultManifestAccessKeys.Where(x => x.UserId == user.Id));
+
+        var manifest = await context.VaultManifests.FirstOrDefaultAsync(x => x.OwnerGroupId == user.PersonalGroupId);
+        if (manifest == null)
+        {
+            return NotFound($"User '{username}' has no personal vault");
+        }
+
+        // A legacy account holds nothing of the manifest storage format, so drop what an earlier write left behind.
+        context.VaultDataBuckets.RemoveRange(context.VaultDataBuckets.Where(x => x.ManifestId == manifest.ManifestId));
+        context.VaultDataBucketsHistory.RemoveRange(context.VaultDataBucketsHistory.Where(x => x.ManifestId == manifest.ManifestId));
+        context.VaultBlobReferences.RemoveRange(context.VaultBlobReferences.Where(x => x.ManifestId == manifest.ManifestId));
+        context.VaultBlobObjects.RemoveRange(context.VaultBlobObjects.Where(x => x.ManifestId == manifest.ManifestId));
+        context.VaultManifestDeliveryKeys.RemoveRange(context.VaultManifestDeliveryKeys.Where(x => x.VaultManifestId == manifest.ManifestId));
+
+        var now = DateTime.UtcNow;
+        manifest.CopyPayloadFrom(new VaultManifestsHistory
+        {
+            ManifestId = manifest.ManifestId,
+            StorageFormat = VaultManifestBase.LegacyStorageFormat,
+            Version = request.Version,
+            RevisionNumber = request.RevisionNumber,
+            CreatedAt = now,
+            UpdatedAt = now,
+            EncryptionType = request.EncryptionType,
+            EncryptionSettings = request.EncryptionSettings,
+            VaultBlob = request.VaultBlob,
+            Salt = request.Salt,
+            Verifier = request.Verifier,
+        });
+        await context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            manifestId = manifest.ManifestId,
+        });
+    }
+
+    /// <summary>
     /// Set a server setting by key/value. Used by E2E tests to tune runtime limits
     /// (e.g. disabling the per-IP registration rate limit by setting it to 0).
     /// Anonymous endpoint for E2E tests that cannot access auth tokens.

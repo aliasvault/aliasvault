@@ -197,8 +197,10 @@ const Sync: React.FC = () => {
         }
       }
 
-      // Re-open the migrated vault and continue (the manifest migration may still be pending after the legacy chain).
-      hasStarted.current = false;
+      /*
+       * Re-open the migrated vault and continue (the manifest migration may still be pending after the legacy chain).
+       * The startup effect must not run again: it would open the vault a second time and skip the success screen.
+       */
       setStatus('loading');
       await openVault(upgradeKind === 'storage-format');
     } catch (error) {
