@@ -86,14 +86,14 @@ const isSecretField = (field: ItemField): boolean => field.IsHidden || field.Fie
  * of a password cannot reveal which items hold it. Shared with the current-site suggestion
  * so the suggested match count always equals what the search field itself returns.
  */
-export function applySearchFilter(items: Item[], searchTerm: string): Item[] {
+export function applySearchFilter<T extends Pick<Item, 'Name' | 'Fields'>>(items: T[], searchTerm: string): T[] {
   const searchWords = searchTerm.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
 
   if (searchWords.length === 0) {
     return items;
   }
 
-  return items.filter((item: Item) => {
+  return items.filter((item) => {
     const searchableFields: string[] = [
       item.Name?.toLowerCase() ?? '',
     ];

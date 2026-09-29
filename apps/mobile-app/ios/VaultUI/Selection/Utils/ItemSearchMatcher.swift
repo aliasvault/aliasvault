@@ -4,10 +4,8 @@ import VaultModels
 /// Free-text search matcher for items/credentials.
 /// Uses substring matching across all searchable fields.
 ///
-/// Matches behavior of:
-/// - React Native: apps/mobile-app/app/(tabs)/items/index.tsx (lines 269-281)
-/// - Browser Extension: apps/browser-extension/src/entrypoints/background/VaultMessageHandler.ts (filterItemsBySearchTerm)
-/// - Blazor Web: apps/server/AliasVault.Client/Main/Components/Widgets/SearchWidget.razor (lines 224-234)
+/// Uses the same word matching as the item search of the apps (core/client/src/items/ItemFilters.ts, applySearchFilter),
+/// over the login fields an autofill credential carries; that search also matches the other non-secret fields of an item.
 public class ItemSearchMatcher {
 
     /// Filter credentials/items for free-text search using substring matching.

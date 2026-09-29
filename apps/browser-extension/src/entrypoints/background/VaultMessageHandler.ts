@@ -11,6 +11,7 @@ import { decryptVaultBlob, encryptVaultBlob } from '@aliasvault/client/crypto/Va
 import { isSameItem, manifestForItemIn, scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
+import { applySearchFilter } from '@aliasvault/client/items/ItemFilters';
 import { generateTotpCode } from '@aliasvault/client/items/TotpUtility';
 import { filterItems, AutofillMatchingMode, extractRootDomain, isUrlAlreadyLinked } from '@aliasvault/client/rust/RustCore';
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
@@ -358,9 +359,8 @@ async function extractRootDomainFromUrl(url: string): Promise<string> {
 }
 
 /**
- * Filter items by search term.
- * Splits search into words and matches items where ALL words appear in searchable fields.
- * Word order doesn't matter - matching behavior consistent with popup search.
+ * Filter items by search term for the in-page autofill popup, with the same matching as the popup and web app search
+ * (core/client applySearchFilter). An empty term matches nothing, and results are sorted by name.
  *
  * @param items - The items to filter
  * @param searchTerm - The search term to use
@@ -370,40 +370,7 @@ function filterItemsBySearchTerm(items: Item[], searchTerm: string): Item[] {
   if (!searchTerm || searchTerm.trim() === '') {
     return [];
   }
-
-  const searchLower = searchTerm.toLowerCase().trim();
-
-  // Split search query into individual words (same as popup search)
-  const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
-
-  const searchableFieldKeys = [
-    FieldKey.LoginUsername,
-    FieldKey.LoginEmail,
-    FieldKey.LoginUrl,
-    FieldKey.AliasFirstName,
-    FieldKey.AliasLastName
-  ];
-
-  return items.filter((item: Item) => {
-    // Build searchable fields array
-    const searchableFields: string[] = [
-      item.Name?.toLowerCase() || ''
-    ];
-
-    // Add field values to searchable fields
-    item.Fields?.forEach((field: { FieldKey: string; Value: string | string[]; Label: string }) => {
-      if ((searchableFieldKeys as string[]).includes(field.FieldKey)) {
-        const value = Array.isArray(field.Value) ? field.Value.join(' ') : field.Value;
-        searchableFields.push(value?.toLowerCase() || '');
-        searchableFields.push(field.Label.toLowerCase());
-      }
-    });
-
-    // Every word must appear in at least one searchable field (order doesn't matter)
-    return searchWords.every(word =>
-      searchableFields.some(field => field.includes(word))
-    );
-  }).sort((a: Item, b: Item) => (a.Name ?? '').localeCompare(b.Name ?? ''));
+  return applySearchFilter(items, searchTerm).sort((a: Item, b: Item) => (a.Name ?? '').localeCompare(b.Name ?? ''));
 }
 
 /**

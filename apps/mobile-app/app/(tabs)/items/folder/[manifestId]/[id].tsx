@@ -1,8 +1,7 @@
 import { scopedKey, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { canHaveSubfolders, getRecursiveItemCount, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
-import { ItemFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
+import { ItemFilter, applySearchFilter, applyTypeFilter, isItemTypeFilter, parseItemFilterType, type ItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
-import { getFieldValue, FieldKey } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -135,27 +134,7 @@ export default function FolderViewScreen(): React.ReactNode {
    */
   const filteredItems = useMemo(() => {
     const typeFiltered = applyTypeFilter(itemsList, filterType);
-
-    const searchLower = searchQuery.toLowerCase().trim();
-    if (!searchLower) {
-      return typeFiltered;
-    }
-
-    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
-
-    return typeFiltered.filter(item => {
-      const searchableFields = [
-        item.Name?.toLowerCase() || '',
-        getFieldValue(item, FieldKey.LoginUsername)?.toLowerCase() || '',
-        getFieldValue(item, FieldKey.LoginEmail)?.toLowerCase() || '',
-        getFieldValue(item, FieldKey.LoginUrl)?.toLowerCase() || '',
-        getFieldValue(item, FieldKey.NotesContent)?.toLowerCase() || '',
-      ];
-
-      return searchWords.every(word =>
-        searchableFields.some(field => field.includes(word))
-      );
-    });
+    return applySearchFilter(typeFiltered, searchQuery);
   }, [itemsList, searchQuery, filterType]);
 
   /**
