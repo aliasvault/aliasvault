@@ -1421,7 +1421,7 @@
         "pageDescription": "启用两步验证（2FA）可提高您密码库的安全性。",
         "pageTitle": "启用两步验证（2FA）",
         "qrCodeInstructions": "使用您的身份验证器应用扫描此二维码，或手动输入以下密钥：",
-        "twoFactorEnabledSuccess": "两步验证（2FA）已成功启用。下次登录时，您需要输入两步验证代码。",
+        "twoFactorEnabledSuccess": "两步验证已成功启用。下次登录时，您需要输入两步验证码。",
         "verificationCodePlaceholder": "输入验证码",
         "verifyAndEnableButton": "验证并启用"
       },
