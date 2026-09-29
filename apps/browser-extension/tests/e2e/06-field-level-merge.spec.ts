@@ -44,7 +44,8 @@ test.describe.serial('6. Field-Level Merge', () => {
     await clientA
       .goToVault()
       .then((c) => c.createCredential(credentialName, originalUsername, originalPassword))
-      .then((c) => c.screenshot('6.1-client-a-credential-created.png'));
+      .then((c) => c.screenshot('6.1-client-a-credential-created.png'))
+      .then((c) => c.waitForServerSync());
   });
 
   test('6.2 Both clients sync and verify credential exists', async () => {
