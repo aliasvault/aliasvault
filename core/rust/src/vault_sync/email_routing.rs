@@ -39,7 +39,7 @@ pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains:
                 Some((_, domain)) if !domain.is_empty() => domain.to_string(),
                 _ => continue,
             };
-            if !private_email_domains.iter().any(|candidate| *candidate == domain) {
+            if !private_email_domains.iter().any(|candidate| candidate.trim().eq_ignore_ascii_case(&domain)) {
                 continue;
             }
 

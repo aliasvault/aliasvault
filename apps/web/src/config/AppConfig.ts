@@ -69,8 +69,8 @@ export async function loadAppConfig(): Promise<AppConfig> {
 
   current = {
     apiUrl,
-    privateEmailDomains: file.PrivateEmailDomains ?? [],
-    hiddenPrivateEmailDomains: file.HiddenPrivateEmailDomains ?? [],
+    privateEmailDomains: (file.PrivateEmailDomains ?? []).map(domain => domain.trim().toLowerCase()),
+    hiddenPrivateEmailDomains: (file.HiddenPrivateEmailDomains ?? []).map(domain => domain.trim().toLowerCase()),
     supportEmail: file.SupportEmail ?? '',
     publicRegistrationEnabled: String(file.PublicRegistrationEnabled ?? 'true').toLowerCase() === 'true',
     deploymentMode: file.DeploymentMode ?? '',

@@ -1,3 +1,4 @@
+import { ApiAuthError } from '@aliasvault/client/api/errors/ApiAuthError';
 import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/ClientUpgradeRequiredError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
@@ -114,6 +115,10 @@ const Unlock: React.FC = () => {
           navigate('/user/login', { replace: true });
           return;
         }
+        if (err instanceof ApiAuthError) {
+          navigate('/user/login', { replace: true });
+          return;
+        }
         setErrors([t('auth.unlockPage.connectionFailedError')]);
       }
 
@@ -177,6 +182,10 @@ const Unlock: React.FC = () => {
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Unlock error:', err);
+      if (err instanceof ApiAuthError) {
+        navigate('/user/login', { replace: true });
+        return;
+      }
       const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
       if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
         setErrors([err.message]);
