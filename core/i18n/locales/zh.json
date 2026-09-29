@@ -101,7 +101,7 @@
     "forgotPassword": {
       "contactAdministrator": "如果您最近更改了密码且使用新密码登录遇到困难，请注意服务器管理员可能能够恢复您密码库的早期备份来帮助您。若情况如此，请联系服务器管理员。",
       "contactSupportWithEmail": "如果您最近更改了密码且登录遇到困难，请通过 {{email}} 联系支持人员寻求帮助。",
-      "lostPasswordTitle": "密码丢失",
+      "lostPasswordTitle": "丢失密码",
       "newAccountRequired": "如果您不记得密码，需要创建一个新账户。请注意，这将导致您所有的数据丢失。",
       "noRecoveryExplanation": "很遗憾，如果您忘记了密码，将无法找回。AliasVault 对您的所有数据采用端到端加密，确保只有您本人可以访问您的数据。",
       "recentlyChangedPasswordTitle": "最近更改的密码"
@@ -246,7 +246,7 @@
     "duplicateErrorMessage": "项目创建副本失败。",
     "duplicateSuccessMessage": "项目创建副本成功。",
     "duration": {
-      "15seconds": "15秒",
+      "15seconds": "15 秒",
       "30seconds": "30 秒",
       "5seconds": "5 秒"
     },
@@ -260,7 +260,7 @@
     "errors": {
       "backgroundUnresponsive": "扩展的后台服务未响应。请关闭并重新打开该扩展；如果问题仍然存在，请重启浏览器。",
       "browserExtensionOutdated": "此浏览器扩展已过时，无法用于访问此密码库。请更新此浏览器扩展以继续。",
-      "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
+      "clientVersionNotSupported": "此版本的 AliasVault 浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
       "contactSupportAt": "请通过 {{email}} 联系支持人员。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
       "keyChainUnreadable": "您的密码正确，但无法打开您的密码库加密密钥。请联系支持人员。",
@@ -269,8 +269,8 @@
       "mobileLoginRequestExpired": "移动端登录请求超时，请重新加载页面后重试。",
       "passwordChanged": "您的密码已更改过，出于安全考虑，请重新登录。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
-      "serverNotAvailable": "AliasVault服务器不可用。请稍后重试，若问题持续请联系支持人员。",
-      "serverVersionNotSupported": "AliasVault服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
+      "serverNotAvailable": "AliasVault 服务器不可用。请稍后重试，若问题持续请联系支持人员。",
+      "serverVersionNotSupported": "AliasVault 服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
@@ -296,7 +296,7 @@
     "loading": "加载中…",
     "loadingAttachments": "加载附件中…",
     "loadingEmails": "加载邮件中…",
-    "loadingTotpCodes": "加载TOTP验证码中…",
+    "loadingTotpCodes": "加载 TOTP 验证码中…",
     "loadingVault": "正在加载密码库…",
     "lockVault": "锁定密码库",
     "loggedIn": "已登录",
@@ -353,19 +353,19 @@
     "autofillWithAliasVault": "自动填充用户名/密码",
     "dismissPopup": "关闭弹窗",
     "generateRandomPassword": "生成随机密码（复制到剪贴板）",
-    "hideFor1Hour": "隐藏1小时（当前网站）",
+    "hideFor1Hour": "隐藏 1 小时（当前网站）",
     "hidePermanently": "永久隐藏（当前网站）",
     "loginWithPasskey": "使用通行密钥登录",
     "new": "新建",
     "noMatchesFound": "未找到匹配项",
     "noTotpItemsFound": "未找到匹配的两步验证码",
-    "openAliasVaultToUpgrade": "打开AliasVault进行升级",
+    "openAliasVaultToUpgrade": "打开 AliasVault 进行升级",
     "savePrompt": {
       "addUrlTitle": "将 URL 添加到凭据？",
       "neverForThisSite": "此网站不再显示",
       "title": "保存到 AliasVault？"
     },
-    "vaultLocked": "AliasVault已锁定。",
+    "vaultLocked": "AliasVault 已锁定。",
     "vaultUpgradeRequired": "需要升级密码库。"
   },
   "emails": {
@@ -417,11 +417,11 @@
     },
     "sizeKB": "KB",
     "time": {
-      "hoursAgo_plural": "{{count}}小时前",
-      "hoursAgo_single": "{{count}}小时前",
+      "hoursAgo_plural": "{{count}} 小时前",
+      "hoursAgo_single": "{{count}} 小时前",
       "justNow": "刚刚",
-      "minutesAgo_plural": "{{count}}分钟前",
-      "minutesAgo_single": "{{count}}分钟前",
+      "minutesAgo_plural": "{{count}} 分钟前",
+      "minutesAgo_single": "{{count}} 分钟前",
       "yesterday": "昨天"
     },
     "title": "邮件",
@@ -509,7 +509,7 @@
       "importFromServiceTitle": "从 {{service}} 导入",
       "importPartialFailureWarning": "{{count}} 个项目无法解析，将被跳过。",
       "importSuccessMessage": "已成功导入 {{count}} 个凭据。",
-      "moreCredentials": "以及 {{count}} 个其他凭证",
+      "moreCredentials": "…还有 {{count}} 个凭证未显示",
       "noLogoText": "无徽标",
       "noNewCredentials": "未找到需要导入的新凭据。",
       "previewInstructions": "在继续之前，请检查以下检测到的凭据是否正确：",
@@ -528,7 +528,7 @@
       "chromeInstructionsPart1": "要导入您的 Chrome 密码管理器中的密码，您需要将其导出为 CSV 文件。您可以通过登录您的 Chrome 浏览器，进入“设置”菜单 > “密码和自动填充” > “谷歌密码管理器”，然后点击“导出密码”来完成此操作。",
       "dashlaneDescription": "从您的 Dashlane 账户导入密码",
       "dashlaneInstructionsPart1": "要导入您的 Dashlane 密码，您需要将其导出为 CSV 文件。您可以通过登录您的 Dashlane 账户，进入“账户”>“设置”菜单并选择“导出为 CSV”来完成此操作。",
-      "dashlaneInstructionsPart2": "注意：您下载的 .zip 文件将包含一个“credentials.csv”文件。您需要先解压缩该档案，然后在下方上传“credentials.csv”CSV 文件。",
+      "dashlaneInstructionsPart2": "注意：您下载的 .zip 文件将包含一个“credentials.csv”文件。您需要先解压缩该压缩文件，然后在下方上传“credentials.csv”CSV 文件。",
       "dropboxDescription": "从 Dropbox Passwords 导入密码",
       "dropboxInstructionsPart1": "要将您的 Dropbox Passwords 导入，需先将其导出为 CSV 文件。操作步骤为：打开 Dropbox Passwords，进入「账户」>「导出（至 .CSV 文件）」。",
       "edgeDescription": "从您的 Microsoft Edge 密码管理器导入密码",
@@ -540,14 +540,14 @@
       "genericCsvDescription": "使用 CSV 模板格式导入凭据",
       "genericCsvInstructionsPart1": "您使用的密码管理器不被支持吗？您始终可以改用通用 CSV 模板格式将您的凭据导入 AliasVault。",
       "genericCsvStep1": "下载 AliasVault 导入 CSV",
-      "genericCsvStep2": "在电子表格程序（Microsoft Excel、Google Sheets 等）中打开它",
+      "genericCsvStep2": "在电子表格程序（Microsoft Excel、Google 表格等）中打开它",
       "genericCsvStep3": "填写您的凭据（替换示例数据）",
       "genericCsvStep4": "另存为 CSV 格式并在下方上传",
       "genericCsvTemplateDownloadError": "CSV 模板下载失败。请重试。",
       "keePassDescription": "从 KeePass 导入密码",
       "keePassInstructionsPart1": "要导入您的 KeePass 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。",
       "keePassXCDescription": "从 KeePassXC 导入密码",
-      "keePassXCInstructionsPart1": "要导入 KeePassXC 保管库，您需要将其导出为 CSV 文件。您可以前往“数据库”菜单，选择“导出”（CSV 文件）。",
+      "keePassXCInstructionsPart1": "要导入 KeePassXC 密码库，您需要将其导出为 CSV 文件。您可以前往“数据库”菜单，选择“导出”（CSV 文件）。",
       "lastPassDescription": "从您的 LastPass 密码库导入密码",
       "lastPassInstructionsPart1": "要导入您的 LastPass 密码库，您需要将其导出为 CSV 文件。您可以通过登录您的 LastPass 账户，进入左侧边栏的“高级选项”并选择“导出” > “LastPass CSV 文件”来完成此操作。",
       "nordPassDescription": "从 NordPass 导入密码",
@@ -802,7 +802,7 @@
     "passwordLength": "密码长度",
     "passwordSettings": "密码设置",
     "passwordSettingsPopup": {
-      "avoidAmbiguousCharsLabel": "避免易混淆字符（1、l、I、0、O等）",
+      "avoidAmbiguousCharsLabel": "避免易混淆字符（1、l、I、0、O 等）",
       "includeLowercaseLabel": "包含小写字母（a-z）",
       "includeNumbersLabel": "包含数字（0-9）",
       "includeSpecialCharsLabel": "包含特殊字符（!@#$%^&*）",
@@ -857,7 +857,7 @@
     "saveItem": "保存项目",
     "search": {
       "noResultsFoundMessage": "未找到结果",
-      "searchHelpText": "输入要搜索的术语，可以是服务名称、描述或邮箱地址。",
+      "searchHelpText": "输入要搜索的条目，可以是服务名称、描述或邮箱地址。",
       "searchTooShortMessage": "请输入更多字符",
       "searchingForMessage": "正在搜索“{{search}}”",
       "searchingMessage": "搜索中…"
@@ -926,7 +926,7 @@
       "viewItemTitle": "查看项目"
     },
     "viewHistory": "查看历史记录",
-    "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
+    "welcomeDescription": "要使用 AliasVault 浏览器扩展：导航到某个网站，使用 AliasVault 自动填充弹窗创建新凭据。",
     "welcomeTitle": "欢迎使用 AliasVault!",
     "wordCount": "词数"
   },
@@ -1122,12 +1122,12 @@
     "appVersion": "应用版本",
     "appearance": "外观",
     "apps": {
-      "browserExtensionsDescription": "AliasVault浏览器扩展程序允许您在任何网站上自动填充现有凭据。它还允许您在注册过程中生成新的别名，访问所有别名收到的邮件，以及查看您的别名和身份。",
+      "browserExtensionsDescription": "AliasVault 浏览器扩展允许您在任何网站上自动填充现有凭据。它还允许您在注册过程中生成新的别名，访问所有别名收到的邮件，以及查看您的别名和身份。",
       "browserExtensionsTitle": "浏览器扩展",
       "comingSoonText": "即将推出",
       "downloadButton": "下载",
       "installButton": "安装",
-      "mobileAppsDescription": "AliasVault移动应用允许您随时随地访问您的别名和身份，查看和管理收到的邮件，并随时生成新的别名。您的数据通过设备上的生物识别认证得到全面保护。",
+      "mobileAppsDescription": "AliasVault 移动应用允许您随时随地访问您的别名和身份，查看和管理收到的邮件，并随时生成新的别名。您的数据通过设备上的生物识别认证得到全面保护。",
       "mobileAppsTitle": "移动应用",
       "pageDescription": "安装浏览器扩展和移动应用，以便从所有设备访问您的密码库，并在网站上自动填写凭据。",
       "pageTitle": "扩展与应用"
@@ -1146,10 +1146,10 @@
       "8hours": "8 小时"
     },
     "autoLockSettings": {
-      "description": "选择应用在需要重新验证前可在后台停留的时间。您需要使用Face ID/Touch ID或输入密码再次解锁密码库。"
+      "description": "选择应用在需要重新验证前可在后台停留的时间。您需要使用面容 ID 或输入密码再次解锁密码库。"
     },
     "autoLockTimeoutDescription": "无操作一段时间后自动锁定密码库",
-    "autoLockTimeoutHelp": "密码库仅在达到指定的无操作时长后才会锁定（未使用自动填充功能或未打开扩展程序弹窗）。无论此设置如何，关闭浏览器时密码库始终会锁定。",
+    "autoLockTimeoutHelp": "密码库仅在达到指定的无操作时长后才会锁定（未使用自动填充功能或未打开扩展弹窗）。无论此设置如何，关闭浏览器时密码库始终会锁定。",
     "autofill": "自动填充与通行密钥",
     "autofillDisabledDescription": "自动填充建议已全局禁用",
     "autofillEnabled": "启用自动填充",
@@ -1158,7 +1158,7 @@
     "autofillMatchingDefault": "URL + 子域名 + 名称通配符",
     "autofillMatchingMode": "自动填充匹配模式",
     "autofillMatchingModeDescription": "用于判定哪些凭据会被视为匹配项，并在指定网站的自动填充弹窗中显示为建议选项。",
-    "autofillMatchingUrlExact": "精确匹配URL域名",
+    "autofillMatchingUrlExact": "精确匹配 URL 域名",
     "autofillMatchingUrlSubdomain": "URL + 子域名",
     "autofillSettings": "自动填充设置",
     "autofillSettingsDescription": "启用或禁用网页上的自动填充弹出窗口",
@@ -1174,13 +1174,13 @@
     "clientUrlHint": "您自托管实例的 Web 界面 URL",
     "clipboardClear": "清除剪贴板",
     "clipboardClear10Seconds": "10 秒后清除",
-    "clipboardClear15Seconds": "15分钟后清除",
-    "clipboardClear5Seconds": "5秒后清除",
+    "clipboardClear15Seconds": "15 秒后清除",
+    "clipboardClear5Seconds": "5 秒后清除",
     "clipboardClearAndroidWarning": "注：部分 Android 设备启用了剪贴板历史记录，即使 AliasVault 清空剪贴板，历史记录仍可能保留之前复制的内容。AliasVault 只能覆盖最新复制的内容，但较早的记录可能仍会显示在历史记录中。出于安全考虑，我们建议您在设备设置中禁用所有剪贴板历史记录功能。",
     "clipboardClearDescription": "在指定时间后自动清除剪贴板中复制的密码及敏感信息。",
     "clipboardClearDisabled": "从不清除",
     "clipboardClearOptions": {
-      "10seconds": "10秒"
+      "10seconds": "10 秒"
     },
     "clipboardClearTimeout": "复制后清除剪贴板",
     "clipboardClearTimeoutDescription": "复制敏感数据后自动清除剪贴板",
@@ -1225,9 +1225,9 @@
       "defaultEmailDomainLabel": "默认邮件域名",
       "defaultEmailDomainLearnMore": "了解更多关于差异的信息",
       "emailSettingsTitle": "邮件设置",
-      "pageDescription": "配置AliasVault的通用设置。",
+      "pageDescription": "配置 AliasVault 的通用设置。",
       "pageTitle": "通用设置",
-      "privateDomainsDisabledLabel": "未配置私密邮件域",
+      "privateDomainsDisabledLabel": "未配置私密邮件域名",
       "privateDomainsLabel": "私人域名",
       "publicDomainsLabel": "公共域名"
     },
@@ -1236,14 +1236,14 @@
     "identityGeneratorSettings": {
       "ageRangeDescription": "设置生成新身份的年龄范围。",
       "ageRangeSection": "年龄范围",
-      "description": "配置生成新身份时的默认语言和性别偏好。",
-      "genderDescription": "设置生成新身份时的性别偏好。",
+      "description": "配置生成新身份的默认语言和性别偏好。",
+      "genderDescription": "设置生成新身份的性别偏好。",
       "genderOptions": {
         "female": "女",
         "male": "男",
         "random": "随机"
       },
-      "languageDescription": "设置生成新身份时使用的语言。"
+      "languageDescription": "设置生成新身份将使用的语言。"
     },
     "importExport": "导入 / 导出",
     "importSectionDescription": "从其他密码管理器或先前的 AliasVault 导出文件中导入您的密码。",
@@ -1335,7 +1335,7 @@
         "noSessionsMessage": "未找到活跃会话。",
         "revoke": "撤销",
         "revokeConfirmation": "确定要注销此会话吗？这将使您从所选设备中退出登录。",
-        "revokeExceptionMessage": "注销会话失败: {{error}}。",
+        "revokeExceptionMessage": "注销会话失败：{{error}}。",
         "revokeSession": "撤销会话",
         "revokeSuccessMessage": "会话已成功撤销。",
         "sessionRevoked": "会话已成功撤销"
