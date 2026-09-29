@@ -22,7 +22,6 @@ ANDROID_DIR="$DIST_DIR/android"
 
 # Target directories in consumer apps
 BROWSER_EXT_DIST="$SCRIPT_DIR/../client/wasm"
-BLAZOR_CLIENT_DIST="$SCRIPT_DIR/../../apps/server/AliasVault.Client/wwwroot/wasm"
 IOS_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/ios/RustCoreFramework/RustCore"
 ANDROID_APP_DIST="$SCRIPT_DIR/../../apps/mobile-app/android/app/src/main/jniLibs"
 
@@ -124,7 +123,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo ""
             echo "Target options:"
-            echo "  --web                Build WASM for the web app and Blazor client (size-optimized)"
+            echo "  --web                Build WASM for the web app (size-optimized)"
             echo "  --browser-extension  Build WASM for the browser extension (speed-optimized)"
             echo "  --ios                Build for iOS (device + simulator arm64) with Swift bindings"
             echo "  --android            Build for Android (arm64-v8a, armeabi-v7a, x86_64) with Kotlin bindings"
@@ -244,17 +243,6 @@ README_EOF
 
         echo -e "${GREEN}Distributed to: $BROWSER_EXT_DIST${NC}"
         ls -lh "$BROWSER_EXT_DIST/"
-
-        # Also distribute to Blazor client
-        echo ""
-        echo -e "${BLUE}Distributing to Blazor client...${NC}"
-        rm -rf "$BLAZOR_CLIENT_DIST"
-        mkdir -p "$BLAZOR_CLIENT_DIST"
-        cp "$WASM_DIR"/aliasvault_core_bg.wasm "$BLAZOR_CLIENT_DIST/"
-        cp "$WASM_DIR"/aliasvault_core.js "$BLAZOR_CLIENT_DIST/"
-
-        echo -e "${GREEN}Distributed to: $BLAZOR_CLIENT_DIST${NC}"
-        ls -lh "$BLAZOR_CLIENT_DIST/"
     fi
 }
 

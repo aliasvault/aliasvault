@@ -31,36 +31,6 @@ importers/protonpass.svg apps/web/public/img/importers/protonpass.svg
 importers/roboform.svg apps/web/public/img/importers/roboform.svg
 importers/strongbox.svg apps/web/public/img/importers/strongbox.svg
 
-# Blazor client
-brand/web/favicon.png apps/server/AliasVault.Client/wwwroot/favicon.png
-brand/logo.svg apps/server/AliasVault.Client/wwwroot/img/logo.svg
-brand/logo-cropped.png apps/server/AliasVault.Client/wwwroot/img/logo-cropped.png
-brand/web/icon-192.png apps/server/AliasVault.Client/wwwroot/img/icon-192.png
-brand/web/icon-500.png apps/server/AliasVault.Client/wwwroot/img/icon-500.png
-browsers/brave.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/brave.svg
-browsers/chrome.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/chrome.svg
-browsers/edge.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/edge.svg
-browsers/firefox.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/firefox.svg
-browsers/safari.svg apps/server/AliasVault.Client/wwwroot/img/browser-icons/safari.svg
-platforms/android.svg apps/server/AliasVault.Client/wwwroot/img/mobile-icons/android.svg
-platforms/ios.svg apps/server/AliasVault.Client/wwwroot/img/mobile-icons/ios.svg
-importers/1password.svg apps/server/AliasVault.Client/wwwroot/img/importers/1password.svg
-importers/bitwarden.svg apps/server/AliasVault.Client/wwwroot/img/importers/bitwarden.svg
-browsers/chrome.svg apps/server/AliasVault.Client/wwwroot/img/importers/chrome.svg
-importers/dashlane.svg apps/server/AliasVault.Client/wwwroot/img/importers/dashlane.svg
-importers/dropbox.svg apps/server/AliasVault.Client/wwwroot/img/importers/dropbox.svg
-browsers/edge.svg apps/server/AliasVault.Client/wwwroot/img/importers/edge.svg
-importers/enpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/enpass.svg
-browsers/firefox.svg apps/server/AliasVault.Client/wwwroot/img/importers/firefox.svg
-importers/generic-csv.svg apps/server/AliasVault.Client/wwwroot/img/importers/generic-csv.svg
-importers/keepass.svg apps/server/AliasVault.Client/wwwroot/img/importers/keepass.svg
-importers/keepassxc.svg apps/server/AliasVault.Client/wwwroot/img/importers/keepassxc.svg
-importers/lastpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/lastpass.svg
-importers/nordpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/nordpass.svg
-importers/protonpass.svg apps/server/AliasVault.Client/wwwroot/img/importers/protonpass.svg
-importers/roboform.svg apps/server/AliasVault.Client/wwwroot/img/importers/roboform.svg
-importers/strongbox.svg apps/server/AliasVault.Client/wwwroot/img/importers/strongbox.svg
-
 # Admin
 brand/web/favicon.png apps/server/AliasVault.Admin/wwwroot/favicon.png
 brand/logo.svg apps/server/AliasVault.Admin/wwwroot/img/logo.svg

@@ -1,5 +1,5 @@
 /**
- * Typed wrapper around the AliasVault Rust core (shared with iOS, Android, and the Blazor client).
+ * Typed wrapper around the AliasVault Rust core (shared with iOS and Android).
  *
  * Algorithms (URL matching, credential filtering, domain extraction, the vault codec) live in `core/rust`.
  */

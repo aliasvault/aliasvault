@@ -3,7 +3,7 @@
  * This is the single source of truth for all item type icons across platforms.
  *
  * Generated platform-specific files:
- * - C# (Blazor): apps/server/Databases/AliasClientDb/Models/ItemTypeIcons.cs
+ * - C#: apps/server/Databases/AliasClientDb/Models/ItemTypeIcons.cs
  * - Swift (iOS): apps/mobile-app/ios/VaultModels/ItemTypeIcons.swift
  * - Kotlin (Android): apps/mobile-app/android/.../vaultstore/models/ItemTypeIcons.kt
  * - TypeScript: distributed via build.sh to browser-extension and mobile-app
