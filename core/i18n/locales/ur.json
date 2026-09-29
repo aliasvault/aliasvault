@@ -95,8 +95,7 @@
       "httpError": "HTTP error: {{status}}",
       "networkError": "Network request failed. Please check your internet connection and try again.",
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
-      "sessionExpired": "Your session has expired. Please login again."
+      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "Connection with the AliasVault servers failed. Please try again (later).",
       "enterMasterPasswordDescription": "Enter your master password to unlock your vault.",
-      "incorrectPasswordError": "The password is incorrect. Please try entering your password again, or log out and log in again.",
       "loggingInWithWebAuthn": "Logging in with passkey...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "Your session has timed out. Please log in again.",
       "unlockButton": "Unlock",
       "unlockWithMobileButton": "Unlock with Mobile App",
       "unlockWithWebAuthn": "Unlock with passkey",
@@ -225,7 +222,6 @@
     "back": "واپس جائیں",
     "backspace": "Backspace",
     "cancel": "منسوخ کریں",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Clear Clipboard"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "پاس ورڈز ایک جیسے نہیں ہیں۔",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
-      "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +266,13 @@
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "ایک نامعلوم مسئلہ پیش آ گیا ہے۔ براہِ کرم دوبارہ کوشش کریں۔",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Vault is locked",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "Two-factor authentication",
     "unavailable": "Unavailable",
     "undo": "Undo",
+    "updateApp": "Update app",
     "use": "Use",
     "username": "صارف کا نام",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "صارف کا نام: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "ویب سائیٹ"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "Checking for vault updates",
     "checkingVaultUpdates": "Checking vault updates",
     "errors": {
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "failedToGetEncryptedDatabase": "Failed to get encrypted database",
       "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
-      "usernameNotFound": "Username not found",
-      "vaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
-      "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version."
+      "usernameNotFound": "Username not found"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Saving changes to vault",
