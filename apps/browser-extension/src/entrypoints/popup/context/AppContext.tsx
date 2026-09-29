@@ -80,8 +80,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * Subscribe to logout events from WebApiService.
    */
   useEffect(() => {
-    const unsubscribe = logoutEventEmitter.subscribe(async (errorKey: string) => {
-      await logout(t(errorKey));
+    const unsubscribe = logoutEventEmitter.subscribe(async (messageKey) => {
+      await logout(t(messageKey));
     });
 
     return unsubscribe;

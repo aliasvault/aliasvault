@@ -3,12 +3,14 @@
  */
 
 import { createRustSqliteEngine } from '@aliasvault/client/database/RustSqliteEngine';
-import { type IClientPlatform, type IKeyValueStore, type StorageKey, TranslatableMessage } from '@aliasvault/client/platform';
+import { type IClientPlatform, type IKeyValueStore, type StorageKey } from '@aliasvault/client/platform';
 import { createWasmRustCore } from '@aliasvault/client/rust/WasmRustCore';
 
 import { devError, devLog, devWarn } from '@/utils/devLogger/DevLogger';
 
 import { t } from '@/i18n/StandaloneI18n';
+
+import type { TranslationKey } from '@aliasvault/i18n';
 
 import { browser, storage } from '#imports';
 
@@ -36,15 +38,6 @@ function detectClientName(): 'chrome' | 'firefox' | 'edge' | 'safari' | 'browser
   }
   return 'browser';
 }
-
-/** 
- * Which translation key backs each of the core's own messages. 
- * TODO: refactor this to use centralized translation system instead (on to-do list) once that is implemented.
- */
-const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
-  [TranslatableMessage.ClientOutdated]: 'common.errors.browserExtensionOutdated',
-  [TranslatableMessage.VaultUpgradeRequired]: 'content.vaultUpgradeRequired',
-};
 
 /**
  * WXT storage.
@@ -97,7 +90,7 @@ export const extensionPlatform: IClientPlatform = {
   rustCore,
   sqlite: createRustSqliteEngine(rustCore),
   /**
-   * Translate one of the core's own messages through the extension's i18n.
+   * Translate a shared message through the extension's i18n.
    */
-  translate: (message: TranslatableMessage): Promise<string> => t(TRANSLATION_KEYS[message]),
+  translate: (key: TranslationKey): Promise<string> => t(key),
 };

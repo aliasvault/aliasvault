@@ -31,7 +31,7 @@ const EXPECTED_ERROR_CODES = new Set<string>([
   AppErrorCode.UPLOAD_TIMEOUT,
   AppErrorCode.UPLOAD_TOO_LARGE,
   AppErrorCode.SERVER_UPDATE_REQUIRED,
-  AppErrorCode.VERSION_INCOMPATIBLE,
+  AppErrorCode.VAULT_VERSION_INCOMPATIBLE,
 ]);
 
 /**
