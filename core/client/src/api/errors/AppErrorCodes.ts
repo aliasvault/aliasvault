@@ -1,8 +1,12 @@
 import type { TranslationKey } from '@aliasvault/i18n';
 
 /**
- * The error codes of all AliasVault clients: web app, browser extension and mobile app and the Rust sync engine.
- *
+ * The main registry for error codes of all AliasVault clients: web app, browser extension and mobile app and the Rust sync engine.
+ * 
+ * When adding or changing any error codes, also make sure to apply them to:
+ * - apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/AppError.kt
+ * - apps/mobile-app/ios/VaultStoreKit/Enums/AppError.swift
+ * 
  * These codes serve two purposes:
  * 1. Enable multi-language support by mapping codes to translation keys
  * 2. Provide debugging information for additional context when a user reports an error

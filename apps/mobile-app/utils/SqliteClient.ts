@@ -248,7 +248,7 @@ class SqliteClient {
     const compatibilityResult = checkVersionCompatibility(databaseVersion);
 
     if (!compatibilityResult.isCompatible) {
-      throw new VaultVersionIncompatibleError('vault.errors.appOutdated');
+      throw new VaultVersionIncompatibleError('common.errors.clientOutdated');
     }
 
     // If the version is known, return the full version info

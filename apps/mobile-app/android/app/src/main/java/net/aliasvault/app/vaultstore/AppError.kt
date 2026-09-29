@@ -425,72 +425,62 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError("Sync engine failed: $message", cause)
 
     /**
-     * Get the error code string for React Native bridge.
-     *
-     * Error codes use the E-XXX format for easy user reporting:
-     * - E-1xx: Authentication errors
-     * - E-2xx: Network/connectivity errors
-     * - E-3xx: Version/compatibility errors
-     * - E-4xx: Vault status errors
-     * - E-5xx: Decryption/Encryption errors
-     * - E-6xx: Database/Storage errors
-     * - E-7xx: Merge errors
-     * - E-8xx: Upload errors
-     * - E-9xx: Native module errors
-     * - E-0xx: Generic errors
+     * Get the error code string for React Native bridge, in the E-XXX format for easy user reporting.
+     * The codes are shared by every client: `AppErrorCode` in core/client/src/api/errors/AppErrorCodes.ts is the registry,
+     * so add a new code there first and never reuse a number.
      */
     val code: String
         get() = when (this) {
-            is AuthenticationFailed -> "E-101"
-            is SessionExpired -> "E-102"
-            is PasswordChanged -> "E-103"
-            is ServerUnavailable -> "E-201"
-            is NetworkError -> "E-202"
-            is ServerError -> "E-204"
-            is ClientVersionNotSupported -> "E-301"
-            is ServerVersionNotSupported -> "E-302"
-            is VaultVersionIncompatible -> "E-303"
-            is ServerUpdateRequired -> "E-304"
-            is VaultMergeRequired -> "E-401"
-            is VaultOutdated -> "E-402"
-            is SyncVaultFetchFailed -> "E-404"
-            is VaultDecryptFailed -> "E-501"
-            is EncryptionKeyNotFound -> "E-502"
-            is Base64DecodeFailed -> "E-503"
-            is DatabaseTempWriteFailed -> "E-504"
-            is DatabaseOpenFailed -> "E-505"
-            is DatabaseMemoryFailed -> "E-506"
-            is DatabaseBackupFailed -> "E-507"
-            is DatabasePragmaFailed -> "E-508"
-            is BiometricCancelled -> "E-509"
-            is BiometricFailed -> "E-510"
-            is KeystoreKeyNotFound -> "E-511"
-            is KeystoreAccessDenied -> "E-512"
-            is KeystoreItemNotFound -> "E-513"
-            is BiometricNotAvailable -> "E-514"
-            is BiometricNotEnrolled -> "E-515"
-            is BiometricLockout -> "E-516"
-            is UnlockKeyRejected -> "E-517"
-            is KeyChainUnreadable -> "E-518"
-            is KeyOutOfSync -> "E-519"
-            is ServerVaultDecryptFailed -> "E-520"
+            is AuthenticationFailed -> "E-104"
+            is SessionExpired -> "E-105"
+            is PasswordChanged -> "E-106"
+            is ServerUnavailable -> "E-505"
+            is NetworkError -> "E-003"
+            is ServerError -> "E-506"
+            is ClientVersionNotSupported -> "E-904"
+            is ServerVersionNotSupported -> "E-905"
+            is VaultVersionIncompatible -> "E-902"
+            is ServerUpdateRequired -> "E-903"
+            is VaultMergeRequired -> "E-907"
+            is VaultOutdated -> "E-906"
+            is SyncVaultFetchFailed -> "E-502"
+            is VaultDecryptFailed -> "E-203"
+            is EncryptionKeyNotFound -> "E-202"
+            is Base64DecodeFailed -> "E-606"
+            is DatabaseTempWriteFailed -> "E-607"
+            is DatabaseOpenFailed -> "E-608"
+            is DatabaseMemoryFailed -> "E-609"
+            is DatabaseBackupFailed -> "E-610"
+            is DatabasePragmaFailed -> "E-611"
+            is BiometricCancelled -> "E-209"
+            is BiometricFailed -> "E-210"
+            is KeystoreKeyNotFound -> "E-211"
+            is KeystoreAccessDenied -> "E-212"
+            is KeystoreItemNotFound -> "E-213"
+            is BiometricNotAvailable -> "E-214"
+            is BiometricNotEnrolled -> "E-215"
+            is BiometricLockout -> "E-216"
+            is UnlockKeyRejected -> "E-206"
+            is KeyChainUnreadable -> "E-207"
+            is KeyOutOfSync -> "E-208"
+            is ServerVaultDecryptFailed -> "E-503"
             is StorageReadFailed -> "E-601"
             is StorageWriteFailed -> "E-602"
             is DatabaseInitFailed -> "E-603"
-            is VaultStoreFailed -> "E-604"
+            is VaultStoreFailed -> "E-504"
             is ManifestNotRecorded -> "E-605"
             is VaultMergeFailed -> "E-701"
-            is MergeUploadFailed -> "E-705"
+            is MergeUploadFailed -> "E-703"
             is VaultUploadFailed -> "E-801"
             is VaultTooLarge -> "E-804"
             is VaultSyncTimeout -> "E-805"
-            is MaxRetriesReached -> "E-901"
-            is MigrationCheckFailed -> "E-903"
+            is MaxRetriesReached -> "E-702"
+            is MigrationCheckFailed -> "E-901"
             is UnknownError -> "E-001"
-            is ParseError -> "E-002"
-            is SyncResponseInvalid -> "E-003"
-            is SyncCodecFailed -> "E-004"
-            is SyncEngineFailed -> "E-005"
+            is ParseError -> "E-004"
+            is SyncResponseInvalid -> "E-507"
+            is SyncCodecFailed -> "E-508"
+            is SyncEngineFailed -> "E-509"
         }
 
     /**
@@ -519,10 +509,4 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is ServerUnavailable, is NetworkError -> true
             else -> false
         }
-
-    /**
-     * Get the translation key for this error (error code format for lookup in translation files).
-     */
-    val translationKey: String?
-        get() = code
 }

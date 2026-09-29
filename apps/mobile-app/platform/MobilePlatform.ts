@@ -1,18 +1,12 @@
-import { setPlatform, TranslatableMessage, unavailableService } from '@aliasvault/client/platform';
+import { setPlatform, unavailableService } from '@aliasvault/client/platform';
 
 import type { IClientPlatform, IKeyValueStore, ISqliteEngine } from '@aliasvault/client/platform';
+import type { TranslationKey } from '@aliasvault/i18n';
 
 import i18n from '@/i18n';
 import { nativeRustCore } from '@/platform/NativeRustCore';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 import { MobileAppIdentity } from '@/utils/AppInfo';
-
-/**
- * Which translation key backs each of the client core's own messages.
- */
-const TRANSLATION_KEYS: Record<TranslatableMessage, string> = {
-  [TranslatableMessage.ClientOutdated]: 'vault.errors.appOutdated',
-  [TranslatableMessage.VaultUpgradeRequired]: 'vault.errors.vaultOutdated',
-};
 
 /*
  * Only the client core's repositories and Rust wrappers run on mobile. Tokens, sync state and the vault itself live
@@ -54,9 +48,13 @@ const mobilePlatform: IClientPlatform = {
   rustCore: nativeRustCore,
   sqlite: unavailableService<ISqliteEngine>('SQLite engine'),
   /**
-   * Translate one of the core's own messages through the app's i18n.
+   * Translate a shared message through the app's i18n.
    */
-  translate: async (message: TranslatableMessage): Promise<string> => i18n.t(TRANSLATION_KEYS[message]),
+  translate: async (key: TranslationKey): Promise<string> => i18n.t(key),
+  /**
+   * Whether this device holds a key chain; the app keeps it in native storage.
+   */
+  hasLocalVaultKey: async (): Promise<boolean> => (await NativeVaultManager.getAccountKeyChain()) !== null,
   /**
    * The app's UI language.
    */

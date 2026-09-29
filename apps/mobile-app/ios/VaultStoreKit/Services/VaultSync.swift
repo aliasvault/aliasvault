@@ -205,7 +205,7 @@ internal final class VaultSync {
 
     /// The engine's failure as the native error: a forced logout by its reason, else by its error code.
     private static func syncError(from result: [String: Any]) -> AppError {
-        if let reason = result["errorKey"] as? String, let error = logoutErrors[reason] {
+        if let reason = result["logoutReason"] as? String, let error = logoutErrors[reason] {
             return error
         }
         // The engine's message is diagnostic detail; the code decides what the user sees.

@@ -14,7 +14,8 @@ import {
   extractErrorCode,
   formatErrorWithCode,
   getErrorTranslationKey,
-} from '@/utils/types/errors/AppErrorCodes';
+  isErrorCode,
+} from '@aliasvault/client/api/errors/AppErrorCodes';
 
 /**
  * Sync state tracking for race detection and offline support.
@@ -98,7 +99,8 @@ export const useVaultSync = (): {
 
       // Handle logout requirement from status check
       if (statusCheck.requiresLogout) {
-        const errorMessage = statusCheck.errorKey ? t(getErrorTranslationKey(extractErrorCode(statusCheck.errorKey) ?? AppErrorCode.UNKNOWN_ERROR)) : undefined;
+        const errorCode = statusCheck.errorCode && isErrorCode(statusCheck.errorCode) ? statusCheck.errorCode : AppErrorCode.UNKNOWN_ERROR;
+        const errorMessage = statusCheck.errorCode ? t(getErrorTranslationKey(errorCode)) : undefined;
         await app.logout(errorMessage);
         return false;
       }
@@ -209,9 +211,9 @@ export const useVaultSync = (): {
         }
 
         // Extract the specific error code from native layer if available
-        // This preserves detailed error info (E-501 to E-511) for debugging
+        // This preserves detailed error info for debugging
         const nativeErrorCode = getAppErrorCode(err);
-        const errorCode = nativeErrorCode ?? AppErrorCode.NATIVE_UNLOCK_FAILED;
+        const errorCode = nativeErrorCode ?? AppErrorCode.VAULT_UNLOCK_FAILED;
 
         console.error(`Failed to unlock vault (${errorCode}):`, err);
 

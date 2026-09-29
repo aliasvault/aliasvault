@@ -1,4 +1,6 @@
+import { AppErrorCode, formatErrorWithCode, getAppErrorCode, getErrorTranslationKey } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@aliasvault/client/api/errors/VaultVersionIncompatibleError';
+import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,7 +9,6 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimension
 
 import { AppUnlockUtility } from '@/utils/AppUnlockUtility';
 import { HapticsUtility } from '@/utils/HapticsUtility';
-import { AppErrorCode, getAppErrorCode, getErrorTranslationKey, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
@@ -24,14 +25,12 @@ import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
- * Whether a failed unlock means the entered password was wrong.
- * @param errorCode - the error code the unlock failed with
+ * The message for a failed unlock.
+ * @param err - the thrown error
+ * @param t - the translation function
  */
-async function isWrongUnlockKey(errorCode: AppErrorCode): Promise<boolean> {
-  if (errorCode === AppErrorCode.UNLOCK_KEY_REJECTED) {
-    return true;
-  }
-  return errorCode === AppErrorCode.VAULT_DECRYPT_FAILED && (await NativeVaultManager.getAccountKeyChain()) === null;
+async function unlockErrorMessage(err: unknown, t: (key: string) => string): Promise<string> {
+  return formatErrorMessage(await describeAuthError(err, { uncodedIsWrongPassword: true }), t);
 }
 
 /**
@@ -154,17 +153,10 @@ export default function UnlockScreen() : React.ReactNode {
           }
 
           console.error('Unlock error:', err);
-          const errorCode = getAppErrorCode(err);
 
           // Haptic feedback for authentication error
           HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
-
-          if (!errorCode || await isWrongUnlockKey(errorCode)) {
-            setError(t('common.errors.wrongPassword'));
-          } else {
-            const translationKey = getErrorTranslationKey(errorCode);
-            setError(formatErrorWithCode(t(translationKey), errorCode));
-          }
+          setError(await unlockErrorMessage(err, t));
           setIsLoading(false);
         }
       } else {
@@ -241,20 +233,9 @@ export default function UnlockScreen() : React.ReactNode {
         return;
       }
 
-      // Try to extract error code from the error
-      const errorCode = getAppErrorCode(err);
-
       // Haptic feedback for authentication error
       HapticsUtility.notification(Haptics.NotificationFeedbackType.Error);
-
-      if (!errorCode || await isWrongUnlockKey(errorCode)) {
-        // Treat as incorrect password - show error and allow retry
-        setError(t('common.errors.wrongPassword'));
-      } else {
-        // Other error codes: show the formatted message with raw error code
-        const translationKey = getErrorTranslationKey(errorCode);
-        setError(formatErrorWithCode(t(translationKey), errorCode));
-      }
+      setError(await unlockErrorMessage(err, t));
     } finally {
       setIsLoading(false);
     }
@@ -322,7 +303,7 @@ export default function UnlockScreen() : React.ReactNode {
 
       // Check if this is a cancellation - don't show error, just allow retry
       const errorCode = getAppErrorCode(err);
-      if (errorCode === 'E-509') { // BIOMETRIC_CANCELLED
+      if (errorCode === AppErrorCode.BIOMETRIC_CANCELLED) {
         // User cancelled - don't show error, just stay on screen
         return;
       }

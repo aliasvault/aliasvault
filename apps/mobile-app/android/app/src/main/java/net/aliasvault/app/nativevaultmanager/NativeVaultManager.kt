@@ -1377,7 +1377,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     putBoolean("hasDirtyChanges", versionCheck.syncState.isDirty)
                     putBoolean("isOffline", false)
                     putBoolean("requiresLogout", false)
-                    putNull("errorKey")
+                    putNull("errorCode")
                 }
                 withContext(Dispatchers.Main) {
                     promise.resolve(resultMap)
@@ -1386,7 +1386,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 withContext(Dispatchers.Main) {
                     // Check for specific error types that require logout
                     val requiresLogout = e.isAuthenticationError || e.isVersionError
-                    val errorKey = e.translationKey
                     val isOffline = e.isNetworkError
 
                     if (isOffline) {
@@ -1397,7 +1396,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                             putBoolean("hasDirtyChanges", syncState.isDirty)
                             putBoolean("isOffline", true)
                             putBoolean("requiresLogout", false)
-                            putNull("errorKey")
+                            putNull("errorCode")
                         }
                         promise.resolve(resultMap)
                     } else {
@@ -1407,11 +1406,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                             putBoolean("hasDirtyChanges", false)
                             putBoolean("isOffline", false)
                             putBoolean("requiresLogout", requiresLogout)
-                            if (errorKey != null) {
-                                putString("errorKey", errorKey)
-                            } else {
-                                putNull("errorKey")
-                            }
+                            putString("errorCode", e.code)
                         }
                         promise.resolve(resultMap)
                     }
@@ -1425,7 +1420,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                         putBoolean("hasDirtyChanges", false)
                         putBoolean("isOffline", false)
                         putBoolean("requiresLogout", false)
-                        putNull("errorKey")
+                        putNull("errorCode")
                     }
                     promise.resolve(resultMap)
                 }
