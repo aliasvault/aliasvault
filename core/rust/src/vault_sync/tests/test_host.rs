@@ -6,7 +6,7 @@ use rusqlite::{Connection, MAIN_DB};
 use serde_json::{json, Map, Value};
 
 use crate::crypto;
-use crate::encoding::{base64_decode, base64_encode};
+use crate::common::encoding::{base64_decode, base64_encode};
 use crate::sqlite_host::{self, SqlStatement};
 use crate::vault_sync::types::{Command, Db};
 use crate::vault_sync::session::SyncSession;

@@ -14,13 +14,10 @@
 //! - **password_generator**: Password and passphrase (Diceware) generation
 //! - **identity_generator**: Random identity (alias persona) generation
 //! - **crypto**: Argon2id derivation, AES-256-GCM, RSA-OAEP, the account key hierarchy and the SRP-6a handshake
-//! - **timestamp**: the vault datetime formats and the `UpdatedAt` comparison the merge relies on
-//! - **error**: the `VaultError` type and the JSON-in/JSON-out call helper the bindings share
+//! - **common**: `VaultError`, byte encodings, randomness and the vault timestamp formats
+//! - **bindings**: the wasm-bindgen and UniFFI entry points
 
-pub mod error;
-mod encoding;
-pub mod timestamp;
-mod rng;
+pub mod common;
 pub mod vault_model;
 pub mod vault_merge;
 pub mod vault_codec;
@@ -35,15 +32,9 @@ pub mod crypto;
 pub mod vault_sync;
 pub mod sqlite_host;
 
-pub use error::VaultError;
+pub use common::error::VaultError;
 
-// WASM bindings
-#[cfg(feature = "wasm")]
-pub mod wasm;
-
-// UniFFI bindings for Swift/Kotlin
-#[cfg(feature = "uniffi")]
-pub mod uniffi_api;
+pub mod bindings;
 
 // UniFFI scaffolding - generates the FFI glue code
 #[cfg(feature = "uniffi")]

@@ -3,7 +3,7 @@ use mail_parser::{GetHeader, Message, MessageParser, MessagePart, MimeHeaders};
 use serde::Serialize;
 use std::io::Read;
 
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 
 /// Header the server stamps on an attachment whose body it detached from the source at ingest, carrying the
 /// index that body is stored and requested under. Reading the index from the message itself keeps it

@@ -191,7 +191,7 @@ fn test_prune_json_api() {
         "currentTime": "{}"
     }}"#, old_date, now_str);
 
-    let output_json = crate::error::json_call(&input_json, prune_vault).unwrap();
+    let output_json = crate::common::error::json_call(&input_json, prune_vault).unwrap();
     let output: PruneOutput = serde_json::from_str(&output_json).unwrap();
 
     assert!(output.success);

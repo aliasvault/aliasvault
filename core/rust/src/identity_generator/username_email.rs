@@ -1,7 +1,7 @@
 //! Username and email prefix generation based on an identity's name and birth year.
 use rand::RngCore;
 
-use crate::rng::unbiased_index;
+use crate::common::rng::unbiased_index;
 
 const MIN_LENGTH: usize = 6;
 const MAX_LENGTH: usize = 20;

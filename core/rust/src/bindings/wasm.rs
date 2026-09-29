@@ -55,7 +55,7 @@ pub fn merge_canonical_js(input: JsValue) -> Result<JsValue, JsValue> {
 /// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
 #[wasm_bindgen(js_name = pruneVaultJson)]
 pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::error::json_call(input_json, prune_vault).map_err(js_err)
+    crate::common::error::json_call(input_json, prune_vault).map_err(js_err)
 }
 
 /// Get the per-table SELECT queries used to build prune input.

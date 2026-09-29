@@ -623,7 +623,7 @@ pub(crate) async fn rebuild_local_schema(ctx: &mut Ctx, stamp_unstamped_into: Op
     let mut blob_map = HashMap::new();
     for entry in &set.canonicalized.manifests {
         for (hash, blob) in &entry.blobs {
-            blob_map.insert(hash.clone(), crate::encoding::base64_decode(&blob.bytes_base64)?);
+            blob_map.insert(hash.clone(), crate::common::encoding::base64_decode(&blob.bytes_base64)?);
         }
     }
     let manifests: Vec<_> = set.canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();

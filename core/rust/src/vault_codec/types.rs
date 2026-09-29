@@ -16,11 +16,11 @@ pub fn is_readable_schema_version(schema_version: u32) -> bool {
 }
 
 /// Refuse a manifest or data bucket written at a format version this build cannot read.
-pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> crate::error::VaultResult<()> {
+pub(crate) fn ensure_readable_schema_version(schema_version: u32, label: &str) -> crate::common::error::VaultResult<()> {
     if is_readable_schema_version(schema_version) {
         return Ok(());
     }
-    Err(crate::error::VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
+    Err(crate::common::error::VaultError::General(format!("{} has format version {}, this build reads up to {}", label, schema_version, SCHEMA_VERSION)))
 }
 
 /// One identity component of a row, as a string: a GUID lowercased, any other string as-is,

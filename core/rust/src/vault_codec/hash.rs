@@ -14,8 +14,8 @@
 
 use sha2::{Digest, Sha256};
 
-use crate::encoding::{hex_decode, hex_encode_lower, uuid_from_bytes};
-use crate::error::{VaultError, VaultResult};
+use crate::common::encoding::{hex_decode, hex_encode_lower, uuid_from_bytes};
+use crate::common::error::{VaultError, VaultResult};
 
 /// A UUIDv8 derived from a string: the first 16 bytes of its sha256, version and variant bits set.
 pub fn derived_uuid(material: &str) -> String {

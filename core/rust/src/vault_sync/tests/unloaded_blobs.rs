@@ -32,7 +32,7 @@ impl ServerBlob {
 fn server_db(host: &TestHost) -> rusqlite::Connection {
     let db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&db, ITEM_ID, "Server item", PERSONAL_MANIFEST_ID);
-    let now = crate::timestamp::now_vault_datetime();
+    let now = crate::common::timestamp::now_vault_datetime();
     db.execute("INSERT INTO Logos (ManifestId, Id, Source, FileData, Kind, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'bbbbbbbb-0000-4000-8000-000000000001', 'example.com', ?, 'favicon', ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, vec![1u8, 2, 3, 4], now, now]).unwrap();
     db.execute("UPDATE Items SET LogoId = 'bbbbbbbb-0000-4000-8000-000000000001'", []).unwrap();
     db.execute("INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'cccccccc-0000-4000-8000-000000000001', ?, 'passport.pdf', ?, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, ITEM_ID, vec![9u8; 64], now, now]).unwrap();
@@ -54,7 +54,7 @@ fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, 
         .blobs
         .iter()
         .map(|(hash, b)| {
-            let encrypted = blob_keys::encrypt_blob(&crate::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key).unwrap();
+            let encrypted = blob_keys::encrypt_blob(&crate::common::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key).unwrap();
             ServerBlob { hash: hash.clone(), kind: b.kind.clone(), ciphertext: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key }
         })
         .collect();
@@ -222,7 +222,7 @@ fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     let kek = crypto::generate_key_base64();
     let mut host = TestHost::new(&kek);
     insert_item(&host.local, ITEM_ID, "Old item", PERSONAL_MANIFEST_ID);
-    let now = crate::timestamp::now_vault_datetime();
+    let now = crate::common::timestamp::now_vault_datetime();
     host.local.execute("INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'cccccccc-0000-4000-8000-000000000001', ?, 'passport.pdf', NULL, 'hash-of-a-blob-that-is-not-loaded', ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, ITEM_ID, now, now]).unwrap();
     host.store_local_as_blob();
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));

@@ -3,8 +3,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::crypto;
-use crate::encoding::base64_decode;
-use crate::error::VaultResult;
+use crate::common::encoding::base64_decode;
+use crate::common::error::VaultResult;
 
 /// A blob as the server stores it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

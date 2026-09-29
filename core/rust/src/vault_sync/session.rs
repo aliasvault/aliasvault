@@ -11,7 +11,7 @@ use serde_json::Value;
 use super::engine;
 use super::errors::{SyncError, SyncResult};
 use super::types::{Ack, Command, LogLevel, SyncRequest};
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 
 /// The exchange point between the engine's future and the host.
 #[derive(Default)]

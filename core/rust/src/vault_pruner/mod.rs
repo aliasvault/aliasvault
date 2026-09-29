@@ -9,7 +9,7 @@ use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 use crate::sqlite_host::SqlStatement;
 use crate::vault_codec::row::{has_bytes, is_deleted, logo_kind, str_col};
 use crate::vault_codec::{CodecRecord, CodecTableData};
@@ -143,9 +143,9 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     let mut stats = PruneStats::default();
     let mut statements: Vec<SqlStatement> = Vec::new();
 
-    let now = crate::timestamp::parse_vault_datetime(&input.current_time)
+    let now = crate::common::timestamp::parse_vault_datetime(&input.current_time)
         .ok_or_else(|| VaultError::General(format!("Invalid current_time format: {}", input.current_time)))?;
-    let now_str = crate::timestamp::iso_utc(&now);
+    let now_str = crate::common::timestamp::iso_utc(&now);
     let cutoff_date = now - Duration::days(input.retention_days as i64);
 
     // Items table is required for both the trash purge and the logo orphan check.
@@ -174,7 +174,7 @@ fn expired_item_ids(items: &[CodecRecord], cutoff_date: DateTime<Utc>) -> Vec<(S
     let mut expired = Vec::new();
     for item in items.iter().filter(|item| !is_deleted(item)) {
         let Some(deleted_at) = str_col(item, DELETED_AT_COL) else { continue };
-        let Some(deleted_date) = crate::timestamp::parse_vault_datetime(deleted_at) else { continue };
+        let Some(deleted_date) = crate::common::timestamp::parse_vault_datetime(deleted_at) else { continue };
         if deleted_date < cutoff_date {
             if let Some(id) = str_col(item, ID_COL) {
                 expired.push((manifest_of(item).to_string(), id.to_string()));

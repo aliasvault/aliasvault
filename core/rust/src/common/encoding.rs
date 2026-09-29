@@ -3,7 +3,7 @@
 use base64::engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD as BASE64_URL};
 use base64::Engine;
 
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 
 /// Lowercase hex of a byte slice.
 pub(crate) fn hex_encode_lower(bytes: &[u8]) -> String {

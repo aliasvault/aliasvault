@@ -21,7 +21,7 @@ use serde_json::json;
 use super::manifest::{CodecOverflow, CodecRecord, CodecTableData, Manifest, MaterializeInput, MaterializedTables};
 use super::row::blob_ref_of;
 use super::types::{blob_spec_for, ensure_readable_schema_version, is_local_only_table, row_identity};
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 use crate::vault_model::names::ID_COL;
 use crate::vault_model::{id_key, MANIFESTS_TABLE, MANIFEST_ID_COL, OVERFLOW_TABLE};
 

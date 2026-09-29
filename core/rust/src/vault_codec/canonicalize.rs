@@ -24,7 +24,7 @@ use super::types::{
     blob_spec_for, bucket_categories, bucket_category_for, is_bucketed_table, is_skip_table, is_unstamped_scope,
     manifest_scoped_tables, row_identity, SCHEMA_VERSION,
 };
-use crate::error::VaultResult;
+use crate::common::error::VaultResult;
 use crate::vault_model::names::LOGOS_TABLE;
 use crate::vault_model::{ids_equal, MANIFEST_ID_COL, OVERFLOW_TABLE};
 
@@ -33,8 +33,8 @@ use crate::vault_model::{ids_equal, MANIFEST_ID_COL, OVERFLOW_TABLE};
 pub fn canonicalize_from_sqlite(input: CanonicalizeInput) -> VaultResult<CanonicalizedVault> {
     let writing_spec = match input.manifests.first() {
         Some(spec) if !spec.manifest_id.is_empty() => spec.clone(),
-        Some(_) => return Err(crate::error::VaultError::General("canonicalize requires a manifest id on every manifest".to_string())),
-        None => return Err(crate::error::VaultError::General("canonicalize input declares no manifests".to_string())),
+        Some(_) => return Err(crate::common::error::VaultError::General("canonicalize requires a manifest id on every manifest".to_string())),
+        None => return Err(crate::common::error::VaultError::General("canonicalize input declares no manifests".to_string())),
     };
     let writing_manifest_id = writing_spec.manifest_id.clone();
     let writing_manifest_salt = writing_spec.manifest_salt.clone();
@@ -251,7 +251,7 @@ fn reject_unstamped_rows(tables: &HashMap<String, Vec<CodecRecord>>) -> VaultRes
         let unstamped = rows.iter().filter(|row| is_unstamped(row)).count();
         if unstamped > 0 {
             let first = rows.iter().find(|row| is_unstamped(row)).and_then(|row| row.get("Id")).cloned().unwrap_or(Value::Null);
-            return Err(crate::error::VaultError::General(format!(
+            return Err(crate::common::error::VaultError::General(format!(
                 "the codec refuses to write {} row(s) of {} that name no manifest (first: Id {}); every row must carry the manifest it belongs to",
                 unstamped, name, first
             )));
@@ -296,7 +296,7 @@ fn extract_blob_cell(
         None => return Ok(serde_json::Value::Null),
     };
 
-    let bytes = match crate::encoding::base64_decode(b64) {
+    let bytes = match crate::common::encoding::base64_decode(b64) {
         Ok(b) if !b.is_empty() => b,
         _ => return Ok(serde_json::Value::Null),
     };
@@ -355,7 +355,7 @@ fn primary_key_of(identity: &str) -> &str {
 pub fn extract_buckets(category: String, manifest_ids: Vec<String>, mut tables: HashMap<String, Vec<CodecRecord>>) -> VaultResult<Vec<DataBucket>> {
     if manifest_ids.is_empty() {
         let message = "extract_buckets declares no manifests; a bucket write needs the manifests it may be addressed to";
-        return Err(crate::error::VaultError::General(message.to_string()));
+        return Err(crate::common::error::VaultError::General(message.to_string()));
     }
 
     let overflow = tables.remove(OVERFLOW_TABLE).map(|records| CodecOverflow::from_table_records(&records)).unwrap_or_default();

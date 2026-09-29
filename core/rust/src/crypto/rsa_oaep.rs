@@ -7,8 +7,8 @@ use sha2::Sha256;
 use std::fmt;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-use crate::encoding::{base64_decode, base64_encode, base64url_decode, base64url_encode};
-use crate::error::{VaultError, VaultResult};
+use crate::common::encoding::{base64_decode, base64_encode, base64url_decode, base64url_encode};
+use crate::common::error::{VaultError, VaultResult};
 
 const MODULUS_BITS: usize = 2048;
 

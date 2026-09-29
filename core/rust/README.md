@@ -53,9 +53,11 @@ Random identity (alias persona) generation: names from embedded per-language dic
 ### crypto
 Argon2id key derivation, AES-256-GCM, RSA-OAEP key grants, the account key hierarchy and the SRP-6a handshake.
 
-### timestamp and error
-The vault datetime formats plus the `UpdatedAt` comparison the merge relies on, and the `VaultError`
-type with the JSON-in/JSON-out call helper the bindings share.
+### common
+Crate-wide helper utils.
+
+### bindings
+The host entry points: `wasm` (wasm-bindgen, browser) and `uniffi_api` (UniFFI, Swift and Kotlin).
 
 ## Building
 

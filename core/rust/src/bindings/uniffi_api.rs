@@ -5,7 +5,7 @@
 
 use crate::crypto::argon2::Argon2Error;
 use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
-use crate::error::{json_call, VaultError};
+use crate::common::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
 use crate::vault_codec::{self, CanonicalizeInput};
 

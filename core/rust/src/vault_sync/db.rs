@@ -8,9 +8,9 @@ use super::errors::{SyncError, SyncResult};
 use super::session::Host;
 use super::types::{Ack, Command, Db, DbBytes, DbRows, LogLevel};
 use super::legacy;
-use crate::encoding::{base64_decode, base64_encode, uuid_from_bytes};
+use crate::common::encoding::{base64_decode, base64_encode, uuid_from_bytes};
 use crate::sqlite_host::SqlStatement;
-use crate::timestamp::{now_iso_utc, now_vault_datetime};
+use crate::common::timestamp::{now_iso_utc, now_vault_datetime};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
 use crate::vault_codec::{is_skip_table, manifest_scoped_tables, CodecRecord, CodecTableData, MaterializedTables};
 use crate::vault_model::{id_key, ids_equal, MANIFEST_ID_COL, UNSTAMPED_SCOPE_SENTINEL};
@@ -225,7 +225,7 @@ fn bind_value(value: &Value, blobs: &HashMap<String, Vec<u8>>) -> Value {
 /// A random lowercase UUID v4.
 pub(crate) fn new_id() -> String {
     let mut bytes = [0u8; 16];
-    crate::rng::fill_random(&mut bytes);
+    crate::common::rng::fill_random(&mut bytes);
     uuid_from_bytes(bytes, 4)
 }
 

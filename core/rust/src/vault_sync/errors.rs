@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::types::CommandKind;
-use crate::error::VaultError;
+use crate::common::error::VaultError;
 
 /// Client error codes, shared with the client apps (`AppErrorCodes` in the client core).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

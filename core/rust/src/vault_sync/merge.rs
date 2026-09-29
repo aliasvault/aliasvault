@@ -136,7 +136,7 @@ async fn merge_onto_opened_manifests(ctx: &mut Ctx, opened: &OpenedManifestSet, 
         for (hash, blob) in &canonicalized.blobs {
             local_blobs.insert(hash.clone(), blob.clone());
             if !blob_map.contains_key(hash) {
-                blob_map.insert(hash.clone(), crate::encoding::base64_decode(&blob.bytes_base64)?);
+                blob_map.insert(hash.clone(), crate::common::encoding::base64_decode(&blob.bytes_base64)?);
             }
         }
     }
@@ -194,7 +194,7 @@ fn collect_merged_blobs(manifests: &[Manifest], blob_map: &HashMap<String, Vec<u
             if let Some(local) = local_blobs.get(&hash) {
                 blobs.insert(hash, local.clone());
             } else if let Some(bytes) = blob_map.get(&hash) {
-                blobs.insert(hash, BlobEntry { kind, bytes_base64: crate::encoding::base64_encode(bytes) });
+                blobs.insert(hash, BlobEntry { kind, bytes_base64: crate::common::encoding::base64_encode(bytes) });
             }
         }
     }

@@ -20,8 +20,8 @@ use chrono::{Datelike, Days, NaiveDate, Utc};
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 
-use crate::error::{json_call, VaultError};
-use crate::rng::{make_rng, unbiased_index};
+use crate::common::error::{json_call, VaultError};
+use crate::common::rng::{make_rng, unbiased_index};
 
 /// Gender value used in generated identities.
 pub const GENDER_MALE: &str = "Male";

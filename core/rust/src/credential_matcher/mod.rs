@@ -246,8 +246,8 @@ fn extract_words(text: &str) -> Vec<String> {
 }
 
 /// JSON sibling of [`filter_credentials`]. Input: `CredentialMatcherInput`. Output: `CredentialMatcherOutput`.
-pub fn filter_credentials_json(input_json: &str) -> crate::error::VaultResult<String> {
-    crate::error::json_call(input_json, |input| Ok(filter_credentials(input)))
+pub fn filter_credentials_json(input_json: &str) -> crate::common::error::VaultResult<String> {
+    crate::common::error::json_call(input_json, |input| Ok(filter_credentials(input)))
 }
 
 #[cfg(test)]

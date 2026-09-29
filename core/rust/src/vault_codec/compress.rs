@@ -6,7 +6,7 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 
 /// gzip the given bytes.
 pub fn gzip(bytes: &[u8]) -> VaultResult<Vec<u8>> {

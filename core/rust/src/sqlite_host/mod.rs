@@ -9,8 +9,8 @@ use rusqlite::{params_from_iter, Connection, MAIN_DB};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
-use crate::encoding::base64_decode;
-use crate::error::{VaultError, VaultResult};
+use crate::common::encoding::base64_decode;
+use crate::common::error::{VaultError, VaultResult};
 use crate::vault_codec::row::{inline_b64, inline_bytes};
 
 /// One parameterized SQL statement, as the bindings and the sync engine hand it to a host.

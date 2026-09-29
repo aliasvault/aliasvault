@@ -70,7 +70,7 @@ pub(crate) async fn canonicalize_vault(ctx: &Ctx, stamp_unstamped_into: Option<S
     let tables = db::read_tables(&ctx.host, Db::Local).await?;
     let manifest_records = resolve_manifest_records(ctx).await?;
     let manifests: Vec<ManifestSpec> = manifest_records.iter().map(|r| ManifestSpec { manifest_id: r.manifest_id.clone(), manifest_salt: r.salt.clone(), name: None }).collect();
-    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests, stamp_unstamped_into })?;
+    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::common::timestamp::now_iso_utc(), manifests, stamp_unstamped_into })?;
     Ok(CanonicalizedSet { canonicalized, manifest_records })
 }
 
@@ -511,7 +511,7 @@ fn collect_upload_blobs(candidates: &[Candidate]) -> SyncResult<UploadBlobs> {
                 continue;
             }
             blobs.order.push(hash.clone());
-            blobs.entries.insert(hash.clone(), UploadBlobEntry { manifest_id: candidate.record.manifest_id.clone(), bytes: crate::encoding::base64_decode(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
+            blobs.entries.insert(hash.clone(), UploadBlobEntry { manifest_id: candidate.record.manifest_id.clone(), bytes: crate::common::encoding::base64_decode(&blob.bytes_base64)?, kind: blob.kind.clone(), vek: candidate.vek.clone(), from_personal: candidate.record.is_personal });
         }
     }
     Ok(blobs)

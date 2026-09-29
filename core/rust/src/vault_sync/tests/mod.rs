@@ -33,7 +33,7 @@ fn request(operation: &str, key: &str, dirty: bool, mutation_sequence: u64) -> S
 }
 
 fn insert_item(conn: &rusqlite::Connection, id: &str, name: &str, manifest_id: &str) {
-    let now = crate::timestamp::now_vault_datetime();
+    let now = crate::common::timestamp::now_vault_datetime();
     conn.execute(
         "INSERT INTO Items (Id, ManifestId, Name, ItemType, FolderId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 'Login', NULL, ?, ?, 0)",
         rusqlite::params![id, manifest_id, name, now, now],
@@ -171,7 +171,7 @@ fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
 
     // The written manifest opens with the VEK and names the personal manifest.
     let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["manifestId"], PERSONAL_MANIFEST_ID);
     assert_eq!(manifest["manifestSalt"], host.state[state::VAULT_MANIFEST_SALT]);
@@ -299,7 +299,7 @@ fn dirty_client_pushes_only_what_changed() {
 
     // The written manifest decrypts with the VEK and carries both items.
     let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["tables"]["Items"].as_array().unwrap().len(), 2);
 }
@@ -316,7 +316,7 @@ fn pushed_blobs_name_the_manifest_that_owns_them() {
     host.respond("GET", "Vault", vault);
     host.drive(&SyncSession::new(&request("fullSync", &vek, false, 0)).unwrap());
 
-    let now = crate::timestamp::now_vault_datetime();
+    let now = crate::common::timestamp::now_vault_datetime();
     host.local
         .execute(
             "INSERT INTO Logos (ManifestId, Id, Source, FileData, Kind, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, 'example.com', ?, 'favicon', ?, ?, 0)",
@@ -345,7 +345,7 @@ fn pushed_blobs_name_the_manifest_that_owns_them() {
     assert_eq!(upload["blobs"][0]["hash"], missing_checks[0].body.as_ref().unwrap()["hashes"][0]);
 
     // The bytes are encrypted with the blob's own key, which travels encrypted with the VEK.
-    let ciphertext = crate::encoding::base64_decode(upload["blobs"][0]["encryptedDataBase64"].as_str().unwrap()).unwrap();
+    let ciphertext = crate::common::encoding::base64_decode(upload["blobs"][0]["encryptedDataBase64"].as_str().unwrap()).unwrap();
     assert!(crypto::symmetric_decrypt_bytes(&ciphertext, &vek).is_err());
     let blob_key = crypto::unwrap_key(upload["blobs"][0]["encryptedBlobKey"].as_str().unwrap(), &vek).unwrap();
     assert_eq!(crypto::symmetric_decrypt_bytes(&ciphertext, &blob_key).unwrap(), vec![1u8, 2, 3, 4]);
@@ -421,14 +421,14 @@ fn outdated_push_merges_the_server_change_and_retries() {
     assert_eq!(posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["currentRevision"], 8);
     let merged: Value = {
         let blob = posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["manifestBlob"].as_str().unwrap();
-        let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+        let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(merged["tables"]["Items"].as_array().unwrap().len(), 3);
 }
 
 fn insert_item_stats(conn: &rusqlite::Connection, item_id: &str, use_count: i64) {
-    let now = crate::timestamp::now_vault_datetime();
+    let now = crate::common::timestamp::now_vault_datetime();
     conn.execute(
         "INSERT INTO ItemStats (ManifestId, Id, UseCount, AutofillCount, CopyCount, PasskeyAuthCount, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, 0, 0, 0, ?, ?, 0)",
         rusqlite::params![PERSONAL_MANIFEST_ID, item_id, use_count, now, now],
@@ -489,7 +489,7 @@ fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it(
     let accepted = posts.last().unwrap().body.as_ref().unwrap();
     assert_eq!(accepted["buckets"][0]["currentRevision"], 8);
     let bucket: Value = {
-        let plain = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(accepted["buckets"][0]["blob"].as_str().unwrap()).unwrap(), &vek).unwrap();
+        let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(accepted["buckets"][0]["blob"].as_str().unwrap()).unwrap(), &vek).unwrap();
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(bucket["tables"]["ItemStats"].as_array().unwrap().len(), 2, "the other device's stats must survive: {}", bucket);
@@ -684,7 +684,7 @@ fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the baseline still comes from the server");
-    let manifest_json = crypto::symmetric_decrypt_bytes(&crate::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), &host.vault_key).unwrap();
+    let manifest_json = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), &host.vault_key).unwrap();
     assert!(vault_codec::unpack_payload(&manifest_json).unwrap().contains("Local item"), "the push carries the local changes");
 }
 

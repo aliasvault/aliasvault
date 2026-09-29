@@ -10,7 +10,7 @@ use crate::vault_model::{MANIFESTS_TABLE, MANIFEST_ID_COL};
 
 /// Standard base64 of `bytes`, the inline byte spelling the tests hand the codec.
 pub(crate) fn b64(bytes: &[u8]) -> String {
-    crate::encoding::base64_encode(bytes)
+    crate::common::encoding::base64_encode(bytes)
 }
 
 /// A row from `(column, value)` pairs.
@@ -25,12 +25,12 @@ pub(crate) fn table(name: &str, records: Vec<CodecRecord>) -> CodecTableData {
 
 /// The current instant in the ISO form the prune input takes.
 pub(crate) fn now_iso() -> String {
-    crate::timestamp::now_iso_utc()
+    crate::common::timestamp::now_iso_utc()
 }
 
 /// The instant `days` days ago in the ISO form the prune input takes.
 pub(crate) fn days_ago_iso(days: i64) -> String {
-    crate::timestamp::iso_utc(&(chrono::Utc::now() - chrono::Duration::days(days)))
+    crate::common::timestamp::iso_utc(&(chrono::Utc::now() - chrono::Duration::days(days)))
 }
 
 /// Stamp every row of a manifest-scoped table that carries no `ManifestId`, leaving rows that already name one alone.

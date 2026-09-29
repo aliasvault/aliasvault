@@ -19,8 +19,8 @@ mod tests;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::VaultError;
-use crate::rng::{make_rng, unbiased_index};
+use crate::common::error::VaultError;
+use crate::common::rng::{make_rng, unbiased_index};
 
 /// Which generator to use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]

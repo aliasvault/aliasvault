@@ -24,7 +24,7 @@ pub(crate) fn make_rng(seed: Option<&str>) -> StdRng {
 
 /// Parse a 64-character hex string into a 32-byte seed, or `None` if it is malformed.
 fn parse_seed_hex(hex: &str) -> Option<[u8; 32]> {
-    crate::encoding::hex_decode(hex)?.try_into().ok()
+    crate::common::encoding::hex_decode(hex)?.try_into().ok()
 }
 
 /// Get an unbiased random index in `0..max` using rejection sampling over the given CSPRNG.

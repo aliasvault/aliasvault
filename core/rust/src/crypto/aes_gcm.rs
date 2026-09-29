@@ -4,9 +4,9 @@ use aes_gcm::aead::{Aead, KeyInit, Payload};
 use aes_gcm::{Aes256Gcm, Nonce};
 use zeroize::{Zeroize, Zeroizing};
 
-use crate::encoding::{base64_decode, base64_encode};
-use crate::error::{VaultError, VaultResult};
-use crate::rng::fill_random;
+use crate::common::encoding::{base64_decode, base64_encode};
+use crate::common::error::{VaultError, VaultResult};
+use crate::common::rng::fill_random;
 
 const IV_LENGTH: usize = 12;
 const KEY_LENGTH: usize = 32;

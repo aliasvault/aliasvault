@@ -1433,7 +1433,7 @@ fn manifest_specs_deserialize_from_camel_case_json() {
         ]
     })
     .to_string();
-    let out_json = crate::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
+    let out_json = crate::common::error::json_call(&input_json, |input: CanonicalizeInput| canonicalize_from_sqlite(input)).unwrap();
     let out: CanonicalizedVault = serde_json::from_str(&out_json).unwrap();
     assert_eq!(out.rest().len(), 1);
     assert_eq!(out.rest()[0].manifest.manifest_id, "m-1");

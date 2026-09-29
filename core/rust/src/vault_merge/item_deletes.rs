@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 use chrono::{DateTime, Utc};
 
 use super::get_key;
-use crate::timestamp::updated_at;
+use crate::common::timestamp::updated_at;
 use crate::vault_codec::row::is_deleted;
 use crate::vault_codec::{is_bucketed_table, CodecRecord};
 use crate::vault_model::names::{ID_COL, ITEMS_TABLE};

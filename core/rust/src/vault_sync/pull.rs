@@ -95,8 +95,8 @@ fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, expected_ciphertext
             return Err(SyncError::ServerVaultUnreadable(format!("{} ciphertext hash mismatch, refusing to load (possible storage corruption)", label)));
         }
     }
-    let unreadable = |e: crate::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
-    let encrypted = crate::encoding::base64_decode(base64_ciphertext).map_err(unreadable)?;
+    let unreadable = |e: crate::common::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
+    let encrypted = crate::common::encoding::base64_decode(base64_ciphertext).map_err(unreadable)?;
     let plain = crypto::symmetric_decrypt_bytes(&encrypted, vek).map_err(unreadable)?;
     match vault_codec::unpack_versioned_payload(&plain).map_err(unreadable)? {
         UnpackedPayload::Readable(payload_json) => Ok(payload_json),
@@ -390,7 +390,7 @@ async fn empty_personal_manifest(ctx: &Ctx, dto: &ManifestDto, vek: &str) -> Syn
     let manifest_salt = state::get::<String>(&ctx.host, state::VAULT_MANIFEST_SALT).await?.unwrap_or_else(vault_codec::generate_manifest_salt);
     let tables = SYNCABLE_TABLE_NAMES.iter().map(|name| CodecTableData { name: name.to_string(), records: Vec::new() }).collect();
     let spec = ManifestSpec { manifest_id: dto.manifest_id.clone(), manifest_salt, name: None };
-    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::timestamp::now_iso_utc(), manifests: vec![spec], stamp_unstamped_into: None })?;
+    let canonicalized = vault_codec::canonicalize_from_sqlite(CanonicalizeInput { tables, canonicalized_at: crate::common::timestamp::now_iso_utc(), manifests: vec![spec], stamp_unstamped_into: None })?;
     let manifest = canonicalized.manifests.into_iter().next().map(|m| m.manifest).ok_or_else(|| SyncError::Other("canonicalize returned no manifest for the empty vault".to_string()))?;
     Ok(ResolvedManifest { manifest_id: dto.manifest_id.clone(), is_personal: true, manifest, vek: vek.to_string(), revision: dto.revision, blob_references: Vec::new(), content_fingerprint: String::new() })
 }

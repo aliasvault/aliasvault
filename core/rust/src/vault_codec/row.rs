@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use serde_json::{json, Value};
 
 use super::manifest::CodecRecord;
-use crate::encoding::base64_encode;
+use crate::common::encoding::base64_encode;
 use crate::vault_model::names::{IS_DELETED_COL, KIND_COL, LOGO_KIND_FAVICON};
 
 /// The key of an inline byte cell: `{ "__b64": <base64> }`.

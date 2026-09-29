@@ -23,8 +23,8 @@ mod validate;
 
 use serde_json::json;
 
-use crate::encoding::{base64_decode, hex_encode_lower};
-use crate::error::{VaultError, VaultResult};
+use crate::common::encoding::{base64_decode, hex_encode_lower};
+use crate::common::error::{VaultError, VaultResult};
 pub use types::SCHEMA_VERSION;
 
 pub use canonicalize::{canonicalize_from_sqlite, extract_buckets};
@@ -59,7 +59,7 @@ pub fn logo_content_hash(bytes: &[u8]) -> String {
 /// Generate a fresh 32-byte per-manifest blob-hashing salt as a lowercase hex string.
 pub fn generate_manifest_salt() -> String {
     let mut bytes = [0u8; 32];
-    crate::rng::fill_random(&mut bytes);
+    crate::common::rng::fill_random(&mut bytes);
     hex_encode_lower(&bytes)
 }
 

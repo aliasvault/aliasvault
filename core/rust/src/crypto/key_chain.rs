@@ -7,8 +7,8 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes, symmetric_encrypt, symmetric_encrypt_bytes};
 use super::rsa_oaep::generate_rsa_key_pair;
-use crate::encoding::{base64_decode, base64_encode};
-use crate::error::VaultResult;
+use crate::common::encoding::{base64_decode, base64_encode};
+use crate::common::error::VaultResult;
 
 /// The wrapped halves of an account key hierarchy: what the server stores.
 #[derive(Debug, Clone, Serialize, Deserialize)]

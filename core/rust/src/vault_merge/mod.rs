@@ -12,8 +12,8 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::VaultResult;
-use crate::timestamp::updated_at;
+use crate::common::error::VaultResult;
+use crate::common::timestamp::updated_at;
 use crate::vault_model::{id_key, TableConfig, SYNCABLE_TABLES};
 use crate::vault_codec::{bucket_categories, ensure_readable_schema_version, identity_part, is_bucketed_table, tables_for_category, CodecRecord, DataBucket, Manifest};
 

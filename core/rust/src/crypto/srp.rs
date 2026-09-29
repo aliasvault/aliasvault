@@ -15,8 +15,8 @@ use srp::utils::{compute_k, compute_u};
 use subtle::ConstantTimeEq;
 use thiserror::Error;
 
-use crate::encoding::{hex_decode, hex_encode_upper as bytes_to_hex};
-use crate::rng::fill_random;
+use crate::common::encoding::{hex_decode, hex_encode_upper as bytes_to_hex};
+use crate::common::rng::fill_random;
 
 /// Byte length of the 2048-bit group modulus N; all padded values use this size.
 const N_BYTES: usize = 256;

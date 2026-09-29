@@ -7,7 +7,7 @@ use serde_json::json;
 use super::manifest::CodecRecord;
 use super::row::{is_deleted, str_col, truthy};
 use super::types::{is_guid, is_id_column};
-use crate::timestamp::updated_at;
+use crate::common::timestamp::updated_at;
 use crate::vault_model::{id_key, MANIFEST_ID_COL, MULTI_VALUE_FIELD_KEYS, SINGLE_VALUE_FIELD_KEYS, SYNCABLE_TABLES};
 use crate::vault_model::names::{
     CHANGED_AT_COL, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_KEY_COL,

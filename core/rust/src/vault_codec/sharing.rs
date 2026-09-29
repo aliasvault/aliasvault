@@ -37,7 +37,7 @@ use super::manifest::{CodecRecord, Manifest, ManifestSpec};
 use super::row::{is_deleted, rows_of, str_col};
 use super::scoped_assets::{is_custom_logo, normalize_logo_scope, reconcile_logo_references};
 use super::types::{is_bucketed_table, is_local_only_table, is_manifest_scoped, is_personal_table, manifest_scoped_tables, row_identity};
-use crate::error::{VaultError, VaultResult};
+use crate::common::error::{VaultError, VaultResult};
 use crate::vault_model::names::{
     ENCRYPTION_KEYS_TABLE, FIELD_DEFINITIONS_TABLE, FIELD_DEFINITION_ID_COL, FIELD_HISTORIES_TABLE, FIELD_VALUES_TABLE, FOLDERS_TABLE,
     FOLDER_ID_COL, ID_COL, ITEMS_TABLE, ITEM_ID_COL, ITEM_TAGS_TABLE, LOGOS_TABLE, LOGO_ID_COL, PARENT_FOLDER_ID_COL, PUBLIC_KEY_COL,

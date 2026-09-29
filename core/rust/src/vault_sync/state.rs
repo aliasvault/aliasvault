@@ -174,14 +174,14 @@ const SQLITE_HEADER: &[u8] = b"SQLite format 3\0";
 
 /// Decrypt a stored vault blob into the plaintext SQLite database.
 pub(crate) fn decrypt_vault_blob(encrypted_blob: &str, key: &str) -> SyncResult<Vec<u8>> {
-    let ciphertext = crate::encoding::base64_decode(encrypted_blob)?;
+    let ciphertext = crate::common::encoding::base64_decode(encrypted_blob)?;
     let plaintext = crypto::symmetric_decrypt_bytes(&ciphertext, key).map_err(|e| SyncError::VaultDecryptFailed(e.to_string()))?;
     if plaintext.starts_with(SQLITE_HEADER) {
         return Ok(plaintext);
     }
     let not_a_database = || SyncError::VaultDecryptFailed("plaintext is neither a database nor base64 text".to_string());
     let text = String::from_utf8(plaintext).map_err(|_| not_a_database())?;
-    crate::encoding::base64_decode(text.trim()).map_err(|_| not_a_database())
+    crate::common::encoding::base64_decode(text.trim()).map_err(|_| not_a_database())
 }
 
 /// Encrypt a plaintext SQLite database for local storage.
