@@ -1,10 +1,11 @@
 /**
- * Language reference shared by all AliasVault clients. ../languages.json is the single list of known languages:
- * flag, native label, the BCP-47 region variants that map onto each code, and whether the apps offer it as a UI
- * language (`ui`). Languages with `ui: false` are only used by features such as the identity generator.
+ * Language reference shared by all AliasVault clients, read from ../languages.json:
+ * - `languages`: display info (flag, native label, BCP-47 region variants) for every language code any feature can
+ *   return, e.g. the identity generator and Diceware languages that come from the Rust core.
+ * - `uiLanguages`: the languages the apps are translated into (a locale file in ../locales), English first.
  */
 
-import languages from '../languages.json' with { type: 'json' };
+import languageData from '../languages.json' with { type: 'json' };
 
 /**
  * Display metadata for a single language.
@@ -16,8 +17,6 @@ export interface ILanguageInfo {
   flag: string;
   /** Native display label. */
   label: string;
-  /** Whether the apps offer this language as UI language (translated in Crowdin). */
-  ui?: boolean;
   /** Alternative locale codes (BCP-47 language-region tags) that map onto this language. */
   alternativeCodes?: string[];
 }
@@ -28,20 +27,20 @@ export interface ILanguageInfo {
 export const DEFAULT_LANGUAGE = 'en';
 
 /**
- * Every known language.
+ * Display info of every known language, UI language or not.
  */
-export const LANGUAGES: ILanguageInfo[] = languages;
+export const LANGUAGES: ILanguageInfo[] = languageData.languages;
 
 /**
- * The UI languages the apps offer, English first. Keep in sync with the target languages in the Crowdin project
+ * The codes of the UI languages the apps offer, English first. Keep in sync with the target languages in the Crowdin project
  * settings.
  */
-export const UI_LANGUAGES: ILanguageInfo[] = LANGUAGES.filter((language) => language.ui);
+export const LANGUAGE_CODES: string[] = languageData.uiLanguages;
 
 /**
- * The codes of the UI languages.
+ * Display info of the UI languages, in {@link LANGUAGE_CODES} order.
  */
-export const LANGUAGE_CODES: string[] = UI_LANGUAGES.map((language) => language.code);
+export const UI_LANGUAGES: ILanguageInfo[] = LANGUAGE_CODES.map((code) => LANGUAGES.find((language) => language.code === code) ?? { code, flag: '🌐', label: code });
 
 /**
  * Whether a code is one of the UI languages.
