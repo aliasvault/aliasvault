@@ -13,7 +13,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { TotpCode } from '@aliasvault/models/vault';
 import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
-import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
+import { buildOtpAuthUri, otpAuthDisplayName, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
 
 type TotpFormData = {
   name: string;
@@ -112,7 +112,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
         const parsed = parseOtpAuthUri(scannedData);
         if (parsed) {
           const secretKey = parsed.secret.replace(/\s/g, '').replace(/=+$/, '');
-          const name = parsed.label || '';
+          const name = otpAuthDisplayName(parsed);
 
           const newTotpCode: TotpCode = {
             Id: crypto.randomUUID(),
@@ -172,9 +172,9 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       algorithm = parsed.algorithm;
       digits = parsed.digits;
       period = parsed.period;
-      // If name is empty, use the label from the URI
-      if (!name && parsed.label) {
-        name = parsed.label;
+      // If name is empty, use the issuer and account from the URI
+      if (!name) {
+        name = otpAuthDisplayName(parsed);
       }
     }
 

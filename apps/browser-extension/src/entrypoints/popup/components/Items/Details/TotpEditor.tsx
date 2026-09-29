@@ -1,4 +1,4 @@
-import { buildOtpAuthUri, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
+import { buildOtpAuthUri, otpAuthDisplayName, parseOtpAuthUri } from '@aliasvault/client/items/OtpAuthUri';
 import { TOTP_DEFAULT_ALGORITHM, TOTP_DEFAULT_DIGITS, TOTP_DEFAULT_PERIOD } from '@aliasvault/models/vault';
 import QRCode from 'qrcode';
 import React, { useState } from 'react';
@@ -79,9 +79,9 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       algorithm = parsed.algorithm;
       digits = parsed.digits;
       period = parsed.period;
-      // If name is empty, use the account from the URI label
-      if (!name && parsed.account) {
-        name = parsed.account;
+      // If name is empty, use the issuer and account from the URI
+      if (!name) {
+        name = otpAuthDisplayName(parsed);
       }
     }
 

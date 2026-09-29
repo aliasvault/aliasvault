@@ -67,6 +67,18 @@ export function parseOtpAuthUri(uri: string): OtpAuthUri | null {
 }
 
 /**
+ * The name for a code imported from an otpauth URI: "Issuer: account" when the URI names an issuer, else the account.
+ * @param parsed - The parsed URI
+ */
+export function otpAuthDisplayName(parsed: OtpAuthUri): string {
+  const issuer = parsed.issuer?.trim() ?? '';
+  if (issuer.length === 0) {
+    return parsed.account;
+  }
+  return parsed.account.length > 0 ? `${issuer}: ${parsed.account}` : issuer;
+}
+
+/**
  * Serialize a TOTP code back to an `otpauth://` URI. Non-default parameters are written out so a
  * scanned QR reproduces the same codes.
  *
