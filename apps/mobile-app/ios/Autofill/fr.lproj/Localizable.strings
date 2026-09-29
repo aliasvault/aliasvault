@@ -10,8 +10,8 @@
 "error" = "Erreur";
 "cancel" = "Annuler";
 "face_id_touch_id" = "Face ID / Touch ID";
-"face_id" = "Identification faciale (Face ID)";
-"touch_id" = "Empreinte digitale";
+"face_id" = "Face ID";
+"touch_id" = "Touch ID";
 "vault_syncing" = "Synchronisation du coffre-fort";
 "creating_passkey" = "Création de la clé d'accès";
 "connection_error_title" = "Erreur de Connexion";
@@ -22,12 +22,12 @@
 "password_changed_title" = "Mot de passe modifié";
 "password_changed_message" = "Votre mot de passe a été modifié. Veuillez vous reconnecter.";
 "version_not_supported_title" = "Mise à jour requise";
-"version_not_supported_message" = "La version de votre application n'est plus prise en charge. Veuillez mettre à jour vers la dernière version.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Serveur indisponible";
 "server_unavailable_message" = "Le serveur est actuellement indisponible, veuillez réessayer plus tard.";
 "network_error_title" = "Erreur réseau";
 "network_error_message" = "Une erreur réseau s'est produite. Veuillez vérifier votre connexion et réessayer.";
 "server_version_not_supported_title" = "Mise à jour du serveur requise";
-"server_version_not_supported_message" = "La version du serveur est obsolète. Veuillez mettre à jour votre serveur vers la dernière version.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Impossible de récupérer la clé de cryptage";
 "no_encryption_key_message" = "Veuillez d'abord déverrouiller le coffre-fort dans l'application AliasVault";

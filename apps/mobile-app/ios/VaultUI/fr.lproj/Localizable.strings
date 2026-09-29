@@ -3,8 +3,8 @@
 "cancel" = "Annuler";
 "back" = "Retour";
 "next" = "Suivant";
-"edit" = "Editer";
-"website" = "Site Web";
+"edit" = "Modifier";
+"website" = "Site internet";
 "username" = "Nom d'utilisateur";
 "title" = "Titre";
 "unknown_error" = "Une erreur inconnue s'est produite.";
@@ -63,7 +63,7 @@
 "pin_incorrect_attempts_remaining" = "Code PIN incorrect, %d tentatives restantes";
 "enter_password_to_unlock" = "Entrez votre mot de passe principal";
 "unlock" = "Déverrouiller";
-"incorrect_password" = "Mot de passe incorrect, veuillez réessayer.";
+"incorrect_password" = "Mot de passe incorrect. Veuillez réessayer.";
 "attempts_warning" = "Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de %d fois.";
 "max_attempts_reached" = "Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité.";
 "pin_setup_title" = "Configurer le code PIN";

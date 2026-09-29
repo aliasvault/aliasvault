@@ -4,7 +4,7 @@
 "back" = "Tilbage";
 "next" = "Næste";
 "edit" = "Rediger";
-"website" = "Webside";
+"website" = "Websted";
 "username" = "Brugernavn";
 "title" = "Titel";
 "unknown_error" = "Der opstod en ukendt fejl.";
@@ -38,12 +38,12 @@
 "password_copied" = "Adgangskode kopieret";
 "email_copied" = "E-mail kopieret";
 "totp_code_copied" = "TOTP kode kopieret";
-"totp_code" = "TOTP Kode";
+"totp_code" = "TOTP-kode";
 "search_items" = "Søg i elementer...";
 "create_passkey_title" = "Opret ny passkey";
 "create_passkey_subtitle" = "Registrer en ny passkey for denne webside. Den vil blive opbevaret sikkert i din boks og automatisk synkroniseret på tværs af dine enheder med AliasVault.";
 "create_passkey_button_confirm" = "Opret passkey";
-"passkey" = "Adgangsnøgle";
+"passkey" = "Passkey";
 "loading_passkeys" = "Indlæser passkeys...";
 "no_passkeys_found" = "Ingen passkeys fundet";
 "no_passkeys_match" = "Ingen eksisterende passkeys matcher din søgning";

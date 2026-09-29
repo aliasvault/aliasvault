@@ -22,12 +22,12 @@
 "password_changed_title" = "Senha Alterada";
 "password_changed_message" = "Sua senha foi alterada. Por favor, faça login novamente.";
 "version_not_supported_title" = "Atualização Necessária";
-"version_not_supported_message" = "A versão do seu aplicativo não tem mais suporte. Por favor, atualize para a versão mais nova.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Servidor Indisponível";
 "server_unavailable_message" = "O servidor esta indisponível no momento. Por favor, tente novamente mais tarde.";
 "network_error_title" = "Erro de Rede";
 "network_error_message" = "Ocorreu um erro de rede. Por favor, confira sua conexão e tente novamente.";
 "server_version_not_supported_title" = "Atualização de Servidor Necessária";
-"server_version_not_supported_message" = "A versão do servidor está desatualizada. Por favor, atualize seu servidor para a versão mais nova.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Falha ao recuperar chave de criptografia";
 "no_encryption_key_message" = "Por favor, desbloqueie seu cofre no aplicativo do AliasVault antes";

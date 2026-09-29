@@ -22,12 +22,12 @@
 "password_changed_title" = "Lösenordet har ändrats";
 "password_changed_message" = "Ditt lösenord har ändrats. Logga in igen.";
 "version_not_supported_title" = "Uppdatering krävs";
-"version_not_supported_message" = "Din appversion stöds inte längre. Vänligen uppdatera till den senaste versionen.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Servern är inte tillgänglig";
 "server_unavailable_message" = "Servern är inte tillgänglig för tillfället. Försök igen senare.";
 "network_error_title" = "Nätverksfel";
 "network_error_message" = "Ett nätverksfel inträffade. Vänligen kontrollera din anslutning och försök igen.";
 "server_version_not_supported_title" = "Serveruppdatering krävs";
-"server_version_not_supported_message" = "Serverversionen är föråldrad. Vänligen uppdatera din server till den senaste versionen.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Det gick inte att hämta krypteringsnyckeln";
 "no_encryption_key_message" = "Lås upp valv i AliasVault-appen först";

@@ -1,7 +1,7 @@
 /* Strings of the Autofill extension. Generated from core/i18n/locales by core/i18n/scripts/export-native.mjs. Do not edit, change core/i18n instead. */
 "loading_error" = "Latausvirhe";
 "loading_error_message" = "Tunnistetietojen lataaminen meni pieleen. Avaa AliasVault-sovellus tarkistaaksesi päivitysten varalta.";
-"ok" = "Hyvä on";
+"ok" = "OK";
 "login_required" = "Sisäänkirjautuminen vaaditaan";
 "login_required_message" = "Käyttääksesi automaattista täyttöä, kirjaudu sisään AliasVault-tilillesi AliasVault-sovelluksessa.";
 "auth_required" = "Todennus vaaditaan";
@@ -9,9 +9,9 @@
 "failed_to_load_credentials" = "Tunnistetietojen lataaminen epäonnistui";
 "error" = "Virhe";
 "cancel" = "Peruuta";
-"face_id_touch_id" = "FaceID / TouchID";
-"face_id" = "FaceID";
-"touch_id" = "TouchID";
+"face_id_touch_id" = "Kasvotunniste / Kosketustunniste";
+"face_id" = "Kasvotunniste";
+"touch_id" = "Kosketustunniste";
 "vault_syncing" = "Synkronoidaan holvia";
 "creating_passkey" = "Luodaan sala-avainta";
 "connection_error_title" = "Yhteysvirhe";
@@ -22,12 +22,12 @@
 "password_changed_title" = "Salasana vaihdettu";
 "password_changed_message" = "Salasanasi on vaihdettu. Kirjaudu sisään uudelleen.";
 "version_not_supported_title" = "Päivitys vaaditaan";
-"version_not_supported_message" = "Sovelluksesi versio ei ole enää tuettu. Päivitä uusimpaan versioon.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Palvelin ei saatavilla";
 "server_unavailable_message" = "Palvelin ei ole tällä hetkellä saattavilla. Yritä myöhemmin uudelleen.";
 "network_error_title" = "Verkkovirhe";
 "network_error_message" = "Verkkovirhe tapahtui. Tarkista yhteytesi ja yritä uudelleen.";
 "server_version_not_supported_title" = "Palvelimen päivtys vaaditaan";
-"server_version_not_supported_message" = "Palvelimen versio on vanhentunut. Päivitä palvelin uusimpaan versioon.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Salausavaimen noutaminen epäonnistui";
 "no_encryption_key_message" = "Ole hyvä ja avaa holvi ensin AliasVault-sovelluksessa";

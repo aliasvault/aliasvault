@@ -22,12 +22,12 @@
 "password_changed_title" = "Adgangskode ændret";
 "password_changed_message" = "Din adgangskode er blevet ændret. Log venligst ind igen.";
 "version_not_supported_title" = "Opdatering påkrævet";
-"version_not_supported_message" = "Din app-version understøttes ikke længere. Opdater venligst til den nyeste version.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server utilgængelig";
 "server_unavailable_message" = "Serveren er i øjeblikket utilgængelig. Prøv igen senere.";
 "network_error_title" = "Netværksfejl";
 "network_error_message" = "Der opstod en netværksfejl. Tjek venligst din forbindelse og prøv igen.";
 "server_version_not_supported_title" = "Serveropdatering påkrævet";
-"server_version_not_supported_message" = "Serverversionen er forældet. Opdater venligst din server til den nyeste version.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Kunne ikke hente krypteringsnøgle";
 "no_encryption_key_message" = "Lås venligst boksen op i AliasVault-appen først";

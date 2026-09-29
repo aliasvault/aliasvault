@@ -22,12 +22,12 @@
 "password_changed_title" = "Parolă schimbată";
 "password_changed_message" = "Parola ta a fost schimbată. Autentifică-te din nou.";
 "version_not_supported_title" = "Actualizare necesară";
-"version_not_supported_message" = "Versiunea aplicației nu mai este compatibilă. Instalează cea mai recentă actualizare.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server indisponibil";
 "server_unavailable_message" = "Serverul este indisponibil momentan. Încearcă din nou mai târziu.";
 "network_error_title" = "Eroare de rețea";
 "network_error_message" = "A apărut o eroare de rețea. Verifică conexiunea și încearcă din nou.";
 "server_version_not_supported_title" = "Actualizare server necesară";
-"server_version_not_supported_message" = "Versiunea serverului este incompatibila. Actualizează serverul la ultima versiune.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Preluarea cheii de criptare a eșuat";
 "no_encryption_key_message" = "Deblochează mai întâi seiful în aplicația AliasVault";

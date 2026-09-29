@@ -4,7 +4,7 @@
 "back" = "Powrót";
 "next" = "Dalej";
 "edit" = "Edytuj";
-"website" = "Strona internetowa";
+"website" = "Strona www";
 "username" = "Nazwa użytkownika";
 "title" = "Tytuł";
 "unknown_error" = "Wystąpił nieznany błąd.";
@@ -14,7 +14,7 @@
 "create_new_item" = "Stwórz nowy element";
 "open_aliasvault" = "Otwórz AliasVault";
 "untitled_credential" = "this credential";
-"link_url_prompt_title" = "Link do logowania?";
+"link_url_prompt_title" = "Link to credential?";
 "link_url_prompt_message" = "Dodać \"{{url}}\" do {{name}} więc AliasVault rozpozna tę aplikację lub stronę internetową następnym razem?";
 "link_url_prompt_link_action" = "Połącz i wypełnij";
 "link_url_prompt_skip_action" = "Just fill";
@@ -29,9 +29,9 @@
 "password" = "Hasło";
 "items_load_error" = "Wystąpił błąd podczas ładowania danych logowania. Otwórz aplikację AliasVault, aby sprawdzić dostępność aktualizacji.";
 "no_item_selected" = "Nie wybrano elementu";
-"copy_username" = "Skopiuj nazwę użytkownika";
-"copy_password" = "Skopiuj hasło";
-"copy_email" = "Skopiuj adres e-mail";
+"copy_username" = "Kopiuj nazwę użytkownika";
+"copy_password" = "Kopiuj hasło";
+"copy_email" = "Kopiuj adres e-mail";
 "copy_totp_code" = "Kopiuj kod TOTP";
 "view_details" = "Zobacz szczegóły";
 "username_copied" = "Nazwa użytkownika skopiowana";
@@ -70,4 +70,4 @@
 "pin_setup_subtitle" = "Wybierz kod PIN, aby odblokować sejf";
 "pin_confirm_title" = "Potwierdź kod PIN";
 "pin_confirm_subtitle" = "Wprowadź ponownie swój kod PIN, aby potwierdzić";
-"pin_mismatch" = "Kody PIN nie pasują. Spróbuj jeszcze raz.";
+"pin_mismatch" = "PINs do not match. Please try again.";

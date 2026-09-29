@@ -1046,8 +1046,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1056,7 +1054,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "Username: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "Website"

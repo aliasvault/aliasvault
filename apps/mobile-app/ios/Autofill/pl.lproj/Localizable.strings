@@ -9,8 +9,8 @@
 "failed_to_load_credentials" = "Nie udało się załadować danych logowania";
 "error" = "Błąd";
 "cancel" = "Anuluj";
-"face_id_touch_id" = "Rozpoznawanie twarzy / Odcisk palca";
-"face_id" = "Rozpoznawanie twarzy";
+"face_id_touch_id" = "Identyfikacja twarzy / Touch ID";
+"face_id" = "Identyfikacja twarzy";
 "touch_id" = "Odcisk palca";
 "vault_syncing" = "Synchronizacja sejfu";
 "creating_passkey" = "Tworzenie klucza dostępu";
@@ -22,12 +22,12 @@
 "password_changed_title" = "Hasło zostało zmienione";
 "password_changed_message" = "Twoje hasło zostało zmienione. Zaloguj się ponownie.";
 "version_not_supported_title" = "Wymagana aktualizacja";
-"version_not_supported_message" = "Twoja wersja aplikacji nie jest już obsługiwana. Zaktualizuj ją do najnowszej wersji.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Serwer niedostępny";
 "server_unavailable_message" = "Serwer jest obecnie niedostępny. Spróbuj ponownie później.";
 "network_error_title" = "Błąd sieci";
 "network_error_message" = "Wystąpił błąd sieci. Sprawdź połączenie i spróbuj ponownie.";
 "server_version_not_supported_title" = "Wymagana aktualizacja serwera";
-"server_version_not_supported_message" = "A network error has occurred. Please check your connection and try again.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Nie udało się pobrać klucza szyfrującego";
 "no_encryption_key_message" = "Najpierw odblokuj sejf w aplikacji AliasVault";

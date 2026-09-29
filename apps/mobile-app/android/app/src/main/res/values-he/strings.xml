@@ -58,13 +58,13 @@
   <string name="password_changed_title">הסיסמה הוחלפה</string>
   <string name="password_changed_message">הסיסמה שלך הוחלפה. נא להיכנס שוב.</string>
   <string name="version_not_supported_title">נדרש עדכון</string>
-  <string name="version_not_supported_message">גרסת היישום שלך לא נתמכת עוד. נא לעדכן לגרסה העדכנית ביותר.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">השרת לא זמין</string>
   <string name="server_unavailable_message">השרת לא זמין כרגע. נא לנסות שוב מאוחר יותר.</string>
   <string name="network_error_title">שגיאת רשת</string>
   <string name="network_error_message">אירעה שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.</string>
   <string name="server_version_not_supported_title">יש לעדכן את השרת</string>
-  <string name="server_version_not_supported_message">גרסת השרת מיושנת. נא ליצור קשר עם הנהלת השרת ולבקש מהם לעדכן אותו.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">נא לשחרר את נעילת הכספת ביישום של AppVault תחילה</string>
   <string name="error_vault_decrypt_failed">פענוח הכספת נכשל</string>

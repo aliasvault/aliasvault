@@ -22,12 +22,12 @@
 "password_changed_title" = "Пароль изменен";
 "password_changed_message" = "Ваш пароль был изменен. Пожалуйста, войдите снова.";
 "version_not_supported_title" = "Требуется обновление";
-"version_not_supported_message" = "Ваша версия приложения больше не поддерживается. Обновите приложение до последней версии.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Сервер недоступен";
 "server_unavailable_message" = "Сервер в настоящее время недоступен. Повторите попытку позже.";
 "network_error_title" = "Ошибка сети";
 "network_error_message" = "Произошла сетевая ошибка. Проверьте подключение и повторите попытку.";
 "server_version_not_supported_title" = "Требуется обновление сервера";
-"server_version_not_supported_message" = "Версия сервера устарела. Обновите сервер до последней версии.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Не удалось получить ключ шифрования";
 "no_encryption_key_message" = "Сначала разблокируйте хранилище в приложении AliasVault";

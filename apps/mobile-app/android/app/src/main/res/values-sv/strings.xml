@@ -58,13 +58,13 @@
   <string name="password_changed_title">Lösenordet har ändrats</string>
   <string name="password_changed_message">Ditt lösenord har ändrats. Logga in igen.</string>
   <string name="version_not_supported_title">Uppdatering krävs</string>
-  <string name="version_not_supported_message">Din appversion stöds inte längre. Vänligen uppdatera till den senaste versionen.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Servern är inte tillgänglig</string>
   <string name="server_unavailable_message">Servern är inte tillgänglig för tillfället. Försök igen senare.</string>
   <string name="network_error_title">Nätverksfel</string>
   <string name="network_error_message">Ett nätverksfel inträffade. Vänligen kontrollera din anslutning och försök igen.</string>
   <string name="server_version_not_supported_title">Serveruppdatering krävs</string>
-  <string name="server_version_not_supported_message">Serverversionen är föråldrad. Kontakta administratören för att uppdatera servern.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Aktivera biometrisk eller PIN-autentisering i AliasVault-appen för att fortsätta</string>
   <string name="error_unlock_vault_first">Lås upp valv i AliasVault-appen först</string>
   <string name="error_vault_decrypt_failed">Misslyckades att dekryptera valvet</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_subtitle">Ange ditt huvudlösenord</string>
   <string name="password_unlock_password_hint">Lösenord</string>
   <string name="password_unlock_button">Lås upp</string>
-  <string name="password_unlock_incorrect">Felaktigt lösenord. Försök igen.</string>
+  <string name="password_unlock_incorrect">Felaktigt lösenord. Var god försök igen.</string>
   <string name="password_unlock_error">Kunde inte verifiera lösenord</string>
   <string name="password_unlock_attempts_warning">Felaktigt lösenord. Du kommer att loggas ut om du anger fel lösenord %d gång(er) till.</string>
   <string name="password_unlock_max_attempts_reached">För många misslyckade upplåsningsförsök. Du har blivit utloggad av säkerhetsskäl.</string>

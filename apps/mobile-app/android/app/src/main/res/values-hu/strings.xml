@@ -58,13 +58,13 @@
   <string name="password_changed_title">Jelszó módosítva</string>
   <string name="password_changed_message">A jelszava megváltozott. Kérem, jelentkezzen be újra.</string>
   <string name="version_not_supported_title">Frissítés szükséges</string>
-  <string name="version_not_supported_message">Az app verziója már nem támogatott. Kérem, frissítse a leújabb verzióra.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Szerver nem elérhető</string>
   <string name="server_unavailable_message">A szerver jelenleg nem elérhető. Kérem, próbálja meg később.</string>
   <string name="network_error_title">Hálózati hiba</string>
   <string name="network_error_message">Hálózati hiba lépett fel. Kérem, ellenőrizze internet kapcsolatát, és próbálja újra.</string>
   <string name="server_version_not_supported_title">Szerver frissítés szükséges</string>
-  <string name="server_version_not_supported_message">A szerver verzió túl régi. Kérem, lépjen kapcsolatba a rendszergazdával, hogy frissítse a szervert.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Kérem, kapcsolja be a PIN kódos vagy biometrikus belépést a fő appban mielőtt tovább halad</string>
   <string name="error_unlock_vault_first">Kérem, először oldja fel az AliasVault-ot az appban</string>
   <string name="error_vault_decrypt_failed">A széf dekódolása sikertelen</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_subtitle">Adja meg mester jelszavát</string>
   <string name="password_unlock_password_hint">Jelszó</string>
   <string name="password_unlock_button">Feloldás</string>
-  <string name="password_unlock_incorrect">Hibás jelszó. Próbálkozzon újra.</string>
+  <string name="password_unlock_incorrect">Hibás jelszó. Kérem, próbálkozzon újra.</string>
   <string name="password_unlock_error">A jelszó ellenőrzése sikertelen</string>
   <string name="password_unlock_attempts_warning">Hibás jelszó. Ha további %d alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.</string>
   <string name="password_unlock_max_attempts_reached">Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti.</string>

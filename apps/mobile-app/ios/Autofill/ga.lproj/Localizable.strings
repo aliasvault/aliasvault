@@ -22,12 +22,12 @@
 "password_changed_title" = "Athraíodh an Pasfhocal";
 "password_changed_message" = "Athraíodh do phasfhocal. Sínigh isteach arís le do thoil.";
 "version_not_supported_title" = "Nuashonrú ag Teastáil";
-"version_not_supported_message" = "Ní thacaítear le do leagan aip a thuilleadh. Nuashonraigh go dtí an leagan is déanaí le do thoil.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Níl an freastalaí ar fáil";
 "server_unavailable_message" = "Níl an freastalaí ar fáil faoi láthair. Bain triail eile as ar ball.";
 "network_error_title" = "Earráid Líonra";
 "network_error_message" = "Tharla earráid líonra. Seiceáil do cheangal agus bain triail eile as.";
 "server_version_not_supported_title" = "Nuashonrú Freastalaí ag Teastáil";
-"server_version_not_supported_message" = "Tá leagan an fhreastalaí as dáta. Nuashonraigh do fhreastalaí go dtí an leagan is déanaí.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Theip ar aisghabháil eochair chriptiúcháin";
 "no_encryption_key_message" = "Díghlasáil cruinneachán san aip AliasVault ar dtús";

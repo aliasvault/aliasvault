@@ -27,7 +27,7 @@
   <string name="replace_passkey">Erstat passkey</string>
   <string name="passkey_display_name_label">Navn på passkey</string>
   <string name="passkey_display_name_hint">Indtast et navn til denne passkey</string>
-  <string name="passkey_website_label">Webside</string>
+  <string name="passkey_website_label">Websted</string>
   <string name="passkey_username_label">Brugernavn</string>
   <string name="passkey_create_button">Opret passkey</string>
   <string name="passkey_creating">Opretter passkey...</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Adgangskode ændret</string>
   <string name="password_changed_message">Din adgangskode er blevet ændret. Log venligst ind igen.</string>
   <string name="version_not_supported_title">Opdatering påkrævet</string>
-  <string name="version_not_supported_message">Din app-version understøttes ikke længere. Opdater venligst til den nyeste version.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Server utilgængelig</string>
   <string name="server_unavailable_message">Serveren er i øjeblikket utilgængelig. Prøv igen senere.</string>
   <string name="network_error_title">Netværksfejl</string>
   <string name="network_error_message">Der opstod en netværksfejl. Tjek venligst din forbindelse og prøv igen.</string>
   <string name="server_version_not_supported_title">Serveropdatering påkrævet</string>
-  <string name="server_version_not_supported_message">Server versionen er forældet. Kontakt venligst din administrator for at opdatere serveren.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Aktiver venligst biometrisk- eller PIN-godkendelse i den primære AliasVault-app for at fortsætte</string>
   <string name="error_unlock_vault_first">Lås venligst boksen op i AliasVault-appen først</string>
   <string name="error_vault_decrypt_failed">Kunne ikke dekryptere boks</string>

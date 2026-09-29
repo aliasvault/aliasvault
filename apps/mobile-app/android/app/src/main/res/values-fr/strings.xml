@@ -27,7 +27,7 @@
   <string name="replace_passkey">Remplacer la clé d\'accès</string>
   <string name="passkey_display_name_label">Nom de la clé d\'accès</string>
   <string name="passkey_display_name_hint">Entrez un nom pour cette clé d\'accès</string>
-  <string name="passkey_website_label">Site Web</string>
+  <string name="passkey_website_label">Site internet</string>
   <string name="passkey_username_label">Nom d\'utilisateur</string>
   <string name="passkey_create_button">Créer une clé d\'accès</string>
   <string name="passkey_creating">Création de la clé d\'accès...</string>
@@ -36,7 +36,7 @@
   <string name="passkey_error_title">Erreur</string>
   <string name="passkey_error_empty_name">Entrez un nom pour la clé d\'accès</string>
   <string name="passkey_creation_failed">Echec de la création de la clé d\'accès</string>
-  <string name="passkey_retry_button">Réessayer</string>
+  <string name="passkey_retry_button">Recommencer</string>
   <string name="passkey_info_icon">Icône d\'info</string>
   <string name="passkey_create_explanation">Cela crée une nouvelle clé d\'accès et la stocke dans votre coffre-fort. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.</string>
   <string name="passkey_create_new_button">Créer une nouvelle clé d\'accès</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Mot de passe modifié</string>
   <string name="password_changed_message">Votre mot de passe a été modifié. Veuillez vous reconnecter.</string>
   <string name="version_not_supported_title">Mise à jour requise</string>
-  <string name="version_not_supported_message">La version de votre application n\'est plus prise en charge. Veuillez mettre à jour vers la dernière version.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Serveur indisponible</string>
   <string name="server_unavailable_message">Le serveur est actuellement indisponible, veuillez réessayer plus tard.</string>
   <string name="network_error_title">Erreur réseau</string>
   <string name="network_error_message">Une erreur réseau s\'est produite. Veuillez vérifier votre connexion et réessayer.</string>
   <string name="server_version_not_supported_title">Mise à jour du serveur requise</string>
-  <string name="server_version_not_supported_message">La version du serveur est obsolète. Veuillez contacter votre administrateur pour mettre à jour le serveur.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Veuillez activer l\'authentification biométrique ou PIN dans l\'application principale AliasVault pour continuer</string>
   <string name="error_unlock_vault_first">Veuillez d\'abord déverrouiller le coffre-fort dans l\'application AliasVault</string>
   <string name="error_vault_decrypt_failed">Échec du déchiffrement du coffre-fort</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_subtitle">Entrez votre mot de passe principal</string>
   <string name="password_unlock_password_hint">Mot de passe</string>
   <string name="password_unlock_button">Déverrouiller</string>
-  <string name="password_unlock_incorrect">Mot de passe incorrect, veuillez réessayer.</string>
+  <string name="password_unlock_incorrect">Mot de passe incorrect. Veuillez réessayer.</string>
   <string name="password_unlock_error">Échec de la vérification du mot de passe</string>
   <string name="password_unlock_attempts_warning">Mot de passe incorrect. Vous serez déconnecté si vous entrez le mauvais mot de passe plus de %d fois.</string>
   <string name="password_unlock_max_attempts_reached">Trop de tentatives de déverrouillage échouées. Vous avez été déconnecté pour des raisons de sécurité.</string>

@@ -28,7 +28,7 @@
   <string name="passkey_display_name_label">Todennusavaimen nimi</string>
   <string name="passkey_display_name_hint">Anna nimi tälle todennusavaimelle</string>
   <string name="passkey_website_label">Verkkosivusto</string>
-  <string name="passkey_username_label">Käyttäjänimi</string>
+  <string name="passkey_username_label">Käyttäjätunnus</string>
   <string name="passkey_create_button">Luo Passkey, todennusavain</string>
   <string name="passkey_creating">Luodaan todennusavainta...</string>
   <string name="passkey_saving">Tallennetaan holviin...</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Salasana vaihdettu</string>
   <string name="password_changed_message">Salasanasi on vaihdettu. Kirjaudu sisään uudelleen.</string>
   <string name="version_not_supported_title">Päivitys vaaditaan</string>
-  <string name="version_not_supported_message">Sovelluksesi versio ei ole enää tuettu. Päivitä uusimpaan versioon.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Palvelin ei saatavilla</string>
   <string name="server_unavailable_message">Palvelin ei ole tällä hetkellä saattavilla. Yritä myöhemmin uudelleen.</string>
   <string name="network_error_title">Verkkovirhe</string>
   <string name="network_error_message">Verkkovirhe tapahtui. Tarkista yhteytesi ja yritä uudelleen.</string>
   <string name="server_version_not_supported_title">Palvelimen päivtys vaaditaan</string>
-  <string name="server_version_not_supported_message">Palvelimen versio on vanhentunut. Ota yhteyttä järjestelmänvalvojaan päivittääksesi palvelin.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.</string>
   <string name="error_unlock_vault_first">Ole hyvä ja avaa holvi ensin AliasVault-sovelluksessa</string>
   <string name="error_vault_decrypt_failed">Holvin salauksen purku epäonnistui</string>

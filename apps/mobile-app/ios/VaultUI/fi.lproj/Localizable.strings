@@ -5,7 +5,7 @@
 "next" = "Seuraava";
 "edit" = "Muokkaa";
 "website" = "Verkkosivusto";
-"username" = "Käyttäjänimi";
+"username" = "Käyttäjätunnus";
 "title" = "Otsikko";
 "unknown_error" = "Tapahtui tuntematon virhe.";
 "loading_items" = "Loading items...";

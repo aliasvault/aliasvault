@@ -22,12 +22,12 @@
 "password_changed_title" = "Jelszó módosítva";
 "password_changed_message" = "A jelszava megváltozott. Kérem, jelentkezzen be újra.";
 "version_not_supported_title" = "Frissítés szükséges";
-"version_not_supported_message" = "Az app verziója már nem támogatott. Kérem, frissítse a leújabb verzióra.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Szerver nem elérhető";
 "server_unavailable_message" = "A szerver jelenleg nem elérhető. Kérem, próbálja meg később.";
 "network_error_title" = "Hálózati hiba";
 "network_error_message" = "Hálózati hiba lépett fel. Kérem, ellenőrizze internet kapcsolatát, és próbálja újra.";
 "server_version_not_supported_title" = "Szerver frissítés szükséges";
-"server_version_not_supported_message" = "A szerver verziója túl régi. Kérem, frissítse a szervert a legújabb verzióra.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Nem sikerült a kódolási kulcs kinyerése";
 "no_encryption_key_message" = "Kérem, először oldja fel az AliasVault-ot az appban";

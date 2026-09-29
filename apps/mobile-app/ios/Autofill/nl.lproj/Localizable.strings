@@ -22,12 +22,12 @@
 "password_changed_title" = "Wachtwoord gewijzigd";
 "password_changed_message" = "Je wachtwoord is gewijzigd. Log opnieuw in.";
 "version_not_supported_title" = "Update vereist";
-"version_not_supported_message" = "Deze app-versie wordt niet langer ondersteund. Update naar de nieuwste versie.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server niet beschikbaar";
 "server_unavailable_message" = "De server is momenteel niet beschikbaar. Probeer het later opnieuw.";
 "network_error_title" = "Verbindingsfout";
 "network_error_message" = "Er is een netwerkfout opgetreden. Controleer je verbinding en probeer het opnieuw.";
 "server_version_not_supported_title" = "Server update vereist";
-"server_version_not_supported_message" = "De server versie is verouderd. Update je server naar de laatste versie of neem contact op met support.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Fout bij ophalen van encryptiesleutel";
 "no_encryption_key_message" = "Ontgrendel eerst de vault in de AliasVault app";

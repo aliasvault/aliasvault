@@ -27,7 +27,7 @@
   <string name="replace_passkey">Zamień klucz dostępu</string>
   <string name="passkey_display_name_label">Nazwa klucza dostępu</string>
   <string name="passkey_display_name_hint">Wprowadź nazwę dla tego klucza dostępu</string>
-  <string name="passkey_website_label">Strona internetowa</string>
+  <string name="passkey_website_label">Strona www</string>
   <string name="passkey_username_label">Nazwa użytkownika</string>
   <string name="passkey_create_button">Utwórz klucz dostępu</string>
   <string name="passkey_creating">Generowanie klucz dostępu...</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Hasło zostało zmienione</string>
   <string name="password_changed_message">Twoje hasło zostało zmienione. Zaloguj się ponownie.</string>
   <string name="version_not_supported_title">Wymagana aktualizacja</string>
-  <string name="version_not_supported_message">Twoja wersja aplikacji nie jest już obsługiwana. Zaktualizuj ją do najnowszej wersji.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Serwer niedostępny</string>
   <string name="server_unavailable_message">Serwer jest obecnie niedostępny. Spróbuj ponownie później.</string>
   <string name="network_error_title">Błąd sieci</string>
   <string name="network_error_message">Wystąpił błąd sieci. Sprawdź połączenie i spróbuj ponownie.</string>
   <string name="server_version_not_supported_title">Wymagana aktualizacja serwera</string>
-  <string name="server_version_not_supported_message">Wersja serwera jest nieaktualna. Skontaktuj się z administratorem, aby zaktualizować serwer.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Aby kontynuować, włącz uwierzytelnianie biometryczne lub PIN w głównej aplikacji AliasVault</string>
   <string name="error_unlock_vault_first">Najpierw odblokuj sejf w aplikacji AliasVault</string>
   <string name="error_vault_decrypt_failed">Nie udało się odszyfrować sejfu</string>
@@ -78,7 +78,7 @@
   <string name="pin_setup_description">Wybierz kod PIN, aby odblokować sejf</string>
   <string name="pin_confirm_title">Potwierdź kod PIN</string>
   <string name="pin_confirm_description">Wprowadź ponownie swój kod PIN, aby potwierdzić</string>
-  <string name="pin_mismatch">Kody PIN nie pasują. Spróbuj jeszcze raz.</string>
+  <string name="pin_mismatch">PINs do not match. Please try again.</string>
   <string name="password_unlock_title">Odblokuj sejf</string>
   <string name="password_unlock_subtitle">Wprowadź swoje hasło główne</string>
   <string name="password_unlock_password_hint">Hasło</string>

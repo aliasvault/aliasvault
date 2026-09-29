@@ -38,7 +38,7 @@
 "password_copied" = "Wachtwoord gekopieerd";
 "email_copied" = "E-mail gekopieerd";
 "totp_code_copied" = "TOTP code gekopieerd";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP-code";
 "search_items" = "Zoek items...";
 "create_passkey_title" = "Passkey aanmaken";
 "create_passkey_subtitle" = "Registreer een nieuwe passkey voor deze website. Deze wordt veilig opgeslagen in je vault en wordt automatisch gesynchroniseerd met je andere apparaten.";

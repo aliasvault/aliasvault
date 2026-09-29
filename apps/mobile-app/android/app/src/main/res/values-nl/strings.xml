@@ -58,13 +58,13 @@
   <string name="password_changed_title">Wachtwoord gewijzigd</string>
   <string name="password_changed_message">Je wachtwoord is gewijzigd. Log opnieuw in.</string>
   <string name="version_not_supported_title">Update vereist</string>
-  <string name="version_not_supported_message">Deze app-versie wordt niet langer ondersteund. Update naar de nieuwste versie.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Server niet beschikbaar</string>
   <string name="server_unavailable_message">De server is momenteel niet beschikbaar. Probeer het later opnieuw.</string>
   <string name="network_error_title">Verbindingsfout</string>
   <string name="network_error_message">Er is een netwerkfout opgetreden. Controleer je verbinding en probeer het opnieuw.</string>
   <string name="server_version_not_supported_title">Server update vereist</string>
-  <string name="server_version_not_supported_message">De server versie is verouderd. Neem contact op met de beheerder van je server om deze bij te werken.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Schakel biometrische ontgrendeling of een pincode in de AliasVault-app in om passkeys te gebruiken</string>
   <string name="error_unlock_vault_first">Ontgrendel eerst de vault in de AliasVault app</string>
   <string name="error_vault_decrypt_failed">Ontsleutelen van vault mislukt</string>

@@ -63,7 +63,7 @@
 "pin_incorrect_attempts_remaining" = "Érvénytelen PIN kód. %d próbálkozás maradt hátra";
 "enter_password_to_unlock" = "Adja meg mester jelszavát";
 "unlock" = "Feloldás";
-"incorrect_password" = "Hibás jelszó. Próbálkozzon újra.";
+"incorrect_password" = "Hibás jelszó. Kérem, próbálkozzon újra.";
 "attempts_warning" = "Hibás jelszó. Ha további %d alkalommal sem tudja megadni a helyes jelszót, a rendszer kijelentkezteti.";
 "max_attempts_reached" = "Túl sok sikertelen belépési kísérlet. A rendszer biztonsági okok miatt kilépteti.";
 "pin_setup_title" = "PIN kód beállítása";

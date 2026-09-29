@@ -27,7 +27,7 @@
   <string name="replace_passkey">Sostituire Passkey</string>
   <string name="passkey_display_name_label">Nome Passkey</string>
   <string name="passkey_display_name_hint">Inserisci un nome per questa passkey</string>
-  <string name="passkey_website_label">Sito Web</string>
+  <string name="passkey_website_label">Sito web</string>
   <string name="passkey_username_label">Nome utente</string>
   <string name="passkey_create_button">Crea Passkey</string>
   <string name="passkey_creating">Creazione passkey...</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Password Modificata</string>
   <string name="password_changed_message">La tua password è stata cambiata. Accedi di nuovo.</string>
   <string name="version_not_supported_title">Aggiornamento richiesto</string>
-  <string name="version_not_supported_message">La versione dell\'app non è più supportata. Si prega di aggiornare all\'ultima versione.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Server Non Disponibile</string>
   <string name="server_unavailable_message">Il server non è al momento disponibile. Riprova più tardi.</string>
   <string name="network_error_title">Errore Di Rete</string>
   <string name="network_error_message">Si è verificato un errore di rete. Controlla la connessione e riprova.</string>
   <string name="server_version_not_supported_title">Aggiornamento Del Server Richiesto</string>
-  <string name="server_version_not_supported_message">La versione del server è obsoleta. Contatta l\'amministratore per aggiornare il server.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Si prega di abilitare l\'autenticazione biometrica o PIN nell\'app principale di AliasVault per continuare</string>
   <string name="error_unlock_vault_first">Si prega di sbloccare prima la cassaforte nell\'app AliasVault</string>
   <string name="error_vault_decrypt_failed">Decifratura della cassaforte non riuscita</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_subtitle">Inserisci la tua password principale</string>
   <string name="password_unlock_password_hint">Password</string>
   <string name="password_unlock_button">Sblocca</string>
-  <string name="password_unlock_incorrect">Password errata. Riprovare.</string>
+  <string name="password_unlock_incorrect">Password errata. Riprova.</string>
   <string name="password_unlock_error">Verifica della password non riuscita</string>
   <string name="password_unlock_attempts_warning">Password errata. Sarai disconnesso se inserisci la password errata %d altre volte.</string>
   <string name="password_unlock_max_attempts_reached">Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza.</string>

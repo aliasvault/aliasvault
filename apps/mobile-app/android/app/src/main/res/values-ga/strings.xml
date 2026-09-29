@@ -36,7 +36,7 @@
   <string name="passkey_error_title">Earráid</string>
   <string name="passkey_error_empty_name">Cuir isteach ainm don eochair pas</string>
   <string name="passkey_creation_failed">Theip ar an eochair pas a chruthú</string>
-  <string name="passkey_retry_button">Déan iarracht eile</string>
+  <string name="passkey_retry_button">Bain triail eile as</string>
   <string name="passkey_info_icon">Deilbhín faisnéise</string>
   <string name="passkey_create_explanation">Cruthaíonn sé seo eochair phas nua agus stórálann sé í i do chruinneachán. Déanfar í a shioncronú go huathoibríoch ar fud do ghléasanna uile a úsáideann AliasVault.</string>
   <string name="passkey_create_new_button">Cruthaigh Eochair phas Nua</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Athraíodh an Pasfhocal</string>
   <string name="password_changed_message">Athraíodh do phasfhocal. Sínigh isteach arís le do thoil.</string>
   <string name="version_not_supported_title">Nuashonrú ag Teastáil</string>
-  <string name="version_not_supported_message">Ní thacaítear le do leagan aip a thuilleadh. Nuashonraigh go dtí an leagan is déanaí le do thoil.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Níl an freastalaí ar fáil</string>
   <string name="server_unavailable_message">Níl an freastalaí ar fáil faoi láthair. Bain triail eile as ar ball.</string>
   <string name="network_error_title">Earráid Líonra</string>
   <string name="network_error_message">Tharla earráid líonra. Seiceáil do cheangal agus bain triail eile as.</string>
   <string name="server_version_not_supported_title">Nuashonrú Freastalaí ag Teastáil</string>
-  <string name="server_version_not_supported_message">Tá leagan an fhreastalaí as dáta. Déan teagmháil le do riarthóir chun an freastalaí a nuashonrú.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Cumasaigh fíordheimhniú bithmhéadrach nó PIN sa phríomhaip AliasVault chun leanúint ar aghaidh</string>
   <string name="error_unlock_vault_first">Díghlasáil cruinneachán san aip AliasVault ar dtús</string>
   <string name="error_vault_decrypt_failed">Theip ar dhíchriptiú cruinneachán</string>

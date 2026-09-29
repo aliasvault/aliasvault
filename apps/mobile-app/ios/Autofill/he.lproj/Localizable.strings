@@ -22,12 +22,12 @@
 "password_changed_title" = "הסיסמה הוחלפה";
 "password_changed_message" = "הסיסמה שלך הוחלפה. נא להיכנס שוב.";
 "version_not_supported_title" = "נדרש עדכון";
-"version_not_supported_message" = "גרסת היישום שלך לא נתמכת עוד. נא לעדכן לגרסה העדכנית ביותר.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "השרת לא זמין";
 "server_unavailable_message" = "השרת לא זמין כרגע. נא לנסות שוב מאוחר יותר.";
 "network_error_title" = "שגיאת רשת";
 "network_error_message" = "אירעה שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.";
 "server_version_not_supported_title" = "יש לעדכן את השרת";
-"server_version_not_supported_message" = "גרסת השרת לא עדכנית. נא לעדכן את השרת שלך לגרסה העדכנית ביותר.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "משיכת מפתח ההצפנה נכשל";
 "no_encryption_key_message" = "נא לשחרר את נעילת הכספת ביישום של AppVault תחילה";

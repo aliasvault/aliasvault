@@ -58,13 +58,13 @@
   <string name="password_changed_title">Kata sandi diubah</string>
   <string name="password_changed_message">Kata sandi Anda telah diubah. Silakan masuk kembali.</string>
   <string name="version_not_supported_title">Pembaruan Diperlukan</string>
-  <string name="version_not_supported_message">Versi aplikasi Anda tidak lagi didukung. Silakan perbarui ke versi terbaru.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Server Tidak Tersedia</string>
   <string name="server_unavailable_message">Server saat ini sedang tidak tersedia. Silakan coba lagi nanti.</string>
   <string name="network_error_title">Kesalahan Jaringan</string>
   <string name="network_error_message">Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.</string>
   <string name="server_version_not_supported_title">Diperlukan Pembaruan Server</string>
-  <string name="server_version_not_supported_message">Versi server sudah usang. Silakan hubungi administrator Anda untuk memperbarui server.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Silakan aktifkan otentikasi biometrik atau PIN di aplikasi utama AliasVault agar dapat melanjutkan</string>
   <string name="error_unlock_vault_first">Silakan buka kunci brankas di aplikasi AliasVault terlebih dahulu</string>
   <string name="error_vault_decrypt_failed">Gagal mendekripsi brankas</string>
@@ -86,5 +86,5 @@
   <string name="password_unlock_incorrect">Kata sandi salah. Silakan coba lagi.</string>
   <string name="password_unlock_error">Gagal memverifikasi kata sandi</string>
   <string name="password_unlock_attempts_warning">Kata sandi salah. Anda akan dikeluarkan dari sistem jika memasukkan kata sandi yang salah %d kali lagi.</string>
-  <string name="password_unlock_max_attempts_reached">Terlalu banyak percobaan untuk membuka. Kamu di-logout dengan alasan keamanan</string>
+  <string name="password_unlock_max_attempts_reached">Terlalu banyak upaya membuka kunci yang gagal. Anda telah dikeluarkan dari sistem demi alasan keamanan.</string>
 </resources>

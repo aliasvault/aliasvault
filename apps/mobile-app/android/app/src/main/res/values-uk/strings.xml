@@ -58,13 +58,13 @@
   <string name="password_changed_title">Password Changed</string>
   <string name="password_changed_message">Your password has been changed. Please sign in again.</string>
   <string name="version_not_supported_title">Update Required</string>
-  <string name="version_not_supported_message">Your app version is no longer supported. Please update to the latest version.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Server Unavailable</string>
   <string name="server_unavailable_message">The server is currently unavailable. Please try again later.</string>
   <string name="network_error_title">Network Error</string>
   <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
   <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>

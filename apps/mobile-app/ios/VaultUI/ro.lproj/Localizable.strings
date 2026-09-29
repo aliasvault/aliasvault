@@ -4,8 +4,8 @@
 "back" = "Înapoi";
 "next" = "Înainte";
 "edit" = "Editează";
-"website" = "Site web";
-"username" = "Utilizator";
+"website" = "Website";
+"username" = "Nume utilizator";
 "title" = "Titlu";
 "unknown_error" = "A apărut o eroare necunoscută.";
 "loading_items" = "Se încarcă elementele...";
@@ -29,7 +29,7 @@
 "password" = "Parolă";
 "items_load_error" = "Încărcarea elementelor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
 "no_item_selected" = "Niciun element selectat.";
-"copy_username" = "Copiază utilizatorul";
+"copy_username" = "Copiază numele de utilizator";
 "copy_password" = "Copiază parola";
 "copy_email" = "Copiază e-mailul";
 "copy_totp_code" = "Copiază codul TOTP";

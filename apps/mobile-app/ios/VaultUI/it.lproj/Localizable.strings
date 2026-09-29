@@ -4,7 +4,7 @@
 "back" = "Indietro";
 "next" = "Avanti";
 "edit" = "Modifica";
-"website" = "Sito Web";
+"website" = "Sito web";
 "username" = "Nome utente";
 "title" = "Titolo";
 "unknown_error" = "Si è verificato un errore sconosciuto.";
@@ -14,7 +14,7 @@
 "create_new_item" = "Crea Nuovo Elemento";
 "open_aliasvault" = "Apri AliasVault";
 "untitled_credential" = "queste credenziali";
-"link_url_prompt_title" = "Collegamento alle credenziali?";
+"link_url_prompt_title" = "Collega alle credenziali?";
 "link_url_prompt_message" = "Aggiungi \"{{url}}\" ad {{name}} così che AliasVault possa riconoscere questa app o sito web la prossima volta?";
 "link_url_prompt_link_action" = "Collega e riempi";
 "link_url_prompt_skip_action" = "Solo riempimento";
@@ -63,7 +63,7 @@
 "pin_incorrect_attempts_remaining" = "PIN errato, %d tentativi rimasti";
 "enter_password_to_unlock" = "Inserisci la tua password principale";
 "unlock" = "Sblocca";
-"incorrect_password" = "Password errata. Riprovare.";
+"incorrect_password" = "Password errata. Riprova.";
 "attempts_warning" = "Password errata. Sarai disconnesso se inserisci la password errata %d altre volte.";
 "max_attempts_reached" = "Troppi tentativi di sblocco falliti. Sei stato disconnesso per motivi di sicurezza.";
 "pin_setup_title" = "Configurare PIN";

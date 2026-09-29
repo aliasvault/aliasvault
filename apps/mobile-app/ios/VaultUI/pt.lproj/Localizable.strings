@@ -2,10 +2,10 @@
 "error" = "Erro";
 "cancel" = "Cancelar";
 "back" = "Voltar";
-"next" = "Próximo";
+"next" = "Avançar";
 "edit" = "Editar";
-"website" = "Website";
-"username" = "Nome de Usuário";
+"website" = "Site";
+"username" = "Usuário";
 "title" = "Título";
 "unknown_error" = "Ocorreu um erro desconhecido.";
 "loading_items" = "Carregando itens...";

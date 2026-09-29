@@ -12,7 +12,7 @@
 "face_id_touch_id" = "Face ID / Touch ID";
 "face_id" = "Face ID";
 "touch_id" = "Touch ID";
-"vault_syncing" = "Menyinkronkan vault";
+"vault_syncing" = "Menyinkronkan brankas";
 "creating_passkey" = "Membuat Passkey";
 "connection_error_title" = "Koneksi bermasalah";
 "connection_error_message" = "Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda dan coba buat kembali kunci akses.";
@@ -22,12 +22,12 @@
 "password_changed_title" = "Kata sandi diubah";
 "password_changed_message" = "Kata sandi Anda telah diubah. Silakan masuk kembali.";
 "version_not_supported_title" = "Pembaruan Diperlukan";
-"version_not_supported_message" = "Versi aplikasi Anda tidak lagi didukung. Silakan perbarui ke versi terbaru.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server Tidak Tersedia";
 "server_unavailable_message" = "Server saat ini sedang tidak tersedia. Silakan coba lagi nanti.";
 "network_error_title" = "Kesalahan Jaringan";
 "network_error_message" = "Terjadi kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.";
 "server_version_not_supported_title" = "Diperlukan Pembaruan Server";
-"server_version_not_supported_message" = "Versi server sudah usang. Silakan perbarui server Anda ke versi terbaru.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Gagal mengambil kunci enkripsi";
 "no_encryption_key_message" = "Silakan buka kunci brankas di aplikasi AliasVault terlebih dahulu";

@@ -28,7 +28,7 @@
   <string name="passkey_display_name_label">Имя ключа доступа</string>
   <string name="passkey_display_name_hint">Укажите название для этого ключа доступа</string>
   <string name="passkey_website_label">Сайт</string>
-  <string name="passkey_username_label">Имя пользователя</string>
+  <string name="passkey_username_label">Логин</string>
   <string name="passkey_create_button">Создание ключа доступа</string>
   <string name="passkey_creating">Создание ключа доступа﻿...</string>
   <string name="passkey_saving">Сохраняем в хранилище...</string>
@@ -58,13 +58,13 @@
   <string name="password_changed_title">Пароль изменен</string>
   <string name="password_changed_message">Ваш пароль был изменен. Пожалуйста, войдите снова.</string>
   <string name="version_not_supported_title">Требуется обновление</string>
-  <string name="version_not_supported_message">Ваша версия приложения больше не поддерживается. Обновите приложение до последней версии.</string>
+  <string name="version_not_supported_message">This version of AliasVault is no longer supported by the server. Please update to the latest version.</string>
   <string name="server_unavailable_title">Сервер недоступен</string>
   <string name="server_unavailable_message">Сервер в настоящее время недоступен. Повторите попытку позже.</string>
   <string name="network_error_title">Ошибка сети</string>
   <string name="network_error_message">Произошла сетевая ошибка. Проверьте подключение и повторите попытку.</string>
   <string name="server_version_not_supported_title">Требуется обновление сервера</string>
-  <string name="server_version_not_supported_message">Версия сервера устарела. Свяжитесь с вашим администратором для обновления сервера.</string>
+  <string name="server_version_not_supported_message">The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.</string>
   <string name="error_unlock_method_required">Чтобы продолжить, включите аутентификацию по биометрии или ПИН-коду в основном приложении AliasVault</string>
   <string name="error_unlock_vault_first">Сначала разблокируйте хранилище в приложении AliasVault</string>
   <string name="error_vault_decrypt_failed">Не удалось расшифровать хранилище</string>
@@ -83,7 +83,7 @@
   <string name="password_unlock_subtitle">Введите свой мастер-пароль</string>
   <string name="password_unlock_password_hint">Пароль</string>
   <string name="password_unlock_button">Разблокировать</string>
-  <string name="password_unlock_incorrect">Неверный пароль. Повторите попытку.</string>
+  <string name="password_unlock_incorrect">Неверный пароль. Пожалуйста, повторите попытку.</string>
   <string name="password_unlock_error">Не удалось проверить пароль</string>
   <string name="password_unlock_attempts_warning">Неверный пароль. Вы выйдете из системы, если ошибетесь еще %d раз.</string>
   <string name="password_unlock_max_attempts_reached">Слишком много неудачных попыток. Выход из системы выполнен в целях безопасности.</string>

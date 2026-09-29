@@ -22,12 +22,12 @@
 "password_changed_title" = "Passwort geändert";
 "password_changed_message" = "Dein Passwort wurde geändert. Bitte melde Dich erneut an.";
 "version_not_supported_title" = "Aktualisierung erforderlich";
-"version_not_supported_message" = "Deine App-Version wird nicht mehr unterstützt. Bitte aktualisiere auf die neueste Version.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server nicht erreichbar";
 "server_unavailable_message" = "Der Server ist derzeit nicht erreichbar. Bitte versuche es später erneut.";
 "network_error_title" = "Netzwerkfehler";
 "network_error_message" = "Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfe Deine Verbindung und versuche es erneut.";
 "server_version_not_supported_title" = "Server-Update erforderlich";
-"server_version_not_supported_message" = "Die Server-Version ist veraltet. Bitte aktualisiere Deinen Server auf die neueste Version.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Fehler beim Abrufen des Schlüssel";
 "no_encryption_key_message" = "Bitte entsperre zuerst den Tresor in der AliasVault-App";

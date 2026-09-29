@@ -22,12 +22,12 @@
 "password_changed_title" = "Password Modificata";
 "password_changed_message" = "La tua password è stata cambiata. Accedi di nuovo.";
 "version_not_supported_title" = "Aggiornamento richiesto";
-"version_not_supported_message" = "La versione dell'app non è più supportata. Si prega di aggiornare all'ultima versione.";
+"version_not_supported_message" = "This version of AliasVault is no longer supported by the server. Please update to the latest version.";
 "server_unavailable_title" = "Server Non Disponibile";
 "server_unavailable_message" = "Il server non è al momento disponibile. Riprova più tardi.";
 "network_error_title" = "Errore Di Rete";
 "network_error_message" = "Si è verificato un errore di rete. Controlla la connessione e riprova.";
 "server_version_not_supported_title" = "Aggiornamento Del Server Richiesto";
-"server_version_not_supported_message" = "La versione del server è obsoleta. Aggiorna il tuo server all'ultima versione.";
+"server_version_not_supported_message" = "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.";
 "keychain_error_message" = "Impossibile recuperare la chiave di cifratura";
 "no_encryption_key_message" = "Si prega di sbloccare prima la cassaforte nell'app AliasVault";
