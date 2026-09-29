@@ -13,6 +13,7 @@ import { PayloadTooLargeError } from './errors/PayloadTooLargeError';
 import { RequestTimeoutError } from './errors/RequestTimeoutError';
 import { logoutEventEmitter } from './LogoutEventEmitter';
 
+import type { LogoutReason } from '../sync/VaultSyncEngine';
 import type { AuthLogModel, RefreshToken, StatusResponseV2 } from '@aliasvault/models/webapi';
 
 type RequestInit = globalThis.RequestInit;
@@ -444,9 +445,9 @@ export class WebApiService {
   }
 
   /**
-   * Validates the status response and returns an error message (as translation key) if validation fails.
+   * Validates the status response and returns the logout reason if this client cannot continue.
    */
-  public validateStatusResponse(statusResponse: StatusResponseV2): string | null {
+  public validateStatusResponse(statusResponse: StatusResponseV2): LogoutReason | null {
     if (!statusResponse.clientVersionSupported) {
       return 'clientVersionNotSupported';
     }

@@ -8,14 +8,16 @@ type CriticalErrorPanelProps = {
   report?: string | null;
   title?: string;
   description?: string;
-  onBack?: () => void;
+  onAction?: () => void;
+  actionLabel?: string;
+  hideSupportContact?: boolean;
   footer?: React.ReactNode;
 };
 
 /**
  * A blocking error that takes over the whole screen and shows the error details.
  */
-const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, description, onBack, footer }) => {
+const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, description, onAction, actionLabel, hideSupportContact, footer }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [message, ...detailLines] = report?.split('\n') ?? [];
@@ -61,11 +63,11 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
           </div>
         )}
 
-        <SupportContact report={report} className="mt-3" />
+        {!hideSupportContact && <SupportContact report={report} className="mt-3" />}
 
-        {onBack && (
-          <button type="button" id="critical-error-back" onClick={onBack} className="mt-6 w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-            {t('common.back')}
+        {onAction && (
+          <button type="button" id="critical-error-action" onClick={onAction} className="mt-6 w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+            {actionLabel ?? t('common.back')}
           </button>
         )}
       </div>

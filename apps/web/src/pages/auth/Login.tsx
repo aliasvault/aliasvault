@@ -21,7 +21,7 @@ import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { asksForClientUpdate } from '@/utils/ClientUpdate';
+import { asksForClientUpdate, updateApp } from '@/utils/ClientUpdate';
 import { focusWhenVisible } from '@/utils/FocusWhenVisible';
 import { StorageKeys } from '@/utils/StorageKeys';
 import { vaultStore } from '@/vault/VaultStore';
@@ -72,7 +72,7 @@ const Login: React.FC = () => {
   // Show the message a forced logout left behind, and prefill the username it kept.
   useEffect(() => {
     if (auth.globalMessage) {
-      // A coded message shows as a critical error in place of the form; an update request shows with its update button.
+      // A coded message or an update request shows as a critical error in place of the form.
       if (extractErrorCode(auth.globalMessage) || asksForClientUpdate(auth.globalMessage)) {
         setErrors([auth.globalMessage]);
       } else {
@@ -245,6 +245,12 @@ const Login: React.FC = () => {
   const inputClass = 'bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500';
   const submitClass = 'w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
 
+  // An update request blocks the app until the user loads the latest version.
+  const updateRequest = errors.find(asksForClientUpdate);
+  if (updateRequest) {
+    return <CriticalErrorPanel title={t('common.errors.updateRequiredTitle')} description={updateRequest} onAction={updateApp} actionLabel={t('common.updateApp')} hideSupportContact />;
+  }
+
   // A coded error is critical: it replaces the form.
   const criticalError = errors.find(error => extractErrorCode(error) !== null);
   if (criticalError) {
@@ -255,7 +261,7 @@ const Login: React.FC = () => {
       setErrors([]);
       setStep('credentials');
     };
-    return <CriticalErrorPanel report={criticalError} onBack={backToLogin} />;
+    return <CriticalErrorPanel report={criticalError} onAction={backToLogin} />;
   }
 
   if (step === 'two-factor') {

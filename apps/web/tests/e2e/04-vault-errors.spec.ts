@@ -11,6 +11,7 @@ import type { Page } from '@playwright/test';
 
 const KEY_CHAIN_UNREADABLE_MESSAGE = 'Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.';
 const VAULT_DATA_UNREADABLE_MESSAGE = 'Your vault data could not be read, so your data is not accessible at this moment. Please contact support.';
+const CLIENT_NOT_SUPPORTED_MESSAGE = 'This version of AliasVault is no longer supported by the server. Please update to the latest version.';
 
 /**
  * Check the page shows only the critical error: its message and code in a copyable report, and the support address.
@@ -22,6 +23,31 @@ async function expectCriticalError(page: Page, message: string, code: string): P
   await expect(page.locator('#copy-error-report')).toBeVisible();
   await expect(page.locator('#support-contact').getByRole('link', { name: 'support@example.tld' })).toBeVisible();
   await expect(page.locator('#password')).toHaveCount(0);
+}
+
+/**
+ * Send every API request of the page as a client version the server no longer supports, so the real server rejects it.
+ */
+async function sendUnsupportedClientVersion(page: Page, apiUrl: string): Promise<void> {
+  await page.route(`${apiUrl}/**`, (route) => route.continue({ headers: { ...route.request().headers(), 'x-aliasvault-client': 'web-0.0.1' } }));
+}
+
+/**
+ * Check the login page is replaced by the update request, and that its update button loads the app again.
+ */
+async function expectClientUpdateRequest(page: Page): Promise<void> {
+  await expect(page).toHaveURL(/\/user\/login$/);
+  await expect(page.getByRole('heading', { name: 'Update required' })).toBeVisible();
+  await expect(page.locator('#critical-error')).toContainText(CLIENT_NOT_SUPPORTED_MESSAGE);
+  await expect(page.locator('#critical-error-report')).toHaveCount(0);
+  await expect(page.locator('#support-contact')).toHaveCount(0);
+  await expect(page.locator('#password')).toHaveCount(0);
+
+  await test.step('the update button reloads the app', async () => {
+    await page.locator('#critical-error-action').click();
+    await expect(page.locator('#login-button')).toBeVisible();
+    await expect(page.locator('#critical-error')).toHaveCount(0);
+  });
 }
 
 test.describe('4. Vault errors', () => {
@@ -68,7 +94,7 @@ test.describe('4. Vault errors', () => {
     await expectCriticalError(app.page, KEY_CHAIN_UNREADABLE_MESSAGE, 'E-207');
 
     await test.step('going back shows the login form again', async () => {
-      await app.page.locator('#critical-error-back').click();
+      await app.page.locator('#critical-error-action').click();
       await expect(app.page.locator('#login-button')).toBeVisible();
     });
   });
@@ -101,5 +127,30 @@ test.describe('4. Vault errors', () => {
 
     await expect(app.page).toHaveURL(/\/unlock$/);
     await expectCriticalError(app.page, KEY_CHAIN_UNREADABLE_MESSAGE, 'E-207');
+  });
+
+  test('4.5 should ask for an update when the server rejects the client version on login', async ({ app, apiUrl, testUser }) => {
+    await sendUnsupportedClientVersion(app.page, apiUrl);
+
+    await app.page.goto('/user/login');
+    await app.submitLogin(testUser.username, testUser.password);
+
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
+
+    await expectClientUpdateRequest(app.page);
+  });
+
+  test('4.6 should ask for an update when the server rejects the client version on unlock', async ({ app, apiUrl, testUser }) => {
+    await app.login(testUser.username, testUser.password);
+    await sendUnsupportedClientVersion(app.page, apiUrl);
+
+    // Reloading locks the vault; the unlock page checks the server status first, which now rejects the client.
+    await app.page.reload();
+
+    await expect(app.page.locator('#critical-error')).toBeVisible();
+    await app.pause();
+
+    await expectClientUpdateRequest(app.page);
   });
 });

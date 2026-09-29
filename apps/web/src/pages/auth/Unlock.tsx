@@ -5,6 +5,7 @@ import { MasterPasswordService } from '@aliasvault/client/auth/MasterPasswordSer
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { logoutReasonKey } from '@aliasvault/client/sync/VaultSync';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -101,7 +102,8 @@ const Unlock: React.FC = () => {
         } else {
           const statusError = webApi.validateStatusResponse(status);
           if (statusError !== null) {
-            await auth.logout({ errorMessage: t('common.errors.' + statusError) });
+            await auth.logout({ errorMessage: t(logoutReasonKey(statusError)) });
+            navigate('/user/login', { replace: true });
             return;
           }
           await dbContext.setIsOffline(false);
@@ -109,6 +111,7 @@ const Unlock: React.FC = () => {
       } catch (err) {
         if (err instanceof ClientUpgradeRequiredError) {
           await auth.logout({ errorMessage: t('common.errors.clientNotSupported') });
+          navigate('/user/login', { replace: true });
           return;
         }
         setErrors([t('auth.unlockPage.connectionFailedError')]);
@@ -214,6 +217,7 @@ const Unlock: React.FC = () => {
       const message = await describeAuthError(err, { fallback: 'auth.loginForm.loginErrorMessage' });
       if (err instanceof ClientUpgradeRequiredError) {
         await auth.logout({ errorMessage: formatErrorMessage(message, t) });
+        navigate('/user/login', { replace: true });
       } else if (import.meta.env.DEV && err instanceof Error && message.key === 'auth.loginForm.loginErrorMessage') {
         setErrors([err.message]);
       } else {
@@ -247,7 +251,7 @@ const Unlock: React.FC = () => {
   const criticalError = errors.find(error => extractErrorCode(error) !== null);
   if (criticalError) {
     const logoutLink = <>{t('auth.switchAccounts')} <Link to="/user/logout" className="text-primary-700 hover:underline dark:text-primary-500">{t('web.topMenu.logOut')}</Link></>;
-    return <CriticalErrorPanel report={criticalError} onBack={() => setErrors([])} footer={logoutLink} />;
+    return <CriticalErrorPanel report={criticalError} onAction={() => setErrors([])} footer={logoutLink} />;
   }
 
   return (

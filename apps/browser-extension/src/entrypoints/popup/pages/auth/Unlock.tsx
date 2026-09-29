@@ -4,6 +4,7 @@ import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/A
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
+import { logoutReasonKey } from '@aliasvault/client/sync/VaultSync';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -109,7 +110,7 @@ const Unlock: React.FC = () => {
 
       const statusError = webApi.validateStatusResponse(statusResponse);
       if (statusError !== null) {
-        await app.logout(t('common.errors.' + statusError));
+        await app.logout(t(logoutReasonKey(statusError)));
         return { online: false, error: statusError };
       }
 

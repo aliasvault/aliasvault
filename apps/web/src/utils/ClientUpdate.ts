@@ -3,7 +3,7 @@ import i18n from '@/i18n/i18n';
 import type { TranslationKey } from '@aliasvault/i18n';
 
 /*
- * The messages that ask the user to update AliasVault, which triggers to show a reload page button.
+ * The messages that ask the user to update AliasVault, shown as a blocking page with an update button.
  */
 const CLIENT_UPDATE_KEYS: TranslationKey[] = ['common.errors.clientNotSupported', 'common.errors.clientOutdated'];
 
