@@ -51,7 +51,7 @@ COPY apps/server/ ./apps/server/
 
 WORKDIR /src/apps/server
 
-# Restore only the published projects explicitly (not the legacy Blazor WASM client)
+# Restore only the published projects explicitly (not the test projects)
 RUN for project in AliasVault.Api/AliasVault.Api.csproj AliasVault.Admin/AliasVault.Admin.csproj Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj; do \
         dotnet restore "$project" || exit 1; \
     done

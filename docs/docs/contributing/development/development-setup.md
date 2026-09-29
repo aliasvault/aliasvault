@@ -15,7 +15,7 @@ Note for Windows users: the AliasVault development tooling is built around Linux
 - **.NET 10 SDK**: https://dotnet.microsoft.com/download/dotnet/10.0
 - **Docker Desktop**
 - **`dotnet-ef`** tools, if you'll touch the database: `dotnet tool install --global dotnet-ef`
-- **Rust** The AliasVault apps depend on the Rust core, which needs to be compiled locally. Install [rustup](https://rustup.rs), then `rustup target add wasm32-unknown-unknown` and `cargo install wasm-pack`. Build the core with `./core/rust/build.sh --browser`.
+- **Rust** The AliasVault apps depend on the Rust core, which needs to be compiled locally. Install [rustup](https://rustup.rs), then `rustup target add wasm32-unknown-unknown` and `cargo install wasm-pack`. Build the core with `./core/rust/build.sh --web`.
 
 ## Running the apps
 
@@ -27,7 +27,7 @@ a terminal per app (or the VS Code tasks, which fan out one call per app):
 ```bash
 ./scripts/dev.sh db-start   # start the dev database first (db-stop to stop it)
 ./scripts/dev.sh api        # the API
-./scripts/dev.sh client     # the Blazor client (writes its dev appsettings for you)
+./scripts/dev.sh web        # the web app (writes its dev appsettings for you)
 ./scripts/dev.sh admin      # the admin web app
 ./scripts/dev.sh            # no argument → interactive menu
 ./scripts/dev.sh ports      # print the resolved port map (defaults: API 5100, db 5109)
@@ -38,31 +38,28 @@ shows which ports it expects.
 
 ### Tailwind CSS
 
-The Admin and Client projects compile their CSS with Tailwind:
+The Admin project compiles its CSS with Tailwind:
 
 ```bash
-cd apps/server/AliasVault.Admin  && npm run build:admin-css
-cd apps/server/AliasVault.Client && npm run build:client-css
+cd apps/server/AliasVault.Admin && npm run build:admin-css
 ```
 
-### Dev client settings
+### Web app settings
 
-`./scripts/dev.sh client` generates `wwwroot/appsettings.Development.json` with the
-correct `ApiUrl` for your ports automatically. Only create it manually if you run
-the client some other way:
-
-```json
-{
-    "ApiUrl": "http://localhost:5100",
-    "PrivateEmailDomains": ["example.tld"],
-    "SupportEmail": "support@example.tld",
-    "UseDebugEncryptionKey": "true",
-    "CryptographyOverrideType": "Argon2Id",
-    "CryptographyOverrideSettings": "{\"DegreeOfParallelism\":1,\"MemorySize\":1024,\"Iterations\":1}"
-}
-```
+`./scripts/dev.sh web` generates `apps/web/public/appsettings.Development.json` with the
+correct `ApiUrl` for your ports automatically, and starts the Vite dev server.
 
 ### E2E tests (Playwright)
+
+The web app and the browser extension have their own Playwright suites, which run against a running Debug API
+(`./scripts/dev.sh api`):
+
+```bash
+cd apps/web && npm run test:e2e
+cd apps/browser-extension && npm run test:e2e:build
+```
+
+The Admin app is tested by the .NET E2E project:
 
 ```bash
 dotnet tool install --global Microsoft.Playwright.CLI
