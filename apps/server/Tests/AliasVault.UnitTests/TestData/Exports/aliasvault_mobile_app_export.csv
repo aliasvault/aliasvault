@@ -1,4 +1,0 @@
-ServiceName,FolderPath,ServiceUrl,Username,CurrentPassword,AliasEmail,TwoFactorSecret,AliasGender,AliasFirstName,AliasLastName,AliasNickName,AliasBirthDate,Notes,CreatedAt,UpdatedAt
-credential3,,,username3,,,test,,,,,,without password,09/12/2025 17:28:39,09/12/2025 17:28:39
-service2,,https://service2.com,username2,password2,service2@example.tld,,gender2,firstname2,lastname2,nickname2,,,09/12/2025 17:28:39,09/12/2025 17:28:39
-service1,,,username1,password1,email1@example.tld,,gender1,firstname1,lastname1,nickname1,01/01/1970 00:00:00,notes1,09/12/2025 17:28:39,09/12/2025 17:28:39
