@@ -33,6 +33,9 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({ attachments, on
         if (file.size > MAX_FILE_SIZE) {
           throw new Error(t('importExport.serviceCard.importErrorFileTooLarge', { size: MAX_FILE_SIZE / 1024 / 1024 }));
         }
+        if (file.size === 0) {
+          throw new Error(t('attachmentUploader.fileEmpty', { filename: file.name }));
+        }
         const now = new Date().toISOString();
         const attachment: Attachment = { Id: crypto.randomUUID(), Filename: file.name, Blob: new Uint8Array(await file.arrayBuffer()), ItemId: '', CreatedAt: now, UpdatedAt: now };
         current = [...current, attachment];

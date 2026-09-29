@@ -98,14 +98,12 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
           notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${await response.text()}`, true);
           return;
         }
-        onEmailDeleted(email.id);
-        notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
-        onClose();
       } else {
         await webApi.delete(`Email/${email.id}`);
-        onEmailDeleted(email.id);
-        notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
       }
+      onEmailDeleted(email.id);
+      notifications.addSuccessMessage(t('emails.modal.emailDeletedSuccess'), true);
+      onClose();
     } catch (error) {
       notifications.addErrorMessage(`${t('emails.modal.emailDeleteFailed')}: ${error instanceof Error ? error.message : String(error)}`, true);
     }
