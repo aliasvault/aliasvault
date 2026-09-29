@@ -95,8 +95,7 @@
       "httpError": "HTTP 错误：{{status}}",
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
       "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的 SSL 证书。出于安全考虑，移动设备不支持自签名证书。",
-      "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。",
-      "sessionExpired": "您的会话已过期，请重新登录。"
+      "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。"
     },
     "forgotPassword": {
       "contactAdministrator": "如果您最近更改了密码且使用新密码登录遇到困难，请注意服务器管理员可能能够恢复您密码库的早期备份来帮助您。若情况如此，请联系服务器管理员。",
@@ -192,10 +191,8 @@
     "unlockPage": {
       "connectionFailedError": "与 AliasVault 服务器的连接失败。请（稍后）再试一次。",
       "enterMasterPasswordDescription": "输入您的主密码以解锁密码库。",
-      "incorrectPasswordError": "密码不正确。请尝试重新输入密码，或退出登录后重新登录。",
       "loggingInWithWebAuthn": "正在使用通行密钥登录…",
       "quickUnlockDescription": "使用通行密钥快速解锁您的密码库。或者使用密码作为备用方式登录。",
-      "sessionTimedOutError": "您的会话已超时。请重新登录。",
       "unlockButton": "解锁",
       "unlockWithMobileButton": "使用移动应用解锁",
       "unlockWithWebAuthn": "使用通行密钥解锁",
@@ -225,7 +222,6 @@
     "back": "返回",
     "backspace": "Backspace",
     "cancel": "取消",
-    "clientVersionUnsupported": "此版本的应用已不再受服务器支持。请刷新页面以加载最新版本。",
     "clipboardCountdown": {
       "clearClipboardButton": "清除剪贴板"
     },
@@ -259,8 +255,8 @@
     "errorPasswordMismatch": "密码不匹配。",
     "errors": {
       "backgroundUnresponsive": "扩展的后台服务未响应。请关闭并重新打开该扩展；如果问题仍然存在，请重启浏览器。",
-      "browserExtensionOutdated": "此浏览器扩展已过时，无法用于访问此密码库。请更新此浏览器扩展以继续。",
-      "clientVersionNotSupported": "此版本的 AliasVault 浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "请通过 {{email}} 联系支持人员。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
       "keyChainUnreadable": "您的密码正确，但无法打开您的密码库加密密钥。请联系支持人员。",
@@ -270,13 +266,13 @@
       "passwordChanged": "您的密码已更改过，出于安全考虑，请重新登录。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "serverNotAvailable": "AliasVault 服务器不可用。请稍后重试，若问题持续请联系支持人员。",
-      "serverVersionNotSupported": "AliasVault 服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
-      "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
       "unexpectedErrorContactSupport": "发生意外错误。请重试，如果问题仍然存在，请联系支持人员。",
       "unknownError": "发生未知错误。",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "您的密码库数据无法读取，因此您目前无法访问这些数据。请联系支持人员。",
       "vaultIsLocked": "密码库已锁定",
       "vaultLoadError": "加载您的密码库时出现错误。请复制以下错误详情并联系支持人员寻求帮助。",
@@ -342,6 +338,7 @@
     "twoFactorAuthentication": "两步验证",
     "unavailable": "不可用",
     "undo": "撤销",
+    "updateApp": "Update app",
     "use": "使用",
     "username": "用户名",
     "vaultSaveError": "无法保存对密码库的更改，请重试。",
@@ -1049,8 +1046,6 @@
     "selectTextToInsertMessage": "选择要插入到聚焦输入字段的文本",
     "serverUnavailableMessage": "服务器目前不可用，请稍后重试。",
     "serverUnavailableTitle": "服务器不可用",
-    "serverVersionNotSupportedContactAdmin": "服务器版本过旧，请联系您的管理员更新服务器。",
-    "serverVersionNotSupportedMessage": "服务器版本过旧，请将服务器更新至最新版本。",
     "serverVersionNotSupportedTitle": "服务器需要更新",
     "sessionExpiredMessage": "您的会话已过期，请重新登录。",
     "sessionExpiredTitle": "会话已过期",
@@ -1059,7 +1054,6 @@
     "untitledCredential": "此凭据",
     "usernameCopied": "用户名已复制",
     "usernamePrefix": "用户名：",
-    "versionNotSupportedMessage": "您的应用版本已停止支持，请更新至最新版本。",
     "versionNotSupportedTitle": "需要更新",
     "viewDetails": "查看详情",
     "website": "网站"
@@ -1634,13 +1628,9 @@
     "checkingForVaultUpdates": "检查密码库更新中",
     "checkingVaultUpdates": "检查密码库更新",
     "errors": {
-      "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
       "failedToGetEncryptedDatabase": "获取加密数据库失败",
       "passwordChangeRequiresOnline": "更改密码需要联网，请联网后重试。",
-      "serverVersionNotSupported": "AliasVault 服务器需要更新到更高版本才能使用此移动应用。如需帮助，请联系支持人员。",
-      "usernameNotFound": "未找到用户名",
-      "vaultOutdated": "您的密码库版本过低，请登录 AliasVault 网站并按照步骤操作。",
-      "versionNotSupported": "此版本的 AliasVault 移动应用已不再被服务器支持。请将应用更新至最新版本。"
+      "usernameNotFound": "未找到用户名"
     },
     "mergingVault": "正在合并密码库更改...",
     "savingChangesToVault": "正在保存对密码库的更改",
