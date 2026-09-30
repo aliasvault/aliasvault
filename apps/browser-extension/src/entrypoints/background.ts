@@ -330,6 +330,7 @@ export default defineBackground({
 
     // Remember login save state (for surviving page navigation)
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
+    onMessage('GET_SAVE_PROMPT_STATE', ({ data, sender }) => handleGetSavePromptState({ tabId: sender.tab!.id!, ...data }));
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
 
     // Track last autofilled credential (for "Add URL to existing credential" prompt)

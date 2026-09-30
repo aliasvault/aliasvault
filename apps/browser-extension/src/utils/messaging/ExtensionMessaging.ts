@@ -79,7 +79,7 @@ export interface IExtensionMessageProtocol {
   GET_MATCHING_PASSKEYS(data: { rpId: string; allowCredentialIds?: string[] }): MatchingPasskeysResponse;
   GET_PERSISTED_FORM_VALUES(): any | null;
   GET_REQUEST_DATA(data: any): PendingPasskeyRequest | null;
-  GET_SAVE_PROMPT_STATE(): { success: boolean; state: SavePromptPersistedState | null };
+  GET_SAVE_PROMPT_STATE(data: { currentDomain: string }): { success: boolean; state: SavePromptPersistedState | null };
   GET_SEARCH_ITEMS(data: { searchTerm: string }): ItemsResponse;
   GET_SYNC_STATE(): VaultSyncState;
   GET_TOTP_SECRETS(data: { items: ItemRef[] }): { success: boolean; secrets?: Record<string, TotpSecret>; error?: string };
