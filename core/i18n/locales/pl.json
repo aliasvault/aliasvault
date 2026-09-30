@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.",
     "REFRESH_TOKEN_REQUIRED": "Wymagany jest token odświeżania.",
     "REGISTRATION_FAILED": "Nie można utworzyć konta. Spróbuj ponownie za kilka minut. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.",
+    "UNKNOWN_ERROR": "Wystąpił nieznany błąd. Spróbuj ponownie.",
     "USERNAME_ALREADY_IN_USE": "Nazwa użytkownika jest już używana.",
     "USERNAME_AVAILABLE": "Nazwa użytkownika jest dostępna.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nazwa użytkownika nie może być pusta ani zawierać spacji.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Element został pomyślnie usunięty.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Aby przesłać pliki, użyj rozszerzonego okna.",
     "openExpandedWindow": "Otwórz rozszerzone okno",
     "uploadError": "Error uploading file: {{error}}",
