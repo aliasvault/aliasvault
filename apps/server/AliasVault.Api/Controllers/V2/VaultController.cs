@@ -17,7 +17,6 @@ using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Vault;
-using AliasVault.Shared.Providers.Time;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +38,7 @@ public class VaultController(
     ILogger<VaultController> logger,
     IAliasServerDbContextFactory dbContextFactory,
     UserManager<AliasVaultUser> userManager,
-    ITimeProvider timeProvider,
+    TimeProvider timeProvider,
     Config config,
     RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
@@ -469,7 +468,7 @@ public class VaultController(
                 row.CredentialsCount = mw.CredentialsCount;
                 row.Client = ClientHeader;
                 row.UpdatedByUserId = user.Id;
-                row.UpdatedAt = timeProvider.UtcNow;
+                row.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
                 // Every manifest counts the aliases the push filed against it, shared manifests included. One
                 // address may be pushed for several manifests at once, so count distinct addresses per manifest.
@@ -480,7 +479,7 @@ public class VaultController(
 
                 if (row.OwnerGroupId == user.PersonalGroupId)
                 {
-                    row.CreatedAt = timeProvider.UtcNow;
+                    row.CreatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
                     // Create the account-key hierarchy atomically with this write on the migration (first push after
                     // the client re-encrypted the vault under a fresh VEK).
@@ -500,8 +499,8 @@ public class VaultController(
                                 EncryptionType = row.EncryptionType,
                                 EncryptionSettings = row.EncryptionSettings,
                             }.ToJson(),
-                            CreatedAt = timeProvider.UtcNow,
-                            UpdatedAt = timeProvider.UtcNow,
+                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                         });
 
                         context.UserGrantKeys.Add(new UserGrantKey
@@ -512,8 +511,8 @@ public class VaultController(
                             PublicKey = accountKeys.AccountPublicKey!,
                             EncryptedPrivateKey = accountKeys.EncryptedAccountPrivateKey!,
                             IsPrimary = true,
-                            CreatedAt = timeProvider.UtcNow,
-                            UpdatedAt = timeProvider.UtcNow,
+                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                         });
 
                         context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
@@ -525,8 +524,8 @@ public class VaultController(
                             Algorithm = VaultKeyAlgorithm.Aes256Gcm,
                             EncryptedVek = accountKeys.EncryptedVek!,
                             AccountKeyVersion = 0,
-                            CreatedAt = timeProvider.UtcNow,
-                            UpdatedAt = timeProvider.UtcNow,
+                            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                         });
 
                         row.Salt = null;
@@ -849,7 +848,7 @@ public class VaultController(
     /// <returns>The new revision number.</returns>
     private async Task<long> UpsertBucketAsync(AliasServerDbContext context, Guid manifestId, VaultDataBucketCategory kind, byte[] encryptedData, string? ciphertextHash, long? currentRevision, VaultDataBucket? existing)
     {
-        var now = timeProvider.UtcNow;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
         if (existing is null)
         {
@@ -893,7 +892,7 @@ public class VaultController(
         var history = await context.VaultDataBucketsHistory.Where(x => x.ManifestId == manifestId && x.Category == kind && x.RevisionNumber != justArchived.RevisionNumber).ToListAsync();
         history.Add(justArchived);
 
-        var toDelete = VaultRetentionManager.ApplyRetention(_bucketRetentionPolicy, history, timeProvider.UtcNow);
+        var toDelete = VaultRetentionManager.ApplyRetention(_bucketRetentionPolicy, history, timeProvider.GetUtcNow().UtcDateTime);
         if (toDelete.Count > 0)
         {
             context.VaultDataBucketsHistory.RemoveRange(toDelete);
@@ -912,7 +911,7 @@ public class VaultController(
     /// <returns>True when every payload is structurally valid; false when any is malformed (caller should 400).</returns>
     private async Task<bool> TryUpsertBlobObjectsAsync(AliasServerDbContext context, Guid manifestId, List<Blob> blobs, bool overwrite = false)
     {
-        var nowUtc = timeProvider.UtcNow;
+        var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
         var hashes = blobs.Select(b => b.Hash).Distinct().ToList();
         var existing = await context.VaultBlobObjects
             .Where(b => b.ManifestId == manifestId && hashes.Contains(b.Hash))
@@ -1022,7 +1021,7 @@ public class VaultController(
             historyRevisions.Add(justArchived);
         }
 
-        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_manifestRetentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
+        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_manifestRetentionPolicy, historyRevisions, timeProvider.GetUtcNow().UtcDateTime, currentManifest);
         context.VaultManifestsHistory.RemoveRange(revisionsToDelete);
 
         // Blob references of pruned revisions are deleted explicitly (they only cascade with the whole manifest).
@@ -1202,7 +1201,7 @@ public class VaultController(
 
                 if (changed)
                 {
-                    existing.UpdatedAt = timeProvider.UtcNow;
+                    existing.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
                 }
 
                 continue;
@@ -1235,8 +1234,8 @@ public class VaultController(
                 Address = sanitized,
                 AddressLocal = sanitized.Split('@')[0],
                 AddressDomain = sanitized.Split('@')[1],
-                CreatedAt = timeProvider.UtcNow,
-                UpdatedAt = timeProvider.UtcNow,
+                CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
             });
         }
 
@@ -1256,7 +1255,7 @@ public class VaultController(
                 link.State = EmailClaimLinkState.Removed;
             }
 
-            claim.UpdatedAt = timeProvider.UtcNow;
+            claim.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
     }
 
@@ -1293,7 +1292,7 @@ public class VaultController(
                 else
                 {
                     // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
-                    var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                    var windowStart = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-limit.WindowSeconds);
                     currentCount = await context.EmailClaimLinks.Where(l => l.EmailClaim.CreatedAt >= windowStart && l.VaultManifest.OwnerGroupId == groupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
                 }
 
@@ -1331,14 +1330,14 @@ public class VaultController(
         foreach (var key in others)
         {
             key.IsPrimary = false;
-            key.UpdatedAt = timeProvider.UtcNow;
+            key.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
 
         var existingKey = others.FirstOrDefault(x => x.PublicKey == newPublicKey);
         if (existingKey != null)
         {
             existingKey.IsPrimary = true;
-            existingKey.UpdatedAt = timeProvider.UtcNow;
+            existingKey.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
             return;
         }
 
@@ -1348,8 +1347,8 @@ public class VaultController(
             Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
             PublicKey = newPublicKey,
             IsPrimary = true,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
         });
     }
 }

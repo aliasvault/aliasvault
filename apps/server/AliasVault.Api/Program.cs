@@ -19,7 +19,6 @@ using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
 using AliasVault.Logging;
 using AliasVault.Shared.Models.Configuration;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
@@ -80,7 +79,7 @@ builder.Services.ConfigureLogging(builder.Configuration, Assembly.GetExecutingAs
 
 builder.Services.AddAliasVaultDatabaseConfiguration(builder.Configuration);
 builder.Services.AddAliasVaultDataProtection("AliasVault.Api");
-builder.Services.AddSingleton<ITimeProvider, SystemTimeProvider>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<TimeValidationJwtBearerEvents>();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();

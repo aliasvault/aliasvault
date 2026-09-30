@@ -22,7 +22,6 @@ using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V1.Auth;
 using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
@@ -41,7 +40,7 @@ using SecureRemotePassword;
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="configuration">IConfiguration instance.</param>
 /// <param name="cache">IMemoryCache instance for persisting SRP values during multistep login process.</param>
-/// <param name="timeProvider">ITimeProvider instance. This returns the time which can be mutated for testing.</param>
+/// <param name="timeProvider">TimeProvider instance.</param>
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="settingsService">ServerSettingsService instance.</param>
@@ -49,7 +48,7 @@ using SecureRemotePassword;
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("1")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService) : ControllerBase
 {
     /// <summary>
     /// Access token validity in minutes.
@@ -851,7 +850,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             issuer: configuration["Jwt:Issuer"] ?? string.Empty,
             audience: configuration["Jwt:Issuer"] ?? string.Empty,
             claims: claims,
-            expires: timeProvider.UtcNow.AddSeconds(AccessTokenValiditySeconds),
+            expires: timeProvider.GetUtcNow().UtcDateTime.AddSeconds(AccessTokenValiditySeconds),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -901,7 +900,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Token reuse window:
             // Check if a new refresh token was already generated for the current token in the last 30 seconds.
             // If yes, then return the already generated new token. This is to prevent client-side race conditions.
-            var existingTokenReuseWindow = timeProvider.UtcNow.AddSeconds(-30);
+            var existingTokenReuseWindow = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-30);
             var existingTokenReuse = await context.AliasVaultUserRefreshTokens
                 .FirstOrDefaultAsync(t => t.UserId == user.Id &&
                                             t.PreviousTokenValue == existingTokenValue &&
@@ -917,7 +916,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
             // Check if the refresh token still exists and is not expired.
             var existingToken = await context.AliasVaultUserRefreshTokens.FirstOrDefaultAsync(t => t.UserId == user.Id && t.Value == existingTokenValue);
-            if (existingToken == null || existingToken.ExpireDate < timeProvider.UtcNow)
+            if (existingToken == null || existingToken.ExpireDate < timeProvider.GetUtcNow().UtcDateTime)
             {
                 return null;
             }
@@ -967,8 +966,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             IpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
             Value = refreshToken,
             PreviousTokenValue = existingTokenValue,
-            ExpireDate = timeProvider.UtcNow.Add(newTokenLifetime),
-            CreatedAt = timeProvider.UtcNow,
+            ExpireDate = timeProvider.GetUtcNow().UtcDateTime.Add(newTokenLifetime),
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
         });
 
         await context.SaveChangesAsync();

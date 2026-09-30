@@ -8,7 +8,6 @@
 namespace AliasClientDb;
 
 using System.Globalization;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
@@ -22,16 +21,6 @@ public class AliasClientDbContext : DbContext
     /// Initializes a new instance of the <see cref="AliasClientDbContext"/> class.
     /// </summary>
     public AliasClientDbContext()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AliasClientDbContext"/> class.
-    /// </summary>
-    /// <param name="sqliteConnection">The SQLite connection to use to connect to the SQLite database.</param>
-    /// <param name="logAction">The action to perform for logging.</param>
-    public AliasClientDbContext(SqliteConnection sqliteConnection, Action<string> logAction)
-        : base(GetOptions(sqliteConnection, logAction))
     {
     }
 
@@ -350,30 +339,13 @@ public class AliasClientDbContext : DbContext
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            optionsBuilder
-                .UseSqlite(configuration.GetConnectionString("AliasClientDbContext"))
-                .UseLazyLoadingProxies();
+            optionsBuilder.UseSqlite(configuration.GetConnectionString("AliasClientDbContext"));
 
             // Log queries made as debug output.
             optionsBuilder.LogTo(Console.WriteLine);
         }
 
         base.OnConfiguring(optionsBuilder);
-    }
-
-    /// <summary>
-    /// Gets the options for the AliasClientDbContext.
-    /// </summary>
-    /// <param name="connection">The SQLite connection to use to connect to the SQLite database.</param>
-    /// <param name="logAction">The action to perform for logging.</param>
-    /// <returns>The options for the AliasClientDbContext.</returns>
-    private static DbContextOptions<AliasClientDbContext> GetOptions(SqliteConnection connection, Action<string> logAction)
-    {
-        var optionsBuilder = new DbContextOptionsBuilder<AliasClientDbContext>();
-        optionsBuilder.UseSqlite(connection);
-        optionsBuilder.LogTo(logAction, new[] { DbLoggerCategory.Database.Command.Name });
-
-        return optionsBuilder.Options;
     }
 
     /// <summary>

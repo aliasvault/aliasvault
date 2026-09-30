@@ -9,7 +9,6 @@ namespace AliasVault.Api.Services;
 
 using AliasServerDb;
 using AliasVault.Api.Headers;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Capabilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -19,8 +18,8 @@ using Microsoft.Extensions.Caching.Memory;
 /// </summary>
 /// <param name="dbContextFactory">IDbContextFactory instance.</param>
 /// <param name="cache">IMemoryCache instance used to cache the enabled rules.</param>
-/// <param name="timeProvider">ITimeProvider instance.</param>
-public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IMemoryCache cache, ITimeProvider timeProvider)
+/// <param name="timeProvider">TimeProvider instance.</param>
+public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IMemoryCache cache, TimeProvider timeProvider)
 {
     private const int CacheDurationSeconds = 60;
 
@@ -36,7 +35,7 @@ public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IM
     {
         var rules = await GetEnabledRulesAsync();
         var subject = await BuildSubjectAsync(userId, clientHeader, rules);
-        var resolved = CapabilityResolver.ResolveAll(rules, subject, timeProvider.UtcNow);
+        var resolved = CapabilityResolver.ResolveAll(rules, subject, timeProvider.GetUtcNow().UtcDateTime);
 
         /*
          * Filter on the off value itself rather than on IsEnabled: values are strings so one can carry a cap or a
@@ -57,7 +56,7 @@ public class CapabilityService(IAliasServerDbContextFactory dbContextFactory, IM
     {
         var rules = await GetEnabledRulesAsync();
         var subject = await BuildSubjectAsync(userId, clientHeader, rules);
-        return CapabilityValue.IsEnabled(CapabilityResolver.Resolve(rules, subject, capabilityKey, timeProvider.UtcNow));
+        return CapabilityValue.IsEnabled(CapabilityResolver.Resolve(rules, subject, capabilityKey, timeProvider.GetUtcNow().UtcDateTime));
     }
 
     /// <summary>
