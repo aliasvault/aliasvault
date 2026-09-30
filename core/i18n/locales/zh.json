@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "此服务器目前已禁用新账户注册，请联系管理员。",
     "REFRESH_TOKEN_REQUIRED": "刷新令牌为必填项。",
     "REGISTRATION_FAILED": "无法创建账户，请稍后再试。如果问题仍然存在，请联系支持人员。",
+    "UNKNOWN_ERROR": "发生未知错误，请重试。",
     "USERNAME_ALREADY_IN_USE": "用户名已被使用。",
     "USERNAME_AVAILABLE": "用户名可用。",
     "USERNAME_EMPTY_OR_WHITESPACE": "用户名不能为空或仅含空格。",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "附件删除成功。",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "要上传文件，请使用展开的窗口。",
     "openExpandedWindow": "打开展开的窗口",
     "uploadError": "文件上传出错：{{error}}",
