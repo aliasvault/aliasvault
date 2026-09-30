@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "רישום חשבון חדש מושבת כרגע בשרת הזה. נא ליצור קשר עם ההנהלה.",
     "REFRESH_TOKEN_REQUIRED": "אסימון ריענון חובה.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
     "USERNAME_ALREADY_IN_USE": "שם המשתמש תפוס.",
     "USERNAME_AVAILABLE": "שם המשתמש פנוי.",
     "USERNAME_EMPTY_OR_WHITESPACE": "שם המשתמש לא יכול להיות ריק או מורכב מרווחים בלבד.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
