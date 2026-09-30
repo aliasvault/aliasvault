@@ -23,17 +23,38 @@ public static class Defaults
     public static int Argon2IdDegreeOfParallelism { get; } = 1;
 
     /// <summary>
-    /// Gets the default memory size for Argon2id (in KB).
+    /// Gets the default memory size for Argon2id (in KiB).
     /// </summary>
-    public static int Argon2IdMemorySize { get; } = 19456;
+    public static int Argon2IdMemorySize { get; } = 65536;
 
     /// <summary>
     /// Gets the default number of iterations for Argon2id.
     /// </summary>
-    public static int Argon2IdIterations { get; } = 2;
+    public static int Argon2IdIterations { get; } = 5;
 
     /// <summary>
     /// Gets the default encryption settings.
     /// </summary>
     public static string EncryptionSettings { get; } = $"{{\"DegreeOfParallelism\":{Argon2IdDegreeOfParallelism},\"MemorySize\":{Argon2IdMemorySize},\"Iterations\":{Argon2IdIterations}}}";
+
+    /*
+     * The lowest Argon2id parameters the server accepts for a new KEK: the pre-0.31.0 defaults, so clients built before
+     * the defaults were raised can still register and change passwords for one more release with the old parameters.
+     * TODO: remove in 0.32.0+ and enforce the current defaults (Argon2Id* above) as the minimum instead.
+     */
+
+    /// <summary>
+    /// Gets the minimum accepted degree of parallelism for Argon2id.
+    /// </summary>
+    public static int MinimumArgon2IdDegreeOfParallelism { get; } = 1;
+
+    /// <summary>
+    /// Gets the minimum accepted memory size for Argon2id (in KiB).
+    /// </summary>
+    public static int MinimumArgon2IdMemorySize { get; } = 19456;
+
+    /// <summary>
+    /// Gets the minimum accepted number of iterations for Argon2id.
+    /// </summary>
+    public static int MinimumArgon2IdIterations { get; } = 2;
 }

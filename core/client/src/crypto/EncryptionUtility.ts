@@ -38,7 +38,7 @@ export class EncryptionUtility {
   public static async deriveKeyFromPassword(
     password: string,
     salt: string,
-    encryptionSettings: string = '{"Iterations":2,"MemorySize":19456,"DegreeOfParallelism":1}'
+    encryptionSettings: string
   ): Promise<Uint8Array> {
     try {
       return await argon2DeriveKey(password, salt, encryptionSettings);

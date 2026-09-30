@@ -8,8 +8,10 @@ import { AvexConstants } from './AvexConstants';
 
 import type { AvexHeader } from './AvexHeader';
 
-/** The Argon2id parameters a new export is encrypted with: the vault key derivation defaults. */
-const ARGON2_KDF_PARAMS: Record<string, number> = JSON.parse(DEFAULT_ENCRYPTION.settings);
+/**
+ * The Argon2id parameters a new export is encrypted with.
+ */
+const ARGON2_KDF_PARAMS = { DegreeOfParallelism: 1, MemorySize: 262144, Iterations: 3 };
 
 /**
  * Writes the .avex encrypted vault export format: a JSON header, a PEM-style delimiter and the encrypted .avux payload
@@ -24,10 +26,10 @@ export class AvexExportService {
    * @returns The .avex file bytes
    */
   public static async encryptToAvex(avuxBytes: Uint8Array, exportPassword: string, username: string): Promise<Uint8Array> {
-    // 1. A random salt and a key derived from it with Argon2id, as for the vault encryption.
+    // 1. A random salt and a key derived from it with Argon2id.
     const salt = crypto.getRandomValues(new Uint8Array(32));
     const saltBase64 = bytesToBase64(salt);
-    const key = await argon2DeriveKey(exportPassword, saltBase64, DEFAULT_ENCRYPTION.settings);
+    const key = await argon2DeriveKey(exportPassword, saltBase64, JSON.stringify(ARGON2_KDF_PARAMS));
 
     // 2. AES-256-GCM over the .avux bytes.
     const encryptedPayload = base64ToBytes(await EncryptionUtility.symmetricEncryptBytes(avuxBytes, bytesToBase64(key)));

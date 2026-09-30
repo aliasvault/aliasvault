@@ -6,15 +6,6 @@ use thiserror::Error;
 /// Length of every derived key in bytes; the vault format assumes a 256-bit key throughout.
 const ARGON2_OUTPUT_LENGTH: usize = 32;
 
-/// Default memory cost in KiB, used when the settings do not state one.
-const ARGON2_DEFAULT_MEMORY_KIB: u32 = 19456;
-
-/// Default number of passes, used when the settings do not state one.
-const ARGON2_DEFAULT_ITERATIONS: u32 = 2;
-
-/// Default number of lanes, used when the settings do not state one.
-const ARGON2_DEFAULT_PARALLELISM: u32 = 1;
-
 /// Argon2-related errors.
 #[derive(Error, Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
@@ -42,32 +33,13 @@ pub struct Argon2Params {
     pub parallelism: u32,
 }
 
-impl Default for Argon2Params {
-    fn default() -> Self {
-        Self {
-            memory_kib: ARGON2_DEFAULT_MEMORY_KIB,
-            iterations: ARGON2_DEFAULT_ITERATIONS,
-            parallelism: ARGON2_DEFAULT_PARALLELISM,
-        }
-    }
-}
-
 impl Argon2Params {
     /// The cost parameters from the server's `EncryptionSettings` JSON
-    /// (`{"DegreeOfParallelism":1,"MemorySize":19456,"Iterations":2}`); a missing field, or an empty string, means the default.
+    /// (`{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":5}`); every field is required.
     pub fn from_settings_json(settings_json: &str) -> Result<Self, Argon2Error> {
-        let defaults = Self::default();
-        if settings_json.trim().is_empty() {
-            return Ok(defaults);
-        }
-
         let parsed: EncryptionSettingsJson = serde_json::from_str(settings_json).map_err(|e| Argon2Error::InvalidSettings(e.to_string()))?;
 
-        Ok(Self {
-            memory_kib: parsed.memory_size.unwrap_or(defaults.memory_kib),
-            iterations: parsed.iterations.unwrap_or(defaults.iterations),
-            parallelism: parsed.degree_of_parallelism.unwrap_or(defaults.parallelism),
-        })
+        Ok(Self { memory_kib: parsed.memory_size, iterations: parsed.iterations, parallelism: parsed.degree_of_parallelism })
     }
 }
 
@@ -75,13 +47,13 @@ impl Argon2Params {
 #[derive(Deserialize)]
 struct EncryptionSettingsJson {
     #[serde(rename = "MemorySize")]
-    memory_size: Option<u32>,
+    memory_size: u32,
 
     #[serde(rename = "Iterations")]
-    iterations: Option<u32>,
+    iterations: u32,
 
     #[serde(rename = "DegreeOfParallelism")]
-    degree_of_parallelism: Option<u32>,
+    degree_of_parallelism: u32,
 }
 
 /// Derive a 32-byte key from a password with Argon2id under explicit cost parameters; the salt is at least 8 bytes.
@@ -102,7 +74,7 @@ pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> 
 }
 
 /// Derive a 32-byte key from a password and salt (hashed as their UTF-8 bytes) under the cost parameters in
-/// `settings_json`, or the defaults for an empty string.
+/// `settings_json`.
 pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
     argon2_derive_key_bytes_from_settings(password.as_bytes(), salt.as_bytes(), settings_json)
 }
@@ -112,4 +84,37 @@ pub fn argon2_derive_key_from_settings(password: &str, salt: &str, settings_json
 pub fn argon2_derive_key_bytes_from_settings(password: &[u8], salt: &[u8], settings_json: &str) -> Result<Vec<u8>, Argon2Error> {
     let params = Argon2Params::from_settings_json(settings_json)?;
     argon2_derive_key(password, salt, params)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::encoding::base64_encode;
+
+    #[test]
+    fn parses_complete_settings() {
+        let params = Argon2Params::from_settings_json(r#"{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":5}"#).unwrap();
+        assert_eq!(params, Argon2Params { memory_kib: 65536, iterations: 5, parallelism: 1 });
+    }
+
+    #[test]
+    fn rejects_incomplete_or_empty_settings() {
+        for settings in ["", "{}", r#"{"MemorySize":65536,"Iterations":5}"#] {
+            assert!(matches!(Argon2Params::from_settings_json(settings), Err(Argon2Error::InvalidSettings(_))), "accepted {settings:?}");
+        }
+    }
+
+    #[test]
+    fn matches_the_reference_implementation() {
+        // Expected keys come from libargon2 (argon2-cffi), for the pre-0.31.0 and the current default settings. A
+        // different output means existing accounts can no longer derive their key.
+        let cases = [
+            (r#"{"DegreeOfParallelism":1,"MemorySize":19456,"Iterations":2}"#, "l12OncuAll3SmDPkfv2sHtxaoEVsCXfuFulTShtBfxA="),
+            (r#"{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":5}"#, "j7bnKpt3W46ak6Qid2JENR7NxznhfgRNDWAImnpAc40="),
+        ];
+        for (settings, expected) in cases {
+            let key = argon2_derive_key_from_settings("password", "user@example.tld", settings).unwrap();
+            assert_eq!(base64_encode(&key), expected, "settings {settings}");
+        }
+    }
 }

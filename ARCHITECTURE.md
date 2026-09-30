@@ -34,10 +34,13 @@ To derive a key from the master password, AliasVault uses the Argon2id key deriv
 key derivation function which allows for controlling the execution time, memory required and degree of parallelism.
 This makes it resilient against brute-force attacks and makes it one of the best choices for deriving keys from passwords.
 
-AliasVault uses Argon2id with the following default parameters:
+AliasVault uses Argon2id with the following default parameters for new accounts and password changes:
 - Degree of parallelism: 1
-- Memory size: 19456 KB
-- Iterations: 2
+- Memory size: 65536 KiB (64 MiB)
+- Iterations: 5
+
+This is well above the [OWASP minimum](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+(19 MiB, 2 iterations) and above the 64 MiB, 3 iterations of [RFC 9106](https://www.rfc-editor.org/rfc/rfc9106.html#section-4).
 
 More information about Argon2id can be found on the [Argon2](https://en.wikipedia.org/wiki/Argon2) Wikipedia page.
 

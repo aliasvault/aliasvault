@@ -15,7 +15,6 @@ using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
 using AliasVault.Auth;
-using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
@@ -288,8 +287,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.FileSize = FileHelper.Base64StringToKilobytes(model.Blob);
         currentManifest.Salt = model.NewPasswordSalt;
         currentManifest.Verifier = model.NewPasswordVerifier;
-        currentManifest.EncryptionType = Defaults.EncryptionType;
-        currentManifest.EncryptionSettings = Defaults.EncryptionSettings;
         currentManifest.Client = ClientHeader;
         currentManifest.UpdatedByUserId = user.Id;
         currentManifest.CreatedAt = timeProvider.GetUtcNow().UtcDateTime;

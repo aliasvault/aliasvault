@@ -32,6 +32,8 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
 ### 1. Key Derivation
 - When a user enters their master password, it remains strictly on the client device
 - The master password is processed through Argon2id (a memory-hard key derivation function) locally
+    - Argon2id parameters used for main vault KEK: 64 MiB memory, 5 iterations, parallelism 1
+    - Argon2id parameters used for encrypted vault exports (`.avex`): 256 MiB memory, 3 iterations, parallelism 1
 - The derived key serves two purposes:
     - Authentication with the server through the SRP protocol
     - Local encryption/decryption of vault contents using AES-256-GCM

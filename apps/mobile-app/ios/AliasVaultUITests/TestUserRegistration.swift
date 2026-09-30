@@ -31,8 +31,8 @@ struct ApiError: Codable {
 /// These match the server defaults in apps/server/Utilities/AliasVault.Cryptography/Defaults.cs
 enum EncryptionDefaults {
     static let type = "Argon2Id"
-    static let iterations: UInt32 = 2
-    static let memorySize: UInt32 = 19456
+    static let iterations: UInt32 = 5
+    static let memorySize: UInt32 = 65536
     static let parallelism: UInt32 = 1
 
     static var settingsJson: String {
