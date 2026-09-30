@@ -758,30 +758,13 @@ function handleBeforeUnload(): void {
  */
 export async function getPersistedSavePromptState(): Promise<SavePromptPersistedState | null> {
   try {
-    const response = await sendMessage('GET_SAVE_PROMPT_STATE');
+    const response = await sendMessage('GET_SAVE_PROMPT_STATE', { currentDomain: window.location.hostname });
 
     if (!response.success || !response.state) {
       return null;
     }
 
     const state = response.state;
-
-    // Validate the state is still relevant
-    const currentDomain = window.location.hostname;
-
-    // Check if we're on the same domain (or a related domain after redirect)
-    if (state.domain !== currentDomain) {
-      // Allow if we're on a subdomain or parent domain
-      const isRelatedDomain = currentDomain.endsWith(`.${state.domain}`) ||
-                              state.domain.endsWith(`.${currentDomain}`) ||
-                              // Also allow if they share the same base domain (e.g., login.example.com -> app.example.com)
-                              getBaseDomain(currentDomain) === getBaseDomain(state.domain);
-
-      if (!isRelatedDomain) {
-        await clearPersistedSavePromptState();
-        return null;
-      }
-    }
 
     // The background script already adjusts the remaining time, but check if expired
     if (state.remainingTimeMs <= 0) {
@@ -805,18 +788,6 @@ export async function clearPersistedSavePromptState(): Promise<void> {
   } catch (error) {
     logFailure('[AliasVault] Error clearing persisted save prompt state', error);
   }
-}
-
-/**
- * Extract the base domain from a hostname (e.g., "login.example.com" -> "example.com").
- */
-function getBaseDomain(hostname: string): string {
-  const parts = hostname.split('.');
-  if (parts.length <= 2) {
-    return hostname;
-  }
-  // Return the last two parts (this is a simple heuristic, doesn't handle all TLDs)
-  return parts.slice(-2).join('.');
 }
 
 /**

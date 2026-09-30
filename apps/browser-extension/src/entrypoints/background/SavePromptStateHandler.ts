@@ -4,6 +4,8 @@
  * Also tracks the last autofilled credential per tab for the "Add URL" feature.
  */
 
+import { extractRootDomain } from '@aliasvault/client/rust/RustCore';
+
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 
 /** In-memory storage for save prompt state, keyed by tab ID */
@@ -54,14 +56,31 @@ export function handleStoreSavePromptState(
 }
 
 /**
- * Get save prompt state for a tab.
- * @param data - The tab ID.
+ * Whether a save prompt stored on `stateDomain` may be shown on `currentDomain` (same host or same root domain).
+ * @param stateDomain - The hostname the prompt was persisted on.
+ * @param currentDomain - The hostname of the page asking for the prompt.
+ * @returns True when the prompt may be restored.
+ */
+async function isRelatedDomain(stateDomain: string, currentDomain: string): Promise<boolean> {
+  if (stateDomain === currentDomain) {
+    return true;
+  }
+  if (!stateDomain || !currentDomain) {
+    return false;
+  }
+  const [stateRoot, currentRoot] = await Promise.all([extractRootDomain(stateDomain), extractRootDomain(currentDomain)]);
+  return stateRoot === currentRoot;
+}
+
+/**
+ * Get save prompt state for a tab, or null when it expired or belongs to an unrelated domain.
+ * @param data - The tab ID and the hostname of the page asking.
  * @returns The stored state or null.
  */
-export function handleGetSavePromptState(
-  data: { tabId: number }
-): { success: boolean; state: SavePromptPersistedState | null } {
-  const { tabId } = data;
+export async function handleGetSavePromptState(
+  data: { tabId: number; currentDomain: string }
+): Promise<{ success: boolean; state: SavePromptPersistedState | null }> {
+  const { tabId, currentDomain } = data;
   const state = savePromptStateByTab.get(tabId) || null;
 
   if (state) {
@@ -69,14 +88,9 @@ export function handleGetSavePromptState(
     const elapsedSinceSave = Date.now() - state.savedAt;
     const adjustedRemainingTime = state.remainingTimeMs - elapsedSinceSave;
 
-    if (adjustedRemainingTime <= 0) {
-      // Timer expired, clean up
-      savePromptStateByTab.delete(tabId);
-      const timer = stateExpiryTimers.get(tabId);
-      if (timer) {
-        clearTimeout(timer);
-        stateExpiryTimers.delete(tabId);
-      }
+    if (adjustedRemainingTime <= 0 || !(await isRelatedDomain(state.domain, currentDomain))) {
+      // Timer expired or the tab navigated to an unrelated site, clean up
+      handleClearSavePromptState({ tabId });
       return { success: true, state: null };
     }
 
