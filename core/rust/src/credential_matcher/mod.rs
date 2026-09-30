@@ -16,7 +16,7 @@ mod stop_words;
 
 use serde::{Deserialize, Serialize};
 
-pub use domain::{extract_domain, extract_domain_with_port, extract_root_domain, DomainWithPort};
+pub use domain::{extract_domain, extract_domain_with_port, extract_root_domain, is_related_origin_allowed, is_rp_id_allowed_for_host, DomainWithPort};
 use domain::{domains_match, is_app_package_name};
 use stop_words::STOP_WORD_SET;
 

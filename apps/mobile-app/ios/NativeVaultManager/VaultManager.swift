@@ -1572,6 +1572,8 @@ private enum RustCoreDispatcher {
         switch name {
         case "extractDomain": return try json(RustCoreFramework.extractDomain(url: try args.string(0)))
         case "extractRootDomain": return try json(RustCoreFramework.extractRootDomain(domain: try args.string(0)))
+        case "isRpIdAllowedForHost": return try json(RustCoreFramework.isRpIdAllowedForHost(rpId: try args.string(0), host: try args.string(1)))
+        case "isRelatedOriginAllowed": return try json(RustCoreFramework.isRelatedOriginAllowed(callerOrigin: try args.string(0), origins: try args.strings(1)))
         case "selectFaviconTarget":
             guard let target = RustCoreFramework.selectFaviconTarget(urls: try args.strings(0)) else { return "null" }
             return try json(["url": target.url, "source": target.source])

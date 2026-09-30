@@ -121,7 +121,7 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         return;
       }
 
-      if (!validateWebAuthnEventDetail('create', detail, window.location.origin, window.location.hostname)) {
+      if (!validateWebAuthnEventDetail('create', detail, window.location.origin)) {
         dispatchResponse({
           requestId,
           fallback: true
@@ -221,7 +221,7 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         return;
       }
 
-      if (!validateWebAuthnEventDetail('get', detail, window.location.origin, window.location.hostname)) {
+      if (!validateWebAuthnEventDetail('get', detail, window.location.origin)) {
         dispatchResponse({
           requestId,
           fallback: true

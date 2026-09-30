@@ -104,6 +104,18 @@ pub fn extract_root_domain_js(domain: &str) -> String {
     crate::credential_matcher::extract_root_domain(domain)
 }
 
+/// Whether a page on `host` may use `rpId` as its WebAuthn relying party id: the host or a parent that is not a public suffix.
+#[wasm_bindgen(js_name = isRpIdAllowedForHost)]
+pub fn is_rp_id_allowed_for_host_js(rp_id: &str, host: &str) -> bool {
+    crate::credential_matcher::is_rp_id_allowed_for_host(rp_id, host)
+}
+
+/// Whether `callerOrigin` is listed in the `origins` of an rp id's `/.well-known/webauthn` file (WebAuthn related origins).
+#[wasm_bindgen(js_name = isRelatedOriginAllowed)]
+pub fn is_related_origin_allowed_js(caller_origin: &str, origins: Vec<String>) -> bool {
+    crate::credential_matcher::is_related_origin_allowed(caller_origin, &origins)
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Favicon WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════

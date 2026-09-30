@@ -182,6 +182,75 @@ pub fn domains_match(domain1: &str, domain2: &str) -> bool {
     }
 }
 
+/// Check if a WebAuthn rpId is allowed for a host based on the Public Suffix List.
+pub fn is_rp_id_allowed_for_host(rp_id: &str, host: &str) -> bool {
+    let (Some(rp_id), Some(host)) = (normalize_rp_host(rp_id), normalize_rp_host(host)) else {
+        return false;
+    };
+
+    if rp_id == host {
+        return true;
+    }
+    if is_ip_literal(&rp_id) || is_ip_literal(&host) || !host.ends_with(&format!(".{rp_id}")) {
+        return false;
+    }
+
+    match (public_suffix::registrable_domain(&rp_id), public_suffix::registrable_domain(&host)) {
+        (Some(_), Some(host_root)) => rp_id == host_root || rp_id.ends_with(&format!(".{host_root}")),
+        _ => false,
+    }
+}
+
+/// At most this many distinct registrable domain labels are read from a `/.well-known/webauthn` file.
+const MAX_RELATED_ORIGIN_LABELS: usize = 10;
+
+/// WebAuthn related origins validation.
+pub fn is_related_origin_allowed(caller_origin: &str, origins: &[String]) -> bool {
+    let mut labels_seen: Vec<&str> = Vec::new();
+    for origin in origins {
+        let Some(host) = origin_host(origin) else { continue };
+        if is_ip_literal(host) {
+            continue;
+        }
+        let Some(label) = public_suffix::registrable_domain(host).and_then(|domain| domain.split('.').next()) else { continue };
+
+        let seen = labels_seen.contains(&label);
+        if labels_seen.len() >= MAX_RELATED_ORIGIN_LABELS && !seen {
+            continue;
+        }
+        if origin == caller_origin {
+            return true;
+        }
+        if !seen {
+            labels_seen.push(label);
+        }
+    }
+    false
+}
+
+/// The host of a serialized web origin ("https://login.example.com:8443" gives "login.example.com").
+fn origin_host(origin: &str) -> Option<&str> {
+    let (scheme, authority) = origin.split_once("://")?;
+    if !is_web_scheme(scheme) || authority.is_empty() || authority.contains(['/', '?', '#', '@']) {
+        return None;
+    }
+    let host = match authority.rsplit_once(':') {
+        Some((host, port)) if !host.ends_with(':') && port.chars().all(|c| c.is_ascii_digit()) => host,
+        _ => authority,
+    };
+    (!host.is_empty()).then_some(host)
+}
+
+/// A host or rp id lowercased and without its trailing dot, or None when empty or holding a port or path.
+fn normalize_rp_host(value: &str) -> Option<String> {
+    let lowered = value.trim().to_ascii_lowercase();
+    let normalized = lowered.strip_suffix('.').unwrap_or(&lowered);
+    if normalized.is_empty() || normalized.contains(['/', ':']) {
+        return None;
+    }
+    Some(normalized.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -322,6 +391,17 @@ mod tests {
         assert_eq!(extract_root_domain("github.io"), "github.io");
         assert_eq!(extract_root_domain("localhost"), "localhost");
         assert_eq!(extract_root_domain("plex"), "plex");
+
+        // A trailing dot never reduces a domain to its TLD: "bank.com." and "evil.com." must not share "com.".
+        assert_eq!(extract_root_domain("bank.com."), "bank.com");
+        assert_eq!(extract_root_domain("login.bank.com."), "bank.com");
+        assert_eq!(extract_root_domain("victim.vercel.app."), "victim.vercel.app");
+        assert_eq!(extract_root_domain("com."), "com.");
+
+        // A malformed domain has no root domain and is returned as-is.
+        assert_eq!(extract_root_domain(".com"), ".com");
+        assert_eq!(extract_root_domain("a..b.com"), "a..b.com");
+        assert_eq!(extract_root_domain(".."), "..");
     }
 
     #[test]
@@ -330,6 +410,57 @@ mod tests {
         assert_eq!(extract_root_domain("10.0.0.1"), "10.0.0.1");
         assert_eq!(extract_root_domain("::1"), "::1");
         assert_eq!(extract_root_domain("[2001:db8::1]"), "[2001:db8::1]");
+        assert_eq!(extract_root_domain("192.168.1.5."), "192.168.1.5.");
+    }
+
+    #[test]
+    fn test_is_related_origin_allowed() {
+        let origins = |list: &[&str]| list.iter().map(|o| o.to_string()).collect::<Vec<_>>();
+
+        let x = origins(&["https://twitter.com", "https://x.com", "https://mobile.twitter.com:8443"]);
+        assert!(is_related_origin_allowed("https://twitter.com", &x));
+        assert!(is_related_origin_allowed("https://mobile.twitter.com:8443", &x));
+        assert!(!is_related_origin_allowed("https://mobile.twitter.com", &x));
+        assert!(!is_related_origin_allowed("http://twitter.com", &x));
+        assert!(!is_related_origin_allowed("https://evil.com", &x));
+        assert!(!is_related_origin_allowed("https://twitter.com", &[]));
+
+        // Only the first MAX_RELATED_ORIGIN_LABELS distinct labels count; origins sharing a counted label stay reachable.
+        let mut many: Vec<String> = (0..=MAX_RELATED_ORIGIN_LABELS).map(|i| format!("https://site{i}.com")).collect();
+        many.extend(origins(&["https://shop.site0.co.uk", "https://www.site1.com"]));
+        assert!(is_related_origin_allowed(&format!("https://site{}.com", MAX_RELATED_ORIGIN_LABELS - 1), &many));
+        assert!(!is_related_origin_allowed(&format!("https://site{MAX_RELATED_ORIGIN_LABELS}.com"), &many));
+        assert!(is_related_origin_allowed("https://shop.site0.co.uk", &many));
+        assert!(is_related_origin_allowed("https://www.site1.com", &many));
+
+        // Entries without a registrable domain neither match nor use up a label.
+        let mut skipped = origins(&["https://vercel.app", "https://192.168.1.5", "https://localhost", "null"]);
+        skipped.extend((1..=MAX_RELATED_ORIGIN_LABELS).map(|i| format!("https://{i}.com")));
+        assert!(!is_related_origin_allowed("https://vercel.app", &skipped));
+        assert!(!is_related_origin_allowed("https://192.168.1.5", &skipped));
+        assert!(!is_related_origin_allowed("null", &skipped));
+        assert!(is_related_origin_allowed(&format!("https://{MAX_RELATED_ORIGIN_LABELS}.com"), &skipped));
+    }
+
+    #[test]
+    fn test_is_rp_id_allowed_for_host() {
+        // The host itself and parent domains below the public suffix.
+        assert!(is_rp_id_allowed_for_host("example.com", "login.example.com"));
+        assert!(is_rp_id_allowed_for_host("Example.COM.", "login.example.com"));
+        assert!(is_rp_id_allowed_for_host("myproject.vercel.app", "preview.myproject.vercel.app"));
+        assert!(is_rp_id_allowed_for_host("github.io", "github.io"));
+
+        // Public suffixes, siblings and lookalikes.
+        assert!(!is_rp_id_allowed_for_host("vercel.app", "evil.vercel.app"));
+        assert!(!is_rp_id_allowed_for_host("district.sch.uk", "myschool.district.sch.uk"));
+        assert!(!is_rp_id_allowed_for_host("accounts.example.com", "evil.example.com"));
+        assert!(!is_rp_id_allowed_for_host("example.com", "myexample.com"));
+
+        // IP addresses only as themselves, malformed input never.
+        assert!(is_rp_id_allowed_for_host("192.168.1.5", "192.168.1.5"));
+        assert!(!is_rp_id_allowed_for_host("1.5", "192.168.1.5"));
+        assert!(!is_rp_id_allowed_for_host("", "example.com"));
+        assert!(!is_rp_id_allowed_for_host("example.com:443", "example.com"));
     }
 
     #[test]

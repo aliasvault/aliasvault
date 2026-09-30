@@ -865,6 +865,7 @@ export async function handleCheckLoginDuplicate(
     // Find items with matching domain and username
     const normalizedDomain = message.domain.toLowerCase();
     const normalizedUsername = message.username.toLowerCase();
+    const currentRootDomain = await extractRootDomain(normalizedDomain);
 
     for (const item of allItems) {
       // Check LoginUrl field for domain match (supports multi-value URLs)
@@ -894,8 +895,8 @@ export async function handleCheckLoginDuplicate(
           itemDomain = singleUrl.toLowerCase();
         }
 
-        // Check if domains match (including subdomains)
-        if (itemDomain === normalizedDomain || itemDomain.endsWith(`.${normalizedDomain}`) || normalizedDomain.endsWith(`.${itemDomain}`)) {
+        // Same host, or the same root domain per the Public Suffix List
+        if (itemDomain === normalizedDomain || await extractRootDomain(itemDomain) === currentRootDomain) {
           domainsMatch = true;
           break;
         }

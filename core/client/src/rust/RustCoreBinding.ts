@@ -22,6 +22,8 @@ export interface IRustCore {
 
   extractDomain(url: string): Promise<string>;
   extractRootDomain(domain: string): Promise<string>;
+  isRpIdAllowedForHost(rpId: string, host: string): Promise<boolean>;
+  isRelatedOriginAllowed(callerOrigin: string, origins: string[]): Promise<boolean>;
   selectFaviconTarget(urls: string[]): Promise<FaviconTarget | null>;
   filterCredentials(input: FilterCredentialsInput): Promise<FilterCredentialsOutput>;
 

@@ -34,7 +34,7 @@ export function buildFolderPath(folderId: string | null | undefined, foldersById
 }
 
 /**
- * Split a folder path into its folder names, at most five levels deep: "Root/Business/Banking" results in ["Root", "Business", "Banking"].
+ * Split a folder path into its folder names, at most ten levels deep: "Root/Business/Banking" results in ["Root", "Business", "Banking"].
  * @param folderPath - The folder path, with "/" or "\" separators
  * @returns The folder names in order, empty when there are none
  */
