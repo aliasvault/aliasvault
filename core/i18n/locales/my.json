@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "မသိသော အမှားတစ်ခု ဖြစ်ပေါ်ခဲ့သည်။ ကျေးဇူးပြု၍ ပြန်လည်ကြိုးစားပါ။",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
     "USERNAME_AVAILABLE": "Username is available.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
