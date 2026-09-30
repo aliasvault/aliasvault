@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.",
     "REFRESH_TOKEN_REQUIRED": "Este necesar un token de actualizare.",
     "REGISTRATION_FAILED": "Nu s-a putut crea contul. Încercați din nou peste câteva minute. Dacă problema persistă, contactați serviciul de asistență.",
+    "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
     "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja utilizat.",
     "USERNAME_AVAILABLE": "Numele de utilizator este disponibil.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi necompletat sau format doar din spații.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Atașament șters cu succes.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Pentru a încărca fișiere, folosește fereastra extinsă.",
     "openExpandedWindow": "Deschide fereastra extinsă",
     "uploadError": "Eroare la încărcarea fișierului: {{error}}",
