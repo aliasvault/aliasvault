@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Registrering av nytt konto är för närvarande inaktiverat på denna server. Kontakta administratören.",
     "REFRESH_TOKEN_REQUIRED": "Uppdateringstoken krävs.",
     "REGISTRATION_FAILED": "Kunde inte skapa kontot. Försök igen om några minuter. Om problemet kvarstår, vänligen kontakta support.",
+    "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
     "USERNAME_ALREADY_IN_USE": "Användarnamnet används redan",
     "USERNAME_AVAILABLE": "Användarnamnet är tillgängligt",
     "USERNAME_EMPTY_OR_WHITESPACE": "Användarnamnet kan inte vara tomt eller blanksteg.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Bifogade filen har raderats.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "För att ladda upp filer, använd det utökade fönstret.",
     "openExpandedWindow": "Öppna utökat fönster",
     "uploadError": "Error uploading file: {{error}}",
