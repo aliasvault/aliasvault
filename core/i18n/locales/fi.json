@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
     "REFRESH_TOKEN_REQUIRED": "Päivitysvarmenne vaaditaan.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
     "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
     "USERNAME_AVAILABLE": "Käyttäjänimi on saatavilla.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Käyttäjänimi ei voi olla tyhjä eikä siinä voi olla välilyöntejä.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
