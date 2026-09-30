@@ -28,7 +28,7 @@ struct ApiError: Codable {
 }
 
 /// Default encryption settings for Argon2Id.
-/// These match the server defaults in AliasVault.Cryptography.Client/Defaults.cs
+/// These match the server defaults in apps/server/Utilities/AliasVault.Cryptography/Defaults.cs
 enum EncryptionDefaults {
     static let type = "Argon2Id"
     static let iterations: UInt32 = 2

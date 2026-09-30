@@ -1,5 +1,3 @@
 # AliasVault.Shared.Server
 
-This project contains shared functionality used only by the server applications and not required by the client applications.
-
-This is to reduce the number of client dependencies and keep the client applications as lightweight as possible.
+This project contains shared functionality used by the server applications (API, Admin, SMTP service and TaskRunner), such as server settings, capability rules and secret reading.

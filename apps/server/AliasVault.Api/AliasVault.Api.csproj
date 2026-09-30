@@ -36,13 +36,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Databases\AliasServerDb\AliasServerDb.csproj" />
-      <ProjectReference Include="..\Shared\AliasVault.Shared.Core\AliasVault.Shared.Core.csproj" />
       <ProjectReference Include="..\Shared\AliasVault.Shared.Server\AliasVault.Shared.Server.csproj" />
       <ProjectReference Include="..\Shared\AliasVault.Shared\AliasVault.Shared.csproj" />
       <ProjectReference Include="..\Utilities\AliasVault.Auth\AliasVault.Auth.csproj" />
       <ProjectReference Include="..\Utilities\AliasVault.Logging\AliasVault.Logging.csproj" />
-      <ProjectReference Include="..\Utilities\Cryptography\AliasVault.Cryptography.Client\AliasVault.Cryptography.Client.csproj" />
-      <ProjectReference Include="..\Utilities\Cryptography\AliasVault.Cryptography.Server\AliasVault.Cryptography.Server.csproj" />
+      <ProjectReference Include="..\Utilities\AliasVault.Cryptography\AliasVault.Cryptography.csproj" />
       <ProjectReference Include="..\Utilities\AliasVault.FaviconExtractor\AliasVault.FaviconExtractor.csproj" />
     </ItemGroup>
 

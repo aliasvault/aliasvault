@@ -1,4 +1,4 @@
-@using AliasVault.RazorComponents.Tables
+@using AliasVault.Admin.Main.Components.Tables
 
 <SortableTable Columns="@_manifestTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
     @foreach (var entry in SortedRevisions)

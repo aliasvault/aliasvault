@@ -1,0 +1,10 @@
+@inherits ComponentBase
+<h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">@ChildContent</h1>
+
+@code {
+    /// <summary>
+    /// The content to be displayed inside the heading.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

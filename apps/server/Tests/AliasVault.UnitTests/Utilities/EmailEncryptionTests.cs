@@ -10,7 +10,7 @@ namespace AliasVault.UnitTests.Utilities;
 using System.IO.Compression;
 using System.Text;
 using AliasServerDb;
-using AliasVault.Cryptography.Server;
+using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 
 /// <summary>

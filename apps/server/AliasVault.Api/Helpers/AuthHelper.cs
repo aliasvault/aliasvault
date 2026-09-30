@@ -10,11 +10,10 @@ namespace AliasVault.Api.Helpers;
 using AliasServerDb;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Models;
-using AliasVault.Cryptography.Client;
+using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using SecureRemotePassword;
 
 /// <summary>
 /// AuthHelper class which contains helper methods for authentication.

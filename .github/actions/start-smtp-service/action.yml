@@ -28,7 +28,7 @@ runs:
     - name: Build SMTP service
       shell: bash
       working-directory: apps/server
-      run: dotnet build Services/AliasVault.SmtpService
+      run: dotnet build AliasVault.SmtpService
 
     # The service listens on the fixed ports 25 and 587; let the non-root runner user bind them.
     - name: Allow binding the SMTP ports
@@ -37,7 +37,7 @@ runs:
 
     - name: Start SMTP service
       shell: bash
-      working-directory: apps/server/Services/AliasVault.SmtpService
+      working-directory: apps/server/AliasVault.SmtpService
       run: |
         dotnet run --no-build --no-launch-profile > /tmp/smtp-service.log 2>&1 &
         echo "Waiting for the SMTP service to start..."

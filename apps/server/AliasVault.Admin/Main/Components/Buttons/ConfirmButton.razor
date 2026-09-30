@@ -1,0 +1,27 @@
+@inherits ComponentBase
+<Button OnClick="HandleClick"
+        Color="success">
+    @ChildContent
+</Button>
+
+@code {
+    /// <summary>
+    /// The event to call in the parent when the confirm button is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// The content to be displayed inside the button.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Handles the button click event.
+    /// </summary>
+    private async Task HandleClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+}

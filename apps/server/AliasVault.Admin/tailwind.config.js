@@ -3,8 +3,7 @@ module.exports = {
     content: [
         './**/*.html',
         './**/*.razor',
-        '../Shared/AliasVault.RazorComponents/**/*.razor',
-        '../Shared/AliasVault.RazorComponents/**/*.cs',
+        './Main/Components/**/*.cs',
     ],
     safelist: [
         'w-64',

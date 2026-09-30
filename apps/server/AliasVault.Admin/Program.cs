@@ -5,7 +5,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Net;
 using System.Reflection;
 using AliasServerDb;
 using AliasServerDb.Configuration;
@@ -15,9 +14,8 @@ using AliasVault.Admin.Main;
 using AliasVault.Admin.Middleware;
 using AliasVault.Admin.Services;
 using AliasVault.Auth;
-using AliasVault.Cryptography.Server;
+using AliasVault.Cryptography;
 using AliasVault.Logging;
-using AliasVault.RazorComponents.Services;
 using AliasVault.Shared.Models.Configuration;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;

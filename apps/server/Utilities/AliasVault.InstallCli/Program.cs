@@ -7,7 +7,6 @@
 
 using AliasServerDb;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 // Add return type for top-level statements

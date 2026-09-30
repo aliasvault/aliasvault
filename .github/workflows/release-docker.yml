@@ -210,11 +210,11 @@ jobs:
             title: AliasVault Reverse Proxy
             description: Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: smtp
-            dockerfile: apps/server/Services/AliasVault.SmtpService/Dockerfile
+            dockerfile: apps/server/AliasVault.SmtpService/Dockerfile
             title: AliasVault SMTP Service
             description: SMTP service for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: task-runner
-            dockerfile: apps/server/Services/AliasVault.TaskRunner/Dockerfile
+            dockerfile: apps/server/AliasVault.TaskRunner/Dockerfile
             title: AliasVault TaskRunner
             description: Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.com)
           - image: installcli

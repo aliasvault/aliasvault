@@ -52,7 +52,7 @@ COPY apps/server/ ./apps/server/
 WORKDIR /src/apps/server
 
 # Restore only the published projects explicitly (not the test projects)
-RUN for project in AliasVault.Api/AliasVault.Api.csproj AliasVault.Admin/AliasVault.Admin.csproj Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj; do \
+RUN for project in AliasVault.Api/AliasVault.Api.csproj AliasVault.Admin/AliasVault.Admin.csproj AliasVault.SmtpService/AliasVault.SmtpService.csproj AliasVault.TaskRunner/AliasVault.TaskRunner.csproj Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj; do \
         dotnet restore "$project" || exit 1; \
     done
 
@@ -67,11 +67,11 @@ RUN dotnet publish AliasVault.Admin/AliasVault.Admin.csproj \
         -c Release -o /app/admin --no-restore
 
 # Build SMTP Service
-RUN dotnet publish Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj \
+RUN dotnet publish AliasVault.SmtpService/AliasVault.SmtpService.csproj \
         -c Release -o /app/smtp --no-restore
 
 # Build Task Runner
-RUN dotnet publish Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj \
+RUN dotnet publish AliasVault.TaskRunner/AliasVault.TaskRunner.csproj \
         -c Release -o /app/taskrunner --no-restore
 
 # Build Install CLI

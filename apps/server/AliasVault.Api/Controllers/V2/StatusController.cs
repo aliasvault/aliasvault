@@ -12,7 +12,7 @@ using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Api.Services;
-using AliasVault.Shared.Core;
+using AliasVault.Shared;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Vault;

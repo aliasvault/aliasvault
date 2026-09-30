@@ -9,7 +9,6 @@ namespace AliasServerDb;
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AliasVault.Shared.Models.Enums;
 
 /// <summary>
