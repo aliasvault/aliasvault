@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Az új fiók regisztráció jelenleg ki van kapcsolva a szerveren. Kérem vegye fel a kapcsolatot a rendszergazdával.",
     "REFRESH_TOKEN_REQUIRED": "Frissítő token szükséges.",
     "REGISTRATION_FAILED": "Sikertelen fiók létrehozás. Kérem, próbálja újra pár percet követően. Ha a probléma továbbra is fennáll, vegye fel a kapcsolatot az ügyfélszolgálattal.",
+    "UNKNOWN_ERROR": "Egy ismeretlen hiba lépett fel. Próbálkozzon újra.",
     "USERNAME_ALREADY_IN_USE": "A felhasználónév már használatban van.",
     "USERNAME_AVAILABLE": "A felhasználónév elérhető.",
     "USERNAME_EMPTY_OR_WHITESPACE": "A felhasználónév nem lehet üres vagy whitespace.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Csatolmány sikeresen törölve.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "A fájlok feltöltéséhez használja a kibővített ablakot.",
     "openExpandedWindow": "Kibővített ablak megnyitása",
     "uploadError": "Error uploading file: {{error}}",
