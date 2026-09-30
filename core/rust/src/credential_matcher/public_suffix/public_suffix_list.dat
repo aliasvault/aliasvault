@@ -1,7 +1,7 @@
 // Mozilla Public Suffix List, rules only: comments and blank lines stripped, internationalized rules in punycode.
 // Source: https://publicsuffix.org/list/public_suffix_list.dat
 // Upstream version: 2026-09-24_13-26-36_UTC
-// Last refreshed: 2026-09-26 by scripts/refresh-external-dependencies.sh (task public-suffix-list)
+// Last refreshed: 2026-09-30 by scripts/refresh-external-dependencies.sh (task public-suffix-list)
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
