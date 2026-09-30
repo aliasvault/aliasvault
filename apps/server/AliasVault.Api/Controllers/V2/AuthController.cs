@@ -23,7 +23,6 @@ using AliasVault.Shared;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
@@ -42,7 +41,7 @@ using SecureRemotePassword;
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="configuration">IConfiguration instance.</param>
 /// <param name="cache">IMemoryCache instance for persisting SRP values during multistep login process.</param>
-/// <param name="timeProvider">ITimeProvider instance. This returns the time which can be mutated for testing.</param>
+/// <param name="timeProvider">TimeProvider instance.</param>
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="settingsService">ServerSettingsService instance.</param>
@@ -52,7 +51,7 @@ using SecureRemotePassword;
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, ITimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
 {
     /// <summary>
     /// Access token validity in minutes.
@@ -435,15 +434,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             UserName = UsernameHelper.NormalizeUsername(model.Username),
             SrpIdentity = AuthHelper.ResolveSrpIdentity(model.SrpIdentity, model.Username),
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
-            PasswordChangedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
 
         var personalManifestId = Guid.NewGuid();
 
         // Create the personal group before the user row.
-        var personalGroup = GroupHelper.CreatePersonalGroup(user, timeProvider.UtcNow);
+        var personalGroup = GroupHelper.CreatePersonalGroup(user, timeProvider.GetUtcNow().UtcDateTime);
         await using (var context = await dbContextFactory.CreateDbContextAsync())
         {
             context.Groups.Add(personalGroup);
@@ -457,7 +456,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Create the owner membership and personal manifest.
             await using (var context = await dbContextFactory.CreateDbContextAsync())
             {
-                context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(personalGroup, user.Id, timeProvider.UtcNow));
+                context.GroupMembers.Add(GroupHelper.CreateOwnerMembership(personalGroup, user.Id, timeProvider.GetUtcNow().UtcDateTime));
 
                 // Create placeholder manifest for the account which is empty and will be replaced by the first real manifest push by the client.
                 context.VaultManifests.Add(new AliasServerDb.VaultManifest
@@ -472,8 +471,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     EncryptionType = null,
                     EncryptionSettings = null,
                     FileSize = 0,
-                    CreatedAt = timeProvider.UtcNow,
-                    UpdatedAt = timeProvider.UtcNow,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                 });
 
                 context.UserUnlockKeys.Add(new UserUnlockKey
@@ -490,8 +489,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                         EncryptionType = model.EncryptionType,
                         EncryptionSettings = model.EncryptionSettings,
                     }.ToJson(),
-                    CreatedAt = timeProvider.UtcNow,
-                    UpdatedAt = timeProvider.UtcNow,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                 });
 
                 context.UserGrantKeys.Add(new UserGrantKey
@@ -502,8 +501,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     PublicKey = model.AccountPublicKey!,
                     EncryptedPrivateKey = model.EncryptedAccountPrivateKey!,
                     IsPrimary = true,
-                    CreatedAt = timeProvider.UtcNow,
-                    UpdatedAt = timeProvider.UtcNow,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                 });
 
                 context.VaultManifestAccessKeys.Add(new VaultManifestAccessKey
@@ -515,8 +514,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
                     Algorithm = VaultKeyAlgorithm.Aes256Gcm,
                     EncryptedVek = model.EncryptedVek!,
                     AccountKeyVersion = 0,
-                    CreatedAt = timeProvider.UtcNow,
-                    UpdatedAt = timeProvider.UtcNow,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                    UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                 });
 
                 await context.SaveChangesAsync();
@@ -614,7 +613,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PASSWORD_MISMATCH, 400));
         }
 
-        var now = timeProvider.UtcNow;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         var settings = await settingsService.GetAllSettingsAsync();
         var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
 
@@ -779,7 +778,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             Id = requestId,
             ClientPublicKey = model.ClientPublicKey,
             PollSecretHash = MobileLoginRequestHelper.HashPollSecret(pollSecret),
-            CreatedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             ClientIpAddress = ipAddress,
             ClientName = MobileLoginRequestHelper.SanitizeClientName(ClientHeaderInfo.GetRawValue(Request)),
             ClientBrowser = RequestClientInfo.DetermineBrowser(HttpContext),
@@ -822,7 +821,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (loginRequest.FulfilledAt == null)
         {
-            if (MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.UtcNow))
+            if (MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
             {
                 return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
             }
@@ -831,7 +830,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // One-time use: an approved request is handed out once, and only shortly after the approval.
-        if (loginRequest.RetrievedAt != null || loginRequest.EncryptedUnlockKey == null || MobileLoginRequestHelper.IsRetrievalWindowClosed(loginRequest, timeProvider.UtcNow))
+        if (loginRequest.RetrievedAt != null || loginRequest.EncryptedUnlockKey == null || MobileLoginRequestHelper.IsRetrievalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
@@ -861,7 +860,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Claim the request and clear its key material in one transaction.
         var clientPublicKey = loginRequest.ClientPublicKey;
         var encryptedUnlockKey = loginRequest.EncryptedUnlockKey;
-        var retrievedAt = timeProvider.UtcNow;
+        var retrievedAt = timeProvider.GetUtcNow().UtcDateTime;
         var claimed = await context.MobileLoginRequests
             .Where(r => r.Id == loginRequest.Id && r.RetrievedAt == null)
             .ExecuteUpdateAsync(u => u.SetProperty(r => r.RetrievedAt, retrievedAt).SetProperty(r => r.ClientPublicKey, string.Empty).SetProperty(r => r.EncryptedUnlockKey, (string?)null));
@@ -911,7 +910,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
-        if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.UtcNow))
+        if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
@@ -947,7 +946,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
-        if (loginRequest == null || loginRequest.DeclinedAt != null || MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.UtcNow))
+        if (loginRequest == null || loginRequest.DeclinedAt != null || MobileLoginRequestHelper.IsApprovalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
@@ -959,7 +958,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Store the answer in one transaction.
-        var fulfilledAt = timeProvider.UtcNow;
+        var fulfilledAt = timeProvider.GetUtcNow().UtcDateTime;
         var mobileIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
         var updated = await context.MobileLoginRequests
             .Where(r => r.Id == loginRequest.Id && r.FulfilledAt == null && r.DeclinedAt == null)
@@ -990,14 +989,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         var loginRequest = await context.MobileLoginRequests.FirstOrDefaultAsync(r => r.Id == model.RequestId);
-        if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.UtcNow))
+        if (loginRequest == null || !MobileLoginRequestHelper.IsAwaitingApproval(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
 
         loginRequest.ClientPublicKey = string.Empty;
         loginRequest.UserId = user.Id;
-        loginRequest.DeclinedAt = timeProvider.UtcNow;
+        loginRequest.DeclinedAt = timeProvider.GetUtcNow().UtcDateTime;
         loginRequest.MobileIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
         await context.SaveChangesAsync();
 
@@ -1296,7 +1295,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Record usage of this unlock method for statistics purposes.
-        await AuthHelper.TouchUnlockKeyLastUsedAsync(context, srpResult.UnlockKeyId, timeProvider.UtcNow);
+        await AuthHelper.TouchUnlockKeyLastUsedAsync(context, srpResult.UnlockKeyId, timeProvider.GetUtcNow().UtcDateTime);
 
         return (user, srpResult.Session, null);
     }
@@ -1324,7 +1323,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             issuer: configuration["Jwt:Issuer"] ?? string.Empty,
             audience: configuration["Jwt:Issuer"] ?? string.Empty,
             claims: claims,
-            expires: timeProvider.UtcNow.AddSeconds(AccessTokenValiditySeconds),
+            expires: timeProvider.GetUtcNow().UtcDateTime.AddSeconds(AccessTokenValiditySeconds),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -1374,7 +1373,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Token reuse window:
             // Check if a new refresh token was already generated for the current token in the last 30 seconds.
             // If yes, then return the already generated new token. This is to prevent client-side race conditions.
-            var existingTokenReuseWindow = timeProvider.UtcNow.AddSeconds(-30);
+            var existingTokenReuseWindow = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-30);
             var existingTokenReuse = await context.AliasVaultUserRefreshTokens
                 .FirstOrDefaultAsync(t => t.UserId == user.Id &&
                                             t.PreviousTokenValue == existingTokenValue &&
@@ -1390,7 +1389,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
             // Check if the refresh token still exists and is not expired.
             var existingToken = await context.AliasVaultUserRefreshTokens.FirstOrDefaultAsync(t => t.UserId == user.Id && t.Value == existingTokenValue);
-            if (existingToken == null || existingToken.ExpireDate < timeProvider.UtcNow)
+            if (existingToken == null || existingToken.ExpireDate < timeProvider.GetUtcNow().UtcDateTime)
             {
                 return null;
             }
@@ -1440,8 +1439,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             IpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
             Value = refreshToken,
             PreviousTokenValue = existingTokenValue,
-            ExpireDate = timeProvider.UtcNow.Add(newTokenLifetime),
-            CreatedAt = timeProvider.UtcNow,
+            ExpireDate = timeProvider.GetUtcNow().UtcDateTime.Add(newTokenLifetime),
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
         });
 
         await context.SaveChangesAsync();

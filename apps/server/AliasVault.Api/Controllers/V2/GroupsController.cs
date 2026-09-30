@@ -17,7 +17,6 @@ using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
 using AliasVault.Shared.Models.WebApi.V2.Groups;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Capabilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -34,7 +33,7 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="cache">Memory cache holding the server's SRP ephemeral between the delete initiate and confirm calls.</param>
 /// <param name="authLoggingService">Auth logging service, recording shared manifest creation and the master password checks guarding deletion.</param>
 [ApiVersion("2")]
-public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
+public class GroupsController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, TimeProvider timeProvider, IMemoryCache cache, AuthLoggingService authLoggingService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// How many shared manifests one group may hold. TODO: hardcoded for now; make this dynamic when needed.
@@ -186,12 +185,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             RevisionNumber = 0,
             FileSize = 0,
             Client = ClientHeader,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
         context.VaultManifests.Add(manifest);
-        context.VaultManifestShareDetails.Add(new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.UtcNow, UpdatedAt = timeProvider.UtcNow });
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, timeProvider.UtcNow));
+        context.VaultManifestShareDetails.Add(new VaultManifestShareDetails { ManifestId = manifest.ManifestId, EncryptedName = model.EncryptedName, CreatedAt = timeProvider.GetUtcNow().UtcDateTime, UpdatedAt = timeProvider.GetUtcNow().UtcDateTime });
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifest.ManifestId, me.Id, selfPublicKeyId.Value, model.SelfEncryptedVek, algorithm, manifest.KeyVersion, timeProvider.GetUtcNow().UtcDateTime));
 
         try
         {
@@ -301,8 +300,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             UserGrantKeyId = model.Grant.RecipientPublicKeyId,
             VaultKeyVersion = manifestKeyVersion.Value,
             Algorithm = algorithm,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
         context.GroupInvitations.Add(invitation);
 
@@ -372,7 +371,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
 
             if (await GrantHelper.RevokeAccessAsync(context, manifestId, userId))
             {
-                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.UtcNow);
+                await ClientActionHelper.EnqueueForGroupAsync(context, ClientActionType.RotateManifestDeliveryKey, groupId, manifestId, timeProvider.GetUtcNow().UtcDateTime);
             }
 
             await context.SaveChangesAsync();
@@ -415,7 +414,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         var details = await context.VaultManifestShareDetails.FirstOrDefaultAsync(d => d.ManifestId == manifestId);
         if (details is null)
         {
-            details = new VaultManifestShareDetails { ManifestId = manifestId, CreatedAt = timeProvider.UtcNow };
+            details = new VaultManifestShareDetails { ManifestId = manifestId, CreatedAt = timeProvider.GetUtcNow().UtcDateTime };
             context.VaultManifestShareDetails.Add(details);
         }
 
@@ -424,7 +423,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             details.EncryptedName = model.EncryptedName;
         }
 
-        details.UpdatedAt = timeProvider.UtcNow;
+        details.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         await context.SaveChangesAsync();
 
@@ -597,8 +596,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         invitation.State = GroupInvitationState.Accepted;
-        invitation.RespondedAt = timeProvider.UtcNow;
-        invitation.UpdatedAt = timeProvider.UtcNow;
+        invitation.RespondedAt = timeProvider.GetUtcNow().UtcDateTime;
+        invitation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         // The encrypted copy has become the grant, so it stops being a second copy of the key lying around.
         invitation.EncryptedVek = null;
@@ -741,8 +740,8 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         invitation.EncryptedVek = null;
         invitation.EncryptedName = null;
         invitation.UserGrantKeyId = null;
-        invitation.RespondedAt = timeProvider.UtcNow;
-        invitation.UpdatedAt = timeProvider.UtcNow;
+        invitation.RespondedAt = timeProvider.GetUtcNow().UtcDateTime;
+        invitation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
     }
 
     /// <summary>
@@ -766,7 +765,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
             return true;
         }
 
-        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, timeProvider.UtcNow));
+        context.VaultManifestAccessKeys.Add(GrantHelper.BuildGrant(manifestId, userId, invitation.UserGrantKeyId.Value, invitation.EncryptedVek, invitation.Algorithm, keyVersion, timeProvider.GetUtcNow().UtcDateTime));
 
         return true;
     }

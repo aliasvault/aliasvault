@@ -8,7 +8,6 @@
 namespace AliasVault.Api.Services;
 
 using AliasServerDb;
-using AliasVault.Shared.Providers.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -19,8 +18,8 @@ using Microsoft.Extensions.Caching.Memory;
 /// </summary>
 /// <param name="dbContextFactory">IDbContextFactory instance.</param>
 /// <param name="cache">IMemoryCache instance used to cache the enabled rules.</param>
-/// <param name="timeProvider">ITimeProvider instance.</param>
-public class RateLimitService(IAliasServerDbContextFactory dbContextFactory, IMemoryCache cache, ITimeProvider timeProvider)
+/// <param name="timeProvider">TimeProvider instance.</param>
+public class RateLimitService(IAliasServerDbContextFactory dbContextFactory, IMemoryCache cache, TimeProvider timeProvider)
 {
     private const int CacheDurationSeconds = 60;
 
@@ -35,7 +34,7 @@ public class RateLimitService(IAliasServerDbContextFactory dbContextFactory, IMe
     public async Task<IReadOnlyList<EffectiveRateLimit>> GetLimitsAsync(Group group, RateLimitType limitType)
     {
         var rules = await GetEnabledRulesAsync();
-        return RateLimitResolver.Resolve(rules, group, limitType, timeProvider.UtcNow);
+        return RateLimitResolver.Resolve(rules, group, limitType, timeProvider.GetUtcNow().UtcDateTime);
     }
 
     /// <summary>

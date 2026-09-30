@@ -218,7 +218,7 @@ jobs:
           command: |
             sleep 15
             declare -A endpoints=(
-              ["WASM"]="https://localhost:443"
+              ["Client"]="https://localhost:443"
               ["WebApi"]="https://localhost:443/api"
               ["Admin"]="https://localhost:443/admin/user/login"
             )

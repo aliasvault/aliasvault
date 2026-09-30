@@ -4,7 +4,7 @@ This directory contains scripts to generate SQL files from Entity Framework Core
 
 This library is consumed by the web app, browser extensions and mobile apps for vault creation and upgrades.
 
-Refer to the docs `upgrade-ef-client-model.md` for how this scripts are used.
+Run `./run-all.sh` after adding an EF migration to regenerate the SQL files and `core/vault/src/sql/SqlConstants.ts`.
 
 ## The migration chain is frozen at vault version 2.0.0
 

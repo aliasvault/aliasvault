@@ -20,7 +20,6 @@ using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V1.PasswordChange;
 using AliasVault.Shared.Models.WebApi.V1.Vault;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
@@ -34,13 +33,13 @@ using Microsoft.Extensions.Caching.Memory;
 /// <param name="logger">ILogger instance.</param>
 /// <param name="dbContextFactory">DbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
-/// <param name="timeProvider">ITimeProvider instance.</param>
+/// <param name="timeProvider">TimeProvider instance.</param>
 /// <param name="authLoggingService">AuthLoggingService instance.</param>
 /// <param name="cache">IMemoryCache instance.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="rateLimitService">RateLimitService instance.</param>
 [ApiVersion("1")]
-public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, ITimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
+public class VaultController(ILogger<VaultController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, TimeProvider timeProvider, AuthLoggingService authLoggingService, IMemoryCache cache, Config config, RateLimitService rateLimitService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Default retention policy for vaults.
@@ -191,8 +190,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.EmailClaimsCount = model.EmailAddressList.Count;
         currentManifest.Client = ClientHeader;
         currentManifest.UpdatedByUserId = user.Id;
-        currentManifest.CreatedAt = timeProvider.UtcNow;
-        currentManifest.UpdatedAt = timeProvider.UtcNow;
+        currentManifest.CreatedAt = timeProvider.GetUtcNow().UtcDateTime;
+        currentManifest.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         // Run the vault retention manager to clean up old history revisions, then commit to database.
         await ApplyVaultRetention(context, currentManifest, archivedRevision);
@@ -293,15 +292,15 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         currentManifest.EncryptionSettings = Defaults.EncryptionSettings;
         currentManifest.Client = ClientHeader;
         currentManifest.UpdatedByUserId = user.Id;
-        currentManifest.CreatedAt = timeProvider.UtcNow;
-        currentManifest.UpdatedAt = timeProvider.UtcNow;
+        currentManifest.CreatedAt = timeProvider.GetUtcNow().UtcDateTime;
+        currentManifest.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         // Run the vault retention manager to clean up old history revisions, then commit to database.
         await ApplyVaultRetention(context, currentManifest, archivedRevision);
         await context.SaveChangesAsync();
 
         // Update the password last changed at timestamp for user.
-        user.PasswordChangedAt = timeProvider.UtcNow;
+        user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
         await GetUserManager().UpdateAsync(user);
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.PasswordChange);
@@ -388,7 +387,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             historyRevisions.Add(justArchived);
         }
 
-        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, historyRevisions, timeProvider.UtcNow, currentManifest);
+        var revisionsToDelete = VaultRetentionManager.ApplyRetention(_retentionPolicy, historyRevisions, timeProvider.GetUtcNow().UtcDateTime, currentManifest);
         context.VaultManifestsHistory.RemoveRange(revisionsToDelete);
 
         // Blob references of pruned revisions are deleted explicitly (they only cascade with the whole manifest).
@@ -444,7 +443,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             else
             {
                 // Time-based cap: aliases created within the rolling window (create-then-delete still counts).
-                var windowStart = timeProvider.UtcNow.AddSeconds(-limit.WindowSeconds);
+                var windowStart = timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-limit.WindowSeconds);
                 baseCount = await context.EmailClaimLinks.Where(l => l.EmailClaim.CreatedAt >= windowStart && l.VaultManifest.OwnerGroupId == user.PersonalGroupId).Select(l => l.EmailClaimId).Distinct().CountAsync();
             }
 
@@ -488,7 +487,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 if (personalLink is { State: EmailClaimLinkState.Removed })
                 {
                     personalLink.State = EmailClaimLinkState.Active;
-                    existingUserClaim.UpdatedAt = timeProvider.UtcNow;
+                    existingUserClaim.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
                 }
 
                 // Reviving the link is all there is to re-enabling the alias: a claim counts as live for as long as
@@ -526,8 +525,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                         Address = sanitizedEmail,
                         AddressLocal = sanitizedEmail.Split('@')[0],
                         AddressDomain = sanitizedEmail.Split('@')[1],
-                        CreatedAt = timeProvider.UtcNow,
-                        UpdatedAt = timeProvider.UtcNow,
+                        CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+                        UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
                     });
                 addedThisSync++;
             }
@@ -558,7 +557,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 link.State = EmailClaimLinkState.Removed;
             }
 
-            existingClaim.UpdatedAt = timeProvider.UtcNow;
+            existingClaim.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
 
         await context.SaveChangesAsync();
@@ -590,7 +589,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         foreach (var key in otherKeys)
         {
             key.IsPrimary = false;
-            key.UpdatedAt = timeProvider.UtcNow;
+            key.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
         }
 
         // Check if the new public key already exists but is not marked as primary.
@@ -599,7 +598,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         {
             // Set the existing key to be primary.
             existingPublicKey.IsPrimary = true;
-            existingPublicKey.UpdatedAt = timeProvider.UtcNow;
+            existingPublicKey.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
             await context.SaveChangesAsync();
             return;
         }
@@ -611,8 +610,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             Algorithm = VaultKeyAlgorithm.RsaOaepSha256,
             PublicKey = newPublicKey,
             IsPrimary = true,
-            CreatedAt = timeProvider.UtcNow,
-            UpdatedAt = timeProvider.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+            UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
         context.VaultManifestDeliveryKeys.Add(newPublicKeyEntry);
 
