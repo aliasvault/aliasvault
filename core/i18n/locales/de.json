@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.",
     "REFRESH_TOKEN_REQUIRED": "Aktualisierungstoken ist erforderlich.",
     "REGISTRATION_FAILED": "Das Konto konnte nicht erstellt werden. Bitte versuche es in ein paar Minuten erneut. Wenn dieses Problem weiterhin besteht, kontaktiere bitte den Support.",
+    "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
     "USERNAME_ALREADY_IN_USE": "Dieser Benutzername ist bereits vergeben.",
     "USERNAME_AVAILABLE": "Der Benutzername ist verfügbar.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Der Benutzername darf nicht leer sein.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Anhang wurde erfolgreich gelöscht.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Um Dateien hochzuladen, benutze das erweiterte Fenster.",
     "openExpandedWindow": "Erweitertes Fenster öffnen",
     "uploadError": "Error uploading file: {{error}}",
