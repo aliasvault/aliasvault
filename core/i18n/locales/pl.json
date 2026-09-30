@@ -10,7 +10,7 @@
     "INVALID_RECOVERY_CODE": "Nieprawidłowy kod odzyskiwania. Spróbuj ponownie.",
     "INVALID_REFRESH_TOKEN": "Nieprawidłowy token odświeżania.",
     "PASSWORD_MISMATCH": "Podane hasło nie zgadza się z Twoim aktualnym hasłem.",
-    "PENDING_MIGRATIONS": "Istnieją oczekujące migracje. Uruchom 'dotnet ef update', aby je zastosować.",
+    "PENDING_MIGRATIONS": "Istnieją oczekujące migracje. Uruchom 'aktualizację bazy dotnet ef ', aby je zastosować.",
     "PUBLIC_REGISTRATION_DISABLED": "Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.",
     "REFRESH_TOKEN_REQUIRED": "Wymagany jest token odświeżania.",
     "REGISTRATION_FAILED": "Nie można utworzyć konta. Spróbuj ponownie za kilka minut. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.",
