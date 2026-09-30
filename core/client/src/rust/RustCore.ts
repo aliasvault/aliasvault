@@ -45,6 +45,20 @@ export async function extractRootDomain(domain: string): Promise<string> {
 }
 
 /**
+ * Whether a page on `host` may use `rpId` as its WebAuthn RP ID (the host or a parent that is not a public suffix).
+ */
+export async function isRpIdAllowedForHost(rpId: string, host: string): Promise<boolean> {
+  return rustCore().isRpIdAllowedForHost(rpId, host);
+}
+
+/**
+ * Whether `callerOrigin` is listed in `origins` from an RP's `/.well-known/webauthn` file.
+ */
+export async function isRelatedOriginAllowed(callerOrigin: string, origins: string[]): Promise<boolean> {
+  return rustCore().isRelatedOriginAllowed(callerOrigin, origins);
+}
+
+/**
  * Read a URL field value as an ordered list, accepting the single-string and multi-value
  * shapes a field can hold.
  */

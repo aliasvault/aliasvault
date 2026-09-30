@@ -9,22 +9,6 @@ export type WebAuthnBridgeRequest = {
 };
 
 /**
- * Normalize a host or RP ID for WebAuthn comparison.
- */
-function normalizeWebAuthnHost(value: string | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const normalized = value.trim().toLowerCase().replace(/\.$/, '');
-  if (!normalized || normalized.includes('/') || normalized.includes(':')) {
-    return null;
-  }
-
-  return normalized;
-}
-
-/**
  * Type guard that narrows an unknown value to a non-null object.
  */
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -32,19 +16,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Check whether an RP ID is valid for the current origin host.
- * WebAuthn allows the RP ID to be the current host or a parent domain.
- * This prevents a page from asking AliasVault to sign for another RP.
+ * The RP ID a WebAuthn request names, or undefined when it names none (the RP ID then defaults to the host).
  */
-export function isRpIdAllowedForHost(rpId: string | undefined, host: string): boolean {
-  const normalizedHost = normalizeWebAuthnHost(host);
-  const normalizedRpId = normalizeWebAuthnHost(rpId);
-
-  if (!normalizedHost || !normalizedRpId) {
-    return false;
+export function getWebAuthnRequestRpId(type: WebAuthnRequestType, request: WebAuthnBridgeRequest | undefined): unknown {
+  if (!isObject(request) || !isObject(request.publicKey)) {
+    return undefined;
   }
-
-  return normalizedHost === normalizedRpId || normalizedHost.endsWith(`.${normalizedRpId}`);
+  if (type === 'create') {
+    return isObject(request.publicKey.rp) ? request.publicKey.rp.id : undefined;
+  }
+  return request.publicKey.rpId;
 }
 
 /**
@@ -65,13 +46,12 @@ export function cloneWebAuthnEventDetail<T extends WebAuthnBridgeDetail>(detail:
 }
 
 /**
- * Validate a WebAuthn request before forwarding it to the passkey signing flow.
+ * Validate the shape and origin of a WebAuthn request. The RP ID itself is checked in the background.
  */
 export function validateWebAuthnRequest(
   type: WebAuthnRequestType,
   request: WebAuthnBridgeRequest | undefined,
   expectedOrigin: string,
-  currentHost: string,
 ): boolean {
   if (
     !isObject(request) ||
@@ -99,7 +79,7 @@ export function validateWebAuthnRequest(
     }
 
     const rpId = isObject(rp) ? rp.id : undefined;
-    return rpId === undefined || (typeof rpId === 'string' && isRpIdAllowedForHost(rpId, currentHost));
+    return rpId === undefined || typeof rpId === 'string';
   }
 
   const publicKey = request.publicKey;
@@ -108,7 +88,7 @@ export function validateWebAuthnRequest(
   }
 
   const rpId = publicKey.rpId;
-  return rpId === undefined || (typeof rpId === 'string' && isRpIdAllowedForHost(rpId, currentHost));
+  return rpId === undefined || typeof rpId === 'string';
 }
 
 /**
@@ -120,10 +100,9 @@ export function validateWebAuthnEventDetail(
   type: WebAuthnRequestType,
   detail: WebAuthnBridgeDetail | undefined,
   expectedOrigin: string,
-  currentHost: string,
 ): detail is WebAuthnBridgeDetail {
   return (
     typeof detail?.requestId === 'string' &&
-    validateWebAuthnRequest(type, detail, expectedOrigin, currentHost)
+    validateWebAuthnRequest(type, detail, expectedOrigin)
   );
 }

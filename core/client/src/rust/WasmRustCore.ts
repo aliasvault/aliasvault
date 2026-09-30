@@ -49,6 +49,8 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
 
     extractDomain: (url): Promise<string> => ready(() => core.extractDomain(url)),
     extractRootDomain: (domain): Promise<string> => ready(() => core.extractRootDomain(domain)),
+    isRpIdAllowedForHost: (rpId, host): Promise<boolean> => ready(() => core.isRpIdAllowedForHost(rpId, host)),
+    isRelatedOriginAllowed: (callerOrigin, origins): Promise<boolean> => ready(() => core.isRelatedOriginAllowed(callerOrigin, origins)),
     selectFaviconTarget: (urls): Promise<FaviconTarget | null> => ready(() => (core.selectFaviconTarget(urls) ?? null) as FaviconTarget | null),
     filterCredentials: (input: FilterCredentialsInput): Promise<FilterCredentialsOutput> => ready(() => core.filterCredentials(input) as FilterCredentialsOutput),
 

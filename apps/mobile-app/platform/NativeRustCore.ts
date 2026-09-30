@@ -38,6 +38,8 @@ export const nativeRustCore: IRustCore = {
 
   extractDomain: (url) => call('extractDomain', url),
   extractRootDomain: (domain) => call('extractRootDomain', domain),
+  isRpIdAllowedForHost: (rpId, host) => call('isRpIdAllowedForHost', rpId, host),
+  isRelatedOriginAllowed: (callerOrigin, origins) => call('isRelatedOriginAllowed', callerOrigin, origins),
   selectFaviconTarget: (urls) => call('selectFaviconTarget', urls),
   filterCredentials: (input) => call('filterCredentialsJson', JSON.stringify(input)),
 

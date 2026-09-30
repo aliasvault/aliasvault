@@ -5,10 +5,16 @@ import android.util.Base64
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.credentials.provider.CallingAppInfo
+import net.aliasvault.app.rustcore.JnaInitializer
 import org.json.JSONArray
+import org.json.JSONObject
+import uniffi.aliasvault_core.isRelatedOriginAllowed
+import uniffi.aliasvault_core.isRpIdAllowedForHost
 import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.security.MessageDigest
 
@@ -24,6 +30,9 @@ class OriginVerifier {
 
     companion object {
         private const val TAG = "OriginVerifier"
+
+        private const val MAX_RELATED_ORIGINS_BYTES = 64 * 1024
+        private val RP_ID_HOST_REGEX = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+\\.?$")
 
         /**
          * Privileged app allowlist for CallingAppInfo.getOrigin().
@@ -1137,24 +1146,88 @@ class OriginVerifier {
     }
 
     /**
-     * Verify that an origin is valid for the given RP ID.
-     * The origin must be https:// and the host must equal or be a subdomain of the RP ID.
+     * Verify that an https origin may use the given RP ID: its own host, a parent domain that is not a
+     * public suffix, or an RP that lists the origin in its /.well-known/webauthn file (related origins).
      */
     private fun isOriginValidForRpId(origin: String, rpId: String): Boolean {
-        val originHost = try {
-            val url = URL(origin)
-            if (url.protocol != "https") {
-                Log.w(TAG, "Origin is not HTTPS: $origin")
-                return false
-            }
-            url.host.lowercase()
+        val url = try {
+            URL(origin)
         } catch (e: Exception) {
             Log.w(TAG, "Invalid origin URL: $origin", e)
             return false
         }
+        if (url.protocol != "https") {
+            Log.w(TAG, "Origin is not HTTPS: $origin")
+            return false
+        }
 
-        val rpIdLower = rpId.lowercase()
-        return originHost == rpIdLower || originHost.endsWith(".$rpIdLower")
+        JnaInitializer.ensureInitialized()
+        if (isRpIdAllowedForHost(rpId, url.host)) {
+            return true
+        }
+
+        val callerOrigin = normalizeOrigin(origin) ?: return false
+        val relatedOrigins = fetchRelatedOrigins(rpId)
+        return relatedOrigins.isNotEmpty() && isRelatedOriginAllowed(callerOrigin, relatedOrigins)
+    }
+
+    /**
+     * Fetch the origins listed in https://<rpId>/.well-known/webauthn, or an empty list on any failure.
+     */
+    private fun fetchRelatedOrigins(rpId: String): List<String> {
+        val host = rpId.trim().lowercase()
+        if (!RP_ID_HOST_REGEX.matches(host) || host.all { it.isDigit() || it == '.' }) {
+            return emptyList()
+        }
+
+        return try {
+            val connection = URL("https://$host/.well-known/webauthn").openConnection() as HttpURLConnection
+            connection.instanceFollowRedirects = false
+            connection.useCaches = false
+            connection.connectTimeout = 5000
+            connection.readTimeout = 5000
+            try {
+                val contentType = connection.contentType?.substringBefore(';')?.trim()?.lowercase()
+                if (connection.responseCode != HttpURLConnection.HTTP_OK || contentType != "application/json" ||
+                    connection.contentLengthLong > MAX_RELATED_ORIGINS_BYTES
+                ) {
+                    return emptyList()
+                }
+
+                val body = readLimited(connection) ?: return emptyList()
+                val origins = JSONObject(body).optJSONArray("origins") ?: return emptyList()
+                (0 until origins.length()).mapNotNull { i -> origins.optString(i, null)?.let(::normalizeOrigin) }
+            } finally {
+                connection.disconnect()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Related origins lookup failed for $rpId", e)
+            emptyList()
+        }
+    }
+
+    /** Read the response body, or null when it is larger than MAX_RELATED_ORIGINS_BYTES. */
+    private fun readLimited(connection: HttpURLConnection): String? {
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
+        connection.inputStream.use { input ->
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                if (output.size() + read > MAX_RELATED_ORIGINS_BYTES) return null
+                output.write(buffer, 0, read)
+            }
+        }
+        return output.toString(Charsets.UTF_8.name())
+    }
+
+    /** Serialize an origin as scheme://host[:port], lowercased and without a default port, or null if invalid. */
+    private fun normalizeOrigin(value: String): String? {
+        val uri = runCatching { URI(value) }.getOrNull() ?: return null
+        val scheme = uri.scheme?.lowercase() ?: return null
+        val host = uri.host?.lowercase() ?: return null
+        val defaultPort = if (scheme == "https") 443 else if (scheme == "http") 80 else -1
+        return if (uri.port == -1 || uri.port == defaultPort) "$scheme://$host" else "$scheme://$host:${uri.port}"
     }
 
     /**

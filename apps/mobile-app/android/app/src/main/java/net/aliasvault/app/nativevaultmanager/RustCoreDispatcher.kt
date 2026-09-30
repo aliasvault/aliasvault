@@ -18,6 +18,8 @@ import uniffi.aliasvault_core.getDicewareLanguages
 import uniffi.aliasvault_core.getIdentityAgeRanges
 import uniffi.aliasvault_core.getIdentityLanguages
 import uniffi.aliasvault_core.getSyncableTableNames
+import uniffi.aliasvault_core.isRelatedOriginAllowed
+import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.pruneVaultJson
 import uniffi.aliasvault_core.selectFaviconTarget
@@ -53,6 +55,8 @@ object RustCoreDispatcher {
         return when (name) {
             "extractDomain" -> json(extractDomain(args.string(0)))
             "extractRootDomain" -> json(extractRootDomain(args.string(0)))
+            "isRpIdAllowedForHost" -> isRpIdAllowedForHost(args.string(0), args.string(1)).toString()
+            "isRelatedOriginAllowed" -> isRelatedOriginAllowed(args.string(0), args.strings(1)).toString()
             "selectFaviconTarget" -> {
                 val target = selectFaviconTarget(args.strings(0)) ?: return "null"
                 JSONObject().put("url", target.url).put("source", target.source).toString()

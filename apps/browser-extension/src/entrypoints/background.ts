@@ -17,8 +17,9 @@ import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { onMessage, sendMessage } from "@/utils/messaging/ExtensionMessaging";
 import type { IExtensionMessageProtocol } from "@/utils/messaging/ExtensionMessaging";
+import { isRpIdAllowedForCaller } from '@/utils/passkey/RelyingPartyValidation';
 import type { MatchingPasskeysResponse, WebAuthnAssertionResponse, WebAuthnPublicKeyGetPayload } from '@/utils/passkey/types';
-import { isRpIdAllowedForHost, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
+import { getWebAuthnRequestRpId, validateWebAuthnRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 import type { WebAuthnBridgeRequest } from '@/utils/passkey/WebAuthnRequestValidation';
 
 import { runStartupMigrations } from '@/migrations';
@@ -75,18 +76,30 @@ function getTrustedWebAuthnSenderContext(sender: WebAuthnMessageSender): Trusted
  * so each WebAuthn message keeps its own validation rule and fallback shape while sharing the
  * trust resolution and guard plumbing.
  */
-function withTrustedWebAuthnSender<T, U>(
+async function withTrustedWebAuthnSender<T, U>(
   sender: WebAuthnMessageSender,
-  validate: (context: TrustedWebAuthnSenderContext) => boolean,
+  validate: (context: TrustedWebAuthnSenderContext) => MaybePromise<boolean>,
   handle: (context: TrustedWebAuthnSenderContext) => T,
   onInvalid: U
-): T | U {
+): Promise<Awaited<T> | U> {
   const senderContext = getTrustedWebAuthnSenderContext(sender);
-  if (!senderContext || !validate(senderContext)) {
+  if (!senderContext || !(await validate(senderContext))) {
     return onInvalid;
   }
 
-  return handle(senderContext);
+  return await handle(senderContext);
+}
+
+/**
+ * Validate a WebAuthn request and check that the sender may use the RP ID it names.
+ */
+async function isValidWebAuthnRequest(type: 'create' | 'get', request: WebAuthnBridgeRequest, context: TrustedWebAuthnSenderContext): Promise<boolean> {
+  if (!validateWebAuthnRequest(type, request, context.origin)) {
+    return false;
+  }
+
+  const rpId = getWebAuthnRequestRpId(type, request);
+  return rpId === undefined || (typeof rpId === 'string' && await isRpIdAllowedForCaller(rpId, context.origin, context.host));
 }
 
 /**
@@ -148,10 +161,10 @@ async function broadcastVaultUnlocked(): Promise<void> {
  * Validate a WebAuthn create request against the sender's trusted origin, then forward it to the
  * passkey create flow. Falls back when the sender is untrusted or validation fails.
  */
-function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
+function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => validateWebAuthnRequest('create', data, ctx.origin, ctx.host),
+    (ctx) => isValidWebAuthnRequest('create', data, ctx),
     (ctx) => handleWebAuthnCreate({ ...data, origin: ctx.origin }),
     { fallback: true }
   );
@@ -161,10 +174,10 @@ function handleValidatedWebAuthnCreate(data: WebAuthnBridgeRequest, sender: WebA
  * Validate a WebAuthn get request against the sender's trusted origin, then forward it to the
  * passkey get flow. Falls back when the sender is untrusted or validation fails.
  */
-function handleValidatedWebAuthnGet(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> | { fallback: true } {
+function handleValidatedWebAuthnGet(data: WebAuthnBridgeRequest, sender: WebAuthnMessageSender): Promise<unknown> {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    (ctx) => isValidWebAuthnRequest('get', data, ctx),
     (ctx) => handleWebAuthnGet({ ...data, origin: ctx.origin }),
     { fallback: true }
   );
@@ -178,10 +191,10 @@ function handleValidatedWebAuthnGet(data: WebAuthnBridgeRequest, sender: WebAuth
 function handleValidatedGetMatchingPasskeys(
   data: { rpId: string; allowCredentialIds?: string[] },
   sender: WebAuthnMessageSender
-): Promise<MatchingPasskeysResponse> | MatchingPasskeysResponse {
+): Promise<MatchingPasskeysResponse> {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => typeof data?.rpId === 'string' && isRpIdAllowedForHost(data.rpId, ctx.host),
+    async (ctx) => typeof data?.rpId === 'string' && await isRpIdAllowedForCaller(data.rpId, ctx.origin, ctx.host),
     () => handleGetMatchingPasskeys(data),
     { success: false, locked: false, passkeys: [] }
   );
@@ -194,10 +207,10 @@ function handleValidatedGetMatchingPasskeys(
 function handleValidatedWebAuthnGetAssertion(
   data: { passkeyId: string; manifestId: string; origin: string; publicKey: WebAuthnPublicKeyGetPayload },
   sender: WebAuthnMessageSender
-): Promise<WebAuthnAssertionResponse> | WebAuthnAssertionResponse {
+): Promise<WebAuthnAssertionResponse> {
   return withTrustedWebAuthnSender(
     sender,
-    (ctx) => typeof data?.passkeyId === 'string' && typeof data?.manifestId === 'string' && validateWebAuthnRequest('get', data, ctx.origin, ctx.host),
+    async (ctx) => typeof data?.passkeyId === 'string' && typeof data?.manifestId === 'string' && await isValidWebAuthnRequest('get', data, ctx),
     (ctx) => handleWebAuthnGetAssertion({ ...data, origin: ctx.origin }),
     { success: false, error: 'Invalid request' }
   );
@@ -317,7 +330,6 @@ export default defineBackground({
 
     // Remember login save state (for surviving page navigation)
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
-    onMessage('GET_SAVE_PROMPT_STATE', ({ sender }) => handleGetSavePromptState({ tabId: sender.tab!.id! }));
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
 
     // Track last autofilled credential (for "Add URL to existing credential" prompt)

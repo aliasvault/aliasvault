@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { WebAuthnGetEventDetail } from '@/utils/passkey/webauthn.types';
 import {
   cloneWebAuthnEventDetail,
-  isRpIdAllowedForHost,
+  getWebAuthnRequestRpId,
   validateWebAuthnEventDetail,
   validateWebAuthnRequest
 } from '@/utils/passkey/WebAuthnRequestValidation';
@@ -89,17 +89,11 @@ describe('WebAuthnInterceptor request validation', () => {
     expect(isSameOriginWithAncestors(createFrameWithInaccessibleParent())).toBe(false);
   });
 
-  it('allows exact RP ID matches', () => {
-    expect(isRpIdAllowedForHost('example.com', 'example.com')).toBe(true);
-  });
-
-  it('allows parent-domain RP IDs', () => {
-    expect(isRpIdAllowedForHost('example.com', 'login.example.com')).toBe(true);
-  });
-
-  it('rejects sibling or unrelated RP IDs', () => {
-    expect(isRpIdAllowedForHost('accounts.example.com', 'evil.example.com')).toBe(false);
-    expect(isRpIdAllowedForHost('example.com', 'evil.com')).toBe(false);
+  it('reads the RP ID from create and get requests', () => {
+    expect(getWebAuthnRequestRpId('create', { origin: 'https://a.example.com', publicKey: { rp: { id: 'example.com' } } })).toBe('example.com');
+    expect(getWebAuthnRequestRpId('get', { origin: 'https://a.example.com', publicKey: { rpId: 'example.com' } })).toBe('example.com');
+    expect(getWebAuthnRequestRpId('create', { origin: 'https://a.example.com', publicKey: {} })).toBeUndefined();
+    expect(getWebAuthnRequestRpId('get', { origin: 'https://a.example.com' })).toBeUndefined();
   });
 
   it('rejects a forged origin in create requests', () => {
@@ -118,18 +112,26 @@ describe('WebAuthnInterceptor request validation', () => {
         },
         challenge: 'Y2hhbGxlbmdl',
       },
-    }, 'https://evil.example', 'evil.example')).toBe(false);
+    }, 'https://evil.example')).toBe(false);
   });
 
-  it('rejects a forged RP ID in get requests even when origin is honest', () => {
+  it('leaves the RP ID decision to the background', () => {
     expect(validateWebAuthnEventDetail('get', {
       requestId: 'request-1',
-      origin: 'https://evil.example',
+      origin: 'https://twitter.com',
       publicKey: {
         challenge: 'Y2hhbGxlbmdl',
-        rpId: 'accounts.example.com',
+        rpId: 'x.com',
       },
-    }, 'https://evil.example', 'evil.example')).toBe(false);
+    }, 'https://twitter.com')).toBe(true);
+    expect(validateWebAuthnEventDetail('get', {
+      requestId: 'request-1',
+      origin: 'https://twitter.com',
+      publicKey: {
+        challenge: 'Y2hhbGxlbmdl',
+        rpId: 42,
+      },
+    } as unknown as WebAuthnGetEventDetail, 'https://twitter.com')).toBe(false);
   });
 
   it('allows get requests without explicit RP ID for the current origin', () => {
@@ -139,7 +141,7 @@ describe('WebAuthnInterceptor request validation', () => {
       publicKey: {
         challenge: 'Y2hhbGxlbmdl',
       },
-    }, 'https://login.example.com', 'login.example.com')).toBe(true);
+    }, 'https://login.example.com')).toBe(true);
   });
 
   it('clones page event details before validation and forwarding', () => {
@@ -169,7 +171,6 @@ describe('WebAuthnInterceptor request validation', () => {
       'get',
       clonedDetail,
       'https://login.example.com',
-      'login.example.com',
     )).toBe(true);
   });
 
@@ -180,7 +181,7 @@ describe('WebAuthnInterceptor request validation', () => {
       publicKey: {
         challenge: 123,
       },
-    } as unknown as WebAuthnGetEventDetail, 'https://login.example.com', 'login.example.com')).toBe(false);
+    } as unknown as WebAuthnGetEventDetail, 'https://login.example.com')).toBe(false);
   });
 
   it('rejects a background request when sender origin and payload origin differ', () => {
@@ -190,6 +191,6 @@ describe('WebAuthnInterceptor request validation', () => {
         challenge: 'Y2hhbGxlbmdl',
         rpId: 'victim.example.com',
       },
-    }, 'https://attacker.example.com', 'attacker.example.com')).toBe(false);
+    }, 'https://attacker.example.com')).toBe(false);
   });
 });
