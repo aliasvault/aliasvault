@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Ny brugeroprettelse er i øjeblikket deaktiveret på denne server. Kontakt venligst administratoren.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token er påkrævet.",
     "REGISTRATION_FAILED": "Kunne ikke oprette kontoen. Prøv igen om et par minutter. Hvis dette problem fortsætter, kontakt venligst support.",
+    "UNKNOWN_ERROR": "Der opstod en ukendt fejl. Prøv venligst igen.",
     "USERNAME_ALREADY_IN_USE": "Brugernavnet er allerede i brug.",
     "USERNAME_AVAILABLE": "Brugernavnet er ledigt.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Brugernavn kan ikke være tomt eller bestå af mellemrum.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Vedhæftet fil slettet korrekt.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Brug det udvidede vindue for at uploade filer.",
     "openExpandedWindow": "Åbn udvidet vindue",
     "uploadError": "Error uploading file: {{error}}",
