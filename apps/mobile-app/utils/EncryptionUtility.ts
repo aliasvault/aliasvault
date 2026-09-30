@@ -40,8 +40,8 @@ class EncryptionUtility {
   public static async deriveKeyFromPassword(
     password: string,
     salt: string,
-    encryptionType: string = 'Argon2Id',
-    encryptionSettings: string = '{"Iterations":2,"MemorySize":19456,"DegreeOfParallelism":1}'
+    encryptionType: string,
+    encryptionSettings: string
   ): Promise<Uint8Array> {
     try {
       // Call the native method to derive the key via Argon2id

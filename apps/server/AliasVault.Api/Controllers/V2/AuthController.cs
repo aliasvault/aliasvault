@@ -430,6 +430,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
 
+        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
+        }
+
         var user = new AliasVaultUser
         {
             UserName = UsernameHelper.NormalizeUsername(model.Username),
@@ -1084,7 +1089,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the current defaults.
+    /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the accepted minimum.
     /// </summary>
     /// <param name="encryptionType">The KDF type.</param>
     /// <param name="encryptionSettings">The KDF settings JSON.</param>
@@ -1115,7 +1120,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             }
 
             // Check if any parameter is less than the allowed minimum, return false.
-            if (parallelismValue < Defaults.Argon2IdDegreeOfParallelism || memorySizeValue < Defaults.Argon2IdMemorySize || iterationsValue < Defaults.Argon2IdIterations)
+            if (parallelismValue < Defaults.MinimumArgon2IdDegreeOfParallelism || memorySizeValue < Defaults.MinimumArgon2IdMemorySize || iterationsValue < Defaults.MinimumArgon2IdIterations)
             {
                 return false;
             }

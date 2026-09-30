@@ -3,6 +3,7 @@
  */
 /* eslint-disable jsdoc/require-jsdoc */
 import initWasm, * as core from '../../wasm/aliasvault_core.js';
+import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
 import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, ParsedEmail, SrpEphemeral, SrpSession } from './RustCoreTypes';
@@ -64,7 +65,14 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
     decodeEmailSource: (source): Promise<Uint8Array> => ready(() => core.decodeEmailSource(source)),
     extractEmailAttachment: (source, index, detachedBody): Promise<Uint8Array> => ready(() => core.extractEmailAttachment(source, index, detachedBody)),
 
-    argon2DeriveKey: (password, salt, encryptionSettings): Promise<Uint8Array> => ready(() => core.argon2DeriveKey(password, salt, encryptionSettings)),
+    /*
+     * Argon2 blocks the thread it runs on for up to a few seconds on slow devices, so let the caller's loading
+     * indicator paint first before proceeding with the expensive operation.
+     */
+    argon2DeriveKey: async (password, salt, encryptionSettings): Promise<Uint8Array> => {
+      await yieldToPaint();
+      return ready(() => core.argon2DeriveKey(password, salt, encryptionSettings));
+    },
 
     srpGenerateSalt: (): Promise<string> => ready(() => core.srpGenerateSalt()),
     srpDerivePrivateKey: (salt, identity, passwordHash): Promise<string> => ready(() => core.srpDerivePrivateKey(salt, identity, passwordHash)),

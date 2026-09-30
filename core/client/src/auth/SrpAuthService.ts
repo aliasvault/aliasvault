@@ -64,15 +64,14 @@ export type NewPasswordMaterial = {
 };
 
 /**
- * Default encryption settings for Argon2Id.
- * These match the server defaults in apps/server/Utilities/AliasVault.Cryptography/Defaults.cs
+ * Default Argon2Id settings for a newly derived KEK.
  */
 export const DEFAULT_ENCRYPTION = {
   type: 'Argon2Id',
   settings: JSON.stringify({
     DegreeOfParallelism: 1,
-    MemorySize: 19456,
-    Iterations: 2,
+    MemorySize: 65536,
+    Iterations: 5,
   }),
 } as const;
 

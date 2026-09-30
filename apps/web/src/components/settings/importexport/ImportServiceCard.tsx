@@ -4,6 +4,7 @@ import { AvexImportService, AvexDecryptionError } from '@aliasvault/client/trans
 import { ImportException, ImportStage } from '@aliasvault/client/transfer/import/models/ImportException';
 import { detectAndRemoveDuplicates } from '@aliasvault/client/transfer/import/writers/ImportDuplicateDetection';
 import { VaultImportWriter } from '@aliasvault/client/transfer/import/writers/VaultImportWriter';
+import { yieldToPaint } from '@aliasvault/client/utilities/YieldToPaint';
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -78,15 +79,6 @@ type ImportServiceCardProps = {
   /** Per-import service custom instructions shown in the file upload step. */
   children?: React.ReactNode;
 };
-
-/**
- * Wait until the next paint frame to let the UI update before starting heavy work to prevent blocking the progress bar.
- */
-const yieldToPaint = (): Promise<void> =>
-  new Promise(resolve => {
-    requestAnimationFrame(() => setTimeout(resolve, 0));
-    setTimeout(resolve, 100);
-  });
 
 /**
  * One line naming an error: its class name when that says more than "Error", then the message.

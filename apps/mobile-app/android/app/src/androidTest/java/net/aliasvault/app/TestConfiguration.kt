@@ -39,8 +39,8 @@ object TestConfiguration {
      */
     object EncryptionDefaults {
         const val TYPE = "Argon2Id"
-        const val ITERATIONS = 2
-        const val MEMORY_SIZE = 19456
+        const val ITERATIONS = 5
+        const val MEMORY_SIZE = 65536
         const val PARALLELISM = 1
 
         val settingsJson: String
