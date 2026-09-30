@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Registratie van nieuwe accounts is momenteel uitgeschakeld op deze server. Neem contact op met de beheerder.",
     "REFRESH_TOKEN_REQUIRED": "Refreshtoken is vereist.",
     "REGISTRATION_FAILED": "Kon het account niet aanmaken. Probeer het over een paar minuten opnieuw. Als dit probleem zich blijft voordoen, neem dan contact op met support.",
+    "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
     "USERNAME_ALREADY_IN_USE": "Gebruikersnaam is al in gebruik.",
     "USERNAME_AVAILABLE": "Gebruikersnaam is beschikbaar.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Gebruikersnaam mag niet leeg zijn of alleen uit spaties bestaan.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Bijlage is succesvol verwijderd.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Gebruik het grote venster om bestanden te uploaden.",
     "openExpandedWindow": "Open groot venster",
     "uploadError": "Fout bij uploaden van bestand: {{error}}",
