@@ -140,6 +140,75 @@ task_passkeys_allowlist() {
     echo -e "  ${GREEN}✓${RESET} updated ${target#$REPO_ROOT/}"
 }
 
+task_public_suffix_list() {
+    local url="https://publicsuffix.org/list/public_suffix_list.dat"
+    local target="$REPO_ROOT/core/rust/src/credential_matcher/public_suffix/public_suffix_list.dat"
+
+    echo -e "  ${BLUE}↓${RESET} fetching $url"
+    local raw="$WORK_DIR/public_suffix_list.dat"
+    download "$url" "$raw"
+
+    # Rewrite the upstream list into the rules-only form the Rust core embeds: comments and blank
+    # lines dropped (the section markers are kept), internationalized rules converted to punycode
+    # since the matcher only ever sees ASCII hostnames. The MPL-2.0 notice stays with the data.
+    python3 - "$raw" "$target" "$url" "$TODAY" <<'PY'
+import re
+import sys
+
+raw_path, target, url, today = sys.argv[1:5]
+
+with open(raw_path, encoding="utf-8") as f:
+    lines = f.read().splitlines()
+
+version = next((l[len("// VERSION:"):].strip() for l in lines if l.startswith("// VERSION:")), None)
+if version is None or "// ===BEGIN ICANN DOMAINS===" not in lines or "// ===END PRIVATE DOMAINS===" not in lines:
+    sys.stderr.write("ERROR: downloaded content does not look like the Public Suffix List\n")
+    sys.exit(1)
+
+def to_ascii(rule):
+    prefix = "!" if rule.startswith("!") else ""
+    labels = [label if label == "*" else label.encode("idna").decode("ascii") for label in rule[len(prefix):].split(".")]
+    return prefix + ".".join(labels)
+
+out = []
+rule_count = 0
+for line in lines:
+    if line.startswith("// ===") and line.endswith("==="):
+        out.append(line)
+        continue
+    rule = line.split()[0] if line.strip() else ""
+    if not rule or rule.startswith("//"):
+        continue
+    if not re.fullmatch(r"!?(\*|[^\s.!*]+)(\.[^\s.!*]+)*", rule):
+        sys.stderr.write(f"ERROR: unexpected rule syntax: {line}\n")
+        sys.exit(1)
+    out.append(to_ascii(rule.lower()))
+    rule_count += 1
+
+if rule_count < 5000:
+    sys.stderr.write(f"ERROR: only {rule_count} rules parsed, refusing to write a truncated list\n")
+    sys.exit(1)
+
+header = [
+    "// Mozilla Public Suffix List, rules only: comments and blank lines stripped, internationalized rules in punycode.",
+    f"// Source: {url}",
+    f"// Upstream version: {version}",
+    f"// Last refreshed: {today} by scripts/refresh-external-dependencies.sh (task public-suffix-list)",
+    "//",
+    "// This Source Code Form is subject to the terms of the Mozilla Public",
+    "// License, v. 2.0. If a copy of the MPL was not distributed with this",
+    "// file, You can obtain one at https://mozilla.org/MPL/2.0/.",
+]
+
+with open(target, "w", encoding="utf-8") as f:
+    f.write("\n".join(header + out) + "\n")
+
+print(f"  {rule_count} rules, upstream version {version}")
+PY
+
+    echo -e "  ${GREEN}✓${RESET} updated ${target#$REPO_ROOT/}"
+}
+
 # ----------------------------------------------------------------------
 # Registry
 # ----------------------------------------------------------------------
@@ -148,6 +217,7 @@ task_passkeys_allowlist() {
 # tasks run when no specific task argument is given.
 TASKS=(
     "passkeys-allowlist:Android privileged-apps allowlist for WebAuthn (gstatic.com/gpm-passkeys-privileged-apps/apps.json)"
+    "public-suffix-list:Public Suffix List for root domain matching in the Rust credential matcher (publicsuffix.org)"
 )
 
 # ----------------------------------------------------------------------
