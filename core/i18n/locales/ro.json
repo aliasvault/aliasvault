@@ -71,7 +71,7 @@
     "deleteSuccess": "Atașament șters cu succes.",
     "firefoxExpandRequired": "Pentru a încărca fișiere, folosește fereastra extinsă.",
     "openExpandedWindow": "Deschide fereastra extinsă",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Eroare la încărcarea fișierului: {{error}}",
     "uploadSuccess": "Fișiere încărcate cu succes.",
     "uploading": "Se încarcă..."
   },
