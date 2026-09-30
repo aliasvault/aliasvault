@@ -67,7 +67,8 @@ fn public_suffix_label_count(host: &str, starts: &[usize]) -> usize {
 
 /// The registrable domain of `host`: its public suffix plus one label, kept as-is from the input.
 pub fn registrable_domain(host: &str) -> Option<&str> {
-    if host.is_empty() {
+    let host = host.strip_suffix('.').unwrap_or(host);
+    if host.split('.').any(str::is_empty) {
         return None;
     }
 
@@ -159,6 +160,23 @@ mod tests {
         assert_eq!(registrable_domain("myserver.local"), Some("myserver.local"));
         assert_eq!(registrable_domain("plex.myserver.local"), Some("myserver.local"));
         assert_eq!(registrable_domain("app.localhost"), Some("app.localhost"));
+    }
+
+    #[test]
+    fn trailing_dot_and_empty_labels() {
+        // A fully qualified host has the same registrable domain as without its trailing dot, never the bare TLD.
+        assert_eq!(registrable_domain("bank.com."), Some("bank.com"));
+        assert_eq!(registrable_domain("login.bank.com."), Some("bank.com"));
+        assert_eq!(registrable_domain("victim.vercel.app."), Some("victim.vercel.app"));
+        assert_eq!(registrable_domain("com."), None);
+        assert_eq!(registrable_domain("vercel.app."), None);
+
+        // Empty labels make a host malformed: no registrable domain at all.
+        assert_eq!(registrable_domain(".com"), None);
+        assert_eq!(registrable_domain("a..b.com"), None);
+        assert_eq!(registrable_domain("bank.com.."), None);
+        assert_eq!(registrable_domain(".."), None);
+        assert_eq!(registrable_domain("."), None);
     }
 
     #[test]

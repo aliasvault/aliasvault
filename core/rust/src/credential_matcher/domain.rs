@@ -133,10 +133,11 @@ pub fn extract_domain(url: &str) -> String {
     extract_domain_with_port(url).domain
 }
 
-/// Check if a host string is an IP address literal (IPv4 or IPv6, optionally bracketed).
+/// Check if a host string is an IP address literal (IPv4 with an optional trailing dot, or IPv6, optionally bracketed).
 /// IP addresses have no domain hierarchy, so they must never be reduced to a "root domain".
 fn is_ip_literal(host: &str) -> bool {
     let bare = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')).unwrap_or(host);
+    let bare = bare.strip_suffix('.').unwrap_or(bare);
     bare.parse::<std::net::IpAddr>().is_ok()
 }
 
