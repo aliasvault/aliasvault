@@ -363,6 +363,53 @@ fn test_multi_part_tlds() {
     assert_eq!(uk_matches[0].item_name.as_deref(), Some("UK Site"));
 }
 
+/// Verify that public suffix list is correctly implemented and subdomains of domains classified as shared hosts
+/// should not be treated as the same domain.
+#[test]
+fn test_shared_hosting_tenants_do_not_collapse_into_one_root_domain() {
+    let credentials = vec![
+        create_test_credential("My Vercel App", "https://myproject.vercel.app/login", "victim@example.com"),
+        create_test_credential("My GitHub Pages", "https://victim.github.io", "victim@example.com"),
+        create_test_credential("My Shop", "https://victim-shop.myshopify.com/admin", "victim@example.com"),
+        create_test_credential("My Worker", "https://victim.workers.dev", "victim@example.com"),
+    ];
+
+    for phishing_url in [
+        "https://evil-phish.vercel.app/",
+        "https://attacker.github.io/login",
+        "https://attacker-shop.myshopify.com/admin",
+        "https://attacker.workers.dev",
+        "https://vercel.app",
+        "https://github.io",
+    ] {
+        for mode in [AutofillMatchingMode::Default, AutofillMatchingMode::UrlSubdomain, AutofillMatchingMode::UrlExact] {
+            let input = CredentialMatcherInput {
+                credentials: credentials.clone(),
+                current_url: phishing_url.to_string(),
+                page_title: String::new(),
+                matching_mode: mode,
+                ignore_port: false,
+                max_results: None,
+            };
+            let output = filter_credentials(input);
+            assert!(output.matched_ids.is_empty(), "{phishing_url} in {mode:?} mode must not match: {:?}", output.matched_ids);
+        }
+    }
+
+    // The tenant itself, and its own subdomains, still match.
+    let matches = filter(credentials.clone(), "https://myproject.vercel.app/dashboard", "");
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].item_name.as_deref(), Some("My Vercel App"));
+
+    let matches = filter(credentials.clone(), "https://preview.myproject.vercel.app", "");
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].item_name.as_deref(), Some("My Vercel App"));
+
+    let matches = filter(credentials, "https://docs.victim.github.io", "");
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].item_name.as_deref(), Some("My GitHub Pages"));
+}
+
 /// Test JSON serialization/deserialization
 #[test]
 fn test_json_roundtrip() {

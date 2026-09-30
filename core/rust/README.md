@@ -34,7 +34,9 @@ An in-memory SQLite database (`SqliteMemoryDatabase`) that hosts every client's 
 needs its own SQLite build or writes plaintext to disk.
 
 ### credential_matcher
-Priority-based credential filtering for autofill with anti-phishing protection.
+Priority-based credential filtering for autofill. Root domains come from an embedded copy of the 
+Public Suffix List (`src/credential_matcher/public_suffix/public_suffix_list.dat`) which is refreshed
+on every release.
 
 ### email_parser
 RFC 822 email parsing into html/plain bodies and attachment metadata, with on-demand attachment bytes.
