@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Tá clárú cuntais nua díchumasaithe ar an bhfreastalaí seo faoi láthair. Téigh i dteagmháil leis an riarthóir le do thoil.",
     "REFRESH_TOKEN_REQUIRED": "Tá comhartha athnuachana ag teastáil.",
     "REGISTRATION_FAILED": "Níorbh fhéidir an cuntas a chruthú. Déan iarracht arís i gceann cúpla nóiméad. Má leanann an fhadhb seo, déan teagmháil leis an bhfoireann tacaíochta.",
+    "UNKNOWN_ERROR": "Tharla earráid anaithnid. Déan iarracht arís.",
     "USERNAME_ALREADY_IN_USE": "Tá an t-ainm úsáideora in úsáid cheana féin.",
     "USERNAME_AVAILABLE": "Tá ainm úsáideora ar fáil.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Ní féidir ainm úsáideora a bheith folamh ná spás bán.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "D'éirigh leis an gceangaltán a scriosadh.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Chun comhaid a uaslódáil, bain úsáid as an bhfuinneog leathnaithe.",
     "openExpandedWindow": "Oscail Fuinneog Leathnaithe",
     "uploadError": "Error uploading file: {{error}}",
