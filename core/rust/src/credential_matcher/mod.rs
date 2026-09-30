@@ -11,6 +11,7 @@
 //! 5. Priority 4: text matching of the search string against item names
 
 pub(crate) mod domain;
+mod public_suffix;
 mod stop_words;
 
 use serde::{Deserialize, Serialize};
