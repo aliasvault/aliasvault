@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "El registro de nuevas cuentas está actualmente deshabilitado en este servidor. Por favor, contacta con el administrador.",
     "REFRESH_TOKEN_REQUIRED": "Se requiere actualizar el token.",
     "REGISTRATION_FAILED": "No se pudo crear la cuenta. Por favor, inténtalo de nuevo en unos minutos. Si el problema persiste, ponte en contacto con soporte.",
+    "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtalo de nuevo.",
     "USERNAME_ALREADY_IN_USE": "El nombre de usuario ya está en uso.",
     "USERNAME_AVAILABLE": "El nombre de usuario está disponible.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nombre de usuario no puede estar vacío o en blanco.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Adjunto eliminado correctamente.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Para subir archivos, utiliza la ventana ampliada.",
     "openExpandedWindow": "Abrir ventana ampliada",
     "uploadError": "Error uploading file: {{error}}",
