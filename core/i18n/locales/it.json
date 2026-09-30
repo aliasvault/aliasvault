@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "La registrazione di nuovi account è disabilitata su questo server. Contatta l'amministratore.",
     "REFRESH_TOKEN_REQUIRED": "È necessario aggiornare il token.",
     "REGISTRATION_FAILED": "Impossibile creare l'account. Per favore riprova tra qualche minuto. Se il problema persiste, contatta l'assistenza.",
+    "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto. Riprova.",
     "USERNAME_ALREADY_IN_USE": "Il nome utente è già in uso.",
     "USERNAME_AVAILABLE": "Nome utente disponibile.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Il nome utente non può essere vuoto o contenere spazi.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Allegato eliminato con successo.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Per caricare i file, usa la finestra estesa.",
     "openExpandedWindow": "Apri Finestra Estesa",
     "uploadError": "Errore durante il caricamento del file: {{error}}",
