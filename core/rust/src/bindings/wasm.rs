@@ -5,10 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::credential_matcher::{filter_credentials, CredentialMatcherInput, CredentialMatcherOutput};
 use crate::password_generator::{available_languages, generate_password};
-use crate::vault_codec::{self, CanonicalizeInput, DataBucket, Manifest, MaterializeInput};
-use crate::vault_merge::{merge_canonical, CanonicalMergeInput, CanonicalMergeOutput};
-use crate::vault_sharing::{self, ManifestAccessRequest, ManifestWriteSetRequest};
-use crate::vault_pruner::prune_vault;
+use crate::vault_codec::{self, CanonicalizeInput};
 
 /// Initialize panic hook for better error messages.
 #[wasm_bindgen(start)]
@@ -27,44 +24,13 @@ fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Vault Merge WASM Bindings
+// Vault Sync WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Get the list of table names that take part in a vault sync.
 #[wasm_bindgen(js_name = getSyncableTableNames)]
 pub fn get_syncable_table_names_js() -> Vec<String> {
     crate::vault_model::SYNCABLE_TABLE_NAMES.iter().map(|s| s.to_string()).collect()
-}
-
-/// Merge the local canonical vault onto the server canonical vault (manifest-v1 format).
-///
-/// Takes a JsValue (CanonicalMergeInput) and returns a JsValue (CanonicalMergeOutput): the merged
-/// manifests + data buckets, one entry per server manifest, rows out instead of SQL statements.
-#[wasm_bindgen(js_name = mergeCanonical)]
-pub fn merge_canonical_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: CanonicalMergeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    let output: CanonicalMergeOutput = merge_canonical(input).map_err(js_err)?;
-    to_js(&output)
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault Pruner WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Prune expired items from trash (items with DeletedAt older than retention_days, default 30).
-/// Input: `PruneInput` JSON. Output: `PruneOutput` JSON.
-#[wasm_bindgen(js_name = pruneVaultJson)]
-pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
-    crate::common::error::json_call(input_json, prune_vault).map_err(js_err)
-}
-
-/// Get the per-table SELECT queries used to build prune input.
-///
-/// Returns an array of `{ name, query }` objects. Blob columns are reduced to a
-/// 1-byte presence marker to avoid serializing large binary data to JSON.
-#[wasm_bindgen(js_name = getPruneTableQueries)]
-pub fn get_prune_table_queries_js() -> Result<JsValue, JsValue> {
-    serde_wasm_bindgen::to_value(&crate::vault_pruner::get_prune_table_queries()).map_err(js_err)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -94,15 +60,6 @@ pub fn vault_codec_canonicalize_from_sqlite_js(input: JsValue) -> Result<JsValue
     to_js(&output)
 }
 
-/// Materialize the manifest + data buckets into the table set the platform inserts into a fresh schema DB.
-/// Input: `MaterializeInput`. Output: `MaterializedTables`.
-#[wasm_bindgen(js_name = vaultCodecMaterializeAsSqlite)]
-pub fn vault_codec_materialize_as_sqlite_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: MaterializeInput = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    let output = vault_codec::materialize_as_sqlite(input).map_err(js_err)?;
-    to_js(&output)
-}
-
 /// Generate a fresh 32-byte per-manifest blob-hashing salt (lowercase hex).
 #[wasm_bindgen(js_name = vaultCodecGenerateManifestSalt)]
 pub fn vault_codec_generate_manifest_salt_js() -> String {
@@ -119,62 +76,6 @@ pub fn vault_codec_pack_payload_js(payload_json: &str) -> Result<Vec<u8>, JsValu
 #[wasm_bindgen(js_name = vaultCodecUnpackPayload)]
 pub fn vault_codec_unpack_payload_js(plain_bytes: &[u8]) -> Result<String, JsValue> {
     vault_codec::unpack_payload(plain_bytes).map_err(js_err)
-}
-
-/// Structurally validate a manifest. Input: `Manifest`. Output: `ValidationResult`.
-#[wasm_bindgen(js_name = vaultCodecValidateManifest)]
-pub fn vault_codec_validate_manifest_js(manifest: JsValue) -> Result<JsValue, JsValue> {
-    let m: Manifest = serde_wasm_bindgen::from_value(manifest).map_err(js_err)?;
-    serde_wasm_bindgen::to_value(&vault_codec::validate_manifest(&m)).map_err(js_err)
-}
-
-/// Validate a data bucket. Input: `DataBucket`. Output: `ValidationResult`.
-#[wasm_bindgen(js_name = vaultCodecValidateDataBucket)]
-pub fn vault_codec_validate_data_bucket_js(data_bucket: JsValue) -> Result<JsValue, JsValue> {
-    let b: DataBucket = serde_wasm_bindgen::from_value(data_bucket).map_err(js_err)?;
-    serde_wasm_bindgen::to_value(&vault_codec::validate_data_bucket(&b)).map_err(js_err)
-}
-
-/// SHA-256 (lowercase hex) of a base64 ciphertext string.
-#[wasm_bindgen(js_name = vaultCodecComputeCiphertextHash)]
-pub fn vault_codec_compute_ciphertext_hash_js(base64_ciphertext: &str) -> String {
-    vault_codec::compute_ciphertext_hash(base64_ciphertext)
-}
-
-/// Content fingerprint of a manifest / data-bucket payload JSON for change detection: SHA-256 (lowercase
-/// hex) of the canonical JSON, excluding the volatile `canonicalizedAt` timestamp.
-#[wasm_bindgen(js_name = vaultCodecComputeContentFingerprint)]
-pub fn vault_codec_compute_content_fingerprint_js(payload_json: &str) -> String {
-    vault_codec::compute_content_fingerprint(payload_json)
-}
-
-/// Extract the encryption-key row whose `PublicKey` matches `public_key` from a decrypted manifest's
-/// `EncryptionKeys` table (scoped to the manifest itself: personal keys on the personal manifest, the folder's
-/// delivery keypair on a shared manifest).
-#[wasm_bindgen(js_name = vaultCodecExtractEncryptionKeyForPublicKey)]
-pub fn vault_codec_extract_encryption_key_for_public_key_js(manifest: JsValue, public_key: &str) -> Result<JsValue, JsValue> {
-    let m: Manifest = serde_wasm_bindgen::from_value(manifest).map_err(js_err)?;
-    to_js(&vault_codec::extract_encryption_key_for_public_key(&m, public_key))
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Vault Sharing WASM Bindings
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Resolve which manifests the next push writes, personal manifest first.
-/// Input: `ManifestWriteSetRequest`. Output: `ManifestWriteSet`.
-#[wasm_bindgen(js_name = vaultSharingResolveManifestWriteSet)]
-pub fn vault_sharing_resolve_manifest_write_set_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ManifestWriteSetRequest = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    to_js(&vault_sharing::resolve_manifest_write_set(input))
-}
-
-/// Split what the vault holds into what cannot be written and what access was lost.
-/// Input: `ManifestAccessRequest`. Output: `ManifestAccessPartition`.
-#[wasm_bindgen(js_name = vaultSharingPartitionManifestAccess)]
-pub fn vault_sharing_partition_manifest_access_js(input: JsValue) -> Result<JsValue, JsValue> {
-    let input: ManifestAccessRequest = serde_wasm_bindgen::from_value(input).map_err(js_err)?;
-    to_js(&vault_sharing::partition_manifest_access(input))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

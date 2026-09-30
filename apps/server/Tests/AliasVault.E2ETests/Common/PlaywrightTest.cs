@@ -104,15 +104,6 @@ public abstract class PlaywrightTest
         }
     }
 
-    /// <summary>
-    /// Get the current relative URL.
-    /// </summary>
-    /// <returns>Current page as relative URL.</returns>
-    protected string GetCurrentRelativeUrl()
-    {
-        return Page.Url.Replace(AppBaseUrl, string.Empty);
-    }
-
      /// <summary>
     /// Navigate to a relative URL using Blazor's client-side router.
     /// </summary>
@@ -236,35 +227,6 @@ public abstract class PlaywrightTest
             Console.Error.WriteLine(failureMessage);
             TestContext.Progress.WriteLine(failureMessage);
         };
-    }
-
-    /// <summary>
-    /// Sets new random test user credentials that are used for signing up and logging in.
-    /// </summary>
-    protected void SetRandomTestUserCredentials()
-    {
-        TestUserUsername = $"{Guid.NewGuid().ToString()[..10]}@test.com";
-        TestUserPassword = Guid.NewGuid().ToString();
-    }
-
-    /// <summary>
-    /// Wait for the page to be fully loaded and the specified element to be visible and enabled.
-    /// </summary>
-    /// <param name="selector">The element to wait for and get.</param>
-    /// <returns>The requested element or a timeout if element was not found in time.</returns>
-    protected async Task<ILocator> WaitForAndGetElement(string selector)
-    {
-        var requestedElement = Page.Locator(selector);
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-
-        // Wait for the requested element to be visible and enabled.
-        await requestedElement.WaitForAsync(new LocatorWaitForOptions
-        {
-            State = WaitForSelectorState.Visible,
-            Timeout = 10000,
-        });
-
-        return requestedElement;
     }
 
     /// <summary>

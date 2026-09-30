@@ -7,6 +7,8 @@
 
 namespace AliasVault.E2ETests.Tests.Admin;
 
+using OtpNet;
+
 /// <summary>
 /// End-to-end tests for two-factor auth lockout behavior.
 /// </summary>
@@ -35,8 +37,8 @@ public class TwoFactorAuthLockoutTests : AdminPlaywrightTest
         // Extract secret key from page.
         var secretKey = await Page.TextContentAsync("kbd");
 
-        // Generate verification code with TotpHelper.
-        var totp = TotpGenerator.TotpGenerator.GenerateTotpCode(secretKey!);
+        // Generate verification code.
+        var totp = new Totp(Base32Encoding.ToBytes(secretKey!.Replace(" ", string.Empty))).ComputeTotp();
 
         // Fill in the form name="Input.Code".
         await Page.Locator("input[id='code']").FillAsync(totp);

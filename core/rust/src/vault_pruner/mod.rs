@@ -27,8 +27,8 @@ pub struct PruneInput {
     pub tables: Vec<CodecTableData>,
     /// Current time in ISO 8601 UTC format: `YYYY-MM-DDTHH:MM:SS.sssZ`.
     /*
-     * Callers: JavaScript `new Date().toISOString()`, C# `DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")`,
-     * Swift `ISO8601DateFormatter().string(from: Date())`, Kotlin `Instant.now().toString()`.
+     * Callers: the Rust sync engine (`now_iso_utc()`), Swift `ISO8601DateFormatter().string(from: Date())`,
+     * Kotlin `Instant.now().toString()`.
      */
     pub current_time: String,
     /// Retention period in days (default: 30)

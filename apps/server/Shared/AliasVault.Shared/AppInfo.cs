@@ -123,10 +123,4 @@ public static class AppInfo
 
         return version;
     }
-
-    /// <summary>
-    /// Gets a short version string (major.minor).
-    /// </summary>
-    /// <returns>The short version string.</returns>
-    public static string GetShortVersion() => $"{VersionMajor}.{VersionMinor}";
 }

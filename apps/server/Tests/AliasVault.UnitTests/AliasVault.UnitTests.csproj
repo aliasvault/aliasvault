@@ -46,7 +46,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.10" />
     </ItemGroup>
 
     <ItemGroup>
@@ -55,7 +54,6 @@
         <ProjectReference Include="..\..\Databases\AliasServerDb\AliasServerDb.csproj" />
         <ProjectReference Include="..\..\Utilities\AliasVault.Cryptography\AliasVault.Cryptography.csproj" />
         <ProjectReference Include="..\..\Utilities\AliasVault.FaviconExtractor\AliasVault.FaviconExtractor.csproj" />
-        <ProjectReference Include="..\..\Utilities\AliasVault.TotpGenerator\AliasVault.TotpGenerator.csproj" />
     </ItemGroup>
 
 </Project>
