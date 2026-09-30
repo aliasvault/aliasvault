@@ -1,10 +1,10 @@
 # AliasVault.Shared
 
-This project contains shared models, DTOs, and functionality used across the AliasVault solution. Unlike AliasVault.Shared.Core, this project can include external dependencies and more complex shared logic.
+This project contains shared models, DTOs, application version info (`AppInfo`) and functionality used across the AliasVault solution.
 
 ## Purpose
 
-This library provides shared components used by both client and server applications:
+This library provides shared components used by the server projects:
 - Data transfer objects (DTOs)
 - Domain models
 - Shared services
@@ -13,4 +13,4 @@ This library provides shared components used by both client and server applicati
 
 ## Dependencies
 
-This project can include external dependencies as needed such as utility libraries etc.
+This project has no external dependencies.

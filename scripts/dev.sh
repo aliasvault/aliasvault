@@ -228,8 +228,8 @@ run_worker() {
   ConnectionStrings__AliasServerDbContext="$CONN_STR" \
     dotnet watch --project "$ROOT_DIR/apps/server/$proj"
 }
-start_smtp()       { run_worker "Services/AliasVault.SmtpService"; }
-start_taskrunner() { run_worker "Services/AliasVault.TaskRunner"; }
+start_smtp()       { run_worker "AliasVault.SmtpService"; }
+start_taskrunner() { run_worker "AliasVault.TaskRunner"; }
 
 start_web() {
   require npm

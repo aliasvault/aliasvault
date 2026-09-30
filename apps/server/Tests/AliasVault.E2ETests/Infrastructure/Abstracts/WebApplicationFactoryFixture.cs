@@ -8,7 +8,6 @@
 namespace AliasVault.E2ETests.Infrastructure.Abstracts;
 
 using AliasServerDb;
-using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

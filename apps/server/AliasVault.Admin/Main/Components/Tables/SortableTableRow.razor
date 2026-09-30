@@ -1,0 +1,35 @@
+﻿@inherits ComponentBase
+<tr @onclick="HandleClick" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 @(OnClick.HasDelegate ? "cursor-pointer" : "") @(Class)">
+    @ChildContent
+</tr>
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content of the table.
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets (additional) CSS classes to add to row.
+    /// </summary>
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the callback to invoke when the row is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Handles the click event.
+    /// </summary>
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}

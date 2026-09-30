@@ -2,9 +2,7 @@
  * Single source of truth for the password-length and Diceware word-count
  * defaults and UI slider ranges shared across every AliasVault client.
  *
- * This file is distributed by core/models/build.sh to all platforms including:
- *   - `core/rust/src/password_generator/defaults.rs` (Rust core)
- *   - `apps/server/Databases/AliasClientDb/Models/PasswordGeneratorDefaults.cs` (C# web client)
+ * core/models/build.sh generates `core/rust/src/password_generator/defaults.rs` (Rust core) from this file.
  *
  * The TypeScript clients (browser extension, mobile app) import the constants directly from `@/utils/dist/core/models/defaults`.
  */

@@ -8,7 +8,6 @@
 namespace AliasVault.Api.Helpers;
 
 using AliasServerDb;
-using AliasVault.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>

@@ -1,5 +1,5 @@
 /**
- * A downloadable client (the shared BrowserExtensionInfo / MobileAppInfo).
+ * A downloadable client app (browser extension or mobile app).
  */
 export type AppInfo = {
   name: string;
@@ -8,7 +8,7 @@ export type AppInfo = {
   isAvailable: boolean;
 };
 
-/** The browser extensions, in the order of the shared constants. */
+/** The browser extensions. */
 export const BROWSER_EXTENSIONS: AppInfo[] = [
   { name: 'Google Chrome', iconPath: '/img/browser-icons/chrome.svg', downloadUrl: 'https://chromewebstore.google.com/detail/aliasvault/bmoggiinmnodjphdjnmpcnlleamkfedj', isAvailable: true },
   { name: 'Firefox', iconPath: '/img/browser-icons/firefox.svg', downloadUrl: 'https://addons.mozilla.org/en-US/firefox/addon/aliasvault/', isAvailable: true },

@@ -1,0 +1,33 @@
+﻿@inherits ComponentBase
+@if (IsPrimary)
+{
+    <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-200" title="@Title">
+        @ChildContent
+    </td>
+}
+else
+{
+    <td class="px-4 py-3 text-gray-500 dark:text-gray-400" title="@Title">
+        @ChildContent
+    </td>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content of the table.
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>
+    /// Indicates if the column is considered primary which will be styled differently.
+    /// </summary>
+    [Parameter]
+    public bool IsPrimary { get; set; }
+
+    /// <summary>
+    /// Gets or sets the title attribute for the column.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+}

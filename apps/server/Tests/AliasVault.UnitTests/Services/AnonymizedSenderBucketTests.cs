@@ -8,7 +8,7 @@
 namespace AliasVault.UnitTests.Services;
 
 using System.Globalization;
-using AliasVault.Cryptography.Server;
+using AliasVault.Cryptography;
 
 /// <summary>
 /// Tests for <see cref="AnonymizedSenderBucket"/>.

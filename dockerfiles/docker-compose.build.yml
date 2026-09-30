@@ -33,10 +33,10 @@ services:
         image: aliasvault-smtp
         build:
             context: .
-            dockerfile: apps/server/Services/AliasVault.SmtpService/Dockerfile
+            dockerfile: apps/server/AliasVault.SmtpService/Dockerfile
 
     task-runner:
         image: aliasvault-task-runner
         build:
             context: .
-            dockerfile: apps/server/Services/AliasVault.TaskRunner/Dockerfile
+            dockerfile: apps/server/AliasVault.TaskRunner/Dockerfile

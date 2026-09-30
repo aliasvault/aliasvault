@@ -8,7 +8,7 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using System.Text.Json;
-using AliasVault.Cryptography.Server;
+using AliasVault.Cryptography;
 
 /// <summary>
 /// Tests for the SrpArgonEncryption class.

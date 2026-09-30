@@ -1,0 +1,74 @@
+@inherits ComponentBase
+<button type="@Type"
+        @onclick="HandleClick"
+        disabled="@IsDisabled"
+        class="@GetButtonClasses()">
+    @ChildContent
+</button>
+
+@code {
+    /// <summary>
+    /// The content to be displayed inside the button.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The event to call when the button is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Specifies whether the button is disabled.
+    /// </summary>
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    /// <summary>
+    /// Specifies the type of the button. Default is "button".
+    /// </summary>
+    [Parameter]
+    public string Type { get; set; } = "button";
+
+    /// <summary>
+    /// The color theme of the button.
+    /// </summary>
+    [Parameter]
+    public string Color { get; set; } = "primary";
+
+    /// <summary>
+    /// Additional CSS classes to apply to the button.
+    /// </summary>
+    [Parameter]
+    public string AdditionalClasses { get; set; } = "";
+
+    /// <summary>
+    /// The display class of the button. Defaults to inline.
+    /// </summary>
+    [Parameter]
+    public string Display { get; set; } = "inline";
+
+    /// <summary>
+    /// Handles the button click event.
+    /// </summary>
+    private async Task HandleClick()
+    {
+        if (!IsDisabled)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Gets the CSS classes for the button based on its state and color.
+    /// </summary>
+    /// <returns>A string containing the CSS classes for the button.</returns>
+    private string GetButtonClasses()
+    {
+        var colorClasses = ButtonStyles.GetColorClasses(Color);
+        var disabledClasses = IsDisabled ? ButtonStyles.DisabledClasses : "";
+
+        return $"{Display} {ButtonStyles.BaseClasses} {colorClasses} {disabledClasses} {AdditionalClasses}".Trim();
+    }
+}

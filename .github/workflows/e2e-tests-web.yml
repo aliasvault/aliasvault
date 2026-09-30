@@ -12,7 +12,7 @@ on:
       - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
       - '.github/actions/start-smtp-service/**'
-      - 'apps/server/Services/AliasVault.SmtpService/**'
+      - 'apps/server/AliasVault.SmtpService/**'
   pull_request:
     branches: [ "main" ]
     paths:
@@ -23,7 +23,7 @@ on:
       - '.github/actions/build-core-libraries/**'
       - '.github/actions/start-api-server/**'
       - '.github/actions/start-smtp-service/**'
-      - 'apps/server/Services/AliasVault.SmtpService/**'
+      - 'apps/server/AliasVault.SmtpService/**'
   workflow_dispatch:
 
 concurrency:

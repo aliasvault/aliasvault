@@ -68,7 +68,11 @@ runs:
         GATED_PATHS=(
           "core/rust/src/vault_model/generated.rs"
           "core/rust/src/password_generator/defaults.rs"
-          "apps/server/Databases/AliasClientDb/Models"
+          "apps/server/Databases/AliasClientDb/Models/VaultTableRegistry.cs"
+          "apps/server/Shared/AliasVault.Shared/Models/WebApi/V2/Vault/VaultDataBucketCategory.cs"
+          "apps/server/Shared/AliasVault.Shared/Models/Enums/UnlockMethodType.cs"
+          "apps/server/Shared/AliasVault.Shared/Models/Enums/ManifestKeyType.cs"
+          "apps/server/Shared/AliasVault.Shared/Models/Enums/VaultKeyAlgorithm.cs"
           "apps/mobile-app/ios/VaultModels"
           "apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models"
         )

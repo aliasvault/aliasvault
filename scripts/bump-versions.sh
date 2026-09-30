@@ -146,9 +146,9 @@ extract_build_increment() {
 # Function to read and validate semantic version
 read_semver() {
     # Get current version from server
-    local current_major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local current_minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local current_stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | cut -d'"' -f2)
+    local current_major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local current_minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local current_stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | cut -d'"' -f2)
     local suggested_version="${current_major}.$((current_minor + 1)).0"
 
     while true; do
@@ -245,10 +245,10 @@ update_version() {
 
 # Function to extract version from server AppInfo.cs
 get_server_version() {
-    local major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local patch=$(grep "public const int VersionPatch = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | cut -d'"' -f2)
+    local major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local patch=$(grep "public const int VersionPatch = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" | cut -d'"' -f2)
     echo "$major.$minor.$patch$stage"
 }
 
@@ -603,16 +603,16 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
 
     # Update server version
     echo -e "${BLUE}Updating server version...${RESET}"
-    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" \
         "public const int VersionMajor = [0-9][0-9]*;" \
         "public const int VersionMajor = $major;"
-    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" \
         "public const int VersionMinor = [0-9][0-9]*;" \
         "public const int VersionMinor = $minor;"
-    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" \
         "public const int VersionPatch = [0-9][0-9]*;" \
         "public const int VersionPatch = $patch;"
-    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared/AppInfo.cs" \
         "public const string VersionStage = \"[^\"]*\";" \
         "public const string VersionStage = \"$version_suffix\";"
 

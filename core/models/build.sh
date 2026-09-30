@@ -23,10 +23,10 @@ node scripts/generate-vault-table-registry.cjs
 npm run test
 
 echo ""
-echo "- Generating platform-specific models (C#, Swift, Kotlin)..."
+echo "- Generating platform-specific models (Swift, Kotlin, React Native)..."
 node scripts/generate-field-keys.cjs
 
-echo "- Generating password-generator defaults (Rust, C#)..."
+echo "- Generating password-generator defaults (Rust)..."
 node scripts/generate-password-defaults.cjs
 
 echo "- Generating app defaults (Swift, Kotlin)..."

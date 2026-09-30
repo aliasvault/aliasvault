@@ -65,7 +65,7 @@ export type NewPasswordMaterial = {
 
 /**
  * Default encryption settings for Argon2Id.
- * These match the server defaults in AliasVault.Cryptography.Client/Defaults.cs
+ * These match the server defaults in apps/server/Utilities/AliasVault.Cryptography/Defaults.cs
  */
 export const DEFAULT_ENCRYPTION = {
   type: 'Argon2Id',

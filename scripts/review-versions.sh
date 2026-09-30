@@ -9,10 +9,10 @@ fi
 
 # Function to extract version from server AppInfo.cs
 get_server_version() {
-    local major=$(grep "public const int VersionMajor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local minor=$(grep "public const int VersionMinor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local patch=$(grep "public const int VersionPatch = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local stage=$(grep "public const string VersionStage = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | cut -d'"' -f2)
+    local major=$(grep "public const int VersionMajor = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local minor=$(grep "public const int VersionMinor = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local patch=$(grep "public const int VersionPatch = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local stage=$(grep "public const string VersionStage = " ../apps/server/Shared/AliasVault.Shared/AppInfo.cs | cut -d'"' -f2)
     echo "$major.$minor.$patch$stage"
 }
 

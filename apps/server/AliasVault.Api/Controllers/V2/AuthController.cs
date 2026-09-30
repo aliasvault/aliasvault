@@ -18,9 +18,8 @@ using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
-using AliasVault.Cryptography.Client;
-using AliasVault.Cryptography.Server;
-using AliasVault.Shared.Core;
+using AliasVault.Cryptography;
+using AliasVault.Shared;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
@@ -885,9 +884,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         };
 
         // The payload is encrypted with a one-off symmetric key, which in turn is encrypted with the client's RSA public key.
-        var symmetricKey = Cryptography.Server.Encryption.GenerateRandomSymmetricKey();
-        var encryptedPayload = Cryptography.Server.Encryption.SymmetricEncrypt(JsonSerializer.Serialize(payload, MobileLoginRequestHelper.PayloadJsonOptions), symmetricKey);
-        var encryptedSymmetricKey = Cryptography.Server.Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, clientPublicKey);
+        var symmetricKey = Cryptography.Encryption.GenerateRandomSymmetricKey();
+        var encryptedPayload = Cryptography.Encryption.SymmetricEncrypt(JsonSerializer.Serialize(payload, MobileLoginRequestHelper.PayloadJsonOptions), symmetricKey);
+        var encryptedSymmetricKey = Cryptography.Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, clientPublicKey);
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.MobileLogin);
 

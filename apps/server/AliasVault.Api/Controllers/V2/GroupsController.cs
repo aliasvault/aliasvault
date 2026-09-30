@@ -12,7 +12,7 @@ using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
 using AliasVault.Auth;
-using AliasVault.Cryptography.Client;
+using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;

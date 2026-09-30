@@ -1,0 +1,55 @@
+@inherits ComponentBase
+<div class="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
+    <div class="mb-4 col-span-full xl:mb-2">
+        <Breadcrumb BreadcrumbItems="BreadcrumbItems" />
+        <div class="flex flex-row items-center justify-between gap-4">
+            @if (TitleActions != null)
+            {
+                @TitleActions
+            }
+            else
+            {
+                <H1>@Title</H1>
+            }
+            @if (CustomActions != null)
+            {
+                <div class="flex flex-wrap items-center gap-2">
+                    @CustomActions
+                </div>
+            }
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">@Description</p>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the breadcrumb items for the header.
+    /// </summary>
+    [Parameter]
+    public List<BreadcrumbItem> BreadcrumbItems { get; set; } = new List<BreadcrumbItem>();
+
+    /// <summary>
+    /// Gets or sets the title of the header.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the description text below the title.
+    /// </summary>
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The caller can provide a custom action button section to be displayed on the right side of the header.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? CustomActions { get; set; }
+
+    /// <summary>
+    /// The caller can provide additional content to be displayed next to the title.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? TitleActions { get; set; }
+}

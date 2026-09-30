@@ -109,8 +109,8 @@ build_multi() {
         "client:apps/web/Dockerfile"
         "admin:apps/server/AliasVault.Admin/Dockerfile"
         "reverse-proxy:apps/server/Dockerfile"
-        "smtp:apps/server/Services/AliasVault.SmtpService/Dockerfile"
-        "task-runner:apps/server/Services/AliasVault.TaskRunner/Dockerfile"
+        "smtp:apps/server/AliasVault.SmtpService/Dockerfile"
+        "task-runner:apps/server/AliasVault.TaskRunner/Dockerfile"
         "installcli:apps/server/Utilities/AliasVault.InstallCli/Dockerfile"
     )
 
