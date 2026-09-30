@@ -70,7 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Allegato eliminato con successo.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "{{filename}} è vuoto.",
     "firefoxExpandRequired": "Per caricare i file, usa la finestra estesa.",
     "openExpandedWindow": "Apri Finestra Estesa",
     "uploadError": "Errore durante il caricamento del file: {{error}}",
