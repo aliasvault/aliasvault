@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Pendaftaran akun baru saat ini dinonaktifkan di server ini. Silakan hubungi administrator.",
     "REFRESH_TOKEN_REQUIRED": "Token refresh diperlukan.",
     "REGISTRATION_FAILED": "Tidak dapat membuat akun. Silakan coba lagi beberapa menit lagi. Jika masalah ini masih berlanjut, silakan hubungi bagian dukungan.",
+    "UNKNOWN_ERROR": "Terjadi kesalahan tidak diketahui. Coba lagi.",
     "USERNAME_ALREADY_IN_USE": "Nama pengguna sudah ada yang pakai.",
     "USERNAME_AVAILABLE": "Nama pengguna tersedia.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Nama pengguna tidak boleh kosong atau mengandung spasi.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Lampiran berhasil dihapus.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Untuk mengunggah berkas, gunakan jendela yang diperluas.",
     "openExpandedWindow": "Buka Jendela yang Diperluas",
     "uploadError": "Error uploading file: {{error}}",
