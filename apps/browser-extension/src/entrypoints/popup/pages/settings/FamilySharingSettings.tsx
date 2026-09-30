@@ -49,7 +49,7 @@ const FamilySharingSettings: React.FC = () => {
   const app = useApp();
   const webApi = useWebApi();
   const { sqliteClient, loadStoredDatabase } = useDb();
-  const { setIsInitialLoading } = useLoading();
+  const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
   const [isLoading, setIsLoading] = useState(true);
   const hasLoadedRef = useRef(false);
 
@@ -241,6 +241,7 @@ const FamilySharingSettings: React.FC = () => {
       return;
     }
 
+    showLoading();
     try {
       await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, async challenge => (await MasterPasswordService.answerSrpChallenge(challenge, password)).proof);
     } catch (deleteError) {
@@ -249,6 +250,8 @@ const FamilySharingSettings: React.FC = () => {
       }
 
       throw new Error(apiErrorMessage(deleteError, familySharingText.errors.deleteVaultFailed));
+    } finally {
+      hideLoading();
     }
 
     setPendingVaultDelete(null);
