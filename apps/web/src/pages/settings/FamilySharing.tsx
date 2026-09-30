@@ -24,6 +24,7 @@ import SmallButton from '@/components/shared/SmallButton';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
+import { useLoading } from '@/context/LoadingContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -75,6 +76,7 @@ const InvitationCard: React.FC<InvitationCardProps> = ({ vaultName, inviterUsern
 const FamilySharing: React.FC = () => {
   const { t } = useTranslation();
   const webApi = useWebApi();
+  const { showLoading, hideLoading } = useLoading();
   const { username } = useAuth();
   const { sqliteClient, loadStoredDatabase } = useDb();
   const { syncVault } = useVaultSync();
@@ -304,12 +306,15 @@ const FamilySharing: React.FC = () => {
     }
 
     setBusy(true);
+    showLoading();
     try {
       await SharingService.deleteSharedManifest(webApi, target.group.groupId, target.manifest.manifestId, async challenge => (await MasterPasswordService.answerSrpChallenge(challenge, password)).proof);
     } catch (deleteError) {
       setDeletePasswordError(apiErrorCodeOf(deleteError) === 'PASSWORD_MISMATCH' ? t('common.errors.wrongPassword') : apiErrorMessage(deleteError, familySharingText.errors.deleteVaultFailed));
       setBusy(false);
       return;
+    } finally {
+      hideLoading();
     }
 
     setPendingVaultDelete(null);
