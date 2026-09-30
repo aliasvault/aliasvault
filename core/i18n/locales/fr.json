@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "L'enregistrement d'un nouveau compte est actuellement désactivé sur ce serveur. Veuillez contacter l'administrateur.",
     "REFRESH_TOKEN_REQUIRED": "Le jeton d'actualisation est requis.",
     "REGISTRATION_FAILED": "Impossible de créer le compte. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez contacter le support.",
+    "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
     "USERNAME_ALREADY_IN_USE": "Nom d'utilisateur déjà utilisé.",
     "USERNAME_AVAILABLE": "Ce nom d'utilisateur est disponible.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Le nom d'utilisateur ne peut pas être vide ou contenir un espace.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Pièce jointe supprimée avec succès.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Pour envoyer des fichiers, utilisez la fenêtre étendue.",
     "openExpandedWindow": "Ouvrir la fenêtre étendue",
     "uploadError": "Erreur lors de l'envoi du fichier : {{error}}",
