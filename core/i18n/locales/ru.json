@@ -14,6 +14,7 @@
     "PUBLIC_REGISTRATION_DISABLED": "Регистрация новых аккаунтов на этом сервере отключена. Пожалуйста, свяжитесь с администратором.",
     "REFRESH_TOKEN_REQUIRED": "Требуется токен обновления.",
     "REGISTRATION_FAILED": "Не удалось создать учетную запись. Повторите попытку через несколько минут. Если проблема сохранится, обратитесь в службу поддержки.",
+    "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
     "USERNAME_ALREADY_IN_USE": "Имя пользователя уже используется.",
     "USERNAME_AVAILABLE": "Имя пользователя доступно.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Имя пользователя не может быть пустым или содержать пробелы.",
@@ -69,6 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Вложение успешно удалено.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
     "openExpandedWindow": "Открыть расширенное окно",
     "uploadError": "Error uploading file: {{error}}",
