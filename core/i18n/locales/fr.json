@@ -70,7 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Pièce jointe supprimée avec succès.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "{{filename}} est vide.",
     "firefoxExpandRequired": "Pour envoyer des fichiers, utilisez la fenêtre étendue.",
     "openExpandedWindow": "Ouvrir la fenêtre étendue",
     "uploadError": "Erreur lors de l'envoi du fichier : {{error}}",
