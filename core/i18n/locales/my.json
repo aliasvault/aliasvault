@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "အတည်ပြုကုဒ်",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "သင့် လုံခြုံရေးသေတ္တာအား ဖွင့်ရန် {{biometric}} ကိုသုံးလိုပါသလား။",
     "browseVault": "Browse vault contents",
-    "closePopup": "Close this popup",
     "confirmLogout": "လော့ဂ်အောက်ထွက်မည် သေချာပါသလား။ သင့် လုံခြုံရေးအခန်းအား ဝင်ရောက်ရန် မာစတာစကားဝှက်ဖြင့် ပြန်လည်ဝင်ရောက်ရမည်ဖြစ်သည်။",
     "connectingTo": "ချိတ်ဆက်",
     "createNewVault": "လုံခြုံရေးအခန်းသစ် ဖန်တီးမည်",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "Your current browser does not support the WebAuthn PRF extension. Please login with your password instead."
     },
-    "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
-    "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockTitle": "Unlock Your Vault",
     "unlockVault": "လုံခြုံရေးအခန်းအား ဖွင့်ရန်",
     "unlockWithBiometric": "{{biometric}} ဖြင့် ဖွင့်လှစ်ရန်",
