@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Kode autentikasi",
     "authCodeNote": "Catatan: Jika anda tidak punya akses ke perangkat autentikator-mu, anda bisa me-reset 2FA dengan kode recovery dengan cara login melalui website.",
-    "autoCloseUnlockPopup": "Tutup otomatis saat masuk di lain waktu",
     "biometricPrompt": "Apakah anda ingin menggunakan {{biometric}} untuk membuka kunci brankas anda?",
     "browseVault": "Jelajahi isi Brankas",
-    "closePopup": "Tutup popup ini",
     "confirmLogout": "Apakah Anda yakin ingin keluar? Anda harus masuk kembali dengan kata sandi utama Anda untuk mengakses brankas.",
     "connectingTo": "Menghubungkan ke",
     "createNewVault": "Buat brankas baru",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Buka dengan kunci akses",
       "webAuthnNotSupportedError": "Browser Anda saat ini tidak mendukung ekstensi WebAuthn PRF. Silakan masuk menggunakan kata sandi Anda."
     },
-    "unlockSuccessDescription": "Kini Anda dapat menggunakan fitur pengisian otomatis pada formulir login di browser Anda.",
-    "unlockSuccessTitle": "Brankas anda sudah berhasil dibuka",
     "unlockTitle": "Buka Brankas kamu",
     "unlockVault": "Buka Brankas",
     "unlockWithBiometric": "Buka kunci dengan {{biometric}}",
