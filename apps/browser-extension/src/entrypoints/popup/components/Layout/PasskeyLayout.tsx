@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
+import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrollbar';
 import Logo from '@/entrypoints/popup/components/Logo';
 
 /**
@@ -7,6 +8,8 @@ import Logo from '@/entrypoints/popup/components/Logo';
  * Shows only the AliasVault logo header, no navigation, no footer.
  */
 const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const mainRef = useRef<HTMLElement>(null);
+
   return (
     <div className="min-h-screen min-w-[350px] bg-white dark:bg-gray-900 flex flex-col max-h-[600px]">
       {/* Minimal header with just logo */}
@@ -27,7 +30,8 @@ const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Main content without footer padding */}
       <main
-        className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900"
+        ref={mainRef}
+        className="flex-1 overflow-y-auto no-scrollbar bg-gray-100 dark:bg-gray-900"
         style={{
           paddingTop: '64px',
         }}
@@ -36,6 +40,7 @@ const PasskeyLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           {children}
         </div>
       </main>
+      <OverlayScrollbar targetRef={mainRef} />
     </div>
   );
 };

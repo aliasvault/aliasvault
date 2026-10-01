@@ -1,10 +1,11 @@
 import { CapabilityKeys } from '@aliasvault/models/webapi';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 import DefaultLayout from '@/entrypoints/popup/components/Layout/DefaultLayout';
 import Header from '@/entrypoints/popup/components/Layout/Header';
+import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrollbar';
 import PasskeyLayout from '@/entrypoints/popup/components/Layout/PasskeyLayout';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
@@ -85,6 +86,7 @@ const AppContent: React.FC<{
   headerButtons: React.ReactNode;
 }> = ({ routes, isLoading, message, headerButtons }) => {
   const location = useLocation();
+  const authMainRef = useRef<HTMLElement>(null);
 
   // Find the current route configuration
   const currentRoute = routes.find(route => {
@@ -140,7 +142,8 @@ const AppContent: React.FC<{
             rightButtons={headerButtons}
           />
           <main
-            className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900"
+            ref={authMainRef}
+            className="flex-1 overflow-y-auto no-scrollbar bg-gray-100 dark:bg-gray-900"
             style={{
               paddingTop: '64px',
               height: '100%',
@@ -153,6 +156,7 @@ const AppContent: React.FC<{
             )}
             {routesComponent}
           </main>
+          <OverlayScrollbar targetRef={authMainRef} />
         </div>
       );
 
