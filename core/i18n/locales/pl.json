@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Kod uwierzytelniający",
     "authCodeNote": "Uwaga: jeśli nie masz dostępu do urządzenia uwierzytelniającego, możesz zresetować kod 2FA za pomocą kodu odzyskiwania, logując się przez stronę internetową.",
-    "autoCloseUnlockPopup": "Automatyczne zamykanie przyszłych logowań",
     "biometricPrompt": "Czy chcesz użyć {{biometric}} do odblokowania sejfu?",
     "browseVault": "Przeglądaj zawartość sejfu",
-    "closePopup": "Zamknij to okno.",
     "confirmLogout": "Czy na pewno chcesz się wylogować? Aby uzyskać dostęp do swojego sejfu, musisz ponownie zalogować się przy użyciu hasła głównego.",
     "connectingTo": "Łączenie z",
     "createNewVault": "Utwórz nowy sejf",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Odblokuj za pomocą klucza dostępu",
       "webAuthnNotSupportedError": "Twoja przeglądarka nie obsługuje rozszerzenia WebAuthn PRF. Zaloguj się, używając hasła."
     },
-    "unlockSuccessDescription": "Możesz teraz używać automatycznego uzupełniania w formularzach logowania w przeglądarce.",
-    "unlockSuccessTitle": "Twój sejf został pomyślnie odblokowany.",
     "unlockTitle": "Odblokuj swój sejf",
     "unlockVault": "Odblokuj sejf",
     "unlockWithBiometric": "Odblokuj z {{biometric}}",
