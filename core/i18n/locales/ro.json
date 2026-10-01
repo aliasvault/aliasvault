@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Cod de autentificare",
     "authCodeNote": "Notă: dacă nu ai acces la dispozitivul de autentificare, poți reseta 2FA cu un cod de recuperare autentificându-te prin site-ul web.",
-    "autoCloseUnlockPopup": "Închidere automată la următoarele autentificări",
     "biometricPrompt": "Dorești să utilizezi {{biometric}} pentru a debloca seiful?",
     "browseVault": "Răsfoiește conținutul seifului",
-    "closePopup": "Închide această fereastră",
     "confirmLogout": "Sigur dorești să te deconectezi? Va trebui să te autentifici din nou cu parola principală pentru a accesa seiful.",
     "connectingTo": "Conectare la",
     "createNewVault": "Creează un seif nou",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Deblochează prin passkey",
       "webAuthnNotSupportedError": "Browserul actual este incompatibil cu WebAuthn PRF. Accesează contul folosind parola."
     },
-    "unlockSuccessDescription": "Acum poți folosi completarea automată pentru câmpurile cu date de autentificare în browserul tău.",
-    "unlockSuccessTitle": "Seiful a fost deblocat cu succes",
     "unlockTitle": "Deblochează seiful",
     "unlockVault": "Deblochează seiful",
     "unlockWithBiometric": "Deblochează cu {{biometric}}",
