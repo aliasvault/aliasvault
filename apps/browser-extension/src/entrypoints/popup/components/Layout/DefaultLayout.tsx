@@ -6,6 +6,7 @@ import { ClipboardCountdownBar } from '@/entrypoints/popup/components/ClipboardC
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import BottomNav from '@/entrypoints/popup/components/Layout/BottomNav';
 import Header from '@/entrypoints/popup/components/Layout/Header';
+import OverlayScrollbar from '@/entrypoints/popup/components/Layout/OverlayScrollbar';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 /**
@@ -56,7 +57,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
 
       <main
         ref={mainRef}
-        className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900"
+        className="flex-1 overflow-y-auto no-scrollbar bg-gray-100 dark:bg-gray-900"
         style={{
           paddingTop: '64px',
           height: 'calc(100% - 120px)',
@@ -79,6 +80,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
           )}
         </div>
       </main>
+      <OverlayScrollbar targetRef={mainRef} />
 
       <BottomNav />
 
