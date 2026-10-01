@@ -1,5 +1,5 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
+import { buildFolderTree, flattenFolderTree, getFolderIdPath, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +8,9 @@ import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
+
+/** Indent per folder level. */
+const FOLDER_INDENT_PX = 20;
 
 type ItemNameInputProps = {
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -45,8 +48,8 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const selectedFolder = folders.find(f => f.Id === selectedFolderId && f.ManifestId === selectedManifestId);
   const personalManifestId = dbContext?.sqliteClient?.getPersonalManifestId() ?? null;
 
-  // Build folder tree
   const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
+  const visibleFolders = useMemo(() => flattenFolderTree(folderTree, expandedFolders), [folderTree, expandedFolders]);
 
   /**
    * Automatically expand parent folders when a folder is pre-selected.
@@ -107,76 +110,6 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
   const handleCloseFolderModal = useCallback((): void => {
     setShowFolderModal(false);
   }, []);
-
-  /**
-   * Render a folder tree node recursively.
-   */
-  const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
-    const nodeKey = scopedKey(node.ManifestId, node.Id);
-    const isExpanded = expandedFolders.has(nodeKey);
-    const hasChildren = node.children.length > 0;
-    const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
-
-    return (
-      <div key={nodeKey}>
-        <button
-          type="button"
-          onClick={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
-          className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-2 transition-colors ${
-            isSelected
-              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          style={{ paddingLeft: `${depth * 12 + 12}px` }}
-        >
-          {/* Expand/Collapse button */}
-          {hasChildren && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFolder(nodeKey);
-              }}
-              className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-            >
-              <svg
-                className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </button>
-          )}
-
-          {/* Folder icon */}
-          <FolderIcon
-            variant="outline"
-            isShared={isSharedFolder(node, personalManifestId)}
-            className={`w-5 h-5 ${isSelected ? 'text-primary-500' : 'text-gray-400'} ${!hasChildren ? 'ml-5' : ''}`}
-            badgeClassName="bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600"
-          />
-
-          {/* Folder name */}
-          <span className="font-medium flex-1">{node.Name}</span>
-
-          {/* Checkmark for selected */}
-          {isSelected && (
-            <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-          )}
-        </button>
-
-        {/* Render children if expanded */}
-        {hasChildren && isExpanded && (
-          <div>
-            {node.children.map(child => renderFolderNode(child, depth + 1))}
-          </div>
-        )}
-      </div>
-    );
-  }, [expandedFolders, selectedFolderId, selectedManifestId, handleSelectFolder, toggleFolder, personalManifestId]);
 
   return (
     <>
@@ -267,8 +200,53 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
             )}
           </button>
 
-          {/* Folder Tree */}
-          {folderTree.map(node => renderFolderNode(node, 0))}
+          {/* Folder Tree, one row per visible folder; each level indents by one chevron slot */}
+          {visibleFolders.map(node => {
+            const nodeKey = scopedKey(node.ManifestId, node.Id);
+            const isExpanded = expandedFolders.has(nodeKey);
+            const hasChildren = node.children.length > 0;
+            const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
+            return (
+              <div
+                key={nodeKey}
+                className={`flex items-center rounded-md transition-colors ${isSelected ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                style={{ paddingLeft: `${node.depth * FOLDER_INDENT_PX + 4}px` }}
+              >
+                {hasChildren ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleFolder(nodeKey)}
+                    aria-expanded={isExpanded}
+                    className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                ) : (
+                  <span className="flex-shrink-0 w-6" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
+                  className="flex-1 min-w-0 pl-1 pr-3 py-2 text-left flex items-center gap-2"
+                >
+                  <FolderIcon
+                    variant="outline"
+                    isShared={isSharedFolder(node, personalManifestId)}
+                    className={`w-5 h-5 flex-shrink-0 ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}
+                    badgeClassName="bg-white dark:bg-gray-800 ring-gray-200 dark:ring-gray-600"
+                  />
+                  <span className="font-medium flex-1 truncate">{node.Name}</span>
+                  {isSelected && (
+                    <svg className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </ModalWrapper>
     </>

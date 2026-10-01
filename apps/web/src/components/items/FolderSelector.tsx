@@ -1,5 +1,5 @@
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
+import { buildFolderTree, flattenFolderTree, getFolderIdPath, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -19,6 +19,9 @@ type FolderSelectorProps = {
  * The key of a folder in the selector's maps including the manifest id as scope.
  */
 const folderKey = (folder: FolderRef): string => scopedKey(folder.ManifestId, folder.Id);
+
+/** Indent per folder level. */
+const FOLDER_INDENT_REM = 1.25;
 
 /**
  * Inline folder name with a modal to pick another folder from the tree.
@@ -52,7 +55,6 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
   // Expand the parents of the selected folder so it is visible.
   const selectedKey = selectedFolder ? folderKey(selectedFolder) : null;
-  const excludedKey = excludeFolder ? folderKey(excludeFolder) : null;
   useEffect(() => {
     if (!selectedFolder || folders.length === 0) {
       return;
@@ -64,25 +66,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
   const tree = useMemo(() => buildFolderTree(folders), [folders]);
 
-  const flatTree = useMemo((): FolderTreeNode[] => {
-    const result: FolderTreeNode[] = [];
-    /**
-     * Walk the tree, skipping the excluded folder and collapsed children.
-     */
-    const traverse = (nodes: FolderTreeNode[]): void => {
-      for (const node of nodes) {
-        if (folderKey(node) === excludedKey) {
-          continue;
-        }
-        result.push(node);
-        if (expandedFolderIds.has(folderKey(node)) && node.children.length > 0) {
-          traverse(node.children);
-        }
-      }
-    };
-    traverse(tree);
-    return result;
-  }, [excludedKey, expandedFolderIds, tree]);
+  const flatTree = useMemo(() => flattenFolderTree(tree, expandedFolderIds, excludeFolder), [tree, expandedFolderIds, excludeFolder]);
 
   /**
    * Expand or collapse a folder.
@@ -108,32 +92,20 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
   };
 
   /**
-   * Classes of a folder row button.
+   * Classes of a folder row.
    */
-  const buttonClass = (key: string | null, isDisabled: boolean, hasChevron: boolean): string => {
-    const base = `flex-1 px-3 py-2 text-left ${hasChevron ? 'rounded-r-md' : 'rounded-md'} flex items-center transition-colors`;
-    if (isDisabled) {
-      return `${base} bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50`;
-    }
-    if (selectedKey === key) {
-      return `${base} bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300`;
-    }
-    return `${base} text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`;
-  };
+  const rowClass = (key: string | null): string => selectedKey === key
+    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700';
 
   /**
    * Classes of a folder row icon.
    */
-  const iconClass = (key: string | null, isDisabled: boolean = false): string => {
-    if (isDisabled) {
-      return 'w-5 h-5 text-gray-300 dark:text-gray-700';
-    }
-    return selectedKey === key ? 'w-5 h-5 text-primary-500' : 'w-5 h-5 text-gray-400';
-  };
+  const iconClass = (key: string | null): string => selectedKey === key ? 'w-5 h-5 flex-shrink-0 text-primary-500' : 'w-5 h-5 flex-shrink-0 text-gray-400';
 
   const selectedFolderRow = selectedKey ? folders.find(f => folderKey(f) === selectedKey) : undefined;
   const checkIcon = (
-    <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+    <svg className="w-5 h-5 ml-auto flex-shrink-0 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
     </svg>
   );
@@ -174,7 +146,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
         )}
       >
         <div className="space-y-1 max-h-64 overflow-y-auto -mx-2">
-          <button type="button" onClick={() => selectFolder(null)} className={`${buttonClass(null, false, false)} w-full`}>
+          <button type="button" onClick={() => selectFolder(null)} className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${rowClass(null)}`}>
             <svg className={iconClass(null)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
             </svg>
@@ -184,31 +156,25 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
           {flatTree.map((node) => {
             const key = folderKey(node);
-            const isDisabled = key === excludedKey;
             const hasChildren = node.children.length > 0;
             const isExpanded = expandedFolderIds.has(key);
             const count = itemCounts[key] ?? 0;
             return (
-              <div key={key} className="flex items-stretch">
+              <div key={key} className={`flex items-center rounded-md transition-colors ${rowClass(key)}`} style={{ paddingLeft: `${node.depth * FOLDER_INDENT_REM + 0.25}rem` }}>
                 {hasChildren ? (
-                  <button type="button" onClick={(e) => {
-                    e.stopPropagation();
-                    toggleExpansion(key);
-                  }} className="px-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-md transition-colors flex items-center" style={{ marginLeft: `${node.depth * 1.5}rem` }}>
-                    <svg className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <button type="button" onClick={() => toggleExpansion(key)} aria-expanded={isExpanded} className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 ) : (
-                  <div className="w-8" style={{ marginLeft: `${node.depth * 1.5}rem` }}></div>
+                  <span className="flex-shrink-0 w-7" />
                 )}
 
-                <button type="button" onClick={() => selectFolder(node)} disabled={isDisabled} className={buttonClass(key, isDisabled, hasChildren)}>
-                  <div className="flex items-center gap-3 flex-1">
-                    <FolderIcon variant="outline" isShared={isSharedFolder(node, personalManifestId)} className={iconClass(key, isDisabled)} />
-                    <span className="font-medium">{node.Name}</span>
-                    {count > 0 && <span className="text-xs text-gray-400 dark:text-gray-500">({count})</span>}
-                  </div>
+                <button type="button" onClick={() => selectFolder(node)} className="flex-1 min-w-0 pl-1 pr-3 py-2 text-left flex items-center gap-3">
+                  <FolderIcon variant="outline" isShared={isSharedFolder(node, personalManifestId)} className={iconClass(key)} />
+                  <span className="font-medium truncate">{node.Name}</span>
+                  {count > 0 && <span className="flex-shrink-0 text-xs text-gray-400 dark:text-gray-500">({count})</span>}
                   {selectedKey === key && checkIcon}
                 </button>
               </div>
