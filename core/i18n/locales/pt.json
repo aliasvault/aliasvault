@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Código de Autenticação",
     "authCodeNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
-    "autoCloseUnlockPopup": "Fechar automaticamente nos próximos acessos",
     "biometricPrompt": "Gostaria de utilizar {{biometric}} para desbloquear seu cofre?",
     "browseVault": "Navegar por conteúdo do cofre",
-    "closePopup": "Fechar este pop-up",
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
     "connectingTo": "Conectando à",
     "createNewVault": "Criar novo cofre",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Desbloquear com Passkey",
       "webAuthnNotSupportedError": "Seu navegador atual não tem suporte à extensão WebAuthn PRF. Por favor, faça login com sua senha."
     },
-    "unlockSuccessDescription": "Agora você pode utilizar o preenchimento automático nos formulários de login no seu navegador.",
-    "unlockSuccessTitle": "O seu cofre foi desbloqueado com sucesso",
     "unlockTitle": "Desbloquear Seu Cofre",
     "unlockVault": "Desbloquear cofre",
     "unlockWithBiometric": "Desbloquear com {{biometric}}",
