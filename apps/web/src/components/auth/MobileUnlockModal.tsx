@@ -51,7 +51,7 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
     const start = async (): Promise<void> => {
       try {
         const { qrPayload, verificationCode: code } = await service.initiate();
-        const dataUrl = await QRCode.toDataURL(qrPayload, { width: 300, margin: 2 });
+        const dataUrl = await QRCode.toDataURL(qrPayload, { width: 400, margin: 2 });
         if (cancelled) {
           service.cleanup();
           return;
@@ -126,7 +126,7 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
     <FormModal
       isOpen={isOpen}
       title={mode === 'unlock' ? t('auth.unlockWithMobile') : t('auth.loginWithMobile')}
-      maxWidth="md"
+      maxWidth="sm"
       submitOnEnter={false}
       onClose={onClose}
       footerContent={(
@@ -146,7 +146,7 @@ const MobileUnlockModal: React.FC<MobileUnlockModalProps> = ({ isOpen, mode, onC
       {error && <AlertMessageError message={getErrorMessage(error)} hasTopMargin={false} />}
 
       {qrCodeUrl && (
-        <div className="flex flex-col items-center w-full max-w-[300px] mx-auto">
+        <div className="flex flex-col items-center w-full">
           <img src={qrCodeUrl} alt={t('common.qrCode')} className="w-full bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600 mb-3" />
           {verificationCode && (
             <div className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
