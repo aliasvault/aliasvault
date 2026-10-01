@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Cód Fíordheimhnithe",
     "authCodeNote": "Tabhair faoi deara: mura bhfuil rochtain agat ar do ghléas fíordheimhnitheora, is féidir leat do 2FA a athshocrú le cód aisghabhála trí logáil isteach tríd an suíomh Gréasáin.",
-    "autoCloseUnlockPopup": "Dúnadh go huathoibríoch ar logáil isteach amach anseo",
     "biometricPrompt": "Ar mhaith leat {{biometric}} a úsáid chun do chruinneachán a dhíghlasáil?",
     "browseVault": "Brabhsáil inneachar cruinneachán",
-    "closePopup": "Dún an phreabfhuinneog seo",
     "confirmLogout": "An bhfuil tú cinnte gur mian leat logáil amach? Ní mór duit logáil isteach arís le do phríomhfhocal faire chun rochtain a fháil ar do stóras.",
     "connectingTo": "Ag nascadh le",
     "createNewVault": "Cruthaigh cruinneachán nua",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Díghlasáil le heochair phas",
       "webAuthnNotSupportedError": "Ní thacaíonn do bhrabhsálaí reatha leis an síneadh WebAuthn PRF. Logáil isteach le do phasfhocal ina ionad."
     },
-    "unlockSuccessDescription": "Is féidir leat foirmeacha logála isteach uathoibríoch a úsáid i do bhrabhsálaí anois.",
-    "unlockSuccessTitle": "Díghlasáiltear do chruinneachán go rathúil",
     "unlockTitle": "Díghlasáil Do Cruinneog",
     "unlockVault": "Díghlasáil an Cruinneachán",
     "unlockWithBiometric": "Díghlasáil le {{biometric}}",
