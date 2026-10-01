@@ -21,6 +21,7 @@ import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHand
 
 import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 import type { PendingPasskeyRequest, WebAuthnSettingsResponse, WebAuthnPublicKeyGetPayload, MatchingPasskeysResponse, WebAuthnAssertionResponse } from '@/utils/passkey/types';
+import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 import type { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import type { FullVaultSyncRequest } from '@/utils/types/messaging/FullVaultSyncRequest';
@@ -35,7 +36,6 @@ import type { VaultMigrationKind } from '@aliasvault/client/sync/VaultManifestMi
 import type { VaultMutationScope } from '@aliasvault/client/sync/VaultMutationScope';
 import type { FullVaultSyncResult, SharedManifestDetails, VaultManifestMigrationResult } from '@aliasvault/client/sync/VaultSync';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
-import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * How the background stores an encrypted vault blob, sent along with its last chunk (see VaultBlobTransfer).
@@ -54,6 +54,11 @@ export type VaultBlobStoreOptions = {
  * the response shape (promises are unwrapped automatically by the library).
  */
 export interface IExtensionMessageProtocol {
+  AUTH_AWAIT_PENDING(): BackgroundAuthResult | null;
+  AUTH_LOGIN(data: { username: string; password: string; rememberMe: boolean }): BackgroundAuthResult;
+  AUTH_LOGIN_TWO_FACTOR(data: { code: string }): BackgroundAuthResult;
+  AUTH_UNLOCK_PASSWORD(data: { password: string }): BackgroundAuthResult;
+  AUTH_UNLOCK_PIN(data: { pin: string }): BackgroundAuthResult;
   ADD_URL_TO_CREDENTIAL(data: { itemId: string; manifestId: string; url: string }): { success: boolean; error?: string }; 
   AUTOFILL_CREATED_ITEM(data: { item: any; elementIdentifier?: string }): BoolResponse;
   CHECK_AUTH_STATUS(): { isLoggedIn: boolean; isVaultLocked: boolean; requiresLegacySqliteBlobMigration: boolean; requiresManifestMigration: boolean; error?: string };
@@ -107,12 +112,12 @@ export interface IExtensionMessageProtocol {
   SET_AUTO_LOCK_TIMEOUT(data: number): boolean;
   SET_CLIPBOARD_CLEAR_TIMEOUT(data: number): boolean;
   SET_RECENTLY_SELECTED(data: { itemId: string; manifestId: string; domain: string }): { success: boolean };
+  START_VAULT_SYNC(): BoolResponse;
   STORE_ENCRYPTED_VAULT(data: { transferId: string; index: number; chunk: string; commit?: VaultBlobStoreOptions }): { success: boolean; mutationSequence: number } | null;
   STORE_UNLOCK_KEY(data: string): BoolResponse;
   STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };
   STORE_SAVE_PROMPT_STATE(data: SavePromptPersistedState): { success: boolean };
-  STORE_TWO_FACTOR_STATE(data: { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }): void;
   TOGGLE_CONTEXT_MENU(data: any): BoolResponse;
   VAULT_SYNC_PHASE(data: { phase: VaultSyncPhase }): void;
   VAULT_UNLOCKED(): void;

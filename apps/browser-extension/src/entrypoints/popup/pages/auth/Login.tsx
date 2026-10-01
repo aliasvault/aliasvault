@@ -2,12 +2,10 @@ import { ClientUpgradeRequiredError } from '@aliasvault/client/api/errors/Client
 import { ServerUpdateRequiredError } from '@aliasvault/client/api/errors/ServerUpdateRequiredError';
 import { VaultProcessingError } from '@aliasvault/client/api/errors/VaultProcessingError';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { syncErrorMessage } from '@aliasvault/client/sync/SyncErrorMessage';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,17 +20,18 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import { useFinishBackgroundAuth } from '@/entrypoints/popup/hooks/useFinishBackgroundAuth';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
+import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 
 import { vaultStateEvents } from '@/events/VaultStateEvents';
 
 import type { MobileLoginResult } from '@aliasvault/client/auth/MobileLoginService';
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
-import type { LoginResponse } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
 
@@ -58,9 +57,6 @@ const Login: React.FC = () => {
   const { showLoading, hideLoading, setIsInitialLoading } = useLoading();
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
-  const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
-  const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [clientUrl, setClientUrl] = useState<string | null>(null);
@@ -68,7 +64,12 @@ const Login: React.FC = () => {
   const [vaultError, setVaultError] = useState<VaultProcessingError | null>(null);
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const webApi = useWebApi();
-  const srpUtil = new SrpLoginService(webApi);
+  const finishBackgroundAuth = useFinishBackgroundAuth();
+
+  /**
+   * True while this page waits for a background login, so its own login does not trigger the cross-window reload.
+   */
+  const authInFlightRef = useRef(false);
 
   /**
    * Pull the vault from the server.
@@ -104,7 +105,64 @@ const Login: React.FC = () => {
   };
 
   /**
-   * Finish a password or mobile login: store the tokens and unlock key, then pull and load the vault.
+   * Run a login flow in the background and show its outcome. Resolves to the outcome, or null when none ran.
+   */
+  const runBackgroundAuth = async (start: () => Promise<BackgroundAuthResult | null>): Promise<BackgroundAuthResult | null> => {
+    authInFlightRef.current = true;
+    let result: BackgroundAuthResult | null = null;
+    try {
+      result = await start();
+      if (result) {
+        await handleAuthResult(result);
+      }
+    } catch (err) {
+      await showLoginError('Login error', err);
+    } finally {
+      // After a success the page navigates away, keep ignoring the unlock event until then.
+      authInFlightRef.current = result?.status === 'success';
+    }
+    return result;
+  };
+
+  /**
+   * Show the outcome of a background login flow.
+   */
+  const handleAuthResult = async (result: BackgroundAuthResult): Promise<void> => {
+    switch (result.status) {
+      case 'success': {
+        // Reset prefill flag so next logout will prefill again
+        usernamePrefillAttempted = false;
+        setTwoFactorRequired(false);
+        setTwoFactorCode('');
+        const finishError = await finishBackgroundAuth(result.offline);
+        if (finishError) {
+          setError(finishError);
+        }
+        return;
+      }
+      case 'twoFactorRequired':
+        setCredentials({ username: result.username, password: '' });
+        setRememberMe(result.rememberMe);
+        setTwoFactorRequired(true);
+        return;
+      case 'vaultPullFailed':
+        // The vault was fetched but couldn't be decrypted/materialized, surface the real error (copyable) for support.
+        setVaultError(new VaultProcessingError('vault-pull', new Error(syncErrorMessage(result.sync, t) ?? t('common.errors.unknownError'))));
+        return;
+      case 'logout':
+        setError(result.message ?? t(result.reasonKey ?? 'common.errors.unknownError'));
+        return;
+      case 'error':
+        setError(formatErrorMessage(result.error, t));
+        return;
+      default:
+        // An unlock flow finished while this page was open, reinitialize routes to where it left the popup.
+        navigate('/reinitialize', { replace: true });
+    }
+  };
+
+  /**
+   * Finish a mobile login: store the tokens and unlock key, then pull and load the vault.
    * @param username - the normalized username
    * @param token - the access token
    * @param refreshToken - the refresh token
@@ -174,6 +232,14 @@ const Login: React.FC = () => {
       }
       setClientUrl(clientUrl);
 
+      // Pick up a login the background is still running because the popup was closed mid-login.
+      const pending = await runBackgroundAuth(() => sendMessage('AUTH_AWAIT_PENDING'));
+      if (pending) {
+        twoFactorStateRestoreAttempted = true;
+        setIsInitialLoading(false);
+        return;
+      }
+
       /*
        * Check for persisted 2FA state (from popup close during 2FA entry).
        * This allows users to close the popup to switch to their authenticator app
@@ -183,11 +249,8 @@ const Login: React.FC = () => {
         twoFactorStateRestoreAttempted = true;
         const savedState = await sendMessage('GET_TWO_FACTOR_STATE');
         if (savedState) {
-          // Restore the 2FA state
+          // Restore the 2FA step, the background keeps what it needs to finish the login.
           setCredentials({ username: savedState.username, password: '' });
-          setLoginResponse(savedState.loginResponse);
-          setPasswordHashString(savedState.passwordHashString);
-          setPasswordHashBase64(savedState.passwordHashBase64);
           setRememberMe(savedState.rememberMe);
           setTwoFactorRequired(true);
           setIsInitialLoading(false);
@@ -210,6 +273,7 @@ const Login: React.FC = () => {
       setIsInitialLoading(false);
     };
     loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIsInitialLoading]);
 
   // Set header buttons on mount and clear on unmount
@@ -236,7 +300,9 @@ const Login: React.FC = () => {
    */
   useEffect(() => {
     return vaultStateEvents.onVaultUnlocked(() => {
-      window.location.reload();
+      if (!authInFlightRef.current) {
+        window.location.reload();
+      }
     });
   }, []);
 
@@ -247,72 +313,13 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError(null);
     setVaultError(null);
+    showLoading();
 
-    try {
-      showLoading();
+    // Clear global message if set with every login attempt.
+    app.clearGlobalMessage();
 
-      // Clear global message if set with every login attempt.
-      app.clearGlobalMessage();
-
-      // Initiate login with server
-      const normalizedUsername = SrpAuthService.normalizeUsername(credentials.username);
-      const loginResponse = await srpUtil.initiateLogin(normalizedUsername);
-
-      // Derive key from password using Argon2id and prepare credentials
-      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(credentials.password, loginResponse.salt, loginResponse.encryptionSettings);
-
-      // Validate login with SRP protocol
-      const validationResponse = await srpUtil.validateLogin(
-        normalizedUsername,
-        passwordHashString,
-        rememberMe,
-        loginResponse
-      );
-
-      // Handle 2FA if required
-      if (validationResponse.requiresTwoFactor) {
-        // Store login response as we need it for 2FA validation
-        setLoginResponse(loginResponse);
-        // Store password hash string as we need it for 2FA validation
-        setPasswordHashString(passwordHashString);
-        // Store password hash base64 as we need it for decryption
-        setPasswordHashBase64(passwordHashBase64);
-        setTwoFactorRequired(true);
-
-        /*
-         * Persist 2FA state to background script so user can
-         * close popup to switch to authenticator app and continue when reopening
-         */
-        await sendMessage('STORE_TWO_FACTOR_STATE', {
-          username: normalizedUsername,
-          loginResponse,
-          passwordHashString,
-          passwordHashBase64,
-          rememberMe,
-        });
-
-        // Show app.
-        hideLoading();
-        return;
-      }
-
-      // Check if token was returned.
-      if (!validationResponse.token) {
-        throw new Error(t('common.errors.unknownError'));
-      }
-
-      // Handle successful authentication
-      await handleSuccessfulAuth(
-        normalizedUsername,
-        validationResponse.token.token,
-        validationResponse.token.refreshToken,
-        passwordHashBase64,
-        loginResponse
-      );
-    } catch (err) {
-      await showLoginError('Login error', err);
-      hideLoading();
-    }
+    await runBackgroundAuth(() => sendMessage('AUTH_LOGIN', { username: credentials.username, password: credentials.password, rememberMe }));
+    hideLoading();
   };
 
   /**
@@ -323,55 +330,16 @@ const Login: React.FC = () => {
     setError(null);
     setVaultError(null);
 
-    try {
-      showLoading();
-
-      if (!passwordHashString || !passwordHashBase64 || !loginResponse) {
-        throw new Error(t('common.errors.unknownError'));
-      }
-
-      // Validate that 2FA code is a 6-digit number
-      const code = twoFactorCode.trim();
-      if (!/^\d{6}$/.test(code)) {
-        throw new Error(t('common.errors.invalidCode'));
-      }
-
-      const twoFaUsername = SrpAuthService.normalizeUsername(credentials.username);
-      const validationResponse = await srpUtil.validateLogin2Fa(
-        twoFaUsername,
-        passwordHashString,
-        rememberMe,
-        loginResponse,
-        parseInt(twoFactorCode)
-      );
-
-      // Check if token was returned.
-      if (!validationResponse.token) {
-        throw new Error(t('common.errors.unknownError'));
-      }
-
-      // Clear any persisted 2FA state since login is successful
-      await sendMessage('CLEAR_TWO_FACTOR_STATE');
-
-      // Handle successful authentication
-      await handleSuccessfulAuth(
-        twoFaUsername,
-        validationResponse.token.token,
-        validationResponse.token.refreshToken,
-        passwordHashBase64,
-        loginResponse
-      );
-
-      // Reset 2FA state and login response as it's no longer needed
-      setTwoFactorRequired(false);
-      setTwoFactorCode('');
-      setPasswordHashString(null);
-      setPasswordHashBase64(null);
-      setLoginResponse(null);
-    } catch (err) {
-      await showLoginError('2FA error', err);
-      hideLoading();
+    // Validate that 2FA code is a 6-digit number
+    const code = twoFactorCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setError(t('common.errors.invalidCode'));
+      return;
     }
+
+    showLoading();
+    await runBackgroundAuth(() => sendMessage('AUTH_LOGIN_TWO_FACTOR', { code }));
+    hideLoading();
   };
 
   /**
