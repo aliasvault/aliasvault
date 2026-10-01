@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Код за удостоверяване",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
-    "autoCloseUnlockPopup": "Автоматично затваряне при следващи влизания",
     "biometricPrompt": "Would you like to use {{biometric}} to unlock your vault?",
     "browseVault": "Browse vault contents",
-    "closePopup": "Close this popup",
     "confirmLogout": "Are you sure you want to logout? You need to login again with your master password to access your vault.",
     "connectingTo": "Свързване към",
     "createNewVault": "Ново хранилище",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "Your current browser does not support the WebAuthn PRF extension. Please login with your password instead."
     },
-    "unlockSuccessDescription": "Сега можете да използвате автозапълване в формуляри за вход в браузъра си.",
-    "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockTitle": "Unlock Your Vault",
     "unlockVault": "Unlock Vault",
     "unlockWithBiometric": "Unlock with {{biometric}}",
