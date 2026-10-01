@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Authenticatiecode",
     "authCodeNote": "Opmerking: als je geen toegang hebt tot je authenticator, kunt je je 2FA resetten door met een herstelcode in te loggen via de website.",
-    "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
     "biometricPrompt": "Wil je {{biometric}} gebruiken om je vault te ontgrendelen?",
     "browseVault": "Bekijk vault inhoud",
-    "closePopup": "Sluit deze popup",
     "confirmLogout": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen met je hoofdwachtwoord om toegang te krijgen tot je vault.",
     "connectingTo": "Verbinden met",
     "createNewVault": "Nieuwe vault aanmaken",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Ontgrendelen met passkey",
       "webAuthnNotSupportedError": "Je huidige browser ondersteunt de WebAuthn PRF-extensie niet. Log in met je wachtwoord."
     },
-    "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken op inlogformulieren in je browser.",
-    "unlockSuccessTitle": "Je vault is succesvol ontgrendeld",
     "unlockTitle": "Ontgrendel je vault",
     "unlockVault": "Vault ontgrendelen",
     "unlockWithBiometric": "Ontgrendel met {{biometric}}",
