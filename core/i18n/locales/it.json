@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Codice di autenticazione",
     "authCodeNote": "Nota: se non hai accesso al tuo dispositivo di autenticazione, puoi reimpostare il 2FA con un codice di recupero accedendo via sito web.",
-    "autoCloseUnlockPopup": "Chiusura automatica ai futuri accessi",
     "biometricPrompt": "Vuoi usare {{biometric}} per sbloccare la tua cassaforte?",
     "browseVault": "Sfoglia i contenuti della cassaforte",
-    "closePopup": "Chiudi questo popup",
     "confirmLogout": "Sei sicuro di voler uscire? Dovrai accedere nuovamente con la password principale per accedere alla cassaforte.",
     "connectingTo": "Connessione a",
     "createNewVault": "Crea nuova cassaforte",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Sblocca con passkey",
       "webAuthnNotSupportedError": "Il tuo browser attuale non supporta l'estensione PRF di WebAuthn. Effettua invece il login con la password."
     },
-    "unlockSuccessDescription": "Ora puoi usare l'auto-riempimento nei moduli di accesso nel tuo browser.",
-    "unlockSuccessTitle": "La cassaforte è stata sbloccata con successo",
     "unlockTitle": "Sblocca la tua cassaforte",
     "unlockVault": "Sblocca Cassaforte",
     "unlockWithBiometric": "Sblocca con {{biometric}}",
