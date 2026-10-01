@@ -94,11 +94,16 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
     loadDomains();
   }, [dbContext]);
 
+  // Private domains that are available to the user to pick from
+  const selectablePrivateEmailDomains = useMemo(() => {
+    return privateEmailDomains.filter(domain => !hiddenPrivateEmailDomains.includes(domain));
+  }, [privateEmailDomains, hiddenPrivateEmailDomains]);
+
   // Check if private domains are available and valid
   const showPrivateDomains = useMemo(() => {
-    return privateEmailDomains.length > 0 &&
-           !(privateEmailDomains.length === 1 && (privateEmailDomains[0] === 'DISABLED.TLD' || privateEmailDomains[0] === ''));
-  }, [privateEmailDomains]);
+    return selectablePrivateEmailDomains.length > 0 &&
+           !(selectablePrivateEmailDomains.length === 1 && (selectablePrivateEmailDomains[0] === 'DISABLED.TLD' || selectablePrivateEmailDomains[0] === ''));
+  }, [selectablePrivateEmailDomains]);
 
   // Initialize state from value prop
   useEffect(() => {
@@ -107,8 +112,8 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setLocalPart('');
       // Only set default domain if none is selected yet (initial load)
       if (!selectedDomain) {
-        if (showPrivateDomains && privateEmailDomains[0]) {
-          setSelectedDomain(privateEmailDomains[0]);
+        if (showPrivateDomains && selectablePrivateEmailDomains[0]) {
+          setSelectedDomain(selectablePrivateEmailDomains[0]);
         } else if (publicEmailDomains[0]) {
           setSelectedDomain(publicEmailDomains[0]);
         }
@@ -142,14 +147,14 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
       // Set default domain if not already set
       if (!selectedDomain && !value.includes('@')) {
-        if (showPrivateDomains && privateEmailDomains[0]) {
-          setSelectedDomain(privateEmailDomains[0]);
+        if (showPrivateDomains && selectablePrivateEmailDomains[0]) {
+          setSelectedDomain(selectablePrivateEmailDomains[0]);
         } else if (publicEmailDomains[0]) {
           setSelectedDomain(publicEmailDomains[0]);
         }
       }
     }
-  }, [value, publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, showPrivateDomains, isControlled, onEmailModeChange, selectedDomain, setIsCustomDomain]);
+  }, [value, publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, selectablePrivateEmailDomains, showPrivateDomains, isControlled, onEmailModeChange, selectedDomain, setIsCustomDomain]);
 
   /*
    * Re-check domain mode when domains finish loading.
@@ -198,8 +203,8 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
     // If value exists but doesn't include @, we need to add the domain
     if (value && !value.includes('@') && value.trim()) {
-      const defaultDomain = showPrivateDomains && privateEmailDomains[0]
-        ? privateEmailDomains[0]
+      const defaultDomain = showPrivateDomains && selectablePrivateEmailDomains[0]
+        ? selectablePrivateEmailDomains[0]
         : publicEmailDomains[0];
 
       const domainToUse = selectedDomain || defaultDomain;
@@ -217,7 +222,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         onChange(`${value}@${domainToUse}`);
       }
     }
-  }, [value, isCustomDomain, selectedDomain, showPrivateDomains, privateEmailDomains, publicEmailDomains, onChange]);
+  }, [value, isCustomDomain, selectedDomain, showPrivateDomains, selectablePrivateEmailDomains, publicEmailDomains, onChange]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,7 +253,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
        * This ensures that when user types in alias mode, we always have a domain to construct the full email.
        */
       const domainToUse = selectedDomain ||
-        (showPrivateDomains && privateEmailDomains[0] ? privateEmailDomains[0] : publicEmailDomains[0] || '');
+        (showPrivateDomains && selectablePrivateEmailDomains[0] ? selectablePrivateEmailDomains[0] : publicEmailDomains[0] || '');
       if (domainToUse) {
         onChange(`${newLocalPart}@${domainToUse}`);
         // Update selectedDomain if it wasn't set
@@ -263,7 +268,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         onChange(newLocalPart);
       }
     }
-  }, [isCustomDomain, selectedDomain, onChange, setIsCustomDomain, showPrivateDomains, privateEmailDomains, publicEmailDomains]);
+  }, [isCustomDomain, selectedDomain, onChange, setIsCustomDomain, showPrivateDomains, selectablePrivateEmailDomains, publicEmailDomains]);
 
   // Select a domain from the popup
   const selectDomain = useCallback((domain: string) => {
@@ -294,14 +299,14 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setLocalPart('');
     } else {
       // Switching to domain chooser mode - clear the old email-mode value.
-      const defaultDomain = showPrivateDomains && privateEmailDomains[0]
-        ? privateEmailDomains[0]
+      const defaultDomain = showPrivateDomains && selectablePrivateEmailDomains[0]
+        ? selectablePrivateEmailDomains[0]
         : publicEmailDomains[0];
       setSelectedDomain(defaultDomain);
       setLocalPart('');
       onChange('');
     }
-  }, [isCustomDomain, showPrivateDomains, publicEmailDomains, privateEmailDomains, onChange, setIsCustomDomain]);
+  }, [isCustomDomain, showPrivateDomains, publicEmailDomains, selectablePrivateEmailDomains, onChange, setIsCustomDomain]);
 
   // Handle clicks outside the popup
   useEffect(() => {
@@ -336,8 +341,8 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
     setIsCustomDomain(false);
 
     // Reset to the default domain so stale domains from email mode are cleared.
-    const defaultDomain = showPrivateDomains && privateEmailDomains[0]
-      ? privateEmailDomains[0]
+    const defaultDomain = showPrivateDomains && selectablePrivateEmailDomains[0]
+      ? selectablePrivateEmailDomains[0]
       : publicEmailDomains[0];
     if (defaultDomain) {
       setSelectedDomain(defaultDomain);
@@ -350,7 +355,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
     if (onGenerateAlias) {
       onGenerateAlias();
     }
-  }, [onGenerateAlias, setIsCustomDomain, showPrivateDomains, privateEmailDomains, publicEmailDomains, onChange]);
+  }, [onGenerateAlias, setIsCustomDomain, showPrivateDomains, selectablePrivateEmailDomains, publicEmailDomains, onChange]);
 
   return (
     <div className="space-y-2">
@@ -454,8 +459,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
                     {t('items.privateEmailDescription')}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {privateEmailDomains
-                      .filter((domain) => !hiddenPrivateEmailDomains.includes(domain))
+                    {selectablePrivateEmailDomains
                       .map((domain) => (
                         <button
                           key={domain}

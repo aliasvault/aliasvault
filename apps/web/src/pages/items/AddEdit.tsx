@@ -168,11 +168,11 @@ const ItemAddEditForm: React.FC = () => {
     setManuallyAddedFields(prev => new Set([...prev].filter(applies)));
     setInitiallyVisibleFields(prev => new Set([...prev].filter(applies)));
 
-    if (newType === ItemTypes.Alias && !editMode && !hasAliasValues(next)) {
+    if (newType === ItemTypes.Alias && !hasAliasValues(next)) {
       next = await generateRandomAlias(next);
     }
     return next;
-  }, [editMode, generateRandomAlias]);
+  }, [generateRandomAlias]);
 
   // Load the item (edit) or prefill the form from the quick create widget's query (create).
   useEffect(() => {

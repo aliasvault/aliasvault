@@ -112,6 +112,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const [manuallyAddedFields, setManuallyAddedFields] = useState<Set<string>>(new Set());
   const [initiallyVisibleFields, setInitiallyVisibleFields] = useState<Set<string>>(new Set());
   const aliasGeneratedRef = useRef(false);
+  // Set when an existing item without alias identity values is switched to the alias type, so the identity gets generated
+  const aliasRequestedByTypeChangeRef = useRef(false);
   const [lastGeneratedValues, setLastGeneratedValues] = useState<{
     username: string | null;
     password: string | null;
@@ -575,10 +577,11 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   }, [isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, folderManifestIdParam, loadExistingItem, router, t, dbContext.sqliteClient]);
 
   /**
-   * Auto-generate alias when alias fields are shown by default in create mode.
+   * Auto-generate alias when alias fields are shown by default in create mode, or after an existing item was switched to the alias type.
    */
   useEffect(() => {
-    if (!isEditMode && aliasFieldsShownByDefault && item && dbContext?.sqliteClient && !aliasGeneratedRef.current) {
+    if ((!isEditMode || aliasRequestedByTypeChangeRef.current) && aliasFieldsShownByDefault && item && dbContext?.sqliteClient && !aliasGeneratedRef.current) {
+      aliasRequestedByTypeChangeRef.current = false;
       aliasGeneratedRef.current = true;
       void generateRandomAlias();
     }
@@ -641,6 +644,8 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
 
     // Reset alias generated flag
     aliasGeneratedRef.current = false;
+    aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias &&
+      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((fieldValues[key] as string) ?? '').trim());
 
     setItem({
       ...item,
@@ -649,7 +654,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     });
 
     HapticsUtility.impact();
-  }, [item, isEditMode]);
+  }, [item, isEditMode, fieldValues]);
 
   /**
    * Handle adding an optional system field.

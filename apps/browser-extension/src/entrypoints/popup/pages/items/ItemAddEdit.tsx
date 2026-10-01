@@ -135,6 +135,9 @@ const ItemAddEdit: React.FC = () => {
   // Track if alias was already auto-generated (to avoid re-generating on re-renders)
   const aliasGeneratedRef = useRef(false);
 
+  // Set when an existing item without alias identity values is switched to the alias type, so the identity gets generated
+  const aliasRequestedByTypeChangeRef = useRef(false);
+
   // Ref for the item name input field (for auto-focus)
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -649,10 +652,11 @@ const ItemAddEdit: React.FC = () => {
   }, [applicableSystemFields]);
 
   /**
-   * Auto-generate alias when alias fields are shown by default in create mode.
+   * Auto-generate alias when alias fields are shown by default in create mode, or after an existing item was switched to the alias type.
    */
   useEffect(() => {
-    if (!isEditMode && aliasFieldsShownByDefault && !localLoading && dbContext?.sqliteClient && !aliasGeneratedRef.current) {
+    if ((!isEditMode || aliasRequestedByTypeChangeRef.current) && aliasFieldsShownByDefault && !localLoading && dbContext?.sqliteClient && !aliasGeneratedRef.current) {
+      aliasRequestedByTypeChangeRef.current = false;
       aliasGeneratedRef.current = true;
       void handleGenerateAlias();
     }
@@ -1015,6 +1019,8 @@ const ItemAddEdit: React.FC = () => {
 
     // Reset alias generated flag, so alias fields will be filled (again) if they are shown by the new type
     aliasGeneratedRef.current = false;
+    aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias &&
+      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((fieldValues[key] as string) ?? '').trim());
 
     /*
      * Update email field mode based on new item type
@@ -1029,7 +1035,7 @@ const ItemAddEdit: React.FC = () => {
     });
 
     setShowTypeDropdown(false);
-  }, [item, isEditMode]);
+  }, [item, isEditMode, fieldValues]);
 
   /**
    * Remove notes section - clears value and removes from manually added fields.
