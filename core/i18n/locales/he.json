@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "קוד אימות",
     "authCodeNote": "לתשומת ליבך: אם אין לך גישה להתקן המאמת (authenticator) שלך, אפשר לאפס אימות דו־שלבי עם קוד שחזור על ידי כניסה דרך האתר.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "להשתמש ב־{{biometric}} כדי לשחרר את נעילת הכספת שלך?",
     "browseVault": "עיון בתוכן הכספת",
-    "closePopup": "סגירת החלונית הצצה הזאת",
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "connectingTo": "מתבצעת התחברות אל",
     "createNewVault": "יצירת כספת חדשה",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "הדפדפן הנוכחי שלך לא תומך בהרחבת PRF (פונקציה אקראית מדומה) של WebAuthn. נא להיכנס עם הסיסמה שלך במקום."
     },
-    "unlockSuccessDescription": "מעתה ניתן להשתמש בהשלמה אוטומטית בטופסי כניסה בדפדפן שלך.",
-    "unlockSuccessTitle": "נעילת הכספת שלך נפתחה בהצלחה",
     "unlockTitle": "שחרור נעילת הכספת שלך",
     "unlockVault": "שחרור נעילת כספת",
     "unlockWithBiometric": "Unlock with {{biometric}}",
