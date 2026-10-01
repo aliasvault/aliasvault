@@ -4,9 +4,8 @@
  * This handler stores 2FA login state ONLY in memory, and the state automatically
  * expires after a short timeout.
  *
- * This allows users to enter username/password and get to 2FA prompt, close popup
- * to switch to authenticator app, and reopen popup and continue from 2FA prompt
- * without re-entering credentials.
+ * The background login flow (AuthHandler) stores it after the password step and reads it back for the 2FA step,
+ * so users can close the popup to switch to their authenticator app and continue without re-entering credentials.
  */
 
 import type { LoginResponse } from '@aliasvault/models/webapi';
@@ -24,9 +23,9 @@ export type TwoFactorState = {
 };
 
 /**
- * Timeout for automatic state expiration (60 seconds).
+ * Timeout for automatic state expiration.
  */
-const STATE_EXPIRY_MS = 60 * 1000;
+const STATE_EXPIRY_MS = 5 * 60 * 1000;
 
 /**
  * In-memory storage for 2FA state.

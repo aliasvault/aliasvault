@@ -4,13 +4,14 @@
 
 import '@/platform/ClientServices';
 
+import { broadcastVaultUnlocked, handleAwaitPendingAuth, handleLoginWithPassword, handleLoginWithTwoFactor, handleUnlockWithPassword, handleUnlockWithPin } from '@/entrypoints/background/AuthHandler';
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
-import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+import { handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -133,28 +134,6 @@ function onExtensionPageMessage<TType extends keyof IExtensionMessageProtocol>(
     }
     return handler(message);
   });
-}
-
-/**
- * Notify content scripts in all tabs that the vault was unlocked, so any conditional passkey
- * request parked while the vault was locked can re-query and surface its passkeys.
- */
-async function broadcastVaultUnlocked(): Promise<void> {
-  try {
-    const tabs = await browser.tabs.query({});
-    await Promise.all(tabs.map(async (tab) => {
-      if (tab.id === undefined) {
-        return;
-      }
-      try {
-        await sendMessage('VAULT_UNLOCKED', undefined, tab.id);
-      } catch {
-        // No receiving content script in this tab — ignore.
-      }
-    }));
-  } catch {
-    // tabs.query can fail in rare contexts — best-effort, ignore.
-  }
 }
 
 /**
@@ -286,10 +265,21 @@ export default defineBackground({
     });
     onExtensionPageMessage('STORE_UNLOCK_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreUnlockKeyDerivationParams(data));
 
+    // Login and unlock run in the background so they complete when the popup closes mid-flow.
+    onExtensionPageMessage('AUTH_LOGIN', ({ data }) => handleLoginWithPassword(data));
+    onExtensionPageMessage('AUTH_LOGIN_TWO_FACTOR', ({ data }) => handleLoginWithTwoFactor(data));
+    onExtensionPageMessage('AUTH_UNLOCK_PASSWORD', ({ data }) => handleUnlockWithPassword(data));
+    onExtensionPageMessage('AUTH_UNLOCK_PIN', ({ data }) => handleUnlockWithPin(data));
+    onExtensionPageMessage('AUTH_AWAIT_PENDING', () => handleAwaitPendingAuth());
+
     onExtensionPageMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVaultChunk(data));
     onExtensionPageMessage('GET_SYNC_STATE', () => handleGetSyncState());
 
     onExtensionPageMessage('FULL_VAULT_SYNC', ({ data }) => handleFullVaultSync(data));
+    onExtensionPageMessage('START_VAULT_SYNC', () => {
+      void handleFullVaultSync().catch(error => logFailure('Background vault sync failed', error));
+      return { success: true };
+    });
     onExtensionPageMessage('GET_VAULT_MIGRATION_STATUS', () => handleGetVaultMigrationStatus());
     onExtensionPageMessage('MIGRATE_VAULT_MANIFEST', () => handleMigrateVaultManifest());
     onExtensionPageMessage('GROUP_CREATE_VAULT', ({ data }) => handleGroupCreateVault(data));
@@ -339,7 +329,6 @@ export default defineBackground({
     onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
     // Two-factor authentication state persistence
-    onExtensionPageMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data));
     onExtensionPageMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
     onExtensionPageMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 

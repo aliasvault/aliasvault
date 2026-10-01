@@ -199,17 +199,23 @@ const Reinitialize: React.FC = () => {
        * This ensures the UI is responsive even if server is slow to respond.
        * All branches below are idempotent so this can safely run more than once (see the `location.key` note above).
        */
-      setIsInitialLoading(false);
       if (inlineUnlock) {
-        navigate('/unlock-success', { replace: true });
-      } else {
-        // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
-        const pendingRedirectUrl = await consumePendingRedirectUrl();
-        if (pendingRedirectUrl) {
-          navigate(pendingRedirectUrl, { replace: true });
-        } else {
-          await restoreLastPage();
+        if (!hasInitialized.current) {
+          hasInitialized.current = true;
+          await sendMessage('START_VAULT_SYNC');
         }
+        window.close();
+        return;
+      }
+
+      setIsInitialLoading(false);
+
+      // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
+      const pendingRedirectUrl = await consumePendingRedirectUrl();
+      if (pendingRedirectUrl) {
+        navigate(pendingRedirectUrl, { replace: true });
+      } else {
+        await restoreLastPage();
       }
 
       // Run the background sync once.
