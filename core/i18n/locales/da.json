@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Autentificeringskode",
     "authCodeNote": "Bemærk: Hvis du ikke har adgang til din autentificeringsenhed, kan du nulstille din 2FA med en gendannelseskode ved at logge ind via hjemmesiden.",
-    "autoCloseUnlockPopup": "Luk automatisk ved fremtidige log in",
     "biometricPrompt": "Vil du bruge {{biometric}} til at låse din boks op?",
     "browseVault": "Gennemse boksens indhold",
-    "closePopup": "Luk denne popup",
     "confirmLogout": "Er du sikker på, at du vil logge ud? Du skal logge ind igen med din master-adgangskode for at få adgang til din boks.",
     "connectingTo": "Forbinder til",
     "createNewVault": "Opret ny boks",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Lås op med adgangsnøgle",
       "webAuthnNotSupportedError": "Din nuværende browser understøtter ikke WebAuthn PRF-udvidelsen. Log venligst ind med din adgangskode i stedet."
     },
-    "unlockSuccessDescription": "Du kan nu bruge autofyld i login-formularer i din browser.",
-    "unlockSuccessTitle": "Din boks er oplåst",
     "unlockTitle": "Lås Din Boks op",
     "unlockVault": "Lås boks op",
     "unlockWithBiometric": "Lås op med {{biometric}}",
