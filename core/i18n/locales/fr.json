@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Code d'authentification",
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
-    "autoCloseUnlockPopup": "Fermeture automatique lors des connexions futures",
     "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre-fort ?",
     "browseVault": "Parcourir le contenu du coffre-fort",
-    "closePopup": "Fermer cette popup",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devez vous reconnecter avec votre mot de passe maître pour accéder à votre coffre-fort.",
     "connectingTo": "Connexion à",
     "createNewVault": "Créer un nouveau coffre-fort",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Déverrouiller avec la clé d'accès",
       "webAuthnNotSupportedError": "Votre navigateur actuel ne supporte pas l'extension WebAuthn PRF. Veuillez vous connecter avec votre mot de passe."
     },
-    "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
-    "unlockSuccessTitle": "Votre coffre-fort a été déverrouillé avec succès",
     "unlockTitle": "Déverrouiller votre coffre-fort",
     "unlockVault": "Déverrouiller le coffre-fort",
     "unlockWithBiometric": "Déverrouiller avec {{biometric}}",
