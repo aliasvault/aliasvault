@@ -1,6 +1,8 @@
 import { type ItemType, ItemTypes } from '@aliasvault/models/vault';
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useClickOutside } from '@/hooks/useClickOutside';
 
 type ItemTypeSelectorProps = {
   selectedType: ItemType;
@@ -79,36 +81,52 @@ export const ItemTypePill: React.FC<ItemTypePillProps> = ({ itemType, onClick, i
  */
 const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({ selectedType, onSelectedTypeChange, showDropdown, onShowDropdownChange }) => {
   const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => onShowDropdownChange(false), [onShowDropdownChange]);
+  useClickOutside([containerRef], close, showDropdown);
+
+  useEffect(() => {
+    if (!showDropdown) {
+      return;
+    }
+    /**
+     * Close on Escape.
+     */
+    const onKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        close();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return (): void => document.removeEventListener('keydown', onKeyDown);
+  }, [showDropdown, close]);
 
   return (
-    <div className="relative inline-block">
+    <div ref={containerRef} className="relative inline-block">
       <ItemTypePill itemType={selectedType} onClick={() => onShowDropdownChange(!showDropdown)} isOpen={showDropdown} />
 
       {showDropdown && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => onShowDropdownChange(false)}></div>
-          <div className="absolute left-0 z-20 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
-            {ALL_TYPES.map((itemType) => {
-              const selected = selectedType === itemType;
-              return (
-                <button key={itemType} type="button" id={`itemTypeSelector_${itemType}`} onClick={() => {
-                  if (!selected) {
-                    onSelectedTypeChange(itemType);
-                  }
-                  onShowDropdownChange(false);
-                }} className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${selected ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-white'}`}>
-                  <span className={selected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'}><TypeIcon itemType={itemType} /></span>
-                  <span className="font-medium text-sm">{t(typeNameKey(itemType))}</span>
-                  {selected && (
-                    <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </>
+        <div className="absolute left-0 z-20 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+          {ALL_TYPES.map((itemType) => {
+            const selected = selectedType === itemType;
+            return (
+              <button key={itemType} type="button" id={`itemTypeSelector_${itemType}`} onClick={() => {
+                if (!selected) {
+                  onSelectedTypeChange(itemType);
+                }
+                onShowDropdownChange(false);
+              }} className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${selected ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-white'}`}>
+                <span className={selected ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'}><TypeIcon itemType={itemType} /></span>
+                <span className="font-medium text-sm">{t(typeNameKey(itemType))}</span>
+                {selected && (
+                  <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
       )}
     </div>
   );
