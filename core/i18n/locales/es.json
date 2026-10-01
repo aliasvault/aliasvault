@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Código de autenticación",
     "authCodeNote": "Nota: si no tienes acceso a tu dispositivo de autenticación, puedes restablecer tu 2FA con un código de recuperación iniciando sesión a través del sitio web.",
-    "autoCloseUnlockPopup": "Autocerrar en futuros inicios de sesión",
     "biometricPrompt": "¿Quieres usar {{biometric}} para desbloquear tu bóveda?",
     "browseVault": "Navegar el contenido de la bóveda",
-    "closePopup": "Cerrar esta ventana emergente",
     "confirmLogout": "¿Realmente quieres cerrar la sesión? Necesitas volver a iniciar sesión con tu contraseña maestra para acceder a tu bóveda.",
     "connectingTo": "Conectando con",
     "createNewVault": "Crear nueva bóveda",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Desbloquear con llave",
       "webAuthnNotSupportedError": "Tu navegador actual no soporta la extensión WebAuthn PRF. Por favor, inténtalo de nuevo con tu contraseña."
     },
-    "unlockSuccessDescription": "Ahora puedes utilizar el autocompletado en los formularios de inicio de sesión en tu navegador.",
-    "unlockSuccessTitle": "Tu bóveda se ha desbloqueado correctamente",
     "unlockTitle": "Desbloquear tu Bóveda",
     "unlockVault": "Desbloquear bóveda",
     "unlockWithBiometric": "Desbloquear con {{biometric}}",
