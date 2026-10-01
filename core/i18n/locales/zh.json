@@ -70,7 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "附件删除成功。",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "{{filename}} 为空。",
     "firefoxExpandRequired": "要上传文件，请使用展开的窗口。",
     "openExpandedWindow": "打开展开的窗口",
     "uploadError": "文件上传出错：{{error}}",
