@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Todennuskoodi",
     "authCodeNote": "Huomautus: Jos sinulla ei ole pääsyä varmennuslaitteeseesi, voit palauttaa kaksivaiheisen varmennuksen (2FA) kirjautumalla palautuskoodilla sisään verkkosivuston kautta.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "Haluatko käyttää {{biometric}} avataksesi holvisi lukituksen?",
     "browseVault": "Selaa holvin sisältöä",
-    "closePopup": "Sulje tämä ponnahdusikkuna",
     "confirmLogout": "Oletko varma, että haluat kirjautua ulos? Sinun täytyy kirjautua sisään uudelleen pääsalasanallasi päästäksesi holviisi.",
     "connectingTo": "Yhdistetään kohteeseen",
     "createNewVault": "Luo uusi holvi",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Poista lukitus todennusavaimella",
       "webAuthnNotSupportedError": "Nykyinen selain ei tue WebAuthn PRF -laajennusta. Kirjauduthan sisään sen sijaan salasanalla."
     },
-    "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
-    "unlockSuccessTitle": "Holvisi lukitus on avattu",
     "unlockTitle": "Avaa holvisi lukitus",
     "unlockVault": "Avaa holvin lukitus",
     "unlockWithBiometric": "Unlock with {{biometric}}",
