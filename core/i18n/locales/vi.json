@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Mã xác thực",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "Would you like to use {{biometric}} to unlock your vault?",
     "browseVault": "Browse vault contents",
-    "closePopup": "Close this popup",
     "confirmLogout": "Bạn có chắc chắn muốn đăng xuất không? Bạn sẽ cần đăng nhập lại bằng mật khẩu chính để truy cập kho lưu trữ của mình.",
     "connectingTo": "Connecting to",
     "createNewVault": "Create new vault",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "Your current browser does not support the WebAuthn PRF extension. Please login with your password instead."
     },
-    "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
-    "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockTitle": "Unlock Your Vault",
     "unlockVault": "Mở khóa kho bí mật",
     "unlockWithBiometric": "Mở khóa bằng sinh trắc học",
