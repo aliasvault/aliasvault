@@ -7,7 +7,7 @@ import { setPlatform } from '@aliasvault/client/platform';
 
 import { CONDITIONAL_PASSKEYS_UPDATED_EVENT, hasPendingConditionalRequest, refreshConditionalPasskeyOptions } from '@/entrypoints/contentScript/ConditionalPasskey';
 import { fillItem, injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { consumeUnlockResume, getLastAutofillInput, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
@@ -708,12 +708,23 @@ export default defineContentScript({
           return { success: true };
         });
 
-        // When the vault is unlocked, re-query any pending conditional passkey requests
+        /*
+         * When the vault is unlocked, reopen the autofill popup the user unlocked from, and re-query any pending
+         * conditional passkey requests.
+         */
         onMessage('VAULT_UNLOCKED', async () => {
-          if (ctx.isInvalid || !hasPendingConditionalRequest()) {
+          if (ctx.isInvalid) {
             return;
           }
-          await refreshConditionalPasskeyOptions();
+
+          const resume = consumeUnlockResume();
+          if (resume) {
+            await showPopupWithAuthCheck(resume.input, container, resume.popupType, true);
+          }
+
+          if (hasPendingConditionalRequest()) {
+            await refreshConditionalPasskeyOptions();
+          }
         });
 
         /**
@@ -832,7 +843,7 @@ export default defineContentScript({
 
               // Vault is locked, show vault locked popup
               const { createVaultLockedPopup } = await import('@/entrypoints/contentScript/Popup');
-              createVaultLockedPopup(inputElement, container);
+              createVaultLockedPopup(inputElement, container, popupType);
               return;
             }
 
