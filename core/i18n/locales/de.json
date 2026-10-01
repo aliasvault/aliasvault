@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Sicherheits-Code",
     "authCodeNote": "Hinweis: Wenn Du keinen Zugriff auf Dein Authentifizierungsgerät hast, kannst Du Deine Zwei-Faktor-Authentifizierung (2FA) mit einem Wiederherstellungscode zurücksetzen, indem Du Dich über die Website anmeldest.",
-    "autoCloseUnlockPopup": "Bei zukünftigen Anmeldungen automatisch schließen",
     "biometricPrompt": "Möchtest Du Deinen Tresor mit {{biometric}} entsperren?",
     "browseVault": "Tresor durchsuchen",
-    "closePopup": "Popup schließen",
     "confirmLogout": "Bist Du sicher, dass Du Dich abmelden möchtest? Du musst Dich anschließend erneut mit Deinem Master-Passwort anmelden, um auf Deinen Tresor zuzugreifen.",
     "connectingTo": "Verbinde zu",
     "createNewVault": "Neuen Tresor erstellen",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Mit Passkey entsperren",
       "webAuthnNotSupportedError": "Dein aktueller Browser unterstützt die WebAuthn-PRF-Erweiterung nicht. Bitte melde Dich stattdessen mit Deinem Passwort an."
     },
-    "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
-    "unlockSuccessTitle": "Dein Tresor wurde erfolgreich entsperrt",
     "unlockTitle": "Entsperre Deinen Tresor",
     "unlockVault": "Tresor entsperren",
     "unlockWithBiometric": "Mit {{biometric}} entsperren",
