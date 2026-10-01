@@ -374,61 +374,66 @@ const Login: React.FC = () => {
 
   if (twoFactorRequired) {
     return (
-      <div>
-        <form onSubmit={handleTwoFactorSubmit} className="bg-white dark:bg-gray-700 w-full shadow-md rounded px-8 pt-6 pb-8 mb-4">
-          {error && (
-            <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
-              {error}
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <form onSubmit={handleTwoFactorSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('common.twoFactorAuthentication')}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{t('auth.twoFactorTitle')}</p>
             </div>
-          )}
-          {vaultError && <VaultErrorReport error={vaultError} />}
-          <div className="mb-6">
-            <p className="text-gray-700 dark:text-gray-200 mb-4">
-              {t('auth.twoFactorTitle')}
+
+            {error && (
+              <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+            {vaultError && <VaultErrorReport error={vaultError} />}
+
+            <div className="mb-6">
+              <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="twoFactorCode">
+                {t('auth.authCode')}
+              </label>
+              <input
+                className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                id="twoFactorCode"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value)}
+                placeholder={t('auth.enterAuthCode')}
+                required
+              />
+            </div>
+            <div className="flex flex-col w-full space-y-2">
+              <Button type="submit">
+                {t('auth.verify')}
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  // Clear persisted 2FA state
+                  await sendMessage('CLEAR_TWO_FACTOR_STATE');
+                  // Reset the form
+                  setCredentials({
+                    username: '',
+                    password: ''
+                  });
+                  setTwoFactorRequired(false);
+                  setTwoFactorCode('');
+                  setError(null);
+                }}
+                variant="secondary"
+              >
+                {t('common.cancel')}
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
+              {t('auth.authCodeNote')}
             </p>
-            <label className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2" htmlFor="twoFactorCode">
-              {t('auth.authCode')}
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline"
-              id="twoFactorCode"
-              type="text"
-              value={twoFactorCode}
-              onChange={(e) => setTwoFactorCode(e.target.value)}
-              placeholder={t('auth.enterAuthCode')}
-              required
-            />
-          </div>
-          <div className="flex flex-col w-full space-y-2">
-            <Button type="submit">
-              {t('auth.verify')}
-            </Button>
-            <Button
-              type="button"
-              onClick={async () => {
-                // Clear persisted 2FA state
-                await sendMessage('CLEAR_TWO_FACTOR_STATE');
-                // Reset the form
-                setCredentials({
-                  username: '',
-                  password: ''
-                });
-                setTwoFactorRequired(false);
-                setTwoFactorCode('');
-                setPasswordHashString(null);
-                setPasswordHashBase64(null);
-                setLoginResponse(null);
-                setError(null);
-              }}
-              variant="secondary"
-            >
-              {t('common.cancel')}
-            </Button>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-            {t('auth.authCodeNote')}
-          </p>
-        </form>
+          </form>
+        </div>
       </div>
     );
   }

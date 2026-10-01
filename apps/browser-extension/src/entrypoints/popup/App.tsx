@@ -15,7 +15,6 @@ import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContex
 import AuthSettings from '@/entrypoints/popup/pages/auth/AuthSettings';
 import Login from '@/entrypoints/popup/pages/auth/Login';
 import Unlock from '@/entrypoints/popup/pages/auth/Unlock';
-import UnlockSuccess from '@/entrypoints/popup/pages/auth/UnlockSuccess';
 import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
 import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
 import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
@@ -192,7 +191,6 @@ const App: React.FC = () => {
     { path: '/reinitialize', element: <Reinitialize />, showBackButton: false },
     { path: '/login', element: <Login />, showBackButton: false, layout: LayoutType.AUTH },
     { path: '/unlock', element: <Unlock />, showBackButton: false, layout: LayoutType.AUTH },
-    { path: '/unlock-success', element: <UnlockSuccess />, showBackButton: false },
     { path: '/upgrade', element: <Upgrade />, showBackButton: false },
     { path: '/auth-settings', element: <AuthSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/items', element: <ItemsList />, showBackButton: false },

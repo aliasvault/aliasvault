@@ -7,5 +7,4 @@ export const AUTH_FLOW_PATHS: readonly string[] = [
   '/reinitialize',
   '/login',
   '/unlock',
-  '/unlock-success',
 ];

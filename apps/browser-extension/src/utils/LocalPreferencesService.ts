@@ -30,22 +30,6 @@ export const LocalPreferencesService = {
     await storage.setItem(StorageKeys.SHOW_FOLDERS, showFolders);
   },
 
-  /**
-   * Get the auto-close unlock popup preference.
-   * @returns Whether to auto-close the popup after unlocking. Defaults to true.
-   */
-  async getAutoCloseUnlockPopup(): Promise<boolean> {
-    const value = await storage.getItem(StorageKeys.AUTO_CLOSE_UNLOCK_POPUP) as boolean | null;
-    return value ?? true;
-  },
-
-  /**
-   * Set the auto-close unlock popup preference.
-   */
-  async setAutoCloseUnlockPopup(enabled: boolean): Promise<void> {
-    await storage.setItem(StorageKeys.AUTO_CLOSE_UNLOCK_POPUP, enabled);
-  },
-
   /*
    * ============================================
    * Unlock screen behavior

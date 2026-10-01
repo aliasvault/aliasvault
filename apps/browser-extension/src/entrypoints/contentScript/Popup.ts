@@ -6,6 +6,7 @@ import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
+import { DEFAULT_POPUP_TYPE, type PopupType } from '@/utils/autofill/PopupTypes';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage, type TotpSecret } from '@/utils/messaging/ExtensionMessaging';
 import { ClickValidator } from '@/utils/security/ClickValidator';
@@ -30,6 +31,28 @@ let lastAutofillInput: HTMLInputElement | null = null;
  */
 export function getLastAutofillInput(): HTMLInputElement | null {
   return lastAutofillInput;
+}
+
+/**
+ * How long after the user clicked a "vault locked" popup an unlock still reopens the autofill popup.
+ */
+const UNLOCK_RESUME_WINDOW_MS = 5 * 60 * 1000;
+
+/**
+ * The field whose "vault locked" popup the user clicked, to reopen its autofill popup once the vault is unlocked.
+ */
+let pendingUnlockResume: { input: HTMLInputElement; popupType: PopupType; expiresAt: number } | null = null;
+
+/**
+ * Take the field to reopen the autofill popup for after an unlock, or null when there is none (or it is gone).
+ */
+export function consumeUnlockResume(): { input: HTMLInputElement; popupType: PopupType } | null {
+  const resume = pendingUnlockResume;
+  pendingUnlockResume = null;
+  if (!resume || Date.now() > resume.expiresAt || isAnchorGone(resume.input)) {
+    return null;
+  }
+  return resume;
 }
 
 /*
@@ -246,7 +269,7 @@ export function openTotpPopup(input: HTMLInputElement, container: HTMLElement, f
         }
       }
 
-      await createVaultLockedPopup(input, container);
+      await createVaultLockedPopup(input, container, 'totp');
     }
   })();
 }
@@ -1124,11 +1147,12 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
 /**
  * Create vault locked popup.
  */
-export async function createVaultLockedPopup(input: HTMLInputElement, rootContainer: HTMLElement): Promise<void> {
+export async function createVaultLockedPopup(input: HTMLInputElement, rootContainer: HTMLElement, popupType: PopupType = DEFAULT_POPUP_TYPE): Promise<void> {
   /**
-   * Handle unlock click.
+   * Handle unlock click: open the unlock window, and reopen this field's autofill popup once the vault is unlocked.
    */
   const handleUnlockClick = () : void => {
+    pendingUnlockResume = { input, popupType, expiresAt: Date.now() + UNLOCK_RESUME_WINDOW_MS };
     sendMessage('OPEN_POPUP');
     removeExistingPopup(rootContainer);
   }

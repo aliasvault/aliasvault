@@ -79,8 +79,6 @@ export const StorageKeys = {
   CUSTOM_USERNAME_HISTORY: 'local:aliasvault_custom_username_history',
   /** Whether the item list is grouped by folder. */
   SHOW_FOLDERS: 'local:aliasvault_show_folders',
-  /** Whether the popup closes automatically after unlocking. */
-  AUTO_CLOSE_UNLOCK_POPUP: 'local:aliasvault_auto_close_unlock_popup',
   /** Unlock method used last, preselected on the unlock screen. */
   LAST_USED_UNLOCK_METHOD: 'local:aliasvault_last_used_unlock_method',
   /** Whether the save-login prompt is enabled. */
@@ -157,7 +155,6 @@ export const LOCAL_PREFERENCE_STORAGE_KEYS: readonly StorageKey[] = [
   StorageKeys.CUSTOM_EMAIL_HISTORY,
   StorageKeys.CUSTOM_USERNAME_HISTORY,
   StorageKeys.SHOW_FOLDERS,
-  StorageKeys.AUTO_CLOSE_UNLOCK_POPUP,
   StorageKeys.LAST_USED_UNLOCK_METHOD,
   StorageKeys.LOGIN_SAVE_ENABLED,
   StorageKeys.LOGIN_SAVE_AUTO_DISMISS_SECONDS,
