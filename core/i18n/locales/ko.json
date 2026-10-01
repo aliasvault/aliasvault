@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "인증 코드",
     "authCodeNote": "참고: 인증기 기기에 접근할 수 없는 경우, 웹사이트에 로그인하여 복구 코드로 2단계 인증을 재설정할 수 있습니다.",
-    "autoCloseUnlockPopup": "이후 로그인 시 자동으로 닫기",
     "biometricPrompt": "보관함 잠금을 해제할 때 {{biometric}}을(를) 사용하시겠습니까?",
     "browseVault": "보관함 내용 찾아보기",
-    "closePopup": "이 팝업 닫기",
     "confirmLogout": "정말 로그아웃하시겠습니까? 보관함에 접근하려면 마스터 비밀번호로 다시 로그인해야 합니다.",
     "connectingTo": "연결 중:",
     "createNewVault": "새 보관함 만들기",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "패스키로 잠금 해제",
       "webAuthnNotSupportedError": "현재 브라우저는 WebAuthn PRF 확장을 지원하지 않습니다. 대신 비밀번호로 로그인하세요."
     },
-    "unlockSuccessDescription": "이제 브라우저의 로그인 양식에서 자동 완성을 사용할 수 있습니다.",
-    "unlockSuccessTitle": "보관함이 성공적으로 잠금 해제되었습니다",
     "unlockTitle": "보관함 잠금 해제",
     "unlockVault": "보관함 잠금 해제",
     "unlockWithBiometric": "{{biometric}}(으)로 잠금 해제",
