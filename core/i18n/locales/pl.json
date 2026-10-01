@@ -70,7 +70,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Element został pomyślnie usunięty.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "{{filename}} jest pusty.",
     "firefoxExpandRequired": "Aby przesłać pliki, użyj rozszerzonego okna.",
     "openExpandedWindow": "Otwórz rozszerzone okno",
     "uploadError": "Error uploading file: {{error}}",
