@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import Breadcrumb from '@/components/shared/Breadcrumb';
+import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import H1 from '@/components/shared/H1';
 import { useNotifications } from '@/context/NotificationContext';
@@ -22,6 +24,7 @@ const Disable2Fa: React.FC = () => {
   
   usePageTitle(t('settings.securitySettings.disable2fa.pageTitle'));
   const [isLoading, setIsLoading] = useState(true);
+  const [code, setCode] = useState('');
   const hasStarted = useRef(false);
 
   useEffect(() => {
@@ -50,16 +53,17 @@ const Disable2Fa: React.FC = () => {
   }, [navigate, notifications, t, webApi]);
 
   /**
-   * Switch two-factor off.
+   * Switch two-factor off after the server checked the authenticator or recovery code.
    */
-  const disableTwoFactor = async (): Promise<void> => {
+  const disableTwoFactor = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
     try {
-      await webApi.post<null, unknown>('TwoFactorAuth/disable', null, false);
+      await webApi.post<string, unknown>('TwoFactorAuth/disable', code.trim(), false);
       notifications.addSuccessMessage(t('settings.securitySettings.disable2fa.twoFactorDisabledSuccess'));
       navigate('/settings/security');
     } catch (error) {
       console.error('Failed to disable 2FA:', error);
-      notifications.addErrorMessage(t('settings.securitySettings.disable2fa.failedToDisable2Fa'), true);
+      notifications.addErrorMessage(apiErrorMessage(error, t, t('settings.securitySettings.disable2fa.failedToDisable2Fa')), true);
     }
   };
 
@@ -80,9 +84,10 @@ const Disable2Fa: React.FC = () => {
       <Card>
         <AlertMessageError hasTopMargin={false} message={t('settings.securitySettings.disable2fa.warningMessage')} />
         <div className="mb-3 mt-4 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.disable2fa.statusMessage')}</div>
-        <button type="button" onClick={() => void disableTwoFactor()} className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-150 ease-in-out">
-          {t('settings.securitySettings.disable2fa.confirmDisableButton')}
-        </button>
+        <form onSubmit={disableTwoFactor} className="space-y-4" av-enable="true" av-suppress-save="true">
+          <input id="disableCode" type="text" value={code} onChange={e => setCode(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400" placeholder={t('settings.securitySettings.enable2fa.verificationCodePlaceholder')} autoComplete="one-time-code" required />
+          <Button type="submit" color="danger">{t('settings.securitySettings.disable2fa.confirmDisableButton')}</Button>
+        </form>
       </Card>
     </>
   );

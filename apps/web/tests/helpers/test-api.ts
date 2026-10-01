@@ -128,3 +128,14 @@ export async function restoreLegacyVault(apiUrl: string, username: string, fixtu
     throw new Error(`Restoring the legacy vault via ${url} failed with status ${response.status}: ${await response.text()}`);
   }
 }
+
+/**
+ * Call a TwoFactorAuth endpoint directly with the given access token.
+ */
+export async function postTwoFactorAuth(apiUrl: string, token: string, action: 'enable' | 'verify' | 'disable', body?: string): Promise<Response> {
+  return fetch(`${WebApiService.versionedBaseUrl(apiUrl)}TwoFactorAuth/${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
