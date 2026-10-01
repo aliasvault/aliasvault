@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Autentiseringskod",
     "authCodeNote": "Obs! Om du inte har tillgång till din autentiseringsenhet kan du återställa din 2FA med en återställningskod genom att logga in via webbplatsen.",
-    "autoCloseUnlockPopup": "Stäng automatiskt vid framtida inloggningar",
     "biometricPrompt": "Vill du använda {{biometric}} för att låsa upp ditt valv?",
     "browseVault": "Bläddra bland valvets innehåll",
-    "closePopup": "Stäng detta popup-fönster",
     "confirmLogout": "Är du säker på att du vill logga ut? Du måste logga in igen med ditt huvudlösenord för att komma åt ditt valv.",
     "connectingTo": "Ansluter till",
     "createNewVault": "Skapa ett nytt valv",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Lås upp med passkey",
       "webAuthnNotSupportedError": "Din nuvarande webbläsare stöder inte tillägget WebAuthn PRF. Försök igen med en annan webbläsare."
     },
-    "unlockSuccessDescription": "Du kan nu använda autofyll av inloggningsformulär i din webbläsare.",
-    "unlockSuccessTitle": "Ditt valv har låsts upp",
     "unlockTitle": "Lås upp ditt valv",
     "unlockVault": "Lås upp valv",
     "unlockWithBiometric": "Lås upp med {{biometric}}",
