@@ -10,12 +10,15 @@ import {
 } from 'react-native';
 
 import { scopedKey } from '@aliasvault/client/database/ItemRef';
-import { buildFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
+import { buildFolderTree, flattenFolderTree, getFolderIdPath, isSharedFolder, type FolderTreeNode } from '@aliasvault/client/items/FolderUtils';
 import { useColors } from '@/hooks/useColorScheme';
 import { ModalWrapper } from '@/components/common/ModalWrapper';
 import { FolderIcon } from '@/components/folders/FolderIcon';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
+
+/** Indent per folder level. */
+const FOLDER_INDENT = 24;
 
 interface IFolderSelectorModalProps {
   folders: Folder[];
@@ -78,6 +81,7 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   }, [selectedFolderId, selectedManifestId, folders]);
 
   const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
+  const visibleFolders = useMemo(() => flattenFolderTree(folderTree, expandedFolders), [folderTree, expandedFolders]);
 
   /**
    * Handle folder selection.
@@ -88,14 +92,11 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   }, [onFolderChange, onClose]);
 
   const styles = StyleSheet.create({
-    chevronButton: {
-      padding: 4,
-      borderRadius: 4,
-    },
     chevronContainer: {
-      width: 26,
       alignItems: 'center',
+      alignSelf: 'stretch',
       justifyContent: 'center',
+      width: FOLDER_INDENT,
     },
     closeButton: {
       padding: 4,
@@ -103,14 +104,24 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
       right: 0,
       top: 0,
     },
-    folderIcon: {
-      marginLeft: 4,
-    },
     folderOption: {
       alignItems: 'center',
       borderRadius: 8,
       flexDirection: 'row',
       paddingHorizontal: 12,
+      paddingVertical: 12,
+    },
+    folderRow: {
+      alignItems: 'center',
+      borderRadius: 8,
+      flexDirection: 'row',
+    },
+    folderRowButton: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      paddingLeft: 4,
+      paddingRight: 12,
       paddingVertical: 12,
     },
     folderOptionActive: {
@@ -146,86 +157,54 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
   });
 
   /**
-   * Recursively render folder tree node.
+   * Render one visible folder row; each level indents by one chevron slot.
    */
-  const renderFolderNode = useCallback((node: FolderTreeNode, depth: number = 0): React.ReactNode => {
+  const renderFolderRow = (node: FolderTreeNode): React.ReactNode => {
     const nodeKey = scopedKey(node.ManifestId, node.Id);
     const isExpanded = expandedFolders.has(nodeKey);
     const hasChildren = node.children.length > 0;
     const isSelected = selectedFolderId === node.Id && selectedManifestId === node.ManifestId;
 
     return (
-      <View key={nodeKey}>
+      <View key={nodeKey} style={[styles.folderRow, isSelected && styles.folderOptionActive, { paddingLeft: 4 + node.depth * FOLDER_INDENT }]}>
+        {hasChildren ? (
+          <TouchableOpacity
+            onPress={() => toggleFolder(nodeKey)}
+            style={styles.chevronContainer}
+            hitSlop={{ top: 10, bottom: 10, left: 6, right: 0 }}
+            accessibilityState={{ expanded: isExpanded }}
+          >
+            <MaterialIcons
+              name="chevron-right"
+              size={20}
+              color={colors.textMuted}
+              style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}
+            />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.chevronContainer} />
+        )}
+
         <TouchableOpacity
-          style={[
-            styles.folderOption,
-            isSelected && styles.folderOptionActive,
-          ]}
+          style={styles.folderRowButton}
           onPress={() => handleSelectFolder({ Id: node.Id, ManifestId: node.ManifestId })}
           activeOpacity={0.7}
         >
-          {/* Indentation */}
-          <View style={{ width: depth * 20 }} />
-
-          {/* Expand/collapse chevron - fixed width container */}
-          <View style={styles.chevronContainer}>
-            {hasChildren ? (
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  toggleFolder(nodeKey);
-                }}
-                style={styles.chevronButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <MaterialIcons
-                  name="chevron-right"
-                  size={18}
-                  color={colors.textMuted}
-                  style={{
-                    transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
-                  }}
-                />
-              </TouchableOpacity>
-            ) : (
-              <View style={{ width: 18 }} />
-            )}
-          </View>
-
-          {/* Folder icon */}
           <FolderIcon
             isShared={isSharedFolder(node, personalManifestId)}
             size={22}
             color={isSelected ? colors.tint : colors.textMuted}
-            style={styles.folderIcon}
           />
-
-          {/* Folder name */}
-          <Text
-            style={[
-              styles.folderOptionText,
-              isSelected && styles.folderOptionTextActive,
-            ]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.folderOptionText, isSelected && styles.folderOptionTextActive]} numberOfLines={1}>
             {node.Name}
           </Text>
-
-          {/* Checkmark for selected folder */}
           {isSelected && (
             <MaterialIcons name="check" size={20} color={colors.tint} />
           )}
         </TouchableOpacity>
-
-        {/* Render children if expanded */}
-        {isExpanded && hasChildren && (
-          <>
-            {node.children.map(child => renderFolderNode(child, depth + 1))}
-          </>
-        )}
       </View>
     );
-  }, [expandedFolders, selectedFolderId, selectedManifestId, personalManifestId, handleSelectFolder, toggleFolder, colors, styles]);
+  };
 
   const modalContent = (
     <View style={styles.modalContainer}>
@@ -267,8 +246,8 @@ export const FolderSelectorModal: React.FC<IFolderSelectorModalProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* Folder tree (recursive rendering) */}
-        {folderTree.map(node => renderFolderNode(node, 0))}
+        {/* Folder tree, one row per visible folder */}
+        {visibleFolders.map(renderFolderRow)}
       </ScrollView>
     </View>
   );

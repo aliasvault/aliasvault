@@ -68,32 +68,30 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
     });
   });
 
-  // Build the tree structure
+  // Link children to their parents first; depth and path are set afterwards, since a child may come before its parent.
   const rootFolders: FolderTreeNode[] = [];
-
   folders.forEach(folder => {
     const node = folderMap.get(scopedKey(folder.ManifestId, folder.Id))!;
-
-    if (!folder.ParentFolderId) {
-      // Root folder
-      node.depth = 0;
-      node.path = [folder.Id];
-      rootFolders.push(node);
+    const parent = folder.ParentFolderId ? folderMap.get(scopedKey(folder.ManifestId, folder.ParentFolderId)) : undefined;
+    if (parent) {
+      parent.children.push(node);
     } else {
-      // Child folder
-      const parent = folderMap.get(scopedKey(folder.ManifestId, folder.ParentFolderId));
-      if (parent) {
-        node.depth = parent.depth + 1;
-        node.path = [...parent.path, folder.Id];
-        parent.children.push(node);
-      } else {
-        // Parent not found or deleted - treat as root
-        node.depth = 0;
-        node.path = [folder.Id];
-        rootFolders.push(node);
-      }
+      // Root folder, or its parent is missing or deleted.
+      rootFolders.push(node);
     }
   });
+
+  /**
+   * Set depth and path of each node from its parent.
+   */
+  const assignDepth = (nodes: FolderTreeNode[], depth: number, parentPath: string[]): void => {
+    nodes.forEach(node => {
+      node.depth = depth;
+      node.path = [...parentPath, node.Id];
+      assignDepth(node.children, depth + 1, node.path);
+    });
+  };
+  assignDepth(rootFolders, 0, []);
 
   /**
    * Sort children of a folder tree node recursively.
@@ -112,6 +110,36 @@ export function buildFolderTree(folders: Folder[]): FolderTreeNode[] {
   sortChildren(rootFolders);
 
   return rootFolders;
+}
+
+/**
+ * The visible rows of a folder tree: children of collapsed folders are skipped, as is the excluded folder with its subtree.
+ * @param tree - Root-level folder tree nodes
+ * @param expandedKeys - Scoped keys (see scopedKey) of the expanded folders
+ * @param excludeFolder - Folder to leave out, or null
+ * @returns The rows in display order, each with its depth
+ */
+export function flattenFolderTree(tree: FolderTreeNode[], expandedKeys: ReadonlySet<string>, excludeFolder: FolderRef | null = null): FolderTreeNode[] {
+  const result: FolderTreeNode[] = [];
+  const excludedKey = excludeFolder ? scopedKey(excludeFolder.ManifestId, excludeFolder.Id) : null;
+
+  /**
+   * Walk the nodes depth first.
+   */
+  const walk = (nodes: FolderTreeNode[]): void => {
+    for (const node of nodes) {
+      const key = scopedKey(node.ManifestId, node.Id);
+      if (key === excludedKey) {
+        continue;
+      }
+      result.push(node);
+      if (node.children.length > 0 && expandedKeys.has(key)) {
+        walk(node.children);
+      }
+    }
+  };
+  walk(tree);
+  return result;
 }
 
 /**
