@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "身份验证码",
     "authCodeNote": "注：如果您无法访问您的身份验证器设备，您可以通过网站登录并使用恢复码重置您的两步验证。",
-    "autoCloseUnlockPopup": "将来登录时自动关闭",
     "biometricPrompt": "您想使用 {{biometric}} 来解锁密码库吗？",
     "browseVault": "浏览密码库内容",
-    "closePopup": "关闭此弹窗",
     "confirmLogout": "确定要退出登录吗？您需要使用主密码重新登录才能访问密码库。",
     "connectingTo": "正在连接",
     "createNewVault": "创建新密码库",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "使用通行密钥解锁",
       "webAuthnNotSupportedError": "您当前的浏览器不支持 WebAuthn PRF 扩展。请改用密码登录。"
     },
-    "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
-    "unlockSuccessTitle": "您的密码库已成功解锁",
     "unlockTitle": "解锁您的密码库",
     "unlockVault": "解锁密码库",
     "unlockWithBiometric": "使用 {{biometric}} 解锁",
