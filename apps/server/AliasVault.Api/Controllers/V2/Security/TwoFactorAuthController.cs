@@ -12,6 +12,7 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Auth;
 using AliasVault.Shared.Models.Enums;
+using AliasVault.Shared.Models.WebApi;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -57,22 +58,22 @@ public class TwoFactorAuthController(IDbContextFactory<AliasServerDbContext> dbC
             return Unauthorized();
         }
 
-        string? authenticatorKey;
-        authenticatorKey = await GetUserManager().GetAuthenticatorKeyAsync(user);
-
-        // Only reset (create new keys) if no key exists yet, avoiding duplicate key errors.
-        if (string.IsNullOrEmpty(authenticatorKey))
+        if (await GetUserManager().GetTwoFactorEnabledAsync(user))
         {
-            try
-            {
-                await GetUserManager().ResetAuthenticatorKeyAsync(user);
-                authenticatorKey = await GetUserManager().GetAuthenticatorKeyAsync(user);
-            }
-            catch (DbUpdateException)
-            {
-                // Key was most likely created by concurrent request, just get it.
-                authenticatorKey = await GetUserManager().GetAuthenticatorKeyAsync(user);
-            }
+            return BadRequest("Two-factor authentication is already enabled.");
+        }
+
+        // Create a new key on every call.
+        string? authenticatorKey;
+        try
+        {
+            await GetUserManager().ResetAuthenticatorKeyAsync(user);
+            authenticatorKey = await GetUserManager().GetAuthenticatorKeyAsync(user);
+        }
+        catch (DbUpdateException)
+        {
+            // Key was most likely created by concurrent request, just get it.
+            authenticatorKey = await GetUserManager().GetAuthenticatorKeyAsync(user);
         }
 
         var encodedKey = urlEncoder.Encode(authenticatorKey!);
@@ -95,10 +96,23 @@ public class TwoFactorAuthController(IDbContextFactory<AliasServerDbContext> dbC
             return Unauthorized();
         }
 
+        if (await GetUserManager().GetTwoFactorEnabledAsync(user))
+        {
+            return BadRequest("Two-factor authentication is already enabled.");
+        }
+
+        if (await GetUserManager().IsLockedOutAsync(user))
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthEnable, AuthFailureReason.AccountLocked);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400));
+        }
+
         var isValid = await GetUserManager().VerifyTwoFactorTokenAsync(user, GetUserManager().Options.Tokens.AuthenticatorTokenProvider, code);
 
         if (isValid)
         {
+            await GetUserManager().ResetAccessFailedCountAsync(user);
+
             try
             {
                 await GetUserManager().SetTwoFactorEnabledAsync(user, true);
@@ -118,21 +132,50 @@ public class TwoFactorAuthController(IDbContextFactory<AliasServerDbContext> dbC
             }
         }
 
-        return BadRequest("Invalid code.");
+        await GetUserManager().AccessFailedAsync(user);
+        await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthEnable, AuthFailureReason.InvalidTwoFactorCode);
+        return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_AUTHENTICATOR_CODE, 400));
     }
 
     /// <summary>
-    /// Disable two-factor authentication for a user.
+    /// Disable two-factor authentication for a user, after checking a current authenticator code or a recovery code.
     /// </summary>
+    /// <param name="code">A current authenticator code or an unused recovery code.</param>
     /// <returns>Task.</returns>
     [HttpPost("disable")]
-    public async Task<IActionResult> Disable()
+    public async Task<IActionResult> Disable([FromBody] string code)
     {
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
             return Unauthorized();
         }
+
+        if (!await GetUserManager().GetTwoFactorEnabledAsync(user))
+        {
+            return BadRequest("Two-factor authentication is not enabled.");
+        }
+
+        if (await GetUserManager().IsLockedOutAsync(user))
+        {
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthDisable, AuthFailureReason.AccountLocked);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400));
+        }
+
+        var sanitizedCode = code.Replace(" ", string.Empty);
+        var isAuthenticatorCode = sanitizedCode.Length == 6 && sanitizedCode.All(char.IsAsciiDigit);
+        var isValid = isAuthenticatorCode
+            ? await GetUserManager().VerifyTwoFactorTokenAsync(user, GetUserManager().Options.Tokens.AuthenticatorTokenProvider, sanitizedCode)
+            : sanitizedCode.Length > 0 && (await GetUserManager().RedeemTwoFactorRecoveryCodeAsync(user, sanitizedCode.ToUpperInvariant())).Succeeded;
+
+        if (!isValid)
+        {
+            await GetUserManager().AccessFailedAsync(user);
+            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthDisable, isAuthenticatorCode ? AuthFailureReason.InvalidTwoFactorCode : AuthFailureReason.InvalidRecoveryCode);
+            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(isAuthenticatorCode ? ApiErrorCode.INVALID_AUTHENTICATOR_CODE : ApiErrorCode.INVALID_RECOVERY_CODE, 400));
+        }
+
+        await GetUserManager().ResetAccessFailedCountAsync(user);
 
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
