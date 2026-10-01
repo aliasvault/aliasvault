@@ -80,10 +80,8 @@
   "auth": {
     "authCode": "Hitelesítő kód",
     "authCodeNote": "Figyelem: Ha nem elérhető a hitelesítő eszköze, helyreállíthatja a másodfaktoros visszaállító kóddal ha bejelentkezik az oldalra.",
-    "autoCloseUnlockPopup": "Auto-bezárás a jövőbeli bejelentkezések alkalmával",
     "biometricPrompt": "{{biometric}} széf feloldást akar használni?",
     "browseVault": "Széf tartalom böngészése",
-    "closePopup": "Felugró üzenet bezárása",
     "confirmLogout": "Biztosan ki akar jelentkezni? Újra bejelentkezés esetén a mester jelszavával kell belépnie széfjébe.",
     "connectingTo": "Csatlakozás a következőhöz:",
     "createNewVault": "Új széf létrehozása",
@@ -200,8 +198,6 @@
       "unlockWithWebAuthn": "Feloldás azonosítókulccsal",
       "webAuthnNotSupportedError": "A jelenlegi böngészője nem támogatja a WebAuthn PRF bővítményt. Kérem használja inkább a jelszavát."
     },
-    "unlockSuccessDescription": "Innentől automatikusan ki tudja tölteni a mezőket a böngészőjében.",
-    "unlockSuccessTitle": "A széfje sikeresen feloldásra került",
     "unlockTitle": "Széf feloldása",
     "unlockVault": "Széf feloldása",
     "unlockWithBiometric": "{{biometric}} feloldás",
