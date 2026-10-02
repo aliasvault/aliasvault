@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Helytelen hitelesítő kód. Kérem próbálja meg újra.",
     "INVALID_RECOVERY_CODE": "Helytelen helyreállító kód. Kérem, próbálja meg újra.",
     "INVALID_REFRESH_TOKEN": "Helytelen frissítő token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "A megadott jelszó nem egyezik meg a jelenlegi jelszavával.",
     "PENDING_MIGRATIONS": "Vannak folyamatban lévő migrációk. Kérem futtassa a 'dotnet ef database update' frissítést az alkalmazáshoz.",
     "PUBLIC_REGISTRATION_DISABLED": "Az új fiók regisztráció jelenleg ki van kapcsolva a szerveren. Kérem vegye fel a kapcsolatot a rendszergazdával.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Kitűnő! Most állítson be egy mester jelszót az AliasVault fiókjához."
       },
       "passwordStepTitle": "Jelszó beállítása",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Beállítás",
       "termsAndConditionsStepTitle": "Az AliasVault használatával",
       "termsStep": {
