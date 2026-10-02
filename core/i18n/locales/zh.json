@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "验证码无效，请重试。",
     "INVALID_RECOVERY_CODE": "恢复码无效，请重试。",
     "INVALID_REFRESH_TOKEN": "刷新令牌无效。",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "提供的密码与您的当前密码不匹配。",
     "PENDING_MIGRATIONS": "存在待处理的数据库迁移。请运行“dotnet ef database update”命令来应用这些迁移。",
     "PUBLIC_REGISTRATION_DISABLED": "此服务器目前已禁用新账户注册，请联系管理员。",
@@ -161,6 +162,8 @@
         "welcomeMessage": "很好！现在，我们来设置您的 AliasVault 主密码。"
       },
       "passwordStepTitle": "设置密码",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "设置",
       "termsAndConditionsStepTitle": "使用 AliasVault",
       "termsStep": {
