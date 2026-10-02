@@ -73,7 +73,7 @@ export const TermsAndConditionsStep: React.FC<{ agreedToTerms: boolean; onAgreed
 /**
  * Step 2: pick a username.
  */
-export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange: (username: string) => void }> = ({ defaultUsername, onUsernameChange }) => {
+export const UsernameStep: React.FC<{ defaultUsername: string; inviteCode?: string; onUsernameChange: (username: string) => void }> = ({ defaultUsername, inviteCode, onUsernameChange }) => {
   const { t } = useTranslation();
   const webApi = useWebApi();
   const isLoading = useStepLoading();
@@ -95,7 +95,7 @@ export const UsernameStep: React.FC<{ defaultUsername: string; onUsernameChange:
       return;
     }
     try {
-      await webApi.post<{ username: string }, unknown>('Auth/validate-username', { username: value }, false);
+      await webApi.post<{ username: string; inviteCode?: string }, unknown>('Auth/validate-username', { username: value, inviteCode }, false);
       setIsValid(true);
       setErrorMessage('');
       onUsernameChange(value);
@@ -275,7 +275,7 @@ export const PasswordStep: React.FC<{ onPasswordChange: (password: string) => vo
 /**
  * Step 4: create the account.
  */
-export const CreatingStep: React.FC<{ username: string; password: string; onDone: () => void }> = ({ username, password, onDone }) => {
+export const CreatingStep: React.FC<{ username: string; password: string; inviteCode?: string; onDone: () => void }> = ({ username, password, inviteCode, onDone }) => {
   const { t } = useTranslation();
   const auth = useAuth();
   const webApi = useWebApi();
@@ -294,7 +294,7 @@ export const CreatingStep: React.FC<{ username: string; password: string; onDone
      */
     const completeSetup = async (): Promise<void> => {
       try {
-        await RegistrationService.register(webApi, username, password, auth.setAuthTokens);
+        await RegistrationService.register(webApi, username, password, auth.setAuthTokens, inviteCode);
         onDone();
       } catch (error) {
         console.error('Registration failed:', error);
@@ -303,7 +303,7 @@ export const CreatingStep: React.FC<{ username: string; password: string; onDone
       }
     };
     void completeSetup();
-  }, [auth.setAuthTokens, notifications, onDone, password, t, username, webApi]);
+  }, [auth.setAuthTokens, inviteCode, notifications, onDone, password, t, username, webApi]);
 
   return (
     <div className="w-full mx-auto">
