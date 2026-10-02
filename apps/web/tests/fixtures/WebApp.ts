@@ -18,11 +18,12 @@ export class WebApp {
   }
 
   /**
-   * Log out via the user menu and wait for the login page.
+   * Log out via the account popover and wait for the login page.
    */
   public async logout(): Promise<void> {
-    await this.page.locator('#toggleMobileMenuButton').click();
-    await this.page.locator('#mobileMenuDropdown').getByRole('link', { name: 'Log out' }).click();
+    await this.page.locator('#userMenuButton').click();
+    await this.page.locator('#userMenuLogoutButton').click();
+    await this.page.locator('#confirmButton').click();
     await expect(this.page).toHaveURL(/\/user\/login$/);
   }
 
@@ -74,7 +75,7 @@ export class WebApp {
    */
   public async expectVaultOpen(username: string): Promise<void> {
     await expect(this.page).toHaveURL(/\/items$/);
-    await expect(this.page.locator('#mobileMenuDropdown').getByText(username, { exact: true })).toBeAttached();
+    await expect(this.page.locator('#userMenu').getByText(username, { exact: true })).toBeAttached();
   }
 
   /**
@@ -89,10 +90,10 @@ export class WebApp {
   }
 
   /**
-   * Create a login item with only a name via the top bar widget, and wait for its view page.
+   * Create a login item with only a name via the top bar quick create, and wait for its view page.
    */
   public async createItem(name: string): Promise<void> {
-    await this.page.locator('#quickIdentityButton').click();
+    await this.page.locator('#topBarQuickCreateButton').click();
     await this.page.locator('#serviceName').fill(name);
     await this.page.locator('#quickIdentitySubmit').click();
     await expect(this.page.locator('#service-name')).toHaveValue(name);

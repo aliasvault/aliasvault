@@ -15,12 +15,12 @@ type TwoFactorSetup = {
 };
 
 /**
- * Open the security settings page via the user menu; a full page load would lock the vault.
+ * Open the two-factor authentication page via the account menu; a full page load would lock the vault.
  */
-async function openSecuritySettings(app: WebApp): Promise<void> {
-  await app.page.locator('#toggleMobileMenuButton').click();
-  await app.page.locator('#mobileMenuDropdown').getByRole('link', { name: 'Security settings' }).click();
-  await expect(app.page).toHaveURL(/\/settings\/security$/);
+async function openTwoFactorSettings(app: WebApp): Promise<void> {
+  await app.page.locator('#userMenuButton').click();
+  await app.page.locator('#userMenu').getByRole('link', { name: 'Two-factor authentication' }).click();
+  await expect(app.page).toHaveURL(/\/settings\/two-factor$/);
 }
 
 /**
@@ -28,9 +28,9 @@ async function openSecuritySettings(app: WebApp): Promise<void> {
  */
 async function enableTwoFactor(app: WebApp): Promise<TwoFactorSetup> {
   const { page } = app;
-  await openSecuritySettings(app);
+  await openTwoFactorSettings(app);
   await page.getByRole('button', { name: 'Enable two-factor authentication', exact: true }).click();
-  await expect(page).toHaveURL(/\/settings\/security\/enable-2fa$/);
+  await expect(page).toHaveURL(/\/settings\/two-factor\/enable$/);
 
   await expect(page.locator('#authenticator-uri img')).toBeVisible();
   const secret = (await page.locator('#authenticator-secret').innerText()).replace(/\s/g, '').toUpperCase();
@@ -60,20 +60,20 @@ async function loginUntilTwoFactor(app: WebApp, username: string, password: stri
  */
 async function submitDisableCode(app: WebApp, code: string): Promise<void> {
   const { page } = app;
-  if (!page.url().endsWith('/settings/security/disable-2fa')) {
-    await openSecuritySettings(app);
+  if (!page.url().endsWith('/settings/two-factor/disable')) {
+    await openTwoFactorSettings(app);
     await page.getByRole('button', { name: 'Disable two-factor authentication', exact: true }).click();
-    await expect(page).toHaveURL(/\/settings\/security\/disable-2fa$/);
+    await expect(page).toHaveURL(/\/settings\/two-factor\/disable$/);
   }
   await page.locator('#disableCode').fill(code);
   await page.getByRole('button', { name: 'Confirm Disable Two-Factor Authentication' }).click();
 }
 
 /**
- * Wait until two-factor is off and the security page offers to enable it again.
+ * Wait until two-factor is off and the two-factor page offers to enable it again.
  */
 async function expectTwoFactorDisabled(app: WebApp): Promise<void> {
-  await expect(app.page).toHaveURL(/\/settings\/security$/);
+  await expect(app.page).toHaveURL(/\/settings\/two-factor$/);
   await expect(app.page.getByText('Two-factor authentication is now successfully disabled.')).toBeVisible();
   await expect(app.page.getByRole('button', { name: 'Enable two-factor authentication', exact: true })).toBeVisible();
 }
@@ -112,7 +112,7 @@ test.describe('8. Two-factor authentication', () => {
     await test.step('a wrong authenticator code does not disable 2FA', async () => {
       await submitDisableCode(app, wrongCode(totp));
       await expect(page.getByText('Invalid authenticator code. Please try again.')).toBeVisible();
-      await expect(page).toHaveURL(/\/settings\/security\/disable-2fa$/);
+      await expect(page).toHaveURL(/\/settings\/two-factor\/disable$/);
     });
 
     await test.step('a current authenticator code disables 2FA', async () => {

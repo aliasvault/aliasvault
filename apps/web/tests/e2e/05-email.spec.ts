@@ -26,7 +26,7 @@ test.describe('5. Email', () => {
     await app.login(testUser.username, testUser.password);
 
     await test.step('create a login item with an address on a private domain', async () => {
-      await page.locator('#quickIdentityButton').click();
+      await page.locator('#topBarQuickCreateButton').click();
       await page.locator('#serviceName').fill('Mail test');
       await page.locator('#quickIdentitySubmit').click();
       await page.getByRole('button', { name: 'Email', exact: true }).click();
