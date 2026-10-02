@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CopyPasteFormRow from '@/components/forms/CopyPasteFormRow';
+import Icon from '@/components/shared/Icon';
 import Modal from '@/components/shared/Modal';
 import TabButton from '@/components/shared/TabButton';
 import ToggleChip from '@/components/shared/ToggleChip';
@@ -137,9 +138,7 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
             <div className="mt-1 flex">
               <div className="flex-grow"><CopyPasteFormRow id="preview-password" value={previewPassword} /></div>
               <button type="button" className="ml-2 px-3 py-2 text-sm text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-md dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" onClick={handleRefreshPreview}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                </svg>
+                <Icon name="refresh" className="w-5 h-5" />
               </button>
             </div>
           </div>

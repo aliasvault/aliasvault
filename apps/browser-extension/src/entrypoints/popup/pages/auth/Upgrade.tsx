@@ -12,6 +12,7 @@ import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutCon
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
@@ -373,9 +374,7 @@ const Upgrade: React.FC = () => {
         <CountdownBar ref={countdownBarRef} isVisible={true} colorClass="bg-primary-500" />
 
         <div className="mb-4 text-green-600 dark:text-green-400">
-          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Icon name="check-circle" className="w-12 h-12 mx-auto" />
         </div>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{t('upgrade.successTitle')}</h2>
         <p className="mb-6 text-gray-600 dark:text-gray-400">{t('upgrade.successOtherDevices')}</p>

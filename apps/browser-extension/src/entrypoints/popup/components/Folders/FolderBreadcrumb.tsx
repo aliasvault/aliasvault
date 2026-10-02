@@ -3,6 +3,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useNavigationHistory } from '@/entrypoints/popup/hooks/useNavigationHistory';
 
@@ -115,9 +116,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
     <div className="mb-3 flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 overflow-x-auto">
       {isOnRootPage ? (
         <span className="text-gray-900 dark:text-white font-medium flex-shrink-0 flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <Icon name="home" className="w-4 h-4" />
           {rootLabelText}
         </span>
       ) : (
@@ -125,9 +124,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
           onClick={() => handleBreadcrumbClick(rootPath)}
           className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors flex-shrink-0 flex items-center gap-1"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <Icon name="home" className="w-4 h-4" />
           {rootLabelText}
         </button>
       )}
@@ -136,9 +133,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
 
         return (
           <React.Fragment key={crumb.id}>
-            <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="9 6 15 12 9 18" />
-            </svg>
+            <Icon name="chevron-right" className="w-4 h-4 flex-shrink-0" />
             <button
               onClick={() => handleBreadcrumbClick(crumbPath)}
               className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate"

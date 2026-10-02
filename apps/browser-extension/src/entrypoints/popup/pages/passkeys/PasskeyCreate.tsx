@@ -10,6 +10,7 @@ import Alert from '@/entrypoints/popup/components/Alert';
 import Button from '@/entrypoints/popup/components/Button';
 import PasskeyBypassDialog from '@/entrypoints/popup/components/Dialogs/PasskeyBypassDialog';
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -649,9 +650,7 @@ const PasskeyCreate: React.FC = () => {
                           <span className="truncate">{passkey.Username || passkey.Email || passkey.DisplayName}</span>
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      <Icon name="chevron-right" className="w-5 h-5 text-gray-400" />
                     </div>
                   </button>
                 ))}
@@ -723,9 +722,7 @@ const PasskeyCreate: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      <Icon name="chevron-right" className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
                     </div>
                   </button>
                 ))}

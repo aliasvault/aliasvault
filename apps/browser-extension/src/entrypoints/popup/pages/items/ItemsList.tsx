@@ -13,6 +13,7 @@ import FolderBreadcrumb from '@/entrypoints/popup/components/Folders/FolderBread
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import AddItemDropdown from '@/entrypoints/popup/components/Items/AddItemDropdown';
 import CurrentSiteSuggestion from '@/entrypoints/popup/components/Items/CurrentSiteSuggestion';
 import FolderPill from '@/entrypoints/popup/components/Items/FolderPill';
@@ -902,19 +903,14 @@ const ItemsList: React.FC = () => {
                 title={t('items.folders.editFolder')}
                 className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                <Icon name="pencil-alt" className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setShowDeleteFolderModal(true)}
                 title={t('items.folders.deleteFolder')}
                 className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
+                <Icon name="trash" className="w-4 h-4" strokeWidth={1} />
               </button>
             </div>
           )}
@@ -927,13 +923,7 @@ const ItemsList: React.FC = () => {
               className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               title={t('items.sort.title')}
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="6" x2="16" y2="6" />
-                <line x1="4" y1="12" x2="12" y2="12" />
-                <line x1="4" y1="18" x2="8" y2="18" />
-                <polyline points="15 15 18 18 21 15" />
-                <line x1="18" y1="12" x2="18" y2="18" />
-              </svg>
+              <Icon name="sort-descending" className="w-5 h-5" />
             </button>
             {showSortMenu && (
               <>
@@ -959,9 +949,7 @@ const ItemsList: React.FC = () => {
                         }`}
                       >
                         {sortOrder === option.value ? (
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                          <Icon name="check" className="w-4 h-4" />
                         ) : (
                           <span className="w-4" />
                         )}
@@ -1040,10 +1028,7 @@ const ItemsList: React.FC = () => {
                     onClick={() => setSearchTerm('')}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <Icon name="x" className="w-4 h-4" />
                     {t('items.clearSearch')}
                   </button>
                 )}
@@ -1055,10 +1040,7 @@ const ItemsList: React.FC = () => {
                     }}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
+                    <Icon name="x" className="w-4 h-4" />
                     {t('items.clearFilter')}
                   </button>
                 )}
@@ -1087,13 +1069,8 @@ const ItemsList: React.FC = () => {
                   onClick={handleAddFolder}
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                 >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                  <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
+                  <Icon name="folder" className="w-3.5 h-3.5" />
+                  <Icon name="plus" className="w-3 h-3 -ml-0.5" strokeWidth={2.5} />
                 </button>
               )}
             </div>
@@ -1129,13 +1106,8 @@ const ItemsList: React.FC = () => {
                       : 'text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
                   }`}
                 >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  </svg>
-                  <svg className="w-3 h-3 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
+                  <Icon name="folder" className="w-3.5 h-3.5" />
+                  <Icon name="plus" className="w-3 h-3 -ml-0.5" strokeWidth={2.5} />
                   {folders.length === 0 && (
                     /**
                      * Only show text when there are no folders yet
@@ -1185,10 +1157,7 @@ const ItemsList: React.FC = () => {
                   onClick={() => setSearchTerm('')}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <Icon name="x" className="w-4 h-4" />
                   {t('items.clearSearch')}
                 </button>
               )}
@@ -1200,10 +1169,7 @@ const ItemsList: React.FC = () => {
                   }}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
+                  <Icon name="x" className="w-4 h-4" />
                   {t('items.clearFilter')}
                 </button>
               )}

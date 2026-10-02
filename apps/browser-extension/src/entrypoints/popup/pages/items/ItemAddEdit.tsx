@@ -21,6 +21,7 @@ import PasswordField from '@/entrypoints/popup/components/Forms/PasswordField';
 import UsernameField from '@/entrypoints/popup/components/Forms/UsernameField';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import AttachmentUploader from '@/entrypoints/popup/components/Items/Details/AttachmentUploader';
 import PasskeyEditor from '@/entrypoints/popup/components/Items/Details/PasskeyEditor';
 import TotpEditor from '@/entrypoints/popup/components/Items/Details/TotpEditor';
@@ -1191,9 +1192,7 @@ const ItemAddEdit: React.FC = () => {
                   onClick={() => handleFieldChange(fieldKey, [...values, ''])}
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                  <Icon name="plus-sm" className="w-5 h-5" />
                 </button>
               )}
             </div>
@@ -1224,10 +1223,7 @@ const ItemAddEdit: React.FC = () => {
             className={`absolute right-2 ${hasLabel ? 'top-[38px]' : 'top-1/2'} -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors`}
             title={t('common.delete')}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
       );
@@ -1363,10 +1359,7 @@ const ItemAddEdit: React.FC = () => {
             className="p-1.5 text-gray-400 hover:text-primary-500 focus:outline-none"
             title={t('common.generate')}
           >
-            <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 4v6h-6"/>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-            </svg>
+            <Icon name="refresh" className='w-4 h-4' />
           </button>
         </>
       );
@@ -1479,10 +1472,7 @@ const ItemAddEdit: React.FC = () => {
                     onClick={() => handleAddOptionalField('login.email')}
                     className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500"
                   >
-                    <svg className="w-2.5 h-2.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
+                    <Icon name="plus" className="w-2.5 h-2.5 -ml-0.5" strokeWidth={2.5} />
                     <span>{t('common.email')}</span>
                   </button>
                 )}
@@ -1523,10 +1513,7 @@ const ItemAddEdit: React.FC = () => {
                 className="p-1.5 text-gray-400 hover:text-red-500 focus:outline-none"
                 title={t('common.delete')}
               >
-                <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+                <Icon name="x" className='w-4 h-4' />
               </button>
             ) : undefined
           }

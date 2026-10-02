@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import Button from '@/components/shared/Button';
+import Icon from '@/components/shared/Icon';
 import Modal from '@/components/shared/Modal';
 import Text from '@/components/shared/Text';
 import { useDb } from '@/context/DbContext';
@@ -601,9 +602,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
   const renderParseFailures = (): React.ReactNode => (
     <div className="mb-4 p-4 rounded-lg bg-amber-50 border border-amber-400 dark:bg-amber-900/20 dark:border-amber-700" role="alert">
       <div className="flex items-start gap-2 mb-2">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z" />
-        </svg>
+        <Icon name="exclamation" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <p className="font-medium text-amber-900 dark:text-amber-200">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
       </div>
       <ul className="mb-3 ml-7 text-xs list-disc pl-5 space-y-0.5 text-gray-700 dark:text-gray-300">
@@ -625,9 +624,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         <div className="mt-2 ml-7 flex items-start gap-2">
           <textarea readOnly rows={4} value={buildFailureDetailsText()} className="flex-1 text-xs font-mono p-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 leading-snug" />
           <button type="button" onClick={() => void copyToClipboard(buildFailureDetailsText())} title={t('importExport.serviceCard.importErrorCopyDetailsButton')} className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
-            </svg>
+            <Icon name="document-duplicate" className="w-3.5 h-3.5" />
             {t('importExport.serviceCard.importErrorCopyDetailsButton')}
           </button>
         </div>
@@ -771,9 +768,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
                 <h3 className="text-xl font-semibold dark:text-white">{t('importExport.serviceCard.importFromServiceTitle', { service: serviceName })}</h3>
               </div>
               <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+                <Icon name="x" className="w-6 h-6" />
               </button>
             </div>
 

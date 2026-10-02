@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import SenderInitials from '@/components/email/SenderInitials';
+import Icon from '@/components/shared/Icon';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
 
@@ -60,9 +61,7 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, onEma
               <div className="text-gray-800 dark:text-gray-200 font-medium truncate mb-1 flex items-center">
                 {email.fromName}
                 {email.hasAttachments && (
-                  <svg className="attachment-indicator w-3 h-3 ml-1 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                  </svg>
+                  <Icon name="paper-clip" className="attachment-indicator w-3 h-3 ml-1 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                 )}
                 {isNewEmail && (
                   <div className="w-2 h-2 ml-1 bg-yellow-500 rounded-full animate-pulse flex-shrink-0" title={t('emails.row.newEmailTooltip')}></div>

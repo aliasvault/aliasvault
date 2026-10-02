@@ -1,6 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/components/shared/Icon';
+
 type ResponsivePaginatorProps = {
   currentPage: number;
   pageSize: number;
@@ -60,9 +62,7 @@ const ResponsivePaginator: React.FC<ResponsivePaginatorProps> = ({ currentPage, 
           <ul className="flex items-center space-x-2">
             <li className={currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}>
               <button onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1} className={`${pillClasses} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
+                <Icon name="chevron-left" className="w-4 h-4" />
               </button>
             </li>
             <li>
@@ -72,9 +72,7 @@ const ResponsivePaginator: React.FC<ResponsivePaginatorProps> = ({ currentPage, 
             </li>
             <li className={currentPage === pageCount ? 'opacity-50 cursor-not-allowed' : ''}>
               <button onClick={() => setPage(currentPage + 1)} disabled={currentPage === pageCount} className={`${pillClasses} disabled:opacity-50 disabled:cursor-not-allowed`}>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
+                <Icon name="chevron-right" className="w-4 h-4" />
               </button>
             </li>
           </ul>

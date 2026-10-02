@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Icon from '@/components/shared/Icon';
+
 /** Button colors. */
 export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success' | 'outline';
 
@@ -56,9 +58,7 @@ export const getButtonColorClasses = (color: ButtonColor): string => {
  * A small arrow icon for a button that moves through a process.
  */
 export const ButtonArrow: React.FC<{ direction: ButtonArrowDirection }> = ({ direction }) => (
-  <svg className="w-4 h-4 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={direction === 'forward' ? 'M14 5l7 7m0 0l-7 7m7-7H3' : 'M10 19l-7-7m0 0l7-7m-7 7h18'} />
-  </svg>
+  <Icon name={direction === 'forward' ? 'arrow-right' : 'arrow-left'} className="w-4 h-4 flex-shrink-0 opacity-80" />
 );
 
 /**

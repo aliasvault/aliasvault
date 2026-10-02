@@ -16,6 +16,7 @@ import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
+import Icon from '@/components/shared/Icon';
 import InputTextField from '@/components/shared/InputTextField';
 import PageContent from '@/components/shared/PageContent';
 import PasswordConfirmationModal from '@/components/shared/PasswordConfirmationModal';
@@ -442,9 +443,7 @@ const FamilySharing: React.FC = () => {
                             <Link to={folderRoute({ Id: folderId, ManifestId: folderId })} className="flex flex-1 items-center gap-2 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                               <FolderIcon isShared className="w-5 h-5 text-orange-500" />
                               <span className="text-lg font-medium text-gray-900 dark:text-white truncate" title={vaultLabel(manifest)}>{vaultLabel(manifest)}</span>
-                              <svg className="w-4 h-4 ml-auto shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
+                              <Icon name="chevron-right" className="w-4 h-4 ml-auto shrink-0 text-gray-400" />
                             </Link>
                           ) : (
                             <div className="flex flex-1 items-center gap-2 min-w-0 px-2 py-1.5">
@@ -460,10 +459,7 @@ const FamilySharing: React.FC = () => {
                                 aria-label={t('common.edit')}
                                 className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
+                                <Icon name="cog" className="w-5 h-5" />
                               </button>
 
                               {openVaultMenuId === manifest.manifestId && (

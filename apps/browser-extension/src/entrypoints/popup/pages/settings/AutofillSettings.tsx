@@ -2,6 +2,7 @@ import { AutofillMatchingMode } from '@aliasvault/client/rust/RustCore';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
@@ -308,14 +309,7 @@ const AutofillSettings: React.FC = () => {
                     <span className="font-medium text-gray-900 dark:text-white">
                       {t('settings.disabledSites')} ({getDisabledSitesCount()})
                     </span>
-                    <svg
-                      className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`} />
                   </button>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
 
@@ -396,14 +390,7 @@ const AutofillSettings: React.FC = () => {
                   <span className="font-medium text-gray-900 dark:text-white">
                     {t('settings.loginSave.blockedSites')} ({loginSaveSettings.blockedDomains.length})
                   </span>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform ${showBlockedDomains ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${showBlockedDomains ? 'rotate-180' : ''}`} />
                 </button>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.blockedSitesDescription')}</p>
 

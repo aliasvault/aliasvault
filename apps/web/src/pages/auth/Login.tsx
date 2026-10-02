@@ -15,6 +15,7 @@ import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
 import Button from '@/components/shared/Button';
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 import InputTextField from '@/components/shared/InputTextField';
 import { getAppConfig } from '@/config/AppConfig';
 import { useAuth } from '@/context/AuthContext';
@@ -366,9 +367,7 @@ const Login: React.FC = () => {
         <div className="flex flex-col gap-4">
           <Button type="submit" id="login-button" size="lg" display="flex" additionalClasses="w-full">{t('auth.login')}</Button>
           <Button id="mobile-login-button" onClick={() => setShowMobileLoginModal(true)} color="outline" size="lg" display="flex" additionalClasses="hidden md:flex w-full">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
+            <Icon name="device-mobile" className="w-5 h-5" />
             {t('auth.loginWithMobile')}
           </Button>
         </div>

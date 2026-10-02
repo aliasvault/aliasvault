@@ -11,6 +11,7 @@ import DbStatusIndicator from '@/components/layout/DbStatusIndicator';
 import NavBarLink from '@/components/layout/NavBarLink';
 import SearchWidget from '@/components/layout/SearchWidget';
 import SettingsIcon, { type SettingsIconName } from '@/components/settings/SettingsIcon';
+import Icon from '@/components/shared/Icon';
 import MenuItem from '@/components/shared/MenuItem';
 import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useAuth } from '@/context/AuthContext';
@@ -97,7 +98,7 @@ const TopMenu: React.FC = () => {
             <DbStatusIndicator />
             <div ref={quickCreateRef} className="relative ms-1 md:ms-2">
               <button type="button" id="topBarQuickCreateButton" onClick={() => setIsQuickCreateOpen(!isQuickCreateOpen)} aria-expanded={isQuickCreateOpen} title={t('items.quickCreate.newAliasButtonText')} className="flex items-center justify-center h-9 w-9 md:w-auto md:px-4 rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 transition-colors">
-                <svg className="w-5 h-5 md:hidden" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={2.25} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" /></svg>
+                <Icon name="plus" className="w-5 h-5 md:hidden" strokeWidth={2.25} />
                 <span className="sr-only md:not-sr-only">{t('items.quickCreate.newAliasButtonText')}</span>
               </button>
               {isQuickCreateOpen && <QuickCreateDialog variant="popover" initialType={ItemTypes.Login} onClose={closeQuickCreate} />}
@@ -109,7 +110,7 @@ const TopMenu: React.FC = () => {
                   {hasReminders && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary-500 ring-2 ring-white dark:ring-gray-800" aria-hidden="true" />}
                 </span>
                 <span className="hidden md:block max-w-[8rem] truncate text-sm font-medium text-gray-700 dark:text-gray-200">{username}</span>
-                <svg className={`hidden md:block w-4 h-4 text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                <Icon name="chevron-down" className={`hidden md:block w-4 h-4 text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               <div ref={userMenuRef} id="userMenu" className={`absolute right-0 top-full mt-3 w-72 z-50 overflow-hidden bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600 ${isUserMenuOpen ? 'block' : 'hidden'}`}>
                 <div className="flex items-start gap-2 px-4 py-3">

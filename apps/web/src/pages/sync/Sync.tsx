@@ -11,6 +11,7 @@ import AlertMessageError from '@/components/alerts/AlertMessageError';
 import CriticalErrorPanel from '@/components/alerts/CriticalErrorPanel';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
 import Button from '@/components/shared/Button';
+import Icon from '@/components/shared/Icon';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -293,9 +294,7 @@ const Sync: React.FC = () => {
         return (
           <div className="relative p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
             <div className="text-center space-y-4">
-              <svg className="w-12 h-12 mx-auto text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Icon name="check-circle" className="w-12 h-12 mx-auto text-green-600 dark:text-green-400" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('upgrade.upgradeSuccessMessage')}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('upgrade.successOtherDevices')}</p>
               <button onClick={() => void navigateToHome()} type="button" id="upgrade-continue-button" className="px-4 mt-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
@@ -189,14 +190,10 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
-            <svg className={`w-5 h-5 ${!selectedFolderId ? 'text-primary-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
+            <Icon name="archive" className={`w-5 h-5 ${!selectedFolderId ? 'text-primary-500' : 'text-gray-400'}`} />
             <span className="font-medium">&mdash;</span>
             {!selectedFolderId && (
-              <svg className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
+              <Icon name="check" className="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" />
             )}
           </button>
 
@@ -219,9 +216,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
                     aria-expanded={isExpanded}
                     className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   >
-                    <svg className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
+                    <Icon name="chevron-right" className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                   </button>
                 ) : (
                   <span className="flex-shrink-0 w-6" />
@@ -239,9 +234,7 @@ const ItemNameInput: React.FC<ItemNameInputProps> = ({
                   />
                   <span className="font-medium flex-1 truncate">{node.Name}</span>
                   {isSelected && (
-                    <svg className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+                    <Icon name="check" className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" />
                   )}
                 </button>
               </div>

@@ -7,6 +7,7 @@ import AlertMessageError from '@/components/alerts/AlertMessageError';
 import EmailModal from '@/components/email/EmailModal';
 import SkeletonBase from '@/components/loading/SkeletonBase';
 import Card from '@/components/shared/Card';
+import Icon from '@/components/shared/Icon';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -209,9 +210,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
               <div className="w-3 h-3 mr-2 rounded-full bg-primary-300 border-2 border-primary-100 animate-pulse" title={t('emails.home.autoRefreshEnabledTooltip')}></div>
             )}
             <button id="recent-email-refresh" onClick={() => void manualRefresh()} type="button" className="text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-full text-sm p-2 text-center inline-flex items-center dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 dark:focus:ring-gray-700">
-              <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
+              <Icon name="refresh" className="w-4 h-4" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -271,9 +270,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
             {canLoadMore && (
               <button onClick={() => setDisplayedCount(c => c + EMAILS_PER_LOAD)} type="button" className="w-full mt-3 py-1 px-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md transition-colors duration-200 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 flex items-center justify-center gap-1">
                 <span>{t('common.loadMore')}</span>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                <Icon name="chevron-down" className="w-3 h-3" />
               </button>
             )}
           </div>

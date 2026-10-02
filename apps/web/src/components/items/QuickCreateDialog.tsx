@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 import Modal from '@/components/shared/Modal';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
@@ -15,16 +16,17 @@ import { generateIdentity } from '@/utils/IdentityGenerator';
 import { itemRoute } from '@/utils/ItemRoute';
 
 import type { FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
+import type { UiIconName } from '@aliasvault/models/icons';
 
 /** The URL prefilled in the website field. */
 const DEFAULT_SERVICE_URL = 'https://';
 
 /** The icon of each item type in the type selector. */
-const TYPE_ICON_PATHS: Record<ItemType, string> = {
-  [ItemTypes.Login]: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z',
-  [ItemTypes.Alias]: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-  [ItemTypes.CreditCard]: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
-  [ItemTypes.Note]: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+const TYPE_ICONS: Record<ItemType, UiIconName> = {
+  [ItemTypes.Login]: 'key',
+  [ItemTypes.Alias]: 'user',
+  [ItemTypes.CreditCard]: 'credit-card',
+  [ItemTypes.Note]: 'document-text',
 };
 
 const ALL_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -196,7 +198,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
               id={`quickIdentityType_${type}`}
               onClick={() => setItemType(type)}
               className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors flex flex-col items-center gap-1 ${itemType === type ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-300 dark:border-primary-700' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-transparent'}`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={TYPE_ICON_PATHS[type]} /></svg>
+              <Icon name={TYPE_ICONS[type]} className="w-4 h-4" />
               <span>{getTypeDisplayName(type)}</span>
             </button>
           ))}
@@ -240,9 +242,7 @@ const QuickCreateDialog: React.FC<QuickCreateDialogProps> = ({ initialType, onCl
             {itemType === ItemTypes.Alias ? t('common.create') : (
               <>
                 {t('common.continue')}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
+                <Icon name="chevron-right" className="w-4 h-4" />
               </>
             )}
           </button>

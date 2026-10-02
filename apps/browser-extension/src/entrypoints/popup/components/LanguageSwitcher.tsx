@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
+
 import { StorageKeys } from '@/utils/constants/storageKeys';
 
 import { AVAILABLE_LANGUAGES, getLanguageConfig, type ILanguageConfig } from '../../../i18n/config';
@@ -93,14 +95,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           <span className="text-lg">{currentLanguage.flag}</span>
           <span>{currentLanguage.nativeName}</span>
         </div>
-        <svg
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <Icon name="chevron-down" className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -118,9 +113,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 <span className="text-gray-700 dark:text-gray-200">{lang.nativeName}</span>
               </div>
               {i18n.language === lang.code && (
-                <svg className="w-4 h-4 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
+                <Icon name="check" className="w-4 h-4 text-primary-500" />
               )}
             </button>
           ))}

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 
 type CustomFieldModalProps = {
   isOpen: boolean;
@@ -70,9 +71,7 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, isEditMode 
       onClose={onClose}
       onConfirm={handleConfirm}
       icon={(
-        <svg className="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
+        <Icon name="plus-sm" className="h-6 w-6 text-primary-600 dark:text-primary-400" />
       )}
     >
       <div className="space-y-4">

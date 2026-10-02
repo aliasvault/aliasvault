@@ -23,7 +23,7 @@ public class Logo : ManifestScopedEntity
 
     /// <summary>
     /// The <see cref="Kind"/> of a logo the user picked from the built-in catalog. <see cref="Source"/>
-    /// is the catalog key (see core/models/src/icons/AppIcons.ts) and there is no image data: every
+    /// is the catalog key (see core/models/src/icons/BuiltinLogos.ts) and there is no image data: every
     /// platform draws the logo itself.
     /// </summary>
     public const string KindBuiltin = "builtin";

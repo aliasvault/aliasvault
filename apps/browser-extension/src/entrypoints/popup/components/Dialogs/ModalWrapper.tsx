@@ -1,6 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
+
 type ModalWrapperProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -92,9 +94,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                     onClick={onClose}
                   >
                     <span className="sr-only">{t('common.close')}</span>
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <Icon name="x" className="h-6 w-6" strokeWidth={1.5} />
                   </button>
                 )}
               </div>
@@ -108,9 +108,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 onClick={onClose}
               >
                 <span className="sr-only">{t('common.close')}</span>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon name="x" className="h-6 w-6" strokeWidth={1.5} />
               </button>
             )}
 

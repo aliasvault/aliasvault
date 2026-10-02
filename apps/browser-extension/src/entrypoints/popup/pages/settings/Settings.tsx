@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutConfirmModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import { SettingsGroup, SettingsRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
@@ -208,20 +209,7 @@ const Settings: React.FC = () => {
                     title={t('settings.lock')}
                     className="p-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md transition-colors"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                      aria-label={t('settings.lock')}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
+                    <Icon name="lock-closed" className="w-5 h-5" aria-label={t('settings.lock')} />
                   </button>
                   <button
                     id="logout-button"
@@ -229,20 +217,7 @@ const Settings: React.FC = () => {
                     title={t('common.logout')}
                     className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-md transition-colors"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                      aria-label={t('common.logout')}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
+                    <Icon name="logout" className="w-5 h-5" aria-label={t('common.logout')} />
                   </button>
                 </div>
               </div>
@@ -252,7 +227,7 @@ const Settings: React.FC = () => {
                 label={familySharingText.title}
                 badge={familySharingText.beta}
                 onClick={() => navigate('/settings/family-sharing')}
-                icon={<path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
+                icon="user-group"
               />
             )}
           </div>
@@ -262,24 +237,24 @@ const Settings: React.FC = () => {
           <SettingsRow
             label={t('settings.autofillSettings')}
             onClick={() => navigate('/settings/autofill')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
+            icon="document-text"
           />
           <SettingsRow
             label={t('settings.passkeySettings')}
             onClick={() => navigate('/settings/passkeys')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />}
+            icon="key"
           />
           <SettingsRow
             label={t('settings.contextMenuSettings')}
             onClick={() => navigate('/settings/context-menu')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />}
+            icon="menu-alt-3"
           />
           {openKeyboardShortcuts && (
             <SettingsRow
               label={t('settings.keyboardShortcuts')}
               onClick={openKeyboardShortcuts}
               external
-              icon={<path strokeLinecap="round" strokeLinejoin="round" d="M5 7h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2zM7 11h.01M11 11h.01M15 11h.01M8 15h8" />}
+              icon="keyboard"
             />
           )}
         </SettingsGroup>
@@ -288,23 +263,23 @@ const Settings: React.FC = () => {
           <SettingsRow
             label={t('settings.vaultUnlock')}
             onClick={() => navigate('/settings/unlock-method')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />}
+            icon="hashtag"
           />
           <SettingsRow
             label={t('settings.autoLock')}
             onClick={() => navigate('/settings/auto-lock')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />}
+            icon="lock-closed"
           />
           <SettingsRow
             label={t('settings.clipboardClear')}
             onClick={() => navigate('/settings/clipboard')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />}
+            icon="document-duplicate"
           />
           <SettingsRow
             id="security-settings-button"
             label={t('settings.accountSecurity')}
             onClick={() => navigate('/settings/security')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
+            icon="shield-check"
           />
         </SettingsGroup>
 
@@ -312,12 +287,12 @@ const Settings: React.FC = () => {
           <SettingsRow
             label={t('settings.passwordGenerator')}
             onClick={() => navigate('/settings/password-generator')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />}
+            icon="key"
           />
           <SettingsRow
             label={t('settings.identityGenerator')}
             onClick={() => navigate('/settings/identity-generator')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />}
+            icon="user"
           />
         </SettingsGroup>
 
@@ -325,12 +300,12 @@ const Settings: React.FC = () => {
           <SettingsRow
             label={t('settings.appearance')}
             onClick={() => navigate('/settings/appearance')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L9.828 19.071M7 17h.01" />}
+            icon="color-swatch"
           />
           <SettingsRow
             label={t('settings.language')}
             onClick={() => navigate('/settings/language')}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />}
+            icon="translate"
           />
         </SettingsGroup>
 

@@ -36,7 +36,7 @@ public struct ItemRow {
 
         // A built-in logo carries no bytes: it is drawn from the shared catalog, keyed by its Source.
         if row["LogoKind"] as? String == "builtin", let source = row["LogoSource"] as? String {
-            self.logo = AppIcons.svg(for: source)?.data(using: .utf8)
+            self.logo = BuiltinLogos.svg(for: source)?.data(using: .utf8)
         } else if let logoBase64 = row["Logo"] as? String {
             // BLOB columns arrive as base64 text
             self.logo = Data(base64Encoded: logoBase64, options: .ignoreUnknownCharacters)

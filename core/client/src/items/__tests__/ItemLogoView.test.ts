@@ -5,13 +5,13 @@ import { effectiveItemLogo, logoSourceTranslationKey, usesWebsiteLogo } from '..
 
 import type { ItemLogo } from '@aliasvault/models/vault';
 
-const stored: ItemLogo = { Id: 'logo-1', Kind: LogoKinds.Builtin, Source: 'Bank' };
+const stored: ItemLogo = { Id: 'logo-1', Kind: LogoKinds.Builtin, Source: 'bank' };
 
 describe('usesWebsiteLogo', () => {
   it('follows the website without a choice or with a favicon choice', () => {
     expect(usesWebsiteLogo(undefined)).toBe(true);
     expect(usesWebsiteLogo({ Kind: LogoKinds.Favicon })).toBe(true);
-    expect(usesWebsiteLogo({ Kind: LogoKinds.Builtin, Source: 'Mail' })).toBe(false);
+    expect(usesWebsiteLogo({ Kind: LogoKinds.Builtin, Source: 'mail' })).toBe(false);
   });
 });
 
@@ -21,7 +21,7 @@ describe('effectiveItemLogo', () => {
   });
 
   it('previews a built-in choice over the stored logo', () => {
-    expect(effectiveItemLogo(stored, { Kind: LogoKinds.Builtin, Source: 'Mail' }, null)).toEqual({ Id: '', Kind: LogoKinds.Builtin, Source: 'Mail', Name: undefined });
+    expect(effectiveItemLogo(stored, { Kind: LogoKinds.Builtin, Source: 'mail' }, null)).toEqual({ Id: '', Kind: LogoKinds.Builtin, Source: 'mail', Name: undefined });
   });
 
   it('previews the resolved domain when going back to the website icon', () => {

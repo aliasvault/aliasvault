@@ -18,6 +18,7 @@ import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
@@ -234,9 +235,7 @@ const ItemView: React.FC = () => {
                 {passkey && (
                   <div className="mb-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-                      </svg>
+                      <Icon name="key" className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <div className="mb-1">
                           <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
@@ -318,9 +317,7 @@ const ItemView: React.FC = () => {
           }
         }}
         icon={(
-          <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-          </svg>
+          <Icon name="exclamation" className="h-6 w-6 text-red-600 dark:text-red-400" />
         )}
       >
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('items.delete.deleteItemDescription', { days: TRASH_RETENTION_DEFAULT_DAYS })}</p>

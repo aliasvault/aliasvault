@@ -23,6 +23,7 @@ import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import SectionTitle from '@/components/shared/SectionTitle';
@@ -62,9 +63,7 @@ const Section: React.FC<{ title?: React.ReactNode; children: React.ReactNode; cl
  * The passkey key icon.
  */
 const PasskeyIcon: React.FC<{ className: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-  </svg>
+  <Icon name="key" className={className} />
 );
 
 /**
@@ -589,10 +588,7 @@ const ItemAddEditForm: React.FC = () => {
                       <span>{t('items.loginCredentials')}</span>
                       {edit.ItemType === ItemTypes.Login && !shouldShowField(FieldKey.LoginEmail) && (
                         <button type="button" onClick={() => addOptionalField(FieldKey.LoginEmail)} className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500">
-                          <svg className="w-2.5 h-2.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                          </svg>
+                          <Icon name="plus" className="w-2.5 h-2.5 -ml-0.5" strokeWidth={2.5} />
                           <span>{t('common.email')}</span>
                         </button>
                       )}
@@ -610,12 +606,7 @@ const ItemAddEditForm: React.FC = () => {
                                   <div className="mb-1 flex items-center justify-between">
                                     <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
                                     <button type="button" onClick={() => setPasskeyMarkedForDeletion(true)} className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" title={t('items.addEdit.deletePasskeyButton')}>
-                                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="3 6 5 6 21 6" />
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                        <line x1="10" y1="11" x2="10" y2="17" />
-                                        <line x1="14" y1="11" x2="14" y2="17" />
-                                      </svg>
+                                      <Icon name="trash" className="w-4 h-4" />
                                     </button>
                                   </div>
                                   <div className="space-y-1 mb-2">
@@ -646,10 +637,7 @@ const ItemAddEditForm: React.FC = () => {
                                   <div className="mb-1 flex items-center justify-between">
                                     <span className="text-sm font-semibold text-red-900 dark:text-red-100">{t('passkeys.passkeyMarkedForDeletion')}</span>
                                     <button type="button" onClick={() => setPasskeyMarkedForDeletion(false)} className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title={t('common.undo')}>
-                                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 7v6h6" />
-                                        <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
-                                      </svg>
+                                      <Icon name="reply" className="w-4 h-4" />
                                     </button>
                                   </div>
                                   <p className="text-xs text-red-800 dark:text-red-200">{t('items.addEdit.passkeyWillBeDeleted')}</p>
@@ -677,10 +665,7 @@ const ItemAddEditForm: React.FC = () => {
                       <SectionTitle className="mb-3 flex items-center justify-between gap-2">
                         <span>{t('common.alias')}</span>
                         <button type="button" id="generate-random-alias" onClick={() => void onGenerateRandomAlias()} className="p-1.5 text-gray-400 hover:text-primary-500 transition-colors focus:outline-none" title={t('common.generate')}>
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M23 4v6h-6" />
-                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                          </svg>
+                          <Icon name="refresh" className="w-4 h-4" />
                         </button>
                       </SectionTitle>
                       <div className="grid gap-4">
@@ -706,9 +691,7 @@ const ItemAddEditForm: React.FC = () => {
                           {secretField(FieldKey.CardPin, 'pin', t('fieldLabels.card.pin'))}
                           {canRemoveField(FieldKey.CardPin) && (
                             <button type="button" onClick={() => removeOptionalField(FieldKey.CardPin)} className="absolute top-0 right-0 text-gray-400 hover:text-red-500 transition-colors" title={t('items.addEdit.removeField')}>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                              <Icon name="x" className="w-4 h-4" />
                             </button>
                           )}
                         </div>

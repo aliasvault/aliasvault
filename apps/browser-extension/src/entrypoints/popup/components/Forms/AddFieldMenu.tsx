@@ -2,6 +2,8 @@ import { FieldCategories } from '@aliasvault/models/vault';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
+
 import CustomFieldModal from './CustomFieldModal';
 
 import type { FieldType, SystemFieldDefinition } from '@aliasvault/models/vault';
@@ -62,36 +64,28 @@ type MenuOption = {
  * Notes icon for menu option.
  */
 const NotesIcon: React.FC = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
+  <Icon name="document-text" className="w-5 h-5" />
 );
 
 /**
  * Lock icon for 2FA menu option.
  */
 const LockIcon: React.FC = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-  </svg>
+  <Icon name="lock-closed" className="w-5 h-5" />
 );
 
 /**
  * Attachment icon for menu option.
  */
 const AttachmentIcon: React.FC = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-  </svg>
+  <Icon name="paper-clip" className="w-5 h-5" />
 );
 
 /**
  * Plus icon for add button and custom field option.
  */
 const PlusIcon: React.FC = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-  </svg>
+  <Icon name="plus-sm" className="w-5 h-5" />
 );
 
 /**

@@ -3,6 +3,8 @@
  * Displays a non-intrusive banner at the top of the page when credentials are detected.
  */
 
+import { uiIconSvg } from '@aliasvault/models/icons';
+
 import { getLogoMarkSvg } from '@/utils/constants/logo';
 import { logExpected, logFailure } from '@/utils/Diagnostics';
 import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
@@ -562,9 +564,7 @@ async function createPromptFromTemplate(config: IPromptTemplateConfig): Promise<
   const dismissText = await t('common.dismiss');
   const dismissButton = `
     <button class="av-save-prompt__btn av-save-prompt__btn--dismiss" aria-label="${dismissText}">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
+      ${uiIconSvg('x', { width: '16', height: '16' })}
     </button>
   `;
 
@@ -881,9 +881,7 @@ async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: 
   const content = `
     <div class="av-save-prompt__add-url-info">
       <span class="av-save-prompt__url-pill">
-        <svg class="av-save-prompt__plus-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
+        ${uiIconSvg('plus', { class: 'av-save-prompt__plus-icon', width: '12', height: '12', 'stroke-width': '2.5' })}
         ${escapedUrl}
       </span>
       <span class="av-save-prompt__url-arrow">→</span>

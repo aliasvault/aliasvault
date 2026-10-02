@@ -3,7 +3,7 @@ package net.aliasvault.app.vaultstore.repositories
 import android.util.Log
 import net.aliasvault.app.utils.DateHelpers
 import net.aliasvault.app.vaultstore.VaultDatabase
-import net.aliasvault.app.vaultstore.models.AppIcons
+import net.aliasvault.app.vaultstore.models.BuiltinLogos
 import net.aliasvault.app.vaultstore.models.FieldKey
 import net.aliasvault.app.vaultstore.models.FieldType
 import net.aliasvault.app.vaultstore.models.Item
@@ -42,7 +42,7 @@ class ItemRepository(database: VaultDatabase) : BaseRepository(database) {
      */
     private fun resolveLogo(row: Map<String, Any?>): ByteArray? {
         if (row["LogoKind"] as? String == LOGO_KIND_BUILTIN) {
-            return (row["LogoSource"] as? String)?.let { AppIcons.svgFor(it) }?.toByteArray(Charsets.UTF_8)
+            return (row["LogoSource"] as? String)?.let { BuiltinLogos.svgFor(it) }?.toByteArray(Charsets.UTF_8)
         }
         return row["Logo"] as? ByteArray
     }

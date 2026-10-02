@@ -1,0 +1,36 @@
+<svg @attributes="Attributes">@((MarkupString)Icon.Body)</svg>
+
+@code {
+    /// <summary>
+    /// Gets or sets the icon to render, from <see cref="UiIcons"/>.
+    /// </summary>
+    [Parameter]
+    [EditorRequired]
+    public UiIconDefinition Icon { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the svg attributes (class, stroke-width, ...), which override the icon's own.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private Dictionary<string, object> Attributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object>(Icon.Attributes)
+            {
+                ["xmlns"] = "http://www.w3.org/2000/svg",
+                ["viewBox"] = Icon.ViewBox,
+                ["aria-hidden"] = "true",
+            };
+
+            foreach (var (name, value) in AdditionalAttributes ?? [])
+            {
+                attributes[name] = value;
+            }
+
+            return attributes;
+        }
+    }
+}

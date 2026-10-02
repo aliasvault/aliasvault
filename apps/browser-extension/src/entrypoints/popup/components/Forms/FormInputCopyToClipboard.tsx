@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { ClipboardCopyService } from '@/entrypoints/popup/utils/ClipboardCopyService';
 
 import { logExpected } from '@/utils/Diagnostics';
@@ -21,43 +22,6 @@ type FormInputCopyToClipboardProps = {
 }
 
 const clipboardService = new ClipboardCopyService();
-
-/**
- * Icon component for form input buttons.
- */
-const Icon: React.FC<{ name: string }> = ({ name }) => {
-  switch (name) {
-    case 'visibility':
-      return (
-        <>
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-          <circle cx="12" cy="12" r="3" />
-        </>
-      );
-    case 'visibility-off':
-      return (
-        <>
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-          <line x1="1" y1="1" x2="23" y2="23" />
-        </>
-      );
-    case 'copy':
-      return (
-        <>
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-        </>
-      );
-    case 'check':
-      return (
-        <>
-          <polyline points="20 6 9 17 4 12" />
-        </>
-      );
-    default:
-      return null;
-  }
-};
 
 /**
  * Form input copy to clipboard component.
@@ -154,9 +118,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
               className="p-1 text-green-500 dark:text-green-400 transition-colors duration-200"
               title={t('common.copiedShort')}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <Icon name="check" />
-              </svg>
+              <Icon name="check" className="w-4 h-4" />
             </button>
           ) : (
             <button
@@ -165,9 +127,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
               className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors duration-200"
               title={t('common.copyToClipboard')}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <Icon name="copy" />
-              </svg>
+              <Icon name="duplicate" className="w-4 h-4" />
             </button>
           )}
           {type === 'password' && (
@@ -177,9 +137,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
               className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors duration-200"
               title={showPassword ? t('common.hidePassword') : t('common.showPassword')}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <Icon name={showPassword ? 'visibility-off' : 'visibility'} />
-              </svg>
+              <Icon name={showPassword ? 'eye-off' : 'eye'} className="w-4 h-4" />
             </button>
           )}
         </div>
