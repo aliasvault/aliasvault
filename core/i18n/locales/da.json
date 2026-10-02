@@ -733,8 +733,7 @@
     "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
-      "buttonLocationText": "knappen i øverste højre hjørne.",
-      "createFirstItemText": "Opret dit første element ved hjælp af",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Denne mappe er tom.",
       "failedToCreateFolder": "Kunne ikke oprette mappe.",
       "failedToDeleteFolder": "Kunne ikke slette mappe.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importer fra KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Hvis du tidligere har brugt en anden adgangskodeadministrator, kan du importere dine elementer fra den.",
       "loadingMore": "Indlæser flere...",
-      "newAliasButtonText": "\"+ Nyt alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Ingen elementer endnu",
       "pageDescription": "Find alle dine elementer nedenfor.",
       "sortOrderLabel": "Sorteringsrækkefølge",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Opretter nyt alias...",
       "namePlaceholderCard": "F.eks. Mastercard",
       "namePlaceholderNote": "F.eks. Pasoplysninger",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Ny",
       "typeCard": "Kort",
       "typeLogin": "Log på"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Brug browser-passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "advancedOptions": "Avancerede indstillinger",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.",
       "aliasGenerationGenderDescription": "Indstil standardpræference for køn ved generering af nye identiteter.",
       "aliasGenerationLanguageDescription": "Indstil det standardsprog, der skal bruges ved generering af nye identiteter.",
-      "aliasSettingsTitle": "Indstillinger for identitetsgenerator",
       "appLanguageDescription": "Indstil sproget for applikationens brugerflade.",
       "appLanguageTitle": "Applikationssprog",
       "autoEmailRefreshLabel": "Opdater automatisk e-mailindhold, når der kommer nye beskeder",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Offentlige domæner"
     },
     "globalSettings": "Globale indstillinger",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Indstil aldersgruppen for generering af nye identiteter.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Kunne ikke deaktivere tofaktorautentificering.",
         "pageDescription": "Deaktivering af tofaktorautentificering betyder, at du vil kunne logge ind med kun din adgangskode.",
         "pageTitle": "Deaktiver tofaktorautentificering",
-        "statusMessage": "Tofaktorautentificering er i øjeblikket aktiveret. Deaktiver den for at kunne få adgang til din boks med kun din adgangskode.",
         "twoFactorDisabledSuccess": "Tofaktorautentificering er nu deaktiveret korrekt.",
-        "twoFactorNotEnabled": "Tofaktorautentificering er ikke aktiveret.",
-        "warningMessage": "Bemærk venligst: efter deaktivering af tofaktorautentificering vil alle konfigurerede autentificeringsapps holde op med at fungere. Når du ønsker at genaktivere tofaktorautentificering, skal du konfigurere autentificeringsappsene igen."
+        "twoFactorNotEnabled": "Tofaktorautentificering er ikke aktiveret."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Kunne ikke aktivere to-faktor-godkendelse.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "To-faktor-godkendelse er i øjeblikket deaktiveret. For at forbedre din kontosikkerhed anbefaler vi, at du aktiverer det.",
-        "enabledMessage": "To-faktor-godkendelse er i øjeblikket aktiveret."
+        "enabledMessage": "To-faktor-godkendelse er i øjeblikket aktiveret.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Vælg sprog",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Konfigurer AliasVault server-URL for selv-hostede instanser",
     "serverUrl": "Server-URL",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Webstedsspecifikke indstillinger",
     "storageInsights": {
       "breadcrumbTitle": "Indblik i lagring",
