@@ -2,6 +2,7 @@ import { ItemFilter, isItemTypeFilter, type ItemFilterType } from '@aliasvault/c
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 
 /**
@@ -14,6 +15,8 @@ type ItemFilterDropdownProps = {
   title: string;
   /** Count shown next to the title on the trigger. Pass undefined to hide. */
   count?: number;
+  /** Set when the title is a folder name, to prefix it with a folder icon. */
+  titleFolder?: { isShared: boolean };
   /** Currently active selection used to highlight the matching menu row. */
   activeFilter: ItemFilterSelection;
   /** Number of items currently in the Recently Deleted page (badge). */
@@ -38,6 +41,7 @@ type ItemFilterDropdownProps = {
 const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
   title,
   count,
+  titleFolder,
   activeFilter,
   recentlyDeletedCount,
   showFoldersToggle = false,
@@ -76,6 +80,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
         className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
       >
         <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
+          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-4 h-4 self-center text-orange-500 dark:text-orange-400" />}
           <span className="truncate">{title}</span>
           {count !== undefined && (
             <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">

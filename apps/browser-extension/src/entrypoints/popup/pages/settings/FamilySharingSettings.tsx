@@ -5,16 +5,17 @@ import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifest
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
-import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
+import SharedVaultModal from '@/entrypoints/popup/components/Sharing/SharedVaultModal';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -46,6 +47,7 @@ class BackgroundApiError extends Error {}
  */
 const FamilySharingSettings: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const app = useApp();
   const webApi = useWebApi();
   const { sqliteClient, loadStoredDatabase } = useDb();
@@ -57,7 +59,7 @@ const FamilySharingSettings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
+  const [pendingVaultCreate, setPendingVaultCreate] = useState<GroupInfo | null>(null);
   const [vaultNames, setVaultNames] = useState<Record<string, string>>({});
   const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(null);
   const [pendingVaultDelete, setPendingVaultDelete] = useState<PendingVaultDelete | null>(null);
@@ -163,18 +165,17 @@ const FamilySharingSettings: React.FC = () => {
   };
 
   /**
-   * Create another shared manifest for the family.
-   * @param group - the family to create it for.
+   * Create another shared manifest for the family picked in the create modal.
+   * @param name - the new vault's name.
    */
-  const createSharedVault = (group: GroupInfo): Promise<void> => {
-    const name = (newVaultNames[group.groupId] ?? '').trim();
-    if (name.length === 0) {
+  const createSharedVault = (name: string): Promise<void> => {
+    const group = pendingVaultCreate;
+    if (!group) {
       return Promise.resolve();
     }
 
     return run(async () => {
       unwrap(await sendMessage('GROUP_CREATE_VAULT', { groupId: group.groupId, name }));
-      setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
       await loadStoredDatabase();
     }, familySharingText.errors.createVaultFailed);
   };
@@ -328,12 +329,19 @@ const FamilySharingSettings: React.FC = () => {
         warning={dialog.warning}
       />
 
-      <FolderModal
+      <SharedVaultModal
+        isOpen={pendingVaultCreate !== null}
+        onClose={() => setPendingVaultCreate(null)}
+        onSave={createSharedVault}
+        mode="create"
+      />
+
+      <SharedVaultModal
         isOpen={pendingVaultRename !== null}
         onClose={() => setPendingVaultRename(null)}
         onSave={renameSharedVault}
         initialName={pendingVaultRename ? vaultLabel(pendingVaultRename.manifest) : ''}
-        mode="edit"
+        mode="rename"
       />
 
       <ConfirmDeleteModal
@@ -452,11 +460,27 @@ const FamilySharingSettings: React.FC = () => {
                 <h3 className="text-md font-semibold text-gray-900 dark:text-white">{familySharingText.sharedVaults}</h3>
                 {group.manifests.map(manifest => {
                   const iHoldKey = holdsManifestKey(manifest, myUserId);
+                  // The shared manifest's folder exists in this vault once the manifest itself does.
+                  const folderId = manifest.manifestId.toLowerCase();
+                  const hasFolder = vaultNames[folderId] !== undefined;
 
                   return (
                     <div key={manifest.manifestId} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</p>
+                      <div className="flex items-center justify-between gap-2 -mx-1.5 -mt-1.5">
+                        {hasFolder ? (
+                          <button onClick={() => navigate(`/items/folder/${folderId}/${folderId}`)} className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                            <span className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</span>
+                            <svg className="w-4 h-4 ml-auto shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        ) : (
+                          <div className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1">
+                            <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                            <span className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</span>
+                          </div>
+                        )}
                         {/* Deleting a shared manifest is hidden behind a settings gear icon menu. */}
                         {canAdminister && (
                           <div className="relative shrink-0">
@@ -573,43 +597,27 @@ const FamilySharingSettings: React.FC = () => {
               </div>
             )}
 
-            {/* Creating another shared manifest. */}
-            {(canAdminister || group.manifests.length === 0) && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 space-y-2">
-                {group.manifests.length === 0 && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {canAdminister ? familySharingText.noSharedVaultAdmin : familySharingText.noSharedVaultMember}
-                  </p>
-                )}
-
-                {canAdminister && (
-                  <>
-                    <p className="font-medium text-gray-900 dark:text-white">{familySharingText.createSharedVault}</p>
-                    <form
-                      className="flex gap-2"
-                      onSubmit={event => {
-                        event.preventDefault();
-                        createSharedVault(group);
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={newVaultNames[group.groupId] ?? ''}
-                        onChange={event => setNewVaultNames(previous => ({ ...previous, [group.groupId]: event.target.value }))}
-                        placeholder={familySharingText.vaultNamePlaceholder}
-                        className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                      <button
-                        type="submit"
-                        disabled={busy}
-                        className="shrink-0 px-3 py-1.5 text-sm rounded-md bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white"
-                      >
-                        {familySharingText.create}
-                      </button>
-                    </form>
-                  </>
-                )}
+            {group.manifests.length === 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {canAdminister ? familySharingText.noSharedVaultAdmin : familySharingText.noSharedVaultMember}
+                </p>
               </div>
+            )}
+
+            {/* Creating another shared manifest. */}
+            {canAdminister && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setPendingVaultCreate(group)}
+                className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-md hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="text-sm font-medium">{familySharingText.createSharedVault}</span>
+              </button>
             )}
           </section>
         );
