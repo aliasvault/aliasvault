@@ -32,6 +32,11 @@ using SmtpServer.Storage;
 public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config config, IAliasServerDbContextFactory dbContextFactory) : MessageStore
 {
     /// <summary>
+    /// Maximum accepted raw message size in bytes: 10 MB of content plus headroom for MIME encoding overhead.
+    /// </summary>
+    public const int MaxEmailSizeInBytes = (int)(10 * 1024 * 1024 * 1.4);
+
+    /// <summary>
     /// Attachment bodies smaller than this are left inline in the message source. Detaching them would trade a
     /// download saving too small to notice for an extra round trip whenever the user opens the attachment.
     /// </summary>
@@ -61,10 +66,7 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
     {
         try
         {
-            // Check email size limit
-            var maxEmailSizeInMegabytes = 10;
-            var maxEmailSizeInBytes = (long)((maxEmailSizeInMegabytes * 1024 * 1024) * 1.4);
-            if (buffer.Length > maxEmailSizeInBytes)
+            if (buffer.Length > MaxEmailSizeInBytes)
             {
                 return SmtpResponse.SizeLimitExceeded;
             }
