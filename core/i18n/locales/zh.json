@@ -733,8 +733,7 @@
     "history": "历史记录",
     "home": {
       "alphabeticalOption": "字母顺序",
-      "buttonLocationText": "右上角的按钮。",
-      "createFirstItemText": "使用以下方式创建您的第一个项目",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "此文件夹为空。",
       "failedToCreateFolder": "创建文件夹失败。",
       "failedToDeleteFolder": "删除文件夹失败。",
@@ -744,8 +743,6 @@
       "importButtonText": "从 KeePass、Bitwarden、Chrome、Firefox 导入…",
       "importItemsText": "若您先前使用过其他密码管理器，则可以从中导入您的项目。",
       "loadingMore": "加载中…",
-      "newAliasButtonText": "“+ 新建别名”",
-      "newAliasButtonTextMobile": "“+”",
       "noItemsTitle": "暂无项目",
       "pageDescription": "在下方查找您的所有项目。",
       "sortOrderLabel": "排序顺序",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "正在创建新别名…",
       "namePlaceholderCard": "如“万事达卡”",
       "namePlaceholderNote": "如“护照详情”",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ 新建",
       "typeCard": "卡",
       "typeLogin": "登录"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "使用浏览器通行密钥"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "advancedOptions": "高级选项",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。",
       "aliasGenerationGenderDescription": "设置生成新身份时的默认性别偏好。",
       "aliasGenerationLanguageDescription": "设置生成新身份时将使用的默认语言。",
-      "aliasSettingsTitle": "身份生成器设置",
       "appLanguageDescription": "设置应用界面的语言。",
       "appLanguageTitle": "应用语言",
       "autoEmailRefreshLabel": "收到新邮件时自动刷新邮件内容",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "公共域名"
     },
     "globalSettings": "全局设置",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
       "ageRangeDescription": "设置生成新身份的年龄范围。",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "禁用两步验证（2FA）失败。",
         "pageDescription": "禁用两步验证（2FA）意味着您只需密码即可登录。",
         "pageTitle": "禁用两步验证（2FA）",
-        "statusMessage": "当前已启用两步验证（2FA）。禁用后，您只需密码即可访问密码库。",
         "twoFactorDisabledSuccess": "两步验证（2FA）已成功禁用。",
-        "twoFactorNotEnabled": "尚未启用两步验证（2FA）。",
-        "warningMessage": "请注意：禁用两步验证（2FA）后，所有已配置的身份验证器应用都将停止工作。如果想重新启用两步验证（2FA），您需要重新配置身份验证器应用。"
+        "twoFactorNotEnabled": "尚未启用两步验证（2FA）。"
       },
       "enable2fa": {
         "failedToEnable2Fa": "启用两步验证（2FA）失败。",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "两步验证（2FA）当前已禁用。为提高您的账户安全性，建议您启用此功能。",
-        "enabledMessage": "两步验证（2FA）当前已启用。"
+        "enabledMessage": "两步验证（2FA）当前已启用。",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "选择语言",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
     "serverUrl": "服务器 URL",
     "serverVersion": "服务器版本",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "网站特定设置",
     "storageInsights": {
       "breadcrumbTitle": "存储洞察",
