@@ -733,7 +733,7 @@
     "history": "Geschiedenis",
     "home": {
       "alphabeticalOption": "Alfabetisch",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Maak uw eerste kluis handmatig aan.",
       "emptyFolderMessage": "Deze map is leeg.",
       "failedToCreateFolder": "Map aanmaken is mislukt.",
       "failedToDeleteFolder": "Map verwijderen is mislukt.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Gebruik browser passkey"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Account beveiliging",
     "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
     "androidAutofillSettings": {
@@ -1224,8 +1224,8 @@
     },
     "globalSettings": "Globale Instellingen",
     "groups": {
-      "autofill": "Autofill",
-      "general": "General",
+      "autofill": "Automatisch invullen",
+      "general": "Algemeen",
       "generators": "Generators"
     },
     "identityGenerator": "Identiteit generator",
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "Tweestapsverificatie is momenteel uitgeschakeld. Om de beveiliging van je account te verbeteren raden wij je aan dit in te schakelen.",
         "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Je kluis is momenteel alleen toegankelijk via je hoofdwachtwoord. We raden je aan om tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
       }
     },
     "selectLanguage": "Selecteer taal",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
     "serverUrl": "Server URL",
     "serverVersion": "Server versie",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sessies & Logbestanden",
+    "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
     "siteSpecificSettings": "Site-specifieke Instellingen",
     "storageInsights": {
       "breadcrumbTitle": "Opslaggebruik",
