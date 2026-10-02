@@ -733,8 +733,7 @@
     "history": "History",
     "home": {
       "alphabeticalOption": "Alphabetical",
-      "buttonLocationText": "button in the top right corner.",
-      "createFirstItemText": "Create your first item using the",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
       "failedToDeleteFolder": "Failed to delete folder.",
@@ -744,8 +743,6 @@
       "importButtonText": "Import from KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "If you previously used a different password manager, you can import your items from it.",
       "loadingMore": "Loading more...",
-      "newAliasButtonText": "\"+ New Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
       "sortOrderLabel": "Sort Order",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Creating new alias...",
       "namePlaceholderCard": "E.g. Mastercard",
       "namePlaceholderNote": "E.g. Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
       "typeLogin": "Login"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Active on all sites (unless disabled below)",
     "advancedOptions": "Advanced Options",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",
       "aliasGenerationLanguageDescription": "Set the default language that will be used when generating new identities.",
-      "aliasSettingsTitle": "Identity Generator Settings",
       "appLanguageDescription": "Set the language for the application interface.",
       "appLanguageTitle": "Application Language",
       "autoEmailRefreshLabel": "Auto refresh emails content when new ones arrive",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Public Domains"
     },
     "globalSettings": "Global Settings",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Kimlik Oluşturucu",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Set the age range for generating new identities.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Failed to disable two-factor authentication.",
         "pageDescription": "Disabling two-factor authentication means you will be able to login with only your password.",
         "pageTitle": "Disable two-factor authentication",
-        "statusMessage": "Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.",
         "twoFactorDisabledSuccess": "Two-factor authentication is now successfully disabled.",
-        "twoFactorNotEnabled": "Two-factor authentication is not enabled.",
-        "warningMessage": "Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again."
+        "twoFactorNotEnabled": "Two-factor authentication is not enabled."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Failed to enable two-factor authentication.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Two factor authentication is currently disabled. In order to improve your account security we advise you to enable it.",
-        "enabledMessage": "Two factor authentication is currently enabled."
+        "enabledMessage": "Two factor authentication is currently enabled.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Select Language",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
     "serverUrl": "Server URL",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Site-Specific Settings",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
