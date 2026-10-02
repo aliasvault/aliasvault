@@ -1,7 +1,7 @@
 import { test as base } from '@playwright/test';
 
 import { resolveApiUrl } from '../helpers/api-url';
-import { createTestUser, generateTestUsername, TEST_PASSWORD, type TestUser } from '../helpers/test-api';
+import { createTestUser, generateTestUsername, TEST_DISABLE_PUBLIC_REGISTRATION_HEADER, TEST_PASSWORD, type TestUser } from '../helpers/test-api';
 
 import { WebApp } from './WebApp';
 
@@ -18,6 +18,7 @@ export type TestCredentials = {
  */
 type TestFixtures = {
   apiUrl: string;
+  publicRegistrationEnabled: boolean;
   app: WebApp;
   credentials: TestCredentials;
   testUser: TestUser;
@@ -33,9 +34,15 @@ export const test = base.extend<TestFixtures>({
   apiUrl: [resolveApiUrl(), { option: true }],
 
   /**
+   * Set to false with `test.use` to run the test as if registration is closed, in both the web app and (for this test's
+   * requests only) the API.
+   */
+  publicRegistrationEnabled: [true, { option: true }],
+
+  /**
    * The default context, with appsettings.json answered by the test configuration.
    */
-  context: async ({ context, apiUrl }, use) => {
+  context: async ({ context, apiUrl, publicRegistrationEnabled }, use) => {
     await context.route(/\/appsettings(\.Development)?\.json(\?.*)?$/, (route) => route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({
@@ -43,10 +50,13 @@ export const test = base.extend<TestFixtures>({
         PrivateEmailDomains: ['example.tld', 'example2.tld'],
         HiddenPrivateEmailDomains: [],
         SupportEmail: 'support@example.tld',
-        PublicRegistrationEnabled: 'true',
+        PublicRegistrationEnabled: String(publicRegistrationEnabled),
         DeploymentMode: 'e2e',
       }),
     }));
+    if (!publicRegistrationEnabled) {
+      await context.setExtraHTTPHeaders({ [TEST_DISABLE_PUBLIC_REGISTRATION_HEADER]: 'true' });
+    }
     await use(context);
   },
 

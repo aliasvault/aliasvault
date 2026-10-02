@@ -85,6 +85,24 @@ export async function isApiAvailable(apiUrl: string): Promise<boolean> {
 }
 
 /**
+ * Request header with which the API (DEBUG build in Development) handles that request as if public registration is disabled.
+ */
+export const TEST_DISABLE_PUBLIC_REGISTRATION_HEADER = 'X-AliasVault-Test-Disable-Public-Registration';
+
+/**
+ * Create a registration invite via the DEBUG-only test controller, as the admin panel would.
+ * @returns The invite code
+ */
+export async function createRegistrationInvite(apiUrl: string, maxUses = 1): Promise<string> {
+  const url = `${apiUrl}/v2/Test/registration-invites?maxUses=${maxUses}`;
+  const response = await fetch(url, { method: 'POST' });
+  if (!response.ok) {
+    throw new Error(`Failed to create a registration invite via ${url} (status ${response.status}). The test controller only exists in DEBUG builds running with ASPNETCORE_ENVIRONMENT=Development.`);
+  }
+  return ((await response.json()) as { code: string }).code;
+}
+
+/**
  * Set a server setting via the DEBUG-only test controller.
  */
 export async function setServerSetting(apiUrl: string, key: string, value: string): Promise<void> {
