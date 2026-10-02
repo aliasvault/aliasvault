@@ -74,6 +74,8 @@ builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ConfirmModalService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ServerSettingsService>();
+builder.Services.AddScoped<RegistrationInviteService>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddTransient<StatisticsService>();
 builder.Services.AddSingleton(new VersionedContentService(Directory.GetCurrentDirectory() + "/wwwroot"));
 builder.Services.AddApexCharts();
