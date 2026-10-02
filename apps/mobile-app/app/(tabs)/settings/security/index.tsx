@@ -59,7 +59,7 @@ export default function SecuritySettingsScreen() : React.ReactNode {
   return (
     <ThemedContainer testID="security-settings-screen">
       <ThemedScrollView>
-        <SettingsHeader title={t('settings.security')} description={t('settings.securitySettings.description')} icon="shield-checkmark" />
+        <SettingsHeader title={t('settings.accountSecurity')} description={t('settings.securitySettings.description')} icon="shield-checkmark" />
         <View style={styles.section}>
           <TouchableOpacity
             testID="change-password-link"
