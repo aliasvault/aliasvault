@@ -8,7 +8,7 @@ import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import InputTextField from '@/components/shared/InputTextField';
 import SectionTitle from '@/components/shared/SectionTitle';
-import { useAccountNudges } from '@/context/AccountNudgeContext';
+import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 
@@ -20,7 +20,7 @@ const TwoFactorDisableStep: React.FC = () => {
   const navigate = useNavigate();
   const webApi = useWebApi();
   const notifications = useNotifications();
-  const { refresh: refreshNudges } = useAccountNudges();
+  const { refresh: refreshReminders } = useAccountReminders();
   const [isLoading, setIsLoading] = useState(true);
   const [code, setCode] = useState('');
   const hasStarted = useRef(false);
@@ -58,7 +58,7 @@ const TwoFactorDisableStep: React.FC = () => {
     try {
       await webApi.post<string, unknown>('TwoFactorAuth/disable', code.trim(), false);
       notifications.addSuccessMessage(t('settings.securitySettings.disable2fa.twoFactorDisabledSuccess'));
-      void refreshNudges();
+      void refreshReminders();
       navigate('/settings/two-factor');
     } catch (error) {
       console.error('Failed to disable 2FA:', error);
