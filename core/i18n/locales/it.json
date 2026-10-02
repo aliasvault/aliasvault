@@ -764,16 +764,16 @@
     "loginCredentials": "Credenziali di accesso",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Sviluppo",
-        "Game": "Giochi",
-        "Health": "Salute",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Viaggio",
-        "Work": "Lavoro"
+        "bank": "Banking",
+        "dev": "Sviluppo",
+        "game": "Giochi",
+        "health": "Salute",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Viaggio",
+        "work": "Lavoro"
       },
       "builtinLogos": "Libreria icone",
       "chooseLogo": "Scegli l'icona",
