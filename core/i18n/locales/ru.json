@@ -733,8 +733,7 @@
     "history": "История",
     "home": {
       "alphabeticalOption": "По алфавиту",
-      "buttonLocationText": "в правом верхнем углу.",
-      "createFirstItemText": "Создайте свою первую запись, используя",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Эта папка пуста.",
       "failedToCreateFolder": "Не удалось создать папку.",
       "failedToDeleteFolder": "Не удалось удалить папку.",
@@ -744,8 +743,6 @@
       "importButtonText": "Импорт из KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Если вы ранее пользовались другим менеджером паролей, вы можете импортировать из него свои записи.",
       "loadingMore": "Загружаем еще...",
-      "newAliasButtonText": "\"+ Новый псевдоним\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Записей пока нет",
       "pageDescription": "Ниже вы найдете все ваши записи.",
       "sortOrderLabel": "Порядок сортировки",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Создаём новый псевдоним...",
       "namePlaceholderCard": "Например, Mastercard",
       "namePlaceholderNote": "Например: Данные паспорта",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Новый",
       "typeCard": "Карта",
       "typeLogin": "Логин"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Использовать ключ доступа из браузера﻿"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Активен на всех сайтах (если не отключен ниже)",
     "advancedOptions": "Дополнительные параметры",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Установите диапазон возраста по умолчанию для создания новых личностей. Это влияет на дату рождения, назначаемую сгенерированной личности.",
       "aliasGenerationGenderDescription": "Установите предпочтительный пол по умолчанию для генерации новых личностей.",
       "aliasGenerationLanguageDescription": "Задайте язык по умолчанию, который будет использоваться при создании новых личностей.",
-      "aliasSettingsTitle": "Настройки генератора личностей",
       "appLanguageDescription": "Выберите язык интерфейса приложения.",
       "appLanguageTitle": "Язык приложения",
       "autoEmailRefreshLabel": "Автоматически обновлять список писем при получении новых",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Публичные домены"
     },
     "globalSettings": "Глобальные настройки",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Генератор личности",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Установите диапазон возраста для генерации новых личностей.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Не удалось отключить двухфакторную аутентификацию.",
         "pageDescription": "Отключение двухфакторной аутентификации означает, что вы сможете войти в систему, используя только свой пароль.",
         "pageTitle": "Отключить двухфакторную аутентификацию",
-        "statusMessage": "В настоящее время включена двухфакторная аутентификация. Отключите ее, чтобы иметь возможность доступа к вашему хранилищу только с помощью вашего пароля.",
         "twoFactorDisabledSuccess": "Теперь двухфакторная аутентификация успешно отключена.",
-        "twoFactorNotEnabled": "Двухфакторная аутентификация не включена.",
-        "warningMessage": "Пожалуйста, обратите внимание: после отключения двухфакторной аутентификации все настроенные приложения-аутентификаторы перестанут работать. Если вы захотите снова включить двухфакторную аутентификацию, вам придется снова настроить приложения-аутентификаторы."
+        "twoFactorNotEnabled": "Двухфакторная аутентификация не включена."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Не удалось включить двухфакторную аутентификацию.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Двухфакторная аутентификация сейчас отключена. Чтобы повысить безопасность вашего аккаунта, мы рекомендуем включить её.",
-        "enabledMessage": "Двухфакторная аутентификация сейчас включена."
+        "enabledMessage": "Двухфакторная аутентификация сейчас включена.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Выбрать язык",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Настройте URL-адрес сервера AliasVault для самостоятельно размещенных экземпляров",
     "serverUrl": "URL-адрес сервера",
     "serverVersion": "Версия сервера",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Настройки для конкретного сайта",
     "storageInsights": {
       "breadcrumbTitle": "Анализ памяти",
