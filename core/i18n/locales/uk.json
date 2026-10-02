@@ -764,16 +764,16 @@
     "loginCredentials": "Облікові дані для входу",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -1224,7 +1224,7 @@
     },
     "globalSettings": "Глобальні налаштування",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "Автозаповнення",
       "general": "General",
       "generators": "Generators"
     },
