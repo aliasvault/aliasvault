@@ -17,6 +17,7 @@ import MobileUnlockModal from '@/components/auth/MobileUnlockModal';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
 import BoldLoadingIndicator from '@/components/loading/BoldLoadingIndicator';
+import Button from '@/components/shared/Button';
 import FormLabel from '@/components/shared/FormLabel';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
@@ -304,20 +305,18 @@ const Unlock: React.FC = () => {
               <PasswordInputField ref={passwordRef} id="password" value={password} onValueChange={setPassword} placeholder="••••••••" />
             </div>
 
-            <button type="submit" id="unlock-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
-              {t('auth.unlockPage.unlockButton')}
-            </button>
+            <Button type="submit" id="unlock-button" size="lg" display="flex" additionalClasses="w-full">{t('auth.unlockPage.unlockButton')}</Button>
           </form>
         </>
       )}
 
       {!dbContext.isOffline && (
-        <button type="button" id="mobile-unlock-button" onClick={() => setShowMobileUnlockModal(true)} className="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2 mt-4">
+        <Button id="mobile-unlock-button" onClick={() => setShowMobileUnlockModal(true)} color="outline" size="lg" display="flex" additionalClasses="hidden md:flex w-full mt-4">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
           </svg>
           {t('auth.unlockPage.unlockWithMobileButton')}
-        </button>
+        </Button>
       )}
 
       <div className="text-sm text-center font-medium text-gray-500 dark:text-gray-400 mt-6">

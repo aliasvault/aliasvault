@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { EDIT_INPUT_CLASSES } from '@/components/forms/EditFormRow';
+import FormInput from '@/components/forms/FormInput';
 import FormLabel from '@/components/shared/FormLabel';
 
 type MultiValueFormRowProps = {
@@ -24,7 +24,7 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
       <div className="space-y-2">
         {shown.map((value, index) => (
           <div key={index} className="relative">
-            <input type="text" id={`${id}-${index}`} autoComplete="off" className={EDIT_INPUT_CLASSES} value={value} onChange={e => onChange(shown.map((v, i) => i === index ? e.target.value : v))} onFocus={e => onFocus?.(index, e)} placeholder={placeholder} autoCapitalize="off" autoCorrect="off" />
+            <FormInput id={`${id}-${index}`} value={value} onValueChange={next => onChange(shown.map((v, i) => i === index ? next : v))} onFocus={e => onFocus?.(index, e)} placeholder={placeholder} />
             {index === shown.length - 1 && (
               <button type="button" id={`add-${id}`} onClick={() => onChange([...shown, ''])} className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

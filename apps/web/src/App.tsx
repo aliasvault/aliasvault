@@ -21,13 +21,16 @@ import NotFound from '@/pages/NotFound';
 import AppsSettings from '@/pages/settings/Apps';
 import FamilySharing from '@/pages/settings/FamilySharing';
 import GeneralSettings from '@/pages/settings/General';
+import IdentityGeneratorSettings from '@/pages/settings/IdentityGenerator';
 import ImportExport from '@/pages/settings/importexport/ImportExport';
 import ResetVault from '@/pages/settings/importexport/ResetVault';
+import PasswordGeneratorSettings from '@/pages/settings/PasswordGenerator';
 import ChangePassword from '@/pages/settings/security/ChangePassword';
 import DeleteAccount from '@/pages/settings/security/DeleteAccount';
-import Disable2Fa from '@/pages/settings/security/Disable2Fa';
-import Enable2Fa from '@/pages/settings/security/Enable2Fa';
 import SecuritySettings from '@/pages/settings/security/Security';
+import SessionsAndLogs from '@/pages/settings/security/SessionsAndLogs';
+import TwoFactor from '@/pages/settings/security/TwoFactor';
+import SettingsOverview from '@/pages/settings/Settings';
 import StorageInsights from '@/pages/settings/StorageInsights';
 import Sync from '@/pages/sync/Sync';
 import Welcome from '@/pages/Welcome';
@@ -63,12 +66,17 @@ const App: React.FC = () => (
         <Route path="/items/:manifestId/:id" element={<ItemView />} />
         <Route path="/emails" element={<EmailsHome />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/settings" element={<SettingsOverview />} />
         <Route path="/settings/general" element={<GeneralSettings />} />
+        <Route path="/settings/password-generator" element={<PasswordGeneratorSettings />} />
+        <Route path="/settings/identity-generator" element={<IdentityGeneratorSettings />} />
         <Route path="/settings/security" element={<SecuritySettings />} />
         <Route path="/settings/security/change-password" element={<ChangePassword />} />
-        <Route path="/settings/security/enable-2fa" element={<Enable2Fa />} />
-        <Route path="/settings/security/disable-2fa" element={<Disable2Fa />} />
         <Route path="/settings/security/delete-account" element={<DeleteAccount />} />
+        <Route path="/settings/sessions" element={<SessionsAndLogs />} />
+        <Route path="/settings/two-factor" element={<TwoFactor key="status" />} />
+        <Route path="/settings/two-factor/enable" element={<TwoFactor key="enable" mode="enable" />} />
+        <Route path="/settings/two-factor/disable" element={<TwoFactor key="disable" mode="disable" />} />
         <Route path="/settings/storage-insights" element={<StorageInsights />} />
         <Route path="/settings/family-sharing" element={<RequireCapability capability={CapabilityKeys.VaultSharing}><FamilySharing /></RequireCapability>} />
         <Route path="/settings/import-export" element={<ImportExport />} />

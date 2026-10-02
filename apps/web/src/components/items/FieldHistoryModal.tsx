@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import CopyPasteFormRow from '@/components/forms/CopyPasteFormRow';
 import CopyPastePasswordFormRow from '@/components/forms/CopyPastePasswordFormRow';
 import Modal from '@/components/shared/Modal';
+import Text from '@/components/shared/Text';
 import { useDb } from '@/context/DbContext';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
@@ -105,7 +106,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
             </svg>
           </div>
         ) : records.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('items.noHistoryAvailable')}</p>
+          <Text variant="muted" className="text-center py-8">{t('items.noHistoryAvailable')}</Text>
         ) : (
           <div className="space-y-4">
             {records.map((record) => {

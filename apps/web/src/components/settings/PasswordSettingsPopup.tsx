@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 
 import CopyPasteFormRow from '@/components/forms/CopyPasteFormRow';
 import Modal from '@/components/shared/Modal';
+import TabButton from '@/components/shared/TabButton';
+import ToggleChip from '@/components/shared/ToggleChip';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -33,22 +35,6 @@ const SALT_OPTIONS = ['None', 'Prefix', 'Sprinkle', 'Suffix'];
  * The next option in a cycle.
  */
 const cycle = (options: string[], current: string | undefined): string => options[(options.indexOf(current ?? '') + 1) % options.length];
-
-/**
- * Classes of a character class toggle.
- */
-const toggleClasses = (enabled: boolean): string => {
-  const base = 'flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors';
-  return enabled ? `${base} bg-primary-600 text-white hover:bg-primary-700` : `${base} bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600`;
-};
-
-/**
- * Classes of a passphrase option button.
- */
-const optionClasses = (customized: boolean): string => {
-  const base = 'flex items-center justify-center px-2 py-2 rounded-md transition-colors';
-  return customized ? `${base} bg-primary-600 text-white hover:bg-primary-700` : `${base} bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600`;
-};
 
 /**
  * Glyph of a capitalization option.
@@ -135,21 +121,14 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
     return (): void => document.removeEventListener('keydown', onKeyDown);
   });
 
-  /**
-   * Classes of a generator type tab.
-   */
-  const tabClasses = (type: string): string => {
-    const active = (settings.Type && settings.Type.length > 0 ? settings.Type : 'basic') === type;
-    const base = '-mb-px flex-1 border-b-2 px-3 py-3 text-sm font-medium transition-colors';
-    return active ? `${base} border-primary-600 text-primary-600 dark:border-primary-500 dark:text-primary-500` : `${base} border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`;
-  };
+  const activeType = settings.Type && settings.Type.length > 0 ? settings.Type : 'basic';
 
   return (
     <Modal id="passwordSettingsModal" onBackdropClick={onClose} panelClassName="p-5 pt-0 w-96 max-w-full">
       <div className="m-2">
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
-          <button type="button" onClick={() => handleSettingChange('Type', 'basic')} className={tabClasses('basic')}>{t('common.password')}</button>
-          <button type="button" onClick={() => handleSettingChange('Type', 'diceware')} className={tabClasses('diceware')}>{t('items.passwordTypeDiceware')}</button>
+        <div className="flex border-b border-gray-200 dark:border-gray-700" role="tablist">
+          <TabButton active={activeType === 'basic'} onClick={() => handleSettingChange('Type', 'basic')}>{t('common.password')}</TabButton>
+          <TabButton active={activeType === 'diceware'} onClick={() => handleSettingChange('Type', 'diceware')}>{t('items.passwordTypeDiceware')}</TabButton>
         </div>
 
         <div className="mt-4 space-y-4">
@@ -177,10 +156,10 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" className={toggleClasses(settings.UseLowercase)} title={t('items.passwordSettingsPopup.includeLowercaseLabel')} onClick={() => handleSettingChange('UseLowercase', !settings.UseLowercase)}><span className="font-mono text-base">a-z</span></button>
-                <button type="button" className={toggleClasses(settings.UseUppercase)} title={t('items.passwordSettingsPopup.includeUppercaseLabel')} onClick={() => handleSettingChange('UseUppercase', !settings.UseUppercase)}><span className="font-mono text-base">A-Z</span></button>
-                <button type="button" className={toggleClasses(settings.UseNumbers)} title={t('items.passwordSettingsPopup.includeNumbersLabel')} onClick={() => handleSettingChange('UseNumbers', !settings.UseNumbers)}><span className="font-mono text-base">0-9</span></button>
-                <button type="button" className={toggleClasses(settings.UseSpecialChars)} title={t('items.passwordSettingsPopup.includeSpecialCharsLabel')} onClick={() => handleSettingChange('UseSpecialChars', !settings.UseSpecialChars)}><span className="font-mono text-base">!@#</span></button>
+                <ToggleChip selected={settings.UseLowercase} title={t('items.passwordSettingsPopup.includeLowercaseLabel')} onClick={() => handleSettingChange('UseLowercase', !settings.UseLowercase)}><span className="font-mono text-base">a-z</span></ToggleChip>
+                <ToggleChip selected={settings.UseUppercase} title={t('items.passwordSettingsPopup.includeUppercaseLabel')} onClick={() => handleSettingChange('UseUppercase', !settings.UseUppercase)}><span className="font-mono text-base">A-Z</span></ToggleChip>
+                <ToggleChip selected={settings.UseNumbers} title={t('items.passwordSettingsPopup.includeNumbersLabel')} onClick={() => handleSettingChange('UseNumbers', !settings.UseNumbers)}><span className="font-mono text-base">0-9</span></ToggleChip>
+                <ToggleChip selected={settings.UseSpecialChars} title={t('items.passwordSettingsPopup.includeSpecialCharsLabel')} onClick={() => handleSettingChange('UseSpecialChars', !settings.UseSpecialChars)}><span className="font-mono text-base">!@#</span></ToggleChip>
               </div>
 
               <div className="flex items-center">
@@ -199,15 +178,15 @@ const PasswordSettingsPopup: React.FC<PasswordSettingsPopupProps> = ({ passwordS
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <button type="button" className={optionClasses(settings.Capitalization !== DEFAULT_CAPITALIZATION)} title={optionLabel('Capitalization', settings.Capitalization ?? DEFAULT_CAPITALIZATION)} onClick={() => handleSettingChange('Capitalization', cycle(CAPITALIZATION_OPTIONS, settings.Capitalization))}>
+                <ToggleChip selected={settings.Capitalization !== DEFAULT_CAPITALIZATION} title={optionLabel('Capitalization', settings.Capitalization ?? DEFAULT_CAPITALIZATION)} onClick={() => handleSettingChange('Capitalization', cycle(CAPITALIZATION_OPTIONS, settings.Capitalization))}>
                   <span className="font-mono text-base">{capitalizationGlyph(settings.Capitalization)}</span>
-                </button>
-                <button type="button" className={optionClasses(settings.Separator !== DEFAULT_SEPARATOR)} title={`${t('items.separator')}: ${optionLabel('Separator', settings.Separator ?? DEFAULT_SEPARATOR)}`} onClick={() => handleSettingChange('Separator', cycle(SEPARATOR_OPTIONS, settings.Separator))}>
+                </ToggleChip>
+                <ToggleChip selected={settings.Separator !== DEFAULT_SEPARATOR} title={`${t('items.separator')}: ${optionLabel('Separator', settings.Separator ?? DEFAULT_SEPARATOR)}`} onClick={() => handleSettingChange('Separator', cycle(SEPARATOR_OPTIONS, settings.Separator))}>
                   <span className="font-mono text-base">{separatorGlyph(settings.Separator)}</span>
-                </button>
-                <button type="button" className={optionClasses(settings.Salt !== DEFAULT_SALT)} title={`${t('items.salt')}: ${optionLabel('Salt', settings.Salt ?? DEFAULT_SALT)}`} onClick={() => handleSettingChange('Salt', cycle(SALT_OPTIONS, settings.Salt))}>
+                </ToggleChip>
+                <ToggleChip selected={settings.Salt !== DEFAULT_SALT} title={`${t('items.salt')}: ${optionLabel('Salt', settings.Salt ?? DEFAULT_SALT)}`} onClick={() => handleSettingChange('Salt', cycle(SALT_OPTIONS, settings.Salt))}>
                   <span className="font-mono text-base">{saltGlyph(settings.Salt)}</span>
-                </button>
+                </ToggleChip>
               </div>
 
               <div>

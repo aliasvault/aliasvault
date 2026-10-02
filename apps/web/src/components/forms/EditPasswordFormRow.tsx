@@ -4,6 +4,7 @@ import { MAX_WORD_COUNT, MIN_WORD_COUNT } from '@aliasvault/models/defaults';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import FormInput from '@/components/forms/FormInput';
 import PasswordSettingsPopup from '@/components/settings/PasswordSettingsPopup';
 import FormLabel from '@/components/shared/FormLabel';
 import { useDb } from '@/context/DbContext';
@@ -73,7 +74,7 @@ const EditPasswordFormRow: React.FC<EditPasswordFormRowProps> = ({ id, label, va
       <FormLabel htmlFor={id}>{label}</FormLabel>
       <div className="flex">
         <div className="relative flex-grow">
-          <input type={isVisible ? 'text' : 'password'} id={id} autoComplete="off" className="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 pr-16 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+          <FormInput type={isVisible ? 'text' : 'password'} id={id} attached="right" trailingSpace="lg" value={value} onValueChange={onChange} placeholder={placeholder} />
         </div>
         <div className="flex">
           <button type="button" className={visibilityButtonClasses} onClick={() => setIsVisible(v => !v)}>

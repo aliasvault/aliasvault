@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
-import PageHeader from '@/components/shared/PageHeader';
+import SectionTitle from '@/components/shared/SectionTitle';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { type AppInfo, BROWSER_EXTENSIONS, MOBILE_APPS } from '@/utils/AppDownloads';
 
@@ -36,12 +37,12 @@ const AppsSettings: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t('settings.apps.pageTitle') }]} title={t('settings.apps.pageTitle')} description={t('settings.apps.pageDescription')} />
+      <SettingsPageHeader icon="apps" title={t('settings.apps.pageTitle')} description={t('settings.apps.pageDescription')} />
 
       <PageContent>
         <Card>
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('settings.apps.browserExtensionsTitle')}</h3>
+            <SectionTitle className="mb-2">{t('settings.apps.browserExtensionsTitle')}</SectionTitle>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.apps.browserExtensionsDescription')}</p>
           </div>
 
@@ -52,7 +53,7 @@ const AppsSettings: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('settings.apps.mobileAppsTitle')}</h3>
+            <SectionTitle className="mb-2">{t('settings.apps.mobileAppsTitle')}</SectionTitle>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('settings.apps.mobileAppsDescription')}</p>
           </div>
 

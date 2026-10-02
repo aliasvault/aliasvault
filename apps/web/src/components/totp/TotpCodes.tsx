@@ -4,9 +4,11 @@ import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
 import FormModal from '@/components/shared/FormModal';
+import InputTextField from '@/components/shared/InputTextField';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -19,9 +21,6 @@ type TotpCodesProps = {
   itemDisplayName: string;
   itemUsername: string;
 };
-
-const INPUT_CLASSES = 'bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white';
-const SAVE_BUTTON_CLASSES = 'text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
 
 /**
  * The secret, name and parameters of a TOTP entry from a raw secret or an otpauth URI.
@@ -209,10 +208,10 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
               <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">{t('totp.totpInstructions')}</p>
               <div className="mb-4">
                 <FormLabel htmlFor="totp-secret">{t('totp.secretKey')}</FormLabel>
-                <input id="totp-secret" type="text" value={newSecret} onChange={(e) => {
-                  setNewSecret(e.target.value);
+                <InputTextField id="totp-secret" type="text" value={newSecret} onValueChange={(value) => {
+                  setNewSecret(value);
                   setSecretError('');
-                }} className={INPUT_CLASSES} placeholder={t('totp.secretKeyPlaceholder')} />
+                }} placeholder={t('totp.secretKeyPlaceholder')} />
                 {secretError.length > 0 && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{secretError}</div>}
               </div>
               {showNameField ? (
@@ -226,7 +225,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                       {removeIcon}
                     </button>
                   </div>
-                  <input id="totp-name" type="text" value={newName} onChange={e => setNewName(e.target.value)} className={INPUT_CLASSES} />
+                  <InputTextField id="totp-name" type="text" value={newName} onValueChange={setNewName} />
                 </div>
               ) : (
                 <div className="mb-4">
@@ -236,7 +235,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                 </div>
               )}
               <div className="flex justify-end">
-                <button id="save-totp-code" type="button" onClick={addTotpCode} className={SAVE_BUTTON_CLASSES}>{t('common.save')}</button>
+                <Button id="save-totp-code" onClick={addTotpCode}>{t('common.save')}</Button>
               </div>
             </div>
           </div>
@@ -302,7 +301,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                       {removeIcon}
                     </button>
                   </div>
-                  <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder={t('totp.nameOptional')} />
+                  <InputTextField id="totp-edit-name" type="text" value={editName} onValueChange={setEditName} placeholder={t('totp.nameOptional')} />
                 </div>
               ) : (
                 <button type="button" onClick={() => setShowEditNameField(true)} className="text-sm font-medium text-primary-700 hover:text-primary-800 dark:text-primary-500 dark:hover:text-primary-400">
@@ -310,7 +309,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                 </button>
               )}
 
-              <button type="button" onClick={saveEditedTotpCode} className={`w-full ${SAVE_BUTTON_CLASSES}`}>{t('common.save')}</button>
+              <Button onClick={saveEditedTotpCode} additionalClasses="w-full">{t('common.save')}</Button>
             </div>
           )}
         </div>

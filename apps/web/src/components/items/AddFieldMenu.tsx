@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import CustomFieldModal from '@/components/forms/CustomFieldModal';
+import MenuItem from '@/components/shared/MenuItem';
 
 type AddFieldMenuProps = {
   optionalSystemFields: SystemFieldDefinition[];
@@ -32,8 +33,6 @@ const FieldIcon: React.FC<{ category: string }> = ({ category }) => {
   }
 };
 
-const MENU_ITEM_CLASSES = 'w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-gray-300';
-
 /**
  * The "+" menu that adds optional fields and sections to the item form.
  */
@@ -54,57 +53,39 @@ const AddFieldMenu: React.FC<AddFieldMenuProps> = ({ optionalSystemFields, visib
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-black bg-opacity-50" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+          <div className="absolute bottom-full left-0 right-0 mb-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
             {optionalSystemFields.filter(f => !visibleFieldKeys.has(f.FieldKey)).map(field => (
-              <button key={field.FieldKey} type="button" onClick={() => {
+              <MenuItem key={field.FieldKey} size="md" icon={<FieldIcon category={field.Category} />} label={t(`fieldLabels.${field.FieldKey}`, { defaultValue: field.FieldKey })} onClick={() => {
                 onAddSystemField(field.FieldKey);
                 setIsOpen(false);
-              }} className={MENU_ITEM_CLASSES}>
-                <span className="text-gray-500 dark:text-gray-400"><FieldIcon category={field.Category} /></span>
-                <span>{t(`fieldLabels.${field.FieldKey}`, { defaultValue: field.FieldKey })}</span>
-              </button>
+              }} />
             ))}
 
             {!show2FA && hasLoginFields && (
-              <button type="button" onClick={() => {
+              <MenuItem size="md" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>} label={t('common.twoFactorAuthentication')} onClick={() => {
                 onAdd2FA();
                 setIsOpen(false);
-              }} className={MENU_ITEM_CLASSES}>
-                <span className="text-gray-500 dark:text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </span>
-                <span>{t('common.twoFactorAuthentication')}</span>
-              </button>
+              }} />
             )}
 
             {!showAttachments && (
-              <button type="button" onClick={() => {
+              <MenuItem size="md" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>} label={t('common.attachments')} onClick={() => {
                 onAddAttachments();
                 setIsOpen(false);
-              }} className={MENU_ITEM_CLASSES}>
-                <span className="text-gray-500 dark:text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg>
-                </span>
-                <span>{t('common.attachments')}</span>
-              </button>
+              }} />
             )}
 
-            <button type="button" onClick={() => {
+            <MenuItem size="md" icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>} label={t('itemTypes.addCustomField')} onClick={() => {
               setCustomFieldLabel(t('items.addFieldMenu.defaultFieldLabel', { number: customFieldCount + 1 }));
               setShowCustomFieldModal(true);
               setIsOpen(false);
-            }} className={MENU_ITEM_CLASSES}>
-              <span className="text-gray-500 dark:text-gray-400">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </span>
-              <span>{t('itemTypes.addCustomField')}</span>
-            </button>
+            }} />
           </div>
         </>
       )}

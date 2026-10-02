@@ -144,7 +144,7 @@ const SearchWidget: React.FC = () => {
         type="text"
         placeholder={t('items.searchPlaceholder')}
         autoComplete="off"
-        className="w-full px-4 py-2 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:focus:ring-primary-500"
+        className="w-full h-9 px-4 text-sm text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:focus:ring-primary-500"
         value={searchTerm}
         onChange={(e) => onSearchTermChanged(e.target.value)}
         onFocus={() => setShowPopup(true)}

@@ -13,13 +13,14 @@ import AlertMessageSuccess from '@/components/alerts/AlertMessageSuccess';
 import FolderIcon from '@/components/folders/FolderIcon';
 import FolderModal from '@/components/folders/FolderModal';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import InputTextField from '@/components/shared/InputTextField';
 import PageContent from '@/components/shared/PageContent';
-import PageHeader from '@/components/shared/PageHeader';
 import PasswordConfirmationModal from '@/components/shared/PasswordConfirmationModal';
 import RefreshButton from '@/components/shared/RefreshButton';
+import SectionTitle from '@/components/shared/SectionTitle';
 import SmallButton from '@/components/shared/SmallButton';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
@@ -352,8 +353,8 @@ const FamilySharing: React.FC = () => {
 
   return (
     <>
-      <PageHeader
-        breadcrumbItems={[{ displayName: familySharingText.title }]}
+      <SettingsPageHeader
+        icon="familySharing"
         title={familySharingText.title}
         description={familySharingText.description}
         customActions={<RefreshButton onClick={refresh} buttonText={t('common.refresh')} />}
@@ -387,7 +388,7 @@ const FamilySharing: React.FC = () => {
 
         {!isLoading && orphanInvitations.length > 0 && (
           <section className="mx-4 mb-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{familySharingText.invitations}</h3>
+            <SectionTitle className="mb-4">{familySharingText.invitations}</SectionTitle>
             <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
               {orphanInvitations.map(invitationCard)}
             </div>
@@ -408,7 +409,7 @@ const FamilySharing: React.FC = () => {
             <section key={group.groupId} className="mx-4 mb-6 space-y-6">
               {/* The family's members. */}
               <Card variant="tile">
-                <h3 className="mb-3 text-lg font-medium text-gray-900 dark:text-white">{familySharingText.members} ({group.members.length})</h3>
+                <SectionTitle className="mb-3">{familySharingText.members} ({group.members.length})</SectionTitle>
                 <ul className="flex flex-wrap gap-x-10 gap-y-3">
                   {group.members.map(member => (
                     <li key={member.userId} className="min-w-0">
@@ -420,7 +421,7 @@ const FamilySharing: React.FC = () => {
               </Card>
 
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{familySharingText.sharedVaults}</h3>
+                <SectionTitle className="mb-0">{familySharingText.sharedVaults}</SectionTitle>
                 <p className="mt-1 mb-4 text-sm text-gray-500 dark:text-gray-400">{familySharingText.sharedVaultsHint}</p>
 
                 {/* One card per shared manifest, each with the members who can open it. */}

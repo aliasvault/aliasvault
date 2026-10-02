@@ -6,10 +6,11 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import AttachmentUploader from '@/components/attachments/AttachmentUploader';
 import DraggableCustomFieldsList from '@/components/forms/DraggableCustomFieldsList';
-import EditFormRow, { EDIT_INPUT_CLASSES } from '@/components/forms/EditFormRow';
+import EditFormRow from '@/components/forms/EditFormRow';
 import EditPasswordFormRow from '@/components/forms/EditPasswordFormRow';
 import EditUsernameFormRow from '@/components/forms/EditUsernameFormRow';
 import EmailDomainField from '@/components/forms/EmailDomainField';
+import FormInput from '@/components/forms/FormInput';
 import MultiValueFormRow from '@/components/forms/MultiValueFormRow';
 import RemovableSection from '@/components/forms/RemovableSection';
 import AddFieldMenu from '@/components/items/AddFieldMenu';
@@ -528,9 +529,9 @@ const ItemAddEditForm: React.FC = () => {
                           onFetchFromWebsite={() => void fetchLogoFromWebsite()}
                         />
                         <div className="flex-1 min-w-0">
-                          <input type="text" id="service-name" autoComplete="off" className={EDIT_INPUT_CLASSES} value={edit.ServiceName} placeholder={t('items.addEdit.serviceNamePlaceholder')} autoCapitalize="off" autoCorrect="off" onChange={(e) => {
+                          <FormInput id="service-name" value={edit.ServiceName} placeholder={t('items.addEdit.serviceNamePlaceholder')} onValueChange={(next) => {
                             setNameError('');
-                            update(current => ({ ...current, ServiceName: e.target.value }));
+                            update(current => ({ ...current, ServiceName: next }));
                           }} />
                           {nameError.length > 0 && <div className="validation-message text-red-600 dark:text-red-400 text-sm mt-1">{nameError}</div>}
                           <FolderSelector selectedFolder={edit.FolderId ? { Id: edit.FolderId, ManifestId: edit.ManifestId } : null} onSelectedFolderChange={folder => update(current => setFolder(current, folder, dbContext.sqliteClient?.getPersonalManifestId() ?? null))} />

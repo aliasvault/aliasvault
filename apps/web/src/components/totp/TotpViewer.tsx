@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import Card from '@/components/shared/Card';
 import SectionTitle from '@/components/shared/SectionTitle';
+import Text from '@/components/shared/Text';
 import { useClipboardCopy } from '@/hooks/useClipboardCopy';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -84,7 +85,7 @@ const TotpViewer: React.FC<TotpViewerProps> = ({ totpCodes, item }) => {
 
       {totpCodes.length === 0 ? (
         <div className="flex flex-col justify-center">
-          <p className="text-gray-500 dark:text-gray-400">{t('totp.viewer.noTotpCodesMessage')}</p>
+          <Text variant="muted">{t('totp.viewer.noTotpCodesMessage')}</Text>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 mt-4">

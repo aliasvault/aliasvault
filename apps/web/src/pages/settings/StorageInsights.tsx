@@ -5,11 +5,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
-import PageHeader from '@/components/shared/PageHeader';
+import SectionTitle from '@/components/shared/SectionTitle';
 import SortableTable, { SortableTableColumn, SortableTableRow, type TableColumn } from '@/components/shared/SortableTable';
+import Text from '@/components/shared/Text';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -264,11 +266,11 @@ const StorageInsights: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t('settings.storageInsights.breadcrumbTitle') }]} title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
+      <SettingsPageHeader icon="storage" breadcrumbItems={[{ displayName: t('settings.storageInsights.breadcrumbTitle') }]} title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
 
       <PageContent>
         <Card>
-          <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t('settings.storageInsights.serverTotalTitle')}</h3>
+          <SectionTitle className="mb-2">{t('settings.storageInsights.serverTotalTitle')}</SectionTitle>
           {serverStatsFailed ? (
             <p className="text-sm text-gray-500 dark:text-gray-400">{t('common.errorGeneric')}</p>
           ) : serverStats ? (
@@ -277,7 +279,7 @@ const StorageInsights: React.FC = () => {
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('settings.storageInsights.serverTotalDescription')}</p>
             </>
           ) : (
-            <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+            <Text variant="muted">{t('common.loading')}</Text>
           )}
         </Card>
 
@@ -292,7 +294,7 @@ const StorageInsights: React.FC = () => {
               <CountTile label={t('settings.storageInsights.breakdownLogosLabel')} value={localStats.counts.LogoCount} />
             </div>
           ) : (
-            <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
+            <Text variant="muted">{t('common.loading')}</Text>
           )}
         </Card>
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 
 /**
  * Card linking to the vault reset page.
@@ -14,7 +15,7 @@ const ResetVaultSection: React.FC = () => {
 
   return (
     <Card>
-      <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{t('settings.resetVault.pageTitle')}</h3>
+      <SectionTitle className="mb-2">{t('settings.resetVault.pageTitle')}</SectionTitle>
       <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">{t('settings.resetVault.section.description')}</div>
       <Button color="danger" onClick={() => navigate('/settings/import-export/reset-vault')}>{t('settings.resetVault.pageTitle')}</Button>
     </Card>

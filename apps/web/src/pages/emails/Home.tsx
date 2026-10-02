@@ -15,6 +15,7 @@ import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
 import ResponsivePaginator from '@/components/shared/ResponsivePaginator';
+import Text from '@/components/shared/Text';
 import { getAppConfig } from '@/config/AppConfig';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
@@ -465,7 +466,7 @@ const EmailsHome: React.FC = () => {
         ) : noEmailClaims ? (
           <div className="p-4 mx-4 mt-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <div className="px-4 py-2 text-gray-400 rounded">
-              <p className="text-gray-500 dark:text-gray-400">{t('emails.home.noEmailClaimsMessage')}</p>
+              <Text variant="muted">{t('emails.home.noEmailClaimsMessage')}</Text>
             </div>
           </div>
         ) : (

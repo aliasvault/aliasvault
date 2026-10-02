@@ -1,5 +1,6 @@
 import React from 'react';
 
+import FormInput from '@/components/forms/FormInput';
 import FormLabel from '@/components/shared/FormLabel';
 
 type EditUsernameFormRowProps = {
@@ -19,7 +20,7 @@ const EditUsernameFormRow: React.FC<EditUsernameFormRowProps> = ({ id, label, va
     <FormLabel htmlFor={id}>{label}</FormLabel>
     <div className="flex">
       <div className="relative flex-grow">
-        <input type="text" id={id} autoComplete="off" className="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+        <FormInput id={id} attached="right" trailingSpace="none" value={value} onValueChange={onChange} placeholder={placeholder} />
       </div>
       <button type="button" id="generate-username-button" className="px-3 text-gray-500 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" onClick={onGenerateNewUsername}>
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
