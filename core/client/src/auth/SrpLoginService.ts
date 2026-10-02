@@ -46,12 +46,13 @@ export class SrpLoginService {
    * holds no vault content yet; the first sync writes the empty vault.
    * @param username - The username
    * @param password - The master password
+   * @param inviteCode - The registration invite code, required when public registration is disabled
    * @returns The normalized username, session tokens and key material of the new account
    * @throws {ApiRequestError} with the server's error code when the server refuses the registration
    */
-  public async register(username: string, password: string): Promise<RegistrationResult> {
+  public async register(username: string, password: string, inviteCode?: string): Promise<RegistrationResult> {
     const prepared = await SrpAuthService.prepareRegistration(username, password);
-    const token = await this.parseAuthResponse<TokenModel>(await this.post('Auth/register', prepared.request));
+    const token = await this.parseAuthResponse<TokenModel>(await this.post('Auth/register', { ...prepared.request, inviteCode }));
     const { salt, encryptionType, encryptionSettings } = prepared.request;
     return { username: prepared.request.username, token, keys: prepared.keys, derivedKey: prepared.derivedKey, derivationParams: { salt, encryptionType, encryptionSettings } };
   }
