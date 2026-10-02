@@ -23,8 +23,8 @@ import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 /**
  * One link in the account menu.
  */
-const AccountMenuLink: React.FC<{ to: string; icon: SettingsIconName; label: string; onNavigate: () => void; children?: React.ReactNode }> = ({ to, icon, label, onNavigate, children }) => (
-  <MenuItem to={to} onClick={onNavigate} icon={<SettingsIcon name={icon} className="w-5 h-5" />} label={label}>{children}</MenuItem>
+const AccountMenuLink: React.FC<{ to: string; icon: SettingsIconName; label: string; onNavigate: () => void; exact?: boolean; children?: React.ReactNode }> = ({ to, icon, label, onNavigate, exact, children }) => (
+  <MenuItem to={to} exact={exact} onClick={onNavigate} icon={<SettingsIcon name={icon} className="w-5 h-5" />} label={label}>{children}</MenuItem>
 );
 
 /**
@@ -144,7 +144,7 @@ const TopMenu: React.FC = () => {
                   <AccountMenuLink onNavigate={closeUserMenu} to="/settings/apps" icon="apps" label={t('settings.apps.pageTitle')} />
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-600 py-1">
-                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings" icon="general" label={t('common.settings')} />
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings" exact icon="general" label={t('common.settings')} />
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-600 pt-1">
                   <DbLockButton />
