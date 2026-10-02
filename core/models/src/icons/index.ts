@@ -1,12 +1,11 @@
 /**
- * Icon definitions for item types.
- * Re-exports all icon-related modules.
+ * The icon catalogs shared by all apps, generated from the SVG sources in ./svg (see README.md).
  */
 
 export {
   ItemTypeIconSvgs,
   getItemTypeIconSvg,
-  getAllIconKeys,
+  getAllItemTypeIconKeys,
 } from './ItemTypeIcons';
 
 export type {
@@ -14,11 +13,33 @@ export type {
 } from './ItemTypeIcons';
 
 export {
-  AppIconSvgs,
-  getAppIconSvg,
-  getAllAppIconKeys,
-} from './AppIcons';
+  BuiltinLogoSvgs,
+  getBuiltinLogoSvg,
+  getAllBuiltinLogoKeys,
+} from './BuiltinLogos';
 
 export type {
-  AppIconKey,
-} from './AppIcons';
+  BuiltinLogoKey,
+} from './BuiltinLogos';
+
+export {
+  UiIcons,
+} from './UiIcons';
+
+export type {
+  UiIconDefinition,
+  UiIconName,
+  UiIconNode,
+  UiIconTag,
+} from './UiIcons';
+
+export {
+  createUiIconElement,
+  uiIconSvg,
+} from './render';
+
+export type {
+  SvgDocument,
+  SvgElementLike,
+  UiIconAttributes,
+} from './render';

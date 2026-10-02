@@ -40,7 +40,7 @@ export type Item = {
 export const LogoKinds = {
   /** Fetched automatically from the item's URL; Source is the domain it came from. */
   Favicon: 'favicon',
-  /** Picked from the built-in catalog; Source is the AppIconKey and there are no image bytes. */
+  /** Picked from the built-in catalog; Source is the BuiltinLogoKey and there are no image bytes. */
   Builtin: 'builtin',
   /** Uploaded by the user; Source is the sha256 of the image, which is what makes it reusable. */
   Custom: 'custom',
