@@ -9,7 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
     "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
     "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Acest link de invitație este invalid, a expirat sau a fost deja folosit. Cere administratorului un link nou.",
     "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
     "PENDING_MIGRATIONS": "Există migrări în așteptare. Rulează „dotnet ef database update” pentru a le aplica.",
     "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.",
@@ -71,7 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Atașament șters cu succes.",
-    "fileEmpty": "{{filename}} is empty.",
+    "fileEmpty": "„{{filename}}” este gol.",
     "firefoxExpandRequired": "Pentru a încărca fișiere, folosește fereastra extinsă.",
     "openExpandedWindow": "Deschide fereastra extinsă",
     "uploadError": "Eroare la încărcarea fișierului: {{error}}",
@@ -162,8 +162,8 @@
         "welcomeMessage": "Minunat! Acum, să configurăm parola principală pentru AliasVault."
       },
       "passwordStepTitle": "Setează parola",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "Poți crea conturi noi doar cu un link de invitație. Cere administratorului serverului o invitație.",
+      "registrationDisabledTitle": "Înregistrarea utilizatorilor este dezactivată",
       "setupStepTitle": "Configurare",
       "termsAndConditionsStepTitle": "Utilizare AliasVault",
       "termsStep": {
