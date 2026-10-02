@@ -9,6 +9,7 @@
         ".": "./src/index.ts",
         "./all": "./src/all.ts",
         "./languages": "./src/languages.ts",
+        "./load": "./src/load.ts",
         "./locales/*": "./locales/*"
     },
     "scripts": {

@@ -4,7 +4,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { ALL_TRANSLATIONS } from '../all';
-import { DEFAULT_LANGUAGE, LANGUAGE_CODES, LANGUAGES, UI_LANGUAGES, loadTranslations } from '../index';
+import { DEFAULT_LANGUAGE, LANGUAGE_CODES, LANGUAGES, UI_LANGUAGES } from '../index';
+import { loadTranslations } from '../load';
 
 const localesDir = path.resolve(import.meta.dirname, '../../locales');
 
