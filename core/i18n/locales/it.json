@@ -733,8 +733,7 @@
     "history": "Cronologia",
     "home": {
       "alphabeticalOption": "Alfabetico",
-      "buttonLocationText": "pulsante nell'angolo in alto a destra.",
-      "createFirstItemText": "Crea le tue prime credenziali utilizzando il",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Questa cartella è vuota.",
       "failedToCreateFolder": "Non è stato possibile creare la cartella.",
       "failedToDeleteFolder": "Eliminazione della cartella non riuscita",
@@ -744,8 +743,6 @@
       "importButtonText": "Importa da KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Se in precedenza hai usato un gestore di password diverso, puoi importare le tue credenziali da esso.",
       "loadingMore": "Caricamento di altri risultati...",
-      "newAliasButtonText": "\"+ Nuovo Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Ancora nessun articolo",
       "pageDescription": "Trova tutte le tue credenziali qui sotto.",
       "sortOrderLabel": "Ordina per",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Creazione nuovo alias...",
       "namePlaceholderCard": "Ad es. Mastercard",
       "namePlaceholderNote": "Ad es. Dettagli del Passaporto",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nuovo",
       "typeCard": "Carta",
       "typeLogin": "Accesso"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Usa Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Attivo su tutti i siti (a meno che non sia disabilitato sotto)",
     "advancedOptions": "Opzioni avanzate",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Imposta l'intervallo di età predefinito per generare nuove identità. Ciò influisce sulla data di nascita assegnata all'identità generata.",
       "aliasGenerationGenderDescription": "Imposta la preferenza di genere predefinita per generare nuove identità.",
       "aliasGenerationLanguageDescription": "Imposta la lingua predefinita che verrà utilizzata per generare nuove identità.",
-      "aliasSettingsTitle": "Impostazioni Generatore Identità",
       "appLanguageDescription": "Imposta la lingua per l'interfaccia dell'applicazione.",
       "appLanguageTitle": "Lingua dell'Applicazione",
       "autoEmailRefreshLabel": "Aggiorna automaticamente i contenuti delle email quando ne arrivano di nuove",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Domini Pubblici"
     },
     "globalSettings": "Impostazioni globali",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Generatore di identità",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Imposta la fascia di età per generare nuove identità.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Disabilitazione dell'autenticazione a due fattori non riuscita.",
         "pageDescription": "Disabilitare l'autenticazione a due fattori significa che potrai accedere solo con la tua password.",
         "pageTitle": "Disabilita l'autenticazione a due fattori",
-        "statusMessage": "L'autenticazione a due fattori è attualmente abilitata. Disabilitala per poter accedere alla tua cassaforte solo con la password.",
         "twoFactorDisabledSuccess": "L'autenticazione a due fattori è ora disabilitata con successo.",
-        "twoFactorNotEnabled": "L'autenticazione a due fattori non è abilitata.",
-        "warningMessage": "Attenzione: dopo aver disabilitato l'autenticazione a due fattori, qualsiasi app di autenticazione configurata non funzionerà. Quando si desidera riabilitare l'autenticazione a due fattori si dovrà configurare nuovamente le app di autenticazione."
+        "twoFactorNotEnabled": "L'autenticazione a due fattori non è abilitata."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Attivazione dell'autenticazione a due fattori non riuscita.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "L'autenticazione a due fattori è attualmente disabilitata. Al fine di migliorare la sicurezza del tuo account, ti consigliamo di attivarla.",
-        "enabledMessage": "L'autenticazione a due fattori non è abilitata."
+        "enabledMessage": "L'autenticazione a due fattori non è abilitata.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Seleziona la lingua",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Configurare l'URL del server AliasVault per le istanze self-hosted",
     "serverUrl": "URL del server",
     "serverVersion": "Versione server",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Impostazioni specifiche per sito",
     "storageInsights": {
       "breadcrumbTitle": "Analisi archiviazione",
