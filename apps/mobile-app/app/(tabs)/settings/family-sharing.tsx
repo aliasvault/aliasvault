@@ -4,11 +4,14 @@ import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifest
 import { SharingService } from '@aliasvault/client/sharing/SharingService';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import { Ionicons } from '@expo/vector-icons';
-import { Redirect } from 'expo-router';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Redirect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import ContextMenu from 'react-native-context-menu-view';
 
+import { folderRoute } from '@/utils/FolderRoute';
 import { HapticsUtility } from '@/utils/HapticsUtility';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
@@ -17,7 +20,7 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { FolderIcon } from '@/components/folders/FolderIcon';
-import { FolderModal } from '@/components/folders/FolderModal';
+import { SharedVaultModal } from '@/components/sharing/SharedVaultModal';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -42,6 +45,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const colors = useColors();
   const webApi = useWebApi();
   const { t } = useTranslation();
+  const router = useRouter();
   const { username } = useApp();
   const { sqliteClient } = useDb();
   const { isEnabled, isLoaded } = useCapabilityContext();
@@ -56,7 +60,7 @@ export default function FamilySharingScreen(): React.ReactNode {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
   const [isRefreshing, setIsRefreshing] = useMinDurationLoading(false, 200);
   const [expandedRosters, setExpandedRosters] = useState<Record<string, boolean>>({});
-  const [newVaultNames, setNewVaultNames] = useState<Record<string, string>>({});
+  const [pendingVaultCreate, setPendingVaultCreate] = useState<GroupInfo | null>(null);
   const [pendingVaultRename, setPendingVaultRename] = useState<{ group: GroupInfo; manifest: SharedManifestInfo } | null>(null);
   const [invitationNames, setInvitationNames] = useState<Record<string, string>>({});
 
@@ -155,18 +159,17 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   /**
-   * Create another shared manifest for the family. The sync that follows pushes it to the server.
-   * @param group - the family to create it for.
+   * Create another shared manifest for the family picked in the create modal. The sync that follows pushes it to the server.
+   * @param name - the new vault's name.
    */
-  const createSharedVault = (group: GroupInfo): Promise<void> => {
-    const name = (newVaultNames[group.groupId] ?? '').trim();
-    if (name.length === 0) {
+  const createSharedVault = (name: string): Promise<void> => {
+    const group = pendingVaultCreate;
+    if (!group) {
       return Promise.resolve();
     }
 
     return run(async () => {
       await runSharingOperation('createSharedManifest', { groupId: group.groupId, name }, familySharingText.errors.createVaultFailed);
-      setNewVaultNames(previous => ({ ...previous, [group.groupId]: '' }));
       await syncVault();
     }, familySharingText.errors.createVaultFailed);
   };
@@ -212,6 +215,14 @@ export default function FamilySharingScreen(): React.ReactNode {
    * @param manifest - the shared manifest.
    */
   const vaultLabel = (manifest: SharedManifestInfo): string => vaultNames[manifest.manifestId.toLowerCase()] ?? familySharingText.sharedVault;
+
+  /**
+   * Open the shared manifest's folder in the items tab.
+   */
+  const openVault = (manifest: SharedManifestInfo): void => {
+    const folderId = manifest.manifestId.toLowerCase();
+    router.push(folderRoute({ Id: folderId, ManifestId: folderId }));
+  };
 
   /**
    * Ask before taking a member's access away, or before giving up one's own.
@@ -285,6 +296,22 @@ export default function FamilySharingScreen(): React.ReactNode {
   };
 
   const styles = StyleSheet.create({
+    addButton: {
+      alignItems: 'center',
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderStyle: 'dashed',
+      borderWidth: 2,
+      flexDirection: 'row',
+      gap: 8,
+      justifyContent: 'center',
+      paddingVertical: 12,
+    },
+    addButtonText: {
+      color: colors.textMuted,
+      fontSize: 14,
+      fontWeight: '600',
+    },
     actionText: {
       color: colors.primary,
       fontSize: 14,
@@ -346,23 +373,6 @@ export default function FamilySharingScreen(): React.ReactNode {
       fontSize: 16,
       fontWeight: '600',
     },
-    createInput: {
-      backgroundColor: colors.background,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      color: colors.text,
-      flex: 1,
-      fontSize: 14,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    },
-    createRow: {
-      alignItems: 'center',
-      flexDirection: 'row',
-      gap: 12,
-      marginTop: 10,
-    },
     disabled: {
       opacity: 0.5,
     },
@@ -402,6 +412,14 @@ export default function FamilySharingScreen(): React.ReactNode {
     memberText: {
       flex: 1,
     },
+    moreButton: {
+      alignItems: 'center',
+      height: 44,
+      justifyContent: 'center',
+      marginRight: -10,
+      marginVertical: -10,
+      width: 44,
+    },
     mutedText: {
       color: colors.textMuted,
       fontSize: 13,
@@ -414,6 +432,12 @@ export default function FamilySharingScreen(): React.ReactNode {
       fontSize: 15,
       fontWeight: '600',
       marginBottom: 8,
+    },
+    vaultTitleRow: {
+      alignItems: 'center',
+      flex: 1,
+      flexDirection: 'row',
+      gap: 8,
     },
   });
 
@@ -452,6 +476,28 @@ export default function FamilySharingScreen(): React.ReactNode {
       <ThemedText style={[styles.actionText, destructive && styles.actionTextDestructive]}>{label}</ThemedText>
     </TouchableOpacity>
   );
+
+  /**
+   * The vault's admin actions, behind a "more" button so the title row itself stays tappable.
+   */
+  const renderVaultMenu = (group: GroupInfo, manifest: SharedManifestInfo, canRename: boolean): React.ReactNode => {
+    const renameAction = { title: t('items.folders.editFolder'), systemIcon: Platform.select({ ios: 'pencil', default: 'baseline_edit' }) };
+    const deleteAction = { title: familySharingText.deleteVault, systemIcon: Platform.select({ ios: 'trash', default: 'baseline_delete' }), destructive: true };
+    const actions = canRename ? [renameAction, deleteAction] : [deleteAction];
+
+    return (
+      <ContextMenu
+        dropdownMenuMode
+        disabled={busy}
+        actions={actions}
+        onPress={(event) => (actions[event.nativeEvent.index] === renameAction ? setPendingVaultRename({ group, manifest }) : confirmVaultDelete(group, manifest))}
+      >
+        <View style={[styles.moreButton, busy && styles.disabled]} accessible accessibilityRole="button" accessibilityLabel={t('common.settings')}>
+          <Ionicons name={Platform.OS === 'ios' ? 'ellipsis-horizontal-circle' : 'ellipsis-vertical'} size={22} color={colors.textMuted} />
+        </View>
+      </ContextMenu>
+    );
+  };
 
   return (
     <ThemedContainer>
@@ -529,10 +575,21 @@ export default function FamilySharingScreen(): React.ReactNode {
                   {group.manifests.map(manifest => (
                     <View key={manifest.manifestId} style={styles.card}>
                       <View style={styles.cardHeader}>
-                        <ThemedText style={styles.cardTitle} numberOfLines={1}>{vaultLabel(manifest)}</ThemedText>
+                        {/* The shared manifest's folder exists in this vault once the manifest itself does. */}
+                        {vaultNames[manifest.manifestId.toLowerCase()] !== undefined ? (
+                          <TouchableOpacity style={styles.vaultTitleRow} onPress={() => openVault(manifest)} activeOpacity={0.6} hitSlop={{ top: 10, bottom: 10 }} accessibilityRole="link">
+                            <FolderIcon isShared size={20} color={colors.tint} />
+                            <ThemedText style={styles.cardTitle} numberOfLines={1}>{vaultLabel(manifest)}</ThemedText>
+                            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                          </TouchableOpacity>
+                        ) : (
+                          <View style={styles.vaultTitleRow}>
+                            <FolderIcon isShared size={20} color={colors.tint} />
+                            <ThemedText style={styles.cardTitle} numberOfLines={1}>{vaultLabel(manifest)}</ThemedText>
+                          </View>
+                        )}
                         {/* Renaming encrypts the name with the folder's key, so it takes a member who holds it. */}
-                        {canAdminister && holdsManifestKey(manifest, myUserId) && renderAction(t('items.folders.editFolder'), () => setPendingVaultRename({ group, manifest }))}
-                        {canAdminister && renderAction(familySharingText.deleteVault, () => confirmVaultDelete(group, manifest), true)}
+                        {canAdminister && renderVaultMenu(group, manifest, holdsManifestKey(manifest, myUserId))}
                       </View>
 
                       {/* Inviting somebody encrypts this folder's key for them, which an admin who holds no grant on it cannot do. */}
@@ -558,21 +615,10 @@ export default function FamilySharingScreen(): React.ReactNode {
 
                   {/* Creating another shared manifest. */}
                   {canAdminister && (
-                    <View style={styles.card}>
-                      <ThemedText style={styles.cardTitle}>{familySharingText.createSharedVault}</ThemedText>
-                      <View style={styles.createRow}>
-                        <TextInput
-                          style={styles.createInput}
-                          value={newVaultNames[group.groupId] ?? ''}
-                          onChangeText={text => setNewVaultNames(previous => ({ ...previous, [group.groupId]: text }))}
-                          placeholder={familySharingText.vaultNamePlaceholder}
-                          placeholderTextColor={colors.textMuted}
-                          editable={!busy}
-                          onSubmitEditing={() => createSharedVault(group)}
-                        />
-                        {renderAction(familySharingText.create, () => createSharedVault(group))}
-                      </View>
-                    </View>
+                    <TouchableOpacity style={[styles.addButton, busy && styles.disabled]} onPress={() => setPendingVaultCreate(group)} disabled={busy} activeOpacity={0.7}>
+                      <MaterialIcons name="add" size={24} color={colors.textMuted} />
+                      <ThemedText style={styles.addButtonText}>{familySharingText.createSharedVault}</ThemedText>
+                    </TouchableOpacity>
                   )}
                 </View>
               );
@@ -581,12 +627,18 @@ export default function FamilySharingScreen(): React.ReactNode {
         )}
       </ThemedScrollView>
 
-      <FolderModal
+      <SharedVaultModal
+        isOpen={pendingVaultCreate !== null}
+        onClose={() => setPendingVaultCreate(null)}
+        onSave={createSharedVault}
+        mode="create"
+      />
+      <SharedVaultModal
         isOpen={pendingVaultRename !== null}
         onClose={() => setPendingVaultRename(null)}
         onSave={renameSharedVault}
         initialName={pendingVaultRename ? vaultLabel(pendingVaultRename.manifest) : ''}
-        mode="edit"
+        mode="rename"
       />
     </ThemedContainer>
   );

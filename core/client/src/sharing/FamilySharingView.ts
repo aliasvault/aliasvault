@@ -40,12 +40,14 @@ export const familySharingText = {
   /** Confirmation for leaving a shared vault. */
   leaveVaultConfirm: (vault: string): string => `Leave “${vault}”? You lose access to it, but stay in the family.`,
   cannotInviteWithoutAccess: 'You do not have access to this vault, so you cannot invite anyone to it. Ask a member who has access to invite you first.',
+  vaultName: 'Vault name',
   vaultNamePlaceholder: 'Vault name, for example Streaming',
+  renameVault: 'Rename vault',
   /** Notice after an invitation was sent. */
   invitationSent: (username: string): string => `Invitation sent to ${username}.`,
   /** Confirmation for taking a member's access away. */
   revokeAccessConfirm: (username: string, vault: string): string => `Take ${username} out of “${vault}”? They lose access to it right away, but stay in the family.`,
-  revokeAccessWarning: 'They keep any copy of this vault they already downloaded. Change the passwords in it that you do not want them to keep using.',
+  revokeAccessWarning: 'They may have already seen or copied the passwords in it. Change any you do not want them to keep using.',
   deleteVault: 'Delete vault',
   /** Confirmation for deleting a shared vault. */
   deleteVaultConfirm: (vault: string): string => `Permanently delete “${vault}”? Every member of the family loses this vault and everything in it. This cannot be undone.`,

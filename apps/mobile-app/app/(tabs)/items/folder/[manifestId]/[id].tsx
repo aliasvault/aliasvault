@@ -26,6 +26,7 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderBreadcrumb } from '@/components/folders/FolderBreadcrumb';
+import { FolderHeaderTitle } from '@/components/folders/FolderHeaderTitle';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill } from '@/components/folders/FolderPill';
 import { AddItemFab } from '@/components/items/AddItemFab';
@@ -302,6 +303,7 @@ export default function FolderViewScreen(): React.ReactNode {
 
   // A virtual folder (e.g. shared manifest) is not editable or deletable here.
   const isVirtualFolder = multiManifestRendering.isVirtualFolder(folderRef);
+  const isShared = isSharedFolder(folderRef, personalManifestId);
 
   /**
    * Set up header with folder name and edit/delete buttons.
@@ -309,6 +311,10 @@ export default function FolderViewScreen(): React.ReactNode {
   useEffect(() => {
     navigation.setOptions({
       title: folder?.Name || t('items.folders.folder'),
+      /**
+       * Folder icon and name, marked as shared for a shared vault folder.
+       */
+      headerTitle: (): React.ReactNode => <FolderHeaderTitle name={folder?.Name || t('items.folders.folder')} isShared={isShared} />,
       /**
        * Header right buttons for edit and delete.
        */
@@ -337,7 +343,7 @@ export default function FolderViewScreen(): React.ReactNode {
         </View>
       )),
     });
-  }, [navigation, folder?.Name, isVirtualFolder, colors.primary, colors.destructive, t]);
+  }, [navigation, folder?.Name, isVirtualFolder, isShared, colors.primary, colors.destructive, t]);
 
   /**
    * Delete an item (move to trash).
