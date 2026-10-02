@@ -111,7 +111,7 @@ export default function SettingsLayout(): React.ReactNode {
       <Stack.Screen
         name="security/index"
         options={{
-          title: t('settings.security'),
+          title: t('settings.accountSecurity'),
           headerBackTitle: t('common.settings'),
           ...defaultHeaderOptions,
         }}

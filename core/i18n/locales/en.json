@@ -1224,6 +1224,7 @@
     },
     "globalSettings": "Global Settings",
     "groups": {
+      "autofill": "Autofill",
       "general": "General",
       "generators": "Generators"
     },

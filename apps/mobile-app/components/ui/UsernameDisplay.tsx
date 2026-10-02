@@ -23,8 +23,7 @@ export function UsernameDisplay(): React.ReactNode {
       borderRadius: 10,
       flexDirection: 'row',
       gap: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
+      padding: 16,
     },
     textContainer: {
       flex: 1,
