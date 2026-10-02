@@ -81,6 +81,7 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
       <div className="relative w-full px-4 py-2 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg flex items-center gap-2">
         <button
           type="button"
+          id="item-type-selector"
           onClick={() => onDropdownToggle(!showDropdown)}
           className="peer absolute inset-0 rounded-lg"
           aria-label={t('itemTypes.typeLabel')}
@@ -120,6 +121,7 @@ const ItemTypeSelector: React.FC<ItemTypeSelectorProps> = ({
               <button
                 key={option.type}
                 type="button"
+                id={`item-type-option-${option.type}`}
                 onClick={() => onTypeChange(option.type)}
                 className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
                   selectedType === option.type

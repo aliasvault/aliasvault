@@ -1,4 +1,5 @@
-import { fieldAppliesToType, FieldKey, getFieldConfigForType, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, type Item, type ItemLogo, type ItemType, ItemTypes, SystemFieldRegistry } from '@aliasvault/models/vault';
+import { switchItemTypeFields } from '@aliasvault/client/items/ItemTypeSwitch';
+import { fieldAppliesToType, FieldKey, getFieldConfigForType, getOptionalFieldsForItemType, getSystemField, getSystemFieldsForItemType, type Item, type ItemLogo, type ItemType, ItemTypes } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -35,8 +36,8 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useSaveItem } from '@/hooks/useSaveItem';
 import { VaultPushFailedError } from '@/hooks/useVaultMutate';
 import {
-  addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
-  type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
+  addCustomField, createNewItemEdit, DEFAULT_SERVICE_URL, type FieldEdit, getCustomFields, getFieldValue, getFieldValues, hasAliasValues, hasFieldValue,
+  isFieldFilledIn, type ItemEdit, itemEditFromItem, itemEditToItem, removeCustomField, reorderCustomFields, setFieldValue, setFieldValues, setFolder, updateCustomField,
 } from '@/models/ItemEdit';
 import { waitForMinimumDuration } from '@/utils/Delay';
 import { generateAliasEmail, generateIdentity, generateRandomEmail, generateUsername, type GeneratedAliasData } from '@/utils/IdentityGenerator';
@@ -98,6 +99,7 @@ const ItemAddEditForm: React.FC = () => {
   const originalTotpCodeIds = useRef<string[]>([]);
   const originalAttachmentIds = useRef<string[]>([]);
   const lastGenerated = useRef<GeneratedAliasData | null>(null);
+  const typeSwitchStash = useRef<Record<string, FieldEdit>>({});
   const [storedLogo, setStoredLogo] = useState<ItemLogo | undefined>(undefined);
   const [logoBytes, setLogoBytes] = useState<Item['Logo']>(undefined);
 
@@ -146,18 +148,15 @@ const ItemAddEditForm: React.FC = () => {
   }, [dbContext.sqliteClient, webApi]);
 
   /**
-   * Switch the item type, dropping the fields that do not apply to the new type.
+   * Switch the item type. Fields the new type does not have are stashed, so switching back restores them.
    */
   const handleItemTypeChange = useCallback(async (current: ItemEdit, newType: ItemType): Promise<ItemEdit> => {
     if (current.ItemType === newType) {
       return current;
     }
-    let next: ItemEdit = { ...current, ItemType: newType };
-    for (const definition of Object.values(SystemFieldRegistry)) {
-      if (!fieldAppliesToType(definition, newType)) {
-        next = setFieldValue(next, definition.FieldKey, '');
-      }
-    }
+    const switched = switchItemTypeFields(Object.fromEntries(current.Fields.map(f => [f.FieldKey, f])), typeSwitchStash.current, newType, isFieldFilledIn);
+    typeSwitchStash.current = switched.stash;
+    let next: ItemEdit = { ...current, ItemType: newType, Fields: Object.values(switched.values) };
     /**
      * Whether a field key applies to the new type.
      */
@@ -165,7 +164,7 @@ const ItemAddEditForm: React.FC = () => {
       const definition = getSystemField(fieldKey);
       return !definition || fieldAppliesToType(definition, newType);
     };
-    setManuallyAddedFields(prev => new Set([...prev].filter(applies)));
+    setManuallyAddedFields(prev => new Set([...[...prev].filter(applies), ...switched.restored]));
     setInitiallyVisibleFields(prev => new Set([...prev].filter(applies)));
 
     if (newType === ItemTypes.Alias && !hasAliasValues(next)) {
@@ -188,6 +187,7 @@ const ItemAddEditForm: React.FC = () => {
      */
     const initialize = async (): Promise<void> => {
       setLoading(true);
+      typeSwitchStash.current = {};
       setManuallyAddedFields(new Set());
       setInitiallyVisibleFields(new Set());
       setPasskeyMarkedForDeletion(false);

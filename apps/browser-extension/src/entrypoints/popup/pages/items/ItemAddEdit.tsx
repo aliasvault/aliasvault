@@ -2,6 +2,7 @@ import { scopedKey } from '@aliasvault/client/database/ItemRef';
 import { manifestForItemIn } from '@aliasvault/client/database/ItemRef';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
+import { switchItemTypeFieldValues, type FormFieldValue } from '@aliasvault/client/items/ItemTypeSwitch';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { FieldCategories, FieldTypes, ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@aliasvault/models/vault';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -58,6 +59,7 @@ const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
 type PersistedFormData = {
   item: Item | null;
   fieldValues: Record<string, string | string[]>;
+  typeSwitchStash?: Record<string, FormFieldValue>;
   customFields: CustomFieldDefinition[];
   totpEditorState?: {
     isAddFormVisible: boolean;
@@ -117,6 +119,7 @@ const ItemAddEdit: React.FC = () => {
 
   // Form state for dynamic fields
   const [fieldValues, setFieldValues] = useState<Record<string, string | string[]>>({});
+  const [typeSwitchStash, setTypeSwitchStash] = useState<Record<string, FormFieldValue>>({});
 
   // Custom field definitions (temporary until saved)
   const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>([]);
@@ -188,6 +191,9 @@ const ItemAddEdit: React.FC = () => {
     if (data.fieldValues) {
       setFieldValues(data.fieldValues);
     }
+    if (data.typeSwitchStash) {
+      setTypeSwitchStash(data.typeSwitchStash);
+    }
     if (data.customFields) {
       setCustomFields(data.customFields);
     }
@@ -221,6 +227,7 @@ const ItemAddEdit: React.FC = () => {
     formData: {
       item,
       fieldValues,
+      typeSwitchStash,
       customFields,
       totpEditorState,
       show2FA,
@@ -962,8 +969,7 @@ const ItemAddEdit: React.FC = () => {
   }, []);
 
   /**
-   * Handle item type change from dropdown.
-   * Clears field values that don't apply to the new item type.
+   * Handle item type change from dropdown. Fields the new type does not have are stashed, so switching back restores them.
    */
   const handleTypeChange = useCallback((newType: ItemType) => {
     if (!item) {
@@ -971,56 +977,29 @@ const ItemAddEdit: React.FC = () => {
     }
 
     const oldType = item.ItemType;
+    let nextValues = fieldValues;
 
-    // Clear field values that don't apply to the new type
-    if (!isEditMode && oldType !== newType) {
-      setFieldValues(prev => {
-        const newValues: Record<string, string | string[]> = {};
-        Object.entries(prev).forEach(([key, value]) => {
-          // Check if this field applies to the new type
-          const systemField = getSystemField(key);
-          if (systemField) {
-            // Keep the field only if it applies to the new type
-            if (fieldAppliesToType(systemField, newType)) {
-              newValues[key] = value;
-            }
-          } else {
-            // Custom fields are always kept
-            newValues[key] = value;
-          }
-        });
-        return newValues;
-      });
+    if (oldType !== newType) {
+      const switched = switchItemTypeFieldValues(fieldValues, typeSwitchStash, newType);
+      nextValues = switched.values;
+      setFieldValues(switched.values);
+      setTypeSwitchStash(switched.stash);
 
-      // Clear manually added fields that don't apply to new type
-      setManuallyAddedFields(prev => {
-        const newSet = new Set<string>();
-        prev.forEach(fieldKey => {
-          const systemField = getSystemField(fieldKey);
-          if (!systemField || fieldAppliesToType(systemField, newType)) {
-            newSet.add(fieldKey);
-          }
-        });
-        return newSet;
-      });
-
-      // Clear initially visible fields that don't apply to new type
-      setInitiallyVisibleFields(prev => {
-        const newSet = new Set<string>();
-        prev.forEach(fieldKey => {
-          const systemField = getSystemField(fieldKey);
-          if (!systemField || fieldAppliesToType(systemField, newType)) {
-            newSet.add(fieldKey);
-          }
-        });
-        return newSet;
-      });
+      /**
+       * Whether a field key applies to the new type.
+       */
+      const applies = (fieldKey: string): boolean => {
+        const systemField = getSystemField(fieldKey);
+        return !systemField || fieldAppliesToType(systemField, newType);
+      };
+      setManuallyAddedFields(prev => new Set([...[...prev].filter(applies), ...switched.restored]));
+      setInitiallyVisibleFields(prev => new Set([...prev].filter(applies)));
     }
 
     // Reset alias generated flag, so alias fields will be filled (again) if they are shown by the new type
     aliasGeneratedRef.current = false;
     aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias &&
-      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((fieldValues[key] as string) ?? '').trim());
+      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((nextValues[key] as string) ?? '').trim());
 
     /*
      * Update email field mode based on new item type
@@ -1035,7 +1014,7 @@ const ItemAddEdit: React.FC = () => {
     });
 
     setShowTypeDropdown(false);
-  }, [item, isEditMode, fieldValues]);
+  }, [item, isEditMode, fieldValues, typeSwitchStash]);
 
   /**
    * Remove notes section - clears value and removes from manually added fields.

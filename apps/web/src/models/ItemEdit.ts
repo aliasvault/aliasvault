@@ -176,9 +176,13 @@ export function setFieldValues(edit: ItemEdit, fieldKey: string, values: string[
  */
 export function hasFieldValue(edit: ItemEdit, fieldKey: string): boolean {
   const field = getField(edit, fieldKey);
-  if (!field) {
-    return false;
-  }
+  return field ? isFieldFilledIn(field) : false;
+}
+
+/**
+ * Whether a field edit has a non-empty value.
+ */
+export function isFieldFilledIn(field: FieldEdit): boolean {
   return field.IsMultiValue ? field.Values.some(v => v.length > 0) : field.Value.length > 0;
 }
 

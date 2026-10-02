@@ -1,6 +1,7 @@
 import { manifestForItemIn, type ItemRef } from '@aliasvault/client/database/ItemRef';
 import { FaviconService } from '@aliasvault/client/items/FaviconService';
 import { usesWebsiteLogo } from '@aliasvault/client/items/ItemLogoView';
+import { switchItemTypeFieldValues, type FormFieldValue } from '@aliasvault/client/items/ItemTypeSwitch';
 import * as RustCore from '@aliasvault/client/rust/RustCore';
 import { IdentityHelperUtils } from '@aliasvault/models/identity';
 import { ItemTypes, isItemType, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType, FieldCategories, FieldTypes } from '@aliasvault/models/vault';
@@ -112,6 +113,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   const [manuallyAddedFields, setManuallyAddedFields] = useState<Set<string>>(new Set());
   const [initiallyVisibleFields, setInitiallyVisibleFields] = useState<Set<string>>(new Set());
   const aliasGeneratedRef = useRef(false);
+  const typeSwitchStashRef = useRef<Record<string, FormFieldValue>>({});
   // Set when an existing item without alias identity values is switched to the alias type, so the identity gets generated
   const aliasRequestedByTypeChangeRef = useRef(false);
   const [lastGeneratedValues, setLastGeneratedValues] = useState<{
@@ -588,7 +590,7 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
   }, [isEditMode, aliasFieldsShownByDefault, item, dbContext?.sqliteClient, generateRandomAlias]);
 
   /**
-   * Handle item type change.
+   * Handle item type change. Fields the new type does not have are stashed, so switching back restores them.
    */
   const handleTypeChange = useCallback((newType: ItemType) => {
     if (!item) {
@@ -596,56 +598,31 @@ export default function AddEditItemScreen({ editRef }: AddEditItemScreenProps): 
     }
 
     const oldType = item.ItemType;
+    let nextValues = fieldValues;
 
-    // Clear field values that don't apply to the new type
     if (oldType !== newType) {
-      setFieldValues(prev => {
-        const newValues: Record<string, string | string[]> = {};
-        Object.entries(prev).forEach(([key, value]) => {
-          const systemField = getSystemField(key);
-          if (systemField) {
-            if (fieldAppliesToType(systemField, newType)) {
-              newValues[key] = value;
-            }
-          } else {
-            // Custom fields are always kept
-            newValues[key] = value;
-          }
-        });
-        return newValues;
-      });
+      const switched = switchItemTypeFieldValues(fieldValues, typeSwitchStashRef.current, newType);
+      nextValues = switched.values;
+      typeSwitchStashRef.current = switched.stash;
+      setFieldValues(switched.values);
 
-      // Clear manually added fields that don't apply to new type
-      setManuallyAddedFields(prev => {
-        const newSet = new Set<string>();
-        prev.forEach(fieldKey => {
-          const systemField = getSystemField(fieldKey);
-          if (!systemField || fieldAppliesToType(systemField, newType)) {
-            newSet.add(fieldKey);
-          }
-        });
-        return newSet;
-      });
-
-      // Clear initially visible fields that don't apply to new type (edit mode)
+      /**
+       * Whether a field key applies to the new type.
+       */
+      const applies = (fieldKey: string): boolean => {
+        const systemField = getSystemField(fieldKey);
+        return !systemField || fieldAppliesToType(systemField, newType);
+      };
+      setManuallyAddedFields(prev => new Set([...[...prev].filter(applies), ...switched.restored]));
       if (isEditMode) {
-        setInitiallyVisibleFields(prev => {
-          const newSet = new Set<string>();
-          prev.forEach(fieldKey => {
-            const systemField = getSystemField(fieldKey);
-            if (!systemField || fieldAppliesToType(systemField, newType)) {
-              newSet.add(fieldKey);
-            }
-          });
-          return newSet;
-        });
+        setInitiallyVisibleFields(prev => new Set([...prev].filter(applies)));
       }
     }
 
     // Reset alias generated flag
     aliasGeneratedRef.current = false;
     aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias &&
-      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((fieldValues[key] as string) ?? '').trim());
+      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((nextValues[key] as string) ?? '').trim());
 
     setItem({
       ...item,
