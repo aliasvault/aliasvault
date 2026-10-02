@@ -733,8 +733,7 @@
     "history": "Geschiedenis",
     "home": {
       "alphabeticalOption": "Alfabetisch",
-      "buttonLocationText": "knop rechtsboven.",
-      "createFirstItemText": "Maak je eerste item aan met de",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Deze map is leeg.",
       "failedToCreateFolder": "Map aanmaken is mislukt.",
       "failedToDeleteFolder": "Map verwijderen is mislukt.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importeren van KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Als je al een andere wachtwoordmanager gebruikt, kun je je logingegevens importeren.",
       "loadingMore": "Meer laden...",
-      "newAliasButtonText": "\"+ Nieuwe Alias\"",
-      "newAliasButtonTextMobile": "+",
       "noItemsTitle": "Nog geen items",
       "pageDescription": "Vind al je items hieronder.",
       "sortOrderLabel": "Sorteervolgorde",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Nieuwe alias wordt aangemaakt...",
       "namePlaceholderCard": "Bijv. Mastercard",
       "namePlaceholderNote": "Bijv. Paspoort",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nieuw",
       "typeCard": "Creditcard",
       "typeLogin": "Login"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Gebruik browser passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationGenderDescription": "Stel de standaard geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationLanguageDescription": "Stel de standaardtaal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
-      "aliasSettingsTitle": "Identiteit generator instellingen",
       "appLanguageDescription": "Stel de taal in voor de applicatie interface.",
       "appLanguageTitle": "Taal van de applicatie",
       "autoEmailRefreshLabel": "Automatisch e-mailinhoud verversen wanneer nieuwe berichten aankomen",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Publieke Domeinen"
     },
     "globalSettings": "Globale Instellingen",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identiteit generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Tweestapsverificatie uitschakelen mislukt.",
         "pageDescription": "Als je tweestapsverificatie uitschakelt, kun je inloggen en toegang krijgen tot je vault met alleen je wachtwoord.",
         "pageTitle": "Tweestapsverificatie uitschakelen",
-        "statusMessage": "Tweestapsverificatie is momenteel ingeschakeld. Je kunt het uitschakelen om inloggen met alleen je wachtwoord mogelijk te maken.",
         "twoFactorDisabledSuccess": "Tweestapsverificatie is met succes uitgeschakeld.",
-        "twoFactorNotEnabled": "Tweestapsverificatie is niet ingeschakeld.",
-        "warningMessage": "Let op: na het uitschakelen van tweestapsverificatie zal de geconfigureerde authenticator-app niet meer werken. Wanneer je tweestapsverificatie opnieuw wilt inschakelen, moet je de authenticator-app opnieuw configureren."
+        "twoFactorNotEnabled": "Tweestapsverificatie is niet ingeschakeld."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Tweestapsverificatie inschakelen mislukt.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tweestapsverificatie is momenteel uitgeschakeld. Om de beveiliging van je account te verbeteren raden wij je aan dit in te schakelen.",
-        "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld."
+        "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Selecteer taal",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
     "serverUrl": "Server URL",
     "serverVersion": "Server versie",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Site-specifieke Instellingen",
     "storageInsights": {
       "breadcrumbTitle": "Opslaggebruik",
