@@ -2,11 +2,13 @@ import { ItemFilter, type ItemFilterType } from '@aliasvault/client/items/ItemFi
 import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import FolderIcon from '@/components/folders/FolderIcon';
 import { useClickOutside } from '@/hooks/useClickOutside';
 
 type ItemFilterDropdownProps = {
   title: string;
   count?: number;
+  titleFolder?: { isShared: boolean };
   activeFilter: ItemFilterType | null;
   isRecentlyDeletedActive?: boolean;
   recentlyDeletedCount: number;
@@ -21,7 +23,7 @@ type ItemFilterDropdownProps = {
 /**
  * Page title which acts as a filter dropdown when clicked.
  */
-const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, activeFilter, isRecentlyDeletedActive = false, recentlyDeletedCount, showFoldersToggle, showFolders, titleActions, onSelectFilter, onSelectRecentlyDeleted, onToggleShowFolders }) => {
+const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, titleFolder, activeFilter, isRecentlyDeletedActive = false, recentlyDeletedCount, showFoldersToggle, showFolders, titleActions, onSelectFilter, onSelectRecentlyDeleted, onToggleShowFolders }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -61,6 +63,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, a
     <div className="relative flex items-center gap-2">
       <button ref={buttonRef} onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
         <h1 className="flex items-baseline gap-1.5 text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-5 h-5 self-center text-orange-500" />}
           <span>{title}</span>
           {count !== undefined && (
             <span className="text-base text-gray-500 dark:text-gray-400">({count})</span>

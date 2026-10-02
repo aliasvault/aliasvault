@@ -441,6 +441,7 @@ const ItemsHome: React.FC = () => {
           <ItemFilterDropdown
             title={getFilterTitle()}
             count={totalFilteredItems}
+            titleFolder={filterType === ItemFilter.All && currentFolder && currentFolderName ? { isShared: isSharedFolder(currentFolder, dbContext.sqliteClient?.getPersonalManifestId()) } : undefined}
             activeFilter={filterType}
             recentlyDeletedCount={recentlyDeletedCount}
             showFoldersToggle={!isInFolder}
