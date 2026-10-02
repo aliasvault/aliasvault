@@ -172,6 +172,11 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<BlockedIpRange> BlockedIpRanges { get; set; }
 
     /// <summary>
+    /// Gets or sets the RegistrationInvites DbSet.
+    /// </summary>
+    public DbSet<RegistrationInvite> RegistrationInvites { get; set; }
+
+    /// <summary>
     /// Gets or sets the VaultDataBuckets DbSet. These represent separately-syncable per-manifest, per-kind sync buckets. Separate from the manifest blob itself.
     /// </summary>
     public DbSet<VaultDataBucket> VaultDataBuckets { get; set; }
