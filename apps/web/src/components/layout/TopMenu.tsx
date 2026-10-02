@@ -1,55 +1,72 @@
 import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
+import { ItemTypes } from '@aliasvault/models/vault';
 import { CapabilityKeys } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
-import CreateNewIdentityWidget from '@/components/layout/CreateNewIdentityWidget';
+import QuickCreateDialog from '@/components/items/QuickCreateDialog';
 import DbLockButton from '@/components/layout/DbLockButton';
 import DbStatusIndicator from '@/components/layout/DbStatusIndicator';
+import NavBarLink from '@/components/layout/NavBarLink';
 import SearchWidget from '@/components/layout/SearchWidget';
+import SettingsIcon, { type SettingsIconName } from '@/components/settings/SettingsIcon';
+import MenuItem from '@/components/shared/MenuItem';
+import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useAuth } from '@/context/AuthContext';
 import { useCapabilities } from '@/context/CapabilityContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { useConfirmLogout } from '@/hooks/useConfirmLogout';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 
 /**
- * Class of a menu link, highlighting the active route.
- * @param isActive - whether the route is active
- * @param base - the base classes
+ * One link in the account menu.
  */
-const navLinkClass = (isActive: boolean, base: string): string => `${base} ${isActive ? 'text-primary-700 dark:text-primary-500' : ''}`;
-
-const DESKTOP_LINK = 'block text-gray-700 hover:text-primary-700 dark:text-gray-400 dark:hover:text-white';
-const DROPDOWN_LINK = 'block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white';
+const AccountMenuLink: React.FC<{ to: string; icon: SettingsIconName; label: string; onNavigate: () => void; children?: React.ReactNode }> = ({ to, icon, label, onNavigate, children }) => (
+  <MenuItem to={to} onClick={onNavigate} icon={<SettingsIcon name={icon} className="w-5 h-5" />} label={label}>{children}</MenuItem>
+);
 
 /**
- * The fixed top bar with navigation, search, quick create and user menu.
+ * The fixed top bar with navigation, search, quick create and the account menu.
  */
 const TopMenu: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { username } = useAuth();
-  const { isDarkMode, toggleTheme } = useTheme();
   const hasCapability = useCapabilities();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
+  const { isDarkMode, toggleTheme } = useTheme();
+  const confirmLogout = useConfirmLogout();
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+  const quickCreateRef = useRef<HTMLDivElement>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
+  const { reminders, hasReminders, refresh: refreshReminders } = useAccountReminders();
 
-  /**
-   * Close the menu.
-   */
-  const closeMenu = useCallback((): void => setIsMobileMenuOpen(false), []);
-  useClickOutside([menuRef, toggleRef], closeMenu, isMobileMenuOpen);
+  const closeUserMenu = useCallback((): void => setIsUserMenuOpen(false), []);
+  useClickOutside([userMenuRef, userButtonRef], closeUserMenu, isUserMenuOpen);
+
+  const closeQuickCreate = useCallback((): void => setIsQuickCreateOpen(false), []);
+  useClickOutside([quickCreateRef], closeQuickCreate, isQuickCreateOpen);
+  const openQuickCreate = useCallback((): void => setIsQuickCreateOpen(true), []);
+  useKeyboardShortcut('gc', openQuickCreate);
 
   const goHome = useCallback((): void => void navigate('/'), [navigate]);
   useKeyboardShortcut('gh', goHome);
 
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setIsQuickCreateOpen(false);
   }, [location.pathname]);
+
+  // Re-check when the account menu opens.
+  useEffect(() => {
+    if (isUserMenuOpen) {
+      void refreshReminders();
+    }
+  }, [isUserMenuOpen, refreshReminders]);
 
   return (
     <header>
@@ -66,12 +83,8 @@ const TopMenu: React.FC = () => {
 
             <div className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-col mt-4 space-x-6 text-sm font-medium lg:flex-row xl:space-x-8 lg:mt-0">
-                <NavLink to="/items" end className={({ isActive }) => navLinkClass(isActive, DESKTOP_LINK)}>
-                  {t('navigation.vault')}
-                </NavLink>
-                <NavLink to="/emails" end className={({ isActive }) => navLinkClass(isActive, DESKTOP_LINK)}>
-                  {t('emails.title')}
-                </NavLink>
+                <NavBarLink to="/items">{t('navigation.vault')}</NavBarLink>
+                <NavBarLink to="/emails">{t('emails.title')}</NavBarLink>
               </ul>
             </div>
           </div>
@@ -81,86 +94,69 @@ const TopMenu: React.FC = () => {
           </div>
 
           <div className="flex justify-end items-center lg:order-2">
-            <CreateNewIdentityWidget />
-            <DbLockButton />
             <DbStatusIndicator />
-            <button ref={toggleRef} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} type="button" id="toggleMobileMenuButton" className="items-center p-2 text-gray-500 rounded-lg md:ml-2 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" aria-expanded={isMobileMenuOpen}>
-              <span className="sr-only">{t('web.topMenu.openMenuLabel')}</span>
-              <svg className="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path></svg>
-            </button>
+            <div ref={quickCreateRef} className="relative ms-1 md:ms-2">
+              <button type="button" id="topBarQuickCreateButton" onClick={() => setIsQuickCreateOpen(!isQuickCreateOpen)} aria-expanded={isQuickCreateOpen} title={t('items.quickCreate.newAliasButtonText')} className="flex items-center justify-center h-9 w-9 md:w-auto md:px-4 rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 transition-colors">
+                <svg className="w-5 h-5 md:hidden" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={2.25} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m-7-7h14" /></svg>
+                <span className="sr-only md:not-sr-only">{t('items.quickCreate.newAliasButtonText')}</span>
+              </button>
+              {isQuickCreateOpen && <QuickCreateDialog variant="popover" initialType={ItemTypes.Login} onClose={closeQuickCreate} />}
+            </div>
+            <div className="relative ms-3 md:ms-4">
+              <button ref={userButtonRef} onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} type="button" id="userMenuButton" title={username ?? ''} aria-expanded={isUserMenuOpen} className={`flex items-center gap-2 h-9 rounded-full md:pl-0.5 md:pr-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors ${isUserMenuOpen ? 'bg-gray-100 dark:bg-gray-700' : ''}`}>
+                <span className="relative flex items-center justify-center w-9 h-9 md:w-8 md:h-8 rounded-full text-sm font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/60 dark:text-primary-300">
+                  {username?.[0]?.toUpperCase() ?? '?'}
+                  {hasReminders && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-primary-500 ring-2 ring-white dark:ring-gray-800" aria-hidden="true" />}
+                </span>
+                <span className="hidden md:block max-w-[8rem] truncate text-sm font-medium text-gray-700 dark:text-gray-200">{username}</span>
+                <svg className={`hidden md:block w-4 h-4 text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              <div ref={userMenuRef} id="userMenu" className={`absolute right-0 top-full mt-3 w-72 z-50 overflow-hidden bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600 ${isUserMenuOpen ? 'block' : 'hidden'}`}>
+                <div className="flex items-start gap-2 px-4 py-3">
+                  <div className="flex-1 min-w-0">
+                    <span className="block text-xs text-gray-500 dark:text-gray-400">{t('auth.loggedInAs')}</span>
+                    <span className="block text-sm font-semibold text-gray-900 dark:text-white break-all">{username}</span>
+                  </div>
+                  <button type="button" id="theme-toggle" onClick={toggleTheme} title={isDarkMode ? t('web.topMenu.enableLightMode') : t('web.topMenu.enableDarkMode')} className="flex-shrink-0 p-1.5 -mr-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    <span className="sr-only">{isDarkMode ? t('web.topMenu.enableLightMode') : t('web.topMenu.enableDarkMode')}</span>
+                    <SettingsIcon name={isDarkMode ? 'themeLight' : 'themeDark'} className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="lg:hidden border-t border-gray-100 dark:border-gray-600 py-1">
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/items" icon="vault" label={t('navigation.vault')} />
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/emails" icon="emails" label={t('emails.title')} />
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-600 py-1">
+                  {hasCapability(CapabilityKeys.VaultSharing) && (
+                    <AccountMenuLink onNavigate={closeUserMenu} to="/settings/family-sharing" icon="familySharing" label={familySharingText.title}>
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">{familySharingText.beta}</span>
+                    </AccountMenuLink>
+                  )}
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings/two-factor" icon="twoFactor" label={t('common.twoFactorAuthentication')}>
+                    {reminders.enableTwoFactor && (
+                      <span title={t('settings.securitySettings.twoFactor.disabledMessage')} className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                        <SettingsIcon name="warning" className="w-4 h-4" />
+                        <span className="sr-only">{t('common.disabled')}</span>
+                      </span>
+                    )}
+                  </AccountMenuLink>
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings/import-export" icon="importExport" label={t('settings.importExport')} />
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings/apps" icon="apps" label={t('settings.apps.pageTitle')} />
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-600 py-1">
+                  <AccountMenuLink onNavigate={closeUserMenu} to="/settings" icon="general" label={t('common.settings')} />
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-600 pt-1">
+                  <DbLockButton />
+                  <MenuItem id="userMenuLogoutButton" danger icon={<SettingsIcon name="logout" className="w-5 h-5" />} label={t('web.topMenu.logOut')} onClick={() => {
+                    setIsUserMenuOpen(false);
+                    void confirmLogout();
+                  }} />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div ref={menuRef} className={`absolute w-full md:w-64 top-[40px] md:top-[39px] right-0 z-50 my-4 text-base list-none bg-white rounded-b-lg divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 ${isMobileMenuOpen ? 'block' : 'hidden'}`} id="mobileMenuDropdown">
-            <ul className="lg:hidden py-1 text-gray-700 dark:text-gray-400">
-              <li>
-                <NavLink to="/items" className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('navigation.vault')}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/emails" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('emails.title')}
-                </NavLink>
-              </li>
-            </ul>
-            <div className="py-3 px-4">
-              <span className="block text-sm font-semibold text-gray-900 dark:text-white">{username}</span>
-            </div>
-            {hasCapability(CapabilityKeys.VaultSharing) && (
-              <ul className="py-1 text-gray-700 dark:text-gray-400">
-                <li>
-                  <NavLink to="/settings/family-sharing" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                    {familySharingText.title}
-                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200">
-                      {familySharingText.beta}
-                    </span>
-                  </NavLink>
-                </li>
-              </ul>
-            )}
-            <ul className="py-1 text-gray-700 dark:text-gray-400">
-              <li>
-                <NavLink to="/settings/general" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('settings.general.pageTitle')}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/settings/security" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('settings.securitySettings.pageTitle')}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/settings/storage-insights" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('settings.storageInsights.breadcrumbTitle')}
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/settings/import-export" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('settings.importExport')}
-                </NavLink>
-              </li>
-              <li className="border-t border-b border-gray-100 dark:border-gray-600">
-                <NavLink to="/settings/apps" end className={({ isActive }) => navLinkClass(isActive, DROPDOWN_LINK)}>
-                  {t('settings.apps.pageTitle')}
-                </NavLink>
-              </li>
-              <li>
-                <button id="theme-toggle" type="button" onClick={toggleTheme} className="w-full text-start py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">
-                  {isDarkMode ? t('web.topMenu.enableLightMode') : t('web.topMenu.enableDarkMode')}
-                  {isDarkMode ? (
-                    <svg id="theme-toggle-light-icon" className="w-5 h-5 align-middle inline-block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                  ) : (
-                    <svg id="theme-toggle-dark-icon" className="w-5 h-5 align-middle inline-block" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                  )}
-                </button>
-              </li>
-              <li>
-                <NavLink to="/user/logout" className={({ isActive }) => `block py-2 px-4 font-bold text-sm text-primary-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-200 dark:hover:text-white ${isActive ? 'text-primary-700 dark:text-primary-500' : ''}`}>
-                  {t('web.topMenu.logOut')}
-                </NavLink>
-              </li>
-            </ul>
-          </div>
         </div>
       </nav>
     </header>

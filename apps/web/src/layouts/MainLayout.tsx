@@ -7,7 +7,7 @@ import ClipboardCountdownBar from '@/components/layout/ClipboardCountdownBar';
 import Footer from '@/components/layout/Footer';
 import TopMenu from '@/components/layout/TopMenu';
 import ConfirmModal from '@/components/shared/ConfirmModal';
-import { AccountNudgeProvider } from '@/context/AccountNudgeContext';
+import { AccountReminderProvider } from '@/context/AccountReminderContext';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { QuickCreateProvider } from '@/context/QuickCreateContext';
@@ -87,7 +87,7 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <AccountNudgeProvider>
+    <AccountReminderProvider>
       <QuickCreateProvider>
         <ClipboardCountdownBar />
         <TopMenu />
@@ -104,7 +104,7 @@ const MainLayout: React.FC = () => {
           <ConfirmModal title={t('common.error')} message={syncError} confirmText={t('common.close')} onClose={() => void clearSyncError()} />
         )}
       </QuickCreateProvider>
-    </AccountNudgeProvider>
+    </AccountReminderProvider>
   );
 };
 

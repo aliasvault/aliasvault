@@ -10,7 +10,7 @@ import Card from '@/components/shared/Card';
 import InputTextField from '@/components/shared/InputTextField';
 import SectionTitle from '@/components/shared/SectionTitle';
 import Text from '@/components/shared/Text';
-import { useAccountNudges } from '@/context/AccountNudgeContext';
+import { useAccountReminders } from '@/context/AccountReminderContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
 
@@ -50,7 +50,7 @@ const TwoFactorEnableStep: React.FC = () => {
   const navigate = useNavigate();
   const webApi = useWebApi();
   const notifications = useNotifications();
-  const { refresh: refreshNudges } = useAccountNudges();
+  const { refresh: refreshReminders } = useAccountReminders();
   const [isLoading, setIsLoading] = useState(true);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [secret, setSecret] = useState('');
@@ -92,7 +92,7 @@ const TwoFactorEnableStep: React.FC = () => {
       const result = await webApi.post<string, { recoveryCodes: string[] }>('TwoFactorAuth/verify', code);
       notifications.addSuccessMessage(t('settings.securitySettings.enable2fa.twoFactorEnabledSuccess'), true);
       setRecoveryCodes(result.recoveryCodes);
-      void refreshNudges();
+      void refreshReminders();
     } catch (error) {
       console.error('Failed to verify 2FA code:', error);
       notifications.addErrorMessage(t('settings.securitySettings.enable2fa.failedToEnable2Fa'), true);
