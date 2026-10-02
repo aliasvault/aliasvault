@@ -135,16 +135,16 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return error;
         }
 
-        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Login);
-
         // If 2FA is required, return that status and no JWT token yet.
         if (user!.TwoFactorEnabled)
         {
+            await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Login);
             return Ok(new ValidateLoginResponse(true, string.Empty, null));
         }
 
         // Reset failed login attempts.
         await userManager.ResetAccessFailedCountAsync(user);
+        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Login);
 
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
         return Ok(new ValidateLoginResponse(false, serverSession!.Proof, tokenModel));
@@ -183,10 +183,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Validation of 2-FA token is successful, user is authenticated.
-        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
-
-        // Reset failed login attempts.
         await userManager.ResetAccessFailedCountAsync(user);
+        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
 
         // Generate and return the JWT token.
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
@@ -230,10 +228,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // Recovery code is valid, user is authenticated.
-        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
-
-        // Reset failed login attempts.
         await userManager.ResetAccessFailedCountAsync(user);
+        await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
 
         // Generate and return the JWT token.
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
