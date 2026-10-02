@@ -733,8 +733,7 @@
     "history": "Historie",
     "home": {
       "alphabeticalOption": "Alphabetisch",
-      "buttonLocationText": "Schaltfläche in der rechten oberen Ecke.",
-      "createFirstItemText": "Erstelle dein erstes Element mit",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Dieser Ordner ist leer.",
       "failedToCreateFolder": "Ordner konnte nicht erstellt werden.",
       "failedToDeleteFolder": "Ordner konnte nicht gelöscht werden.",
@@ -744,8 +743,6 @@
       "importButtonText": "Passwörter aus KeePass, Bitwarden, Chrome, Firefox... importieren.",
       "importItemsText": "Wenn Du zuvor einen anderen Passwort-Manager verwendet hast, kannst Du Deine Daten daraus importieren.",
       "loadingMore": "Lade mehr...",
-      "newAliasButtonText": "\"+ Neuer Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Noch keine Elemente",
       "pageDescription": "Nachfolgend findest Du alle Deine Elemente.",
       "sortOrderLabel": "Sortierreihenfolge",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Neuen Alias erstellen...",
       "namePlaceholderCard": "z. B. Mastercard",
       "namePlaceholderNote": "z.B. Pass-Informationen",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Neu",
       "typeCard": "Karte",
       "typeLogin": "Anmelden"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Browser-Passkey verwenden"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Auf allen Seiten aktiv (sofern nicht unten deaktiviert)",
     "advancedOptions": "Erweiterte Einstellungen",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Lege die standardmäßige Altersspanne für die Erstellung neuer Identitäten fest. Dies betrifft das Geburtsdatum der Identität.",
       "aliasGenerationGenderDescription": "Lege die Geschlechtspräferenz für die Erstellung neuer Identitäten fest.",
       "aliasGenerationLanguageDescription": "Lege die Sprache fest, die bei der Erstellung neuer Identitäten verwendet wird.",
-      "aliasSettingsTitle": "Einstellungen für den Identitätsgenerator",
       "appLanguageDescription": "Lege die Sprache für die Anwendung fest.",
       "appLanguageTitle": "Sprache der Anwendung",
       "autoEmailRefreshLabel": "E-Mail-Übersicht automatisch aktualisieren, wenn neue E-Mails eintreffen",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Öffentliche Domains"
     },
     "globalSettings": "Allgemeine Einstellungen",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identitätsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Lege die Altersspanne für die Erstellung neuer Identitäten fest.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Deaktivierung der Zwei-Faktor-Authentifizierung fehlgeschlagen.",
         "pageDescription": "Durch das Deaktivieren der Zwei-Faktor-Authentifizierung kannst Du Dich ausschließlich mit Deinem Passwort anmelden.",
         "pageTitle": "Zwei-Faktor-Authentifizierung deaktivieren",
-        "statusMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit aktiviert. Deaktiviere sie, um ausschließlich mit Deinem Passwort auf Deinen Tresor zugreifen zu können.",
         "twoFactorDisabledSuccess": "Die Zwei-Faktor-Authentifizierung wurde erfolgreich deaktiviert.",
-        "twoFactorNotEnabled": "Zwei-Faktor-Authentifizierung ist nicht aktiviert.",
-        "warningMessage": "Bitte beachte: Nach dem Deaktivieren der Zwei-Faktor-Authentifizierung wird der konfigurierte AliasVault-Eintrag in jeder Authentifizierungs-App nicht mehr funktionieren. Wenn Du die Zwei-Faktor-Authentifizierung wieder aktivieren möchtest, musst Du die Authentifizierungs-App(s) erneut konfigurieren."
+        "twoFactorNotEnabled": "Zwei-Faktor-Authentifizierung ist nicht aktiviert."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Aktivierung der Zwei-Faktor-Authentifizierung fehlgeschlagen.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit deaktiviert. Es wird empfohlen, diese zu aktivieren, um die Sicherheit Deines Kontos zu verbessern.",
-        "enabledMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit aktiviert."
+        "enabledMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit aktiviert.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Sprache auswählen",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "AliasVault-Server-URL für selbstgehostete Instanzen konfigurieren",
     "serverUrl": "URL des Servers",
     "serverVersion": "Server-Version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Seitenspezifische Einstellungen",
     "storageInsights": {
       "breadcrumbTitle": "Speichereinblicke",
