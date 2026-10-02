@@ -733,8 +733,7 @@
     "history": "Féach ar an stair",
     "home": {
       "alphabeticalOption": "In ord aibítre",
-      "buttonLocationText": "cnaipe sa chúinne uachtarach ar dheis.",
-      "createFirstItemText": "Cruthaigh do chéad mhír ag baint úsáide as an",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Tá an fillteán seo folamh.",
       "failedToCreateFolder": "Theip ar fhillteán a chruthú.",
       "failedToDeleteFolder": "Theip ar an bhfillteán a scriosadh.",
@@ -744,8 +743,6 @@
       "importButtonText": "Iompórtáil ó KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Má d'úsáid tú bainisteoir pasfhocal difriúil roimhe seo, is féidir leat do mhíreanna a allmhairiú uaidh.",
       "loadingMore": "Ag lódáil níos mó...",
-      "newAliasButtonText": "\"+ Alias Nua\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Gan aon mhíreanna fós",
       "pageDescription": "Aimsigh do chuid míreanna go léir thíos.",
       "sortOrderLabel": "Ord Sórtála",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Ag cruthú leasainm nua...",
       "namePlaceholderCard": "M.sh. Mastercard",
       "namePlaceholderNote": "M.sh. Sonraí Pas",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nua",
       "typeCard": "Cárta",
       "typeLogin": "Logáil Isteach"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Socraigh an raon aoise réamhshocraithe chun féiniúlachtaí nua a ghiniúint. Bíonn tionchar aige seo ar an dáta breithe a shanntar don chéannacht ginte.",
       "aliasGenerationGenderDescription": "Socraigh an tosaíocht inscne réamhshocraithe chun féiniúlachtaí nua a ghiniúint.",
       "aliasGenerationLanguageDescription": "Socraigh an teanga réamhshocraithe a úsáidfear agus féiniúlachtaí nua á nginiúint.",
-      "aliasSettingsTitle": "Socruithe Gineadóra Aitheantais",
       "appLanguageDescription": "Socraigh an teanga le haghaidh comhéadan an fheidhmchláir.",
       "appLanguageTitle": "Teanga Feidhmchláir",
       "autoEmailRefreshLabel": "Athnuachan uathoibríoch ar ábhar ríomhphoist nuair a thagann cinn nua",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Fearainn Phoiblí"
     },
     "globalSettings": "Socruithe Domhanda",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Socraigh an raon aoise chun céannachtaí nua a ghiniúint.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Theip ar fhíordheimhniú dhá fhachtóir a dhíchumasú.",
         "pageDescription": "Má dhíchumasaítear fíordheimhniú dhá fhachtóir beidh tú in ann logáil isteach le do phasfhocal amháin.",
         "pageTitle": "Díchumasaigh fíordheimhniú dhá fhachtóir",
-        "statusMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair. Díchumasaigh é ionas go mbeidh tú in ann do chruinneog a rochtain le do phasfhocal amháin.",
         "twoFactorDisabledSuccess": "Díchumasaíodh fíordheimhniú dhá-fhachtóir anois.",
-        "twoFactorNotEnabled": "Níl fíordheimhniú dhá fhachtóir cumasaithe.",
-        "warningMessage": "Tabhair faoi deara le do thoil: tar éis fíordheimhniú dhá fhachtóir a dhíchumasú, ní bheidh aon aip(anna) fíordheimhneora cumraithe ag obair. Nuair is mian leat fíordheimhniú dhá fhachtóir a athchumasú beidh ort an aip(anna) fíordheimhnitheora a chumrú arís."
+        "twoFactorNotEnabled": "Níl fíordheimhniú dhá fhachtóir cumasaithe."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Theip ar fhíordheimhniú dhá fhachtóir a chumasú.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tá fíordheimhniú dhá fhachtóir díchumasaithe faoi láthair. Chun slándáil do chuntais a fheabhsú, molaimid duit é a chumasú.",
-        "enabledMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair."
+        "enabledMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Roghnaigh Teanga",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Cumraigh URL an fhreastalaí AliasVault le haghaidh cásanna féin-óstáilte",
     "serverUrl": "URL an fhreastalaí",
     "serverVersion": "Leagan an fhreastalaí",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Socruithe Sonracha don Suíomh",
     "storageInsights": {
       "breadcrumbTitle": "Léargais stórála",
