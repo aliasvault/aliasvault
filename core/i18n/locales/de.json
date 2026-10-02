@@ -764,16 +764,16 @@
     "loginCredentials": "Anmeldeinformationen",
     "logo": {
       "builtin": {
-        "Bank": "Finanzen",
-        "Dev": "Entwicklung",
-        "Game": "Spiele",
-        "Health": "Gesundheit",
-        "Mail": "E-Mail",
-        "Media": "Medien",
-        "Shopping": "Einkaufen",
-        "Social": "Soziale Medien",
-        "Travel": "Reisen",
-        "Work": "Arbeit"
+        "bank": "Finanzen",
+        "dev": "Entwicklung",
+        "game": "Spiele",
+        "health": "Gesundheit",
+        "mail": "E-Mail",
+        "media": "Medien",
+        "shopping": "Einkaufen",
+        "social": "Soziale Medien",
+        "travel": "Reisen",
+        "work": "Arbeit"
       },
       "builtinLogos": "Symbolbibliothek",
       "chooseLogo": "Symbol auswählen",
