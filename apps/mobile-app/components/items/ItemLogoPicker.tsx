@@ -42,7 +42,6 @@ export const ItemLogoPicker: React.FC<ItemLogoPickerProps> = ({ item, pendingSel
       paddingHorizontal: 10,
     },
     icon: {
-      borderRadius: 6,
       height: 28,
       width: 28,
     },

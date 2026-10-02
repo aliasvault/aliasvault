@@ -92,7 +92,6 @@ export const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClos
       width: 44,
     },
     previewIcon: {
-      borderRadius: 6,
       height: 30,
       width: 30,
     },

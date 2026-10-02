@@ -306,7 +306,6 @@ export function ItemCard({ item, onItemDelete, onItemDuplicate, showFolderPath =
       marginLeft: 6,
     },
     logo: {
-      borderRadius: 4,
       height: 32,
       marginRight: 12,
       width: 32,

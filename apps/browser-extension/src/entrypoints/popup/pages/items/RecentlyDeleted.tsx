@@ -196,7 +196,7 @@ const RecentlyDeleted: React.FC = () => {
                       {/* Item card content (simplified) */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <ItemIcon item={item} className="w-6 h-6 rounded" />
+                          <ItemIcon item={item} className="w-6 h-6" />
                           <span className="font-medium text-gray-900 dark:text-white truncate">
                             {item.Name || t('items.untitled')}
                           </span>

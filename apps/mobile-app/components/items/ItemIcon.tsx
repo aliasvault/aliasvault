@@ -27,6 +27,11 @@ import {
 const SVG_DATA_URI_PREFIX = 'data:image/svg+xml;base64,';
 
 /**
+ * Corner radius of a logo.
+ */
+const LOGO_RADIUS_RATIO = 0.17;
+
+/**
  * Item icon props.
  */
 type ItemIconProps = {
@@ -133,6 +138,7 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
   const svgWidth = Number(style?.width ?? styles.logo.width);
   const svgHeight = Number(style?.height ?? styles.logo.height);
   const isSvg = dataUri.startsWith(SVG_DATA_URI_PREFIX);
+  const borderRadius = Math.round(svgWidth * LOGO_RADIUS_RATIO);
 
   // Decode and sanitize an SVG once per logo and size, not on every render.
   const svgXml = useMemo(() => {
@@ -143,7 +149,7 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
   }, [dataUri, isSvg, svgWidth, svgHeight]);
 
   if (!isSvg) {
-    return <Image source={{ uri: dataUri }} style={[styles.logo, style]} />;
+    return <Image source={{ uri: dataUri }} style={[styles.logo, style, { borderRadius }]} />;
   }
 
   const fallback = (
@@ -163,17 +169,12 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
    * malformed SVGs that would otherwise crash the native renderer
    * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
    */
+  // react-native-svg does not clip to a border radius, so a wrapping view does the rounding.
   return (
-    <SvgXml
-      xml={svgXml}
-      width={svgWidth}
-      height={svgHeight}
-      onError={() => {
-        console.warn('SvgXml failed to render SVG logo');
-      }}
-      fallback={fallback}
+    <View
       style={{
-        borderRadius: styles.logo.borderRadius,
+        borderRadius,
+        overflow: 'hidden',
         width: svgWidth,
         height: svgHeight,
         marginLeft: Number(style?.marginLeft ?? 0),
@@ -181,7 +182,17 @@ function LogoImage({ dataUri, style }: { dataUri: string; style?: ImageStyle }):
         marginTop: Number(style?.marginTop ?? 0),
         marginBottom: Number(style?.marginBottom ?? 0),
       }}
-    />
+    >
+      <SvgXml
+        xml={svgXml}
+        width={svgWidth}
+        height={svgHeight}
+        onError={() => {
+          console.warn('SvgXml failed to render SVG logo');
+        }}
+        fallback={fallback}
+      />
+    </View>
   );
 }
 
@@ -288,7 +299,6 @@ function sanitizeSvg(xml: string, targetWidth: number, targetHeight: number): st
 
 const styles = StyleSheet.create({
   logo: {
-    borderRadius: 4,
     height: 32,
     width: 32,
   },

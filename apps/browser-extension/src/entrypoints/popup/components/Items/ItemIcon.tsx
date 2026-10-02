@@ -10,6 +10,11 @@ import React from 'react';
 
 import type { ItemTypeIconKey } from '@aliasvault/models/icons';
 
+/**
+ * Corner rounding for raster logos, proportional to the icon size so every size looks the same.
+ */
+const LOGO_ROUNDING = 'rounded-[17%]';
+
 type ItemIconProps = {
   item: Item;
   className?: string;
@@ -86,7 +91,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
   if (chosen?.Kind === LogoKinds.Custom) {
     const uploadedSrc = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
     if (uploadedSrc) {
-      return <img src={uploadedSrc} alt={item.Name ?? 'Item'} className={`${className} flex-shrink-0`} />;
+      return <img src={uploadedSrc} alt={item.Name ?? 'Item'} className={`${className} flex-shrink-0 ${LOGO_ROUNDING}`} />;
     }
   }
 
@@ -115,7 +120,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
       <img
         src={logoSrc}
         alt={item.Name || 'Item'}
-        className={`${className} flex-shrink-0`}
+        className={`${className} flex-shrink-0 ${LOGO_ROUNDING}`}
         onError={(e) => {
           // On error, replace with placeholder icon
           const target = e.target as HTMLImageElement;

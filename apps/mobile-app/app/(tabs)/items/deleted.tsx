@@ -213,7 +213,6 @@ export default function RecentlyDeletedScreen(): React.ReactNode {
       flexDirection: 'row',
     },
     itemLogo: {
-      borderRadius: 4,
       height: 32,
       marginRight: 12,
       width: 32,

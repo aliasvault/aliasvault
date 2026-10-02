@@ -154,7 +154,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
       {/* Header with name, logo, and URLs */}
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3">
-          <ItemIcon item={item} className="w-12 h-12 rounded-lg" />
+          <ItemIcon item={item} className="w-12 h-12" />
           <div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">
               {item.Name || t('items.untitled')}

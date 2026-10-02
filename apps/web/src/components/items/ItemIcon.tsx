@@ -63,7 +63,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, altText, sizeClass = 'w-10 h-
   if (chosen?.Kind === LogoKinds.Custom) {
     const uploadedSrc = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
     if (uploadedSrc && !imageFailed) {
-      return <img src={uploadedSrc} alt={altText ?? item.Name ?? 'Item'} className={`${sizeClass} flex-shrink-0 rounded-lg`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />;
+      return <img src={uploadedSrc} alt={altText ?? item.Name ?? 'Item'} className={`${sizeClass} flex-shrink-0 rounded-[17%]`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />;
     }
   }
 
@@ -79,7 +79,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, altText, sizeClass = 'w-10 h-
 
   const logoSrc = item.Logo && !imageFailed ? SqliteClient.imgSrcFromBytes(item.Logo) : null;
   if (logoSrc) {
-    return <img src={logoSrc} alt={altText ?? item.Name ?? 'Item'} className={`${sizeClass} flex-shrink-0 rounded-lg`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />;
+    return <img src={logoSrc} alt={altText ?? item.Name ?? 'Item'} className={`${sizeClass} flex-shrink-0 rounded-[17%]`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />;
   }
 
   return <SvgIcon svg={ItemTypeIconSvgs.Placeholder} sizeClass={sizeClass} />;
