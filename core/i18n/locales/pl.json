@@ -620,7 +620,7 @@
     "attachmentUnavailable": "Attachment data unavailable",
     "autofillLinkExisting": {
       "confirmMessage": "Czy na pewno chcesz połączyć \"{{url}}\" z tym kontem?",
-      "confirmTitle": "Link to credential?",
+      "confirmTitle": "Link do logowania?",
       "intro": "Wybierz istniejące dane logowania ze swojego sejfu aby połączyć się z \"{{target}}\".",
       "title": "Link do istniejącego konta"
     },
@@ -764,16 +764,16 @@
     "loginCredentials": "Dane logowania",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Praca"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Praca"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -1224,7 +1224,7 @@
     },
     "globalSettings": "Ustawienia ogólne",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "Autouzupełnianie",
       "general": "General",
       "generators": "Generators"
     },
