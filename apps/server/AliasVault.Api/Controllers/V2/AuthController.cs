@@ -23,6 +23,7 @@ using AliasVault.Shared;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
+using AliasVault.Shared.Models.WebApi.V2.Vault;
 using AliasVault.Shared.Server.Services;
 using AliasVault.Shared.Server.Utilities;
 using Asp.Versioning;
@@ -59,6 +60,21 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Access token validity in minutes.
     /// </summary>
     private const int AccessTokenValiditySeconds = 600;
+
+    /// <summary>
+    /// Maximum accepted length of a password salt.
+    /// </summary>
+    private const int MaxSaltLength = 100;
+
+    /// <summary>
+    /// Maximum accepted length of an SRP verifier.
+    /// </summary>
+    private const int MaxVerifierLength = 1000;
+
+    /// <summary>
+    /// Maximum accepted length of the KDF settings JSON.
+    /// </summary>
+    private const int MaxEncryptionSettingsLength = 255;
 
     /// <summary>
     /// Semaphore to prevent concurrent access to the database when generating new tokens for a user.
@@ -429,7 +445,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
         }
 
-        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings))
+        if (!IsValidKekDerivationParams(model.EncryptionType, model.EncryptionSettings) || !WithinSrpCredentialLimits(model.Salt, model.Verifier))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
         }
@@ -612,8 +628,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_KEY_NOT_FOUND, 400));
         }
 
-        // Validate the new KDF parameters.
-        if (!IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings))
+        // Validate the new KDF parameters and the size of the new credentials.
+        var accountKeyFits = !string.IsNullOrEmpty(model.NewEncryptedAccountKey) && model.NewEncryptedAccountKey.Length <= AccountKeysUpload.MaxWrappedKeyLength;
+        if (!IsValidKekDerivationParams(model.NewEncryptionType, model.NewEncryptionSettings) || !WithinSrpCredentialLimits(model.NewPasswordSalt, model.NewPasswordVerifier) || !accountKeyFits)
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVALID_ENCRYPTION_PARAMETERS, 400));
         }
@@ -1130,6 +1147,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
+    /// Whether a client-supplied SRP salt and verifier are present and within the stored size limits.
+    /// </summary>
+    /// <param name="salt">The password salt.</param>
+    /// <param name="verifier">The SRP verifier.</param>
+    /// <returns>True when both values may be stored.</returns>
+    private static bool WithinSrpCredentialLimits(string? salt, string? verifier)
+    {
+        return !string.IsNullOrEmpty(salt) && salt.Length <= MaxSaltLength && !string.IsNullOrEmpty(verifier) && verifier.Length <= MaxVerifierLength;
+    }
+
+    /// <summary>
     /// Whether the KDF parameters a client derived its new KEK with are Argon2id at or above the accepted minimum.
     /// </summary>
     /// <param name="encryptionType">The KDF type.</param>
@@ -1137,7 +1165,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <returns>True when the parameters are safe to store and advertise at the next login.</returns>
     private static bool IsValidKekDerivationParams(string encryptionType, string encryptionSettings)
     {
-        if (encryptionType != Defaults.EncryptionType)
+        if (encryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(encryptionSettings) || encryptionSettings.Length > MaxEncryptionSettingsLength)
         {
             return false;
         }
