@@ -121,6 +121,10 @@ export default defineConfig({
         allow: [path.resolve('.'), CORE_DIR],
       },
     },
+    build: {
+      // Browser extension bundles load froom disk so chunk size is not a concern.
+      chunkSizeWarningLimit: 10_000,
+    },
     optimizeDeps: {
       entries: ['src/**/*.html', 'public/**/*.html'],
       exclude: ['@aliasvault/client', '@aliasvault/models', '@aliasvault/vault'],
