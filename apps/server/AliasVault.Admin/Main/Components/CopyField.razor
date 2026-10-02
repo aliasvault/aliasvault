@@ -1,0 +1,65 @@
+@inherits ComponentBase
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<div class="flex w-full">
+    <input type="text" readonly value="@Value" onfocus="this.select()" class="min-w-0 flex-1 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 p-2.5 font-mono text-sm text-gray-900 focus:border-primary-600 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+    <button type="button" @onclick="CopyAsync" class="inline-flex shrink-0 items-center gap-2 rounded-r-lg border border-primary-600 bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-300 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+        @if (_copied)
+        {
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Copied</span>
+        }
+        else
+        {
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>Copy</span>
+        }
+    </button>
+</div>
+
+@code {
+    private bool _copied;
+    private CancellationTokenSource? _resetCts;
+
+    /// <summary>
+    /// Gets or sets the text that is shown and copied.
+    /// </summary>
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _resetCts?.Cancel();
+        _resetCts?.Dispose();
+    }
+
+    private async Task CopyAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", Value);
+
+        _resetCts?.Cancel();
+        _resetCts?.Dispose();
+        _resetCts = new CancellationTokenSource();
+        var token = _resetCts.Token;
+
+        _copied = true;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Delay(2000, token);
+            _copied = false;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException)
+        {
+            // A newer copy or disposal took over the reset.
+        }
+    }
+}

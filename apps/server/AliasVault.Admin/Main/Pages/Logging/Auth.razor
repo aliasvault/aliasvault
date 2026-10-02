@@ -13,8 +13,8 @@
     Title="@GetTitle()"
     Description="This page shows an overview of recent auth attempts.">
     <CustomActions>
-        <DeleteButton OnClick="DeleteLogsWithConfirmation" ButtonText="Delete all logs" />
         <RefreshButton OnClick="() => RefreshData(CancellationToken.None)" ButtonText="Refresh" />
+        <DeleteButton OnClick="DeleteLogsWithConfirmation" ButtonText="Delete all logs" />
     </CustomActions>
 </PageHeader>
 
