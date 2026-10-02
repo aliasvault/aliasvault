@@ -3,9 +3,10 @@ import { CredentialSortOrder } from '@aliasvault/client/database/repositories/Se
 import { canHaveSubfolders, getDescendantFolderIds, getFolderPath, isItemInFolder, isSharedFolder } from '@aliasvault/client/items/FolderUtils';
 import { ItemFilter, applyTypeFilter, type ItemFilterType, parseItemFilterType } from '@aliasvault/client/items/ItemFilters';
 import { multiManifestRendering } from '@aliasvault/client/sharing/MultiManifestRendering';
+import { ItemTypes, type Item, type ItemType } from '@aliasvault/models/vault';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import DeleteFolderModal from '@/components/folders/DeleteFolderModal';
 import FolderModal from '@/components/folders/FolderModal';
@@ -16,7 +17,9 @@ import { type ItemListEntry, toItemListEntry } from '@/components/items/ItemList
 import ItemsTable from '@/components/items/ItemsTable';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import type { BreadcrumbItem } from '@/components/shared/Breadcrumb';
+import Button from '@/components/shared/Button';
 import FormLabel from '@/components/shared/FormLabel';
+import LinkButton from '@/components/shared/LinkButton';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
 import RefreshButton from '@/components/shared/RefreshButton';
@@ -24,6 +27,7 @@ import Select from '@/components/shared/Select';
 import type { SortDirection } from '@/components/shared/SortableTable';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
+import { useQuickCreate } from '@/context/QuickCreateContext';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useVaultMutate, VaultPushFailedError } from '@/hooks/useVaultMutate';
@@ -33,7 +37,6 @@ import { getLocalPreferenceJson, setLocalPreferenceJson } from '@/utils/LocalPre
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
-import type { Item } from '@aliasvault/models/vault';
 
 /** How many items render per infinite scroll batch (180 makes up for 30 equal rows in full width desktop view) */
 const BATCH_SIZE = 180;
@@ -70,6 +73,7 @@ const applyTableSort = (entries: ItemListEntry[], column: string, direction: Sor
  */
 const ItemsHome: React.FC = () => {
   const { t } = useTranslation();
+  const { openQuickCreate } = useQuickCreate();
   const navigate = useNavigate();
   const { manifestId: manifestIdParam, folderId: folderIdParam } = useParams<{ manifestId?: string; folderId?: string }>();
   const [searchParams] = useSearchParams();
@@ -224,6 +228,15 @@ const ItemsHome: React.FC = () => {
   const hasMoreItems = visibleItemCount < totalFilteredItems;
   const filteredAndSortedItems = allFilteredAndSortedItems.slice(0, visibleItemCount);
   const hasItemsInFoldersOnly = items.length > 0 && items.every(x => x.folderId !== null);
+  const isEmptyVault = items.length === 0 && !isInFolder;
+
+  /**
+   * Open the quick create dialog, with the type of the active type filter preselected.
+   */
+  const createItem = (): void => {
+    const typeFilters: string[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
+    openQuickCreate(typeFilters.includes(filterType) ? filterType as ItemType : undefined);
+  };
 
   /**
    * Folders at the current level with their (recursive) filtered item counts.
@@ -431,6 +444,30 @@ const ItemsHome: React.FC = () => {
     }
   };
 
+  /** The empty vault message: importing first, creating an item by hand as the alternative. */
+  const welcomeCard = (
+    <div className="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
+      <div className="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center flex flex-col items-center">
+        <p className="mb-2 text-lg font-semibold text-primary-700 dark:text-primary-400">{t('items.home.noItemsTitle')}</p>
+        <div className="max-w-md mx-auto">
+          <div>
+            <p className="text-sm mb-3">{t('items.home.importItemsText')}</p>
+            <LinkButton href="/settings/import-export" text={t('items.home.importButtonText')} />
+          </div>
+          <div className="flex items-center my-6">
+            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
+            <span className="px-4 text-sm text-gray-500 dark:text-gray-400">{t('common.or')}</span>
+            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
+          </div>
+          <div>
+            <p className="text-sm mb-3">{t('items.home.createFirstItemManuallyText')}</p>
+            <Button id="quickIdentityButton" color="outline" onClick={createItem}>{t('items.quickCreate.newAliasButtonText')}</Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <PageHeader
@@ -543,35 +580,13 @@ const ItemsHome: React.FC = () => {
             </div>
           )}
 
-          {viewMode === 'table' ? (
+          {isEmptyVault ? welcomeCard : viewMode === 'table' ? (
             <ItemsTable entries={filteredAndSortedItems} sortColumn={tableSortColumn} sortDirection={tableSortDirection} onTableSortChanged={handleTableSortChanged} onMutated={loadItems} />
           ) : (
-            <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
-              {items.length === 0 && !isInFolder ? (
+            <div className="grid gap-2 md:gap-4 md:grid-cols-4 xl:grid-cols-6">
+              {filteredAndSortedItems.length === 0 && (
                 <div className="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
-                  <div className="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center flex flex-col items-center">
-                    <p className="mb-2 text-lg font-semibold text-primary-700 dark:text-primary-400">{t('items.home.noItemsTitle')}</p>
-                    <div className="max-w-md mx-auto">
-                      <div className="mb-6">
-                        <p className="text-sm mb-2">{t('items.home.createFirstItemText')} <span className="hidden md:inline">{t('items.home.newAliasButtonText')}</span><span className="md:hidden">{t('items.home.newAliasButtonTextMobile')}</span> {t('items.home.buttonLocationText')}</p>
-                      </div>
-                      <div className="flex items-center my-6">
-                        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-                        <span className="px-4 text-sm text-gray-500 dark:text-gray-400">{t('common.or')}</span>
-                        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm mb-2">{t('items.home.importItemsText')}</p>
-                        <Link to="/settings/import-export" className="inline-block text-sm px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors dark:bg-primary-700 dark:hover:bg-primary-600">
-                          {t('items.home.importButtonText')}
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : filteredAndSortedItems.length === 0 && (
-                <div className="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
-                  <div className="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center">
+                  <div className="px-4 py-6 text-sm text-gray-700 dark:text-gray-200 rounded text-center flex flex-col items-center gap-4">
                     {filterType !== ItemFilter.All ? (
                       <p>{t('items.noMatchingItems')}</p>
                     ) : isInFolder ? (
@@ -581,6 +596,7 @@ const ItemsHome: React.FC = () => {
                     ) : (
                       <p>{t('items.noMatchingItems')}</p>
                     )}
+                    <Button onClick={createItem}>{t('items.quickCreate.newAliasButtonText')}</Button>
                   </div>
                 </div>
               )}
