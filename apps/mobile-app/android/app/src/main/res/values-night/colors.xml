@@ -1,5 +1,5 @@
 <resources>
-  <!-- The theme colors (av_*) are generated into av_colors.xml from core/models/src/colors/palette.json. -->
+  <!-- The theme colors (av_*) are generated into av_colors.xml from core/assets/colors/palette.json. -->
   <color name="splashscreen_background">#202020</color>
   <color name="av_loading_overlay">#CC000000</color>
 </resources>

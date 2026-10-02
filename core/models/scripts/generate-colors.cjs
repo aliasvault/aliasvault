@@ -2,7 +2,7 @@
 /**
  * Generates the AliasVault color palette for every platform.
  *
- * Input: core/models/src/colors/palette.json
+ * Input: core/assets/colors/palette.json
  * Outputs:
  *   - core/models/src/colors/Palette.ts (TypeScript, imported as `@aliasvault/models/colors`)
  *   - core/models/src/colors/tailwind-preset.cjs (Tailwind preset for the web app, browser extension and admin)
@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '../../..');
-const SOURCE_REL = 'core/models/src/colors/palette.json';
+const SOURCE_REL = 'core/assets/colors/palette.json';
 const COLORS_DIR = path.join(REPO_ROOT, 'core/models/src/colors');
 const TS_OUTPUT = path.join(COLORS_DIR, 'Palette.ts');
 const TAILWIND_OUTPUT = path.join(COLORS_DIR, 'tailwind-preset.cjs');
@@ -202,11 +202,14 @@ ${colors.join('\n')}
 `;
 }
 
-/** Write a generated file, creating its directory when missing. */
+/** Write a generated file when its contents changed, creating its directory when missing. */
 function writeFile(filePath, contents) {
+  if (fs.existsSync(filePath) && fs.readFileSync(filePath, 'utf8') === contents) {
+    return;
+  }
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, contents);
-  console.log(`  ✓ Generated ${path.relative(REPO_ROOT, filePath)}`);
+  console.log(`Generated: ${path.relative(REPO_ROOT, filePath)}`);
 }
 
 function main() {

@@ -1,9 +1,10 @@
 #!/bin/bash
 #
-# Copies the shared image assets in core/assets to every app folder listed in targets.txt.
+# Copies the shared image assets in core/assets to every app folder listed in targets.txt, then runs the generators for
+# the icon catalogs (icons/) and the color palette (colors/), which are not copied as-is.
 #
 # Usage:
-#   ./sync.sh          Copy every source to its destinations (only files that differ are written)
+#   ./sync.sh          Copy every source to its destinations (only files that differ are written) and run the generators
 #   ./sync.sh --check  Change nothing; exit 1 when a copy is missing or differs, or an image is unmanaged
 #   ./sync.sh --list   Print each source with the destinations it is copied to
 #
@@ -119,7 +120,7 @@ done
 
 # Sources that no mapping uses.
 SOURCES="$(printf '%s\n' "${PAIRS[@]}" | cut -d' ' -f1 | sed 's/^paths://' | sort -u)"
-for f in $(cd "$ASSETS_DIR" && find . -type f | sed 's|^\./||' | grep -iE "$IMAGE_PATTERN" | sort); do
+for f in $(cd "$ASSETS_DIR" && find . -type f -not -path './icons/*' | sed 's|^\./||' | grep -iE "$IMAGE_PATTERN" | sort); do
     if ! printf '%s\n' "$SOURCES" | grep -qxF "$f"; then echo "unused source: core/assets/$f"; PROBLEMS=$((PROBLEMS + 1)); fi
 done
 
@@ -129,4 +130,6 @@ if [ "$MODE" = "check" ]; then
 else
     echo "$WRITTEN file(s) written."
     if [ "$PROBLEMS" -gt 0 ]; then echo "$PROBLEMS problem(s) above need a manual fix."; exit 1; fi
+    node core/models/scripts/generate-icons.cjs
+    node core/models/scripts/generate-colors.cjs
 fi

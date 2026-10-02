@@ -19,8 +19,8 @@ Automatically generates platform-specific models from TypeScript sources:
 | `src/vault/FieldKey.ts`     | `apps/mobile-app/ios/VaultModels/FieldKey.swift`                      | Swift         |
 | `src/vault/FieldKey.ts`     | `apps/mobile-app/android/.../vaultstore/models/FieldKey.kt`           | Kotlin        |
 
-Icons (UI, item type and built-in logos) are generated from the SVG files in `src/icons/svg` by
-`scripts/generate-icons.cjs`; see [src/icons/README.md](src/icons/README.md) for more details.
+Icons (UI, item type and built-in logos) are generated from the SVG files in `core/assets/icons` by
+`scripts/generate-icons.cjs`; see [core/assets/icons/README.md](../assets/icons/README.md) for more details.
 
 ### 3. Registry and Vocabulary Generators
 
@@ -29,7 +29,7 @@ Icons (UI, item type and built-in logos) are generated from the SVG files in `sr
 | `scripts/generate-vault-table-registry.cjs` | `src/vault/VaultTableRegistry.ts` | the Rust codec's datamodel registry, the C# `VaultTableRegistry`, and `VaultDataBucketCategory` (C#, Swift, Kotlin) |
 | `scripts/generate-key-vocabulary.cjs` | the `VOCABULARIES` table inside the script | `UnlockMethodType`, `ManifestKeyType`, `VaultKeyAlgorithm` |
 | `scripts/generate-app-defaults.cjs` | `src/defaults/AppDefaults.ts` | the Swift and Kotlin `AppInfo` (minimum server version, default URLs) |
-| `scripts/generate-colors.cjs` | `src/colors/palette.json` | the TS palette, the Tailwind preset, Swift `ColorConstants` and Android `av_colors.xml`; see [src/colors/README.md](src/colors/README.md) |
+| `scripts/generate-colors.cjs` | `core/assets/colors/palette.json` | the TS palette, the Tailwind preset, Swift `ColorConstants` and Android `av_colors.xml`; see [core/assets/colors/README.md](../assets/colors/README.md) |
 
 The key vocabulary is the set of tokens naming how a vault key is protected, which unlock method encrypts a
 user's Account Key, how a manifest's VEK reaches a given user, and which algorithm a piece of key ciphertext

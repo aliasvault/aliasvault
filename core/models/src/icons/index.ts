@@ -1,5 +1,5 @@
 /**
- * The icon catalogs shared by all apps, generated from the SVG sources in ./svg (see README.md).
+ * The icon catalogs shared by all apps, generated from the SVG sources in core/assets/icons.
  */
 
 export {

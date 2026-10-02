@@ -1,7 +1,7 @@
 import { ThemeColors as SharedColors } from '@aliasvault/models/colors';
 
 /**
- * The colors used in the app, per color scheme. The shared theme colors come from core/models/src/colors/palette.json,
+ * The colors used in the app, per color scheme. The shared theme colors come from core/assets/colors/palette.json,
  * the keys below them are specific to the React Native app.
  */
 export const Colors = {

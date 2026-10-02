@@ -1,5 +1,5 @@
 /**
- * Reads the icon SVG sources in core/models/src/icons/svg and serializes them back to SVG markup.
+ * Reads the icon SVG sources in core/assets/icons and serializes them back to SVG markup.
  */
 
 const fs = require('fs');
