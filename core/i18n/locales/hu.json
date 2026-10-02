@@ -733,8 +733,7 @@
     "history": "Előzmények",
     "home": {
       "alphabeticalOption": "Betűrendben",
-      "buttonLocationText": "jobb felső sarokban levő gombbal.",
-      "createFirstItemText": "Hozza létre az első elemet a",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Ez a mappa üres.",
       "failedToCreateFolder": "Sikertelen mappa létrehozás.",
       "failedToDeleteFolder": "Sikertelen mappa törlés.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importálja bárhonnan, legyen az KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Ha korábban egy másik jelszókezelőt használt, importálhatja az elemeket onnan.",
       "loadingMore": "Továbbiak betöltése...",
-      "newAliasButtonText": "\"+ Új alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Még nincsenek elemek",
       "pageDescription": "Lentebb megtalálhatja az összes elemét.",
       "sortOrderLabel": "Rendezési sorrend",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Új alias létrehozása...",
       "namePlaceholderCard": "pl: Mastercard",
       "namePlaceholderNote": "pl: Útlevél adatok",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Új",
       "typeCard": "Kártya",
       "typeLogin": "Bejelentkezés"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Böngészős azonosítókulcs használata"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktív minden oldalon (hacsak nincs lent kikapcsolva)",
     "advancedOptions": "Haladó beállítások",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Állítsa be a személyiség generáláshoz használt alap kor intervallumot. Ez hatással lesz a születési időre.",
       "aliasGenerationGenderDescription": "Állítsa be a személyiség generáláshoz preferált alap nemet.",
       "aliasGenerationLanguageDescription": "Állítsa be a személyiség generáláshoz preferált alap nyelvet.",
-      "aliasSettingsTitle": "Személyazonosság Generáló beállítások",
       "appLanguageDescription": "Állítsa be az alkalmazás nyelvét.",
       "appLanguageTitle": "Alkalmazás nyelve",
       "autoEmailRefreshLabel": "Új érkezésekor automatikusan frissítésre kerülnek az e-mailek",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Nyilvános tartományok"
     },
     "globalSettings": "Általános beállítások",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Személyiség Generátor",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Állítsa be a személyiség generáláshoz használt kor intervallumot.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "A kétlépcsős hitelesítőt nem sikerült kikapcsolni.",
         "pageDescription": "Ha kikapcsolja a kétlépcsős hitelesítőt, akkor elégséges lesz a jelszavai a is a belépéshez.",
         "pageTitle": "Kétlépcsős hitelesítő kikapcsolása",
-        "statusMessage": "A kétlépcsős hitelesítő jelenleg aktív. Ha kikapcsolja, elégséges csak a jelszó a belépéshez.",
         "twoFactorDisabledSuccess": "A kétlépcsős hitelesítés sikeresen kikapcsolva.",
-        "twoFactorNotEnabled": "A kétlépcsős hitelesítő nincs bekapcsolva.",
-        "warningMessage": "Megjegyzés: Miután kikapcsolja a kétlépcsős hitelesítőt, majd újra bekapcsolja, egy új titkos kód áll majd rendelkezésre. Emiatt az újra aktiválást követően újra konfigurálnia kell a hitelesítő alkalmazását."
+        "twoFactorNotEnabled": "A kétlépcsős hitelesítő nincs bekapcsolva."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Nem sikerült bekapcsolni a kétlépcsős hitelesítést.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "A kétlépcsős hitelesítés jelenleg inaktív. Azt javasoljuk, hogy kapcsolja be a biztonságának növelése érdekében.",
-        "enabledMessage": "A kétlépcsős hitelesítés jelenleg aktív."
+        "enabledMessage": "A kétlépcsős hitelesítés jelenleg aktív.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Nyelv kiválasztása",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "AliasVault szerver webcím konfigurálása saját üzemeltetés esetén",
     "serverUrl": "Kiszolgáló webcím",
     "serverVersion": "Szerver verzió",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Oldal specifikus beállítások",
     "storageInsights": {
       "breadcrumbTitle": "Tároló áttekintő",
