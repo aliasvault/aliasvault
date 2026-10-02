@@ -764,16 +764,16 @@
     "loginCredentials": "登录凭据",
     "logo": {
       "builtin": {
-        "Bank": "银行",
-        "Dev": "开发",
-        "Game": "游戏",
-        "Health": "健康",
-        "Mail": "邮件",
-        "Media": "媒体",
-        "Shopping": "购物",
-        "Social": "社交",
-        "Travel": "旅游",
-        "Work": "工作"
+        "bank": "银行",
+        "dev": "开发",
+        "game": "游戏",
+        "health": "健康",
+        "mail": "邮件",
+        "media": "媒体",
+        "shopping": "购物",
+        "social": "社交",
+        "travel": "旅游",
+        "work": "工作"
       },
       "builtinLogos": "图标库",
       "chooseLogo": "选择图标",
@@ -1224,7 +1224,7 @@
     },
     "globalSettings": "全局设置",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "自动填充",
       "general": "General",
       "generators": "Generators"
     },
