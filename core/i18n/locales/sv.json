@@ -733,8 +733,7 @@
     "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
-      "buttonLocationText": "knappen i det övre högra hörnet",
-      "createFirstItemText": "Skapa ditt första objekt med hjälp av",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Den här mappen är tom.",
       "failedToCreateFolder": "Det gick inte att skapa mappen.",
       "failedToDeleteFolder": "Det gick inte att radera mappen.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importera från KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Om du tidigare använt en annan lösenordshanterare, kan du importera dina objekt från den.",
       "loadingMore": "Laddar fler ...",
-      "newAliasButtonText": "\"+ Nytt alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Inga objekt än",
       "pageDescription": "Dina objekt visas nedan.",
       "sortOrderLabel": "Sorteringsordning",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Skapar nytt alias...",
       "namePlaceholderCard": "T.ex. Mastercard",
       "namePlaceholderNote": "T.ex. Passinformation",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nytt",
       "typeCard": "Kort",
       "typeLogin": "Logga in"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Använd webbläsarens Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "advancedOptions": "Avancerade inställningar",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.",
       "aliasGenerationGenderDescription": "Ställ in föredragen könspreferens för generering av nya identiteter.",
       "aliasGenerationLanguageDescription": "Ange standardspråk som ska användas vid generering av nya identiteter.",
-      "aliasSettingsTitle": "Inställningar för identitetsgenerering",
       "appLanguageDescription": "Ställ in språket för applikationsgränssnittet.",
       "appLanguageTitle": "Appspråk",
       "autoEmailRefreshLabel": "Uppdatera e-postlistan automatiskt när nya e-postmeddelanden kommer in",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Offentliga domäner"
     },
     "globalSettings": "Globala inställningar",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Det gick inte att inaktivera tvåfaktorsautentisering.",
         "pageDescription": "Inaktivering av tvåfaktorsautentisering innebär att du endast behöver logga in med ditt lösenord.",
         "pageTitle": "Inaktivera tvåfaktorsautentisering",
-        "statusMessage": "Tvåfaktorsautentisering är för närvarande aktiverat. Inaktivera det för att kunna komma åt ditt valv med endast ditt lösenord.",
         "twoFactorDisabledSuccess": "Tvåfaktorsautentisering har nu inaktiverats.",
-        "twoFactorNotEnabled": "Tvåfaktorsautentisering är inte aktiverad.",
-        "warningMessage": "Observera: Efter inaktivering av tvåfaktorsautentisering kommer alla konfigurerade autentiseringsapp (-en/-arna) att sluta fungera. När du vill återaktivera tvåfaktorsautentisering måste du konfigurera autentiseringsapp (-en/-arna) igen."
+        "twoFactorNotEnabled": "Tvåfaktorsautentisering är inte aktiverad."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Det gick inte att aktivera tvåfaktorsautentisering.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tvåfaktorsautentisering är för närvarande inaktiverad. För att förbättra din kontosäkerhet rekommenderar vi att du aktiverar funktionen.",
-        "enabledMessage": "Tvåfaktorsautentisering är för närvarande aktiverat."
+        "enabledMessage": "Tvåfaktorsautentisering är för närvarande aktiverat.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Välj Språk",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
     "serverUrl": "Serverns webbadress",
     "serverVersion": "Server-version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Webbplatsspecifika inställningar",
     "storageInsights": {
       "breadcrumbTitle": "Insikter om lagring",
