@@ -60,6 +60,7 @@ type FormInputProps = {
   type?: 'text' | 'password';
   placeholder?: string;
   required?: boolean;
+  autoComplete?: string;
   multiline?: boolean;
   rows?: number;
   error?: string;
@@ -79,6 +80,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
   type = 'text',
   placeholder,
   required = false,
+  autoComplete,
   multiline = false,
   rows = 1,
   error,
@@ -149,6 +151,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            autoComplete={autoComplete}
             className={inputClasses}
           />
         )}
