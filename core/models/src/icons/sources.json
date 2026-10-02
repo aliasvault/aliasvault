@@ -1,0 +1,380 @@
+{
+  "ui": {
+    "archive": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/archive"
+    },
+    "arrow-circle-down": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrow-circle-down"
+    },
+    "arrow-left": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrow-left"
+    },
+    "arrow-narrow-down": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrow-narrow-down"
+    },
+    "arrow-narrow-up": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrow-narrow-up"
+    },
+    "arrow-right": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrow-right"
+    },
+    "arrows-expand": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/arrows-expand"
+    },
+    "backspace": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/backspace"
+    },
+    "chart-bar": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/chart-bar"
+    },
+    "check": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/check"
+    },
+    "check-circle": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/check-circle"
+    },
+    "chevron-down": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/chevron-down"
+    },
+    "chevron-left": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/chevron-left"
+    },
+    "chevron-right": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/chevron-right"
+    },
+    "clipboard": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/clipboard"
+    },
+    "clipboard-list": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/clipboard-list"
+    },
+    "clock": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/clock"
+    },
+    "cloud-upload": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/cloud-upload"
+    },
+    "cog": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/cog"
+    },
+    "collection": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/collection"
+    },
+    "color-swatch": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/color-swatch"
+    },
+    "credit-card": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/credit-card"
+    },
+    "database": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/database"
+    },
+    "desktop-computer": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/desktop-computer"
+    },
+    "device-mobile": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/device-mobile"
+    },
+    "document-duplicate": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/document-duplicate"
+    },
+    "document-text": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/document-text"
+    },
+    "dots-vertical-narrow": {
+      "source": "custom",
+      "note": "Three vertical dots on a 12x24 grid, for narrow overflow menu buttons."
+    },
+    "download": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/download"
+    },
+    "duplicate": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/duplicate"
+    },
+    "exclamation": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/exclamation"
+    },
+    "external-link": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/external-link"
+    },
+    "eye": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/eye"
+    },
+    "eye-off": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/eye-off"
+    },
+    "folder": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/folder"
+    },
+    "folder-check": {
+      "source": "custom",
+      "note": "heroicons v1 outline folder with a check mark added."
+    },
+    "folder-filled": {
+      "source": "custom",
+      "note": "Filled folder, the Material Icons folder outline redrawn with arcs."
+    },
+    "globe-alt": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/globe-alt"
+    },
+    "grip-vertical": {
+      "source": "custom",
+      "note": "Drag handle of six dots on a 20x20 grid."
+    },
+    "hashtag": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/hashtag"
+    },
+    "home": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/home"
+    },
+    "information-circle": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/information-circle"
+    },
+    "key": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/key"
+    },
+    "keyboard": {
+      "source": "custom",
+      "note": "Keyboard outline in the heroicons v1 outline style."
+    },
+    "lock-closed": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/lock-closed"
+    },
+    "logout": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/logout"
+    },
+    "mail": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/mail"
+    },
+    "menu": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/menu"
+    },
+    "menu-alt-3": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/menu-alt-3"
+    },
+    "moon": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/moon"
+    },
+    "paper-clip": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/paper-clip"
+    },
+    "pencil": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/pencil"
+    },
+    "pencil-alt": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/pencil-alt"
+    },
+    "pin-material": {
+      "source": "material-symbols",
+      "icon": "pin/materialsymbolsoutlined/pin_24px"
+    },
+    "plus": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/plus"
+    },
+    "plus-sm": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/plus-sm"
+    },
+    "qrcode": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/qrcode"
+    },
+    "question-mark-circle": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/question-mark-circle"
+    },
+    "refresh": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/refresh"
+    },
+    "reply": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/reply"
+    },
+    "search": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/search"
+    },
+    "shield-check": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/shield-check"
+    },
+    "shield-exclamation": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/shield-exclamation"
+    },
+    "sort-descending": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/sort-descending"
+    },
+    "spinner": {
+      "source": "custom",
+      "note": "Loading spinner from the Tailwind CSS docs (animate-spin example); spin it with the animate-spin class."
+    },
+    "spinner-flowbite": {
+      "source": "custom",
+      "note": "Loading spinner from the Flowbite docs; the track takes the text color, the arc the fill-* class (currentFill)."
+    },
+    "square-check": {
+      "source": "custom",
+      "note": "feather square with a check mark added, the checked state of square-feather."
+    },
+    "square-feather": {
+      "source": "feather-icons@4.29.2",
+      "icon": "square"
+    },
+    "status-offline": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/status-offline"
+    },
+    "sun": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/sun"
+    },
+    "switch-horizontal": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/switch-horizontal"
+    },
+    "translate": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/translate"
+    },
+    "trash": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/trash"
+    },
+    "upload": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/upload"
+    },
+    "user": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/user"
+    },
+    "user-group": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/user-group"
+    },
+    "users": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/users"
+    },
+    "view-grid-add": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/view-grid-add"
+    },
+    "x": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/x"
+    },
+    "x-circle": {
+      "source": "heroicons@1.0.6",
+      "icon": "outline/x-circle"
+    }
+  },
+  "item": {
+    "placeholder": {
+      "source": "custom",
+      "note": "Shown for login and alias items without a logo."
+    },
+    "note": {
+      "source": "custom"
+    },
+    "credit-card": {
+      "source": "custom"
+    },
+    "visa": {
+      "source": "custom"
+    },
+    "mastercard": {
+      "source": "custom"
+    },
+    "amex": {
+      "source": "custom"
+    },
+    "discover": {
+      "source": "custom"
+    }
+  },
+  "builtin-logo": {
+    "shopping": {
+      "source": "custom"
+    },
+    "bank": {
+      "source": "custom"
+    },
+    "mail": {
+      "source": "custom"
+    },
+    "social": {
+      "source": "custom"
+    },
+    "work": {
+      "source": "custom"
+    },
+    "game": {
+      "source": "custom"
+    },
+    "media": {
+      "source": "custom"
+    },
+    "travel": {
+      "source": "custom"
+    },
+    "health": {
+      "source": "custom"
+    },
+    "dev": {
+      "source": "custom"
+    }
+  }
+}

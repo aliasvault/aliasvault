@@ -12,18 +12,15 @@ TypeScript models are consumed as the `@aliasvault/models` package:
 - **Mobile App**: linked as source through `@aliasvault/models` (a `file:` dependency; `metro.config.js` watches `core/`)
 
 ### 2. Native Code Generation (Transformed)
-Automatically generates platform-specific models and icon assets from TypeScript sources:
+Automatically generates platform-specific models from TypeScript sources:
 
 | Source                      | Generated Output                                                      | Language      |
 |-----------------------------|-----------------------------------------------------------------------|---------------|
 | `src/vault/FieldKey.ts`     | `apps/mobile-app/ios/VaultModels/FieldKey.swift`                      | Swift         |
 | `src/vault/FieldKey.ts`     | `apps/mobile-app/android/.../vaultstore/models/FieldKey.kt`           | Kotlin        |
-| `src/icons/ItemTypeIcons.ts`| `apps/mobile-app/ios/VaultModels/ItemTypeIcons.swift`                 | Swift         |
-| `src/icons/ItemTypeIcons.ts`| `apps/mobile-app/android/.../vaultstore/models/ItemTypeIcons.kt`      | Kotlin        |
-| `src/icons/ItemTypeIcons.ts`| `apps/mobile-app/components/items/ItemTypeIconComponents.tsx`         | React Native  |
-| `src/icons/AppIcons.ts`     | `apps/mobile-app/ios/VaultModels/AppIcons.swift`                      | Swift         |
-| `src/icons/AppIcons.ts`     | `apps/mobile-app/android/.../vaultstore/models/AppIcons.kt`           | Kotlin        |
-| `src/icons/AppIcons.ts`     | `apps/mobile-app/components/items/AppIconComponents.tsx`              | React Native  |
+
+Icons (UI, item type and built-in logos) are generated from the SVG files in `src/icons/svg` by
+`scripts/generate-icons.cjs`; see [src/icons/README.md](src/icons/README.md) for more details.
 
 ### 3. Registry and Vocabulary Generators
 

@@ -17,7 +17,8 @@
         "clean": "rm -rf dist",
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
-        "test": "vitest run --passWithNoTests"
+        "test": "vitest run --passWithNoTests",
+        "icons:generate": "node scripts/generate-icons.cjs"
     },
     "files": [
         "dist"
