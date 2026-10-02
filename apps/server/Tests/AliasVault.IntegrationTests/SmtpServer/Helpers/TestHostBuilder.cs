@@ -110,7 +110,8 @@ public class TestHostBuilder : AbstractTestHostBuilder
                     Environment.GetEnvironmentVariable("SMTP_ADVERTISED_HOSTNAME"),
                     Dns.GetHostName);
                 var options = new SmtpServerOptionsBuilder()
-                    .ServerName(advertisedHostname);
+                    .ServerName(advertisedHostname)
+                    .MaxMessageSize(DatabaseMessageStore.MaxEmailSizeInBytes, MaxMessageSizeHandling.Strict);
 
                 // Note: port 25 doesn't work in GitHub actions so we use these instead for the integration tests:
                 // - 2525 for the SMTP server

@@ -16,7 +16,6 @@ using AliasVault.SmtpService;
 using AliasVault.SmtpService.Handlers;
 using AliasVault.SmtpService.Workers;
 using AliasVault.WorkerStatus.ServiceExtensions;
-using Microsoft.Extensions.Configuration;
 using SmtpServer;
 using SmtpServer.Storage;
 
@@ -85,10 +84,11 @@ builder.Services.AddSingleton(
     {
         // Use SmtpServerWorker logger so logs appear in the database (it's in the allowed sources list).
         var logger = provider.GetRequiredService<ILogger<SmtpServerWorker>>();
-        var configuration = provider.GetRequiredService<IConfiguration>();
         logger.LogInformation("SMTP advertised hostname (banner / EHLO): {AdvertisedHostname}", advertisedHostname);
+
         var options = new SmtpServerOptionsBuilder()
-            .ServerName(advertisedHostname);
+            .ServerName(advertisedHostname)
+            .MaxMessageSize(DatabaseMessageStore.MaxEmailSizeInBytes, MaxMessageSizeHandling.Strict);
 
         if (tlsAvailable && loadedCertificate != null)
         {

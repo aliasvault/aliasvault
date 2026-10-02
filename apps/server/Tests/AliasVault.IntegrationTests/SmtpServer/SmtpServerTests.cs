@@ -12,6 +12,7 @@ using System.Net.Sockets;
 using System.Text;
 using AliasVault.Cryptography;
 using AliasVault.IntegrationTests.SmtpServer.Helpers;
+using AliasVault.SmtpService.Handlers;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
@@ -164,6 +165,60 @@ public class SmtpServerTests
 
         var rcptResponse = await SendSmtpCommandAsync(stream, "RCPT TO:<not-claimed@example.tld>");
         Assert.That(rcptResponse, Does.StartWith("250"));
+    }
+
+    /// <summary>
+    /// EHLO should advertise the maximum message size so compliant senders refuse oversized mail up front.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task Ehlo_AdvertisesMaxMessageSize()
+    {
+        using var client = await ConnectRawSmtpClient();
+        using var stream = client.GetStream();
+
+        _ = await ReadSmtpLineAsync(stream); // Greeting
+        var ehloResponse = await SendSmtpCommandAsync(stream, "EHLO localhost");
+        Assert.That(ehloResponse, Does.Contain($"SIZE {DatabaseMessageStore.MaxEmailSizeInBytes}"));
+    }
+
+    /// <summary>
+    /// A DATA section larger than the maximum message size should end the session without storing anything.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task OversizedData_IsRejectedAndNotStored()
+    {
+        using var client = await ConnectRawSmtpClient();
+        using var stream = client.GetStream();
+
+        _ = await ReadSmtpLineAsync(stream); // Greeting
+        Assert.That(await SendSmtpCommandAsync(stream, "HELO localhost"), Does.StartWith("250"));
+        Assert.That(await SendSmtpCommandAsync(stream, "MAIL FROM:<sender@example.com>"), Does.StartWith("250"));
+        Assert.That(await SendSmtpCommandAsync(stream, "RCPT TO:<claimed@example.tld>"), Does.StartWith("250"));
+        Assert.That(await SendSmtpCommandAsync(stream, "DATA"), Does.StartWith("354"));
+
+        // Stream twice the limit; the server may close the connection before everything is written.
+        var line = Encoding.ASCII.GetBytes(new string('a', 998) + "\r\n");
+        var linesToSend = (DatabaseMessageStore.MaxEmailSizeInBytes * 2) / line.Length;
+        try
+        {
+            await stream.WriteAsync(Encoding.ASCII.GetBytes("Subject: oversized\r\n\r\n"));
+            for (var i = 0; i < linesToSend; i++)
+            {
+                await stream.WriteAsync(line);
+            }
+
+            await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n.\r\n"));
+            await stream.FlushAsync();
+        }
+        catch (IOException)
+        {
+            // Expected when the server ends the session mid-transfer.
+        }
+
+        var storedCount = await _testHostBuilder.GetDbContext().Emails.CountAsync();
+        Assert.That(storedCount, Is.Zero);
     }
 
     /// <summary>
