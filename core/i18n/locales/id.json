@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Kode otentikasi tidak valid. Silakan coba lagi.",
     "INVALID_RECOVERY_CODE": "Kode pemulihan tidak valid. Silakan coba lagi.",
     "INVALID_REFRESH_TOKEN": "Token refresh salah.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Kata sandi yang diberikan tidak sesuai dengan kata sandi Anda saat ini.",
     "PENDING_MIGRATIONS": "Ada migrasi yang masih tertunda. Silakan jalankan perintah ‘dotnet ef database update’ untuk menerapkan migrasi tersebut.",
     "PUBLIC_REGISTRATION_DISABLED": "Pendaftaran akun baru saat ini dinonaktifkan di server ini. Silakan hubungi administrator.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Bagus! Sekarang, mari kita atur kata sandi utama Anda untuk AliasVault."
       },
       "passwordStepTitle": "Atur Kata Sandi",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Pengaturan",
       "termsAndConditionsStepTitle": "Gunakan AliasVault",
       "termsStep": {
