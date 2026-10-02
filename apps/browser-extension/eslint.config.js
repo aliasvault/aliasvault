@@ -162,6 +162,18 @@ export default [
         },
     },
     {
+        // Icons come from the shared catalog in core/models/src/icons (the Icon component, uiIconSvg), never inline SVG markup.
+        files: ["src/**/*.{ts,tsx}"],
+        ignores: ["src/entrypoints/popup/components/Icons/Icon.tsx", "src/entrypoints/popup/components/Logo.tsx", "src/utils/constants/logo.ts", "src/**/__tests__/**"],
+        rules: {
+            "no-restricted-syntax": ["error",
+                { selector: "JSXOpeningElement[name.name='svg']", message: "Use the Icon component with an icon from core/models/src/icons instead of inline SVG." },
+                { selector: "TemplateElement[value.raw=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
+                { selector: "Literal[value=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
+            ],
+        },
+    },
+    {
         // The dev-only trace channel is the only module allowed to reach the console directly.
         files: ["src/utils/devLogger/DevLogger.ts"],
         rules: {
