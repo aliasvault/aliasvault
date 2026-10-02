@@ -56,6 +56,10 @@ AV_INSTANCE=$1
 
 AV_BASE_PORT=$DEFAULT_BASE_PORT
 AV_PORT_STRIDE=$DEFAULT_PORT_STRIDE
+
+# Whether new users can register without an invite link (API + web app). 'false'
+# requires an invite created in the admin panel (Users > + Invite).
+AV_PUBLIC_REGISTRATION_ENABLED=true
 ENV
 }
 
@@ -75,7 +79,9 @@ set +a
 AV_INSTANCE="${AV_INSTANCE:-0}"
 AV_BASE_PORT="${AV_BASE_PORT:-$DEFAULT_BASE_PORT}"
 AV_PORT_STRIDE="${AV_PORT_STRIDE:-$DEFAULT_PORT_STRIDE}"
+AV_PUBLIC_REGISTRATION_ENABLED="${AV_PUBLIC_REGISTRATION_ENABLED:-true}"
 case "$AV_INSTANCE" in (*[!0-9]*|"") die "AV_INSTANCE must be a non-negative integer (got '$AV_INSTANCE').";; esac
+case "$AV_PUBLIC_REGISTRATION_ENABLED" in (true|false) ;; (*) die "AV_PUBLIC_REGISTRATION_ENABLED must be 'true' or 'false' (got '$AV_PUBLIC_REGISTRATION_ENABLED').";; esac
 
 # --- Resolve effective ports ---------------------------------------------------
 SERVICE_COUNT=10   # block width (offsets 0..9); DB sits last so it ends in 9
@@ -141,7 +147,7 @@ write_web_dev_settings() {
     "PrivateEmailDomains": ["example.tld", "example2.tld", "aliasvault.net", "disabled.tld"],
     "HiddenPrivateEmailDomains": ["disabled.tld"],
     "SupportEmail": "support@example.tld",
-    "PublicRegistrationEnabled": "true",
+    "PublicRegistrationEnabled": "$AV_PUBLIC_REGISTRATION_ENABLED",
     "DeploymentMode": "dev"
 }
 JSON
@@ -205,7 +211,7 @@ DEV_HIDDEN_PRIVATE_EMAIL_DOMAINS="${HIDDEN_PRIVATE_EMAIL_DOMAINS:-disabled.tld}"
 start_api() {
   JWT_KEY="$DEV_JWT_KEY" \
   DATA_PROTECTION_CERT_PASS="$DEV_DATA_PROTECTION_CERT_PASS" \
-  PUBLIC_REGISTRATION_ENABLED="true" \
+  PUBLIC_REGISTRATION_ENABLED="$AV_PUBLIC_REGISTRATION_ENABLED" \
   PRIVATE_EMAIL_DOMAINS="$DEV_PRIVATE_EMAIL_DOMAINS" \
   HIDDEN_PRIVATE_EMAIL_DOMAINS="$DEV_HIDDEN_PRIVATE_EMAIL_DOMAINS" \
   IP_LOGGING_ENABLED="true" \
