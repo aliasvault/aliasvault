@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Ugyldig godkendelseskode. Prøv venligst igen.",
     "INVALID_RECOVERY_CODE": "Ugyldig gendannelseskode. Prøv venligst igen.",
     "INVALID_REFRESH_TOKEN": "Ugyldigt refresh-token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Den angivne adgangskode matcher ikke din nuværende adgangskode.",
     "PENDING_MIGRATIONS": "Der er udestående migreringer. Kør venligst 'dotnet ef database update' for at anvende dem.",
     "PUBLIC_REGISTRATION_DISABLED": "Ny brugeroprettelse er i øjeblikket deaktiveret på denne server. Kontakt venligst administratoren.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Fantastisk! Lad os nu oprette din hovedadgangskode til AliasVault."
       },
       "passwordStepTitle": "Vælg Adgangskode",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Opsætning",
       "termsAndConditionsStepTitle": "Brug Af AliasVault",
       "termsStep": {
