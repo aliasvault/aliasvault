@@ -73,6 +73,10 @@ runs:
           "apps/server/Shared/AliasVault.Shared/Models/Enums/UnlockMethodType.cs"
           "apps/server/Shared/AliasVault.Shared/Models/Enums/ManifestKeyType.cs"
           "apps/server/Shared/AliasVault.Shared/Models/Enums/VaultKeyAlgorithm.cs"
+          "core/models/src/icons"
+          "apps/server/AliasVault.Admin/Main/Components/Icons/UiIcons.cs"
+          "apps/mobile-app/components/items/ItemTypeIconComponents.tsx"
+          "apps/mobile-app/components/items/BuiltinLogoComponents.tsx"
           "apps/mobile-app/ios/VaultModels"
           "apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models"
         )
