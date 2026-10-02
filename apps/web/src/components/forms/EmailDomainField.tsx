@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/components/shared/Icon';
 import ToggleChip from '@/components/shared/ToggleChip';
 import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
@@ -184,10 +185,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
           </div>
           {onRemove && (
             <button type="button" onClick={onRemove} className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors" title={t('common.delete')}>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <Icon name="x" className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -203,9 +201,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
             )}
             {!isCustomDomain && onGenerateAlias && (
               <button type="button" onClick={handleRegenerate} className="px-3 text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm border-l border-gray-300 dark:border-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" title={t('common.generate')}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+                <Icon name="refresh" className="w-5 h-5" />
               </button>
             )}
           </div>

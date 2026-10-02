@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/components/shared/Icon';
 import { AVAILABLE_LANGUAGES } from '@/i18n/config';
 import { changeLanguage } from '@/i18n/i18n';
 
@@ -21,9 +22,7 @@ const LanguageSwitcher: React.FC = () => {
           <option key={language.code} value={language.code}>{language.flag} {language.nativeName}</option>
         ))}
       </select>
-      <svg className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7"></path>
-      </svg>
+      <Icon name="chevron-down" className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400" />
     </div>
   );
 };

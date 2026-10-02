@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { ITEM_TYPE_OPTIONS } from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 
 /**
@@ -88,17 +89,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
             </span>
           )}
         </h2>
-        <svg
-          className="w-4 h-4 mt-1 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <Icon name="chevron-down" className="w-4 h-4 mt-1 shrink-0" />
       </button>
 
       {isOpen && (
@@ -127,18 +118,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
                     className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                   >
                     <span>{t('items.filters.showFolders')}</span>
-                    <svg
-                      className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      {showFolders && (
-                        <polyline points="7 12 10 15 17 8" />
-                      )}
-                    </svg>
+                    <Icon name={showFolders ? 'square-check' : 'square-feather'} className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} />
                   </button>
                 )}
               </div>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import FolderIcon from '@/components/folders/FolderIcon';
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 import { useDb } from '@/context/DbContext';
 
 import type { Folder, FolderRef } from '@aliasvault/client/database/repositories/FolderRepository';
@@ -105,9 +106,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
 
   const selectedFolderRow = selectedKey ? folders.find(f => folderKey(f) === selectedKey) : undefined;
   const checkIcon = (
-    <svg className="w-5 h-5 ml-auto flex-shrink-0 text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-    </svg>
+    <Icon name="check" className="w-5 h-5 ml-auto flex-shrink-0 text-primary-600 dark:text-primary-400" />
   );
 
   return (
@@ -123,14 +122,10 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
         {selectedFolder ? (
           <FolderIcon isShared={selectedFolderRow !== undefined && isSharedFolder(selectedFolderRow, personalManifestId)} className="w-4 h-4 text-orange-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
         ) : (
-          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-          </svg>
+          <Icon name="folder" className="w-4 h-4 flex-shrink-0" />
         )}
         <span className="truncate">{selectedFolder ? selectedFolderRow?.Name : t('items.folderSelector.noFolder')}</span>
-        <svg className="w-3.5 h-3.5 ml-auto flex-shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <Icon name="chevron-down" className="w-3.5 h-3.5 ml-auto flex-shrink-0 opacity-70" />
       </button>
 
       <FormModal
@@ -140,16 +135,12 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
         maxWidth="sm"
         onClose={() => setShowFolderModal(false)}
         icon={(
-          <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-          </svg>
+          <Icon name="folder-filled" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
         )}
       >
         <div className="space-y-1 max-h-64 overflow-y-auto -mx-2">
           <button type="button" onClick={() => selectFolder(null)} className={`w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors ${rowClass(null)}`}>
-            <svg className={iconClass(null)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
+            <Icon name="archive" className={iconClass(null)} />
             <span className="font-medium">&mdash;</span>
             {!selectedFolder && checkIcon}
           </button>
@@ -163,9 +154,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
               <div key={key} className={`flex items-center rounded-md transition-colors ${rowClass(key)}`} style={{ paddingLeft: `${node.depth * FOLDER_INDENT_REM + 0.25}rem` }}>
                 {hasChildren ? (
                   <button type="button" onClick={() => toggleExpansion(key)} aria-expanded={isExpanded} className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                    <svg className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    <Icon name="chevron-right" className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                   </button>
                 ) : (
                   <span className="flex-shrink-0 w-7" />

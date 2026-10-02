@@ -2,6 +2,7 @@ import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { logFailure } from '@/utils/Diagnostics';
@@ -90,9 +91,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId, manifestId })
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
-                  </svg>
+                  <Icon name="download" className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </div>
               </div>
             </button>

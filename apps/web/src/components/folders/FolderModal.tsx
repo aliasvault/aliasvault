@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 
 type FolderModalProps = {
   isOpen: boolean;
@@ -61,9 +62,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
       onClose={onClose}
       onConfirm={handleSave}
       icon={(
-        <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-        </svg>
+        <Icon name="folder-filled" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
       )}>
       <label htmlFor="folder-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {t('items.folders.folderName')}

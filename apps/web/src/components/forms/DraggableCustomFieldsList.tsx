@@ -5,6 +5,7 @@ import CustomFieldLabel from '@/components/forms/CustomFieldLabel';
 import CustomFieldModal from '@/components/forms/CustomFieldModal';
 import EditPasswordFormRow from '@/components/forms/EditPasswordFormRow';
 import FormInput from '@/components/forms/FormInput';
+import Icon from '@/components/shared/Icon';
 import type { FieldEdit } from '@/models/ItemEdit';
 
 type DraggableCustomFieldsListProps = {
@@ -111,9 +112,7 @@ const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps> = ({ c
               <div data-drag-item={field.FieldKey} style={isDragged ? DRAGGED_STYLE : undefined} className="relative bg-white dark:bg-gray-800 rounded-lg group">
                 <div className="relative cursor-grab active:cursor-grabbing" draggable onDragStart={e => handleDragStart(e, field, slotIndex)} onDragEnd={endDrag}>
                   <CustomFieldLabel htmlFor={inputId} label={field.Label} onEdit={() => setEditingField(field)} onDelete={() => onDelete(field.FieldKey)} />
-                  <svg className="absolute right-0 top-0 w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                    <path d="M7 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-1.5 7.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-1.5 7.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16 16a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                  </svg>
+                  <Icon name="grip-vertical" className="absolute right-0 top-0 w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
 
                 {field.FieldType === FieldTypes.TextArea ? (

@@ -1,10 +1,11 @@
 import { logoSourceTranslationKey } from '@aliasvault/client/items/ItemLogoView';
-import { AppIconSvgs, getAllAppIconKeys } from '@aliasvault/models/icons';
+import { BuiltinLogoSvgs, getAllBuiltinLogoKeys } from '@aliasvault/models/icons';
 import { LogoKinds } from '@aliasvault/models/vault';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 
 import ItemIconComponent from './ItemIcon';
 
@@ -62,7 +63,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClose, item
         <div>
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('items.logo.builtinLogos')}</h3>
           <div className="grid grid-cols-5 gap-2">
-            {getAllAppIconKeys().map(key => (
+            {getAllBuiltinLogoKeys().map(key => (
               <button
                 key={key}
                 type="button"
@@ -70,7 +71,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClose, item
                 onClick={() => choose({ Kind: LogoKinds.Builtin, Source: key })}
                 className="flex items-center justify-center p-2 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-500 dark:hover:border-primary-500"
               >
-                <div className="w-7 h-7" dangerouslySetInnerHTML={{ __html: AppIconSvgs[key] }} />
+                <div className="w-7 h-7" dangerouslySetInnerHTML={{ __html: BuiltinLogoSvgs[key] }} />
               </button>
             ))}
           </div>
@@ -83,7 +84,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClose, item
             onClick={() => choose({ Kind: LogoKinds.Favicon })}
             className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg border border-gray-200 dark:border-gray-600 transition-colors hover:bg-primary-50 dark:hover:bg-primary-900/30 hover:border-primary-500 dark:hover:border-primary-500"
           >
-            <svg className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0a8.95 8.95 0 003.2-9 8.95 8.95 0 00-3.2-9m0 18a8.95 8.95 0 01-3.2-9A8.95 8.95 0 0112 3m-8.7 6h17.4M3.3 15h17.4" /></svg>
+            <Icon name="globe-alt" className="w-5 h-5 flex-shrink-0 text-primary-600 dark:text-primary-400" />
             <span className="min-w-0">
               <span className="block text-sm text-gray-900 dark:text-white">
                 {currentLogo?.Kind === LogoKinds.Favicon ? t('items.logo.refetchFromWebsite') : t('items.logo.fetchFromWebsite')}

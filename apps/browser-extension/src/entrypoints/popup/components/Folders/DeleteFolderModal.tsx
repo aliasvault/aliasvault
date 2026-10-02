@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 
 import { logFailure } from '@/utils/Diagnostics';
 
@@ -95,10 +96,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
           >
             <div className="flex items-start gap-3">
               <div className="mt-0.5 text-orange-500">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l2 2 4-4" />
-                </svg>
+                <Icon name="folder-check" className="w-5 h-5" />
               </div>
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -121,10 +119,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 text-red-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
+                  <Icon name="trash" className="w-5 h-5" strokeWidth={1} />
                 </div>
                 <div>
                   <p className="font-medium text-red-600 dark:text-red-400">

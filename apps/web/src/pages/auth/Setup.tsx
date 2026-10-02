@@ -9,6 +9,7 @@ import LanguageSwitcher from '@/components/auth/LanguageSwitcher';
 import Logo from '@/components/auth/Logo';
 import { CreatingStep, PasswordStep, TermsAndConditionsStep, UsernameStep } from '@/components/auth/setup/SetupSteps';
 import { ButtonLabel } from '@/components/shared/Button';
+import Icon from '@/components/shared/Icon';
 import { getAppConfig } from '@/config/AppConfig';
 import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -118,18 +119,14 @@ const Setup: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <button type="button" onClick={goBack} className={`text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 ${stepIndex === 0 ? 'invisible' : ''}`}>
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                  </svg>
+                  <Icon name="arrow-left" className="w-8 h-8" />
                 </button>
               </div>
               <div className="flex-grow text-center">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{stepTitle()}</h2>
               </div>
               <button type="button" onClick={() => navigate('/')} className="text-gray-500 -mt-1 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+                <Icon name="x" className="w-8 h-8" />
               </button>
             </div>
             {progressPercentage > 0 && (

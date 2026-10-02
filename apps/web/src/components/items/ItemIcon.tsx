@@ -1,5 +1,5 @@
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
-import { getAppIconSvg, ItemTypeIconSvgs } from '@aliasvault/models/icons';
+import { getBuiltinLogoSvg, ItemTypeIconSvgs } from '@aliasvault/models/icons';
 import { FieldKey, ItemTypes, LogoKinds, type Item } from '@aliasvault/models/vault';
 import React, { useState } from 'react';
 
@@ -25,25 +25,25 @@ const SvgIcon: React.FC<{ svg: string; sizeClass: string }> = ({ svg, sizeClass 
  */
 const detectCardBrand = (cardNumber: string | null | undefined): ItemTypeIconKey => {
   if (!cardNumber) {
-    return 'CreditCard';
+    return 'credit-card';
   }
   const cleaned = cardNumber.replace(/[\s-]/g, '');
   if (!/^\d{4,}/.test(cleaned)) {
-    return 'CreditCard';
+    return 'credit-card';
   }
   if (/^4/.test(cleaned)) {
-    return 'Visa';
+    return 'visa';
   }
   if (/^5[1-5]/.test(cleaned) || /^2[2-7]/.test(cleaned)) {
-    return 'Mastercard';
+    return 'mastercard';
   }
   if (/^3[47]/.test(cleaned)) {
-    return 'Amex';
+    return 'amex';
   }
   if (/^6(?:011|22|4[4-9]|5)/.test(cleaned)) {
-    return 'Discover';
+    return 'discover';
   }
-  return 'CreditCard';
+  return 'credit-card';
 };
 
 /**
@@ -55,7 +55,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, altText, sizeClass = 'w-10 h-
 
   const chosen = item.LogoInfo && item.LogoInfo.Kind !== LogoKinds.Favicon ? item.LogoInfo : null;
   if (chosen?.Kind === LogoKinds.Builtin) {
-    const builtinSvg = getAppIconSvg(chosen.Source);
+    const builtinSvg = getBuiltinLogoSvg(chosen.Source);
     if (builtinSvg) {
       return <SvgIcon svg={builtinSvg} sizeClass={sizeClass} />;
     }
@@ -68,7 +68,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, altText, sizeClass = 'w-10 h-
   }
 
   if (item.ItemType === ItemTypes.Note) {
-    return <SvgIcon svg={ItemTypeIconSvgs.Note} sizeClass={sizeClass} />;
+    return <SvgIcon svg={ItemTypeIconSvgs.note} sizeClass={sizeClass} />;
   }
 
   if (item.ItemType === ItemTypes.CreditCard) {
@@ -82,7 +82,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, altText, sizeClass = 'w-10 h-
     return <img src={logoSrc} alt={altText ?? item.Name ?? 'Item'} className={`${sizeClass} flex-shrink-0 rounded-[17%]`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />;
   }
 
-  return <SvgIcon svg={ItemTypeIconSvgs.Placeholder} sizeClass={sizeClass} />;
+  return <SvgIcon svg={ItemTypeIconSvgs.placeholder} sizeClass={sizeClass} />;
 };
 
 export default ItemIcon;

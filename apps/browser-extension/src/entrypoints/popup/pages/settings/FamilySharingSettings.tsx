@@ -12,6 +12,7 @@ import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDe
 import ConfirmPasswordModal from '@/entrypoints/popup/components/Dialogs/ConfirmPasswordModal';
 import FolderIcon from '@/entrypoints/popup/components/Folders/FolderIcon';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
@@ -427,9 +428,7 @@ const FamilySharingSettings: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3">
               <button onClick={() => toggleRoster(group.groupId)} className="flex items-center justify-between w-full text-left">
                 <span className="font-medium text-gray-900 dark:text-white">{familySharingText.members} ({group.members.length})</span>
-                <svg className={`w-5 h-5 text-gray-500 transition-transform ${isRosterExpanded(group.groupId) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <Icon name="chevron-down" className={`w-5 h-5 text-gray-500 transition-transform ${isRosterExpanded(group.groupId) ? 'rotate-180' : ''}`} />
               </button>
 
               {isRosterExpanded(group.groupId) && (
@@ -471,9 +470,7 @@ const FamilySharingSettings: React.FC = () => {
                           <button onClick={() => navigate(`/items/folder/${folderId}/${folderId}`)} className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                             <span className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</span>
-                            <svg className="w-4 h-4 ml-auto shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
+                            <Icon name="chevron-right" className="w-4 h-4 ml-auto shrink-0 text-gray-400" />
                           </button>
                         ) : (
                           <div className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1">
@@ -613,9 +610,7 @@ const FamilySharingSettings: React.FC = () => {
                 onClick={() => setPendingVaultCreate(group)}
                 className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-md hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                <Icon name="plus-sm" className="w-5 h-5" />
                 <span className="text-sm font-medium">{familySharingText.createSharedVault}</span>
               </button>
             )}

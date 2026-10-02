@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import SkeletonBase from '@/components/loading/SkeletonBase';
+import Icon from '@/components/shared/Icon';
 import Modal from '@/components/shared/Modal';
 import ModalHeaderAction from '@/components/shared/ModalHeaderAction';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
@@ -145,15 +146,11 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
             )}
             {email !== null && (
               <ModalHeaderAction onClick={() => void showDeleteConfirmation()} title={t('common.delete')} variant="danger">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Icon name="trash" className="h-5 w-5" />
               </ModalHeaderAction>
             )}
             <ModalHeaderAction onClick={onClose} title={t('common.close')}>
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <Icon name="x" className="h-5 w-5" />
             </ModalHeaderAction>
           </div>
         </div>
@@ -218,9 +215,7 @@ const EmailModal: React.FC<EmailModalProps> = ({ email, onClose, onEmailDeleted,
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {email.attachments.map((attachment) => (
                   <div key={attachment.index} className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                    </svg>
+                    <Icon name="paper-clip" className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                     <button type="button" onClick={() => void downloadAttachment(attachment)} className="text-primary-600 hover:underline text-sm truncate dark:text-primary-400 attachment-link">
                         ({Math.ceil(attachment.size / 1024)} KB) {attachment.filename}
                     </button>

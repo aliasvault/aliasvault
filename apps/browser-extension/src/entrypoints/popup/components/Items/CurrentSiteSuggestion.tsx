@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import useCurrentTabInfo from '@/entrypoints/popup/hooks/useCurrentTabInfo';
 
 import { itemRoute } from '@/utils/ItemRoute';
@@ -70,9 +71,7 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, on
             {item.Name || t('items.untitled')}
           </p>
         </div>
-        <svg className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
+        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
       </button>
     );
   }
@@ -84,16 +83,11 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, on
         onClick={() => onSearch(domain)}
         className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-orange-300 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 text-left"
       >
-        <svg className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+        <Icon name="search" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
         <span className="min-w-0 text-sm flex-1 font-medium text-orange-700 dark:text-orange-300 truncate">
           {domain} ({t('items.numberOfItemMatchesFound', { count: matches.length })})
         </span>
-        <svg className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
+        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
       </button>
     );
   }

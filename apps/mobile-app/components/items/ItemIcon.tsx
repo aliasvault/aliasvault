@@ -12,13 +12,13 @@ import {
 
 import type { DisplayItem } from '@/utils/DisplayItem';
 
-// Import centralized icon components (auto-generated from core/models/src/icons/AppIcons.ts and ItemTypeIcons.ts)
-import { appIconComponents, type AppIconKey } from './AppIconComponents';
+// Import centralized icon components (auto-generated from core/models/src/icons)
+import { builtinLogoComponents, type BuiltinLogoComponentKey } from './BuiltinLogoComponents';
 import {
-  iconComponents,
+  itemTypeIconComponents,
   PlaceholderIcon,
   NoteIcon,
-  type IconKey,
+  type ItemTypeIconComponentKey,
 } from './ItemTypeIconComponents';
 
 /**
@@ -42,32 +42,32 @@ type ItemIconProps = {
 /**
  * Detect credit card brand from card number using BIN prefixes.
  */
-const detectCardBrand = (cardNumber: string | undefined): IconKey => {
-  if (!cardNumber) return 'CreditCard';
+const detectCardBrand = (cardNumber: string | undefined): ItemTypeIconComponentKey => {
+  if (!cardNumber) return 'credit-card';
 
   const cleaned = cardNumber.replace(/[\s-]/g, '');
-  if (!/^\d{4,}/.test(cleaned)) return 'CreditCard';
+  if (!/^\d{4,}/.test(cleaned)) return 'credit-card';
 
-  if (/^4/.test(cleaned)) return 'Visa';
-  if (/^5[1-5]/.test(cleaned) || /^2[2-7]/.test(cleaned)) return 'Mastercard';
-  if (/^3[47]/.test(cleaned)) return 'Amex';
-  if (/^6(?:011|22|4[4-9]|5)/.test(cleaned)) return 'Discover';
+  if (/^4/.test(cleaned)) return 'visa';
+  if (/^5[1-5]/.test(cleaned) || /^2[2-7]/.test(cleaned)) return 'mastercard';
+  if (/^3[47]/.test(cleaned)) return 'amex';
+  if (/^6(?:011|22|4[4-9]|5)/.test(cleaned)) return 'discover';
 
-  return 'CreditCard';
+  return 'credit-card';
 };
 
 /**
  * The component for a built-in icon key, or null when the key is unknown to this client (a newer version may have added it).
  */
-export const getAppIconComponent = (key: string): typeof appIconComponents[AppIconKey] | null => {
-  return Object.prototype.hasOwnProperty.call(appIconComponents, key) ? appIconComponents[key as AppIconKey] : null;
+export const getBuiltinLogoComponent = (key: string): typeof builtinLogoComponents[BuiltinLogoComponentKey] | null => {
+  return Object.prototype.hasOwnProperty.call(builtinLogoComponents, key) ? builtinLogoComponents[key as BuiltinLogoComponentKey] : null;
 };
 
 /**
  * Get the appropriate icon component for a card number.
  */
 const getCardIconComponent = (cardNumber: string | undefined) => {
-  return iconComponents[detectCardBrand(cardNumber)];
+  return itemTypeIconComponents[detectCardBrand(cardNumber)];
 };
 
 /**
@@ -79,7 +79,7 @@ export function ItemIcon({ item, style }: ItemIconProps) : React.ReactNode {
 
   // A built-in icon carries no bytes: every platform draws it from the shared catalog.
   if (item.LogoInfo?.Kind === LogoKinds.Builtin) {
-    const BuiltinIcon = getAppIconComponent(item.LogoInfo.Source);
+    const BuiltinIcon = getBuiltinLogoComponent(item.LogoInfo.Source);
     if (BuiltinIcon) {
       return (
         <View style={[styles.iconContainer, style]}>

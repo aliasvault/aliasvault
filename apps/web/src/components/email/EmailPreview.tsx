@@ -2,6 +2,7 @@ import { downloadBytes } from '@aliasvault/client/utilities/FileDownload';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/components/shared/Icon';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -95,9 +96,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
                   </button>
                 )}
                 <button type="button" onClick={() => void showDeleteConfirmation()} id="delete-email" className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Icon name="trash" className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -133,9 +132,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
                 <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                   {email.attachments.map((attachment) => (
                     <div key={attachment.index} className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-                      </svg>
+                      <Icon name="paper-clip" className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                       <button type="button" onClick={() => void downloadAttachment(attachment)} className="text-primary-600 hover:underline text-sm truncate dark:text-primary-400 attachment-link">
                         ({Math.ceil(attachment.size / 1024)} KB) {attachment.filename}
                       </button>
@@ -149,9 +146,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({ email, onEmailDeleted, item
       ) : (
         <div className="flex bg-gray-50 dark:bg-gray-700 items-center justify-center h-full text-gray-500 dark:text-gray-400">
           <div className="text-center">
-            <svg className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
+            <Icon name="mail" className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" />
             <p className="mt-2 text-sm">{t('emails.preview.selectEmailMessage')}</p>
           </div>
         </div>

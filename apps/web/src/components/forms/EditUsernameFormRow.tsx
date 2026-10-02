@@ -2,6 +2,7 @@ import React from 'react';
 
 import FormInput from '@/components/forms/FormInput';
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 
 type EditUsernameFormRowProps = {
   id: string;
@@ -23,9 +24,7 @@ const EditUsernameFormRow: React.FC<EditUsernameFormRowProps> = ({ id, label, va
         <FormInput id={id} attached="right" trailingSpace="none" value={value} onValueChange={onChange} placeholder={placeholder} />
       </div>
       <button type="button" id="generate-username-button" className="px-3 text-gray-500 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm dark:text-white dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800" onClick={onGenerateNewUsername}>
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-        </svg>
+        <Icon name="refresh" className="w-5 h-5" />
       </button>
     </div>
   </>

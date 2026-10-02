@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 
 import { logFailure } from '@/utils/Diagnostics';
 
@@ -328,10 +329,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
             className="w-8 h-8 flex items-center justify-center text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800"
             title={t('totp.addCode')}
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
+            <Icon name="plus" className="w-5 h-5" />
           </button>
         )}
       </div>
@@ -342,10 +340,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
           onClick={showAddForm}
           className="w-full py-1.5 px-4 flex items-center justify-center gap-2 text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <Icon name="plus" className="w-5 h-5" />
           <span>{t('totp.addCode')}</span>
         </button>
       )}
@@ -363,9 +358,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                 onClick={hideAddForm}
                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 14 14">
-                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                </svg>
+                <Icon name="x" className="w-3 h-3" />
               </button>
             )}
           </div>
@@ -414,10 +407,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                   className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
                   title={t('common.remove')}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
+                  <Icon name="x" className="w-4 h-4" />
                 </button>
               </div>
               <input
@@ -477,9 +467,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                     className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                     title={t('common.edit')}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
+                    <Icon name="pencil-alt" className="w-5 h-5" />
                   </button>
                   <button
                     type="button"
@@ -487,9 +475,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                     className="text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400"
                     title={t('common.delete')}
                   >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path>
-                    </svg>
+                    <Icon name="trash" className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -519,9 +505,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                     className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
                     title={showQrCode ? t('common.hide') + ' QR Code' : t('common.show') + ' QR Code'}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                    </svg>
+                    <Icon name="qrcode" className="w-5 h-5" />
                   </button>
                 </div>
                 <input
@@ -553,10 +537,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                       className="w-5 h-5 flex items-center justify-center text-gray-300 hover:text-red-400 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
                       title={t('common.remove')}
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
+                      <Icon name="x" className="w-4 h-4" />
                     </button>
                   </div>
                   <input

@@ -1,5 +1,5 @@
 import SqliteClient from '@aliasvault/client/database/SqliteClient';
-import { getAppIconSvg, ItemTypeIconSvgs } from '@aliasvault/models/icons';
+import { getBuiltinLogoSvg, ItemTypeIconSvgs } from '@aliasvault/models/icons';
 import {
   FieldKey,
   LogoKinds,
@@ -36,28 +36,28 @@ const SvgIcon: React.FC<{ svg: string; className?: string }> = ({ svg, className
  */
 const detectCardBrand = (cardNumber: string | undefined): ItemTypeIconKey => {
   if (!cardNumber) {
-    return 'CreditCard';
+    return 'credit-card';
   }
 
   const cleaned = cardNumber.replace(/[\s-]/g, '');
   if (!/^\d{4,}/.test(cleaned)) {
-    return 'CreditCard';
+    return 'credit-card';
   }
 
   if (/^4/.test(cleaned)) {
-    return 'Visa';
+    return 'visa';
   }
   if (/^5[1-5]/.test(cleaned) || /^2[2-7]/.test(cleaned)) {
-    return 'Mastercard';
+    return 'mastercard';
   }
   if (/^3[47]/.test(cleaned)) {
-    return 'Amex';
+    return 'amex';
   }
   if (/^6(?:011|22|4[4-9]|5)/.test(cleaned)) {
-    return 'Discover';
+    return 'discover';
   }
 
-  return 'CreditCard';
+  return 'credit-card';
 };
 
 /**
@@ -83,7 +83,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
    */
   const chosen = item.LogoInfo && item.LogoInfo.Kind !== LogoKinds.Favicon ? item.LogoInfo : null;
   if (chosen?.Kind === LogoKinds.Builtin) {
-    const builtinSvg = getAppIconSvg(chosen.Source);
+    const builtinSvg = getBuiltinLogoSvg(chosen.Source);
     if (builtinSvg) {
       return <SvgIcon svg={builtinSvg} className={className} />;
     }
@@ -97,7 +97,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
 
   // For Note type, always show note icon
   if (item.ItemType === ItemTypes.Note) {
-    return <SvgIcon svg={ItemTypeIconSvgs.Note} className={className} />;
+    return <SvgIcon svg={ItemTypeIconSvgs.note} className={className} />;
   }
 
   // For CreditCard type, detect card brand and show appropriate icon
@@ -129,7 +129,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
           if (parent) {
             const placeholder = document.createElement('div');
             placeholder.className = className;
-            placeholder.innerHTML = ItemTypeIconSvgs.Placeholder;
+            placeholder.innerHTML = ItemTypeIconSvgs.placeholder;
             parent.insertBefore(placeholder, target);
           }
         }}
@@ -138,7 +138,7 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
   }
 
   // Default placeholder for Login/Alias without logo
-  return <SvgIcon svg={ItemTypeIconSvgs.Placeholder} className={className} />;
+  return <SvgIcon svg={ItemTypeIconSvgs.placeholder} className={className} />;
 };
 
 export default ItemIcon;

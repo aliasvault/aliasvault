@@ -1,7 +1,7 @@
 import { isSameItem, scopedKey } from '@aliasvault/client/database/ItemRef';
 import { SqliteClient } from '@aliasvault/client/database/SqliteClient';
 import { generateTotpCode, getTotpRemainingSeconds } from '@aliasvault/client/items/TotpUtility';
-import { ItemTypeIconSvgs } from '@aliasvault/models/icons';
+import { createUiIconElement, ItemTypeIconSvgs, uiIconSvg } from '@aliasvault/models/icons';
 import { FieldKey, getFieldValue, normalizeTotpPeriod } from '@aliasvault/models/vault';
 
 import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
@@ -353,9 +353,7 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
   const closeButton = document.createElement('button');
   closeButton.className = 'av-button av-button-close';
   closeButton.innerHTML = `
-    <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    ${uiIconSvg('x', { class: 'av-icon' })}
   `;
 
   /**
@@ -371,15 +369,11 @@ async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefine
     contextMenu.style.top = `${rect.bottom + 4}px`;
     contextMenu.innerHTML = `
       <button class="av-context-menu-item" data-action="temporary">
-        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        ${uiIconSvg('clock', { class: 'av-icon' })}
         ${hideFor1HourText}
       </button>
       <button class="av-context-menu-item" data-action="permanent">
-        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        ${uiIconSvg('x', { class: 'av-icon' })}
         ${hidePermanentlyText}
       </button>
     `;
@@ -796,29 +790,10 @@ export async function updatePopupContent(items: Item[], itemList: HTMLElement | 
  * autofilled on this site, so the user can quickly spot it among multiple matches.
  */
 function createRecentlySelectedIcon(): SVGSVGElement {
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('stroke', '#6b7280');
-  svg.setAttribute('stroke-width', '2');
-  svg.setAttribute('stroke-linecap', 'round');
-  svg.setAttribute('stroke-linejoin', 'round');
+  const svg = createUiIconElement<SVGSVGElement>(document, 'clock', { stroke: '#6b7280' });
   svg.style.width = '12px';
   svg.style.height = '12px';
   svg.style.flexShrink = '0';
-
-  const arc = document.createElementNS(svgNS, 'path');
-  arc.setAttribute('d', 'M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8');
-  svg.appendChild(arc);
-
-  const corner = document.createElementNS(svgNS, 'polyline');
-  corner.setAttribute('points', '3 3 3 8 8 8');
-  svg.appendChild(corner);
-
-  const innerHands = document.createElementNS(svgNS, 'path');
-  innerHands.setAttribute('d', 'M12 7v5l4 2');
-  svg.appendChild(innerHands);
 
   return svg;
 }
@@ -913,10 +888,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   const createButton = document.createElement('button');
   createButton.className = 'av-button av-button-primary';
   createButton.innerHTML = `
-    <svg class="av-icon" viewBox="0 0 24 24">
-      <line x1="12" y1="5" x2="12" y2="19"></line>
-      <line x1="5" y1="12" x2="19" y2="12"></line>
-    </svg>
+    ${uiIconSvg('plus', { class: 'av-icon' })}
     ${newText}
   `;
 
@@ -975,9 +947,7 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   const closeButton = document.createElement('button');
   closeButton.className = 'av-button av-button-close';
   closeButton.innerHTML = `
-    <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    ${uiIconSvg('x', { class: 'av-icon' })}
   `;
 
   /**
@@ -993,15 +963,11 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
     contextMenu.style.top = `${rect.bottom + 4}px`;
     contextMenu.innerHTML = `
       <button class="av-context-menu-item" data-action="temporary">
-        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        ${uiIconSvg('clock', { class: 'av-icon' })}
         ${hideFor1HourText}
       </button>
       <button class="av-context-menu-item" data-action="permanent">
-        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        ${uiIconSvg('x', { class: 'av-icon' })}
         ${hidePermanentlyText}
       </button>
     `;
@@ -1184,10 +1150,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
   button.title = 'Unlock AliasVault';
   button.className = 'av-vault-locked-button';
   button.innerHTML = `
-    <svg class="av-icon-lock" viewBox="0 0 24 24">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
+    ${uiIconSvg('lock-closed', { class: 'av-icon-lock' })}
   `;
   container.appendChild(button);
 
@@ -1199,10 +1162,7 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
   closeButton.className = 'av-button av-button-close av-vault-locked-close';
   closeButton.title = 'Dismiss popup';
   closeButton.innerHTML = `
-    <svg class="av-icon" viewBox="0 0 24 24">
-      <line x1="18" y1="6" x2="6" y2="18"></line>
-      <line x1="6" y1="6" x2="18" y2="18"></line>
-    </svg>
+    ${uiIconSvg('x', { class: 'av-icon' })}
   `;
 
   // Position the close button to the right of the container
@@ -1282,24 +1242,11 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialItems: It
  * Build small passkey badge icon shown next to a service name to mark that the entry is (or has) a passkey.
  */
 function createPasskeyBadgeIcon(): SVGSVGElement {
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('class', 'av-passkey-icon');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('stroke', 'currentColor');
-  svg.setAttribute('stroke-width', '2');
-  svg.setAttribute('stroke-linecap', 'round');
-  svg.setAttribute('stroke-linejoin', 'round');
-  svg.setAttribute('aria-label', 'Has passkey');
+  const svg = createUiIconElement<SVGSVGElement>(document, 'key', { 'class': 'av-passkey-icon', 'aria-label': 'Has passkey' });
   svg.style.width = '14px';
   svg.style.height = '14px';
   svg.style.flexShrink = '0';
   svg.style.opacity = '0.7';
-
-  const path = document.createElementNS(svgNS, 'path');
-  path.setAttribute('d', 'M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4');
-  svg.appendChild(path);
 
   return svg;
 }
@@ -1315,7 +1262,7 @@ function createLogoContainer(logo: Uint8Array | number[] | undefined): HTMLEleme
   if (logoSrc) {
     logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
   } else {
-    logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
+    logoContainer.innerHTML = ItemTypeIconSvgs.placeholder;
   }
 
   return logoContainer;
@@ -1328,11 +1275,7 @@ function createPopoutIcon(item: ItemRef, rootContainer: HTMLElement): HTMLElemen
   const popoutIcon = document.createElement('div');
   popoutIcon.className = 'av-popout-icon';
   popoutIcon.innerHTML = `
-      <svg class="av-icon" viewBox="0 0 24 24">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        <polyline points="15 3 21 3 21 9"></polyline>
-        <line x1="10" y1="14" x2="21" y2="3"></line>
-      </svg>
+      ${uiIconSvg('external-link', { class: 'av-icon' })}
     `;
 
   addReliableClickHandler(popoutIcon, (e) => {
@@ -1669,9 +1612,7 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
   button.title = await t('content.openAliasVaultToUpgrade');
   button.className = 'av-upgrade-required-button';
   button.innerHTML = `
-    <svg class="av-icon-upgrade" viewBox="0 0 24 24">
-      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-    </svg>
+    ${uiIconSvg('collection', { class: 'av-icon-upgrade' })}
   `;
   container.appendChild(button);
 
@@ -1683,10 +1624,7 @@ export async function createUpgradeRequiredPopup(input: HTMLInputElement, rootCo
   closeButton.className = 'av-button av-button-close av-upgrade-required-close';
   closeButton.title = await t('content.dismissPopup');
   closeButton.innerHTML = `
-    <svg class="av-icon" viewBox="0 0 24 24">
-      <line x1="18" y1="6" x2="6" y2="18"></line>
-      <line x1="6" y1="6" x2="18" y2="18"></line>
-    </svg>
+    ${uiIconSvg('x', { class: 'av-icon' })}
   `;
 
   // Position the close button to the right of the container

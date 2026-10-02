@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 
 type PasswordConfirmationModalProps = {
   isOpen: boolean;
@@ -61,9 +62,7 @@ const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ i
       closeOnOverlayClick={false}
       submitOnEnter={true}
       icon={(
-        <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-        </svg>
+        <Icon name="lock-closed" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
       )}>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{description}</p>
 

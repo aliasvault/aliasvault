@@ -2,6 +2,7 @@ import React from 'react';
 
 import FormInput from '@/components/forms/FormInput';
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 
 type MultiValueFormRowProps = {
   id: string;
@@ -27,9 +28,7 @@ const MultiValueFormRow: React.FC<MultiValueFormRowProps> = ({ id, label, values
             <FormInput id={`${id}-${index}`} value={value} onValueChange={next => onChange(shown.map((v, i) => i === index ? next : v))} onFocus={e => onFocus?.(index, e)} placeholder={placeholder} />
             {index === shown.length - 1 && (
               <button type="button" id={`add-${id}`} onClick={() => onChange([...shown, ''])} className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                <Icon name="plus-sm" className="w-5 h-5" />
               </button>
             )}
           </div>

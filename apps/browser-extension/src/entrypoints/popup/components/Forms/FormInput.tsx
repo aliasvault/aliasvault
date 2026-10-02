@@ -1,53 +1,18 @@
 import React, { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
+
+import type { UiIconName } from '@aliasvault/models/icons';
+
 /**
  * Button configuration for form input.
  */
 type FormInputButton = {
-  icon: string;
+  icon: UiIconName;
   onClick: () => void;
   title?: string;
 }
-
-/**
- * Icon component for form input buttons.
- */
-const Icon: React.FC<{ name: string }> = ({ name }) => {
-  switch (name) {
-    case 'visibility':
-      return (
-        <>
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-          <circle cx="12" cy="12" r="3" />
-        </>
-      );
-    case 'visibility-off':
-      return (
-        <>
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-          <line x1="1" y1="1" x2="23" y2="23" />
-        </>
-      );
-    case 'refresh':
-      return (
-        <>
-          <path d="M23 4v6h-6" />
-          <path d="M1 20v-6h6" />
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-        </>
-      );
-    case 'settings':
-      return (
-        <>
-          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </>
-      );
-    default:
-      return null;
-  }
-};
 
 /**
  * Form input props.
@@ -116,9 +81,9 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
   } text-gray-900 sm:text-sm rounded-lg shadow-sm border focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 py-2 px-3`;
 
   // Add password visibility button if type is password
-  const allButtons = type === 'password'
+  const allButtons: FormInputButton[] = type === 'password'
     ? [...buttons, {
-      icon: showPassword ? 'visibility-off' : 'visibility',
+      icon: showPassword ? 'eye-off' : 'eye',
       /**
        * Toggle password visibility.
        */
@@ -165,9 +130,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
                 title={button.title}
                 className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors duration-200"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <Icon name={button.icon} />
-                </svg>
+                <Icon name={button.icon} className="w-4 h-4" />
               </button>
             ))}
           </div>

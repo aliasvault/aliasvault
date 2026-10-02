@@ -7,6 +7,7 @@ import CopyPastePasswordFormRow from '@/components/forms/CopyPastePasswordFormRo
 import type { DisplayField } from '@/components/items/DisplayField';
 import FieldHistoryModal from '@/components/items/FieldHistoryModal';
 import FormLabel from '@/components/shared/FormLabel';
+import Icon from '@/components/shared/Icon';
 import { useDb } from '@/context/DbContext';
 
 import type { ItemRef } from '@aliasvault/client/database/ItemRef';
@@ -97,9 +98,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, item, fullWidth = false,
       {label}
       {field.EnableHistory && historyCount > 0 && (
         <button type="button" className="ml-2 inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none" title={t('items.viewHistory')} onClick={() => setShowHistoryModal(true)}>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
+          <Icon name="clock" className="h-4 w-4" />
         </button>
       )}
     </FormLabel>

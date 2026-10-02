@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
 import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
@@ -351,9 +352,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
           className="w-full mt-2 py-1 px-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md transition-colors duration-200 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 flex items-center justify-center gap-1"
         >
           <span>{t('common.loadMore')}</span>
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <Icon name="chevron-down" className="w-3 h-3" />
         </button>
       )}
     </div>

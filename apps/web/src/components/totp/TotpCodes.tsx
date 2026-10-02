@@ -8,6 +8,7 @@ import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 import InputTextField from '@/components/shared/InputTextField';
 import SectionTitle from '@/components/shared/SectionTitle';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
@@ -155,10 +156,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
   }, [editingCode, itemDisplayName, itemUsername, showQrCode]);
 
   const removeIcon = (
-    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
+    <Icon name="x" className="w-4 h-4" />
   );
 
   return (
@@ -171,16 +169,12 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
           <div className="flex items-center gap-2">
             {visibleCodes.length > 0 && !isAddFormVisible && (
               <button id="add-totp-code" onClick={showAddForm} type="button" className="text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-2 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-xs w-8 h-8 flex items-center justify-center dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800" title={t('totp.addTotpCodeDescription')}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
+                <Icon name="plus" className="w-4 h-4" strokeWidth={2.5} />
               </button>
             )}
             {canRemove && (
               <button type="button" onClick={onRemove} className="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center" title={t('common.delete')}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <Icon name="x" className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -198,9 +192,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                 <h4 className="text-lg font-medium text-gray-900 dark:text-white">{t('totp.addTotpCodeModalTitle')}</h4>
                 {visibleCodes.length > 0 && (
                   <button onClick={() => setIsAddFormVisible(false)} type="button" className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
-                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                    </svg>
+                    <Icon name="x" className="w-3 h-3" />
                     <span className="sr-only">{t('totp.closeFormButton')}</span>
                   </button>
                 )}
@@ -253,14 +245,10 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                     <div className="text-sm text-gray-500 dark:text-gray-400">{t('totp.saveToViewCode')}</div>
                   </div>
                   <button type="button" onClick={() => showEditModal(code)} className="edit-totp-code text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title={t('common.edit')}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
+                    <Icon name="pencil-alt" className="w-5 h-5" />
                   </button>
                   <button type="button" onClick={() => void deleteTotpCode(code)} className="delete-totp-code text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path>
-                    </svg>
+                    <Icon name="trash" className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -277,9 +265,7 @@ const TotpCodes: React.FC<TotpCodesProps> = ({ totpCodes, onTotpCodesChange, can
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-900 dark:text-white">{t('totp.secretKey')}</label>
                   <button type="button" onClick={() => setShowQrCode(v => !v)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1" title={`${showQrCode ? t('common.hide') : t('common.show')} QR Code`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                    </svg>
+                    <Icon name="qrcode" className="w-5 h-5" />
                   </button>
                 </div>
                 <input type="text" value={editSecret} onChange={e => setEditSecret(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono" placeholder={t('totp.secretKey')} />

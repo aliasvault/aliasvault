@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import SmallLoadingIndicator from '@/components/loading/SmallLoadingIndicator';
+import Icon from '@/components/shared/Icon';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -141,9 +142,7 @@ const DbStatusIndicator: React.FC = () => {
       <SmallLoadingIndicator title={getStatusTitle()} spinning={isSpinning}>
         {!isSpinning && (
           <button className="absolute p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl" id="vault-refresh-btn" onClick={onRefreshClick}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
+            <Icon name="refresh" className="h-4 w-4 text-gray-400" />
             {showSyncError && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" aria-hidden="true"></span>}
           </button>
         )}

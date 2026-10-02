@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FormModal from '@/components/shared/FormModal';
+import Icon from '@/components/shared/Icon';
 import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
 
 const VALIDATION_DEBOUNCE_MS = 800;
@@ -109,9 +110,7 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title
       closeOnOverlayClick={false}
       submitOnEnter={false}
       icon={(
-        <svg className="h-6 w-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
+        <Icon name="upload" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
       )}
       footerContent={(
         <>

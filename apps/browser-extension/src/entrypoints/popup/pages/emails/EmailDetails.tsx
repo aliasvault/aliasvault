@@ -9,6 +9,7 @@ import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
+import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -310,19 +311,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
                 title={showMetadata ? t('common.hideDetails') : t('common.showDetails')}
                 aria-expanded={showMetadata}
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <Icon name="information-circle" className="w-4 h-4" />
               </button>
             </div>
             {parsedAttachments.length > 0 && (
@@ -393,19 +382,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
                   onClick={() => handleDownloadParsedAttachment(attachment, index)}
                   className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 text-left"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                    />
-                  </svg>
+                  <Icon name="paper-clip" className="w-4 h-4" />
                   <span>
                     {attachment.filename} ({Math.ceil(attachment.size / 1024)} KB)
                   </span>

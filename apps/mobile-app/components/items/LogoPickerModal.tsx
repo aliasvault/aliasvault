@@ -1,5 +1,5 @@
 import { logoSourceTranslationKey } from '@aliasvault/client/items/ItemLogoView';
-import { getAllAppIconKeys } from '@aliasvault/models/icons';
+import { getAllBuiltinLogoKeys } from '@aliasvault/models/icons';
 import { LogoKinds } from '@aliasvault/models/vault';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useCallback } from 'react';
@@ -12,7 +12,7 @@ import { HapticsUtility } from '@/utils/HapticsUtility';
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ModalWrapper } from '@/components/common/ModalWrapper';
-import { appIconComponents } from '@/components/items/AppIconComponents';
+import { builtinLogoComponents } from '@/components/items/BuiltinLogoComponents';
 import { ItemIcon } from '@/components/items/ItemIcon';
 
 import type { ItemLogo, LogoSelection } from '@aliasvault/models/vault';
@@ -189,8 +189,8 @@ export const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ isOpen, onClos
 
       <Text style={styles.sectionLabel}>{t('items.logo.builtinLogos')}</Text>
       <View style={styles.grid}>
-        {getAllAppIconKeys().map(key => {
-          const Icon = appIconComponents[key];
+        {getAllBuiltinLogoKeys().map(key => {
+          const Icon = builtinLogoComponents[key];
           return (
             <View key={key} style={styles.cell}>
               <TouchableOpacity

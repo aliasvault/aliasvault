@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import SupportContact from '@/components/alerts/SupportContact';
 import Button from '@/components/shared/Button';
+import Icon from '@/components/shared/Icon';
 
 type CriticalErrorPanelProps = {
   report?: string | null;
@@ -54,10 +55,7 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
             )}
             <div className="mt-2 flex justify-end">
               <button type="button" id="copy-error-report" onClick={copyReport} className={`inline-flex items-center gap-1.5 text-sm font-medium hover:underline ${copied ? 'text-green-600 dark:text-green-400' : 'text-primary-700 dark:text-primary-500'}`}>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
-                  <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
-                </svg>
+                <Icon name="clipboard" className="w-4 h-4" />
                 {copied ? t('common.copiedShort') : t('app.vaultError.copyErrorDetails')}
               </button>
             </div>
