@@ -2,7 +2,6 @@
 @using System.Timers
 
 <Button OnClick="HandleClick"
-        IsDisabled="@IsRefreshing"
         Display="flex"
         Color="@Color"
         AdditionalClasses="@AdditionalClasses">
@@ -29,7 +28,7 @@
     /// The color theme of the button.
     /// </summary>
     [Parameter]
-    public string Color { get; set; } = "primary";
+    public string Color { get; set; } = "light";
 
     /// <summary>
     /// Additional CSS classes to apply to the button.
