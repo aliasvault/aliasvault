@@ -149,6 +149,18 @@ export default [
         },
     },
     {
+        // Icons come from the shared catalog in core/models/src/icons (the Icon component, uiIconSvg), never inline SVG markup.
+        files: ["src/**/*.{ts,tsx}"],
+        ignores: ["src/components/shared/Icon.tsx", "src/**/__tests__/**"],
+        rules: {
+            "no-restricted-syntax": ["error",
+                { selector: "JSXOpeningElement[name.name='svg']", message: "Use the Icon component with an icon from core/models/src/icons instead of inline SVG." },
+                { selector: "TemplateElement[value.raw=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
+                { selector: "Literal[value=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
+            ],
+        },
+    },
+    {
         // Playwright fixtures call their `use` callback, which the React hooks rule mistakes for a hook.
         files: ["tests/**/*.ts"],
         rules: {
