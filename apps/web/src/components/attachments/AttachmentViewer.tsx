@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import Card from '@/components/shared/Card';
 import SectionTitle from '@/components/shared/SectionTitle';
+import Text from '@/components/shared/Text';
 
 import type { Attachment } from '@aliasvault/models/vault';
 
@@ -89,7 +90,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
           })}
         </div>
       ) : (
-        <p className="text-gray-500 dark:text-gray-400">{t('items.noAttachments')}</p>
+        <Text variant="muted">{t('items.noAttachments')}</Text>
       )}
     </Card>
   );

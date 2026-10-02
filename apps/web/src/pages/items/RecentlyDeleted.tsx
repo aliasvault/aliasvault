@@ -11,6 +11,7 @@ import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import FormModal from '@/components/shared/FormModal';
 import PageContent from '@/components/shared/PageContent';
 import PageHeader from '@/components/shared/PageHeader';
+import Text from '@/components/shared/Text';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -192,7 +193,7 @@ const RecentlyDeleted: React.FC = () => {
         <PageContent className="mx-4">
           <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {items.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">{t('items.trash.noItems')}</p>
+              <Text variant="muted">{t('items.trash.noItems')}</Text>
             ) : (
               <>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('items.trash.description')}</p>

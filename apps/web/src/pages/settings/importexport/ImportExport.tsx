@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 import ExportPasswordModal from '@/components/settings/importexport/ExportPasswordModal';
 import ImportServices from '@/components/settings/importexport/ImportServices';
 import ResetVaultSection from '@/components/settings/importexport/ResetVaultSection';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import PageContent from '@/components/shared/PageContent';
-import PageHeader from '@/components/shared/PageHeader';
 import PasswordConfirmationModal from '@/components/shared/PasswordConfirmationModal';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirmModal } from '@/context/ConfirmModalContext';
@@ -209,7 +209,7 @@ const ImportExport: React.FC = () => {
 
   return (
     <>
-      <PageHeader breadcrumbItems={[{ displayName: t('settings.importExport') }]} title={t('settings.importExport')} description={t('importExport.pageDescription')} />
+      <SettingsPageHeader icon="importExport" title={t('settings.importExport')} description={t('importExport.pageDescription')} />
 
       <PageContent>
         <Card className="2xl:col-span-2">

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import LoadingIndicator from '@/components/loading/LoadingIndicator';
 import Button from '@/components/shared/Button';
 import Modal from '@/components/shared/Modal';
+import Text from '@/components/shared/Text';
 import { useDb } from '@/context/DbContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -554,7 +555,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
           <strong>{t('importExport.serviceCard.supportedFormats')}:</strong> {acceptedFileExtensions.join(', ')}
         </p>
         <div className="mb-4 bg-amber-50 border border-amber-400 dark:bg-amber-800/30 dark:border-amber-500/50 rounded-lg p-4">
-          <p className="mb-4 text-gray-700 dark:text-gray-200">{t('importExport.serviceCard.uploadExportFileText', { service: serviceName })}</p>
+          <Text className="mb-4">{t('importExport.serviceCard.uploadExportFileText', { service: serviceName })}</Text>
           <input ref={fileInputRef} type="file" accept={fileAcceptTypes} onChange={e => void handleFileUpload(e)} className="text-gray-700 dark:text-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/40 dark:file:text-primary-300 dark:hover:file:bg-primary-800/60" />
         </div>
         <div className="flex justify-end mt-6 space-x-2">
@@ -573,12 +574,12 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       {isImporting ? (
         <div className="text-center">
           <LoadingIndicator />
-          <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.decryptingFile')}</p>
+          <Text className="mt-4">{t('importExport.serviceCard.decryptingFile')}</Text>
         </div>
       ) : (
         <>
           <div className="mb-4">
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.encryptedFilePasswordPrompt')}</p>
+            <Text className="mb-4">{t('importExport.serviceCard.encryptedFilePasswordPrompt')}</Text>
             <label htmlFor="decryptionPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('importExport.serviceCard.decryptionPasswordLabel')}</label>
             <input id="decryptionPassword" type="password" value={decryptionPassword} onChange={e => setDecryptionPassword(e.target.value)} onKeyDown={handlePasswordKeyDown} autoFocus autoComplete="off" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
@@ -654,7 +655,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
           </div>
         ) : (
           <>
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.previewInstructions')}</p>
+            <Text className="mb-4">{t('importExport.serviceCard.previewInstructions')}</Text>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -706,7 +707,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         isExtractingFavicons ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.extractingFavicons', { current: faviconExtractionProgress, total: totalFaviconsToExtract })}</p>
+            <Text className="mt-4">{t('importExport.serviceCard.extractingFavicons', { current: faviconExtractionProgress, total: totalFaviconsToExtract })}</Text>
             <div className="mt-4">
               <Button onClick={cancelFaviconExtraction} color="secondary">{t('common.cancel')}</Button>
             </div>
@@ -714,12 +715,12 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         ) : isSavingCredentials ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.savingCredentials', { current: credentialSaveProgress, total: totalCredentialsToSave })}</p>
+            <Text className="mt-4">{t('importExport.serviceCard.savingCredentials', { current: credentialSaveProgress, total: totalCredentialsToSave })}</Text>
           </div>
         ) : isSyncingVault ? (
           <div className="text-center">
             <LoadingIndicator />
-            <p className="mt-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.syncingVault')}</p>
+            <Text className="mt-4">{t('importExport.serviceCard.syncingVault')}</Text>
           </div>
         ) : (
           <LoadingIndicator />
@@ -727,7 +728,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
       ) : (
         <>
           <div className="mb-4">
-            <p className="mb-4 text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.confirmImportText', { count: importedCredentials.length })}</p>
+            <Text className="mb-4">{t('importExport.serviceCard.confirmImportText', { count: importedCredentials.length })}</Text>
             {extractFavicons && (
               <div className="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
                 <p>{t('importExport.serviceCard.faviconExtractionNote')}</p>

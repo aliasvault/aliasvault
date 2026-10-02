@@ -25,6 +25,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ImportServiceCard from '@/components/settings/importexport/ImportServiceCard';
+import Text from '@/components/shared/Text';
 import { useNotifications } from '@/context/NotificationContext';
 
 import type { ImportedCredential } from '@aliasvault/client/transfer/import/models/ImportedCredential';
@@ -34,7 +35,7 @@ import type { ImportFileResult } from '@aliasvault/client/transfer/import/models
  * One paragraph of a service's import instructions.
  */
 const Instruction: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="text-gray-700 dark:text-gray-300 mb-4">{children}</p>
+  <Text className="mb-4">{children}</Text>
 );
 
 /**

@@ -1,7 +1,10 @@
 import React from 'react';
 
 /** Button colors. */
-export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success';
+export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success' | 'outline';
+
+/** Button sizes: `md` for in-page actions, `lg` for the main action of the full-screen auth pages. */
+export type ButtonSize = 'md' | 'lg';
 
 /** Direction of the arrow a button can show: forward after the label, back before it. */
 export type ButtonArrowDirection = 'forward' | 'back';
@@ -12,6 +15,7 @@ type ButtonProps = {
   isDisabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
   color?: ButtonColor;
+  size?: ButtonSize;
   additionalClasses?: string;
   display?: 'inline' | 'flex';
   id?: string;
@@ -19,8 +23,14 @@ type ButtonProps = {
 };
 
 /** Base classes shared by every button-styled element. */
-export const BUTTON_BASE_CLASSES = 'center items-center px-3 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-4';
-const DISABLED_CLASSES = 'bg-gray-400 cursor-not-allowed';
+export const BUTTON_BASE_CLASSES = 'items-center justify-center gap-2 text-center font-medium rounded-lg focus:outline-none focus:ring-4';
+
+/**
+ * The padding and text size of a button size.
+ * @param size - the size
+ */
+export const getButtonSizeClasses = (size: ButtonSize): string => size === 'lg' ? 'px-5 py-2 text-base' : 'px-3 py-2 text-sm';
+const DISABLED_CLASSES = 'text-white bg-gray-400 cursor-not-allowed';
 
 /**
  * The color classes of a button.
@@ -29,13 +39,16 @@ const DISABLED_CLASSES = 'bg-gray-400 cursor-not-allowed';
 export const getButtonColorClasses = (color: ButtonColor): string => {
   switch (color) {
     case 'primary':
-      return 'bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
+      return 'text-white bg-primary-700 hover:bg-primary-800 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
     case 'danger':
-      return 'bg-red-700 hover:bg-red-800 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800';
+      return 'text-white bg-red-700 hover:bg-red-800 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800';
     case 'success':
-      return 'bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800';
+      return 'text-white bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800';
+    case 'outline':
+      // A ring instead of a border, so the outline button is exactly as tall as the filled ones.
+      return 'text-gray-700 bg-white ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-gray-200 dark:text-gray-200 dark:bg-gray-800 dark:ring-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700';
     default:
-      return 'bg-gray-700 hover:bg-gray-800 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800';
+      return 'text-white bg-gray-700 hover:bg-gray-800 focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800';
   }
 };
 
@@ -67,8 +80,8 @@ export const ButtonLabel: React.FC<{ children: React.ReactNode; arrow?: ButtonAr
 /**
  * Generic button.
  */
-const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', additionalClasses = '', display = 'inline', id, arrow }) => {
-  const classes = `${display} ${BUTTON_BASE_CLASSES} ${getButtonColorClasses(color)} ${isDisabled ? DISABLED_CLASSES : ''} ${additionalClasses}`.trim();
+const Button: React.FC<ButtonProps> = ({ children, onClick, isDisabled = false, type = 'button', color = 'primary', size = 'md', additionalClasses = '', display = 'inline', id, arrow }) => {
+  const classes = `${display} ${BUTTON_BASE_CLASSES} ${getButtonSizeClasses(size)} ${isDisabled ? DISABLED_CLASSES : getButtonColorClasses(color)} ${additionalClasses}`.trim();
 
   return (
     <button type={type} id={id} onClick={isDisabled ? undefined : onClick} disabled={isDisabled} className={classes}>

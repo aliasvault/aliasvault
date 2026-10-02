@@ -14,9 +14,8 @@ import { vaultStore } from '@/vault/VaultStore';
 const MIN_SPIN_MS = 600;
 
 /**
- * Vault sync indicator in the top bar. Spins while syncing; otherwise a refresh button that pulls the latest vault,
- * marked with a red dot once a sync failed while the vault holds changes of the user the server does not have yet
- * (e.g. a background save that failed), so a click retries the push.
+ * Vault sync indicator in the top bar. Only visible when doing something: spins while syncing, and shows a 
+ * retry button with a red dot once a sync failed while the vault holds changes of the user the server does not have yet.
  */
 const DbStatusIndicator: React.FC = () => {
   const { t } = useTranslation();
@@ -132,6 +131,10 @@ const DbStatusIndicator: React.FC = () => {
     }
     return t('common.syncVaultData');
   };
+
+  if (!isSpinning && !showSyncError) {
+    return null;
+  }
 
   return (
     <div className="ms-1 items-center flex" id="vault-sync-indicator" data-syncing={isSpinning ? 'true' : 'false'}>

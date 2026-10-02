@@ -3,8 +3,8 @@ import React, { useRef, useState } from 'react';
 
 import CustomFieldLabel from '@/components/forms/CustomFieldLabel';
 import CustomFieldModal from '@/components/forms/CustomFieldModal';
-import { EDIT_INPUT_CLASSES } from '@/components/forms/EditFormRow';
 import EditPasswordFormRow from '@/components/forms/EditPasswordFormRow';
+import FormInput from '@/components/forms/FormInput';
 import type { FieldEdit } from '@/models/ItemEdit';
 
 type DraggableCustomFieldsListProps = {
@@ -118,7 +118,7 @@ const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps> = ({ c
 
                 {field.FieldType === FieldTypes.TextArea ? (
                   <div className="relative">
-                    <textarea id={inputId} style={{ height: '200px' }} className={EDIT_INPUT_CLASSES} value={field.Value} onChange={e => onValueChange(field.FieldKey, e.target.value)}></textarea>
+                    <FormInput id={inputId} multiline value={field.Value} onValueChange={next => onValueChange(field.FieldKey, next)} />
                   </div>
                 ) : field.FieldType === FieldTypes.Password ? (
                   <EditPasswordFormRow id={inputId} label="" value={field.Value} onChange={v => onValueChange(field.FieldKey, v)} showPassword={false} showGenerateButtons />
@@ -126,7 +126,7 @@ const DraggableCustomFieldsList: React.FC<DraggableCustomFieldsListProps> = ({ c
                   <EditPasswordFormRow id={inputId} label="" value={field.Value} onChange={v => onValueChange(field.FieldKey, v)} showPassword={false} showGenerateButtons={false} />
                 ) : (
                   <div className="relative">
-                    <input type="text" id={inputId} autoComplete="off" className={EDIT_INPUT_CLASSES} value={field.Value} onChange={e => onValueChange(field.FieldKey, e.target.value)} autoCapitalize="off" autoCorrect="off" />
+                    <FormInput id={inputId} value={field.Value} onValueChange={next => onValueChange(field.FieldKey, next)} />
                   </div>
                 )}
               </div>

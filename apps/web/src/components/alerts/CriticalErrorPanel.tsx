@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
 import SupportContact from '@/components/alerts/SupportContact';
+import Button from '@/components/shared/Button';
 
 type CriticalErrorPanelProps = {
   report?: string | null;
@@ -66,9 +67,7 @@ const CriticalErrorPanel: React.FC<CriticalErrorPanelProps> = ({ report, title, 
         {!hideSupportContact && <SupportContact report={report} className="mt-3" />}
 
         {onAction && (
-          <button type="button" id="critical-error-action" onClick={onAction} className="mt-6 w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-            {actionLabel ?? t('common.back')}
-          </button>
+          <Button id="critical-error-action" onClick={onAction} size="lg" additionalClasses="mt-6 w-full">{actionLabel ?? t('common.back')}</Button>
         )}
       </div>
 

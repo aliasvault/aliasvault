@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Card from '@/components/shared/Card';
+import SectionTitle from '@/components/shared/SectionTitle';
 
 /**
  * What the security page can ask a section to do.
@@ -20,7 +21,7 @@ export const formatDateTime = (value: string): string => new Date(value).toLocal
  */
 const SecuritySection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <Card>
-    <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
+    <SectionTitle className="mb-2">{title}</SectionTitle>
     {children}
   </Card>
 );

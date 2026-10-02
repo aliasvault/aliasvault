@@ -5,10 +5,9 @@ import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import PasswordInputField from '@/components/auth/PasswordInputField';
-import Breadcrumb from '@/components/shared/Breadcrumb';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
-import H1 from '@/components/shared/H1';
 import PasswordStrengthIndicator from '@/components/shared/PasswordStrengthIndicator';
 import { useDb } from '@/context/DbContext';
 import { useLoading } from '@/context/LoadingContext';
@@ -114,13 +113,7 @@ const ChangePassword: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
-        <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.changePassword.changePassword') }]} />
-          <H1>{t('settings.securitySettings.changePassword.changePassword')}</H1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{t('settings.securitySettings.changePassword.headerText')}</p>
-        </div>
-      </div>
+      <SettingsPageHeader icon="security" breadcrumbItems={[{ displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.changePassword.changePassword') }]} title={t('settings.securitySettings.changePassword.changePassword')} description={t('settings.securitySettings.changePassword.headerText')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
 
       <Card>
         <form onSubmit={changePassword} className="space-y-4">

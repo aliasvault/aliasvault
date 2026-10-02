@@ -13,6 +13,7 @@ import ServerValidationErrors from '@/components/alerts/ServerValidationErrors';
 import MobileUnlockModal from '@/components/auth/MobileUnlockModal';
 import PasswordInputField from '@/components/auth/PasswordInputField';
 import FooterLogin from '@/components/layout/FooterLogin';
+import Button from '@/components/shared/Button';
 import FormLabel from '@/components/shared/FormLabel';
 import InputTextField from '@/components/shared/InputTextField';
 import { getAppConfig } from '@/config/AppConfig';
@@ -242,9 +243,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const inputClass = 'bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500';
-  const submitClass = 'w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800';
-
   // An update request blocks the app until the user loads the latest version.
   const updateRequest = errors.find(asksForClientUpdate);
   if (updateRequest) {
@@ -278,7 +276,7 @@ const Login: React.FC = () => {
           <form onSubmit={handle2Fa} className="space-y-6" av-enable="true" av-suppress-save="true">
             <div>
               <FormLabel htmlFor="two-factor-code">{t('auth.loginForm.authenticatorCodeLabel')}</FormLabel>
-              <input ref={twoFactorRef} id="two-factor-code" type="number" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} className={inputClass} autoComplete="one-time-code" />
+              <InputTextField ref={twoFactorRef} id="two-factor-code" type="number" value={twoFactorCode} onValueChange={setTwoFactorCode} autoComplete="one-time-code" />
             </div>
             <div className="flex items-start">
               <div className="flex items-center h-5">
@@ -288,7 +286,7 @@ const Login: React.FC = () => {
                 <label htmlFor="remember-machine" className="font-medium text-gray-900 dark:text-white">{t('auth.loginForm.rememberMachineLabel')}</label>
               </div>
             </div>
-            <button type="submit" className={submitClass}>{t('auth.login')}</button>
+            <Button type="submit" size="lg" additionalClasses="w-full">{t('auth.login')}</Button>
           </form>
         </div>
         <p className="mt-6 text-sm text-gray-700 dark:text-gray-300">
@@ -320,9 +318,9 @@ const Login: React.FC = () => {
           <form onSubmit={handleRecoveryCode} className="space-y-6">
             <div>
               <FormLabel htmlFor="recovery-code">{t('auth.loginForm.recoveryCodeLabel')}</FormLabel>
-              <input id="recovery-code" type="text" value={recoveryCode} onChange={(e) => setRecoveryCode(e.target.value)} className={inputClass} autoComplete="off" />
+              <InputTextField id="recovery-code" type="text" value={recoveryCode} onValueChange={setRecoveryCode} autoComplete="off" />
             </div>
-            <button type="submit" className={submitClass}>{t('auth.login')}</button>
+            <Button type="submit" size="lg" additionalClasses="w-full">{t('auth.login')}</Button>
           </form>
         </div>
         <p className="mt-6 text-sm text-gray-700 dark:text-gray-300">
@@ -366,15 +364,13 @@ const Login: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-4">
-          <button type="submit" id="login-button" className="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
-            {t('auth.login')}
-          </button>
-          <button type="button" id="mobile-login-button" onClick={() => setShowMobileLoginModal(true)} className="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2">
+          <Button type="submit" id="login-button" size="lg" display="flex" additionalClasses="w-full">{t('auth.login')}</Button>
+          <Button id="mobile-login-button" onClick={() => setShowMobileLoginModal(true)} color="outline" size="lg" display="flex" additionalClasses="hidden md:flex w-full">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
             </svg>
             {t('auth.loginWithMobile')}
-          </button>
+          </Button>
         </div>
 
         {getAppConfig().publicRegistrationEnabled && (

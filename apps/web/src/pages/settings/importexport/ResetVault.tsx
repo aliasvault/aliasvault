@@ -3,11 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import MessageWarning from '@/components/alerts/MessageWarning';
-import Breadcrumb from '@/components/shared/Breadcrumb';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader';
 import Button from '@/components/shared/Button';
 import Card from '@/components/shared/Card';
 import FormLabel from '@/components/shared/FormLabel';
-import H1 from '@/components/shared/H1';
 import InputTextField from '@/components/shared/InputTextField';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
@@ -104,12 +103,7 @@ const ResetVault: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
-        <div className="mb-4 col-span-full xl:mb-2">
-          <Breadcrumb items={[{ displayName: t('common.home'), url: '/', showHomeIcon: true }, { displayName: t('settings.importExport'), url: '/settings/import-export' }, { displayName: t('settings.resetVault.pageTitle') }]} />
-          <H1>{t('settings.resetVault.pageTitle')}</H1>
-        </div>
-      </div>
+      <SettingsPageHeader icon="importExport" breadcrumbItems={[{ displayName: t('settings.importExport'), url: '/settings/import-export' }, { displayName: t('settings.resetVault.pageTitle') }]} title={t('settings.resetVault.pageTitle')} backTo={{ url: '/settings/import-export', label: t('settings.importExport') }} />
 
       <Card>
         {!showPasswordConfirm ? (

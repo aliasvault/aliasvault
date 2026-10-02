@@ -7,8 +7,10 @@ import ClipboardCountdownBar from '@/components/layout/ClipboardCountdownBar';
 import Footer from '@/components/layout/Footer';
 import TopMenu from '@/components/layout/TopMenu';
 import ConfirmModal from '@/components/shared/ConfirmModal';
+import { AccountNudgeProvider } from '@/context/AccountNudgeContext';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
+import { QuickCreateProvider } from '@/context/QuickCreateContext';
 import { useVaultLanguage } from '@/hooks/useVaultLanguage';
 import { useVaultSync } from '@/hooks/useVaultSync';
 import { setLocalPreference } from '@/utils/LocalPreferences';
@@ -85,22 +87,24 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <>
-      <ClipboardCountdownBar />
-      <TopMenu />
-      <div className="flex pt-16 mb-4 lg:mb-16 overflow-x-hidden bg-gray-100 dark:bg-gray-900 relative">
-        <div id="main-content" className="relative w-full max-w-screen-2xl mx-auto h-full overflow-y-auto bg-gray-100 dark:bg-gray-900 min-h-[300px]">
-          <main>
-            <GlobalNotificationDisplay />
-            <Outlet />
-          </main>
+    <AccountNudgeProvider>
+      <QuickCreateProvider>
+        <ClipboardCountdownBar />
+        <TopMenu />
+        <div className="flex pt-16 mb-4 lg:mb-16 overflow-x-hidden bg-gray-100 dark:bg-gray-900 relative">
+          <div id="main-content" className="relative w-full max-w-screen-2xl mx-auto h-full overflow-y-auto bg-gray-100 dark:bg-gray-900 min-h-[300px]">
+            <main>
+              <GlobalNotificationDisplay />
+              <Outlet />
+            </main>
+          </div>
         </div>
-      </div>
-      <Footer />
-      {syncError && (
-        <ConfirmModal title={t('common.error')} message={syncError} confirmText={t('common.close')} onClose={() => void clearSyncError()} />
-      )}
-    </>
+        <Footer />
+        {syncError && (
+          <ConfirmModal title={t('common.error')} message={syncError} confirmText={t('common.close')} onClose={() => void clearSyncError()} />
+        )}
+      </QuickCreateProvider>
+    </AccountNudgeProvider>
   );
 };
 

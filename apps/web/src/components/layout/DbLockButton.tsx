@@ -2,12 +2,14 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import SettingsIcon from '@/components/settings/SettingsIcon';
+import MenuItem from '@/components/shared/MenuItem';
 import { useDb } from '@/context/DbContext';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { vaultStore } from '@/vault/VaultStore';
 
 /**
- * Lock the vault and redirect to the unlock page.
+ * Account menu row that locks the vault.
  */
 const DbLockButton: React.FC = () => {
   const { t } = useTranslation();
@@ -26,13 +28,7 @@ const DbLockButton: React.FC = () => {
   useKeyboardShortcut('gl', lockFromShortcut);
 
   return (
-    <div className="ms-2 items-center hidden lg:flex">
-      <button className="p-2 hover:bg-gray-200 rounded-2xl" onClick={onLockClick} title={t('common.lockVault')}>
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-        </svg>
-      </button>
-    </div>
+    <MenuItem id="lockVaultButton" icon={<SettingsIcon name="lock" className="w-5 h-5" />} label={t('common.lockVault')} onClick={() => void onLockClick()} />
   );
 };
 

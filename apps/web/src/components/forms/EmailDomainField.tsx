@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import ToggleChip from '@/components/shared/ToggleChip';
 import { getAppConfig } from '@/config/AppConfig';
 import { useDb } from '@/context/DbContext';
 import { vaultStore } from '@/vault/VaultStore';
@@ -165,11 +166,6 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
     onGenerateAlias?.();
   };
 
-  /**
-   * Classes of a domain chip in the popup.
-   */
-  const domainButtonClasses = (domain: string): string => `px-3 py-1.5 text-sm rounded-md transition-colors ${selectedDomain === domain ? 'bg-primary-600 text-white hover:bg-primary-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'}`;
-
   return (
     <>
       <div className="space-y-2">
@@ -224,7 +220,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
                     </h4>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.privateEmailDescription')}</p>
                     <div className="flex flex-wrap gap-2">
-                      {privateDomains.map(domain => <button key={domain} type="button" onClick={() => selectDomain(domain)} className={domainButtonClasses(domain)}>{domain}</button>)}
+                      {privateDomains.map(domain => <ToggleChip key={domain} selected={selectedDomain === domain} outlined onClick={() => selectDomain(domain)}>{domain}</ToggleChip>)}
                     </div>
                   </div>
                 )}
@@ -233,7 +229,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{t('items.publicEmailTitle')}</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.publicEmailDescription')}</p>
                   <div className="flex flex-wrap gap-2">
-                    {publicDomains.map(domain => <button key={domain} type="button" onClick={() => selectDomain(domain)} className={domainButtonClasses(domain)}>{domain}</button>)}
+                    {publicDomains.map(domain => <ToggleChip key={domain} selected={selectedDomain === domain} outlined onClick={() => selectDomain(domain)}>{domain}</ToggleChip>)}
                   </div>
                 </div>
               </div>
