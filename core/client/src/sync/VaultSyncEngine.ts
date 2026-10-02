@@ -175,7 +175,7 @@ type EngineCommand =
   | { kind: 'stateGet'; key: string }
   | { kind: 'stateSet'; key: string; value: JsonValue }
   | { kind: 'stateRemove'; key: string }
-  | { kind: 'dbOpen'; db: string; bytes?: string | null }
+  | { kind: 'dbOpen'; db: string }
   | { kind: 'dbQuery'; db: string; sql: string; params: JsonValue[] }
   | { kind: 'dbExec'; db: string; statements: EngineSqlStatement[] }
   | { kind: 'dbExport'; db: string }
@@ -184,6 +184,9 @@ type EngineCommand =
   | { kind: 'markClean'; mutationSeqAtStart: number }
   | { kind: 'log'; level: 'log' | 'warn' | 'phase'; message: string }
   | { kind: 'done'; result: JsonValue };
+
+/** The host's response to one command: the JSON, plus the SQLite file for a `dbExport`. */
+type HostResponse = { json: JsonValue; bytes: Uint8Array | null };
 
 /** The database names a command may address. */
 const DB_LOCAL = 'local';
@@ -302,15 +305,16 @@ class EngineRun {
   public constructor(private readonly host: IVaultSyncEngineHost, private readonly webApi: WebApiService) {}
 
   /**
-   * Carry out one command.
+   * Carry out one command and return the host's response.
    * @param command - the command
    */
-  public async handle(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<JsonValue> {
+  public async handle(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<HostResponse> {
     const started = now();
     try {
-      return await this.dispatch(command);
+      const response = await this.dispatch(command);
+      return response instanceof Uint8Array ? { json: {}, bytes: response } : { json: response, bytes: null };
     } catch (error) {
-      return { error: error instanceof Error ? error.message : String(error) };
+      return { json: { error: error instanceof Error ? error.message : String(error) }, bytes: null };
     } finally {
       const timing = this.timings.get(command.kind) ?? { count: 0, ms: 0 };
       timing.count++;
@@ -346,10 +350,10 @@ class EngineRun {
   }
 
   /**
-   * The command handlers.
+   * The command handlers. Raw bytes (a `dbExport`) go back to the engine outside the JSON.
    * @param command - the command
    */
-  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<JsonValue> {
+  private async dispatch(command: Exclude<EngineCommand, { kind: 'done' }>): Promise<JsonValue | Uint8Array> {
     switch (command.kind) {
       case 'http':
         return this.http(command);
@@ -362,7 +366,7 @@ class EngineRun {
         await getPlatform().storage.remove(stateKey(command.key));
         return {};
       case 'dbOpen':
-        await this.openStaging(command.bytes ?? null);
+        await this.openStaging();
         return {};
       case 'dbQuery': {
         const rows = (await this.database(command.db)).query(command.sql, command.params.map(toBindValue));
@@ -375,7 +379,7 @@ class EngineRun {
         }
         return {};
       case 'dbExport':
-        return { bytes: bytesToBase64((await this.database(command.db)).export()) };
+        return (await this.database(command.db)).export();
       case 'vaultStore':
         return this.storeVault(command);
       case 'vaultLoad':
@@ -444,13 +448,12 @@ class EngineRun {
   }
 
   /**
-   * Open the staging database.
-   * @param bytesBase64 - the SQLite file bytes, or null for a fresh database
+   * Open a fresh staging database.
    */
-  private async openStaging(bytesBase64: string | null): Promise<void> {
+  private async openStaging(): Promise<void> {
     this.staging?.close();
     this.staging = null;
-    const db = bytesBase64 ? await getPlatform().sqlite.open(base64ToBytes(bytesBase64)) : await openFreshSchemaDatabase();
+    const db = await openFreshSchemaDatabase();
     try {
       db.exec('PRAGMA foreign_keys = OFF');
     } catch (error) {
@@ -496,7 +499,8 @@ export async function runVaultSyncEngine<T extends VaultSyncEngineResultBase>(ho
         devLog(run.summarize(request.operation, now() - started));
         return command.result as T;
       }
-      await session.resume(JSON.stringify(await run.handle(command)));
+      const response = await run.handle(command);
+      await session.resume(JSON.stringify(response.json), response.bytes);
     }
   } finally {
     run.close();

@@ -35,8 +35,12 @@ class VaultSyncRunLog(private val operation: String) {
         /**
          * The size of a text payload (JSON or base64) for the logs, by character count.
          */
-        private fun formatSize(value: Any?): String {
-            val size = (value as? String)?.length ?: 0
+        private fun formatSize(value: Any?): String = formatByteCount((value as? String)?.length ?: 0)
+
+        /**
+         * A byte count for the logs.
+         */
+        private fun formatByteCount(size: Int): String {
             return when {
                 size < BYTES_PER_KB -> "$size B"
                 size < BYTES_PER_KB * BYTES_PER_KB -> String.format(Locale.US, "%.1f KB", size / BYTES_PER_KB)
@@ -107,10 +111,10 @@ class VaultSyncRunLog(private val operation: String) {
     /**
      * Count one handled command, and log it on its own when it is a transfer or slow.
      */
-    fun recordCommand(kind: String, command: JSONObject, response: JSONObject, nanos: Long) {
+    fun recordCommand(kind: String, command: JSONObject, response: JSONObject, responseBytes: ByteArray?, nanos: Long) {
         commandNanos[kind] = (commandNanos[kind] ?: 0L) + nanos
         commandCounts[kind] = (commandCounts[kind] ?: 0) + 1
-        describe(kind, command, response, nanos / NANOS_PER_MS)?.let { note(it) }
+        describe(kind, command, response, responseBytes, nanos / NANOS_PER_MS)?.let { note(it) }
     }
 
     /**
@@ -135,7 +139,7 @@ class VaultSyncRunLog(private val operation: String) {
     /**
      * One line for a command relevant for performance analysis, or null for unrelated calls.
      */
-    private fun describe(kind: String, command: JSONObject, response: JSONObject, ms: Long): String? {
+    private fun describe(kind: String, command: JSONObject, response: JSONObject, responseBytes: ByteArray?, ms: Long): String? {
         val took = "$kind took ${ms}ms"
         if (response.has("error")) {
             return "$took: failed (${response.optString("error")})"
@@ -154,8 +158,7 @@ class VaultSyncRunLog(private val operation: String) {
             }
             "vaultStore" -> "$took: ${formatSize(command.opt("encryptedBlob"))}"
             "vaultLoad" -> "$took: ${formatSize(response.opt("encryptedBlob"))}"
-            "dbOpen" -> "$took: ${if (command.isNull("bytes")) "fresh schema" else formatSize(command.opt("bytes"))}"
-            "dbExport" -> "$took: $db ${formatSize(response.opt("bytes"))}"
+            "dbExport" -> "$took: $db ${formatByteCount(responseBytes?.size ?: 0)}"
             "dbExec" -> if (slow) "$took: ${command.optJSONArray("statements")?.length() ?: 0} statement(s) on $db" else null
             "dbQuery" -> if (slow) "$took: ${response.optJSONArray("rows")?.length() ?: 0} row(s) from $db" else null
             else -> if (slow) took else null

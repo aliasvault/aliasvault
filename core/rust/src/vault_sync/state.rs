@@ -85,7 +85,7 @@ impl Ctx {
         if let Some(schema) = &self.schema {
             return Ok(schema.clone());
         }
-        db::open_staging(&self.host, None).await?;
+        db::open_staging(&self.host).await?;
         let schema = SchemaInfo { columns: db::schema_columns(&self.host, Db::Staging).await?, migration_id: db::latest_migration_id(&self.host, Db::Staging).await? };
         self.schema = Some(schema.clone());
         Ok(schema)

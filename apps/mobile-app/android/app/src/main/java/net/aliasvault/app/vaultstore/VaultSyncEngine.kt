@@ -1,6 +1,5 @@
 package net.aliasvault.app.vaultstore
 
-import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -67,10 +66,10 @@ class VaultSyncEngine(
                     return result
                 }
                 val startNanos = System.nanoTime()
-                val response = handle(kind, command)
-                log.recordCommand(kind, command, response, System.nanoTime() - startNanos)
+                val (response, bytes) = respond(kind, command)
+                log.recordCommand(kind, command, response, bytes, System.nanoTime() - startNanos)
                 val responseJson = log.json { response.toString() }
-                log.engine { session.resume(responseJson) }
+                log.engine { session.resume(responseJson, bytes) }
             }
         } finally {
             closeStaging()
@@ -107,6 +106,21 @@ class VaultSyncEngine(
 
     // region Commands
 
+    /**
+     * The JSON response to one command.
+     */
+    @Suppress("TooGenericExceptionCaught")
+    private suspend fun respond(kind: String, command: JSONObject): Pair<JSONObject, ByteArray?> {
+        if (kind != "dbExport") {
+            return Pair(handle(kind, command), null)
+        }
+        return try {
+            Pair(JSONObject(), exportDatabase(command.optString("db")))
+        } catch (e: Exception) {
+            Pair(errorResponse(kind, e), null)
+        }
+    }
+
     @Suppress("TooGenericExceptionCaught")
     private suspend fun handle(kind: String, command: JSONObject): JSONObject {
         return try {
@@ -122,7 +136,7 @@ class VaultSyncEngine(
                     JSONObject()
                 }
                 "dbOpen" -> {
-                    openStaging(command.optString("bytes", null).takeIf { command.has("bytes") && !command.isNull("bytes") })
+                    openStaging()
                     JSONObject()
                 }
                 "dbQuery" -> {
@@ -137,14 +151,6 @@ class VaultSyncEngine(
                     }
                     JSONObject()
                 }
-                "dbExport" -> {
-                    val bytes = when (val db = command.optString("db")) {
-                        "local" -> vaultStore.database.export()
-                        "staging" -> stagingDatabase().export()
-                        else -> error("Unknown database $db")
-                    }
-                    JSONObject().put("bytes", Base64.encodeToString(bytes, Base64.NO_WRAP))
-                }
                 "vaultStore" -> storeVault(command)
                 "vaultLoad" -> JSONObject().put("encryptedBlob", if (vaultStore.hasEncryptedDatabase()) vaultStore.getEncryptedDatabase() else JSONObject.NULL)
                 "markClean" -> {
@@ -158,9 +164,25 @@ class VaultSyncEngine(
                 else -> JSONObject().put("error", "Unknown engine command $kind")
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Engine command $kind failed", e)
-            JSONObject().put("error", e.message ?: e.toString())
+            errorResponse(kind, e)
         }
+    }
+
+    /**
+     * Serialize a database to SQLite bytes.
+     */
+    private fun exportDatabase(name: String): ByteArray = when (name) {
+        "local" -> vaultStore.database.export()
+        "staging" -> stagingDatabase().export()
+        else -> error("Unknown database $name")
+    }
+
+    /**
+     * The `{ "error": ... }` response for a failed command.
+     */
+    private fun errorResponse(kind: String, e: Exception): JSONObject {
+        Log.w(TAG, "Engine command $kind failed", e)
+        return JSONObject().put("error", e.message ?: e.toString())
     }
 
     @Suppress("TooGenericExceptionCaught")
@@ -274,13 +296,9 @@ class VaultSyncEngine(
     /**
      * Open the staging database in memory.
      */
-    private fun openStaging(bytesBase64: String?) {
+    private fun openStaging() {
         closeStaging()
-        staging = if (bytesBase64 != null) {
-            SqliteMemoryDatabase.fromBytes(Base64.decode(bytesBase64, Base64.NO_WRAP))
-        } else {
-            SqliteMemoryDatabase.withSchema(VaultSql.completeSchema)
-        }.also {
+        staging = SqliteMemoryDatabase.withSchema(VaultSql.completeSchema).also {
             // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
             it.executeBatch("PRAGMA foreign_keys = OFF")
         }

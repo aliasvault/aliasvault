@@ -291,9 +291,9 @@ impl VaultSyncSession {
         self.inner.next_command()
     }
 
-    /// Hand the host's response to the last command back, as JSON.
-    pub fn resume(&self, response_json: String) -> Result<(), VaultError> {
-        self.inner.resume(&response_json)
+    /// Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`.
+    pub fn resume(&self, response_json: String, bytes: Option<Vec<u8>>) -> Result<(), VaultError> {
+        self.inner.resume(&response_json, bytes)
     }
 }
 

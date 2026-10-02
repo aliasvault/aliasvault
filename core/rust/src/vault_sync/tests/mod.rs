@@ -781,7 +781,7 @@ fn session_reports_when_a_response_is_missing() {
     let first: Value = serde_json::from_str(&session.next_command().unwrap()).unwrap();
     assert_eq!(first["kind"], "log", "the engine announces the sync before touching the host");
     assert!(session.next_command().is_err(), "the session refuses to advance without a response");
-    session.resume("{}").unwrap();
+    session.resume("{}", None).unwrap();
     let second: Value = serde_json::from_str(&session.next_command().unwrap()).unwrap();
     assert_eq!(second["kind"], "http");
     assert_eq!(second["path"], "Status");

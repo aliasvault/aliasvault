@@ -18,6 +18,8 @@ use crate::common::error::{VaultError, VaultResult};
 pub(crate) struct Slot {
     pub pending: Option<Command>,
     pub response: Option<Value>,
+    /// Raw bytes the host handed back with the response (the SQLite file of a `dbExport`).
+    pub response_bytes: Option<Vec<u8>>,
 }
 
 /// The engine's handle to the host.
@@ -33,12 +35,18 @@ impl Host {
 
     /// Send a command and wait for the host's typed response. A `{ "error": ... }` response becomes an error.
     pub async fn call<R: DeserializeOwned>(&self, command: Command) -> SyncResult<R> {
+        Ok(self.call_with_bytes(command).await?.0)
+    }
+
+    /// Like [`Host::call`], also returning the raw bytes the host attached to its response, if any.
+    pub async fn call_with_bytes<R: DeserializeOwned>(&self, command: Command) -> SyncResult<(R, Option<Vec<u8>>)> {
         let kind = command.kind();
-        let response = CommandFuture { slot: self.slot.clone(), command: Some(command), sent: false }.await;
+        let (response, bytes) = CommandFuture { slot: self.slot.clone(), command: Some(command), sent: false }.await;
         if let Some(error) = response.get("error").and_then(Value::as_str) {
             return Err(SyncError::Host { command: kind, message: error.to_string() });
         }
-        serde_json::from_value(response).map_err(|e| SyncError::Host { command: kind, message: format!("unexpected response shape: {}", e) })
+        let typed = serde_json::from_value(response).map_err(|e| SyncError::Host { command: kind, message: format!("unexpected response shape: {}", e) })?;
+        Ok((typed, bytes))
     }
 
     /// Emit a log line.
@@ -55,17 +63,18 @@ struct CommandFuture {
 }
 
 impl Future for CommandFuture {
-    type Output = Value;
+    type Output = (Value, Option<Vec<u8>>);
 
-    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Value> {
+    fn poll(mut self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = &mut *self;
         if !this.sent {
             this.slot.lock().expect("sync host slot poisoned").pending = this.command.take();
             this.sent = true;
             return Poll::Pending;
         }
-        match this.slot.lock().expect("sync host slot poisoned").response.take() {
-            Some(response) => Poll::Ready(response),
+        let mut slot = this.slot.lock().expect("sync host slot poisoned");
+        match slot.response.take() {
+            Some(response) => Poll::Ready((response, slot.response_bytes.take())),
             None => Poll::Pending,
         }
     }
@@ -117,15 +126,17 @@ impl SyncSession {
         }
     }
 
-    /// Hand the host's response to the last command back.
-    pub fn resume(&self, response_json: &str) -> VaultResult<()> {
+    /// Hand the host's response to the last command back, with raw bytes for a `dbExport` (the SQLite file).
+    pub fn resume(&self, response_json: &str, bytes: Option<Vec<u8>>) -> VaultResult<()> {
         let response: Value = if response_json.trim().is_empty() {
             Value::Object(Default::default())
         } else {
             serde_json::from_str(response_json).map_err(|e| VaultError::General(format!("Invalid host response: {}", e)))?
         };
         let inner = self.inner.lock().map_err(|_| VaultError::General("sync session poisoned".to_string()))?;
-        inner.slot.lock().map_err(|_| VaultError::General("sync host slot poisoned".to_string()))?.response = Some(response);
+        let mut slot = inner.slot.lock().map_err(|_| VaultError::General("sync host slot poisoned".to_string()))?;
+        slot.response = Some(response);
+        slot.response_bytes = bytes;
         Ok(())
     }
 }

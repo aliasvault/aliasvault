@@ -98,7 +98,7 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       const session = new core.VaultSyncSession(requestJson);
       return {
         nextCommand: async (): Promise<string> => session.nextCommand(),
-        resume: async (responseJson: string): Promise<void> => session.resume(responseJson),
+        resume: async (responseJson: string, bytes: Uint8Array | null): Promise<void> => session.resume(responseJson, bytes),
         free: (): void => session.free(),
       };
     }),

@@ -21,7 +21,11 @@ internal final class VaultSyncRunLog {
 
     /// The size of a text payload (JSON or base64) for the logs, by UTF-8 byte count.
     private static func formatSize(_ value: Any?) -> String {
-        let size = (value as? String)?.utf8.count ?? 0
+        return formatByteCount((value as? String)?.utf8.count ?? 0)
+    }
+
+    /// A byte count for the logs.
+    private static func formatByteCount(_ size: Int) -> String {
         if size < 1024 {
             return "\(size) B"
         }
@@ -78,11 +82,11 @@ internal final class VaultSyncRunLog {
     }
 
     /// Count one handled command, and log it on its own when it is a transfer or slow.
-    func recordCommand(_ kind: String, command: [String: Any], response: [String: Any], since commandStartedAt: Date) {
+    func recordCommand(_ kind: String, command: [String: Any], response: [String: Any], responseBytes: Data?, since commandStartedAt: Date) {
         let durationMs = Date().timeIntervalSince(commandStartedAt) * 1000
         let timing = commandTimings[kind] ?? (count: 0, totalMs: 0)
         commandTimings[kind] = (count: timing.count + 1, totalMs: timing.totalMs + durationMs)
-        if let line = describe(kind: kind, command: command, response: response, durationMs: durationMs) {
+        if let line = describe(kind: kind, command: command, response: response, responseBytes: responseBytes, durationMs: durationMs) {
             note(line)
         }
     }
@@ -105,7 +109,7 @@ internal final class VaultSyncRunLog {
     }
 
     /// One line for a command relevant for performance analysis, or nil for unrelated calls.
-    private func describe(kind: String, command: [String: Any], response: [String: Any], durationMs: Double) -> String? {
+    private func describe(kind: String, command: [String: Any], response: [String: Any], responseBytes: Data?, durationMs: Double) -> String? {
         let took = "\(kind) took \(Int(durationMs))ms"
         if let error = response["error"] as? String {
             return "\(took): failed (\(error))"
@@ -123,10 +127,8 @@ internal final class VaultSyncRunLog {
             return "\(took): \(Self.formatSize(command["encryptedBlob"]))"
         case "vaultLoad":
             return "\(took): \(Self.formatSize(response["encryptedBlob"]))"
-        case "dbOpen":
-            return "\(took): \(command["bytes"] is String ? Self.formatSize(command["bytes"]) : "fresh schema")"
         case "dbExport":
-            return "\(took): \(database) \(Self.formatSize(response["bytes"]))"
+            return "\(took): \(database) \(Self.formatByteCount(responseBytes?.count ?? 0))"
         case "dbExec":
             return slow ? "\(took): \((command["statements"] as? [Any])?.count ?? 0) statement(s) on \(database)" : nil
         case "dbQuery":

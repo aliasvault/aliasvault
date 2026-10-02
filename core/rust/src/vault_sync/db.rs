@@ -6,9 +6,9 @@ use serde_json::{json, Map, Value};
 
 use super::errors::{SyncError, SyncResult};
 use super::session::Host;
-use super::types::{Ack, Command, Db, DbBytes, DbRows, LogLevel};
+use super::types::{Ack, Command, Db, DbRows, LogLevel};
 use super::legacy;
-use crate::common::encoding::{base64_decode, base64_encode, uuid_from_bytes};
+use crate::common::encoding::uuid_from_bytes;
 use crate::sqlite_host::SqlStatement;
 use crate::common::timestamp::{now_iso_utc, now_vault_datetime};
 use crate::vault_codec::row::{blob_ref_of, inline_bytes};
@@ -35,16 +35,16 @@ pub(crate) async fn exec(host: &Host, db: Db, statements: Vec<SqlStatement>) -> 
     Ok(())
 }
 
-/// Open the staging database: fresh with the current schema, or from SQLite bytes.
-pub(crate) async fn open_staging(host: &Host, bytes: Option<&[u8]>) -> SyncResult<()> {
-    host.call::<Ack>(Command::DbOpen { db: Db::Staging, bytes: bytes.map(base64_encode) }).await?;
+/// Open the staging database fresh with the current schema.
+pub(crate) async fn open_staging(host: &Host) -> SyncResult<()> {
+    host.call::<Ack>(Command::DbOpen { db: Db::Staging }).await?;
     Ok(())
 }
 
 /// Serialize a database to SQLite bytes.
 pub(crate) async fn export(host: &Host, db: Db) -> SyncResult<Vec<u8>> {
-    let response: DbBytes = host.call(Command::DbExport { db }).await?;
-    base64_decode(&response.bytes).map_err(|_| SyncError::Other("host returned invalid database bytes".to_string()))
+    let (_, bytes) = host.call_with_bytes::<Ack>(Command::DbExport { db }).await?;
+    bytes.ok_or_else(|| SyncError::Other("host returned no database bytes".to_string()))
 }
 
 /// A cell as text: strings as they are, null as empty, anything else in its JSON form.

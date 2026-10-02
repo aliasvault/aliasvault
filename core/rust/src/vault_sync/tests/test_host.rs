@@ -6,7 +6,7 @@ use rusqlite::{Connection, MAIN_DB};
 use serde_json::{json, Map, Value};
 
 use crate::crypto;
-use crate::common::encoding::{base64_decode, base64_encode};
+use crate::common::encoding::base64_decode;
 use crate::sqlite_host::{self, SqlStatement};
 use crate::vault_sync::types::{Command, Db};
 use crate::vault_sync::session::SyncSession;
@@ -123,11 +123,8 @@ impl TestHost {
                     self.state.remove(&key);
                     json!({})
                 }
-                Command::DbOpen { bytes, .. } => {
-                    let conn = match bytes {
-                        None => open_schema_db(&self.schema_sql),
-                        Some(b64) => open_from_bytes(&base64_decode(&b64).unwrap()),
-                    };
+                Command::DbOpen { .. } => {
+                    let conn = open_schema_db(&self.schema_sql);
                     conn.execute_batch("PRAGMA foreign_keys = OFF;").unwrap();
                     self.staging = Some(conn);
                     json!({})
@@ -144,7 +141,12 @@ impl TestHost {
                     Ok(()) => json!({}),
                     Err(error) => json!({ "error": error }),
                 },
-                Command::DbExport { db } => json!({ "bytes": base64_encode(&self.db(db).serialize(MAIN_DB).unwrap()) }),
+                Command::DbExport { db } => {
+                    // The SQLite file travels as raw bytes, outside the JSON.
+                    let bytes = self.db(db).serialize(MAIN_DB).unwrap().to_vec();
+                    session.resume("{}", Some(bytes)).unwrap();
+                    continue;
+                }
                 Command::VaultStore { encrypted_blob, mark_dirty, encryption_key, expected_mutation_seq, revision } => {
                     self.store_calls.push(Command::VaultStore { encrypted_blob: String::new(), mark_dirty, encryption_key: encryption_key.clone(), expected_mutation_seq, revision });
                     if let Some(key) = encryption_key {
@@ -180,7 +182,7 @@ impl TestHost {
                     json!({})
                 }
             };
-            session.resume(&response.to_string()).unwrap();
+            session.resume(&response.to_string(), None).unwrap();
         }
     }
 

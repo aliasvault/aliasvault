@@ -322,18 +322,14 @@ pub enum Command {
     StateSet { key: String, value: Value },
     /// Delete an engine-owned persisted value; response [`Ack`].
     StateRemove { key: String },
-    /// Open the staging database, response [`Ack`]: from the given SQLite bytes (base64), or fresh with the
-    /// current client schema applied when `bytes` is null.
-    DbOpen {
-        db: Db,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        bytes: Option<String>,
-    },
+    /// Open the staging database fresh with the current client schema applied; response [`Ack`].
+    DbOpen { db: Db },
     /// Run a SELECT; response [`DbRows`].
     DbQuery { db: Db, sql: String, params: Vec<Value> },
     /// Run statements inside one transaction; response [`Ack`]. A `{ "__b64": ... }` parameter binds a BLOB.
     DbExec { db: Db, statements: Vec<SqlStatement> },
-    /// Serialize a database; response [`DbBytes`].
+    /// Serialize a database; response [`Ack`], with the SQLite file handed back as raw bytes through
+    /// `SyncSession::resume` (never base64 inside the JSON).
     DbExport { db: Db },
     /// Persist the at-rest vault blob; response [`StoreOutcome`].
     VaultStore {
@@ -448,12 +444,6 @@ pub struct StateValue {
 pub struct DbRows {
     #[serde(default)]
     pub rows: Vec<Map<String, Value>>,
-}
-
-/// Response of `dbExport`: the SQLite file, base64.
-#[derive(Debug, Deserialize)]
-pub struct DbBytes {
-    pub bytes: String,
 }
 
 /// Response of `vaultStore`: whether the store went through, and the host's mutation sequence after it.

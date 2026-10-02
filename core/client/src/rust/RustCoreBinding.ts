@@ -7,8 +7,8 @@ export interface IVaultSyncSession {
   /** The next command for the host, as JSON. */
   nextCommand(): Promise<string>;
 
-  /** Hand the host's response to the last command back, as JSON. */
-  resume(responseJson: string): Promise<void>;
+  /** Hand the host's response to the last command back, as JSON, with raw bytes for a `dbExport`. */
+  resume(responseJson: string, bytes: Uint8Array | null): Promise<void>;
 
   /** Release the session. */
   free(): void;

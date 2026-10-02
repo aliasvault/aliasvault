@@ -63,10 +63,10 @@ public final class VaultSyncEngine {
                 return result
             }
             let commandStartedAt = Date()
-            let response = await handle(kind: kind, command: command)
-            log.recordCommand(kind, command: command, response: response, since: commandStartedAt)
+            let (response, bytes) = await respond(kind: kind, command: command)
+            log.recordCommand(kind, command: command, response: response, responseBytes: bytes, since: commandStartedAt)
             let responseJson = try log.json { try Self.serializeJson(response) }
-            try log.engine { try session.resume(responseJson: responseJson) }
+            try log.engine { try session.resume(responseJson: responseJson, bytes: bytes) }
         }
     }
 
@@ -103,6 +103,18 @@ public final class VaultSyncEngine {
 
     // MARK: - Commands
 
+    /// The JSON response to one command.
+    private func respond(kind: String, command: [String: Any]) async -> (json: [String: Any], bytes: Data?) {
+        guard kind == "dbExport" else {
+            return (await handle(kind: kind, command: command), nil)
+        }
+        do {
+            return ([:], try exportDatabase(named: command["db"] as? String ?? ""))
+        } catch {
+            return (Self.errorResponse(error), nil)
+        }
+    }
+
     private func handle(kind: String, command: [String: Any]) async -> [String: Any] {
         do {
             switch kind {
@@ -117,7 +129,7 @@ public final class VaultSyncEngine {
                 setState(nil, forKey: command["key"] as? String ?? "")
                 return [:]
             case "dbOpen":
-                try openStaging(bytesBase64: command["bytes"] as? String)
+                try openStaging()
                 return [:]
             case "dbQuery":
                 let db = try database(named: command["db"] as? String ?? "")
@@ -130,17 +142,6 @@ public final class VaultSyncEngine {
                     localMutated = true
                 }
                 return [:]
-            case "dbExport":
-                let bytes: Data
-                switch command["db"] as? String ?? "" {
-                case "local":
-                    bytes = try vaultStore.exportDatabase()
-                case "staging":
-                    bytes = try database(named: "staging").export()
-                case let name:
-                    throw AppError.unknownError(message: "Unknown database \(name)")
-                }
-                return ["bytes": bytes.base64EncodedString()]
             case "vaultStore":
                 return try storeVault(command)
             case "vaultLoad":
@@ -154,11 +155,29 @@ public final class VaultSyncEngine {
             default:
                 return ["error": "Unknown engine command \(kind)"]
             }
-        } catch let error as AppError {
-            return ["error": error.message]
         } catch {
-            return ["error": "\(error)"]
+            return Self.errorResponse(error)
         }
+    }
+
+    /// Serialize a database to SQLite bytes.
+    private func exportDatabase(named name: String) throws -> Data {
+        switch name {
+        case "local":
+            return try vaultStore.exportDatabase()
+        case "staging":
+            return try database(named: "staging").export()
+        default:
+            throw AppError.unknownError(message: "Unknown database \(name)")
+        }
+    }
+
+    /// The `{ "error": ... }` response for a failed command.
+    private static func errorResponse(_ error: Error) -> [String: Any] {
+        if let appError = error as? AppError {
+            return ["error": appError.message]
+        }
+        return ["error": "\(error)"]
     }
 
     private func http(_ command: [String: Any]) async -> [String: Any] {
@@ -279,15 +298,10 @@ public final class VaultSyncEngine {
         }
     }
 
-    /// Open the staging database in memory: from SQLite bytes, or fresh with the current client schema.
-    private func openStaging(bytesBase64: String?) throws {
+    /// Open a fresh staging database in memory with the current client schema.
+    private func openStaging() throws {
         closeStaging()
-        let opened: SqliteMemoryDatabase
-        if let bytesBase64 = bytesBase64, let bytes = Data(base64Encoded: bytesBase64) {
-            opened = try SqliteMemoryDatabase.fromBytes(bytes: bytes)
-        } else {
-            opened = try SqliteMemoryDatabase.withSchema(schemaSql: VaultSql.completeSchema)
-        }
+        let opened = try SqliteMemoryDatabase.withSchema(schemaSql: VaultSql.completeSchema)
         // The schema script ends by turning foreign keys on; the engine inserts rows in codec order, not FK order.
         try opened.executeBatch(sql: "PRAGMA foreign_keys = OFF")
         staging = opened
