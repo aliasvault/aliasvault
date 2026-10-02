@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "קוד מאמת שגוי. נא לנסות שוב.",
     "INVALID_RECOVERY_CODE": "קוד שחזור שגוי. נא לנסות שוב.",
     "INVALID_REFRESH_TOKEN": "אסימון ריענון שגוי.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "הסיסמה שסופקה לא תואמת לסיסמה הנוכחית שלך.",
     "PENDING_MIGRATIONS": "יש הסבות ממתינות. נא להריץ את הפקודה ‚dotnet ef database update’ כדי להחיל אותן.",
     "PUBLIC_REGISTRATION_DISABLED": "רישום חשבון חדש מושבת כרגע בשרת הזה. נא ליצור קשר עם ההנהלה.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "מעולה! עכשיו בוא נגדיר את סיסמת העל שלך ל־AliasVault."
       },
       "passwordStepTitle": "הגדרת סיסמה",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "הגדרות",
       "termsAndConditionsStepTitle": "שימוש ב־AliasVault",
       "termsStep": {
