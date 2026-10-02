@@ -285,6 +285,15 @@ export class TestClient {
   }
 
   /**
+   * Switch the item type on the add/edit form.
+   */
+  async switchItemType(type: 'Login' | 'Alias' | 'CreditCard' | 'Note'): Promise<this> {
+    await this.popup.click(ButtonSelectors.ITEM_TYPE_SELECTOR);
+    await this.popup.click(`button#item-type-option-${type}`);
+    return this;
+  }
+
+  /**
    * Fill a field in the credential form.
    */
   async fillField(selector: string, value: string): Promise<this> {
