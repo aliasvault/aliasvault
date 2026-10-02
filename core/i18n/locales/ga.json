@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Cód fíordheimhnitheora neamhbhailí. Déan iarracht arís.",
     "INVALID_RECOVERY_CODE": "Cód aisghabhála neamhbhailí. Déan iarracht arís.",
     "INVALID_REFRESH_TOKEN": "Comhartha athnuachana neamhbhailí.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Ní hionann an focal faire a cuireadh ar fáil agus do phasfhocal reatha.",
     "PENDING_MIGRATIONS": "Tá imirce ar feitheamh ann. Rith 'dotnet ef database update' le cur i bhfeidhm iad.",
     "PUBLIC_REGISTRATION_DISABLED": "Tá clárú cuntais nua díchumasaithe ar an bhfreastalaí seo faoi láthair. Téigh i dteagmháil leis an riarthóir le do thoil.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Go hiontach! Anois, socraímis do phríomhfhocal faire le haghaidh AliasVault."
       },
       "passwordStepTitle": "Socraigh Pasfhocal",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Socrú",
       "termsAndConditionsStepTitle": "Ag Úsáid AliasVault",
       "termsStep": {
