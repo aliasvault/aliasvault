@@ -65,7 +65,7 @@ export const ItemTypePill: React.FC<ItemTypePillProps> = ({ itemType, onClick, i
   }
 
   return (
-    <button type="button" onClick={onClick} className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
+    <button type="button" id="itemTypeSelectorToggle" onClick={onClick} className="inline-flex items-center gap-1.5 pl-2.5 pr-2 py-0.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-full hover:bg-primary-100 dark:hover:bg-primary-900/40 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">
       <span className="shrink-0 text-primary-600 dark:text-primary-400"><TypeIcon itemType={itemType} className="w-3.5 h-3.5" /></span>
       <span className="text-xs font-medium whitespace-nowrap text-primary-700 dark:text-primary-300">{t(typeNameKey(itemType))}</span>
       <span className="ml-1 text-xs whitespace-nowrap text-primary-600/70 dark:text-primary-400/70">{t('itemTypes.typeLabel')}</span>
