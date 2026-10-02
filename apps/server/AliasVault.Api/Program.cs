@@ -12,6 +12,7 @@ using System.Text.Json;
 using AliasServerDb;
 using AliasServerDb.Configuration;
 using AliasVault.Api;
+using AliasVault.Api.Helpers;
 using AliasVault.Api.Jwt;
 using AliasVault.Api.Services;
 using AliasVault.Auth;
@@ -39,7 +40,12 @@ CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
+#if DEBUG
+// E2E tests override config values for their own requests via headers, see TestConfig.
+var config = builder.Environment.IsDevelopment() ? new AliasVault.Api.Controllers.V2.Tests.TestConfig(new HttpContextAccessor()) : new Config();
+#else
 var config = new Config();
+#endif
 var publicRegistrationEnabled = Environment.GetEnvironmentVariable("PUBLIC_REGISTRATION_ENABLED") ?? "false";
 config.PublicRegistrationEnabled = bool.Parse(publicRegistrationEnabled);
 
@@ -84,12 +90,14 @@ builder.Services.AddScoped<TimeValidationJwtBearerEvents>();
 builder.Services.AddScoped<AuthLoggingService>();
 builder.Services.AddScoped<ServerSettingsService>();
 builder.Services.AddScoped<RegistrationRateLimitService>();
+builder.Services.AddScoped<RegistrationInviteService>();
 builder.Services.AddScoped<IpBlockListService>();
 builder.Services.AddScoped<MobileLoginRateLimitService>();
 builder.Services.AddSingleton<FaviconRateLimitService>();
 builder.Services.AddScoped<RateLimitService>();
 builder.Services.AddScoped<CapabilityService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddRateLimiter(options => RegistrationCheckRateLimit.Configure(options, builder.Environment.IsDevelopment()));
 
 builder.Services.AddLogging(logging =>
 {
@@ -214,6 +222,7 @@ if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PATHBAS
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 

@@ -267,4 +267,9 @@ public enum ApiErrorCode
     /// The supplied KEK derivation parameters are not within expected bounds.
     /// </summary>
     INVALID_ENCRYPTION_PARAMETERS,
+
+    /// <summary>
+    /// The registration invite code is unknown, expired or used up.
+    /// </summary>
+    INVITE_CODE_INVALID,
 }

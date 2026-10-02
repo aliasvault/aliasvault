@@ -92,6 +92,11 @@ public class RegisterRequest
     public string? EncryptedAccountPrivateKey { get; }
 
     /// <summary>
+    /// Gets the registration invite code, required when public registration is disabled.
+    /// </summary>
+    public string? InviteCode { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether the client sent the complete account key hierarchy. A partial one is not usable.
     /// </summary>
     public bool HasCompleteAccountKeys => !string.IsNullOrEmpty(EncryptedVek) && !string.IsNullOrEmpty(EncryptedAccountKey) && !string.IsNullOrEmpty(AccountPublicKey) && !string.IsNullOrEmpty(EncryptedAccountPrivateKey);

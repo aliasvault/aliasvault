@@ -28,6 +28,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -487,6 +488,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <param name="model">ValidateUsernameRequest model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("validate-username")]
+    [EnableRateLimiting(RegistrationCheckRateLimit.PolicyName)]
     [AllowAnonymous]
     public async Task<IActionResult> ValidateUsername([FromBody] ValidateUsernameRequest model)
     {
