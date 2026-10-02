@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Недійсний код автентифікатора. Будь ласка, спробуйте ще раз.",
     "INVALID_RECOVERY_CODE": "Недійсний код відновлення. Будь ласка, спробуйте ще раз.",
     "INVALID_REFRESH_TOKEN": "Оновлення токена невдале.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Введений пароль не відповідає вашому поточному паролю.",
     "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
     "PUBLIC_REGISTRATION_DISABLED": "Реєстрація нових облікових записів на цьому сервері наразі вимкнена. Будь ласка, зверніться до адміністратора.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Чудово! Тепер налаштуймо ваш головний пароль для AliasVault."
       },
       "passwordStepTitle": "Встановіть пароль",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Установити",
       "termsAndConditionsStepTitle": "Використання AliasVault",
       "termsStep": {
