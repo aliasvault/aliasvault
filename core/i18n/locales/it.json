@@ -9,7 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Codice di autenticazione non valido. Riprova.",
     "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Per favore riprova.",
     "INVALID_REFRESH_TOKEN": "Token di aggiornamento non valido",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Questo link di invito non è valido, è scaduto o è già stato utilizzato. Si prega di richiedere un nuovo invito all'amministratore.",
     "PASSWORD_MISMATCH": "La password fornita non corrisponde alla password corrente.",
     "PENDING_MIGRATIONS": "Ci sono migrazioni in attesa. Si prega di eseguire 'dotnet ef database update' per applicarle.",
     "PUBLIC_REGISTRATION_DISABLED": "La registrazione di nuovi account è disabilitata su questo server. Contatta l'amministratore.",
@@ -162,8 +162,8 @@
         "welcomeMessage": "Ottimo! Ora impostiamo la tua password principale per AliasVault."
       },
       "passwordStepTitle": "Imposta password",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "I nuovi account possono essere creati solo con un link di invito. Puoi richiederlo all'amministratore del server.",
+      "registrationDisabledTitle": "La registrazione dell'utente è disabilitata.",
       "setupStepTitle": "Configurazione",
       "termsAndConditionsStepTitle": "Uso Di Aliasvault",
       "termsStep": {
@@ -733,7 +733,7 @@
     "history": "Cronologia",
     "home": {
       "alphabeticalOption": "Alfabetico",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Crea manualmente il tuo primo elemento nella cassaforte.",
       "emptyFolderMessage": "Questa cartella è vuota.",
       "failedToCreateFolder": "Non è stato possibile creare la cartella.",
       "failedToDeleteFolder": "Eliminazione della cartella non riuscita",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Usa Browser Passkey"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Sicurezza Account",
     "activeOnAllSites": "Attivo su tutti i siti (a meno che non sia disabilitato sotto)",
     "advancedOptions": "Opzioni avanzate",
     "androidAutofillSettings": {
@@ -1224,9 +1224,9 @@
     },
     "globalSettings": "Impostazioni globali",
     "groups": {
-      "autofill": "Autofill",
-      "general": "General",
-      "generators": "Generators"
+      "autofill": "Compilazione automatica",
+      "general": "Generale",
+      "generators": "Generatori"
     },
     "identityGenerator": "Generatore di identità",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "L'autenticazione a due fattori è attualmente disabilitata. Al fine di migliorare la sicurezza del tuo account, ti consigliamo di attivarla.",
         "enabledMessage": "L'autenticazione a due fattori non è abilitata.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "La tua cassaforte è attualmente accessibile solo tramite la tua password principale. Ti consigliamo di abilitare l'autenticazione a due fattori per migliorare la sicurezza del tuo account."
       }
     },
     "selectLanguage": "Seleziona la lingua",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Configurare l'URL del server AliasVault per le istanze self-hosted",
     "serverUrl": "URL del server",
     "serverVersion": "Versione server",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sessioni & Log",
+    "sessionsAndLogsDescription": "Visualizza dove si è connessi e controlla i recenti tentativi di accesso.",
     "siteSpecificSettings": "Impostazioni specifiche per sito",
     "storageInsights": {
       "breadcrumbTitle": "Analisi archiviazione",
