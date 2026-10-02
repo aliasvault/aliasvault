@@ -34,12 +34,14 @@ using Microsoft.EntityFrameworkCore;
 /// <param name="environment">IWebHostEnvironment instance.</param>
 /// <param name="dbContextFactory">DbContext factory instance.</param>
 /// <param name="serverSettingsService">ServerSettingsService instance.</param>
+/// <param name="registrationInviteService">RegistrationInviteService instance.</param>
 [ApiVersion("2")]
 public class TestController(
     UserManager<AliasVaultUser> userManager,
     IWebHostEnvironment environment,
     IAliasServerDbContextFactory dbContextFactory,
-    ServerSettingsService serverSettingsService) : AuthenticatedRequestController(userManager)
+    ServerSettingsService serverSettingsService,
+    RegistrationInviteService registrationInviteService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Authenticated test request. Used to verify authentication is working.
@@ -461,6 +463,25 @@ public class TestController(
             key = request.Key,
             value = request.Value,
         });
+    }
+
+    /// <summary>
+    /// Create a registration invite and return its code, as the admin panel would.
+    /// Only available in DEBUG builds.
+    /// </summary>
+    /// <param name="maxUses">Number of accounts that may register with the invite.</param>
+    /// <returns>OK with the invite code.</returns>
+    [AllowAnonymous]
+    [HttpPost("registration-invites")]
+    public async Task<IActionResult> CreateRegistrationInvite([FromQuery] int maxUses = 1)
+    {
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var code = await registrationInviteService.CreateAsync("E2E test", maxUses, null, "e2e");
+        return Ok(new { code });
     }
 
     /// <summary>

@@ -78,6 +78,11 @@ public enum AuthFailureReason
     MobileLoginDeclined = 12,
 
     /// <summary>
+    /// Indicates that the registration used an invite code that is unknown, expired or used up.
+    /// </summary>
+    InvalidInviteCode = 13,
+
+    /// <summary>
     /// Indicates that the failure reason was unknown.
     /// </summary>
     Unknown = 99,

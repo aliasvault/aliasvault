@@ -29,6 +29,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -48,10 +49,11 @@ using SecureRemotePassword;
 /// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
 /// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
+/// <param name="registrationInviteService">RegistrationInviteService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService, RegistrationInviteService registrationInviteService) : ControllerBase
 {
     /// <summary>
     /// Access token validity in minutes.
@@ -388,8 +390,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest model)
     {
-        // Check if public registration is disabled in the configuration.
-        if (!config.PublicRegistrationEnabled)
+        // Without public registration only an invite code holder may register. The invite use is taken right before the account is created.
+        var requiresInvite = !config.PublicRegistrationEnabled;
+        if (requiresInvite && string.IsNullOrWhiteSpace(model.InviteCode))
         {
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
         }
@@ -443,6 +446,17 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             UpdatedAt = timeProvider.GetUtcNow().UtcDateTime,
             PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime,
         };
+
+        Guid? inviteId = null;
+        if (requiresInvite)
+        {
+            inviteId = await registrationInviteService.TryConsumeAsync(model.InviteCode);
+            if (inviteId is null)
+            {
+                await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Register, AuthFailureReason.InvalidInviteCode);
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+            }
+        }
 
         var personalManifestId = Guid.NewGuid();
 
@@ -533,10 +547,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return Ok(tokenModel);
         }
 
-        // Identity creation failed: remove the personal group written ahead of the user row above.
+        // Identity creation failed: remove the personal group written ahead of the user row above and give the invite use back.
         await using (var context = await dbContextFactory.CreateDbContextAsync())
         {
             await context.Groups.Where(g => g.Id == personalGroup.Id).ExecuteDeleteAsync();
+        }
+
+        if (inviteId is not null)
+        {
+            await registrationInviteService.ReleaseAsync(inviteId.Value);
         }
 
         var errors = result.Errors.Select(e => e.Description).ToArray();
@@ -665,14 +684,22 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// <param name="model">ValidateUsernameRequest model.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("validate-username")]
+    [EnableRateLimiting(RegistrationCheckRateLimit.PolicyName)]
     [AllowAnonymous]
     public async Task<IActionResult> ValidateUsername([FromBody] ValidateUsernameRequest model)
     {
-        // Check if public registration is disabled in the configuration.
-        // This prevents username enumeration when registration is disabled.
+        // Without public registration only an invite code holder may check usernames, which prevents username enumeration.
         if (!config.PublicRegistrationEnabled)
         {
-            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
+            if (string.IsNullOrWhiteSpace(model.InviteCode))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
+            }
+
+            if (!await registrationInviteService.IsValidAsync(model.InviteCode))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+            }
         }
 
         if (string.IsNullOrWhiteSpace(model.Username))
@@ -697,6 +724,24 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         return Ok(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_AVAILABLE, 200));
+    }
+
+    /// <summary>
+    /// Check whether a registration invite code can be used.
+    /// </summary>
+    /// <param name="model">ValidateInviteCodeRequest model.</param>
+    /// <returns>IActionResult.</returns>
+    [HttpPost("validate-invite-code")]
+    [EnableRateLimiting(RegistrationCheckRateLimit.PolicyName)]
+    [AllowAnonymous]
+    public async Task<IActionResult> ValidateInviteCode([FromBody] ValidateInviteCodeRequest model)
+    {
+        if (!await registrationInviteService.IsValidAsync(model.InviteCode))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVITE_CODE_INVALID, 400));
+        }
+
+        return Ok();
     }
 
     /// <summary>
