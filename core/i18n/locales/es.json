@@ -764,16 +764,16 @@
     "loginCredentials": "Credenciales de acceso",
     "logo": {
       "builtin": {
-        "Bank": "Banca",
-        "Dev": "Desarrollo",
-        "Game": "Juegos",
-        "Health": "Salud",
-        "Mail": "Correo",
-        "Media": "Media",
-        "Shopping": "Compras",
-        "Social": "Social",
-        "Travel": "Viajes",
-        "Work": "Trabajo"
+        "bank": "Banca",
+        "dev": "Desarrollo",
+        "game": "Juegos",
+        "health": "Salud",
+        "mail": "Correo",
+        "media": "Media",
+        "shopping": "Compras",
+        "social": "Social",
+        "travel": "Viajes",
+        "work": "Trabajo"
       },
       "builtinLogos": "Biblioteca de iconos",
       "chooseLogo": "Seleccionar icono",
