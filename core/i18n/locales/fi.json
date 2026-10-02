@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Virheellinen tunnistautumiskoodi. Yritä uudelleen.",
     "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Yritä uudelleen.",
     "INVALID_REFRESH_TOKEN": "Virheellinen virkistyspoletti.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Annettu salasana ei vastaa nykyistä salasanaasi.",
     "PENDING_MIGRATIONS": "On vireillä olevia siirtoja. Ole hyvä ja suorita 'dotnet ef database update' hakeaksesi ne.",
     "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Hienoa! Määritä nyt AliasVaultin pääsalasanasi."
       },
       "passwordStepTitle": "Aseta salasana",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Asettaminen",
       "termsAndConditionsStepTitle": "AliasVaultin käyttö",
       "termsStep": {
