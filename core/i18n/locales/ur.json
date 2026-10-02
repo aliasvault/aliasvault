@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
     "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "The provided password does not match your current password.",
     "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Great! Now, let's set up your master password for AliasVault."
       },
       "passwordStepTitle": "Set Password",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
       "termsAndConditionsStepTitle": "Using AliasVault",
       "termsStep": {
