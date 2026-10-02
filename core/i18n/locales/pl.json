@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Nieprawidłowy kod uwierzytelniający. Spróbuj ponownie.",
     "INVALID_RECOVERY_CODE": "Nieprawidłowy kod odzyskiwania. Spróbuj ponownie.",
     "INVALID_REFRESH_TOKEN": "Nieprawidłowy token odświeżania.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Podane hasło nie zgadza się z Twoim aktualnym hasłem.",
     "PENDING_MIGRATIONS": "Istnieją oczekujące migracje. Uruchom 'aktualizację bazy dotnet ef ', aby je zastosować.",
     "PUBLIC_REGISTRATION_DISABLED": "Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Świetnie! Teraz ustawmy Twoje hasło główne dla AliasVault."
       },
       "passwordStepTitle": "Ustaw hasło",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Konfiguracja",
       "termsAndConditionsStepTitle": "Korzystanie z AliasVault",
       "termsStep": {
