@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Ogiltig autentiseringskod. Försök igen.",
     "INVALID_RECOVERY_CODE": "Ogiltig återställningskod. Försök igen.",
     "INVALID_REFRESH_TOKEN": "Ogiltigt uppdateringstoken",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Det angivna lösenordet stämmer inte överens med ditt nuvarande lösenord",
     "PENDING_MIGRATIONS": "Det finns väntande migreringar. Vänligen kör 'dotnet ef databasuppdatering' för att tillämpa dem.",
     "PUBLIC_REGISTRATION_DISABLED": "Registrering av nytt konto är för närvarande inaktiverat på denna server. Kontakta administratören.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Bra! Låt oss nu ställa in ditt huvudlösenord för AliasVault."
       },
       "passwordStepTitle": "Ange lösenord",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
       "termsAndConditionsStepTitle": "Användning av AliasVault",
       "termsStep": {
