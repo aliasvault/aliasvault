@@ -764,16 +764,16 @@
     "loginCredentials": "Identifiants de connexion",
     "logo": {
       "builtin": {
-        "Bank": "Banque",
-        "Dev": "Développement",
-        "Game": "Jeux",
-        "Health": "Santé",
-        "Mail": "Mail",
-        "Media": "Médias",
-        "Shopping": "Achats",
-        "Social": "Réseaux",
-        "Travel": "Voyages",
-        "Work": "Travail"
+        "bank": "Banque",
+        "dev": "Développement",
+        "game": "Jeux",
+        "health": "Santé",
+        "mail": "Mail",
+        "media": "Médias",
+        "shopping": "Achats",
+        "social": "Réseaux",
+        "travel": "Voyages",
+        "work": "Travail"
       },
       "builtinLogos": "Bibliothèque des icônes",
       "chooseLogo": "Choisir une icône",
@@ -1224,7 +1224,7 @@
     },
     "globalSettings": "Paramètres généraux",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "Remplissage automatique",
       "general": "General",
       "generators": "Generators"
     },
