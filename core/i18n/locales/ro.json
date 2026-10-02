@@ -733,8 +733,7 @@
     "history": "Istoric",
     "home": {
       "alphabeticalOption": "Alfabetic",
-      "buttonLocationText": "din colțul din dreapta sus.",
-      "createFirstItemText": "Creează primul tău element folosind",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Acest dosar este gol.",
       "failedToCreateFolder": "Crearea dosarului a eșuat.",
       "failedToDeleteFolder": "Ștergerea dosarului a eșuat.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importă din KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Dacă ai utilizat anterior un alt manager de parole, poți importa elementele din acesta.",
       "loadingMore": "Se încarcă mai multe...",
-      "newAliasButtonText": "„+ Nou Alias”",
-      "newAliasButtonTextMobile": "„+”",
       "noItemsTitle": "Niciun element încă",
       "pageDescription": "Toate elementele tale sunt afișate mai jos.",
       "sortOrderLabel": "Ordine sortare",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Se creează aliasul nou...",
       "namePlaceholderCard": "Ex. Mastercard",
       "namePlaceholderNote": "Ex. Detalii Pașaport",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nou",
       "typeCard": "Card",
       "typeLogin": "Autentificare"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Folosește Passkey-ul Browserului"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Activ pe toate site-urile (cu excepția cazului în care este dezactivat mai jos)",
     "advancedOptions": "Opțiuni Avansate",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
       "aliasGenerationGenderDescription": "Setează preferința implicită de gen pentru generarea noilor identități.",
       "aliasGenerationLanguageDescription": "Setează limba implicită care va fi utilizată la generarea de noi identități.",
-      "aliasSettingsTitle": "Setări generator de identitate",
       "appLanguageDescription": "Setează limba interfeței aplicației.",
       "appLanguageTitle": "Limba aplicației",
       "autoEmailRefreshLabel": "Actualizare automată a conținutului la primirea e-mailurilor noi",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Domenii publice"
     },
     "globalSettings": "Setări Globale",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Generator de Identitate",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Dezactivarea autentificării cu doi factori a eșuat.",
         "pageDescription": "Dezactivarea autentificării cu doi factori înseamnă că te vei putea autentifica folosind doar parola.",
         "pageTitle": "Dezactivare autentificare cu doi factori",
-        "statusMessage": "Autentificarea cu doi factori este în prezent activată. Dezactivează-o pentru a-ți putea accesa seiful doar cu parola.",
         "twoFactorDisabledSuccess": "Autentificarea cu doi factori a fost dezactivată cu succes.",
-        "twoFactorNotEnabled": "Autentificarea cu doi factori nu este activată.",
-        "warningMessage": "Atenție: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când vei dori să reactivezi autentificarea cu doi factori, va trebui să configurezi din nou aplicația."
+        "twoFactorNotEnabled": "Autentificarea cu doi factori nu este activată."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Activarea autentificării cu doi factori a eșuat.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Autentificarea cu doi factori este în prezent dezactivată. Pentru a îmbunătăți securitatea contului tău, îți recomandăm să o activezi.",
-        "enabledMessage": "Autentificarea cu doi factori este în prezent activată."
+        "enabledMessage": "Autentificarea cu doi factori este în prezent activată.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Selectează limba",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Configurează URL-ul serverului AliasVault pentru instanțele self-hosted",
     "serverUrl": "URL Server",
     "serverVersion": "Versiune server",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Setări specifice site-ului",
     "storageInsights": {
       "breadcrumbTitle": "Informații despre stocare",
