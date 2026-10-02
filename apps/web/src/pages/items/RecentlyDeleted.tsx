@@ -208,7 +208,7 @@ const RecentlyDeleted: React.FC = () => {
                                 <ItemIcon item={item} sizeClass="w-6 h-6" />
                                 <span data-item-name className="font-medium text-gray-900 dark:text-white truncate">{item.Name || t('items.untitled')}</span>
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {daysRemaining > 0 ? t('items.trash.daysRemaining', { days: daysRemaining }) : <span className="text-red-500">{t('items.recentlyDeleted.expiringSoon')}</span>}
                               </div>
                             </div>

@@ -38,8 +38,8 @@ const RowContent: React.FC<{ row: SettingsRow }> = ({ row }) => (
   <>
     <SettingsIcon name={row.icon} className="flex-shrink-0 w-5 h-5 mt-0.5 text-primary-600 dark:text-primary-400" />
     <span className="min-w-0">
-      <span className="block text-sm font-medium text-gray-900 dark:text-white">{row.label}</span>
-      <span className="block text-xs text-gray-500 dark:text-gray-400 line-clamp-2" title={row.description}>{row.description}</span>
+      <span className="block text-base font-medium text-gray-900 dark:text-white">{row.label}</span>
+      <span className="block text-sm text-gray-500 dark:text-gray-400 line-clamp-2" title={row.description}>{row.description}</span>
     </span>
   </>
 );
@@ -48,7 +48,7 @@ const RowContent: React.FC<{ row: SettingsRow }> = ({ row }) => (
  * One row, linking to its settings page.
  */
 const Row: React.FC<{ row: SettingsRow }> = ({ row }) => (
-  <Link to={row.to} className="flex items-start gap-3 w-full px-4 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"><RowContent row={row} /></Link>
+  <Link to={row.to} className="flex items-start gap-3 w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"><RowContent row={row} /></Link>
 );
 
 /**
@@ -119,6 +119,7 @@ const Settings: React.FC = () => {
                 </Link>
               )}
               <button type="button" id="logoutButton" onClick={() => void confirmLogout()} className="inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/30 dark:hover:bg-red-900/50">
+                <SettingsIcon name="logout" className="w-4 h-4 mr-2" />
                 {t('web.topMenu.logOut')}
               </button>
             </div>
@@ -127,15 +128,15 @@ const Settings: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             {groups.map((group) => (
               <section key={group.title} className="bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
-                <h2 className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{group.title}</h2>
-                <div>
+                <h2 className="px-4 pt-3 pb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{group.title}</h2>
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {group.rows.map((row) => <Row key={row.label} row={row} />)}
                 </div>
               </section>
             ))}
           </div>
 
-          <p className="text-center text-[13px] text-gray-400 dark:text-gray-500"><span className="font-bold">{t('settings.appVersion')}:</span> {AppInfo.VERSION}</p>
+          <p className="text-center text-sm text-gray-400 dark:text-gray-500"><span className="font-bold">{t('settings.appVersion')}:</span> {AppInfo.VERSION}</p>
         </div>
       </PageContent>
     </>

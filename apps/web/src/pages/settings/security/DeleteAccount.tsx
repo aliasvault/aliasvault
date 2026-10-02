@@ -81,7 +81,7 @@ const DeleteAccount: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="security" breadcrumbItems={[{ displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.deleteAccount.deleteAccount') }]} title={t('settings.securitySettings.deleteAccount.deleteAccount')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
+      <SettingsPageHeader icon="security" title={t('settings.securitySettings.deleteAccount.deleteAccount')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
 
       <Card>
         {!showPasswordConfirm ? (

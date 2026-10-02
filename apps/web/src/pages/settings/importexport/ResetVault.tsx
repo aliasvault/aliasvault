@@ -103,7 +103,7 @@ const ResetVault: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="importExport" breadcrumbItems={[{ displayName: t('settings.importExport'), url: '/settings/import-export' }, { displayName: t('settings.resetVault.pageTitle') }]} title={t('settings.resetVault.pageTitle')} backTo={{ url: '/settings/import-export', label: t('settings.importExport') }} />
+      <SettingsPageHeader icon="importExport" title={t('settings.resetVault.pageTitle')} backTo={{ url: '/settings/import-export', label: t('settings.importExport') }} />
 
       <Card>
         {!showPasswordConfirm ? (

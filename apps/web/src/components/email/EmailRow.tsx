@@ -70,7 +70,7 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, onEma
               <div className="text-sm text-gray-600 dark:text-gray-300 truncate mb-1">
                 {email.subject}
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {email.messagePreview}
               </div>
             </div>

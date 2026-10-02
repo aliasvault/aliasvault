@@ -243,18 +243,18 @@ const ItemView: React.FC = () => {
                         <div className="space-y-1 mb-2">
                           {passkey.RpId.trim().length > 0 && (
                             <div>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
                               <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
                             </div>
                           )}
                           {(passkey.DisplayName ?? '').trim().length > 0 && (
                             <div>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
                               <span className="text-sm text-gray-900 dark:text-white">{passkey.DisplayName}</span>
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{t('items.view.passkeyHelpText')}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('items.view.passkeyHelpText')}</p>
                       </div>
                     </div>
                   </div>

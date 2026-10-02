@@ -462,7 +462,7 @@ const ItemsHome: React.FC = () => {
           </div>
           <div>
             <p className="text-sm mb-3">{t('items.home.createFirstItemManuallyText')}</p>
-            <Button id="quickIdentityButton" color="outline" onClick={createItem}>{t('items.quickCreate.newAliasButtonText')}</Button>
+            <Button id="quickIdentityButton" color="outline" onClick={createItem}><Icon name="plus" className="inline w-4 h-4 mr-1.5 -mt-0.5" strokeWidth={2.25} />{t('items.addNewItem')}</Button>
           </div>
         </div>
       </div>
@@ -582,7 +582,7 @@ const ItemsHome: React.FC = () => {
                     ) : (
                       <p>{t('items.noMatchingItems')}</p>
                     )}
-                    <Button onClick={createItem}>{t('items.quickCreate.newAliasButtonText')}</Button>
+                    <Button onClick={createItem}><Icon name="plus" className="inline w-4 h-4 mr-1.5 -mt-0.5" strokeWidth={2.25} />{t('items.addNewItem')}</Button>
                   </div>
                 </div>
               )}

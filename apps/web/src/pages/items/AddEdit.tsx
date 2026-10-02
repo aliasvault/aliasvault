@@ -612,18 +612,18 @@ const ItemAddEditForm: React.FC = () => {
                                   <div className="space-y-1 mb-2">
                                     {passkey.RpId.trim().length > 0 && (
                                       <div>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
                                         <span className="text-sm text-gray-900 dark:text-white">{passkey.RpId}</span>
                                       </div>
                                     )}
                                     {(passkey.DisplayName ?? '').trim().length > 0 && (
                                       <div>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.itemName')}: </span>
                                         <span className="text-sm text-gray-900 dark:text-white">{passkey.DisplayName}</span>
                                       </div>
                                     )}
                                   </div>
-                                  <p className="text-xs text-gray-600 dark:text-gray-400">{t('items.addEdit.passkeyHelpText')}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('items.addEdit.passkeyHelpText')}</p>
                                 </div>
                               </div>
                             </div>
@@ -640,7 +640,7 @@ const ItemAddEditForm: React.FC = () => {
                                       <Icon name="reply" className="w-4 h-4" />
                                     </button>
                                   </div>
-                                  <p className="text-xs text-red-800 dark:text-red-200">{t('items.addEdit.passkeyWillBeDeleted')}</p>
+                                  <p className="text-sm text-red-800 dark:text-red-200">{t('items.addEdit.passkeyWillBeDeleted')}</p>
                                 </div>
                               </div>
                             </div>

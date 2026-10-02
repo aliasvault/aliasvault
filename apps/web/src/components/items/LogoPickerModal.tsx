@@ -109,7 +109,7 @@ const LogoPickerModal: React.FC<LogoPickerModalProps> = ({ item, currentLogo, we
               <span className="block text-sm text-gray-900 dark:text-white">
                 {currentLogo?.Kind === LogoKinds.Favicon ? t('items.logo.refetchFromWebsite') : t('items.logo.fetchFromWebsite')}
               </span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+              <span className="block text-sm text-gray-500 dark:text-gray-400 truncate">
                 {t('items.logo.sourceFavicon', { domain: websiteSource })}
               </span>
             </span>

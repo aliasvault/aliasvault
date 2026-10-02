@@ -113,11 +113,11 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({ item, fieldKey, f
                     <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(record.ChangedAt)}</div>
                     {confirmDeleteId === record.Id ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('items.fieldHistory.deleteConfirm')}</span>
-                        <button type="button" onClick={() => void deleteRecord(record.Id)} className="text-xs px-2 py-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.fieldHistory.deleteConfirm')}</span>
+                        <button type="button" onClick={() => void deleteRecord(record.Id)} className="text-sm px-2 py-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
                           {t('common.confirm')}
                         </button>
-                        <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-sm px-2 py-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                           {t('common.cancel')}
                         </button>
                       </div>

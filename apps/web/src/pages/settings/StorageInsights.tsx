@@ -266,7 +266,7 @@ const StorageInsights: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="storage" breadcrumbItems={[{ displayName: t('settings.storageInsights.breadcrumbTitle') }]} title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
+      <SettingsPageHeader icon="storage" title={t('settings.storageInsights.pageTitle')} description={t('settings.storageInsights.pageDescription')} />
 
       <PageContent>
         <Card>

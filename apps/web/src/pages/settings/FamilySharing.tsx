@@ -415,7 +415,7 @@ const FamilySharing: React.FC = () => {
                   {group.members.map(member => (
                     <li key={member.userId} className="min-w-0">
                       <p className="text-sm text-gray-900 dark:text-white truncate">{member.username}{member.userId === myUserId && ` (${familySharingText.you})`}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{roleLabel(member)}</p>
                     </li>
                   ))}
                 </ul>
@@ -508,7 +508,7 @@ const FamilySharing: React.FC = () => {
                               <li key={member.userId} className="flex items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
                                 <div className="min-w-0">
                                   <p className="text-sm text-gray-900 dark:text-white truncate">{member.username}{isSelf && ` (${familySharingText.you})`}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{access.statusText}</p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">{access.statusText}</p>
                                 </div>
 
                                 {access.canLeave && (

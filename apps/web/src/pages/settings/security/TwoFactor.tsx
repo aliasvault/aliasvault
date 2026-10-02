@@ -89,7 +89,7 @@ const TwoFactor: React.FC<{ mode?: TwoFactorPageMode }> = ({ mode = 'status' }) 
       {mode === 'status' ? (
         <SettingsPageHeader icon="twoFactor" title={title} description={description} />
       ) : (
-        <SettingsPageHeader icon="twoFactor" title={title} description={description} breadcrumbItems={[{ displayName: title, url: '/settings/two-factor' }, { displayName: stepTitle }]} backTo={{ url: '/settings/two-factor', label: title }} />
+        <SettingsPageHeader icon="twoFactor" title={title} description={description} backTo={{ url: '/settings/two-factor', label: title }} />
       )}
 
       <PageContent>

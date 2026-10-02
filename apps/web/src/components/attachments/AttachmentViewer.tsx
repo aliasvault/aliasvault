@@ -73,7 +73,7 @@ const AttachmentViewer: React.FC<AttachmentViewerProps> = ({ attachments }) => {
                   <span className={`block truncate text-sm font-medium ${available ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                     {attachment.Filename}
                   </span>
-                  <span className="block text-xs text-gray-500 dark:text-gray-400">
+                  <span className="block text-sm text-gray-500 dark:text-gray-400">
                     {available ? formatSize(size) : t('common.unavailable')}
                   </span>
                 </span>

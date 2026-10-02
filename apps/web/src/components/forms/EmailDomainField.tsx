@@ -214,7 +214,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       {t('items.privateEmailTitle')} <span className="text-gray-500 dark:text-gray-400">({t('items.privateEmailAliasVaultServer')})</span>
                     </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.privateEmailDescription')}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('items.privateEmailDescription')}</p>
                     <div className="flex flex-wrap gap-2">
                       {privateDomains.map(domain => <ToggleChip key={domain} selected={selectedDomain === domain} outlined onClick={() => selectDomain(domain)}>{domain}</ToggleChip>)}
                     </div>
@@ -223,7 +223,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({ id, value, onChange
 
                 <div className={showPrivateDomains ? 'border-t border-gray-200 dark:border-gray-600 pt-4' : ''}>
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{t('items.publicEmailTitle')}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('items.publicEmailDescription')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{t('items.publicEmailDescription')}</p>
                   <div className="flex flex-wrap gap-2">
                     {publicDomains.map(domain => <ToggleChip key={domain} selected={selectedDomain === domain} outlined onClick={() => selectDomain(domain)}>{domain}</ToggleChip>)}
                   </div>

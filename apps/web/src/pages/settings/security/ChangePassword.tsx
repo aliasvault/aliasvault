@@ -113,7 +113,7 @@ const ChangePassword: React.FC = () => {
 
   return (
     <>
-      <SettingsPageHeader icon="security" breadcrumbItems={[{ displayName: t('settings.securitySettings.pageTitle'), url: '/settings/security' }, { displayName: t('settings.securitySettings.changePassword.changePassword') }]} title={t('settings.securitySettings.changePassword.changePassword')} description={t('settings.securitySettings.changePassword.headerText')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
+      <SettingsPageHeader icon="security" title={t('settings.securitySettings.changePassword.changePassword')} description={t('settings.securitySettings.changePassword.headerText')} backTo={{ url: '/settings/security', label: t('settings.securitySettings.pageTitle') }} />
 
       <Card>
         <form onSubmit={changePassword} className="space-y-4">

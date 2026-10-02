@@ -231,7 +231,7 @@ const ImportExport: React.FC = () => {
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t('importExport.exportAvexTitle')}</h4>
                   <span className="px-1.5 py-0.5 text-xs font-medium text-orange-700 dark:text-orange-300 bg-orange-100 dark:bg-orange-900 rounded">{t('importExport.recommendedLabel')}</span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportAvexDescription')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportAvexDescription')}</p>
               </div>
               <Button onClick={() => void showExportConfirmation(ExportType.Avex)}>{t('importExport.exportAvexButton')}</Button>
             </div>
@@ -239,7 +239,7 @@ const ImportExport: React.FC = () => {
             <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex-1 min-w-0 mr-4">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportAvuxTitle')}</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportAvuxDescription')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportAvuxDescription')}</p>
               </div>
               <Button onClick={() => void showExportConfirmation(ExportType.Avux)}>{t('importExport.exportAvuxButton')}</Button>
             </div>
@@ -247,7 +247,7 @@ const ImportExport: React.FC = () => {
             <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex-1 min-w-0 mr-4">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('importExport.exportCsvTitle')}</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300">{t('importExport.exportCsvDescription')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t('importExport.exportCsvDescription')}</p>
               </div>
               <Button onClick={() => void showExportConfirmation(ExportType.Csv)}>{t('importExport.exportCsvButton')}</Button>
             </div>
@@ -259,7 +259,7 @@ const ImportExport: React.FC = () => {
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Export raw SQLite</h4>
                     <span className="px-1.5 py-0.5 text-xs font-medium text-yellow-800 dark:text-yellow-200 bg-yellow-200 dark:bg-yellow-800 rounded">DEBUG</span>
                   </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-300">Downloads the unencrypted SQLite vault file as-is. Anyone with the file can read everything.</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Downloads the unencrypted SQLite vault file as-is. Anyone with the file can read everything.</p>
                 </div>
                 <Button onClick={exportVaultSqlite}>Download .sqlite</Button>
               </div>

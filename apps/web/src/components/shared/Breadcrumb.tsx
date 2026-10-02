@@ -25,7 +25,7 @@ const ChevronIcon: React.FC = () => (
  * Home icon of the first entry.
  */
 const HomeIcon: React.FC<{ inline?: boolean }> = ({ inline = false }) => (
-  <Icon name="home" className={`w-5 h-5 mr-2.5 ${inline ? 'inline' : ''}`} />
+  <Icon name="home" className={`w-5 h-5 mr-2 ${inline ? 'inline' : ''}`} />
 );
 
 /**
@@ -33,19 +33,19 @@ const HomeIcon: React.FC<{ inline?: boolean }> = ({ inline = false }) => (
  */
 const Breadcrumb: React.FC<{ items: BreadcrumbItem[] }> = ({ items }) => (
   <nav className="flex mb-4">
-    <ol className="inline-flex items-center space-x-1 text-sm font-medium md:space-x-2">
+    <ol className="inline-flex items-center -ml-1.5 space-x-0.5 text-sm font-medium md:space-x-1">
       {items.map((item, index) => {
         const isFirst = index === 0;
         return (
           <li key={`${item.displayName}-${index}`} className="inline-flex items-center">
             {!isFirst && <ChevronIcon />}
             {item.url !== undefined ? (
-              <Link to={item.url} className="inline-flex items-center text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-500">
+              <Link to={item.url} className="inline-flex items-center px-1.5 py-1 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-200 focus-visible:outline-none focus-visible:text-gray-900 focus-visible:bg-gray-200 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 dark:focus-visible:text-white dark:focus-visible:bg-gray-700 transition-colors">
                 {isFirst && item.showHomeIcon && <HomeIcon />}
                 {item.displayName}
               </Link>
             ) : (
-              <span className="text-gray-400 dark:text-gray-400">
+              <span className="px-1.5 py-1 text-gray-400 dark:text-gray-400">
                 {isFirst && item.showHomeIcon && <HomeIcon inline />}
                 {item.displayName}
               </span>

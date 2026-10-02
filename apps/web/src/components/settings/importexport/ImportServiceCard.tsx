@@ -536,7 +536,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
           <p className="mt-3 mb-2 text-sm">{t('importExport.serviceCard.importErrorDetailsIntro')}</p>
           <pre className="text-xs whitespace-pre-wrap break-words bg-red-50 dark:bg-red-50 p-2 rounded border border-red-200 dark:border-red-300 select-all">{errorPayload}</pre>
           <div className="mt-2">
-            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="text-xs underline font-medium hover:no-underline">{t('importExport.serviceCard.importErrorCopyDetailsButton')}</button>
+            <button type="button" onClick={() => void copyToClipboard(errorPayload)} className="text-sm underline font-medium hover:no-underline">{t('importExport.serviceCard.importErrorCopyDetailsButton')}</button>
           </div>
         </>
       )}
@@ -585,7 +585,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             <input id="decryptionPassword" type="password" value={decryptionPassword} onChange={e => setDecryptionPassword(e.target.value)} onKeyDown={handlePasswordKeyDown} autoFocus autoComplete="off" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
           <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-            <p className="text-xs text-orange-800 dark:text-orange-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
+            <p className="text-sm text-orange-800 dark:text-orange-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
           </div>
           <div className="flex justify-end mt-6 space-x-2">
             <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>
@@ -605,7 +605,7 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         <Icon name="exclamation" className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
         <p className="font-medium text-amber-900 dark:text-amber-200">{t('importExport.serviceCard.importPartialFailureWarning', { count: parseFailures.length })}</p>
       </div>
-      <ul className="mb-3 ml-7 text-xs list-disc pl-5 space-y-0.5 text-gray-700 dark:text-gray-300">
+      <ul className="mb-3 ml-7 text-sm list-disc pl-5 space-y-0.5 text-gray-700 dark:text-gray-300">
         {parseFailures.slice(0, FAILED_ITEMS_PREVIEW_LIMIT).map(failure => (
           <li key={failure.Index}>
             <span className="font-medium">{failure.ItemTitle && failure.ItemTitle.trim().length > 0 ? failure.ItemTitle : '(no title)'}</span>
@@ -614,9 +614,9 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
         ))}
       </ul>
       {parseFailures.length > FAILED_ITEMS_PREVIEW_LIMIT && (
-        <p className="mb-3 ml-7 text-xs text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.moreCredentials', { count: parseFailures.length - FAILED_ITEMS_PREVIEW_LIMIT })}</p>
+        <p className="mb-3 ml-7 text-sm text-gray-700 dark:text-gray-300">{t('importExport.serviceCard.moreCredentials', { count: parseFailures.length - FAILED_ITEMS_PREVIEW_LIMIT })}</p>
       )}
-      <button type="button" onClick={() => setShowFailureDetails(!showFailureDetails)} className="ml-7 inline-flex items-center gap-1 text-xs font-medium text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 hover:underline">
+      <button type="button" onClick={() => setShowFailureDetails(!showFailureDetails)} className="ml-7 inline-flex items-center gap-1 text-sm font-medium text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 hover:underline">
         <span className={`${showFailureDetails ? 'rotate-90' : ''} transition-transform`}>▸</span>
         {showFailureDetails ? t('common.hideDetails') : t('common.showDetails')}
       </button>
