@@ -733,8 +733,7 @@
     "history": "Riwayat",
     "home": {
       "alphabeticalOption": "Menurut abjad",
-      "buttonLocationText": "tombol di pojok kanan atas.",
-      "createFirstItemText": "Buatlah item pertama Anda menggunakan",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Folder ini kosong.",
       "failedToCreateFolder": "Gagal membuat folder.",
       "failedToDeleteFolder": "Gagal menghapus folder.",
@@ -744,8 +743,6 @@
       "importButtonText": "Impor dari KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Jika sebelumnya Anda menggunakan pengelola kata sandi yang berbeda, Anda dapat mengimpor entri-entri Anda dari sana.",
       "loadingMore": "Memuat lebih banyak...",
-      "newAliasButtonText": "\"+ Alias Baru\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Belum ada item",
       "pageDescription": "Temukan semua barang Anda di bawah ini.",
       "sortOrderLabel": "Pengurutan",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Buat alias baru...",
       "namePlaceholderCard": "Misalnya, Mastercard",
       "namePlaceholderNote": "Misalnya, Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Baru",
       "typeCard": "Kartu",
       "typeLogin": "Masuk"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Gunakan Kunci Akses Browser"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktif di semua situs (kecuali jika dinonaktifkan di bawah ini)",
     "advancedOptions": "Pilihan Lanjutan",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Tentukan rentang usia default untuk pembuatan identitas baru. Hal ini memengaruhi tanggal lahir yang ditetapkan pada identitas yang dihasilkan.",
       "aliasGenerationGenderDescription": "Tentukan preferensi jenis kelamin default untuk pembuatan identitas baru.",
       "aliasGenerationLanguageDescription": "Tentukan bahasa default yang akan digunakan saat membuat identitas baru.",
-      "aliasSettingsTitle": "Pengaturan Generator Identitas",
       "appLanguageDescription": "Tentukan bahasa untuk antarmuka aplikasi.",
       "appLanguageTitle": "Bahasa Aplikasi",
       "autoEmailRefreshLabel": "Perbarui konten email secara otomatis saat ada email baru yang masuk",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Domain publik"
     },
     "globalSettings": "Pengaturan Global",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Pembuat identitas",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Atur rentang usia untuk membuat identitas baru.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Gagal menonaktifkan otentikasi dua faktor.",
         "pageDescription": "Menonaktifkan otentikasi dua faktor berarti Anda dapat masuk hanya dengan menggunakan kata sandi Anda.",
         "pageTitle": "Nonaktifkan autentikasi dua faktor",
-        "statusMessage": "Otentikasi dua faktor saat ini diaktifkan. Nonaktifkan fitur ini agar Anda dapat mengakses brankas Anda hanya dengan kata sandi.",
         "twoFactorDisabledSuccess": "Otentikasi dua faktor kini telah berhasil dinonaktifkan.",
-        "twoFactorNotEnabled": "Otentikasi dua faktor belum diaktifkan.",
-        "warningMessage": "Harap diperhatikan: setelah menonaktifkan otentikasi dua faktor, semua aplikasi otentikator yang telah dikonfigurasi akan berhenti berfungsi. Jika Anda ingin mengaktifkan kembali otentikasi dua faktor, Anda harus mengonfigurasi ulang aplikasi otentikator tersebut."
+        "twoFactorNotEnabled": "Otentikasi dua faktor belum diaktifkan."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Gagal mengaktifkan otentikasi dua faktor.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Otentikasi dua faktor saat ini dinonaktifkan. Untuk meningkatkan keamanan akun Anda, kami menyarankan Anda untuk mengaktifkannya.",
-        "enabledMessage": "Otentikasi dua faktor saat ini telah diaktifkan."
+        "enabledMessage": "Otentikasi dua faktor saat ini telah diaktifkan.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Pilih Bahasa",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Konfigurasikan URL server AliasVault untuk instansi yang dihosting mandiri",
     "serverUrl": "URL Server",
     "serverVersion": "Versi Server",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Pengaturan Spesifik Situs",
     "storageInsights": {
       "breadcrumbTitle": "Wawasan tentang penyimpanan",
