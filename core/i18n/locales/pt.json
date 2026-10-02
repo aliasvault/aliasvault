@@ -764,16 +764,16 @@
     "loginCredentials": "Crednciais de login",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -1224,7 +1224,7 @@
     },
     "globalSettings": "Configurações Gerais",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "Preenchimento Automático",
       "general": "General",
       "generators": "Generators"
     },
@@ -1455,7 +1455,7 @@
     "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Configurações Específicas do Site",
     "storageInsights": {
-      "breadcrumbTitle": "Storage insights",
+      "breadcrumbTitle": "Análise de Armazenamento",
       "breakdownLogosLabel": "Logos",
       "breakdownTitle": "Storage usage breakdown",
       "columnCreated": "Criado",
