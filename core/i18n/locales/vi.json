@@ -107,7 +107,7 @@
       "recentlyChangedPasswordTitle": "Recently changed password"
     },
     "loggedInAs": "Đã đăng nhập với tư cách",
-    "loggingIn": "Logging in...",
+    "loggingIn": "Đăng nhập...",
     "login": "Đăng nhập",
     "loginForm": {
       "authenticatorCodeLabel": "Authenticator code",
@@ -392,7 +392,7 @@
       "noEmailsReceivedMessage": "No emails have been received yet.",
       "pageDescription": "You can view all emails received by your private email addresses below."
     },
-    "item": "Item",
+    "item": "Mục",
     "loadMore": "Load More ({{count}} remaining)",
     "modal": {
       "attachmentDownloadError": "Error downloading attachment",
@@ -764,16 +764,16 @@
     "loginCredentials": "Login credentials",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -1050,7 +1050,7 @@
     "totpCodeCopied": "TOTP code copied",
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
-    "usernamePrefix": "Username: ",
+    "usernamePrefix": "Tên người dùng: ",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "Trang wed"
@@ -1460,7 +1460,7 @@
       "breakdownTitle": "Storage usage breakdown",
       "columnCreated": "Created",
       "columnFilename": "Filename",
-      "columnItem": "Item",
+      "columnItem": "Mục",
       "columnItemCount": "Used by",
       "columnSize": "Size",
       "countsTitle": "Overview",
@@ -1623,7 +1623,7 @@
   },
   "validation": {
     "passwordRequired": "Yêu cầu nhập mật khẩu",
-    "required": "This field is required",
+    "required": "Trường này là bắt buộc",
     "secretKeyRequired": "Cần có khóa bí mật",
     "serviceNameRequired": "Service name is required"
   },
@@ -1635,7 +1635,7 @@
       "passwordChangeRequiresOnline": "Đổi mật khẩu yêu cầu có kết nối internet. Vui lòng thử lại khi có mạng.",
       "usernameNotFound": "Không tìm thấy tên người dùng"
     },
-    "mergingVault": "Merging vault changes...",
+    "mergingVault": "Gộp các thay đổi trong kho lưu trữ...",
     "savingChangesToVault": "Đang lưu các thay đổi vào kho lưu trữ",
     "syncingUpdatedVault": "Syncing updated vault",
     "syncingVault": "Đồng bộ hóa kho bí mật",
