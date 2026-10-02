@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
     "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
     "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
     "PENDING_MIGRATIONS": "Există migrări în așteptare. Rulează „dotnet ef database update” pentru a le aplica.",
     "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Minunat! Acum, să configurăm parola principală pentru AliasVault."
       },
       "passwordStepTitle": "Setează parola",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Configurare",
       "termsAndConditionsStepTitle": "Utilizare AliasVault",
       "termsStep": {
