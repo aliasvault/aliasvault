@@ -50,4 +50,56 @@ test.describe('3. Items', () => {
       await expect(page.getByText('Item to delete', { exact: true })).toHaveCount(0);
     });
   });
+
+  test('3.4 should restore fields after switching the item type back', async ({ app }) => {
+    const { page } = app;
+    await app.createItem('Type switch service');
+
+    /**
+     * Pick another item type on the edit form.
+     */
+    const switchType = async (type: string): Promise<void> => {
+      await page.locator('#itemTypeSelectorToggle').click();
+      await page.locator(`#itemTypeSelector_${type}`).click();
+    };
+
+    await test.step('make it an alias and fill in the alias fields', async () => {
+      await page.getByRole('link', { name: 'Edit item' }).click();
+      await expect(page).toHaveURL(/\/edit$/);
+      await switchType('Alias');
+      await page.locator('#first-name').fill('Jane');
+      await page.locator('#last-name').fill('Switcher');
+      await page.locator('#username').fill('jswitch');
+    });
+
+    await test.step('switching to login drops the alias fields only', async () => {
+      await page.pause();
+      await switchType('Login');
+      await expect(page.locator('#first-name')).toHaveCount(0);
+      await expect(page.locator('#username')).toHaveValue('jswitch');
+    });
+
+    await test.step('switching to note drops the login fields', async () => {
+      await page.pause();
+      await switchType('Note');
+      await expect(page.locator('#username')).toHaveCount(0);
+    });
+
+    await test.step('switching back to alias restores every field', async () => {
+      await page.pause();
+      await switchType('Alias');
+      await page.pause();
+      await expect(page.locator('#first-name')).toHaveValue('Jane');
+      await expect(page.locator('#last-name')).toHaveValue('Switcher');
+      await expect(page.locator('#username')).toHaveValue('jswitch');
+    });
+
+    await test.step('the restored fields are saved', async () => {
+      await app.saveItemButton().click();
+      await expect(page.getByText('Item updated successfully')).toBeVisible();
+      await page.getByRole('link', { name: 'Edit item' }).click();
+      await expect(page.locator('#first-name')).toHaveValue('Jane');
+      await expect(page.locator('#username')).toHaveValue('jswitch');
+    });
+  });
 });
