@@ -996,10 +996,10 @@ const ItemAddEdit: React.FC = () => {
       setInitiallyVisibleFields(prev => new Set([...prev].filter(applies)));
     }
 
-    // Reset alias generated flag, so alias fields will be filled (again) if they are shown by the new type
-    aliasGeneratedRef.current = false;
-    aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias &&
-      ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((nextValues[key] as string) ?? '').trim());
+    // Reset alias generated flag, so empty alias fields will be filled (again) if they are shown by the new type
+    const aliasFieldsEmpty = ['alias.first_name', 'alias.last_name', 'alias.gender', 'alias.birthdate'].every(key => !((nextValues[key] as string) ?? '').trim());
+    aliasGeneratedRef.current = !aliasFieldsEmpty;
+    aliasRequestedByTypeChangeRef.current = isEditMode && oldType !== newType && newType === ItemTypes.Alias && aliasFieldsEmpty;
 
     /*
      * Update email field mode based on new item type

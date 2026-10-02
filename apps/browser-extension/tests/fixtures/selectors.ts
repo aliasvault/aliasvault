@@ -89,4 +89,5 @@ export const ButtonSelectors = {
   EDIT_ITEM: 'button[title="Edit Item"]',
   SAVE: 'button#save-credential',
   ADD_FIELD_MENU: 'button#add-field-menu',
+  ITEM_TYPE_SELECTOR: 'button#item-type-selector',
 } as const;
