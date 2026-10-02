@@ -733,8 +733,7 @@
     "history": "기록",
     "home": {
       "alphabeticalOption": "이름순",
-      "buttonLocationText": "버튼(오른쪽 상단)을 누르세요.",
-      "createFirstItemText": "첫 번째 항목을 생성하려면",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "이 폴더는 비어 있습니다.",
       "failedToCreateFolder": "폴더를 생성하지 못했습니다.",
       "failedToDeleteFolder": "폴더를 삭제하지 못했습니다.",
@@ -744,8 +743,6 @@
       "importButtonText": "KeePass, Bitwarden, Chrome, Firefox에서 가져오기...",
       "importItemsText": "이전에 다른 비밀번호 관리자를 사용하셨다면 해당 항목들을 가져올 수 있습니다.",
       "loadingMore": "더 불러오는 중...",
-      "newAliasButtonText": "\"+ 새 에일리어스\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "아직 항목이 없습니다",
       "pageDescription": "아래에서 모든 항목을 확인할 수 있습니다.",
       "sortOrderLabel": "정렬 순서",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "새 에일리어스 생성 중...",
       "namePlaceholderCard": "예: 마스터카드",
       "namePlaceholderNote": "예: 여권 정보",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ 새로 만들기",
       "typeCard": "카드",
       "typeLogin": "로그인"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "브라우저 패스키 사용"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "모든 사이트에서 활성 (아래에서 비활성화된 경우 제외)",
     "advancedOptions": "고급 옵션",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "새 신원 정보를 생성할 때 기본 연령대를 설정합니다. 생성된 신원 정보에 할당되는 생년월일에 영향을 줍니다.",
       "aliasGenerationGenderDescription": "새 신원 정보를 생성할 때 선호하는 기본 성별을 설정합니다.",
       "aliasGenerationLanguageDescription": "새 신원 정보를 생성할 때 사용할 기본 언어를 설정합니다.",
-      "aliasSettingsTitle": "신원 정보 생성기 설정",
       "appLanguageDescription": "애플리케이션 인터페이스의 언어를 설정합니다.",
       "appLanguageTitle": "애플리케이션 언어",
       "autoEmailRefreshLabel": "새 이메일이 도착하면 이메일 콘텐츠 자동 새로고침",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "공개 도메인"
     },
     "globalSettings": "전역 설정",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "신원 정보 생성기",
     "identityGeneratorSettings": {
       "ageRangeDescription": "새로운 신원 정보를 생성할 때 적용할 연령대를 설정합니다.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "2단계 인증을 비활성화하지 못했습니다.",
         "pageDescription": "2단계 인증을 비활성화하면 비밀번호만으로 로그인할 수 있게 됩니다.",
         "pageTitle": "2단계 인증 비활성화",
-        "statusMessage": "현재 2단계 인증이 활성화되어 있습니다. 비밀번호만으로 보관함에 접근하려면 이 기능을 비활성화하세요.",
         "twoFactorDisabledSuccess": "2단계 인증이 성공적으로 비활성화되었습니다.",
-        "twoFactorNotEnabled": "2단계 인증이 활성화되어 있지 않습니다.",
-        "warningMessage": "참고: 2단계 인증을 비활성화하면 설정된 모든 인증기 앱의 작동이 중단됩니다. 2단계 인증을 다시 활성화하려면 인증기 앱을 다시 구성해야 합니다."
+        "twoFactorNotEnabled": "2단계 인증이 활성화되어 있지 않습니다."
       },
       "enable2fa": {
         "failedToEnable2Fa": "2단계 인증을 활성화하지 못했습니다.",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "2단계 인증이 현재 비활성화되어 있습니다. 계정 보안을 강화하기 위해 활성화하는 것을 권장합니다.",
-        "enabledMessage": "2단계 인증이 현재 활성화되어 있습니다."
+        "enabledMessage": "2단계 인증이 현재 활성화되어 있습니다.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "언어 선택",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "자체 호스팅 인스턴스를 위한 AliasVault 서버 URL을 구성합니다",
     "serverUrl": "서버 URL",
     "serverVersion": "서버 버전",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "사이트별 설정",
     "storageInsights": {
       "breadcrumbTitle": "저장 공간 분석",
