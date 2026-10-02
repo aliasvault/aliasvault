@@ -41,6 +41,7 @@ import PasswordGeneratorSettings from '@/entrypoints/popup/pages/settings/Passwo
 import ActiveSessionsSettings from '@/entrypoints/popup/pages/settings/security/ActiveSessionsSettings';
 import AuthLogsSettings from '@/entrypoints/popup/pages/settings/security/AuthLogsSettings';
 import ChangePasswordSettings from '@/entrypoints/popup/pages/settings/security/ChangePasswordSettings';
+import DeleteAccountSettings from '@/entrypoints/popup/pages/settings/security/DeleteAccountSettings';
 import SecuritySettings from '@/entrypoints/popup/pages/settings/security/SecuritySettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
 import VaultUnlockSettings from '@/entrypoints/popup/pages/settings/VaultUnlockSettings';
@@ -214,6 +215,7 @@ const App: React.FC = () => {
     { path: '/settings/security/change-password', element: <ChangePasswordSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/security/active-sessions', element: <ActiveSessionsSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/security/auth-logs', element: <AuthLogsSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/settings/security/delete-account', element: <DeleteAccountSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/autofill', element: <AutofillSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/context-menu', element: <ContextMenuSettings />, showBackButton: true, title: t('common.settings') },
     { path: '/settings/clipboard', element: <ClipboardSettings />, showBackButton: true, title: t('common.settings') },

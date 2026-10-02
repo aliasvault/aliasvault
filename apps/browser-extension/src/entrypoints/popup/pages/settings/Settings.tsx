@@ -9,6 +9,7 @@ import LogoutConfirmModal from '@/entrypoints/popup/components/Dialogs/LogoutCon
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import PageTitle from '@/entrypoints/popup/components/PageTitle';
+import { SettingsGroup, SettingsRow } from '@/entrypoints/popup/components/Settings/SettingsMenu';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useCapabilities } from '@/entrypoints/popup/context/CapabilityContext';
@@ -164,90 +165,6 @@ const Settings: React.FC = () => {
     navigate('/unlock');
   };
 
-  /**
-   * Navigate to family sharing settings.
-   */
-  const navigateToFamilySharingSettings = () : void => {
-    navigate('/settings/family-sharing');
-  };
-
-  /**
-   * Navigate to autofill settings.
-   */
-  const navigateToAutofillSettings = () : void => {
-    navigate('/settings/autofill');
-  };
-
-  /**
-   * Navigate to clipboard settings.
-   */
-  const navigateToClipboardSettings = () : void => {
-    navigate('/settings/clipboard');
-  };
-
-  /**
-   * Navigate to language settings.
-   */
-  const navigateToLanguageSettings = () : void => {
-    navigate('/settings/language');
-  };
-
-  /**
-   * Navigate to auto-lock settings.
-   */
-  const navigateToAutoLockSettings = () : void => {
-    navigate('/settings/auto-lock');
-  };
-
-  /**
-   * Navigate to unlock method settings.
-   */
-  const navigateToUnlockMethodSettings = () : void => {
-    navigate('/settings/unlock-method');
-  };
-
-  /**
-   * Navigate to security settings.
-   */
-  const navigateToSecuritySettings = () : void => {
-    navigate('/settings/security');
-  };
-
-  /**
-   * Navigate to context menu settings.
-   */
-  const navigateToContextMenuSettings = () : void => {
-    navigate('/settings/context-menu');
-  };
-
-  /**
-   * Navigate to passkey settings.
-   */
-  const navigateToPasskeySettings = () : void => {
-    navigate('/settings/passkeys');
-  };
-
-  /**
-   * Navigate to identity generator settings.
-   */
-  const navigateToIdentityGeneratorSettings = () : void => {
-    navigate('/settings/identity-generator');
-  };
-
-  /**
-   * Navigate to password generator settings.
-   */
-  const navigateToPasswordGeneratorSettings = () : void => {
-    navigate('/settings/password-generator');
-  };
-
-  /**
-   * Navigate to appearance settings.
-   */
-  const navigateToAppearanceSettings = () : void => {
-    navigate('/settings/appearance');
-  };
-
   return (
     <>
       {/* Logout Confirmation Modal */}
@@ -262,9 +179,9 @@ const Settings: React.FC = () => {
           <PageTitle>{t('common.settings')}</PageTitle>
         </div>
 
-        {/* User Menu Section */}
+        {/* Account card: who is logged in, plus account-level destinations */}
         <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden divide-y divide-gray-200 dark:divide-gray-700">
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -330,438 +247,92 @@ const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
+            {hasCapability(CapabilityKeys.VaultSharing) && (
+              <SettingsRow
+                label={familySharingText.title}
+                badge={familySharingText.beta}
+                onClick={() => navigate('/settings/family-sharing')}
+                icon={<path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
+              />
+            )}
           </div>
         </section>
 
-        {/* Family Sharing Section */}
-        {hasCapability(CapabilityKeys.VaultSharing) && (
-          <section>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <button
-                onClick={navigateToFamilySharingSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{familySharingText.title}</span>
-                  <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 uppercase tracking-wide">
-                    {familySharingText.beta}
-                  </span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </section>
-        )}
+        <SettingsGroup title={t('settings.autofill')}>
+          <SettingsRow
+            label={t('settings.autofillSettings')}
+            onClick={() => navigate('/settings/autofill')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />}
+          />
+          <SettingsRow
+            label={t('settings.passkeySettings')}
+            onClick={() => navigate('/settings/passkeys')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />}
+          />
+          <SettingsRow
+            label={t('settings.contextMenuSettings')}
+            onClick={() => navigate('/settings/context-menu')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />}
+          />
+          {openKeyboardShortcuts && (
+            <SettingsRow
+              label={t('settings.keyboardShortcuts')}
+              onClick={openKeyboardShortcuts}
+              external
+              icon={<path strokeLinecap="round" strokeLinejoin="round" d="M5 7h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2zM7 11h.01M11 11h.01M15 11h.01M8 15h8" />}
+            />
+          )}
+        </SettingsGroup>
 
-        {/* Settings Navigation Section */}
-        <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Autofill Settings */}
-              <button
-                onClick={navigateToAutofillSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autofillSettings')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+        <SettingsGroup title={t('settings.security')}>
+          <SettingsRow
+            label={t('settings.vaultUnlock')}
+            onClick={() => navigate('/settings/unlock-method')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />}
+          />
+          <SettingsRow
+            label={t('settings.autoLock')}
+            onClick={() => navigate('/settings/auto-lock')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />}
+          />
+          <SettingsRow
+            label={t('settings.clipboardClear')}
+            onClick={() => navigate('/settings/clipboard')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />}
+          />
+          <SettingsRow
+            id="security-settings-button"
+            label={t('settings.accountSecurity')}
+            onClick={() => navigate('/settings/security')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
+          />
+        </SettingsGroup>
 
-              {/* Passkey Settings */}
-              <button
-                onClick={navigateToPasskeySettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.passkeySettings')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+        <SettingsGroup title={t('settings.groups.generators')}>
+          <SettingsRow
+            label={t('settings.passwordGenerator')}
+            onClick={() => navigate('/settings/password-generator')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />}
+          />
+          <SettingsRow
+            label={t('settings.identityGenerator')}
+            onClick={() => navigate('/settings/identity-generator')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />}
+          />
+        </SettingsGroup>
 
-              {/* Vault Unlock Method */}
-              <button
-                onClick={navigateToUnlockMethodSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round"  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.vaultUnlock')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Auto-lock Settings */}
-              <button
-                onClick={navigateToAutoLockSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLock')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Clipboard Settings */}
-              <button
-                onClick={navigateToClipboardSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.clipboardSettings')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Language Settings */}
-              <button
-                onClick={navigateToLanguageSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.language')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Generator Settings Section */}
-        <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Password Generator Settings */}
-              <button
-                onClick={navigateToPasswordGeneratorSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.passwordGenerator')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Identity Generator Settings */}
-              <button
-                onClick={navigateToIdentityGeneratorSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.identityGenerator')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Context Menu Settings */}
-              <button
-                onClick={navigateToContextMenuSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 6h16M4 12h16m-7 6h7"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.contextMenuSettings')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Security Settings */}
-              <button
-                id="security-settings-button"
-                onClick={navigateToSecuritySettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.security')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Appearance & Keyboard Shortcuts Section */}
-        <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Appearance Settings */}
-              <button
-                onClick={navigateToAppearanceSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L9.828 19.071M7 17h.01"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.appearance')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Keyboard Shortcuts (opens browser settings) */}
-              {openKeyboardShortcuts && (
-                <button
-                  onClick={openKeyboardShortcuts}
-                  className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-center">
-                    <svg
-                      className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 7h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2zM7 11h.01M11 11h.01M15 11h.01M8 15h8"
-                      />
-                    </svg>
-                    <span className="text-gray-900 dark:text-white text-left">{t('settings.keyboardShortcuts')}</span>
-                  </div>
-                  {/* External-link icon: indicates this opens the browser's own settings */}
-                  <svg
-                    className="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
+        <SettingsGroup title={t('settings.groups.general')}>
+          <SettingsRow
+            label={t('settings.appearance')}
+            onClick={() => navigate('/settings/appearance')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L9.828 19.071M7 17h.01" />}
+          />
+          <SettingsRow
+            label={t('settings.language')}
+            onClick={() => navigate('/settings/language')}
+            icon={<path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />}
+          />
+        </SettingsGroup>
 
         <div className="text-center text-[13px] text-gray-400 dark:text-gray-600">
           <div><span className="font-bold">{t('settings.appVersion')}:</span> {AppInfo.VERSION}</div>
