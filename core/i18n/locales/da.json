@@ -764,16 +764,16 @@
     "loginCredentials": "Loginoplysninger",
     "logo": {
       "builtin": {
-        "Bank": "Bank",
-        "Dev": "Udvikling",
-        "Game": "Spil",
-        "Health": "Sundhed",
-        "Mail": "Mail",
-        "Media": "Medie",
-        "Shopping": "Indkøb",
-        "Social": "Sociale",
-        "Travel": "Rejser",
-        "Work": "Arbejde"
+        "bank": "Bank",
+        "dev": "Udvikling",
+        "game": "Spil",
+        "health": "Sundhed",
+        "mail": "Mail",
+        "media": "Medie",
+        "shopping": "Indkøb",
+        "social": "Sociale",
+        "travel": "Rejser",
+        "work": "Arbejde"
       },
       "builtinLogos": "Ikon bibliotek",
       "chooseLogo": "Vælg ikon",
