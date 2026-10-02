@@ -15,8 +15,9 @@ test.describe('6. Settings', () => {
     await app.login(testUser.username, testUser.password);
 
     await test.step('switch to Dutch', async () => {
-      await page.locator('#toggleMobileMenuButton').click();
-      await page.locator('#mobileMenuDropdown').getByRole('link', { name: 'General settings' }).click();
+      await page.locator('#userMenuButton').click();
+      await page.locator('#userMenu').getByRole('link', { name: 'Settings', exact: true }).click();
+      await page.getByRole('main').getByRole('link', { name: 'General settings' }).click();
       await page.locator('#appLanguage').selectOption('nl');
       await expect(emailsLink('E-mails')).toBeVisible();
     });
