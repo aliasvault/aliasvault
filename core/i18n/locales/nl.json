@@ -9,6 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Ongeldige authenticatiecode. Probeer het opnieuw.",
     "INVALID_RECOVERY_CODE": "Ongeldige herstelcode. Probeer het opnieuw.",
     "INVALID_REFRESH_TOKEN": "Ongeldig refresh token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Het opgegeven wachtwoord komt niet overeen met je huidige wachtwoord.",
     "PENDING_MIGRATIONS": "Er zijn migraties in behandeling. Voer 'dotnet ef database update' uit om ze toe te passen.",
     "PUBLIC_REGISTRATION_DISABLED": "Registratie van nieuwe accounts is momenteel uitgeschakeld op deze server. Neem contact op met de beheerder.",
@@ -161,6 +162,8 @@
         "welcomeMessage": "Geweldig! Laten we nu je hoofdwachtwoord voor AliasVault instellen."
       },
       "passwordStepTitle": "Wachtwoord instellen",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Instellen",
       "termsAndConditionsStepTitle": "AliasVault gebruiken",
       "termsStep": {
