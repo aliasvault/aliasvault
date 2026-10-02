@@ -764,16 +764,16 @@
     "loginCredentials": "Date de autentificare",
     "logo": {
       "builtin": {
-        "Bank": "Servicii bancare",
-        "Dev": "Dezvoltare",
-        "Game": "Jocuri",
-        "Health": "Sănătate",
-        "Mail": "E-mail",
-        "Media": "Media",
-        "Shopping": "Cumpărături",
-        "Social": "Rețele sociale",
-        "Travel": "Călătorii",
-        "Work": "Serviciu"
+        "bank": "Servicii bancare",
+        "dev": "Dezvoltare",
+        "game": "Jocuri",
+        "health": "Sănătate",
+        "mail": "E-mail",
+        "media": "Media",
+        "shopping": "Cumpărături",
+        "social": "Rețele sociale",
+        "travel": "Călătorii",
+        "work": "Serviciu"
       },
       "builtinLogos": "Biblioteca de pictograme",
       "chooseLogo": "Alege o pictogramă",
