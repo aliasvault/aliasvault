@@ -1,4 +1,5 @@
-import { englishTranslations, loadTranslations, type TranslationTree } from '@aliasvault/i18n';
+import { englishTranslations, type TranslationTree } from '@aliasvault/i18n';
+import { loadTranslations } from '@aliasvault/i18n/load';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
