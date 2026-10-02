@@ -733,8 +733,7 @@
     "history": "Historia",
     "home": {
       "alphabeticalOption": "Alfabetycznie",
-      "buttonLocationText": "przycisk w prawym górnym rogu.",
-      "createFirstItemText": "Utwórz swoje pierwsze dane logowania, korzystając z",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Ten folder jest pusty.",
       "failedToCreateFolder": "Nie udało się utworzyć folderu.",
       "failedToDeleteFolder": "Nie udało się usunąć folderu.",
@@ -744,8 +743,6 @@
       "importButtonText": "Importuj z KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Jeśli wcześniej korzystałeś z innego menedżera haseł, możesz zaimportować z niego swoje dane uwierzytelniające.",
       "loadingMore": "Ładuję więcej...",
-      "newAliasButtonText": "\"+ Nowy Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Brak elementów",
       "pageDescription": "Znajdź wszystkie swoje przedmioty poniżej.",
       "sortOrderLabel": "Kolejność sortowania",
@@ -827,7 +824,6 @@
       "creatingNewAliasMessage": "Tworzenie nowego aliasu...",
       "namePlaceholderCard": "Np. MasterCard",
       "namePlaceholderNote": "Np. dane paszportu",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nowy",
       "typeCard": "Karta",
       "typeLogin": "Logowanie"
@@ -1101,6 +1097,7 @@
     "useBrowserPasskey": "Użyj klucza dostępu przeglądarki"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktywne we wszystkich witrynach (chyba że jest wyłączone)",
     "advancedOptions": "Opcje zaawansowane",
     "androidAutofillSettings": {
@@ -1208,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Ustaw domyślny zakres wieku dla generowania nowych tożsamości. Ma to wpływ na datę urodzenia przypisaną do wygenerowanej tożsamości.",
       "aliasGenerationGenderDescription": "Ustaw domyślne preferencje dotyczące płci dla generowania nowych tożsamości.",
       "aliasGenerationLanguageDescription": "Ustaw domyślny język, który będzie używany podczas generowania nowych tożsamości.",
-      "aliasSettingsTitle": "Ustawienia generatora tożsamości",
       "appLanguageDescription": "Ustaw język interfejsu aplikacji.",
       "appLanguageTitle": "Język aplikacji",
       "autoEmailRefreshLabel": "Automatyczne odświeżanie treści wiadomości e-mail po nadejściu nowych wiadomości",
@@ -1227,6 +1223,11 @@
       "publicDomainsLabel": "Domeny publiczne"
     },
     "globalSettings": "Ustawienia ogólne",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Generator tożsamości",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ustaw zakres wieku dla generowania nowych tożsamości.",
@@ -1406,10 +1407,8 @@
         "failedToDisable2Fa": "Nie udało się wyłączyć uwierzytelniania dwuskładnikowego (2FA).",
         "pageDescription": "Wyłączenie uwierzytelniania dwuskładnikowego oznacza, że będziesz mógł zalogować się tylko za pomocą hasła.",
         "pageTitle": "Wyłącz weryfikację dwuetapową (2FA)",
-        "statusMessage": "Obecnie włączona jest weryfikacja dwuetapowa (2FA). Wyłącz ją, aby uzyskać dostęp do sejfu za pomocą samego hasła.",
         "twoFactorDisabledSuccess": "Weryfikacja dwuetapowa (2FA) zostało pomyślnie wyłączona.",
-        "twoFactorNotEnabled": "Weryfikacja dwuetapowa nie jest włączona.",
-        "warningMessage": "Uwaga: po wyłączeniu weryfikacji dwuetapowej (2FA) wszystkie skonfigurowane aplikacje uwierzytelniające przestaną działać. Jeśli chcesz ponownie włączyć weryfikację dwuetapową, musisz ponownie skonfigurować aplikacje uwierzytelniające."
+        "twoFactorNotEnabled": "Weryfikacja dwuetapowa nie jest włączona."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Nie udało się włączyć uwierzytelniania dwuskładnikowego (2FA).",
@@ -1443,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Weryfikacja dwuetapowa (2FA) jest obecnie wyłączona. Aby zwiększyć bezpieczeństwo swojego konta, zalecamy jej włączenie.",
-        "enabledMessage": "Weryfikacja dwuetapowa jest włączona."
+        "enabledMessage": "Weryfikacja dwuetapowa jest włączona.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Wybierz język",
@@ -1451,6 +1451,8 @@
     "serverConfigurationDescription": "Skonfiguruj adres URL serwera sejfu AliasVault",
     "serverUrl": "Adres URL serwera",
     "serverVersion": "Wersja serwera",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Ustawienia dotyczące witryny",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
