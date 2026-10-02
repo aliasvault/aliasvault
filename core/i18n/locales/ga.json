@@ -764,16 +764,16 @@
     "loginCredentials": "Dintiúir logála isteach",
     "logo": {
       "builtin": {
-        "Bank": "Baincéireacht",
-        "Dev": "Forbairt",
-        "Game": "Cluichí",
-        "Health": "Sláinte",
-        "Mail": "Post",
-        "Media": "Meáin",
-        "Shopping": "Siopadóireacht",
-        "Social": "Sóisialta",
-        "Travel": "Taisteal",
-        "Work": "Obair"
+        "bank": "Baincéireacht",
+        "dev": "Forbairt",
+        "game": "Cluichí",
+        "health": "Sláinte",
+        "mail": "Post",
+        "media": "Meáin",
+        "shopping": "Siopadóireacht",
+        "social": "Sóisialta",
+        "travel": "Taisteal",
+        "work": "Obair"
       },
       "builtinLogos": "Leabharlann deilbhíní",
       "chooseLogo": "Roghnaigh deilbhín",
