@@ -13,10 +13,11 @@ export const RegistrationService = {
   /**
    * Register an account.
    * @param setAuthTokens - stores the username and tokens (the app context's setter, so the UI state follows)
+   * @param inviteCode - the registration invite code, required when public registration is disabled
    * @throws ApiRequestError with the server's error code when the server refuses the registration
    */
-  async register(webApi: WebApiService, username: string, password: string, setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>): Promise<void> {
-    const registered = await new SrpLoginService(webApi).register(username, password);
+  async register(webApi: WebApiService, username: string, password: string, setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>, inviteCode?: string): Promise<void> {
+    const registered = await new SrpLoginService(webApi).register(username, password, inviteCode);
 
     await setAuthTokens(registered.username, registered.token.token, registered.token.refreshToken);
     await VaultKeyService.cacheVaultKeyBlobs({ type: UnlockMethodType.Password, ...registered.keys.accountKeys, ...registered.derivationParams });
