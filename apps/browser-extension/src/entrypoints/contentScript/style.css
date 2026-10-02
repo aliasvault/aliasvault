@@ -289,8 +289,8 @@ body {
 }
 
 .av-search-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #f49541;
+  box-shadow: 0 0 0 2px rgba(244, 149, 65, 0.2);
 }
 
 /* Vault Locked Popup */
@@ -548,8 +548,8 @@ body {
 }
 
 .av-create-popup-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #f49541;
+  box-shadow: 0 0 0 3px rgba(244, 149, 65, 0.1);
 }
 
 .av-create-popup-input-default {
@@ -768,7 +768,7 @@ body {
 }
 
 .av-create-popup-save:hover {
-  background: #c97731;
+  background: #b8702f;
   transform: translateY(-1px);
 }
 
@@ -1284,7 +1284,7 @@ body {
 }
 
 .av-password-config-toggle.active:hover {
-  background-color: #c97731;
+  background-color: #b8702f;
 }
 
 .av-password-config-checkbox {
@@ -1465,7 +1465,7 @@ body {
 }
 
 .av-save-prompt__btn--save:hover {
-  background: #c97731;
+  background: #b8702f;
 }
 
 .av-save-prompt__btn--never {

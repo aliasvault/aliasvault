@@ -59,7 +59,7 @@ type InvitationCardProps = {
 const InvitationCard: React.FC<InvitationCardProps> = ({ vaultName, inviterUsername, isDisabled, onAccept, onDecline }) => (
   <Card variant="tile" className="flex flex-col gap-4 border-primary-400 ring-2 ring-primary-200 dark:border-primary-500 dark:ring-primary-900/60">
     <div className="flex items-center gap-2 min-w-0">
-      <FolderIcon isShared className="w-5 h-5 text-orange-500" />
+      <FolderIcon isShared className="w-5 h-5 text-primary-500" />
       <div className="min-w-0">
         <p className="text-lg font-medium text-gray-900 dark:text-white truncate" title={vaultName}>{vaultName}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invitedBy(inviterUsername)}</p>
@@ -441,13 +441,13 @@ const FamilySharing: React.FC = () => {
                         <div className="flex items-center gap-1 -mx-2 -mt-2 mb-2">
                           {hasFolder ? (
                             <Link to={folderRoute({ Id: folderId, ManifestId: folderId })} className="flex flex-1 items-center gap-2 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                              <FolderIcon isShared className="w-5 h-5 text-orange-500" />
+                              <FolderIcon isShared className="w-5 h-5 text-primary-500" />
                               <span className="text-lg font-medium text-gray-900 dark:text-white truncate" title={vaultLabel(manifest)}>{vaultLabel(manifest)}</span>
                               <Icon name="chevron-right" className="w-4 h-4 ml-auto shrink-0 text-gray-400" />
                             </Link>
                           ) : (
                             <div className="flex flex-1 items-center gap-2 min-w-0 px-2 py-1.5">
-                              <FolderIcon isShared className="w-5 h-5 text-orange-500" />
+                              <FolderIcon isShared className="w-5 h-5 text-primary-500" />
                               <span className="text-lg font-medium text-gray-900 dark:text-white truncate" title={vaultLabel(manifest)}>{vaultLabel(manifest)}</span>
                             </div>
                           )}

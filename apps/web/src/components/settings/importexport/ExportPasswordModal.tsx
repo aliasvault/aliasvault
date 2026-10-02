@@ -110,7 +110,7 @@ const ExportPasswordModal: React.FC<ExportPasswordModalProps> = ({ isOpen, title
       closeOnOverlayClick={false}
       submitOnEnter={false}
       icon={(
-        <Icon name="upload" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        <Icon name="upload" className="h-6 w-6 text-primary-600 dark:text-primary-400" />
       )}
       footerContent={(
         <>

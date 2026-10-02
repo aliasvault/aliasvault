@@ -1,28 +1,7 @@
 <resources>
+  <!-- The theme colors (av_*) are generated into av_colors.xml from core/models/src/colors/palette.json. -->
   <color name="splashscreen_background">#ffffff</color>
   <color name="ic_launcher_background">#FFFFFF</color>
-  <color name="colorPrimary">#023c69</color>
-  <color name="av_light_text">#11181C</color>
-  <color name="av_light_text_muted">#4b5563</color>
-  <color name="av_light_background">#f3f4f6</color>
-  <color name="av_light_accent_background">#ffffff</color>
-  <color name="av_light_accent_border">#d1d5db</color>
-  <color name="av_light_primary">#f49541</color>
-  <color name="av_light_secondary">#6b7280</color>
-  <color name="av_light_tertiary">#eabf69</color>
-  <color name="av_light_icon">#687076</color>
-  <color name="av_light_error">#D32F2F</color>
-  <color name="av_text">#11181C</color>
-  <color name="av_text_muted">#4b5563</color>
-  <color name="av_background">#f3f4f6</color>
-  <color name="av_accent_background">#ffffff</color>
-  <color name="av_accent_border">#d1d5db</color>
-  <color name="av_primary">#f49541</color>
-  <color name="av_primary_ripple">#33f49541</color>
-  <color name="av_secondary">#6b7280</color>
-  <color name="av_tertiary">#eabf69</color>
-  <color name="av_icon">#687076</color>
-  <color name="av_error">#D32F2F</color>
   <color name="av_loading_overlay">#CCFFFFFF</color>
   <color name="primary">@color/av_primary</color>
   <color name="iconBackground">#000000</color>

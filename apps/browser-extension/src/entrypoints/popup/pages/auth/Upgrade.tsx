@@ -460,7 +460,7 @@ const Upgrade: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400">{t('upgrade.yourVault')}</span>
-                  <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                  <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
                     {currentVersion?.compatibleUpToVersion ?? '...'}
                   </span>
                 </div>
@@ -475,7 +475,7 @@ const Upgrade: React.FC = () => {
           )}
 
           {kind === UpgradeKind.StorageFormat && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded p-4 text-sm text-orange-800 dark:text-orange-300">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded p-4 text-sm text-amber-800 dark:text-amber-300">
               {t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}
             </div>
           )}

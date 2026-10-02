@@ -187,7 +187,7 @@
                 android:id="@+id/errorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/av_error"
+                android:textColor="@color/av_destructive"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />

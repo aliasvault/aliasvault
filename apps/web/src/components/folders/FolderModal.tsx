@@ -62,7 +62,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
       onClose={onClose}
       onConfirm={handleSave}
       icon={(
-        <Icon name="folder-filled" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        <Icon name="folder-filled" className="h-6 w-6 text-primary-600 dark:text-primary-400" />
       )}>
       <label htmlFor="folder-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {t('items.folders.folderName')}
@@ -74,7 +74,7 @@ const FolderModal: React.FC<FolderModalProps> = ({ isOpen, mode, initialName = '
         onChange={(e) => setFolderName(e.target.value)}
         placeholder={t('items.folders.modal.folderNamePlaceholder')}
         autoFocus
-        className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500 dark:focus:ring-orange-500" />
+        className="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500 dark:focus:ring-primary-500" />
       {errorMessage && (
         <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
       )}

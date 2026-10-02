@@ -95,7 +95,7 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({
             className="w-full p-3 text-left border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-orange-500">
+              <div className="mt-0.5 text-primary-500">
                 <Icon name="folder-check" className="w-5 h-5" />
               </div>
               <div>

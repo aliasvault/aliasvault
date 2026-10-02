@@ -43,8 +43,8 @@ const ClipboardClearSection: React.FC = () => {
           <option value="15">{t('common.duration.15seconds')}</option>
         </Select>
         <span className="block text-sm font-normal text-gray-500 dark:text-gray-400">{t('settings.general.clipboardClearSecondsDescription')}</span>
-        <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:border-yellow-800">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200">{t('settings.general.clipboardClearLimitationNote')}</p>
+        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-800">
+          <p className="text-sm text-amber-800 dark:text-amber-200">{t('settings.general.clipboardClearLimitationNote')}</p>
         </div>
       </div>
     </SecuritySection>

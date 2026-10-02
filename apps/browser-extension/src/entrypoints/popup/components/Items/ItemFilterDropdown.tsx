@@ -58,7 +58,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
   const itemRowClass = (selected: boolean) : string =>
     `w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
       selected
-        ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
         : 'text-gray-700 dark:text-gray-300'
     }`;
 
@@ -81,7 +81,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
         className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
       >
         <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
-          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-4 h-4 self-center text-orange-500 dark:text-orange-400" />}
+          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-4 h-4 self-center text-primary-500 dark:text-primary-400" />}
           <span className="truncate">{title}</span>
           {count !== undefined && (
             <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
@@ -118,7 +118,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
                     className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                   >
                     <span>{t('items.filters.showFolders')}</span>
-                    <Icon name={showFolders ? 'square-check' : 'square-feather'} className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} />
+                    <Icon name={showFolders ? 'square-check' : 'square-feather'} className={`w-5 h-5 ${showFolders ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`} />
                   </button>
                 )}
               </div>
@@ -131,7 +131,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
                     onClick={() => handleSelectFilter(option.type)}
                     className={`${itemRowClass(selected)} flex items-center gap-2`}
                   >
-                    <span className={selected ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}>
+                    <span className={selected ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}>
                       {option.iconSvg}
                     </span>
                     {t(option.titleKey)}
@@ -164,7 +164,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({
               >
                 <span>{t('items.recentlyDeleted.title')}</span>
                 {recentlyDeletedCount > 0 && (
-                  <span className={activeFilter === 'deleted' ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}>
+                  <span className={activeFilter === 'deleted' ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}>
                     {recentlyDeletedCount}
                   </span>
                 )}

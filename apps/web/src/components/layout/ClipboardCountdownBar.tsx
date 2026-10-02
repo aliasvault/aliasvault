@@ -27,7 +27,7 @@ const ClipboardCountdownBar: React.FC = () => {
 
   // Once the countdown ran out without a clear, the bar stays full (blue) until the clear goes through.
   const waiting = status === 'pending' || status === 'manual_clear_required' || progress <= 0;
-  const barColorClass = waiting ? 'bg-blue-500 dark:bg-blue-400' : 'bg-orange-500 dark:bg-orange-400';
+  const barColorClass = waiting ? 'bg-blue-500 dark:bg-blue-400' : 'bg-primary-500 dark:bg-primary-400';
   const animationClass = waiting && status !== 'manual_clear_required' ? 'animate-pulse' : '';
 
   return (

@@ -5,6 +5,8 @@
     "main": "dist/index.mjs",
     "types": "dist/index.d.mts",
     "exports": {
+        "./colors": "./src/colors/index.ts",
+        "./colors/tailwind-preset": "./src/colors/tailwind-preset.cjs",
         "./defaults": "./src/defaults/index.ts",
         "./icons": "./src/icons/index.ts",
         "./identity": "./src/identity/index.ts",
@@ -18,7 +20,8 @@
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "test": "vitest run --passWithNoTests",
-        "icons:generate": "node scripts/generate-icons.cjs"
+        "icons:generate": "node scripts/generate-icons.cjs",
+        "colors:generate": "node scripts/generate-colors.cjs"
     },
     "files": [
         "dist"

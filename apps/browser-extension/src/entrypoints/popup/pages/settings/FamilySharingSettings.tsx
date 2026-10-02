@@ -386,7 +386,7 @@ const FamilySharingSettings: React.FC = () => {
             {receivedInvitations.map(invitation => (
               <div key={invitation.id} className="p-3 space-y-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-primary-400 dark:border-primary-500 ring-2 ring-primary-200 dark:ring-primary-900/60">
                 <div className="flex items-center gap-2 min-w-0">
-                  <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                  <FolderIcon isShared className="w-4 h-4 text-primary-500 dark:text-primary-400" />
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900 dark:text-white truncate">{invitationNames[invitation.id] ?? familySharingText.sharedVault}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{familySharingText.invitedBy(invitation.inviterUsername)}</p>
@@ -468,13 +468,13 @@ const FamilySharingSettings: React.FC = () => {
                       <div className="flex items-center justify-between gap-2 -mx-1.5 -mt-1.5">
                         {hasFolder ? (
                           <button onClick={() => navigate(`/items/folder/${folderId}/${folderId}`)} className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                            <FolderIcon isShared className="w-4 h-4 text-primary-500 dark:text-primary-400" />
                             <span className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</span>
                             <Icon name="chevron-right" className="w-4 h-4 ml-auto shrink-0 text-gray-400" />
                           </button>
                         ) : (
                           <div className="flex flex-1 items-center gap-2 min-w-0 px-1.5 py-1">
-                            <FolderIcon isShared className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                            <FolderIcon isShared className="w-4 h-4 text-primary-500 dark:text-primary-400" />
                             <span className="font-medium text-gray-900 dark:text-white truncate">{vaultLabel(manifest)}</span>
                           </div>
                         )}

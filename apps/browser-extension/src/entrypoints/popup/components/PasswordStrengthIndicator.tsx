@@ -3,8 +3,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 const LABEL_KEYS = ['veryWeak', 'weak', 'fair', 'good', 'strong'];
+/* eslint-disable no-restricted-syntax -- strength scale (orange = very weak), not the brand color */
 const BAR_COLORS = ['bg-orange-400 dark:bg-orange-500', 'bg-yellow-500 dark:bg-yellow-600', 'bg-green-500 dark:bg-green-600', 'bg-green-600 dark:bg-green-700', 'bg-green-700 dark:bg-green-800'];
 const TEXT_COLORS = ['text-orange-600 dark:text-orange-400', 'text-yellow-600 dark:text-yellow-400', 'text-green-600 dark:text-green-400', 'text-green-700 dark:text-green-300', 'text-green-800 dark:text-green-200'];
+/* eslint-enable no-restricted-syntax */
 
 type PasswordStrengthIndicatorProps = {
   /** The password to rate, the indicator hides itself while this is empty. */

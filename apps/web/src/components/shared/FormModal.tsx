@@ -43,7 +43,7 @@ const getMaxWidthClass = (maxWidth: FormModalProps['maxWidth']): string => {
  * Generic modal for forms and content.
  */
 const FormModal: React.FC<FormModalProps> = ({
-  isOpen, title = '', icon, iconBackgroundClass = 'bg-orange-100 dark:bg-orange-900/30', children, footerContent, showDefaultFooter = true,
+  isOpen, title = '', icon, iconBackgroundClass = 'bg-primary-100 dark:bg-primary-900/30', children, footerContent, showDefaultFooter = true,
   confirmText, cancelText, confirmDisabled = false, confirmButtonClass = 'bg-primary-600 hover:bg-primary-700', isLoading = false, maxWidth = 'lg',
   closeOnOverlayClick = true, closeOnEscape = true, submitOnEnter = true, onClose, onConfirm,
 }) => {

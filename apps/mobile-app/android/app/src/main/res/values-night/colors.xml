@@ -1,15 +1,5 @@
 <resources>
+  <!-- The theme colors (av_*) are generated into av_colors.xml from core/models/src/colors/palette.json. -->
   <color name="splashscreen_background">#202020</color>
-  <color name="av_text">#ECEDEE</color>
-  <color name="av_text_muted">#9BA1A6</color>
-  <color name="av_background">#000000</color>
-  <color name="av_accent_background">#202020</color>
-  <color name="av_accent_border">#444444</color>
-  <color name="av_primary">#f49541</color>
-  <color name="av_primary_ripple">#33f49541</color>
-  <color name="av_secondary">#6b7280</color>
-  <color name="av_tertiary">#eabf69</color>
-  <color name="av_icon">#9BA1A6</color>
-  <color name="av_error">#ef4444</color>
   <color name="av_loading_overlay">#CC000000</color>
 </resources>

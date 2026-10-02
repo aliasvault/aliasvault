@@ -46,7 +46,7 @@ const EmailRowComponent: React.FC<EmailRowProps> = ({ email, onEmailClick, onEma
     <li className={`flex items-center transition duration-150 ease-in-out cursor-pointer ${isSelected ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500 hover:bg-primary-200 dark:hover:bg-primary-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-600'}`}>
       <div className="pl-4 mr-2 flex-shrink-0">
         <input
-          className="form-checkbox h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+          className="form-checkbox h-4 w-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           type="checkbox"
           checked={isChecked}
           onChange={() => onEmailCheck(email.id)} />

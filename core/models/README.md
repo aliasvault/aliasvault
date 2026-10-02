@@ -29,6 +29,7 @@ Icons (UI, item type and built-in logos) are generated from the SVG files in `sr
 | `scripts/generate-vault-table-registry.cjs` | `src/vault/VaultTableRegistry.ts` | the Rust codec's datamodel registry, the C# `VaultTableRegistry`, and `VaultDataBucketCategory` (C#, Swift, Kotlin) |
 | `scripts/generate-key-vocabulary.cjs` | the `VOCABULARIES` table inside the script | `UnlockMethodType`, `ManifestKeyType`, `VaultKeyAlgorithm` |
 | `scripts/generate-app-defaults.cjs` | `src/defaults/AppDefaults.ts` | the Swift and Kotlin `AppInfo` (minimum server version, default URLs) |
+| `scripts/generate-colors.cjs` | `src/colors/palette.json` | the TS palette, the Tailwind preset, Swift `ColorConstants` and Android `av_colors.xml`; see [src/colors/README.md](src/colors/README.md) |
 
 The key vocabulary is the set of tokens naming how a vault key is protected, which unlock method encrypts a
 user's Account Key, how a manifest's VEK reaches a given user, and which algorithm a piece of key ciphertext

@@ -122,7 +122,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
       ) : (
         <button
           onClick={() => handleBreadcrumbClick(rootPath)}
-          className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors flex-shrink-0 flex items-center gap-1"
+          className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors flex-shrink-0 flex items-center gap-1"
         >
           <Icon name="home" className="w-4 h-4" />
           {rootLabelText}
@@ -136,7 +136,7 @@ const FolderBreadcrumb: React.FC<FolderBreadcrumbProps> = ({
             <Icon name="chevron-right" className="w-4 h-4 flex-shrink-0" />
             <button
               onClick={() => handleBreadcrumbClick(crumbPath)}
-              className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors truncate"
+              className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate"
               title={crumb.name}
             >
               {crumb.name}

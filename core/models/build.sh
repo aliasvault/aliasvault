@@ -29,6 +29,9 @@ node scripts/generate-field-keys.cjs
 echo "- Generating icon catalogs (TS, C#, Swift, Kotlin, React Native)..."
 node scripts/generate-icons.cjs
 
+echo "- Generating color palette (TS, Tailwind, Swift, Android)..."
+node scripts/generate-colors.cjs
+
 echo "- Generating password-generator defaults (Rust)..."
 node scripts/generate-password-defaults.cjs
 

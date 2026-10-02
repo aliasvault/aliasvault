@@ -1,3 +1,4 @@
+import { ThemeColors } from '@aliasvault/models/colors';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -10,9 +11,9 @@ type ErrorToastProps = BaseToastProps & {
   text2?: string;
 };
 
-const primaryColor = '#f97316';
-const errorColor = '#dc2626';
-const infoColor = '#3b82f6';
+const primaryColor = ThemeColors.light.primary;
+const errorColor = ThemeColors.light.destructive;
+const infoColor = ThemeColors.light.info;
 const shadowColor = '#000';
 const textColor = '#fff';
 

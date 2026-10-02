@@ -9,7 +9,7 @@ export interface ICountdownBarProps {
    */
   isVisible: boolean;
   /**
-   * Color class for the progress bar (e.g., 'bg-orange-500', 'bg-primary-500').
+   * Color class for the progress bar (e.g., 'bg-primary-500', 'bg-primary-500').
    */
   colorClass?: string;
 }
@@ -34,7 +34,7 @@ export interface ICountdownBarHandle {
  * Use the ref to control the animation.
  */
 export const CountdownBar = forwardRef<ICountdownBarHandle, ICountdownBarProps>(
-  ({ isVisible, colorClass = 'bg-orange-500' }, ref) => {
+  ({ isVisible, colorClass = 'bg-primary-500' }, ref) => {
     const animationRef = useRef<HTMLDivElement>(null);
 
     /**

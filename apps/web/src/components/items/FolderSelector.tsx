@@ -120,7 +120,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
           : 'text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-400 dark:hover:border-primary-500'}`}
       >
         {selectedFolder ? (
-          <FolderIcon isShared={selectedFolderRow !== undefined && isSharedFolder(selectedFolderRow, personalManifestId)} className="w-4 h-4 text-orange-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
+          <FolderIcon isShared={selectedFolderRow !== undefined && isSharedFolder(selectedFolderRow, personalManifestId)} className="w-4 h-4 text-primary-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
         ) : (
           <Icon name="folder" className="w-4 h-4 flex-shrink-0" />
         )}
@@ -135,7 +135,7 @@ const FolderSelector: React.FC<FolderSelectorProps> = ({ selectedFolder, onSelec
         maxWidth="sm"
         onClose={() => setShowFolderModal(false)}
         icon={(
-          <Icon name="folder-filled" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+          <Icon name="folder-filled" className="h-6 w-6 text-primary-600 dark:text-primary-400" />
         )}
       >
         <div className="space-y-1 max-h-64 overflow-y-auto -mx-2">

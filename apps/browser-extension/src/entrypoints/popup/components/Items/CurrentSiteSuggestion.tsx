@@ -58,20 +58,20 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, on
     return (
       <button
         onClick={() => navigate(itemRoute(item))}
-        className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-orange-300 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 text-left"
+        className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-primary-300 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 text-left"
       >
         <div className="w-8 h-8 flex-shrink-0">
           <ItemIcon item={item} className="w-8 h-8" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-orange-700 dark:text-orange-300 truncate">
+          <p className="text-xs font-medium text-primary-700 dark:text-primary-300 truncate">
             {t('items.currentSiteMatch', { domain })}
           </p>
           <p className="font-medium text-gray-900 dark:text-white truncate">
             {item.Name || t('items.untitled')}
           </p>
         </div>
-        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
+        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-primary-500 dark:text-primary-400" />
       </button>
     );
   }
@@ -81,13 +81,13 @@ const CurrentSiteSuggestion: React.FC<CurrentSiteSuggestionProps> = ({ items, on
     return (
       <button
         onClick={() => onSearch(domain)}
-        className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-orange-300 dark:border-orange-500/40 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 text-left"
+        className="w-full mb-4 p-2 flex items-center gap-2 rounded-lg border border-primary-300 dark:border-primary-500/40 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 text-left"
       >
-        <Icon name="search" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
-        <span className="min-w-0 text-sm flex-1 font-medium text-orange-700 dark:text-orange-300 truncate">
+        <Icon name="search" className="w-5 h-5 flex-shrink-0 text-primary-500 dark:text-primary-400" />
+        <span className="min-w-0 text-sm flex-1 font-medium text-primary-700 dark:text-primary-300 truncate">
           {domain} ({t('items.numberOfItemMatchesFound', { count: matches.length })})
         </span>
-        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-orange-500 dark:text-orange-400" />
+        <Icon name="chevron-right" className="w-5 h-5 flex-shrink-0 text-primary-500 dark:text-primary-400" />
       </button>
     );
   }

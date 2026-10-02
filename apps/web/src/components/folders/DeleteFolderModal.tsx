@@ -49,13 +49,13 @@ const DeleteFolderModal: React.FC<DeleteFolderModalProps> = ({ isOpen, folderNam
             type="button"
             onClick={() => run(onDeleteFolderOnly)}
             disabled={isDeleting}
-            className="w-full flex items-center gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50 hover:bg-orange-100 dark:border-orange-800 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
-              <Icon name="folder-filled" className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            className="w-full flex items-center gap-3 p-3 rounded-lg border border-primary-200 bg-primary-50 hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/40">
+              <Icon name="folder-filled" className="w-5 h-5 text-primary-600 dark:text-primary-400" />
             </div>
             <div className="flex-1 text-left">
-              <div className="font-medium text-orange-700 dark:text-orange-300">{t('items.folders.deleteFolderKeepItems')}</div>
-              <div className="text-sm text-orange-600/80 dark:text-orange-400/80">{t('items.folders.deleteFolderKeepItemsDescription')}</div>
+              <div className="font-medium text-primary-700 dark:text-primary-300">{t('items.folders.deleteFolderKeepItems')}</div>
+              <div className="text-sm text-primary-600/80 dark:text-primary-400/80">{t('items.folders.deleteFolderKeepItemsDescription')}</div>
             </div>
           </button>
 

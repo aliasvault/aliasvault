@@ -251,8 +251,8 @@ const Sync: React.FC = () => {
                       </button>
                     </div>
                     {showVersionDescription && (
-                      <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg">
-                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                      <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg">
+                        <p className="text-sm text-amber-800 dark:text-amber-200">
                           {t('upgrade.upgradeRequiredDescription', { changes: latestVersion?.description ?? t('upgrade.noDescriptionAvailable') })}
                         </p>
                       </div>
@@ -260,7 +260,7 @@ const Sync: React.FC = () => {
                     <div className="space-y-2">
                       <p className="flex justify-between items-center">
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('upgrade.yourVault')}</span>
-                        <span className="text-base font-bold text-blue-600 dark:text-blue-400">{currentVersion?.compatibleUpToVersion ?? '...'}</span>
+                        <span className="text-base font-bold text-primary-600 dark:text-primary-400">{currentVersion?.compatibleUpToVersion ?? '...'}</span>
                       </p>
                       <p className="flex justify-between items-center">
                         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('upgrade.newVersion')}</span>
@@ -271,7 +271,7 @@ const Sync: React.FC = () => {
                 )}
                 {upgradeKind === 'storage-format' && (
                   <div className="rounded-lg dark:bg-gray-900">
-                    <div className="p-4 text-sm text-left bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg text-orange-800 dark:text-orange-300">
+                    <div className="p-4 text-sm text-left bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg text-amber-800 dark:text-amber-300">
                       {t('upgrade.otherDevicesWarning', { version: AppInfo.API_VERSION })}
                     </div>
                   </div>

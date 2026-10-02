@@ -55,7 +55,7 @@ const TotpRow: React.FC<{ totpCode: TotpCode; item: ItemRef; tick: number }> = (
             </div>
           </div>
           <div className="w-1.5 h-8 bg-gray-200 rounded-full dark:bg-gray-600">
-            <div className="bg-blue-600 rounded-full transition-all" style={{ height: `${percentage}%`, width: '100%' }}></div>
+            <div className="bg-primary-500 rounded-full transition-all" style={{ height: `${percentage}%`, width: '100%' }}></div>
           </div>
         </div>
       </div>

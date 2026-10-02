@@ -901,7 +901,7 @@ const ItemsList: React.FC = () => {
               <button
                 onClick={() => setShowEditFolderModal(true)}
                 title={t('items.folders.editFolder')}
-                className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <Icon name="pencil-alt" className="w-4 h-4" />
               </button>
@@ -945,7 +945,7 @@ const ItemsList: React.FC = () => {
                           });
                         }}
                         className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
-                          sortOrder === option.value ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                          sortOrder === option.value ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         {sortOrder === option.value ? (
@@ -1038,7 +1038,7 @@ const ItemsList: React.FC = () => {
                       setItemFilterType(ItemFilter.All);
                       localStorage.removeItem(FILTER_STORAGE_KEY);
                     }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded-lg transition-colors"
                   >
                     <Icon name="x" className="w-4 h-4" />
                     {t('items.clearFilter')}
@@ -1067,7 +1067,7 @@ const ItemsList: React.FC = () => {
               {canCreateSubfolder && (
                 <button
                   onClick={handleAddFolder}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                 >
                   <Icon name="folder" className="w-3.5 h-3.5" />
                   <Icon name="plus" className="w-3 h-3 -ml-0.5" strokeWidth={2.5} />
@@ -1102,8 +1102,8 @@ const ItemsList: React.FC = () => {
                   onClick={handleAddFolder}
                   className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full transition-colors focus:outline-none ${
                     folders.length > 0
-                      ? 'text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-                      : 'text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400'
+                      ? 'text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                      : 'text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400'
                   }`}
                 >
                   <Icon name="folder" className="w-3.5 h-3.5" />
@@ -1167,7 +1167,7 @@ const ItemsList: React.FC = () => {
                     setItemFilterType(ItemFilter.All);
                     localStorage.removeItem(FILTER_STORAGE_KEY);
                   }}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded-lg transition-colors"
                 >
                   <Icon name="x" className="w-4 h-4" />
                   {t('items.clearFilter')}

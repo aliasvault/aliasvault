@@ -32,7 +32,7 @@ const LoginServerInfo: React.FC = () => {
       <button
         onClick={handleClick}
         type="button"
-        className="text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-500 underline"
+        className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-500 underline"
       >
         {getDisplayUrl()}
       </button>)

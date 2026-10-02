@@ -203,7 +203,7 @@ const ItemView: React.FC = () => {
                   ))}
                   {folder && (
                     <Link to={folderRoute(folder)} className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                      <FolderIcon isShared={isSharedFolder(folder, dbContext.sqliteClient?.getPersonalManifestId())} className="w-4 h-4 text-orange-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
+                      <FolderIcon isShared={isSharedFolder(folder, dbContext.sqliteClient?.getPersonalManifestId())} className="w-4 h-4 text-primary-500" badgeClassName="bg-gray-100 dark:bg-gray-700 ring-gray-200 dark:ring-gray-600" />
                       <span>{folder.Name}</span>
                     </Link>
                   )}

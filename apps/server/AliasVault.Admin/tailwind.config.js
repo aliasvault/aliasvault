@@ -1,3 +1,5 @@
+const aliasvaultColors = require('../../../core/models/src/colors/tailwind-preset.cjs');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
@@ -21,24 +23,10 @@ module.exports = {
         'bg-opacity-50',
         'dark:bg-opacity-80'
     ],
+    presets: [aliasvaultColors],
     darkMode: "class",
     theme: {
         extend: {
-            colors: {
-                primary: {
-                    "900": "#7b4a1e",
-                    "800": "#9a5d26",
-                    "700": "#b8702f",
-                    "600": "#d68338",
-                    "500": "#f49541",
-                    "400": "#f6a752",
-                    "300": "#f8b963",
-                    "200": "#fbcb74",
-                    "100": "#fdde85",
-                    "50": "#ffe096"
-                }
-
-            },
             fontFamily: {
                 'sans': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
                 'body': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],

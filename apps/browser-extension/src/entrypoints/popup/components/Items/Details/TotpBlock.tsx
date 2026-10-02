@@ -164,7 +164,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId, manifestId }) => {
                   </div>
                   <div className="w-1 h-6 bg-gray-200 rounded-full dark:bg-gray-600">
                     <div
-                      className="bg-blue-600 rounded-full transition-all"
+                      className="bg-primary-500 rounded-full transition-all"
                       style={{ height: `${getTotpElapsedPercentage(totpCode)}%`, width: '100%' }}
                     />
                   </div>

@@ -53,18 +53,18 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, t
    * The classes of a type/feature filter row.
    */
   const rowClass = (filter: ItemFilterType, withIcon: boolean): string =>
-    `w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 ${withIcon ? 'flex items-center gap-2' : ''} ${isActive(filter) ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`;
+    `w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 ${withIcon ? 'flex items-center gap-2' : ''} ${isActive(filter) ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`;
 
   /**
    * The classes of a filter row icon.
    */
-  const iconClass = (filter: ItemFilterType): string => `w-5 h-5 ${isActive(filter) ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`;
+  const iconClass = (filter: ItemFilterType): string => `w-5 h-5 ${isActive(filter) ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`;
 
   return (
     <div className="relative flex items-center gap-2">
       <button ref={buttonRef} onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
         <h1 className="flex items-baseline gap-1.5 text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
-          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-5 h-5 self-center text-orange-500" />}
+          {titleFolder && <FolderIcon isShared={titleFolder.isShared} className="w-5 h-5 self-center text-primary-500" />}
           <span>{title}</span>
           {count !== undefined && (
             <span className="text-base text-gray-500 dark:text-gray-400">({count})</span>
@@ -78,8 +78,8 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, t
       {isOpen && (
         <div ref={menuRef} className="absolute left-0 top-full z-40 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
           <div className="py-1">
-            <div className={`flex items-center justify-between px-4 py-2 ${isActive(ItemFilter.All) ? 'bg-orange-50 dark:bg-orange-900/20' : ''}`}>
-              <button onClick={() => pickFilter(ItemFilter.All)} className={`text-left text-sm hover:text-gray-900 dark:hover:text-white ${isActive(ItemFilter.All) ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
+            <div className={`flex items-center justify-between px-4 py-2 ${isActive(ItemFilter.All) ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
+              <button onClick={() => pickFilter(ItemFilter.All)} className={`text-left text-sm hover:text-gray-900 dark:hover:text-white ${isActive(ItemFilter.All) ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
                 {t('items.title')}
               </button>
               {showFoldersToggle && (
@@ -87,7 +87,7 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, t
                   e.stopPropagation(); setIsOpen(false); onToggleShowFolders(); 
                 }} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <span>{t('items.filters.showFolders')}</span>
-                  <Icon name={showFolders ? 'square-check' : 'square-feather'} className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} />
+                  <Icon name={showFolders ? 'square-check' : 'square-feather'} className={`w-5 h-5 ${showFolders ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}`} />
                 </button>
               )}
             </div>
@@ -126,10 +126,10 @@ const ItemFilterDropdown: React.FC<ItemFilterDropdownProps> = ({ title, count, t
 
             <button onClick={() => {
               setIsOpen(false); onSelectRecentlyDeleted(); 
-            }} className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-between ${isRecentlyDeletedActive ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
+            }} className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-between ${isRecentlyDeletedActive ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>
               <span>{t('items.recentlyDeleted.title')}</span>
               {recentlyDeletedCount > 0 && (
-                <span className={isRecentlyDeletedActive ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}>{recentlyDeletedCount}</span>
+                <span className={isRecentlyDeletedActive ? 'text-primary-500 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'}>{recentlyDeletedCount}</span>
               )}
             </button>
           </div>

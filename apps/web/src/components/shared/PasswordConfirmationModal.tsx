@@ -62,7 +62,7 @@ const PasswordConfirmationModal: React.FC<PasswordConfirmationModalProps> = ({ i
       closeOnOverlayClick={false}
       submitOnEnter={true}
       icon={(
-        <Icon name="lock-closed" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        <Icon name="lock-closed" className="h-6 w-6 text-primary-600 dark:text-primary-400" />
       )}>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{description}</p>
 

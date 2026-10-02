@@ -318,8 +318,8 @@ const ItemsHome: React.FC = () => {
    * The class of the add folder button: dashed when there are no folders yet.
    */
   const getAddFolderButtonClass = (): string => allFolders.length > 0
-    ? 'inline-flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-lg transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-    : 'inline-flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-lg transition-colors focus:outline-none text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400';
+    ? 'inline-flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-lg transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+    : 'inline-flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-lg transition-colors focus:outline-none text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400';
 
   /**
    * Pick a filter.
@@ -489,7 +489,7 @@ const ItemsHome: React.FC = () => {
             onToggleShowFolders={toggleShowFolders}
             titleActions={isInFolder && !currentFolderIsVirtual ? (
               <>
-                <button onClick={() => setShowEditFolderModal(true)} title={t('items.folders.editFolder')} className="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <button onClick={() => setShowEditFolderModal(true)} title={t('items.folders.editFolder')} className="p-1.5 text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                   <Icon name="pencil-alt" className="w-5 h-5" />
                 </button>
                 <button onClick={() => setShowDeleteFolderModal(true)} title={t('items.folders.deleteFolder')} className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -542,7 +542,7 @@ const ItemsHome: React.FC = () => {
           {filterType !== ItemFilter.All && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="text-sm text-gray-500 dark:text-gray-400">{t('items.home.filteringBy')}</span>
-              <button onClick={() => setFilter(ItemFilter.All)} className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
+              <button onClick={() => setFilter(ItemFilter.All)} className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded-lg transition-colors">
                 <span>{getFilterTitle()}</span>
                 <Icon name="x" className="w-4 h-4" />
               </button>

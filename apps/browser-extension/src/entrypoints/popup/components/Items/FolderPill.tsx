@@ -30,13 +30,13 @@ const FolderPill: React.FC<IFolderPillProps> = ({ folder, onClick, isActive = fa
       role="option"
       aria-selected={isActive}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-600/50 rounded-full text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500/50 border ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-600/50 rounded-full text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/50 border ${
         isActive
-          ? 'border-orange-500 dark:border-orange-400 ring-2 ring-orange-500/40'
+          ? 'border-primary-500 dark:border-primary-400 ring-2 ring-primary-500/40'
           : 'border-gray-200 dark:border-gray-600'
       }`}
     >
-      <FolderIcon isShared={isShared} className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" />
+      <FolderIcon isShared={isShared} className="w-3.5 h-3.5 text-primary-500 dark:text-primary-400" />
       <span className="text-gray-700 dark:text-gray-200 font-medium truncate max-w-[120px]">
         {folder.name}
       </span>

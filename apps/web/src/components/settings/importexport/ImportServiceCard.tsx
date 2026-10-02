@@ -584,8 +584,8 @@ const ImportServiceCard: React.FC<ImportServiceCardProps> = ({ serviceName, desc
             <label htmlFor="decryptionPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('importExport.serviceCard.decryptionPasswordLabel')}</label>
             <input id="decryptionPassword" type="password" value={decryptionPassword} onChange={e => setDecryptionPassword(e.target.value)} onKeyDown={handlePasswordKeyDown} autoFocus autoComplete="off" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
           </div>
-          <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-            <p className="text-sm text-orange-800 dark:text-orange-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
+          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-sm text-amber-800 dark:text-amber-200">{t('importExport.serviceCard.decryptionPasswordHint')}</p>
           </div>
           <div className="flex justify-end mt-6 space-x-2">
             <Button onClick={handlePreviousStep} color="secondary" arrow="back">{t('common.back')}</Button>

@@ -81,7 +81,7 @@ export const ClipboardCountdownBar: React.FC = () => {
     <CountdownBar
       ref={countdownBarRef}
       isVisible={isVisible}
-      colorClass="bg-orange-500"
+      colorClass="bg-primary-500"
     />
   );
 };

@@ -149,7 +149,7 @@ export default [
         },
     },
     {
-        // Icons come from the shared catalog in core/models/src/icons (the Icon component, uiIconSvg), never inline SVG markup.
+        // Brand style enforcement.
         files: ["src/**/*.{ts,tsx}"],
         ignores: ["src/components/shared/Icon.tsx", "src/**/__tests__/**"],
         rules: {
@@ -157,6 +157,8 @@ export default [
                 { selector: "JSXOpeningElement[name.name='svg']", message: "Use the Icon component with an icon from core/models/src/icons instead of inline SVG." },
                 { selector: "TemplateElement[value.raw=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
                 { selector: "Literal[value=/<svg/]", message: "Use uiIconSvg() from @aliasvault/models/icons instead of inline SVG markup." },
+                { selector: "Literal[value=/(orange|indigo)-[0-9]/]", message: "Use the primary-* brand colors (core/models/src/colors) instead of Tailwind orange or indigo; use amber for warnings." },
+                { selector: "TemplateElement[value.raw=/(orange|indigo)-[0-9]/]", message: "Use the primary-* brand colors (core/models/src/colors) instead of Tailwind orange or indigo; use amber for warnings." },
             ],
         },
     },

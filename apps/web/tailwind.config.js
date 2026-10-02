@@ -1,9 +1,12 @@
+import aliasvaultColors from '../../core/models/src/colors/tailwind-preset.cjs';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     './index.html',
     './src/**/*.{js,jsx,ts,tsx,html}',
   ],
+  presets: [aliasvaultColors],
   darkMode: 'class',
   theme: {
     extend: {

@@ -2,7 +2,7 @@
   <style name="AppTheme" parent="Theme.EdgeToEdge">
     <item name="android:textColor">@android:color/black</item>
     <item name="android:editTextStyle">@style/ResetEditText</item>
-    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="colorPrimary">@color/av_primary</item>
     <item name="enforceNavigationBarContrast">false</item>
   </style>
   <style name="ResetEditText" parent="@android:style/Widget.EditText">

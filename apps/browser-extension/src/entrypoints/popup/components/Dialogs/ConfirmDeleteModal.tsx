@@ -55,7 +55,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         {message}
       </p>
       {warning && (
-        <p className="mt-3 p-3 border rounded-md text-sm bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-300">
+        <p className="mt-3 p-3 border rounded-md text-sm bg-amber-100 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300">
           {warning}
         </p>
       )}

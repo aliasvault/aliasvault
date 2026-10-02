@@ -531,7 +531,7 @@ const Login: React.FC = () => {
               href={clientUrl ?? ''}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-500"
+              className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-500"
             >
               {t('auth.createNewVault')}
             </a>
