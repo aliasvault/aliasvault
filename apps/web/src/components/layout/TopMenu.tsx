@@ -71,7 +71,7 @@ const TopMenu: React.FC = () => {
   return (
     <header>
       <nav className="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 py-3 px-4">
-        <div className="flex justify-between items-center max-w-screen-2xl mx-auto relative">
+        <div className="flex justify-between items-center min-h-[42px] max-w-screen-2xl mx-auto relative">
           <div className="flex flex-shrink-0 justify-start items-center relative">
             <NavLink to="/" className="flex mr-0 sm:mr-4 lg:mr-8">
               <img src="/img/logo-cropped.png" className="mr-3 h-8 w-10" alt="AliasVault Logo" />

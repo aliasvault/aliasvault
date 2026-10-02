@@ -37,7 +37,7 @@ const SettingsPageHeader: React.FC<SettingsPageHeaderProps> = ({ icon, title, de
             <span className="sr-only">{back.label}</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
           </Link>
-          <span className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-primary-50 text-primary-600 ring-1 ring-primary-100 dark:bg-primary-900/40 dark:text-primary-400 dark:ring-primary-900">
+          <span className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-gray-200 shadow-sm text-primary-600 dark:bg-gray-800 dark:border-gray-700 dark:text-primary-400">
             <SettingsIcon name={icon} className="w-6 h-6" />
           </span>
           <div className="min-w-0">

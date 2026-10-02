@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -38,19 +37,20 @@ export function SettingsHeader({ title, description, icon }: SettingsHeaderProps
       lineHeight: 20,
       textAlign: 'center',
     },
-    gradient: {
-      alignItems: 'center',
-      borderRadius: 10,
-      justifyContent: 'center',
-      padding: 16,
-    },
     iconContainer: {
       alignItems: 'center',
-      borderRadius: 10,
+      alignSelf: 'center',
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderRadius: 14,
+      borderWidth: 1,
+      elevation: 1,
+      justifyContent: 'center',
+      padding: 16,
       shadowColor: colors.black,
-      shadowOffset: { width: 1, height: 4 },
-      shadowOpacity: 0.4,
-      shadowRadius: 2.84,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 2,
     },
     title: {
       color: colors.text,
@@ -66,14 +66,7 @@ export function SettingsHeader({ title, description, icon }: SettingsHeaderProps
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <LinearGradient
-          colors={[colors.loginHeader, colors.primary]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        >
-          <Ionicons name={icon} size={48} color={colors.text} />
-        </LinearGradient>
+        <Ionicons name={icon} size={48} color={colors.primary} />
       </View>
       <ThemedText style={styles.title}>{title}</ThemedText>
       {description ? (
