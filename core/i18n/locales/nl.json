@@ -764,16 +764,16 @@
     "loginCredentials": "Inloggegevens",
     "logo": {
       "builtin": {
-        "bank": "Banking",
-        "dev": "Development",
-        "game": "Games",
-        "health": "Health",
-        "mail": "Mail",
+        "bank": "Bankieren",
+        "dev": "Ontwikkeling",
+        "game": "Spellen",
+        "health": "Gezondheid",
+        "mail": "Post",
         "media": "Media",
-        "shopping": "Shopping",
-        "social": "Social",
-        "travel": "Travel",
-        "work": "Work"
+        "shopping": "Winkelen",
+        "social": "Sociaal",
+        "travel": "Reizen",
+        "work": "Werk"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
