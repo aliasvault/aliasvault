@@ -12,7 +12,8 @@ AliasVault implements zero-knowledge encryption where sensitive user data never 
 
 **What is Zero-Knowledge in AliasVault**:
 - **Vault Data** (usernames, passwords, notes, passkeys etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
-- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with your public key before being saved. Only you can decrypt and read them with your private key.
+- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with the public key of the vault the alias belongs to before being saved. Only users with access to that vault can decrypt and read them.
+- **Shared Vaults**: Every shared vault has its own encryption key, which is handed to each member encrypted with that member's public key. The server never sees it in plaintext.
 
 ## Diagram
 The security architecture diagram below illustrates all encryption and authentication processes used in AliasVault to secure user data and communications.
@@ -29,14 +30,33 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
 
 ## Key Components and Process Flow
 
-### 1. Key Derivation
+### 1. Key Derivation and Key Hierarchy
 - When a user enters their master password, it remains strictly on the client device
 - The master password is processed through Argon2id (a memory-hard key derivation function) locally
     - Argon2id parameters used for main vault KEK: 64 MiB memory, 5 iterations, parallelism 1
     - Argon2id parameters used for encrypted vault exports (`.avex`): 256 MiB memory, 3 iterations, parallelism 1
-- The derived key serves two purposes:
+- The derived key is the Key Encryption Key (KEK) and serves two purposes:
     - Authentication with the server through the SRP protocol
-    - Local encryption/decryption of vault contents using AES-256-GCM
+    - Decrypting the Account Key
+
+#### Key Hierarchy
+The master password does not encrypt the vault directly. It unlocks a chain of random keys, all created on the client:
+
+| Key | What it is | What it encrypts | Stored on the server as |
+|---|---|---|---|
+| **KEK** (Key Encryption Key) | Derived from the master password with Argon2id | The Account Key | Never stored |
+| **AK** (Account Key) | Random 256-bit key, created at registration | The personal VEK and the account private key | Encrypted with the KEK, one copy per unlock method |
+| **VEK** (Vault Encryption Key) | Random 256-bit key, one per vault (personal and every shared vault) | The vault contents and its blob keys | Personal VEK: encrypted with the AK. Shared VEK: encrypted with each member's account public key |
+| **Account keypair** | RSA-2048 keypair, one per user | Private key opens shared VEKs sent to this user | Public key in plaintext, private key encrypted with the AK |
+| **Delivery keypair** | RSA-2048 keypair, one per vault | Private key opens emails for aliases in that vault | Public key in plaintext, private key stored inside the encrypted vault |
+| **Blob key** | Random 256-bit key, one per attachment or logo | That blob's bytes | Encrypted with the VEK of the vault the blob belongs to |
+
+All symmetric encryption in this chain uses AES-256-GCM, all asymmetric encryption uses RSA-OAEP with SHA-256.
+
+Properties of this hierarchy:
+- **Password change** only encrypts the Account Key again with the new KEK. Vault contents, attachments and shared vault access stay untouched, so nothing has to be re-encrypted or uploaded.
+- **Unlock methods** (biometrics, PIN, Login with Mobile) store or transfer the KEK, protected by the device keychain, a PIN-derived key or a one-time RSA key. Every unlock walks the same chain, so the VEK and the account private key always become available together.
+- **Additional unlock methods** can be added later by encrypting the same Account Key with another KEK, without re-encrypting the vault.
 
 ### 2. Authentication Process
 1. SRP (Secure Remote Password) Authentication
@@ -51,16 +71,19 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
 
 ### 3. Vault Operations
 - All vault contents are encrypted/decrypted locally using AES-256-GCM
-- The encryption key is derived from the user's master password
+- The encryption key is the vault's random VEK (see [Key Hierarchy](#key-hierarchy)), not the master password itself
+- A user has access to one or more vaults: their personal vault plus every shared vault they are a member of. Each vault is stored on the server as a separate encrypted *manifest* (the technical term used in the code and API; the apps show it as a vault). Each manifest is compressed and encrypted with the VEK of its vault
+- Attachments and logos are stored as separate blobs, each encrypted with its own random blob key; the blob key is encrypted with the VEK of the vault the blob belongs to
 - Only encrypted data is ever transmitted to or stored on the server
 - The server never has access to the unencrypted vault contents
 
 ### 4. Email System Security
 
 #### Key Generation and Storage
-1. RSA key pair is generated locally on the client
-2. Private key is stored in the encrypted vault
-3. Public key is sent to the server and associated with email claim(s)
+1. Every vault (personal or shared) has its own delivery RSA key pair, generated locally on the client
+2. Private key is stored in that encrypted vault
+3. Public key is sent to the server together with the vault, and email claims are linked to the vault(s) the alias is used in
+4. When a member loses access to a shared vault, the vault's delivery key pair is replaced, so future emails are encrypted to a new key
 
 #### Email Reception Process
 1. When an email is received, the server:
@@ -68,12 +91,12 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
     - If no valid claim exists, the email is rejected
     - If valid, generates a random 256-bit symmetric key
     - Encrypts the email content using this symmetric key
-    - Encrypts the symmetric key using the recipient's public key
-    - Stores both the encrypted email and encrypted symmetric key
+    - Encrypts the symmetric key once for the delivery public key of every vault the claim is linked to
+    - Stores the encrypted email and the encrypted symmetric key(s)
 
 #### Email Retrieval Process
-1. Client retrieves encrypted email and encrypted symmetric key from server
-2. Client uses private key from vault to decrypt the symmetric key
+1. Client retrieves encrypted email and the encrypted symmetric keys for the vaults the user has access to
+2. Client uses the delivery private key from the matching vault to decrypt the symmetric key
 3. Client uses decrypted symmetric key to decrypt the email contents
 4. All decryption occurs locally on the client device
 
@@ -144,7 +167,7 @@ AliasVault includes a secure "Login with Mobile" feature that allows users to un
 #### Security Architecture
 
 The mobile login system uses a hybrid encryption approach combining RSA asymmetric encryption and AES-256-GCM symmetric encryption to ensure that:
-- The server never has access to the user's decryption key in plaintext
+- The server never has access to the user's KEK in plaintext
 - Only the authorized client that initiated the request can decrypt the transmitted data
 - No sensitive data persists on the server after retrieval
 
@@ -153,20 +176,22 @@ The mobile login system uses a hybrid encryption approach combining RSA asymmetr
 1. **Initiation (Browser/Extension Client)**
    - Client generates an RSA-2048 key pair locally
    - Public key is sent to the server
-   - Server creates a unique request ID and stores the public key
-   - Client generates a QR code containing the request ID
+   - Server creates a unique request ID and a poll secret, stores the public key and only a hash of the poll secret
+   - Client generates a QR code containing the request ID and a SHA-256 hash of the public key
+   - Client shows a 2-digit verification code derived from the public key
    - Private key is kept only in memory (never persisted to disk)
 
 2. **QR Code Scanning (Mobile App)**
    - User scans the QR code with their authenticated mobile app
-   - Mobile app retrieves the public key from server
-   - Mobile app encrypts the user's vault decryption key using the RSA public key
-   - Encrypted decryption key is sent to server
-   - Server stores the encrypted decryption key and marks the request as fulfilled
+   - Mobile app retrieves the public key and requester details (browser, OS, IP address) from the server and checks the public key against the hash in the QR code
+   - User picks the verification code shown on the requesting screen out of four options, approves, and confirms with biometrics or PIN
+   - Mobile app encrypts the user's KEK using the RSA public key
+   - Encrypted KEK is sent to server
+   - Server stores the encrypted KEK and marks the request as fulfilled
 
 3. **Polling and Retrieval (Browser/Extension Client)**
-   - Client polls the server every few seconds
-   - Polling continues for up to 2 minutes (3-minute server-side timeout for buffer)
+   - Client polls the server every few seconds with its poll secret
+   - The request must be approved within 3 minutes and retrieved within 1 minute after approval
    - When fulfilled, server:
      - Generates a fresh JWT access token and refresh token for the user
      - Creates a random 256-bit AES symmetric key
@@ -178,14 +203,44 @@ The mobile login system uses a hybrid encryption approach combining RSA asymmetr
 4. **Decryption (Browser/Extension Client)**
    - Client uses its RSA private key to decrypt the symmetric key
    - Client uses the symmetric key to decrypt the JWT tokens and username
-   - Client uses the RSA private key to decrypt the vault decryption key
-   - Client can now unlock the vault using the decryption key and stores it in memory
+   - Client uses the RSA private key to decrypt the KEK
+   - Client unlocks the Account Key, VEK and account private key with the KEK, as with a password login
    - RSA private key is immediately purged from memory
 
 #### Security Properties
 
-- **Zero-Knowledge**: The server never has access to the vault decryption key in plaintext. It only temporarily stores the RSA-encrypted version.
+- **Zero-Knowledge**: The server never has access to the KEK in plaintext. It only temporarily stores the RSA-encrypted version.
+- **Request Binding**: The QR code and the verification code are bound to the requesting client's public key, so a request started by someone else is not approved by accident. Only the client holding the poll secret can retrieve the result.
 - **One-Time Use**: Once a mobile login request is retrieved by the client, it cannot be accessed again. The encrypted data is immediately cleared from the database.
 - **Automatic Expiration**: Fulfilled but unretrieved requests are automatically deleted by the server within 24 hours to prevent stale data accumulation.
-- **Man-in-the-Middle Protection**: The encryption scheme ensures that any eavesdroppers cannot intercept the decryption key. Only the local client that started the mobile login request has the private key for decryption.
-- **Short-Lived Requests**: The 3-minute timeout window limits the attack surface for QR code interception.
+- **Man-in-the-Middle Protection**: The encryption scheme ensures that any eavesdroppers cannot intercept the KEK. Only the local client that started the mobile login request has the private key for decryption.
+- **Short-Lived Requests**: The 3-minute approval window and 1-minute retrieval window limit the attack surface for QR code interception.
+
+### 7. Vault Sharing
+
+AliasVault allows a vault to be shared with other users, for example within a family group. Every shared vault is stored as its own manifest with its own random VEK, so sharing never exposes the personal vault or anyone's master password.
+
+#### Sharing Flow
+1. **Creation**
+   - A group admin creates the shared vault on their client
+   - The client generates a new VEK and a delivery keypair for the vault
+   - The VEK is stored on the server encrypted with the admin's own account public key
+   - The vault name is encrypted with the VEK
+
+2. **Invitation**
+   - The admin's client retrieves the invitee's account public key from the server
+   - The shared VEK (and the vault name) is encrypted with that public key
+   - The server stores the encrypted VEK with the invitation
+
+3. **Acceptance**
+   - When the invitee accepts, the encrypted VEK becomes their access key for the vault
+   - On the next sync, their client decrypts the VEK with their account private key and can read and write the shared vault
+
+4. **Revocation**
+   - Removing a member deletes their access key on the server
+   - The server asks an admin's client to replace the vault's delivery keypair, so new emails are no longer encrypted to a key the removed member has seen
+
+#### Security Properties
+- **Zero-Knowledge**: The server only stores shared VEKs encrypted with each member's public key and never sees them in plaintext.
+- **Access is per user**: A group itself holds no keys. Only users that received an encrypted VEK can open a shared vault, regardless of their role in the group.
+- **Separated keys**: The account keypair is only used to receive vault keys and the delivery keypairs only for email, so a key stored inside a vault only ever unlocks that vault's own content.
