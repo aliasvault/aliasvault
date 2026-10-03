@@ -9,7 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Code d'authentification invalide. Veuillez réessayer.",
     "INVALID_RECOVERY_CODE": "Code de récupération invalide. Veuillez réessayer.",
     "INVALID_REFRESH_TOKEN": "Jeton d'actualisation invalide.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Ce lien d'invitation est invalide, a expiré ou a déjà été utilisé. Veuillez en demander un nouveau.",
     "PASSWORD_MISMATCH": "Le mot de passe indiqué ne correspond pas à votre mot de passe actuel.",
     "PENDING_MIGRATIONS": "Il y a des migrations en attente. Veuillez exécuter 'dotnet ef database update' pour les appliquer.",
     "PUBLIC_REGISTRATION_DISABLED": "L'enregistrement d'un nouveau compte est actuellement désactivé sur ce serveur. Veuillez contacter l'administrateur.",
@@ -162,8 +162,8 @@
         "welcomeMessage": "Super ! Maintenant, allons configurer votre mot de passe principal pour AliasVault."
       },
       "passwordStepTitle": "Définissez le Mot de Passe",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "Les nouveaux comptes ne peuvent être créés qu'avec un lien d'invitation. Demandez une invitation à l'administrateur du serveur.",
+      "registrationDisabledTitle": "L'inscription d'un utilisateur est désactivée",
       "setupStepTitle": "Réglages",
       "termsAndConditionsStepTitle": "Utiliser AliasVault",
       "termsStep": {
@@ -733,7 +733,7 @@
     "history": "Historique",
     "home": {
       "alphabeticalOption": "Ordre alphabétique",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Créez manuellement votre premier élément de coffre.",
       "emptyFolderMessage": "Ce dossier est vide.",
       "failedToCreateFolder": "Impossible de créer le dossier.",
       "failedToDeleteFolder": "Impossible de supprimer le dossier.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Utiliser la clé d'accès du navigateur"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Sécurité du Compte",
     "activeOnAllSites": "Activé sur tous les sites (sauf si désactivé ci-dessous)",
     "advancedOptions": "Options avancées",
     "androidAutofillSettings": {
@@ -1225,8 +1225,8 @@
     "globalSettings": "Paramètres généraux",
     "groups": {
       "autofill": "Remplissage automatique",
-      "general": "General",
-      "generators": "Generators"
+      "general": "Général",
+      "generators": "Générateurs"
     },
     "identityGenerator": "Générateur d'identité",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "L'authentification à deux facteurs est actuellement désactivée. Afin d'améliorer la sécurité de votre compte, nous vous conseillons de l'activer.",
         "enabledMessage": "L'authentification à deux facteurs est actuellement activée.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Votre coffre est actuellement accessible uniquement avec votre mot de passe principal. Nous vous recommandons d'activer l'authentification à deux facteurs pour améliorer la sécurité de votre compte."
       }
     },
     "selectLanguage": "Sélectionner une langue",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Configurer l'URL du serveur AliasVault pour les instances auto-hébergées",
     "serverUrl": "URL du serveur",
     "serverVersion": "Version du serveur",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sessions & Journaux",
+    "sessionsAndLogsDescription": "Voyez où vous êtes connecté et vérifiez les récentes tentatives de connexion.",
     "siteSpecificSettings": "Paramètres spécifiques au site",
     "storageInsights": {
       "breadcrumbTitle": "Aperçu du stockage",
