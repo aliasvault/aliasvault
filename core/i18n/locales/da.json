@@ -616,8 +616,8 @@
     "addNewItem": "Tilføj nyt element",
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Tryk på en mappe ovenfor for at se dine oplysninger, eller brug søgningen til at finde specifikke elementer.",
     "allItemsInFoldersClick": "Alle dine elementer er organiseret i mapper. Klik på en mappe ovenfor for at se dine oplysninger, eller brug søgefunktionen til at finde specifikke elementer.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Kunne ikke læse bilag.",
+    "attachmentUnavailable": "Bilagsdata utilgængelige",
     "autofillLinkExisting": {
       "confirmMessage": "Er du sikker på, at du vil linke \"{{url}}\" til denne legitimationsoplysning?",
       "confirmTitle": "Link til legitimationsoplysninger?",
@@ -727,13 +727,13 @@
       "selectFolder": "Vælg mappe"
     },
     "fullName": "Fulde navn",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "Har bilag",
+    "hasPasskey": "Har passkey",
+    "hasTotp": "Har 2FA kode",
     "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Opret dit første boks element manuelt.",
       "emptyFolderMessage": "Denne mappe er tom.",
       "failedToCreateFolder": "Kunne ikke oprette mappe.",
       "failedToDeleteFolder": "Kunne ikke slette mappe.",
@@ -785,7 +785,7 @@
       "sourceFavicon": "Fra {{domain}}",
       "sourceNone": "Ingen ikon"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Ingen tilgængelige bilag.",
     "noEmailsYet": "Ingen e-mails modtaget endnu.",
     "noHistoryAvailable": "Ingen historik tilgængelig",
     "noItemsFound": "Ingen elementer fundet. Opret et for at komme i gang. Tip: Du kan også logge ind på AliasVault-webappen for at importere oplysninger fra andre adgangskodeadministratorer.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Brug browser-passkey"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Konto Sikkerhed",
     "activeOnAllSites": "Aktiv på alle websteder (medmindre deaktiveret nedenfor)",
     "advancedOptions": "Avancerede indstillinger",
     "androidAutofillSettings": {
@@ -1224,9 +1224,9 @@
     },
     "globalSettings": "Globale indstillinger",
     "groups": {
-      "autofill": "Autofill",
-      "general": "General",
-      "generators": "Generators"
+      "autofill": "Autofyld",
+      "general": "Generelt",
+      "generators": "Generatorer"
     },
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
@@ -1281,7 +1281,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Godkend log ind",
         "codeMismatch": "Nummeret matcher ikke. Login-anmodningen blev afvist.",
         "confirmMessage": "En anden enhed beder om at logge ind med din konto. Det vil få fuld adgang til din boks. Fortsæt kun, hvis du selv startede dette login.",
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "To-faktor-godkendelse er i øjeblikket deaktiveret. For at forbedre din kontosikkerhed anbefaler vi, at du aktiverer det.",
         "enabledMessage": "To-faktor-godkendelse er i øjeblikket aktiveret.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Din boks er i øjeblikket kun tilgængelig via din hovedadgangskode. Vi anbefaler, at du aktiverer to-faktor godkendelse for at forbedre din kontosikkerhed."
       }
     },
     "selectLanguage": "Vælg sprog",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Konfigurer AliasVault server-URL for selv-hostede instanser",
     "serverUrl": "Server-URL",
     "serverVersion": "Server version",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sessioner Og Log filer",
+    "sessionsAndLogsDescription": "Se hvor du er logget ind og se seneste loginforsøg.",
     "siteSpecificSettings": "Webstedsspecifikke indstillinger",
     "storageInsights": {
       "breadcrumbTitle": "Indblik i lagring",
@@ -1467,7 +1467,7 @@
       "deleteAllLogosButton": "Slet alle logoer",
       "deleteAllLogosConfirmMessage": "Dette fjerner alle gemte logo fra din boks og rydder logoet på hver legitimationsoplysninger. Du kan gendownloade dem når som helst. Fortsæt?",
       "deleteAllLogosConfirmTitle": "Slet alle logoer?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Fjernede logo for {{count}} elementer.",
       "itemsWithAttachmentsLabel": "Elementer med vedhæftninger",
       "itemsWithLogosLabel": "Elementer med logo",
       "logoManagementDescription": "Logoer hentes fra favicon af hvert element hjemmeside. Du kan slette hvert logo for at genvinde plads, eller re-downloade dem for at hente forbedrede versioner.",
@@ -1477,9 +1477,9 @@
       "redownloadAllLogosButton": "Genindlæs alle logoer",
       "redownloadAllLogosConfirmMessage": "Dette genindlæser favicon for alle legitimationsoplysninger, der har en hjemmeside URL, erstatter det eksisterende logo. Afhængigt af din boks størrelse kan dette tage et stykke tid. Fortsæt?",
       "redownloadAllLogosConfirmTitle": "Genindlæs alle logoer?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Opdaterede logoet for {{count}} elementer.",
+      "serverTotalDescription": "Den nøjagtige størrelse af din krypterede boks som er gemt på serveren, herunder vedhæftede filer og logoer.",
+      "serverTotalTitle": "Boks størrelse på server",
       "topAttachmentsDescription": "Top 10 største vedhæftede filer. Fjern vedhæftningen, hvis du ikke længere har brug for det.",
       "topAttachmentsTitle": "Største vedhæftede elementer",
       "topLogosDescription": "Top 10 største service logoer. Logoer genbruges for elementer med samme domæne.",
@@ -1554,10 +1554,10 @@
     "syncing": "Synkroniserer...",
     "tapToRetry": "Tryk for at prøve synkronisering igen",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Hvis problemet fortsætter, kontakt vores supportteam for at få hjælp.",
+      "notCompatible": "Versionen af denne boks er ikke kompatibel med din klient.",
+      "title": "Boks version understøttes ikke",
+      "updateInstructions": "Opdater venligst til den seneste version af AliasVault, opdater denne side, og prøv igen."
     }
   },
   "totp": {
