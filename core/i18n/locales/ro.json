@@ -733,7 +733,7 @@
     "history": "Istoric",
     "home": {
       "alphabeticalOption": "Alfabetic",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Creează manual primul element din seiful tău.",
       "emptyFolderMessage": "Acest dosar este gol.",
       "failedToCreateFolder": "Crearea dosarului a eșuat.",
       "failedToDeleteFolder": "Ștergerea dosarului a eșuat.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Folosește Passkey-ul Browserului"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Securitate cont",
     "activeOnAllSites": "Activ pe toate site-urile (cu excepția cazului în care este dezactivat mai jos)",
     "advancedOptions": "Opțiuni Avansate",
     "androidAutofillSettings": {
@@ -1224,9 +1224,9 @@
     },
     "globalSettings": "Setări Globale",
     "groups": {
-      "autofill": "Autofill",
+      "autofill": "Completare automată",
       "general": "General",
-      "generators": "Generators"
+      "generators": "Generatoare"
     },
     "identityGenerator": "Generator de Identitate",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "Autentificarea cu doi factori este în prezent dezactivată. Pentru a îmbunătăți securitatea contului tău, îți recomandăm să o activezi.",
         "enabledMessage": "Autentificarea cu doi factori este în prezent activată.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Seiful tău este accesibil în prezent doar cu parola principală. Îți recomandăm să activezi autentificarea în doi pași pentru a spori securitatea contului."
       }
     },
     "selectLanguage": "Selectează limba",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Configurează URL-ul serverului AliasVault pentru instanțele self-hosted",
     "serverUrl": "URL Server",
     "serverVersion": "Versiune server",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sesiuni și jurnale",
+    "sessionsAndLogsDescription": "Vezi unde ești autentificat și verifică încercările recente de autentificare.",
     "siteSpecificSettings": "Setări specifice site-ului",
     "storageInsights": {
       "breadcrumbTitle": "Informații despre stocare",
