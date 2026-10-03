@@ -157,18 +157,18 @@ impl From<ValueRef<'_>> for SqlValue {
     }
 }
 
-/// A JSON parameter as a SQLite value.
-fn to_sql(value: &Value) -> RsValue {
-    match value {
+/// A JSON parameter as a SQLite value. A `{ __b64 }` cell that is not valid base64 is an error, never an empty BLOB.
+fn to_sql(value: &Value) -> VaultResult<RsValue> {
+    Ok(match value {
         Value::Null => RsValue::Null,
         Value::Bool(b) => RsValue::Integer(*b as i64),
         Value::Number(n) => n.as_i64().map(RsValue::Integer).unwrap_or_else(|| RsValue::Real(n.as_f64().unwrap_or(0.0))),
         Value::String(s) => RsValue::Text(s.clone()),
         other => match inline_b64(other) {
-            Some(b64) => RsValue::Blob(base64_decode(b64).unwrap_or_default()),
+            Some(b64) => RsValue::Blob(base64_decode(b64).map_err(|_| VaultError::General("A BLOB parameter is not valid base64".to_string()))?),
             None => RsValue::Text(other.to_string()),
         },
-    }
+    })
 }
 
 /// A SQLite value as JSON.
@@ -186,7 +186,7 @@ fn from_sql(value: ValueRef<'_>) -> Value {
 pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> VaultResult<Vec<Map<String, Value>>> {
     let mut statement = conn.prepare(sql).map_err(sql_error_at(sql))?;
     let columns: Vec<String> = statement.column_names().iter().map(|c| c.to_string()).collect();
-    let values: Vec<RsValue> = params.iter().map(to_sql).collect();
+    let values: Vec<RsValue> = params.iter().map(to_sql).collect::<VaultResult<_>>()?;
     let mut rows = statement.query(params_from_iter(values.iter())).map_err(sql_error_at(sql))?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(sql_error)? {
@@ -203,11 +203,56 @@ pub fn query(conn: &Connection, sql: &str, params: &[Value]) -> VaultResult<Vec<
 pub fn exec(conn: &Connection, statements: &[SqlStatement]) -> VaultResult<()> {
     conn.execute_batch("SAVEPOINT exec_batch").map_err(sql_error)?;
     for statement in statements {
-        let values: Vec<RsValue> = statement.params.iter().map(to_sql).collect();
+        let values = match statement.params.iter().map(to_sql).collect::<VaultResult<Vec<RsValue>>>() {
+            Ok(values) => values,
+            Err(error) => {
+                let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
+                return Err(error);
+            }
+        };
         if let Err(error) = conn.execute(&statement.sql, params_from_iter(values.iter())) {
             let _ = conn.execute_batch("ROLLBACK TO exec_batch; RELEASE exec_batch");
             return Err(sql_error_at(&statement.sql)(error));
         }
     }
     conn.execute_batch("RELEASE exec_batch").map_err(sql_error)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::encoding::base64_encode;
+
+    fn adversarial() -> Vec<Vec<u8>> {
+        let mut large = vec![0u8; 1024 * 1024];
+        crate::common::rng::fill_random(&mut large);
+        vec![vec![], vec![0x00], vec![0xFF], vec![0x00, 0xFF], vec![0xC3, 0x28, 0xA0], vec![0xED, 0xA0, 0x80, 0xF8], b"QUJD".to_vec(), (0u8..=255).collect(), large]
+    }
+
+    #[test]
+    fn blob_cells_round_trip_through_json_and_typed_values() {
+        let db = MemoryDatabase::with_schema("CREATE TABLE T (Id INTEGER, Data BLOB);").unwrap();
+        for (id, bytes) in adversarial().iter().enumerate() {
+            db.exec(&[SqlStatement { sql: "INSERT INTO T (Id, Data) VALUES (?, ?)".to_string(), params: vec![json!(id), inline_bytes(bytes)] }]).unwrap();
+            let rows = db.query("SELECT typeof(Data) AS Kind, Data FROM T WHERE Id = ?", &[json!(id)]).unwrap();
+            assert_eq!(rows[0]["Kind"], "blob", "{} bytes", bytes.len());
+            assert_eq!(rows[0]["Data"], json!({ "__b64": base64_encode(bytes) }), "{} bytes", bytes.len());
+            let typed = db.query_values("SELECT Data FROM T WHERE Id = ?", &[SqlValue::Integer(id as i64)]).unwrap();
+            assert_eq!(typed.rows[0][0], SqlValue::Blob(bytes.clone()));
+            db.execute("UPDATE T SET Data = ? WHERE Id = ?", &[SqlValue::Blob(bytes.clone()), SqlValue::Integer(id as i64)]).unwrap();
+            assert_eq!(db.export().map(|exported| MemoryDatabase::from_bytes(&exported).unwrap().query_values("SELECT Data FROM T WHERE Id = ?", &[SqlValue::Integer(id as i64)]).unwrap().rows[0][0].clone()).unwrap(), SqlValue::Blob(bytes.clone()));
+        }
+    }
+
+    #[test]
+    fn invalid_base64_blob_parameter_fails_instead_of_binding_empty_bytes() {
+        let db = MemoryDatabase::with_schema("CREATE TABLE T (Data BLOB);").unwrap();
+        let statements = [
+            SqlStatement { sql: "INSERT INTO T (Data) VALUES (?)".to_string(), params: vec![inline_bytes(&[1, 2, 3])] },
+            SqlStatement { sql: "INSERT INTO T (Data) VALUES (?)".to_string(), params: vec![json!({ "__b64": "not base64!" })] },
+        ];
+        assert!(db.exec(&statements).is_err());
+        assert!(db.query("SELECT * FROM T", &[]).unwrap().is_empty(), "the whole batch rolls back");
+        assert!(db.query("SELECT * FROM T WHERE Data = ?", &[json!({ "__b64": "A" })]).is_err(), "a truncated parameter is refused, not read as empty");
+    }
 }

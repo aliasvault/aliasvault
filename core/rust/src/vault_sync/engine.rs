@@ -583,11 +583,11 @@ async fn migration_status(ctx: &mut Ctx) -> MigrationStatusResult {
 }
 
 /// Bring the local vault onto the current storage model and push it: a schema rebuild for a migrated account, the
-/// whole sqlite-blob move (`legacy::migrate_sqlite_blob`) for an account without a key hierarchy yet.
+/// one-time account upgrade (`legacy::upgrade_account_to_manifest_v1`) for an account without a key hierarchy yet.
 async fn migrate_manifest(ctx: &mut Ctx) -> MigrateManifestResult {
     let migrated: SyncResult<bool> = async {
         if !keys::has_local_vault_key(&ctx.host).await? {
-            return legacy::migrate_sqlite_blob(ctx).await;
+            return legacy::upgrade_account_to_manifest_v1(ctx).await;
         }
         migrate_schema(ctx).await
     }

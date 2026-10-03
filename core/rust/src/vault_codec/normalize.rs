@@ -66,6 +66,7 @@ pub(crate) fn normalize_row_id_spelling(row: &mut CodecRecord) {
 
 /// Normalize the shape of rows for converting from materialized SQLite to the manifest format to save on filesize.
 pub(crate) fn normalize_row_shapes(tables: &mut HashMap<String, Vec<CodecRecord>>) {
+    super::sharing::prune_dangling_references(tables);
     // Drop rows of deleted items first (any leftover state after a potential delete/update scenario in LWW merge).
     drop_children_of_deleted_items(tables);
     let multi_value_defs = multi_value_definition_ids(tables);

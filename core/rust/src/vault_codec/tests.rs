@@ -237,17 +237,38 @@ fn unpack_payload_rejects_tampered_payload() {
 #[test]
 fn validate_manifest_catches_broken_fk() {
     let mut manifest = canonicalize_from_sqlite(basic_input(vec![
-        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("FolderId", json!("missing"))])] },
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1"))])] },
         CodecTableData { name: "Folders".to_string(), records: vec![] },
     ]))
     .unwrap()
     .first()
     .manifest
     .clone();
+    // Canonicalize nulls a dangling FolderId itself, so the broken reference is put in afterwards.
+    manifest.tables.get_mut("Items").unwrap()[0].insert("FolderId".to_string(), json!("missing"));
     manifest.tables.entry("Folders".to_string()).or_default();
     let result = validate_manifest(&manifest);
     assert!(!result.ok);
     assert!(result.failed_rules.iter().any(|r| r == "item-folder-fk-broken"));
+}
+
+#[test]
+fn canonicalize_prunes_references_the_validator_would_refuse() {
+    let manifest = canonicalize_from_sqlite(basic_input(vec![
+        CodecTableData { name: "Items".to_string(), records: vec![row(&[("Id", json!("i1")), ("FolderId", json!("missing"))]), row(&[("Id", json!("i2")), ("FolderId", json!(""))])] },
+        CodecTableData { name: "Folders".to_string(), records: vec![] },
+        CodecTableData { name: "Tags".to_string(), records: vec![] },
+        CodecTableData { name: "ItemTags".to_string(), records: vec![row(&[("ItemId", json!("i1")), ("TagId", json!("gone"))])] },
+        CodecTableData { name: "TotpCodes".to_string(), records: vec![row(&[("Id", json!("t1")), ("ItemId", json!("gone"))]), row(&[("Id", json!("t2")), ("ItemId", json!("i1"))])] },
+    ]))
+    .unwrap()
+    .first()
+    .manifest
+    .clone();
+    assert!(validate_manifest(&manifest).ok, "{:?}", validate_manifest(&manifest).failed_rules);
+    assert!(manifest.tables["Items"].iter().all(|item| item["FolderId"].is_null()));
+    assert!(manifest.tables["ItemTags"].is_empty());
+    assert_eq!(manifest.tables["TotpCodes"].iter().map(|r| r["Id"].as_str().unwrap()).collect::<Vec<_>>(), vec!["t2"]);
 }
 
 #[test]

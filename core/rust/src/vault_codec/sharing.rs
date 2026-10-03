@@ -469,6 +469,15 @@ pub(super) fn combine_manifest_tables(
     tables
 }
 
+/// Null or drop rows whose reference names no row in this manifest.
+pub(super) fn prune_dangling_references(tables: &mut HashMap<String, Vec<CodecRecord>>) {
+    if tables.contains_key(FOLDERS_TABLE) {
+        null_dangling_item_folders(tables);
+    }
+    drop_orphan_item_children(tables);
+    drop_item_tags_without_a_tag(tables);
+}
+
 /// Make every row of a single manifest's table set claim `manifest_id` as its scope, every table alike,
 /// registered or not. Stamping a row with the manifest it arrived in is what lets the next push route
 /// it home by its own stamp, instead of trusting whatever scope its author wrote into it (which would

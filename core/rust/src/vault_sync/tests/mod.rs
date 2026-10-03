@@ -1,6 +1,7 @@
 //! Engine tests: the whole sync driven through the command loop against a real SQLite host.
 
 mod item_move;
+mod merge_edge_cases;
 mod test_host;
 mod unloaded_blobs;
 
@@ -671,6 +672,35 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_PRIVATE_KEY));
     assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
+}
+
+#[test]
+fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
+    let kek = crypto::generate_key_base64();
+    let mut host = TestHost::new(&kek);
+    let item = "aaaaaaaa-0000-4000-8000-000000000001";
+    let bytes = vec![0x00u8, 0xFF, 0xC3, 0x28, 0x10];
+    let text = crate::common::encoding::base64_encode(&bytes);
+    let now = crate::common::timestamp::now_vault_datetime();
+    insert_item(&host.local, item, "Item", PERSONAL_MANIFEST_ID);
+    host.local.execute("INSERT INTO Passkeys (ManifestId, Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey, DisplayName, AdditionalData, CredentialId, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'bbbbbbbb-0000-4000-8000-000000000001', ?, 'example.com', ?, 'pub', 'priv', 'not base64!', 'Passkey', NULL, NULL, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, item, text, now, now]).unwrap();
+    host.local.execute("INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'cccccccc-0000-4000-8000-000000000001', ?, 'file.bin', ?, ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, item, text, now, now]).unwrap();
+    host.store_local_as_blob();
+    host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
+    host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
+    host.state.insert(state::VAULT_MANIFEST_SALT.to_string(), json!(vault_codec::generate_manifest_salt()));
+    host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
+    host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
+    host.respond("POST", "Vault/blobs", json!({}));
+    host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
+
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
+
+    assert_eq!(result["success"], true, "{} {:?}", result, host.logs);
+    let cell = |sql: &str| host.local.query_row(sql, [], |row| Ok((row.get::<_, String>(0)?, row.get_ref(1)?.as_bytes().map(<[u8]>::to_vec).ok()))).unwrap();
+    assert_eq!(cell("SELECT typeof(UserHandle), UserHandle FROM Passkeys"), ("blob".to_string(), Some(bytes.clone())));
+    assert_eq!(cell("SELECT typeof(Blob), Blob FROM Attachments"), ("blob".to_string(), Some(bytes)));
+    assert_eq!(cell("SELECT typeof(PrfKey), PrfKey FROM Passkeys"), ("text".to_string(), Some(b"not base64!".to_vec())), "text that is not base64 is kept as-is");
 }
 
 /// The latest EF migration stamp of a database.

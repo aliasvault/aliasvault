@@ -1,17 +1,22 @@
-//! LEGACY: everything only a vault still on the sqlite-blob storage format needs. Remove this module once every
-//! account has migrated to the manifest-v1 storage model, together with its callers:
+//! LEGACY: what old sqlite-blob accounts need, including their one-time upgrade from sqlite-blob to manifest-v1
+//! ([`upgrade_account_to_manifest_v1`]). Remove this module once every account has upgraded, together with its callers:
 //! `pull::pull` (the legacy snapshot branch), `merge::pull_and_merge` (the legacy server branch),
 //! `db::schema_state` (the frozen chain check) and `engine::migrate_manifest` (the branch without a vault key).
 
 use std::collections::HashMap;
 
-use super::db::SchemaState;
+use serde_json::Value;
+
+use super::db::{self, SchemaState};
 use super::errors::{SyncError, SyncResult};
 use super::pull::{self, email_routing_of, PulledVault};
 use super::push::resolve_personal_manifest_id;
 use super::state::{self, Ctx};
-use super::types::GetResponse;
+use super::types::{Db, GetResponse};
 use super::{engine, keys};
+use crate::common::encoding::base64_decode;
+use crate::sqlite_host::SqlStatement;
+use crate::vault_codec::row::inline_bytes;
 
 /// The `storageFormat` of a legacy sqlite-blob snapshot; an absent value means the same.
 const STORAGE_FORMAT_SQLITE_BLOB: i32 = 0;
@@ -35,10 +40,17 @@ pub(crate) async fn open_legacy_snapshot(ctx: &Ctx, snapshot: &GetResponse) -> S
     Ok(PulledVault { encrypted_vault: snapshot.legacy_vault_blob.clone().unwrap_or_default(), revision, email_routing: email_routing_of(snapshot), manifest_revisions, bucket_revisions: HashMap::new(), needs_first_write: false })
 }
 
-/// The one-way move of a sqlite-blob account onto the manifest storage format: the local vault is rebuilt onto the
-/// current schema with its unstamped rows stamped with the personal manifest, and the push that carries it creates the
-/// account key hierarchy. Returns whether that push reached the server.
-pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
+/*
+ * The one-time account upgrade: the one-way move of a sqlite-blob account onto the manifest storage format.
+ */
+
+/// Every column declared BLOB, as (TableName, ColumnName) rows.
+const BLOB_TYPED_COLUMNS: &str = "SELECT m.name AS TableName, p.name AS ColumnName FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type = 'table' AND upper(p.type) = 'BLOB'";
+
+/// Upgrade a sqlite-blob account to manifest-v1: the local vault is rebuilt onto the current schema with its unstamped
+/// rows stamped with the personal manifest, and the push that carries it creates the account key hierarchy. Returns
+/// whether that push reached the server.
+pub(crate) async fn upgrade_account_to_manifest_v1(ctx: &mut Ctx) -> SyncResult<bool> {
     if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
         return Err(SyncError::LegacyUpgradePending);
     }
@@ -48,7 +60,7 @@ pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
     }
     record_server_baseline_if_missing(ctx).await?;
     if keys::has_local_vault_key(&ctx.host).await? {
-        // The account turned out to be migrated already (accepted above, or pulled with the baseline); a schema rebuild is all that can remain.
+        // The account turned out to be upgraded already (accepted above, or pulled with the baseline); a schema rebuild is all that can remain.
         return engine::migrate_schema(ctx).await;
     }
     if engine::schema_state(ctx).await? == SchemaState::LegacyChain {
@@ -56,14 +68,15 @@ pub(crate) async fn migrate_sqlite_blob(ctx: &mut Ctx) -> SyncResult<bool> {
         return Err(SyncError::LegacyUpgradePending);
     }
     let personal = resolve_personal_manifest_id(ctx).await?;
+    decode_base64_text_in_blob_columns(ctx).await?;
     engine::rebuild_local_schema(ctx, Some(personal)).await?;
     engine::push_migrated_vault(ctx, true).await
 }
 
 /// A session that logged in through a client predating the manifest storage format never pulled through this engine,
-/// so it holds neither the personal manifest id nor the revision baseline, and the migration push needs both (the
-/// server refuses a write whose revision it does not know). Calling this method before a push fixes this.
-pub(crate) async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
+/// so it holds neither the personal manifest id nor the revision baseline, and the upgrade push needs both (the
+/// server refuses a write whose revision it does not know). Calling this method before the push fixes this.
+async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResult<()> {
     if state::get::<String>(&ctx.host, state::VAULT_PERSONAL_MANIFEST_ID).await?.is_some() {
         return Ok(());
     }
@@ -78,6 +91,30 @@ pub(crate) async fn record_server_baseline_if_missing(ctx: &mut Ctx) -> SyncResu
     }
     ctx.vault_changed = true;
     pull::commit_revisions(ctx, &pulled.manifest_revisions, &pulled.bucket_revisions).await
+}
+
+/// Decode base64 TEXT in BLOB columns back to bytes, in place. The 0.30.x merges (Android, iOS, Blazor) bound every
+/// value as text, so the BLOB cells of each row the server copy won were stored as base64 TEXT. The upgrade push then
+/// carries real bytes to every device. Text that is not base64 is left as-is.
+async fn decode_base64_text_in_blob_columns(ctx: &Ctx) -> SyncResult<()> {
+    let mut decoded = 0usize;
+    for column in db::query(&ctx.host, Db::Local, BLOB_TYPED_COLUMNS, vec![]).await? {
+        let (Some(table), Some(name)) = (column.get("TableName").and_then(Value::as_str), column.get("ColumnName").and_then(Value::as_str)) else { continue };
+        let rows = db::query(&ctx.host, Db::Local, &format!("SELECT rowid AS RowId, \"{name}\" AS Text FROM \"{table}\" WHERE typeof(\"{name}\") = 'text'"), vec![]).await?;
+        let statements: Vec<SqlStatement> = rows
+            .iter()
+            .filter_map(|row| {
+                let bytes = base64_decode(row.get("Text")?.as_str()?).ok()?;
+                Some(SqlStatement { sql: format!("UPDATE \"{table}\" SET \"{name}\" = ? WHERE rowid = ?"), params: vec![inline_bytes(&bytes), row.get("RowId")?.clone()] })
+            })
+            .collect();
+        decoded += statements.len();
+        db::exec(&ctx.host, Db::Local, statements).await?;
+    }
+    if decoded > 0 {
+        ctx.warn(format!("[ManifestMigration] Decoded {} base64 TEXT cells in BLOB columns back to bytes (written by a 0.30.x merge).", decoded)).await;
+    }
+    Ok(())
 }
 
 /// The frozen sqlite-blob upgrade chain: (revision, data version). It ends at 2.0.0, the first schema compatible
