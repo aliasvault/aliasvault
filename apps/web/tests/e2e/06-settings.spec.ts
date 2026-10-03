@@ -34,7 +34,7 @@ test.describe('6. Settings', () => {
 
     await test.step('a browser without local preferences takes the language from the vault', async () => {
       await page.goto('/user/logout');
-      await expect(page).toHaveURL(/\/user\/login$/);
+      await expect(page).toHaveURL(/\/user\/start$/);
       await page.evaluate(() => localStorage.clear());
       await app.login(testUser.username, testUser.password);
       await expect(emailsLink('E-mails')).toBeVisible();

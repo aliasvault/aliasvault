@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import GlobalNotificationDisplay from '@/components/alerts/GlobalNotificationDisplay';
-import LanguageSwitcher from '@/components/auth/LanguageSwitcher';
+import AuthPreferences from '@/components/auth/AuthPreferences';
 import Logo from '@/components/auth/Logo';
 
 /**
@@ -13,13 +13,13 @@ const AuthLayout: React.FC = () => {
   const path = location.pathname.toLowerCase();
 
   // Show on login, forgot password and register, not during setup or unlock.
-  const showLanguageSwitcher = path.includes('/user/login') || path.includes('/user/forgot-password') || path.endsWith('/');
+  const showPreferences = path.includes('/user/login') || path.includes('/user/forgot-password') || path.endsWith('/');
 
   return (
     <div className="flex flex-col items-center justify-center px-6 pt-8 pb-8 mx-auto md:h-screen pt:mt-0 relative">
-      {showLanguageSwitcher && (
+      {showPreferences && (
         <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher />
+          <AuthPreferences />
         </div>
       )}
       <Logo />

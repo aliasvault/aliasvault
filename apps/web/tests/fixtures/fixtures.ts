@@ -52,6 +52,7 @@ export const test = base.extend<TestFixtures>({
         SupportEmail: 'support@example.tld',
         PublicRegistrationEnabled: String(publicRegistrationEnabled),
         DeploymentMode: 'e2e',
+        TermsUrl: 'https://example.tld/terms',
       }),
     }));
     if (!publicRegistrationEnabled) {

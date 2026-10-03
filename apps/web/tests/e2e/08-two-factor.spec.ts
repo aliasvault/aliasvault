@@ -51,6 +51,7 @@ async function enableTwoFactor(app: WebApp): Promise<TwoFactorSetup> {
  */
 async function loginUntilTwoFactor(app: WebApp, username: string, password: string): Promise<void> {
   await app.logout();
+  await app.page.getByRole('link', { name: 'Log in with existing account' }).click();
   await app.submitLogin(username, password);
   await expect(app.page.locator('#two-factor-code')).toBeVisible();
 }

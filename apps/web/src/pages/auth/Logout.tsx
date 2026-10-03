@@ -26,13 +26,13 @@ const Logout: React.FC = () => {
     hasStarted.current = true;
 
     /**
-     * Revoke the tokens and redirect to the login page.
+     * Revoke the tokens and redirect to the start page.
      */
     const run = async (): Promise<void> => {
       await auth.logout({ userInitiated: true });
       notifications.clearMessages();
       await delay(500);
-      navigate('/user/login', { replace: true });
+      navigate('/user/start', { replace: true });
     };
     void run();
   }, [auth, notifications, navigate]);

@@ -18,13 +18,13 @@ export class WebApp {
   }
 
   /**
-   * Log out via the account popover and wait for the login page.
+   * Log out via the account popover and wait for the start page.
    */
   public async logout(): Promise<void> {
     await this.page.locator('#userMenuButton').click();
     await this.page.locator('#userMenuLogoutButton').click();
     await this.page.locator('#confirmButton').click();
-    await expect(this.page).toHaveURL(/\/user\/login$/);
+    await expect(this.page).toHaveURL(/\/user\/start$/);
   }
 
   /**

@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import AlertMessageError from '@/components/alerts/AlertMessageError';
-import LanguageSwitcher from '@/components/auth/LanguageSwitcher';
+import AuthPreferences from '@/components/auth/AuthPreferences';
 import Logo from '@/components/auth/Logo';
-import { CreatingStep, PasswordStep, TermsAndConditionsStep, UsernameStep } from '@/components/auth/setup/SetupSteps';
+import { CreatingStep, PasswordStep, UsernameStep } from '@/components/auth/setup/SetupSteps';
 import { ButtonLabel } from '@/components/shared/Button';
 import Icon from '@/components/shared/Icon';
 import { getAppConfig } from '@/config/AppConfig';
@@ -15,12 +15,12 @@ import { useWebApi } from '@/context/WebApiContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 /** The wizard steps, in order. */
-const STEPS = ['terms', 'username', 'password', 'creating'] as const;
+const STEPS = ['username', 'password', 'creating'] as const;
 type SetupStep = typeof STEPS[number];
 
 /**
- * The create vault wizard: terms, username, password, then registration. When public registration is disabled, the wizard
- * only opens from a valid admin invite link (`?invite=<code>`).
+ * The create vault wizard: username, password (plus the terms checkbox when a terms URL is configured), then registration.
+ * When public registration is disabled, the wizard only opens from a valid admin invite link (`?invite=<code>`).
  */
 const Setup: React.FC = () => {
   const { t } = useTranslation();
@@ -29,10 +29,11 @@ const Setup: React.FC = () => {
   const [searchParams] = useSearchParams();
   const requiresInvite = !getAppConfig().publicRegistrationEnabled;
   const inviteCode = requiresInvite ? (searchParams.get('invite') ?? '').trim() : '';
+  const termsUrl = getAppConfig().termsUrl;
 
   usePageTitle(t('auth.setup.setupStepTitle'));
 
-  const [step, setStep] = useState<SetupStep>('terms');
+  const [step, setStep] = useState<SetupStep>('username');
   const [isCheckingInvite, setIsCheckingInvite] = useState(requiresInvite && inviteCode.length > 0);
   const [isInviteRejected, setIsInviteRejected] = useState(false);
   const [inviteError, setInviteError] = useState('');
@@ -57,7 +58,8 @@ const Setup: React.FC = () => {
   }, [inviteCode, requiresInvite, t, webApi]);
 
   const isBlocked = isCheckingInvite || inviteError.length > 0;
-  const isNextEnabled = step === 'terms' ? agreedToTerms : step === 'username' ? username.trim().length > 0 : step === 'password' ? password.trim().length > 0 : false;
+  const isPasswordStepComplete = password.trim().length > 0 && (!termsUrl || agreedToTerms);
+  const isNextEnabled = step === 'username' ? username.trim().length > 0 : step === 'password' ? isPasswordStepComplete : false;
   const stepIndex = STEPS.indexOf(step);
   const progressPercentage = Math.floor(stepIndex * 100 / (STEPS.length - 1));
 
@@ -66,7 +68,6 @@ const Setup: React.FC = () => {
    */
   const stepTitle = (): string => {
     switch (step) {
-      case 'terms': return t('auth.setup.termsAndConditionsStepTitle');
       case 'username': return t('auth.setup.usernameStepTitle');
       case 'password': return t('auth.setup.passwordStepTitle');
       default: return t('auth.setup.creatingStepTitle');
@@ -111,7 +112,7 @@ const Setup: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col lg:items-center lg:justify-center">
       <div className="absolute top-4 right-4 z-10 mt-16 lg:mt-0 hidden lg:block">
-        <LanguageSwitcher />
+        <AuthPreferences />
       </div>
       <div className="w-full mx-auto lg:max-w-xl lg:bg-white lg:dark:bg-gray-800 lg:shadow-xl lg:rounded-lg lg:overflow-hidden flex flex-col">
         <div className="flex flex-col flex-grow">
@@ -145,16 +146,15 @@ const Setup: React.FC = () => {
                 </div>
               )}
               {inviteError.length > 0 && <AlertMessageError message={inviteError} />}
-              {!isBlocked && step === 'terms' && <TermsAndConditionsStep agreedToTerms={agreedToTerms} onAgreedToTermsChange={setAgreedToTerms} />}
-              {step === 'username' && <UsernameStep defaultUsername={username} inviteCode={inviteCode || undefined} onUsernameChange={setUsername} />}
-              {step === 'password' && <PasswordStep onPasswordChange={setPassword} />}
+              {!isBlocked && step === 'username' && <UsernameStep defaultUsername={username} inviteCode={inviteCode || undefined} onUsernameChange={setUsername} />}
+              {step === 'password' && <PasswordStep termsUrl={termsUrl} agreedToTerms={agreedToTerms} onAgreedToTermsChange={setAgreedToTerms} onPasswordChange={setPassword} />}
               {step === 'creating' && <CreatingStep username={username} password={password} inviteCode={inviteCode || undefined} onDone={onRegistered} />}
               <button type="submit" className="hidden" />
             </form>
           </div>
           <div className="fixed lg:relative bottom-0 left-0 right-0 p-4 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 lg:bg-transparent lg:dark:bg-transparent lg:border-0">
             {step === 'password' && password.trim().length > 0 ? (
-              <button type="button" onClick={goNext} className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out">
+              <button type="button" onClick={goNext} disabled={!isNextEnabled} className={`w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition duration-300 ease-in-out ${isNextEnabled ? '' : 'opacity-50 cursor-not-allowed'}`}>
                 {t('auth.setup.createAccountButton')}
               </button>
             ) : step !== 'creating' && !isBlocked && (
