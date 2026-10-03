@@ -17,20 +17,20 @@ type AppSettingsFile = {
   SupportEmail?: string;
   PublicRegistrationEnabled?: string | boolean;
   DeploymentMode?: string;
+  TermsUrl?: string;
 };
 
 /**
  * The resolved configuration.
  */
 export type AppConfig = {
-  /** Base URL of the API, without trailing slash. */
   apiUrl: string;
   privateEmailDomains: string[];
   hiddenPrivateEmailDomains: string[];
   supportEmail: string;
   publicRegistrationEnabled: boolean;
-  /** How this instance was deployed (install / build / aio), shown in the footer. Empty when unknown. */
   deploymentMode: string;
+  termsUrl: string;
 };
 
 let current: AppConfig | null = null;
@@ -74,6 +74,7 @@ export async function loadAppConfig(): Promise<AppConfig> {
     supportEmail: file.SupportEmail ?? '',
     publicRegistrationEnabled: String(file.PublicRegistrationEnabled ?? 'true').toLowerCase() === 'true',
     deploymentMode: file.DeploymentMode ?? '',
+    termsUrl: (file.TermsUrl ?? '').trim(),
   };
 
   await getPlatform().storage.set(StorageKeys.API_URL, apiUrl);

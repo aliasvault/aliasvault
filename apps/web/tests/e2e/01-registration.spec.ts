@@ -15,11 +15,6 @@ test.describe('1. Registration', () => {
       await expect(page).toHaveURL(/\/user\/setup$/);
     });
 
-    await test.step('accept the terms', async () => {
-      await page.locator('#agreeTerms').check();
-      await continueButton.click();
-    });
-
     await test.step('choose a username, checked against the server', async () => {
       await page.locator('#username').fill(credentials.username);
       await expect(page.getByText('Username is available')).toBeVisible();
@@ -29,6 +24,7 @@ test.describe('1. Registration', () => {
     await test.step('set the master password and create the account', async () => {
       await page.locator('#password').fill(credentials.password);
       await page.locator('#confirmPassword').fill(credentials.password);
+      await page.locator('#agreeTerms').check();
       await page.getByRole('button', { name: 'Create Account' }).click();
     });
 
@@ -85,8 +81,6 @@ test.describe('1. Registration with public registration disabled', () => {
 
     await test.step('open the invite link', async () => {
       await page.goto(`/user/setup?invite=${encodeURIComponent(inviteCode)}`);
-      await page.locator('#agreeTerms').check();
-      await continueButton.click();
     });
 
     await test.step('choose a username, checked against the server with the invite', async () => {
@@ -98,6 +92,7 @@ test.describe('1. Registration with public registration disabled', () => {
     await test.step('set the master password and create the account', async () => {
       await page.locator('#password').fill(credentials.password);
       await page.locator('#confirmPassword').fill(credentials.password);
+      await page.locator('#agreeTerms').check();
       await page.getByRole('button', { name: 'Create Account' }).click();
       await expect(page).toHaveURL(/\/welcome$/);
     });

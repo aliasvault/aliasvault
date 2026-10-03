@@ -77,5 +77,13 @@ else
     sed -i "s|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\"|\"PublicRegistrationEnabled\": \"$PUBLIC_REGISTRATION_ENABLED\",\n    \"DeploymentMode\": \"$DEPLOYMENT_MODE\"|g" /usr/share/nginx/html/appsettings.json
 fi
 
+# Update the terms URL new users must accept at registration. Empty (the default) skips the terms step.
+TERMS_URL=${TERMS_URL:-}
+if grep -q "TermsUrl" /usr/share/nginx/html/appsettings.json; then
+    sed -i "s|\"TermsUrl\": \".*\"|\"TermsUrl\": \"$TERMS_URL\"|g" /usr/share/nginx/html/appsettings.json
+else
+    sed -i "s|\"DeploymentMode\": \"$DEPLOYMENT_MODE\"|\"DeploymentMode\": \"$DEPLOYMENT_MODE\",\n    \"TermsUrl\": \"$TERMS_URL\"|g" /usr/share/nginx/html/appsettings.json
+fi
+
 # Start the application
 nginx -g "daemon off;"

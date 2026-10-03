@@ -75,7 +75,8 @@ cat > /app/client/wwwroot/appsettings.json << EOF
     "HiddenPrivateEmailDomains": $hidden_json_array,
     "SupportEmail": "$SUPPORT_EMAIL",
     "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED",
-    "DeploymentMode": "${DEPLOYMENT_MODE:-aio-build}"
+    "DeploymentMode": "${DEPLOYMENT_MODE:-aio-build}",
+    "TermsUrl": "${TERMS_URL:-}"
 }
 EOF
 

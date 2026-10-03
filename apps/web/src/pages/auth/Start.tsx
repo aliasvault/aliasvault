@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import MessageInfo from '@/components/alerts/MessageInfo';
-import LanguageSwitcher from '@/components/auth/LanguageSwitcher';
+import AuthPreferences from '@/components/auth/AuthPreferences';
 import Logo from '@/components/auth/Logo';
 import FooterLogin from '@/components/layout/FooterLogin';
 import { getAppConfig } from '@/config/AppConfig';
@@ -39,7 +39,7 @@ const Start: React.FC = () => {
     <>
       <div className="relative">
         <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher />
+          <AuthPreferences />
         </div>
       </div>
 

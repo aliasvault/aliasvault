@@ -165,20 +165,15 @@
       "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
       "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
-      "termsAndConditionsStepTitle": "Using AliasVault",
-      "termsStep": {
-        "agreementCheckboxLabel": "I have read and agree to the Terms and Conditions",
-        "pleaseReadAndAgree": "Please read and agree to the following terms and conditions before proceeding.",
-        "termsContent": "AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.\n\nBy using AliasVault, you agree to the following terms:\n\n1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.\n\n2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.\n\n3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.\n\n4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk."
-      },
+      "termsAgreementLabel": "I have read and agree to the <termsLink>Terms and Conditions</termsLink>",
       "usernameStep": {
         "assistantAvatarAlt": "AliasVault Assistant",
         "enterUsernameInstructions": "Please enter a username you'd like to use. This can be your email address or any unique name you prefer.",
-        "greatNowLetsSetupUsername": "Great! Now, let's set up your username for AliasVault.",
         "rememberUsernameNote": "Remember: This is what you'll use to log in later, so make sure it's something you'll remember!",
         "serverCommunicationError": "An error occurred during communication with the AliasVault server.",
         "usernamePlaceholder": "Enter your desired username or email",
-        "validatingUsernameMessage": "Validating username..."
+        "validatingUsernameMessage": "Validating username...",
+        "welcomeMessage": "Welcome! Let's start by choosing a username for your account."
       },
       "usernameStepTitle": "Choose Username"
     },
