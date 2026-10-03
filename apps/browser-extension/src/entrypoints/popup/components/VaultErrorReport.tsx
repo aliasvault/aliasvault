@@ -56,7 +56,7 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
   };
 
   return (
-    <div className="mb-4 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-3">
+    <div id="vault-error-report" className="mb-4 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-3">
       <p className="text-sm text-red-700 dark:text-red-300">
         {t('common.errors.vaultLoadError')}
       </p>
@@ -66,6 +66,7 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
 
       <button
         type="button"
+        id="vault-error-details-toggle"
         onClick={() => setShowDetails(!showDetails)}
         className="mt-2 text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 focus:outline-none"
       >
@@ -74,11 +75,12 @@ const VaultErrorReport: React.FC<VaultErrorReportProps> = ({ error }) => {
 
       {showDetails && (
         <>
-          <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-red-100 dark:bg-gray-900 p-2 text-[11px] leading-snug text-red-900 dark:text-red-200 select-text">
+          <pre id="vault-error-details" className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-red-100 dark:bg-gray-900 p-2 text-[11px] leading-snug text-red-900 dark:text-red-200 select-text">
             {buildErrorReport()}
           </pre>
           <button
             type="button"
+            id="copy-error-report"
             onClick={copyErrorReport}
             className={`mt-2 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-1 ${
               copied

@@ -67,7 +67,7 @@ jobs:
         with:
           timeout_minutes: 60
           max_attempts: 3
-          command: cd apps/browser-extension && npm run test:e2e:build
+          command: cd apps/browser-extension && npm run test:e2e
         env:
           ALIASVAULT_API_URL: "http://localhost:5100"
 

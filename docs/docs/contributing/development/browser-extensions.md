@@ -107,13 +107,10 @@ The E2E tests live in `tests/e2e/` and use [Playwright](https://playwright.dev/)
 2. Run the E2E suite. This builds the Chrome extension into `dist/chrome-mv3` and runs Playwright against it:
 
 ```bash
-npm run test:e2e:build
-```
-
-If you've already built the extension and just want to re-run the specs (or a single one), call Playwright directly:
-
-```bash
-npm run test:e2e -- <spec-name>
+npm run test:e2e        # all tests
+npm run test:e2e 4.3    # select by number: 4 (file), 4.3, 4.1,4.3 or 4.1-4.3
+npm run test:e2e:h 4.3  # same, in a visible browser, one test at a time
+npm run test:e2e:p 4.3  # same, and stops at each client.pause() in the Playwright Inspector
 ```
 
 ## Manual tests

@@ -10,9 +10,9 @@
 // Usage:
 //   node scripts/run-e2e.mjs [test numbers] [extra playwright args]
 //
-//   npm run test:e2e:build                all tests
-//   npm run test:e2e:build 15             every test in file 15 (15.x)
-//   npm run test:e2e:build 15.1           test 15.1; also 15.1,15.2 or 15.1-15.2
+//   npm run test:e2e                      all tests
+//   npm run test:e2e 15                   every test in file 15 (15.x)
+//   npm run test:e2e 15.1                 test 15.1; also 15.1,15.2 or 15.1-15.2
 //   npm run test:e2e:h 15.1               same, in a visible browser, one test at a time
 //   npm run test:e2e:p 15.1               same, and stops at each client.pause() in the Playwright Inspector
 

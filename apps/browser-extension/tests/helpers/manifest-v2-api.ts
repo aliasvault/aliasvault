@@ -182,6 +182,22 @@ export async function pushManifest(
 }
 
 /**
+ * Uploads an already encrypted manifest blob as a new revision, so a test can write bytes no client would.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param token - Bearer token
+ * @param username - The vault owner's username
+ * @param manifestId - The manifest this write targets
+ * @param blob - The base64 manifest ciphertext to store
+ * @param currentRevision - The revision this upload is based on
+ */
+export async function pushManifestBlob(apiBaseUrl: string, token: string, username: string, manifestId: string, blob: string, currentRevision: number): Promise<void> {
+  const manifestCiphertextHash = createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex');
+  const write = { manifestId, manifestBlob: blob, manifestCiphertextHash, currentRevision, credentialsCount: 0, blobReferences: [] };
+  await postVaultWrite(apiBaseUrl, token, username, [write], []);
+}
+
+/**
  * Writes the first manifest-v1 revision for a newly registered account.
  *
  * @param apiBaseUrl - The base URL of the API

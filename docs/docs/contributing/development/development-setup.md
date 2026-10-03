@@ -56,7 +56,7 @@ The web app and the browser extension have their own Playwright suites, which ru
 
 ```bash
 cd apps/web && npm run test:e2e
-cd apps/browser-extension && npm run test:e2e:build
+cd apps/browser-extension && npm run test:e2e
 ```
 
 The Admin app is tested by the .NET E2E project:
