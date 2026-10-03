@@ -198,7 +198,7 @@
         {
             "label": "Build and watch docs (dev)",
             "type": "shell",
-            "command": "npm start",
+            "command": "npm install && npm start",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
