@@ -733,7 +733,7 @@
     "history": "历史记录",
     "home": {
       "alphabeticalOption": "字母顺序",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "手动创建您的第一个密码库项目。",
       "emptyFolderMessage": "此文件夹为空。",
       "failedToCreateFolder": "创建文件夹失败。",
       "failedToDeleteFolder": "删除文件夹失败。",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "使用浏览器通行密钥"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "账户安全",
     "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "advancedOptions": "高级选项",
     "androidAutofillSettings": {
@@ -1225,8 +1225,8 @@
     "globalSettings": "全局设置",
     "groups": {
       "autofill": "自动填充",
-      "general": "General",
-      "generators": "Generators"
+      "general": "通用",
+      "generators": "生成器"
     },
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "两步验证（2FA）当前已禁用。为提高您的账户安全性，建议您启用此功能。",
         "enabledMessage": "两步验证（2FA）当前已启用。",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "您的密码库目前仅可通过主密码访问。我们建议您启用两步验证，以提高账户安全性。"
       }
     },
     "selectLanguage": "选择语言",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
     "serverUrl": "服务器 URL",
     "serverVersion": "服务器版本",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "会话与日志",
+    "sessionsAndLogsDescription": "查看您的登录位置，并检查近期的登录尝试。",
     "siteSpecificSettings": "网站特定设置",
     "storageInsights": {
       "breadcrumbTitle": "存储洞察",
