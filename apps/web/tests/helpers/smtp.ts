@@ -3,6 +3,8 @@
  */
 import { connect, type Socket } from 'node:net';
 
+import { test } from '@playwright/test';
+
 /**
  * Where the SMTP service listens: ALIASVAULT_SMTP_HOST / ALIASVAULT_SMTP_PORT, else port 25 of this machine
  * (the fixed port of `./scripts/dev.sh smtp`). IPv4 on purpose, so a Docker stack bound to [::]:25 is not hit instead.
@@ -36,6 +38,20 @@ export async function isSmtpAvailable(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Skip the calling test (or describe block, from a beforeAll) when no SMTP service answers. CI starts the SMTP service,
+ * so a missing one there is a failure, not a reason to skip.
+ */
+export async function requireSmtp(): Promise<void> {
+  const { host, port } = resolveSmtpTarget();
+  const available = await isSmtpAvailable();
+  const hint = `No SMTP service at ${host}:${port}. Start it with ./scripts/dev.sh smtp, or set ALIASVAULT_SMTP_HOST / ALIASVAULT_SMTP_PORT.`;
+  if (!available && process.env.CI) {
+    throw new Error(hint);
+  }
+  test.skip(!available, hint);
 }
 
 /**

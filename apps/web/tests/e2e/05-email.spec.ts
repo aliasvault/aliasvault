@@ -2,19 +2,10 @@
  * Category 5: Email (requires API and SMTP service, e.g. `./scripts/dev.sh smtp`)
  */
 import { test, expect } from '../fixtures';
-import { isSmtpAvailable, resolveSmtpTarget, sendMail } from '../helpers/smtp';
+import { requireSmtp, sendMail } from '../helpers/smtp';
 
 test.describe('5. Email', () => {
-  test.beforeAll(async () => {
-    const { host, port } = resolveSmtpTarget();
-    const available = await isSmtpAvailable();
-    const hint = `No SMTP service at ${host}:${port}. Start it with ./scripts/dev.sh smtp, or set ALIASVAULT_SMTP_HOST / ALIASVAULT_SMTP_PORT.`;
-    // CI starts the SMTP service, so a missing one there is a failure, not a reason to skip.
-    if (!available && process.env.CI) {
-      throw new Error(hint);
-    }
-    test.skip(!available, hint);
-  });
+  test.beforeAll(requireSmtp);
 
   test('5.1 should receive and decrypt mail on an alias of a new account', async ({ app, testUser }) => {
     const { page } = app;
