@@ -9,7 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Cód fíordheimhnitheora neamhbhailí. Déan iarracht arís.",
     "INVALID_RECOVERY_CODE": "Cód aisghabhála neamhbhailí. Déan iarracht arís.",
     "INVALID_REFRESH_TOKEN": "Comhartha athnuachana neamhbhailí.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Tá an nasc cuireadh seo neamhbhailí, imithe in éag nó úsáidte cheana féin. Iarr ceann nua ar an riarthóir, le do thoil.",
     "PASSWORD_MISMATCH": "Ní hionann an focal faire a cuireadh ar fáil agus do phasfhocal reatha.",
     "PENDING_MIGRATIONS": "Tá imirce ar feitheamh ann. Rith 'dotnet ef database update' le cur i bhfeidhm iad.",
     "PUBLIC_REGISTRATION_DISABLED": "Tá clárú cuntais nua díchumasaithe ar an bhfreastalaí seo faoi láthair. Téigh i dteagmháil leis an riarthóir le do thoil.",
@@ -162,8 +162,8 @@
         "welcomeMessage": "Go hiontach! Anois, socraímis do phríomhfhocal faire le haghaidh AliasVault."
       },
       "passwordStepTitle": "Socraigh Pasfhocal",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "Ní féidir cuntais nua a chruthú ach le nasc cuireadh. Iarr cuireadh ar riarthóir an fhreastalaí.",
+      "registrationDisabledTitle": "Tá clárú úsáideoirí díchumasaithe",
       "setupStepTitle": "Socrú",
       "termsAndConditionsStepTitle": "Ag Úsáid AliasVault",
       "termsStep": {
@@ -733,7 +733,7 @@
     "history": "Féach ar an stair",
     "home": {
       "alphabeticalOption": "In ord aibítre",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Cruthaigh do chéad mhír sa stór de láimh.",
       "emptyFolderMessage": "Tá an fillteán seo folamh.",
       "failedToCreateFolder": "Theip ar fhillteán a chruthú.",
       "failedToDeleteFolder": "Theip ar an bhfillteán a scriosadh.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Bain úsáid as Eochair Pas Brabhsálaí"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Slándáil Cuntais",
     "activeOnAllSites": "Gníomhach ar gach suíomh (mura bhfuil sé díchumasaithe thíos)",
     "advancedOptions": "Roghanna Casta",
     "androidAutofillSettings": {
@@ -1224,9 +1224,9 @@
     },
     "globalSettings": "Socruithe Domhanda",
     "groups": {
-      "autofill": "Autofill",
-      "general": "General",
-      "generators": "Generators"
+      "autofill": "Uathlíonadh",
+      "general": "Ginearálta",
+      "generators": "Gineadóirí"
     },
     "identityGenerator": "Gineadóir Céannachta",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "Tá fíordheimhniú dhá fhachtóir díchumasaithe faoi láthair. Chun slándáil do chuntais a fheabhsú, molaimid duit é a chumasú.",
         "enabledMessage": "Tá fíordheimhniú dhá fhachtóir cumasaithe faoi láthair.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Ní féidir rochtain a fháil ar do chiste faoi láthair ach amháin trí do phríomhfhocal faire a úsáid. Molaimid duit fíordheimhniú dhá fhachtóir a chumasú chun slándáil do chuntais a fheabhsú."
       }
     },
     "selectLanguage": "Roghnaigh Teanga",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "Cumraigh URL an fhreastalaí AliasVault le haghaidh cásanna féin-óstáilte",
     "serverUrl": "URL an fhreastalaí",
     "serverVersion": "Leagan an fhreastalaí",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Seisiúin & Logaí",
+    "sessionsAndLogsDescription": "Féach cá bhfuil tú logáilte isteach agus déan athbhreithniú ar iarrachtaí logála isteach le déanaí.",
     "siteSpecificSettings": "Socruithe Sonracha don Suíomh",
     "storageInsights": {
       "breadcrumbTitle": "Léargais stórála",
