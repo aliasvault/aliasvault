@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "Ogiltig autentiseringskod. Försök igen.",
     "INVALID_RECOVERY_CODE": "Ogiltig återställningskod. Försök igen.",
     "INVALID_REFRESH_TOKEN": "Ogiltigt uppdateringstoken",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Det angivna lösenordet stämmer inte överens med ditt nuvarande lösenord",
     "PENDING_MIGRATIONS": "Det finns väntande migreringar. Vänligen kör 'dotnet ef databasuppdatering' för att tillämpa dem.",
     "PUBLIC_REGISTRATION_DISABLED": "Registrering av nytt konto är för närvarande inaktiverat på denna server. Kontakta administratören.",
     "REFRESH_TOKEN_REQUIRED": "Uppdateringstoken krävs.",
     "REGISTRATION_FAILED": "Kunde inte skapa kontot. Försök igen om några minuter. Om problemet kvarstår, vänligen kontakta support.",
+    "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
     "USERNAME_ALREADY_IN_USE": "Användarnamnet används redan",
     "USERNAME_AVAILABLE": "Användarnamnet är tillgängligt",
     "USERNAME_EMPTY_OR_WHITESPACE": "Användarnamnet kan inte vara tomt eller blanksteg.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Bifogade filen har raderats.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "För att ladda upp filer, använd det utökade fönstret.",
     "openExpandedWindow": "Öppna utökat fönster",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "Autentiseringskod",
     "authCodeNote": "Obs! Om du inte har tillgång till din autentiseringsenhet kan du återställa din 2FA med en återställningskod genom att logga in via webbplatsen.",
-    "autoCloseUnlockPopup": "Stäng automatiskt vid framtida inloggningar",
     "biometricPrompt": "Vill du använda {{biometric}} för att låsa upp ditt valv?",
     "browseVault": "Bläddra bland valvets innehåll",
-    "closePopup": "Stäng detta popup-fönster",
     "confirmLogout": "Är du säker på att du vill logga ut? Du måste logga in igen med ditt huvudlösenord för att komma åt ditt valv.",
     "connectingTo": "Ansluter till",
     "createNewVault": "Skapa ett nytt valv",
@@ -95,8 +96,7 @@
       "httpError": "HTTP-fel: {{status}}",
       "networkError": "Nätverksförfrågan misslyckades. Kontrollera din internetanslutning och försök igen.",
       "networkErrorSelfHosted": "Nätverksförfrågan misslyckades. Kontrollera din nätverksanslutning och servertillgänglighet. För egenhostade instanser, se till att du har ett giltigt SSL-certifikat installerat. Självsignerade certifikat stöds inte på mobila enheter av säkerhetsskäl.",
-      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, vänligen kontrollera att API-slutpunkten kan nås genom att navigera till den i en webbläsare: den ska visa 'OK'.",
-      "sessionExpired": "Din session har löpt ut. Vänligen logga in igen."
+      "serverErrorSelfHosted": "Kunde inte nå API:et. För egenhostade instanser, vänligen kontrollera att API-slutpunkten kan nås genom att navigera till den i en webbläsare: den ska visa 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Om du nyligen ändrat ditt lösenord och har svårt att logga in med ditt nya lösenord, notera att serveradministratören kanske kan återställa en tidigare säkerhetskopia av ditt valv för att hjälpa dig. Om så är fallet, kontakta serveradministratören.",
@@ -162,6 +162,8 @@
         "welcomeMessage": "Bra! Låt oss nu ställa in ditt huvudlösenord för AliasVault."
       },
       "passwordStepTitle": "Ange lösenord",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
       "termsAndConditionsStepTitle": "Användning av AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "Anslutningen till AliasVault-servrarna misslyckades. Försök igen (senare).",
       "enterMasterPasswordDescription": "Ange ditt huvudlösenord för att låsa upp ditt valv.",
-      "incorrectPasswordError": "Lösenordet är felaktigt. Försök att ange ditt lösenord igen eller logga ut och logga in igen.",
       "loggingInWithWebAuthn": "Loggar in med passkey...",
       "quickUnlockDescription": "Lås snabbt upp ditt valv med din passkey. Eller logga in med ditt lösenord som reserv.",
-      "sessionTimedOutError": "Din session har löpt ut. Vänligen logga in igen.",
       "unlockButton": "Lås upp",
       "unlockWithMobileButton": "Lås upp med mobilappen",
       "unlockWithWebAuthn": "Lås upp med passkey",
       "webAuthnNotSupportedError": "Din nuvarande webbläsare stöder inte tillägget WebAuthn PRF. Försök igen med en annan webbläsare."
     },
-    "unlockSuccessDescription": "Du kan nu använda autofyll av inloggningsformulär i din webbläsare.",
-    "unlockSuccessTitle": "Ditt valv har låsts upp",
     "unlockTitle": "Lås upp ditt valv",
     "unlockVault": "Lås upp valv",
     "unlockWithBiometric": "Lås upp med {{biometric}}",
@@ -225,7 +223,6 @@
     "back": "Tillbaka",
     "backspace": "Backspace",
     "cancel": "Avbryt",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Rensa urklipp"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "Lösenorden matchar inte.",
     "errors": {
       "backgroundUnresponsive": "Bakgrundstjänsten för tillägg svarar inte. Stäng och öppna tillägget igen eller starta om webbläsaren om problemet kvarstår.",
-      "browserExtensionOutdated": "Detta webbläsartillägg är föråldrat och kan inte användas för att komma åt detta valv. Uppdatera detta webbläsartillägg för att fortsätta.",
-      "clientVersionNotSupported": "Denna version av webbläsartillägget AliasVault stöds inte längre av servern. Vänligen uppdatera ditt webbläsartillägg till den senaste versionen.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +267,13 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
       "serverNotAvailable": "AliasVault-servern är inte tillgänglig. Försök igen senare eller kontakta support om problemet kvarstår.",
-      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda detta webbläsartillägg. Kontakta support om du behöver hjälp.",
-      "serverVersionTooOld": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda denna funktion. Vänligen kontakta serveradministratören om du behöver hjälp.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Din session har löpt ut. Logga in igen.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Ett okänt fel har inträffat.",
       "unknownErrorTryAgain": "Ett okänt fel inträffade. Försök igen.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Valvet är låst",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "unavailable": "Unavailable",
     "undo": "Ångra",
+    "updateApp": "Update app",
     "use": "Använd",
     "username": "Användarnamn",
     "vaultSaveError": "Det gick inte att spara ändringarna i valvet. Försök igen.",
@@ -735,8 +733,7 @@
     "history": "Historik",
     "home": {
       "alphabeticalOption": "Alfabetisk",
-      "buttonLocationText": "knappen i det övre högra hörnet",
-      "createFirstItemText": "Skapa ditt första objekt med hjälp av",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Den här mappen är tom.",
       "failedToCreateFolder": "Det gick inte att skapa mappen.",
       "failedToDeleteFolder": "Det gick inte att radera mappen.",
@@ -746,8 +743,6 @@
       "importButtonText": "Importera från KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Om du tidigare använt en annan lösenordshanterare, kan du importera dina objekt från den.",
       "loadingMore": "Laddar fler ...",
-      "newAliasButtonText": "\"+ Nytt alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Inga objekt än",
       "pageDescription": "Dina objekt visas nedan.",
       "sortOrderLabel": "Sorteringsordning",
@@ -769,16 +764,16 @@
     "loginCredentials": "Inloggningsuppgifter",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "Skapar nytt alias...",
       "namePlaceholderCard": "T.ex. Mastercard",
       "namePlaceholderNote": "T.ex. Passinformation",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nytt",
       "typeCard": "Kort",
       "typeLogin": "Logga in"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Välj text att infoga i det fokuserade inmatningsfältet",
     "serverUnavailableMessage": "Servern är inte tillgänglig för tillfället. Försök igen senare.",
     "serverUnavailableTitle": "Servern är inte tillgänglig",
-    "serverVersionNotSupportedContactAdmin": "Serverversionen är föråldrad. Kontakta administratören för att uppdatera servern.",
-    "serverVersionNotSupportedMessage": "Serverversionen är föråldrad. Vänligen uppdatera din server till den senaste versionen.",
     "serverVersionNotSupportedTitle": "Serveruppdatering krävs",
     "sessionExpiredMessage": "Din session har löpt ut. Logga in igen.",
     "sessionExpiredTitle": "Sessionen har löpt ut",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "den här posten",
     "usernameCopied": "Användarnamn kopierat",
     "usernamePrefix": "Användarnamn: ",
-    "versionNotSupportedMessage": "Din appversion stöds inte längre. Vänligen uppdatera till den senaste versionen.",
     "versionNotSupportedTitle": "Uppdatering krävs",
     "viewDetails": "Visa Detaljer",
     "website": "Webbplats"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Använd webbläsarens Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "advancedOptions": "Avancerade inställningar",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.",
       "aliasGenerationGenderDescription": "Ställ in föredragen könspreferens för generering av nya identiteter.",
       "aliasGenerationLanguageDescription": "Ange standardspråk som ska användas vid generering av nya identiteter.",
-      "aliasSettingsTitle": "Inställningar för identitetsgenerering",
       "appLanguageDescription": "Ställ in språket för applikationsgränssnittet.",
       "appLanguageTitle": "Appspråk",
       "autoEmailRefreshLabel": "Uppdatera e-postlistan automatiskt när nya e-postmeddelanden kommer in",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Offentliga domäner"
     },
     "globalSettings": "Globala inställningar",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Det gick inte att inaktivera tvåfaktorsautentisering.",
         "pageDescription": "Inaktivering av tvåfaktorsautentisering innebär att du endast behöver logga in med ditt lösenord.",
         "pageTitle": "Inaktivera tvåfaktorsautentisering",
-        "statusMessage": "Tvåfaktorsautentisering är för närvarande aktiverat. Inaktivera det för att kunna komma åt ditt valv med endast ditt lösenord.",
         "twoFactorDisabledSuccess": "Tvåfaktorsautentisering har nu inaktiverats.",
-        "twoFactorNotEnabled": "Tvåfaktorsautentisering är inte aktiverad.",
-        "warningMessage": "Observera: Efter inaktivering av tvåfaktorsautentisering kommer alla konfigurerade autentiseringsapp (-en/-arna) att sluta fungera. När du vill återaktivera tvåfaktorsautentisering måste du konfigurera autentiseringsapp (-en/-arna) igen."
+        "twoFactorNotEnabled": "Tvåfaktorsautentisering är inte aktiverad."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Det gick inte att aktivera tvåfaktorsautentisering.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tvåfaktorsautentisering är för närvarande inaktiverad. För att förbättra din kontosäkerhet rekommenderar vi att du aktiverar funktionen.",
-        "enabledMessage": "Tvåfaktorsautentisering är för närvarande aktiverat."
+        "enabledMessage": "Tvåfaktorsautentisering är för närvarande aktiverat.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Välj Språk",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
     "serverUrl": "Serverns webbadress",
     "serverVersion": "Server-version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Webbplatsspecifika inställningar",
     "storageInsights": {
       "breadcrumbTitle": "Insikter om lagring",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Söker efter valvuppdateringar",
     "checkingVaultUpdates": "Söker efter valvuppdateringar",
     "errors": {
-      "appOutdated": "Denna app är föråldrad och kan inte användas för att komma åt den här (nyare) valvversionen. Vänligen uppdatera AliasVault-appen för att fortsätta.",
       "failedToGetEncryptedDatabase": "Det gick inte att hämta krypterad databas",
       "passwordChangeRequiresOnline": "Lösenordsbyte kräver en internetanslutning. Försök igen när du är online.",
-      "serverVersionNotSupported": "AliasVault-servern behöver uppdateras till en nyare version för att kunna använda mobilapp. Kontakta support om du behöver hjälp.",
-      "usernameNotFound": "Användarnamnet hittades inte",
-      "vaultOutdated": "Ditt valv är föråldrad. Logga in på AliasVault webbplats och följ stegen.",
-      "versionNotSupported": "Denna version av mobilappen AliasVault stöds inte längre av servern. Vänligen uppdatera ditt appen till den senaste versionen."
+      "usernameNotFound": "Användarnamnet hittades inte"
     },
     "mergingVault": "Sammanfogar valvförändringar...",
     "savingChangesToVault": "Sparar ändringar till valv",

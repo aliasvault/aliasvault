@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "验证码无效，请重试。",
     "INVALID_RECOVERY_CODE": "恢复码无效，请重试。",
     "INVALID_REFRESH_TOKEN": "刷新令牌无效。",
+    "INVITE_CODE_INVALID": "此邀请链接无效、已过期或已被使用。请向管理员索取新的链接。",
     "PASSWORD_MISMATCH": "提供的密码与您的当前密码不匹配。",
     "PENDING_MIGRATIONS": "存在待处理的数据库迁移。请运行“dotnet ef database update”命令来应用这些迁移。",
     "PUBLIC_REGISTRATION_DISABLED": "此服务器目前已禁用新账户注册，请联系管理员。",
     "REFRESH_TOKEN_REQUIRED": "刷新令牌为必填项。",
     "REGISTRATION_FAILED": "无法创建账户，请稍后再试。如果问题仍然存在，请联系支持人员。",
+    "UNKNOWN_ERROR": "发生未知错误，请重试。",
     "USERNAME_ALREADY_IN_USE": "用户名已被使用。",
     "USERNAME_AVAILABLE": "用户名可用。",
     "USERNAME_EMPTY_OR_WHITESPACE": "用户名不能为空或仅含空格。",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "附件删除成功。",
+    "fileEmpty": "{{filename}} 为空。",
     "firefoxExpandRequired": "要上传文件，请使用展开的窗口。",
     "openExpandedWindow": "打开展开的窗口",
     "uploadError": "文件上传出错：{{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "身份验证码",
     "authCodeNote": "注：如果您无法访问您的身份验证器设备，您可以通过网站登录并使用恢复码重置您的两步验证。",
-    "autoCloseUnlockPopup": "将来登录时自动关闭",
     "biometricPrompt": "您想使用 {{biometric}} 来解锁密码库吗？",
     "browseVault": "浏览密码库内容",
-    "closePopup": "关闭此弹窗",
     "confirmLogout": "确定要退出登录吗？您需要使用主密码重新登录才能访问密码库。",
     "connectingTo": "正在连接",
     "createNewVault": "创建新密码库",
@@ -95,8 +96,7 @@
       "httpError": "HTTP 错误：{{status}}",
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
       "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的 SSL 证书。出于安全考虑，移动设备不支持自签名证书。",
-      "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。",
-      "sessionExpired": "您的会话已过期，请重新登录。"
+      "serverErrorSelfHosted": "无法访问 API。对于自托管实例，请在浏览器中导航至 API 端点，验证其是否可访问：它应显示“OK”。"
     },
     "forgotPassword": {
       "contactAdministrator": "如果您最近更改了密码且使用新密码登录遇到困难，请注意服务器管理员可能能够恢复您密码库的早期备份来帮助您。若情况如此，请联系服务器管理员。",
@@ -162,6 +162,8 @@
         "welcomeMessage": "很好！现在，我们来设置您的 AliasVault 主密码。"
       },
       "passwordStepTitle": "设置密码",
+      "registrationDisabledMessage": "新账户只能通过邀请链接创建。请向服务器管理员索取邀请。",
+      "registrationDisabledTitle": "用户注册已禁用",
       "setupStepTitle": "设置",
       "termsAndConditionsStepTitle": "使用 AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "与 AliasVault 服务器的连接失败。请（稍后）再试一次。",
       "enterMasterPasswordDescription": "输入您的主密码以解锁密码库。",
-      "incorrectPasswordError": "密码不正确。请尝试重新输入密码，或退出登录后重新登录。",
       "loggingInWithWebAuthn": "正在使用通行密钥登录…",
       "quickUnlockDescription": "使用通行密钥快速解锁您的密码库。或者使用密码作为备用方式登录。",
-      "sessionTimedOutError": "您的会话已超时。请重新登录。",
       "unlockButton": "解锁",
       "unlockWithMobileButton": "使用移动应用解锁",
       "unlockWithWebAuthn": "使用通行密钥解锁",
       "webAuthnNotSupportedError": "您当前的浏览器不支持 WebAuthn PRF 扩展。请改用密码登录。"
     },
-    "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
-    "unlockSuccessTitle": "您的密码库已成功解锁",
     "unlockTitle": "解锁您的密码库",
     "unlockVault": "解锁密码库",
     "unlockWithBiometric": "使用 {{biometric}} 解锁",
@@ -225,7 +223,6 @@
     "back": "返回",
     "backspace": "Backspace",
     "cancel": "取消",
-    "clientVersionUnsupported": "此版本的应用已不再受服务器支持。请刷新页面以加载最新版本。",
     "clipboardCountdown": {
       "clearClipboardButton": "清除剪贴板"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "密码不匹配。",
     "errors": {
       "backgroundUnresponsive": "扩展的后台服务未响应。请关闭并重新打开该扩展；如果问题仍然存在，请重启浏览器。",
-      "browserExtensionOutdated": "此浏览器扩展已过时，无法用于访问此密码库。请更新此浏览器扩展以继续。",
-      "clientVersionNotSupported": "此版本的 AliasVault 浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
+      "clientNotSupported": "此版本的 AliasVault 已不再受服务器支持。请更新至最新版本。",
+      "clientOutdated": "由于密码库版本已升级，因此 AliasVault 无法打开您的密码库。请更新 AliasVault 以继续使用。",
       "contactSupportAt": "请通过 {{email}} 联系支持人员。",
       "invalidCode": "请输入有效的 6 位身份验证码。",
       "keyChainUnreadable": "您的密码正确，但无法打开您的密码库加密密钥。请联系支持人员。",
@@ -270,13 +267,13 @@
       "passwordChanged": "您的密码已更改过，出于安全考虑，请重新登录。",
       "serverError": "无法访问 AliasVault 服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "serverNotAvailable": "AliasVault 服务器不可用。请稍后重试，若问题持续请联系支持人员。",
-      "serverVersionNotSupported": "AliasVault 服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
-      "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。",
+      "serverOutdated": "AliasVault 服务器需要更新才能与此版本的 AliasVault 兼容。如果您需要帮助，请联系支持人员。",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
       "unexpectedErrorContactSupport": "发生意外错误。请重试，如果问题仍然存在，请联系支持人员。",
       "unknownError": "发生未知错误。",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
+      "updateRequiredTitle": "需要更新",
       "vaultDataUnreadable": "您的密码库数据无法读取，因此您目前无法访问这些数据。请联系支持人员。",
       "vaultIsLocked": "密码库已锁定",
       "vaultLoadError": "加载您的密码库时出现错误。请复制以下错误详情并联系支持人员寻求帮助。",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "两步验证",
     "unavailable": "不可用",
     "undo": "撤销",
+    "updateApp": "更新应用",
     "use": "使用",
     "username": "用户名",
     "vaultSaveError": "无法保存对密码库的更改，请重试。",
@@ -735,8 +733,7 @@
     "history": "历史记录",
     "home": {
       "alphabeticalOption": "字母顺序",
-      "buttonLocationText": "右上角的按钮。",
-      "createFirstItemText": "使用以下方式创建您的第一个项目",
+      "createFirstItemManuallyText": "手动创建您的第一个密码库项目。",
       "emptyFolderMessage": "此文件夹为空。",
       "failedToCreateFolder": "创建文件夹失败。",
       "failedToDeleteFolder": "删除文件夹失败。",
@@ -746,8 +743,6 @@
       "importButtonText": "从 KeePass、Bitwarden、Chrome、Firefox 导入…",
       "importItemsText": "若您先前使用过其他密码管理器，则可以从中导入您的项目。",
       "loadingMore": "加载中…",
-      "newAliasButtonText": "“+ 新建别名”",
-      "newAliasButtonTextMobile": "“+”",
       "noItemsTitle": "暂无项目",
       "pageDescription": "在下方查找您的所有项目。",
       "sortOrderLabel": "排序顺序",
@@ -769,16 +764,16 @@
     "loginCredentials": "登录凭据",
     "logo": {
       "builtin": {
-        "Bank": "银行",
-        "Dev": "开发",
-        "Game": "游戏",
-        "Health": "健康",
-        "Mail": "邮件",
-        "Media": "媒体",
-        "Shopping": "购物",
-        "Social": "社交",
-        "Travel": "旅游",
-        "Work": "工作"
+        "bank": "银行",
+        "dev": "开发",
+        "game": "游戏",
+        "health": "健康",
+        "mail": "邮件",
+        "media": "媒体",
+        "shopping": "购物",
+        "social": "社交",
+        "travel": "旅游",
+        "work": "工作"
       },
       "builtinLogos": "图标库",
       "chooseLogo": "选择图标",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "正在创建新别名…",
       "namePlaceholderCard": "如“万事达卡”",
       "namePlaceholderNote": "如“护照详情”",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ 新建",
       "typeCard": "卡",
       "typeLogin": "登录"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "选择要插入到聚焦输入字段的文本",
     "serverUnavailableMessage": "服务器目前不可用，请稍后重试。",
     "serverUnavailableTitle": "服务器不可用",
-    "serverVersionNotSupportedContactAdmin": "服务器版本过旧，请联系您的管理员更新服务器。",
-    "serverVersionNotSupportedMessage": "服务器版本过旧，请将服务器更新至最新版本。",
     "serverVersionNotSupportedTitle": "服务器需要更新",
     "sessionExpiredMessage": "您的会话已过期，请重新登录。",
     "sessionExpiredTitle": "会话已过期",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "此凭据",
     "usernameCopied": "用户名已复制",
     "usernamePrefix": "用户名：",
-    "versionNotSupportedMessage": "您的应用版本已停止支持，请更新至最新版本。",
     "versionNotSupportedTitle": "需要更新",
     "viewDetails": "查看详情",
     "website": "网站"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "使用浏览器通行密钥"
   },
   "settings": {
+    "accountSecurity": "账户安全",
     "activeOnAllSites": "在所有网站上激活（除非在下方禁用）",
     "advancedOptions": "高级选项",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。",
       "aliasGenerationGenderDescription": "设置生成新身份时的默认性别偏好。",
       "aliasGenerationLanguageDescription": "设置生成新身份时将使用的默认语言。",
-      "aliasSettingsTitle": "身份生成器设置",
       "appLanguageDescription": "设置应用界面的语言。",
       "appLanguageTitle": "应用语言",
       "autoEmailRefreshLabel": "收到新邮件时自动刷新邮件内容",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "公共域名"
     },
     "globalSettings": "全局设置",
+    "groups": {
+      "autofill": "自动填充",
+      "general": "通用",
+      "generators": "生成器"
+    },
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
       "ageRangeDescription": "设置生成新身份的年龄范围。",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "禁用两步验证（2FA）失败。",
         "pageDescription": "禁用两步验证（2FA）意味着您只需密码即可登录。",
         "pageTitle": "禁用两步验证（2FA）",
-        "statusMessage": "当前已启用两步验证（2FA）。禁用后，您只需密码即可访问密码库。",
         "twoFactorDisabledSuccess": "两步验证（2FA）已成功禁用。",
-        "twoFactorNotEnabled": "尚未启用两步验证（2FA）。",
-        "warningMessage": "请注意：禁用两步验证（2FA）后，所有已配置的身份验证器应用都将停止工作。如果想重新启用两步验证（2FA），您需要重新配置身份验证器应用。"
+        "twoFactorNotEnabled": "尚未启用两步验证（2FA）。"
       },
       "enable2fa": {
         "failedToEnable2Fa": "启用两步验证（2FA）失败。",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "两步验证（2FA）当前已禁用。为提高您的账户安全性，建议您启用此功能。",
-        "enabledMessage": "两步验证（2FA）当前已启用。"
+        "enabledMessage": "两步验证（2FA）当前已启用。",
+        "notEnabledWarning": "您的密码库目前仅可通过主密码访问。我们建议您启用两步验证，以提高账户安全性。"
       }
     },
     "selectLanguage": "选择语言",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
     "serverUrl": "服务器 URL",
     "serverVersion": "服务器版本",
+    "sessionsAndLogs": "会话与日志",
+    "sessionsAndLogsDescription": "查看您的登录位置，并检查近期的登录尝试。",
     "siteSpecificSettings": "网站特定设置",
     "storageInsights": {
       "breadcrumbTitle": "存储洞察",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "检查密码库更新中",
     "checkingVaultUpdates": "检查密码库更新",
     "errors": {
-      "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
       "failedToGetEncryptedDatabase": "获取加密数据库失败",
       "passwordChangeRequiresOnline": "更改密码需要联网，请联网后重试。",
-      "serverVersionNotSupported": "AliasVault 服务器需要更新到更高版本才能使用此移动应用。如需帮助，请联系支持人员。",
-      "usernameNotFound": "未找到用户名",
-      "vaultOutdated": "您的密码库版本过低，请登录 AliasVault 网站并按照步骤操作。",
-      "versionNotSupported": "此版本的 AliasVault 移动应用已不再被服务器支持。请将应用更新至最新版本。"
+      "usernameNotFound": "未找到用户名"
     },
     "mergingVault": "正在合并密码库更改...",
     "savingChangesToVault": "正在保存对密码库的更改",

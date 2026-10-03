@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
     "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
     "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
+    "INVITE_CODE_INVALID": "Acest link de invitație este invalid, a expirat sau a fost deja folosit. Cere administratorului un link nou.",
     "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
     "PENDING_MIGRATIONS": "Există migrări în așteptare. Rulează „dotnet ef database update” pentru a le aplica.",
     "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.",
     "REFRESH_TOKEN_REQUIRED": "Este necesar un token de actualizare.",
     "REGISTRATION_FAILED": "Nu s-a putut crea contul. Încercați din nou peste câteva minute. Dacă problema persistă, contactați serviciul de asistență.",
+    "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
     "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja utilizat.",
     "USERNAME_AVAILABLE": "Numele de utilizator este disponibil.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi necompletat sau format doar din spații.",
@@ -69,19 +71,18 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Atașament șters cu succes.",
+    "fileEmpty": "„{{filename}}” este gol.",
     "firefoxExpandRequired": "Pentru a încărca fișiere, folosește fereastra extinsă.",
     "openExpandedWindow": "Deschide fereastra extinsă",
-    "uploadError": "Error uploading file: {{error}}",
+    "uploadError": "Eroare la încărcarea fișierului: {{error}}",
     "uploadSuccess": "Fișiere încărcate cu succes.",
     "uploading": "Se încarcă..."
   },
   "auth": {
     "authCode": "Cod de autentificare",
     "authCodeNote": "Notă: dacă nu ai acces la dispozitivul de autentificare, poți reseta 2FA cu un cod de recuperare autentificându-te prin site-ul web.",
-    "autoCloseUnlockPopup": "Închidere automată la următoarele autentificări",
     "biometricPrompt": "Dorești să utilizezi {{biometric}} pentru a debloca seiful?",
     "browseVault": "Răsfoiește conținutul seifului",
-    "closePopup": "Închide această fereastră",
     "confirmLogout": "Sigur dorești să te deconectezi? Va trebui să te autentifici din nou cu parola principală pentru a accesa seiful.",
     "connectingTo": "Conectare la",
     "createNewVault": "Creează un seif nou",
@@ -95,8 +96,7 @@
       "httpError": "Eroare HTTP: {{status}}",
       "networkError": "Cererea de rețea a eșuat. Verifică conexiunea la internet și încearcă din nou.",
       "networkErrorSelfHosted": "Solicitarea de rețea a eșuat. Verificați conexiunea și disponibilitatea serverului. Pentru instanțele self-hosted, asigurați-vă că aveți un certificat SSL valid instalat. Certificatele de tip „self-signed” nu sunt acceptate pe dispozitivele mobile din motive de securitate.",
-      "serverErrorSelfHosted": "Nu s-a putut accesa API-ul. Pentru instanțele self-hosted, verifică dacă adresa API este accesibilă dintr-un browser: ar trebui să afișeze 'OK'.",
-      "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou."
+      "serverErrorSelfHosted": "Nu s-a putut accesa API-ul. Pentru instanțele self-hosted, verifică dacă adresa API este accesibilă dintr-un browser: ar trebui să afișeze 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Dacă ți-ai schimbat recent parola și întâmpini dificultăți la conectare, administratorul serverului ar putea recupera o copie de rezervă anterioară a seifului tău pentru a te ajuta. În această situație, contactează administratorul serverului.",
@@ -138,7 +138,7 @@
     "noAccountYet": "Nu ai încă un cont?",
     "passwordAttemptsWarning": "Parolă incorectă. Vei fi deconectat dacă introduci parola greșită de încă {{remainingAttempts}} ori.",
     "passwordPlaceholder": "Introdu parola",
-    "pinInput": "PIN input",
+    "pinInput": "Introdu PIN-ul",
     "register": {
       "passwordLabel": "Parola ta",
       "passwordPlaceholder": "••••••••",
@@ -162,6 +162,8 @@
         "welcomeMessage": "Minunat! Acum, să configurăm parola principală pentru AliasVault."
       },
       "passwordStepTitle": "Setează parola",
+      "registrationDisabledMessage": "Poți crea conturi noi doar cu un link de invitație. Cere administratorului serverului o invitație.",
+      "registrationDisabledTitle": "Înregistrarea utilizatorilor este dezactivată",
       "setupStepTitle": "Configurare",
       "termsAndConditionsStepTitle": "Utilizare AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "Conexiunea cu serverele AliasVault a eșuat. Reîncearcă (mai târziu).",
       "enterMasterPasswordDescription": "Introdu parola principală pentru a-ți debloca seiful.",
-      "incorrectPasswordError": "Parola este incorectă. Reîncearcă să introduci parola sau deconectează-te și reconectează-te la contul tău.",
       "loggingInWithWebAuthn": "Autentificare cu passkey...",
       "quickUnlockDescription": "Deblochează rapid seiful folosind passkey-ul. Sau autentifică-te cu parola ca metodă alternativă.",
-      "sessionTimedOutError": "Sesiunea ta a expirat. Autentifică-te din nou.",
       "unlockButton": "Deblochează",
       "unlockWithMobileButton": "Deblochează prin aplicația mobilă",
       "unlockWithWebAuthn": "Deblochează prin passkey",
       "webAuthnNotSupportedError": "Browserul actual este incompatibil cu WebAuthn PRF. Accesează contul folosind parola."
     },
-    "unlockSuccessDescription": "Acum poți folosi completarea automată pentru câmpurile cu date de autentificare în browserul tău.",
-    "unlockSuccessTitle": "Seiful a fost deblocat cu succes",
     "unlockTitle": "Deblochează seiful",
     "unlockVault": "Deblochează seiful",
     "unlockWithBiometric": "Deblochează cu {{biometric}}",
@@ -223,9 +221,8 @@
     "attachmentDownloadFailed": "Descărcarea atașamentului a eșuat",
     "attachments": "Atașamente",
     "back": "Înapoi",
-    "backspace": "Backspace",
+    "backspace": "Spațiu",
     "cancel": "Anulează",
-    "clientVersionUnsupported": "Această versiune a aplicației nu mai este acceptată de server. Repornește pagina pentru a încărca cea mai recentă versiune.",
     "clipboardCountdown": {
       "clearClipboardButton": "Golește clipboardul"
     },
@@ -259,35 +256,35 @@
     "errorPasswordMismatch": "Parolele nu coincid.",
     "errors": {
       "backgroundUnresponsive": "Serviciul de fundal al extensiei nu răspunde. Închide și redeschide extensia sau repornește browserul dacă problema persistă.",
-      "browserExtensionOutdated": "Versiune extensie incompatibilă. Pentru a accesa seiful, actualizează extensia AliasVault la ultima versiune disponibilă.",
-      "clientVersionNotSupported": "Această versiune a extensiei AliasVault nu mai este compatibilă cu serverul. Actualizează extensia la cea mai recentă versiune.",
-      "contactSupportAt": "Contact support at {{email}}.",
+      "clientNotSupported": "Această versiune de AliasVault nu mai este acceptată de server. Actualizează la cea mai recentă versiune.",
+      "clientOutdated": "Această versiune de AliasVault nu poate deschide seiful, deoarece acesta a fost actualizat de o versiune mai nouă.",
+      "contactSupportAt": "Contactează serviciul de asistență la {{email}}.",
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
-      "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
+      "keyChainUnreadable": "Parola este corectă, dar cheile de criptare ale seifului nu au putut fi deschise. Contactează serviciul de asistență.",
       "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
       "mobileLoginRequestDeclined": "Solicitarea de conectare a fost refuzată pe dispozitivul tău mobil.",
       "mobileLoginRequestExpired": "Cererea de autentificare de pe dispozitivul mobil a expirat. Reîncarcă pagina și încearcă din nou.",
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "serverNotAvailable": "Serverul AliasVault nu este disponibil. Încearcă mai târziu sau contactează asistența.",
-      "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această extensie. Contactează asistența pentru ajutor.",
-      "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această funcție. Contactează administratorul serverului.",
+      "serverOutdated": "Serverul AliasVault trebuie actualizat pentru a funcționa cu această versiune de AliasVault. Contactează serviciul de asistență dacă ai nevoie de ajutor.",
       "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
-      "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
+      "unexpectedErrorContactSupport": "A apărut o eroare neașteptată. Reîncercați sau contactați asistența dacă problema persistă.",
       "unknownError": "A apărut o eroare necunoscută.",
       "unknownErrorTryAgain": "A apărut o eroare necunoscută. Încearcă din nou.",
-      "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
+      "updateRequiredTitle": "Actualizare necesară",
+      "vaultDataUnreadable": "Datele seifului nu au putut fi citite, astfel încât datele tale nu sunt accesibile momentan. Contactează serviciul de asistență.",
       "vaultIsLocked": "Seiful este blocat",
       "vaultLoadError": "Ceva nu a funcționat corect la încărcarea seifului tău. Copiază detaliile erorii de mai jos și contactează serviciul de asistență pentru ajutor.",
-      "vaultLoadErrorTitle": "Your vault could not be loaded",
+      "vaultLoadErrorTitle": "Seiful nu a putut fi încărcat",
       "vaultNotAvailable": "Seiful nu este disponibil",
       "vaultSyncTimeout": "Sincronizarea seifului a expirat. Acest lucru se poate întâmpla dacă seiful este de dimensiuni mari sau conexiunea la internet este lentă. Încearcă din nou.",
       "vaultTooLarge": "Seiful este prea mare pentru a fi acceptat de server. Încercați să eliminați unele elemente sau atașamente pentru a reduce dimensiunea și încercați din nou.",
       "wrongPassword": "Parolă incorectă. Încearcă din nou."
     },
     "generate": "Generează",
-    "help": "Help",
+    "help": "Ajutor",
     "hide": "Ascunde",
     "hideDetails": "Ascunde detalii",
     "hidePassword": "Ascunde parola",
@@ -311,7 +308,7 @@
     "ok": "OK",
     "openInNewWindow": "Deschide în fereastră nouă",
     "or": "sau",
-    "pageNavigation": "Page navigation",
+    "pageNavigation": "Navigare între pagini",
     "passkeys": "Passkeys",
     "password": "Parolă",
     "passwordStrength": {
@@ -322,8 +319,8 @@
       "veryWeak": "Continuă",
       "weak": "Se îmbunătățește"
     },
-    "previous": "Previous",
-    "qrCode": "QR code",
+    "previous": "Anterior",
+    "qrCode": "Cod QR",
     "recentEmails": "E-mailuri recente",
     "refresh": "Actualizează",
     "remove": "Elimină",
@@ -340,8 +337,9 @@
     "syncVaultData": "Sincronizează datele seifului",
     "syncingChanges": "Se sincronizează modificările...",
     "twoFactorAuthentication": "Autentificare cu doi factori",
-    "unavailable": "Unavailable",
+    "unavailable": "Indisponibil",
     "undo": "Revocă",
+    "updateApp": "Actualizează aplicația",
     "use": "Folosește",
     "username": "Nume utilizator",
     "vaultSaveError": "Nu s-au putut salva modificările în seif. Încearcă din nou.",
@@ -560,7 +558,7 @@
       "roboformInstructionsPart1": "Pentru a importa parolele tale RoboForm, trebuie să le exporți sub formă de fișier CSV. Poți face acest lucru deschizând RoboForm, mergând la meniul „RoboForm” > „Options” > „Account & Data” > „Export” și selectând formatul CSV.",
       "strongboxDescription": "Importă parolele din Strongbox",
       "strongboxInstructionsPart1": "Pentru a importa seiful Strongbox, trebuie să îl exporți ca fișier CSV. Poți face acest lucru mergând la meniul „File” și selectând „Export Database” (în format CSV).",
-      "template": "template",
+      "template": "șablon",
       "uploadInstructions": "După ce ai exportat fișierul, îl poți încărca mai jos."
     }
   },
@@ -618,8 +616,8 @@
     "addNewItem": "Adăugare element nou",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "allItemsInFoldersClick": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
-    "attachmentReadError": "Could not read the attachment.",
-    "attachmentUnavailable": "Attachment data unavailable",
+    "attachmentReadError": "Atașamentul nu a putut fi citit.",
+    "attachmentUnavailable": "Datele atașamentului nu sunt disponibile",
     "autofillLinkExisting": {
       "confirmMessage": "Sigur vrei să asociezi „{{url}}” cu aceste date de autentificare?",
       "confirmTitle": "Asociezi cu datele de autentificare?",
@@ -729,14 +727,13 @@
       "selectFolder": "Selectează dosarul"
     },
     "fullName": "Nume complet",
-    "hasAttachments": "Has attachments",
-    "hasPasskey": "Has passkey",
-    "hasTotp": "Has 2FA code",
+    "hasAttachments": "Are atașamente",
+    "hasPasskey": "Are cheie de acces",
+    "hasTotp": "Are cod 2FA",
     "history": "Istoric",
     "home": {
       "alphabeticalOption": "Alfabetic",
-      "buttonLocationText": "din colțul din dreapta sus.",
-      "createFirstItemText": "Creează primul tău element folosind",
+      "createFirstItemManuallyText": "Creează manual primul element din seiful tău.",
       "emptyFolderMessage": "Acest dosar este gol.",
       "failedToCreateFolder": "Crearea dosarului a eșuat.",
       "failedToDeleteFolder": "Ștergerea dosarului a eșuat.",
@@ -746,8 +743,6 @@
       "importButtonText": "Importă din KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Dacă ai utilizat anterior un alt manager de parole, poți importa elementele din acesta.",
       "loadingMore": "Se încarcă mai multe...",
-      "newAliasButtonText": "„+ Nou Alias”",
-      "newAliasButtonTextMobile": "„+”",
       "noItemsTitle": "Niciun element încă",
       "pageDescription": "Toate elementele tale sunt afișate mai jos.",
       "sortOrderLabel": "Ordine sortare",
@@ -769,16 +764,16 @@
     "loginCredentials": "Date de autentificare",
     "logo": {
       "builtin": {
-        "Bank": "Servicii bancare",
-        "Dev": "Dezvoltare",
-        "Game": "Jocuri",
-        "Health": "Sănătate",
-        "Mail": "E-mail",
-        "Media": "Media",
-        "Shopping": "Cumpărături",
-        "Social": "Rețele sociale",
-        "Travel": "Călătorii",
-        "Work": "Serviciu"
+        "bank": "Servicii bancare",
+        "dev": "Dezvoltare",
+        "game": "Jocuri",
+        "health": "Sănătate",
+        "mail": "E-mail",
+        "media": "Media",
+        "shopping": "Cumpărături",
+        "social": "Rețele sociale",
+        "travel": "Călătorii",
+        "work": "Serviciu"
       },
       "builtinLogos": "Biblioteca de pictograme",
       "chooseLogo": "Alege o pictogramă",
@@ -790,7 +785,7 @@
       "sourceFavicon": "De la {{domain}}",
       "sourceNone": "Fără pictogramă"
     },
-    "noAttachments": "No attachments available.",
+    "noAttachments": "Nu există atașamente disponibile.",
     "noEmailsYet": "Nu ai primit niciun e-mail încă.",
     "noHistoryAvailable": "Niciun istoric disponibil",
     "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "Se creează aliasul nou...",
       "namePlaceholderCard": "Ex. Mastercard",
       "namePlaceholderNote": "Ex. Detalii Pașaport",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nou",
       "typeCard": "Card",
       "typeLogin": "Autentificare"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Selectează textul pe care dorești să îl inserezi în câmpul selectat",
     "serverUnavailableMessage": "Serverul este indisponibil momentan. Încearcă din nou mai târziu.",
     "serverUnavailableTitle": "Server indisponibil",
-    "serverVersionNotSupportedContactAdmin": "Versiunea serverului este incompatibilă. Contactează administratorul pentru a actualiza serverul.",
-    "serverVersionNotSupportedMessage": "Versiunea serverului este incompatibila. Actualizează serverul la ultima versiune.",
     "serverVersionNotSupportedTitle": "Actualizare server necesară",
     "sessionExpiredMessage": "Sesiunea ta a expirat. Autentifică-te din nou.",
     "sessionExpiredTitle": "Sesiune expirată",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "aceste date de autentificare",
     "usernameCopied": "Nume de utilizator copiat",
     "usernamePrefix": "Utilizator: ",
-    "versionNotSupportedMessage": "Versiunea aplicației nu mai este compatibilă. Instalează cea mai recentă actualizare.",
     "versionNotSupportedTitle": "Actualizare necesară",
     "viewDetails": "Vezi detalii",
     "website": "Website"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Folosește Passkey-ul Browserului"
   },
   "settings": {
+    "accountSecurity": "Securitate cont",
     "activeOnAllSites": "Activ pe toate site-urile (cu excepția cazului în care este dezactivat mai jos)",
     "advancedOptions": "Opțiuni Avansate",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.",
       "aliasGenerationGenderDescription": "Setează preferința implicită de gen pentru generarea noilor identități.",
       "aliasGenerationLanguageDescription": "Setează limba implicită care va fi utilizată la generarea de noi identități.",
-      "aliasSettingsTitle": "Setări generator de identitate",
       "appLanguageDescription": "Setează limba interfeței aplicației.",
       "appLanguageTitle": "Limba aplicației",
       "autoEmailRefreshLabel": "Actualizare automată a conținutului la primirea e-mailurilor noi",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Domenii publice"
     },
     "globalSettings": "Setări Globale",
+    "groups": {
+      "autofill": "Completare automată",
+      "general": "General",
+      "generators": "Generatoare"
+    },
     "identityGenerator": "Generator de Identitate",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
@@ -1285,7 +1281,7 @@
     },
     "qrScanner": {
       "mobileLogin": {
-        "approve": "Approve login",
+        "approve": "Aprobă autentificarea",
         "codeMismatch": "Numărul nu corespunde. Solicitarea de conectare a fost refuzată.",
         "confirmMessage": "Un alt dispozitiv solicită conectarea la contul tău. Acesta va avea acces complet la seiful tău. Continuă doar dacă tu ai inițiat această conectare.",
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Dezactivarea autentificării cu doi factori a eșuat.",
         "pageDescription": "Dezactivarea autentificării cu doi factori înseamnă că te vei putea autentifica folosind doar parola.",
         "pageTitle": "Dezactivare autentificare cu doi factori",
-        "statusMessage": "Autentificarea cu doi factori este în prezent activată. Dezactivează-o pentru a-ți putea accesa seiful doar cu parola.",
         "twoFactorDisabledSuccess": "Autentificarea cu doi factori a fost dezactivată cu succes.",
-        "twoFactorNotEnabled": "Autentificarea cu doi factori nu este activată.",
-        "warningMessage": "Atenție: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când vei dori să reactivezi autentificarea cu doi factori, va trebui să configurezi din nou aplicația."
+        "twoFactorNotEnabled": "Autentificarea cu doi factori nu este activată."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Activarea autentificării cu doi factori a eșuat.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Autentificarea cu doi factori este în prezent dezactivată. Pentru a îmbunătăți securitatea contului tău, îți recomandăm să o activezi.",
-        "enabledMessage": "Autentificarea cu doi factori este în prezent activată."
+        "enabledMessage": "Autentificarea cu doi factori este în prezent activată.",
+        "notEnabledWarning": "Seiful tău este accesibil în prezent doar cu parola principală. Îți recomandăm să activezi autentificarea în doi pași pentru a spori securitatea contului."
       }
     },
     "selectLanguage": "Selectează limba",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Configurează URL-ul serverului AliasVault pentru instanțele self-hosted",
     "serverUrl": "URL Server",
     "serverVersion": "Versiune server",
+    "sessionsAndLogs": "Sesiuni și jurnale",
+    "sessionsAndLogsDescription": "Vezi unde ești autentificat și verifică încercările recente de autentificare.",
     "siteSpecificSettings": "Setări specifice site-ului",
     "storageInsights": {
       "breadcrumbTitle": "Informații despre stocare",
@@ -1470,7 +1467,7 @@
       "deleteAllLogosButton": "Șterge toate logo-urile",
       "deleteAllLogosConfirmMessage": "Această acțiune va elimina toate logo-urile stocate din seiful tău și va șterge logo-ul asociat fiecărui cont. Le poți descărca din nou oricând. Continui?",
       "deleteAllLogosConfirmTitle": "Ștergi toate logo-urile?",
-      "deleteAllLogosSuccessMessage": "Removed the logo of {{count}} items.",
+      "deleteAllLogosSuccessMessage": "Logo-ul a fost eliminat de la {{count}} elemente.",
       "itemsWithAttachmentsLabel": "Elemente cu atașamente",
       "itemsWithLogosLabel": "Elemente cu logo",
       "logoManagementDescription": "Logo-urile sunt preluate din favicon-ul fiecărui site al elementului. Poți șterge toate logo-urile pentru a elibera spațiu sau le poți descărca din nou pentru a obține versiuni îmbunătățite.",
@@ -1480,9 +1477,9 @@
       "redownloadAllLogosButton": "Descarcă din nou toate logo-urile",
       "redownloadAllLogosConfirmMessage": "Această acțiune reîncarcă favicon-ul pentru fiecare cont care are o adresă URL, înlocuind logo-ul existent. În funcție de dimensiunea seifului, acest proces poate dura ceva timp. Continui?",
       "redownloadAllLogosConfirmTitle": "Descarci din nou toate logo-urile?",
-      "redownloadAllLogosSuccessMessage": "Updated the logo of {{count}} items.",
-      "serverTotalDescription": "The exact size of your encrypted vault as stored on the server, including attachments and logos.",
-      "serverTotalTitle": "Vault size on server",
+      "redownloadAllLogosSuccessMessage": "Logo-ul a fost actualizat pentru {{count}} elemente.",
+      "serverTotalDescription": "Mărimea exactă a seifului tău criptat, așa cum este stocat pe server, inclusiv atașamentele și logo-urile.",
+      "serverTotalTitle": "Mărimea seifului pe server",
       "topAttachmentsDescription": "Top 10 cele mai mari atașamente de fișiere. Șterge-le dacă nu mai ai nevoie de ele.",
       "topAttachmentsTitle": "Cele mai mari atașamente",
       "topLogosDescription": "Top 10 cele mai utilizate logo-uri de servicii. Logo-urile sunt reutilizate pentru elementele cu același domeniu.",
@@ -1557,10 +1554,10 @@
     "syncing": "Se sincronizează...",
     "tapToRetry": "Apasă pentru a reîncerca sincronizarea",
     "versionNotSupported": {
-      "contactSupport": "If the issue persists, contact our support team for help.",
-      "notCompatible": "The version of this vault is not compatible with your client.",
-      "title": "Vault version not supported",
-      "updateInstructions": "Please update to the latest version of AliasVault, refresh this page, and try again."
+      "contactSupport": "Dacă problema persistă, contactează echipa noastră de asistență pentru ajutor.",
+      "notCompatible": "Versiunea acestui seif nu este compatibilă cu aplicația ta.",
+      "title": "Versiunea seifului nu este acceptată",
+      "updateInstructions": "Actualizează AliasVault la cea mai recentă versiune, reîncarcă această pagină și încearcă din nou."
     }
   },
   "totp": {
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Se verifică actualizările seifului",
     "checkingVaultUpdates": "Se verifică actualizările seifului",
     "errors": {
-      "appOutdated": "Această versiune a aplicației este incompatibilă cu versiunea (mai nouă) a seifului. Actualizează aplicația AliasVault pentru a continua.",
       "failedToGetEncryptedDatabase": "Eșec la obținerea bazei de date criptate",
       "passwordChangeRequiresOnline": "Schimbarea parolei tale necesită o conexiune la internet. Reîncearcă atunci când ești online.",
-      "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a putea utiliza această aplicație mobilă. Contactează asistența dacă ai nevoie de ajutor.",
-      "usernameNotFound": "Numele de utilizator nu a fost găsit",
-      "vaultOutdated": "Seiful tău este incompatibil. Este necesară autentificarea pe site-ul AliasVault pentru a urma pașii indicați.",
-      "versionNotSupported": "Această versiune a aplicației mobile AliasVault nu mai este compatibilă cu serverul. Actualizează aplicația la cea mai recentă versiune."
+      "usernameNotFound": "Numele de utilizator nu a fost găsit"
     },
     "mergingVault": "Se îmbină modificările seifului...",
     "savingChangesToVault": "Se salvează modificările în seif",

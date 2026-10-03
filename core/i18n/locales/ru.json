@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "Неверный код аутентификатора. Пожалуйста, попробуйте снова.",
     "INVALID_RECOVERY_CODE": "Неверный код восстановления. Пожалуйста, попробуйте снова.",
     "INVALID_REFRESH_TOKEN": "Недопустимый токен обновления.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Указанный пароль не совпадает с вашим текущим паролем.",
     "PENDING_MIGRATIONS": "Есть незавершённые миграции. Запустите 'dotnet ef database update', чтобы применить их.",
     "PUBLIC_REGISTRATION_DISABLED": "Регистрация новых аккаунтов на этом сервере отключена. Пожалуйста, свяжитесь с администратором.",
     "REFRESH_TOKEN_REQUIRED": "Требуется токен обновления.",
     "REGISTRATION_FAILED": "Не удалось создать учетную запись. Повторите попытку через несколько минут. Если проблема сохранится, обратитесь в службу поддержки.",
+    "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
     "USERNAME_ALREADY_IN_USE": "Имя пользователя уже используется.",
     "USERNAME_AVAILABLE": "Имя пользователя доступно.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Имя пользователя не может быть пустым или содержать пробелы.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Вложение успешно удалено.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
     "openExpandedWindow": "Открыть расширенное окно",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "Код аутентификации",
     "authCodeNote": "Примечание: если у вас нет доступа к устройству аутентификации, вы можете сбросить ваш 2FA с помощью кода восстановления, войдя в систему через сайт.",
-    "autoCloseUnlockPopup": "Закрывать окно после входа",
     "biometricPrompt": "Вы хотите использовать {{biometric}} для разблокировки вашего хранилища?",
     "browseVault": "Обзор содержимого хранилища",
-    "closePopup": "Закрыть окно",
     "confirmLogout": "Вы уверены, что хотите выйти? Вам необходимо повторно войти в систему, используя свой мастер-пароль, чтобы получить доступ к своему хранилищу.",
     "connectingTo": "Подключение к",
     "createNewVault": "Создать новое хранилище",
@@ -95,8 +96,7 @@
       "httpError": "Ошибка HTTP: {{status}}",
       "networkError": "Не удалось выполнить сетевой запрос. Пожалуйста, проверьте подключение к Интернету и повторите попытку.",
       "networkErrorSelfHosted": "Не удалось выполнить сетевой запрос. Проверьте сетевое подключение и доступность сервера. Для автономных экземпляров убедитесь, что у вас установлен действующий SSL сертификат. Самозаверяющие сертификаты не поддерживаются на мобильных устройствах по соображениям безопасности.",
-      "serverErrorSelfHosted": "Не удалось связаться с API. Для автономных экземпляров, пожалуйста, убедитесь, что конечная точка API доступна, перейдя к ней в браузере: на экране должно отображаться \"ОК\".",
-      "sessionExpired": "Срок действия вашего сеанса истек. Пожалуйста, войдите в систему еще раз."
+      "serverErrorSelfHosted": "Не удалось связаться с API. Для автономных экземпляров, пожалуйста, убедитесь, что конечная точка API доступна, перейдя к ней в браузере: на экране должно отображаться \"ОК\"."
     },
     "forgotPassword": {
       "contactAdministrator": "Если вы недавно сменили пароль и испытываете трудности со входом с новым паролем, обратите внимание, что администратор сервера может восстановить более раннюю резервную копию вашего хранилища, чтобы помочь вам. В этом случае, пожалуйста, свяжитесь с администратором сервера.",
@@ -162,6 +162,8 @@
         "welcomeMessage": "Отлично! Теперь давайте настроим ваш мастер-пароль для AliasVault."
       },
       "passwordStepTitle": "Установить пароль",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Настройка",
       "termsAndConditionsStepTitle": "Использование AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "Не удалось подключиться к серверам AliasVault. Пожалуйста, попробуйте позже.",
       "enterMasterPasswordDescription": "Введите мастер‑пароль, чтобы разблокировать хранилище.",
-      "incorrectPasswordError": "Неверный пароль. Пожалуйста, повторите ввод или выйдите и войдите снова.",
       "loggingInWithWebAuthn": "Вход по ключу доступа...",
       "quickUnlockDescription": "Быстро разблокируйте хранилище с помощью ключа доступа. В качестве запасного варианта можно войти по паролю.",
-      "sessionTimedOutError": "Время сессии истекло. Пожалуйста, войдите снова.",
       "unlockButton": "Разблокировать",
       "unlockWithMobileButton": "Разблокировать через мобильное приложение",
       "unlockWithWebAuthn": "Разблокировать ключом﻿ доступа",
       "webAuthnNotSupportedError": "Ваш браузер не поддерживает расширение WebAuthn PRF. Пожалуйста, войдите с помощью пароля."
     },
-    "unlockSuccessDescription": "Теперь вы можете использовать автозаполнение форм входа в Вашем браузере.",
-    "unlockSuccessTitle": "Ваше хранилище успешно разблокировано",
     "unlockTitle": "Разблокировать хранилище",
     "unlockVault": "Разблокировать хранилище",
     "unlockWithBiometric": "Разблокировать через {{biometric}}",
@@ -225,7 +223,6 @@
     "back": "Назад",
     "backspace": "Backspace",
     "cancel": "Отмена",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Очистить буфер обмена"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "Пароли не совпадают.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "Это расширение браузера устарело и не может быть использовано для доступа к этому хранилищу. Пожалуйста, обновите расширение, чтобы продолжить.",
-      "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Введите корректный 6-значный код подтверждения.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +267,13 @@
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "serverVersionNotSupported": "Чтобы использовать это расширение для браузера, сервер AliasVault необходимо обновить до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
-      "serverVersionTooOld": "Сервер AliasVault необходимо обновить до более новой версии, чтобы использовать эту функцию. Если вам нужна помощь, обратитесь к администратору сервера.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Срок действия сессии истек. Войдите снова.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Произошла неизвестная ошибка.",
       "unknownErrorTryAgain": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "Хранилище заблокировано",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "Двухфакторная аутентификация",
     "unavailable": "Unavailable",
     "undo": "Отменить",
+    "updateApp": "Update app",
     "use": "Использовать",
     "username": "Логин",
     "vaultSaveError": "Не удалось сохранить изменения в хранилище. Попробуйте еще раз.",
@@ -735,8 +733,7 @@
     "history": "История",
     "home": {
       "alphabeticalOption": "По алфавиту",
-      "buttonLocationText": "в правом верхнем углу.",
-      "createFirstItemText": "Создайте свою первую запись, используя",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "Эта папка пуста.",
       "failedToCreateFolder": "Не удалось создать папку.",
       "failedToDeleteFolder": "Не удалось удалить папку.",
@@ -746,8 +743,6 @@
       "importButtonText": "Импорт из KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Если вы ранее пользовались другим менеджером паролей, вы можете импортировать из него свои записи.",
       "loadingMore": "Загружаем еще...",
-      "newAliasButtonText": "\"+ Новый псевдоним\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Записей пока нет",
       "pageDescription": "Ниже вы найдете все ваши записи.",
       "sortOrderLabel": "Порядок сортировки",
@@ -769,16 +764,16 @@
     "loginCredentials": "Данные для авторизации",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "Создаём новый псевдоним...",
       "namePlaceholderCard": "Например, Mastercard",
       "namePlaceholderNote": "Например: Данные паспорта",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Новый",
       "typeCard": "Карта",
       "typeLogin": "Логин"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Выберите текст для вставки в выделенное поле ввода",
     "serverUnavailableMessage": "Сервер в настоящее время недоступен. Повторите попытку позже.",
     "serverUnavailableTitle": "Сервер недоступен",
-    "serverVersionNotSupportedContactAdmin": "Версия сервера устарела. Свяжитесь с вашим администратором для обновления сервера.",
-    "serverVersionNotSupportedMessage": "Версия сервера устарела. Обновите сервер до последней версии.",
     "serverVersionNotSupportedTitle": "Требуется обновление сервера",
     "sessionExpiredMessage": "Ваша сессия истекла. Пожалуйста, войдите снова.",
     "sessionExpiredTitle": "Сессия истекла",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "эта запись",
     "usernameCopied": "Имя пользователя скопировано",
     "usernamePrefix": "Имя пользователя: ",
-    "versionNotSupportedMessage": "Ваша версия приложения больше не поддерживается. Обновите приложение до последней версии.",
     "versionNotSupportedTitle": "Требуется обновление",
     "viewDetails": "Просмотреть подробности",
     "website": "Сайт"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Использовать ключ доступа из браузера﻿"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Активен на всех сайтах (если не отключен ниже)",
     "advancedOptions": "Дополнительные параметры",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Установите диапазон возраста по умолчанию для создания новых личностей. Это влияет на дату рождения, назначаемую сгенерированной личности.",
       "aliasGenerationGenderDescription": "Установите предпочтительный пол по умолчанию для генерации новых личностей.",
       "aliasGenerationLanguageDescription": "Задайте язык по умолчанию, который будет использоваться при создании новых личностей.",
-      "aliasSettingsTitle": "Настройки генератора личностей",
       "appLanguageDescription": "Выберите язык интерфейса приложения.",
       "appLanguageTitle": "Язык приложения",
       "autoEmailRefreshLabel": "Автоматически обновлять список писем при получении новых",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Публичные домены"
     },
     "globalSettings": "Глобальные настройки",
+    "groups": {
+      "autofill": "Автозаполнение",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Генератор личности",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Установите диапазон возраста для генерации новых личностей.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Не удалось отключить двухфакторную аутентификацию.",
         "pageDescription": "Отключение двухфакторной аутентификации означает, что вы сможете войти в систему, используя только свой пароль.",
         "pageTitle": "Отключить двухфакторную аутентификацию",
-        "statusMessage": "В настоящее время включена двухфакторная аутентификация. Отключите ее, чтобы иметь возможность доступа к вашему хранилищу только с помощью вашего пароля.",
         "twoFactorDisabledSuccess": "Теперь двухфакторная аутентификация успешно отключена.",
-        "twoFactorNotEnabled": "Двухфакторная аутентификация не включена.",
-        "warningMessage": "Пожалуйста, обратите внимание: после отключения двухфакторной аутентификации все настроенные приложения-аутентификаторы перестанут работать. Если вы захотите снова включить двухфакторную аутентификацию, вам придется снова настроить приложения-аутентификаторы."
+        "twoFactorNotEnabled": "Двухфакторная аутентификация не включена."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Не удалось включить двухфакторную аутентификацию.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Двухфакторная аутентификация сейчас отключена. Чтобы повысить безопасность вашего аккаунта, мы рекомендуем включить её.",
-        "enabledMessage": "Двухфакторная аутентификация сейчас включена."
+        "enabledMessage": "Двухфакторная аутентификация сейчас включена.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Выбрать язык",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Настройте URL-адрес сервера AliasVault для самостоятельно размещенных экземпляров",
     "serverUrl": "URL-адрес сервера",
     "serverVersion": "Версия сервера",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Настройки для конкретного сайта",
     "storageInsights": {
       "breadcrumbTitle": "Анализ памяти",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Проверка наличия обновлений в хранилище",
     "checkingVaultUpdates": "Проверка обновлений хранилища",
     "errors": {
-      "appOutdated": "Это приложение устарело и не может быть использовано для доступа к этой (более новой) версии хранилища. Пожалуйста, обновите приложение AliasVault, чтобы продолжить.",
       "failedToGetEncryptedDatabase": "Не удалось получить зашифрованную базу данных",
       "passwordChangeRequiresOnline": "Для смены пароля требуется подключение к интернету. Повторите попытку, когда будете в сети.",
-      "serverVersionNotSupported": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до новой версии. Если вам нужна помощь, обратитесь в службу поддержки.",
-      "usernameNotFound": "Имя пользователя не найдено",
-      "vaultOutdated": "Ваше хранилище устарело. Пожалуйста, войдите на сайт AliasVault и следуйте инструкциям.",
-      "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии."
+      "usernameNotFound": "Имя пользователя не найдено"
     },
     "mergingVault": "Объединение изменений в хранилище...",
     "savingChangesToVault": "Сохранение изменений в хранилище",

@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "קוד מאמת שגוי. נא לנסות שוב.",
     "INVALID_RECOVERY_CODE": "קוד שחזור שגוי. נא לנסות שוב.",
     "INVALID_REFRESH_TOKEN": "אסימון ריענון שגוי.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "הסיסמה שסופקה לא תואמת לסיסמה הנוכחית שלך.",
     "PENDING_MIGRATIONS": "יש הסבות ממתינות. נא להריץ את הפקודה ‚dotnet ef database update’ כדי להחיל אותן.",
     "PUBLIC_REGISTRATION_DISABLED": "רישום חשבון חדש מושבת כרגע בשרת הזה. נא ליצור קשר עם ההנהלה.",
     "REFRESH_TOKEN_REQUIRED": "אסימון ריענון חובה.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
+    "UNKNOWN_ERROR": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
     "USERNAME_ALREADY_IN_USE": "שם המשתמש תפוס.",
     "USERNAME_AVAILABLE": "שם המשתמש פנוי.",
     "USERNAME_EMPTY_OR_WHITESPACE": "שם המשתמש לא יכול להיות ריק או מורכב מרווחים בלבד.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "קוד אימות",
     "authCodeNote": "לתשומת ליבך: אם אין לך גישה להתקן המאמת (authenticator) שלך, אפשר לאפס אימות דו־שלבי עם קוד שחזור על ידי כניסה דרך האתר.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
     "biometricPrompt": "להשתמש ב־{{biometric}} כדי לשחרר את נעילת הכספת שלך?",
     "browseVault": "עיון בתוכן הכספת",
-    "closePopup": "סגירת החלונית הצצה הזאת",
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "connectingTo": "מתבצעת התחברות אל",
     "createNewVault": "יצירת כספת חדשה",
@@ -95,8 +96,7 @@
       "httpError": "שגיאת HTTP:‏ {{status}}",
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
       "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
-      "serverErrorSelfHosted": "לא ניתן להגיע ל־API. למערכות באירוח עצמי, נא לאמת שנקודת ה־API נגישה על ידי ניווט אליה בדפדפן: היא אמורה להציג ‚OK’ (תקין).",
-      "sessionExpired": "משך ההפעלה שלך פג. נא להיכנס שוב."
+      "serverErrorSelfHosted": "לא ניתן להגיע ל־API. למערכות באירוח עצמי, נא לאמת שנקודת ה־API נגישה על ידי ניווט אליה בדפדפן: היא אמורה להציג ‚OK’ (תקין)."
     },
     "forgotPassword": {
       "contactAdministrator": "אם החלפת את הסיסמה שלך לאחרונה ועולים כעת קשיים בכניסה למערכת עם הסיסמה החדשה שלך, נא לשים לב שמנהלי השרת יוכלו כפי הנראה לשחזר גיבוי מוקדם יותר של הכספת שלך כדי לעזור לך. אם זה המצב, נא ליצור קשר עם מנהלי השרת.",
@@ -162,6 +162,8 @@
         "welcomeMessage": "מעולה! עכשיו בוא נגדיר את סיסמת העל שלך ל־AliasVault."
       },
       "passwordStepTitle": "הגדרת סיסמה",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "הגדרות",
       "termsAndConditionsStepTitle": "שימוש ב־AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "החיבור לשרתי ה־AliasVault נכשל. נא לנסות שוב (בהמשך).",
       "enterMasterPasswordDescription": "נא למלא את סיסמת העל שלך כדי לשחרר את הכספת שלך.",
-      "incorrectPasswordError": "הסיסמה שגויה. נא לנסות למלא את הסיסמה שלך שוב או לצאת ולהיכנס מחדש.",
       "loggingInWithWebAuthn": "Logging in with passkey...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "הזמן שהוקצב להפעלה שלך הסתיים. נא להיכנס מחדש.",
       "unlockButton": "שחרור נעילה",
       "unlockWithMobileButton": "Unlock with Mobile App",
       "unlockWithWebAuthn": "Unlock with passkey",
       "webAuthnNotSupportedError": "הדפדפן הנוכחי שלך לא תומך בהרחבת PRF (פונקציה אקראית מדומה) של WebAuthn. נא להיכנס עם הסיסמה שלך במקום."
     },
-    "unlockSuccessDescription": "מעתה ניתן להשתמש בהשלמה אוטומטית בטופסי כניסה בדפדפן שלך.",
-    "unlockSuccessTitle": "נעילת הכספת שלך נפתחה בהצלחה",
     "unlockTitle": "שחרור נעילת הכספת שלך",
     "unlockVault": "שחרור נעילת כספת",
     "unlockWithBiometric": "Unlock with {{biometric}}",
@@ -225,7 +223,6 @@
     "back": "חזרה",
     "backspace": "Backspace",
     "cancel": "ביטול",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "פינוי לוח הגזירים"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "הסיסמאות לא תואמות.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "הרחבת הדפדפן הזאת לא עדכנית ואי אפשר להשתמש בה כדי לגשת לכספת הזאת. נא לעדכן את הרחבת הדפדפן הזאת כדי להמשיך.",
-      "clientVersionNotSupported": "הגרסה הזאת של הרחבת הדפדפן של AliasVault לא נתמכת עוד על ידי השרת. נא לעדכן את הרחבת הדפדפן שלך לגרסה העדכנית ביותר.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,13 +267,13 @@
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
       "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
-      "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש בהרחבת הדפדפן הזאת. נא ליצור קשר עם התמיכה לקבלת עזרה.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "אירעה שגיאה לא ידועה.",
       "unknownErrorTryAgain": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
       "vaultIsLocked": "הכספת נעולה",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "אימות דו־שלבי",
     "unavailable": "Unavailable",
     "undo": "הסגה",
+    "updateApp": "Update app",
     "use": "להשתמש",
     "username": "שם משתמש",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -735,8 +733,7 @@
     "history": "History",
     "home": {
       "alphabeticalOption": "לפי האלפבית",
-      "buttonLocationText": "בפינה השמאלית העליונה.",
-      "createFirstItemText": "Create your first item using the",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
       "failedToDeleteFolder": "Failed to delete folder.",
@@ -746,8 +743,6 @@
       "importButtonText": "אפשר לייבא מ־KeePass,‏ Bitwarden,‏ Chrome,‏ Firefox…",
       "importItemsText": "If you previously used a different password manager, you can import your items from it.",
       "loadingMore": "Loading more...",
-      "newAliasButtonText": "„+ כינוי חדש”",
-      "newAliasButtonTextMobile": "„+”",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
       "sortOrderLabel": "סדר מיון",
@@ -769,16 +764,16 @@
     "loginCredentials": "פרטי הגישה",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "נוצר כינוי חדש…",
       "namePlaceholderCard": "E.g. Mastercard",
       "namePlaceholderNote": "E.g. Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
       "typeLogin": "כניסה"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "נא לבחור טקסט למילוי בשדה הקלט שעליו המיקוד",
     "serverUnavailableMessage": "השרת לא זמין כרגע. נא לנסות שוב מאוחר יותר.",
     "serverUnavailableTitle": "השרת לא זמין",
-    "serverVersionNotSupportedContactAdmin": "גרסת השרת מיושנת. נא ליצור קשר עם הנהלת השרת ולבקש מהם לעדכן אותו.",
-    "serverVersionNotSupportedMessage": "גרסת השרת לא עדכנית. נא לעדכן את השרת שלך לגרסה העדכנית ביותר.",
     "serverVersionNotSupportedTitle": "יש לעדכן את השרת",
     "sessionExpiredMessage": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
     "sessionExpiredTitle": "פג תוקף ההפעלה",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "שם המשתמש הועתק",
     "usernamePrefix": "שם משתמש: ",
-    "versionNotSupportedMessage": "גרסת היישום שלך לא נתמכת עוד. נא לעדכן לגרסה העדכנית ביותר.",
     "versionNotSupportedTitle": "נדרש עדכון",
     "viewDetails": "הצגת פרטים",
     "website": "אתר"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "פעיל בכל האתרים (למעט אם נכבה להלן)",
     "advancedOptions": "אפשרויות מתקדמות",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "הגדרת טווח הגילים כברירת המחדל ליצירת זהויות חדשות. ההגדרות הזאת משפיעה על תאריך הלידה שמוקצית לזהות שנוצרת.",
       "aliasGenerationGenderDescription": "להגדיר את אפשרויות המגדר ליצירת זהויות חדשות כברירת מחדל.",
       "aliasGenerationLanguageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות כברירת מחדל.",
-      "aliasSettingsTitle": "הגדרות מחולל זהויות",
       "appLanguageDescription": "הגדרת שפת ממשק המשתמש.",
       "appLanguageTitle": "שפת היישום",
       "autoEmailRefreshLabel": "לרענן תוכן הודעות דוא״ל כשמגיעה הודעה חדשה",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "שמות תחום ציבוריים"
     },
     "globalSettings": "הגדרות מקיפות",
+    "groups": {
+      "autofill": "השלמה אוטומטית",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "מייצר זהויות",
     "identityGeneratorSettings": {
       "ageRangeDescription": "הגדרת טווח גילים ליצירת זהויות חדשות.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "כיבוי אימות דו־שלבי נכשל.",
         "pageDescription": "השבתת אימות דו־שלבי תגרור לכך שאפשר יהיה להיכנס עם הסיסמה שלך בלבד.",
         "pageTitle": "השבתת אימות דו־שלבי",
-        "statusMessage": "אימות דו־שלבי פעיל כרגע. יש להשבית אותו כדי שיתאפשר לך לגשת לכספת שלך עם הסיסמה שלך בלבד.",
         "twoFactorDisabledSuccess": "אימות דו־שלבי מושבת כרגע בהצלחה.",
-        "twoFactorNotEnabled": "אימות דו־שלבי אינו פעיל.",
-        "warningMessage": "לתשומת ליבך: לאחר כיבוי אימות דו־שלבי כל יישום מאמת שהוא יפסיק לעבור. כדי להפעיל אימות דו־שלבי יש להגדיר את יישום המאמת שוב."
+        "twoFactorNotEnabled": "אימות דו־שלבי אינו פעיל."
       },
       "enable2fa": {
         "failedToEnable2Fa": "הפעלת אימות דו־שלבי נכשל.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "אימות דו־שלבי כבוי כרגע. כדי לשפר את אבטחת החשבון שלך מומלץ להפעיל אותו.",
-        "enabledMessage": "אימות דו־שלבי פעיל כרגע."
+        "enabledMessage": "אימות דו־שלבי פעיל כרגע.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "בחירת שפה",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "הגדרת כתובת שרת AliasVault לעותקים באירוח עצמי",
     "serverUrl": "כתובת שרת",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "הגדרות תואמות אתר",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
     "checkingVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
     "errors": {
-      "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
       "failedToGetEncryptedDatabase": "משיכת מסד הנתונים המוצפן נכשלה",
       "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
-      "usernameNotFound": "שם המשתמש לא נמצא",
-      "vaultOutdated": "הכספת שלך לא עדכנית. נא להיכנס לאתר AliasVault ולעקוב אחר ההנחיות.",
-      "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר."
+      "usernameNotFound": "שם המשתמש לא נמצא"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "השינוים לכספת נשמרים",

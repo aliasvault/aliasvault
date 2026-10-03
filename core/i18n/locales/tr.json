@@ -1,29 +1,31 @@
 {
   "apiErrors": {
-    "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
-    "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
-    "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
-    "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
+    "ACCOUNT_BLOCKED": "Hesabınız devre dışı bırakıldı. Bunun bir hata olduğunu düşünüyorsanız lütfen destek ekibiyle iletişime geçin.",
+    "ACCOUNT_LOCKED": "Çok fazla hatalı deneme nedeniyle hesabınız geçici olarak kilitlendi. Lütfen daha sonra tekrar deneyin.",
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Hesabınız başarıyla silinmiştir.",
+    "CLAIM_DOES_NOT_EXIST": "E-postalar yüklenirken bir hata oluştu. Veritabanını senkronize etmek için lütfen kimlik bilgisi kaydını düzenleyip kaydedin, ardından tekrar deneyin.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Seçilen e posta adresi zaten kullanılıyor. Lütfen bu kimlik bilgisini düzenleyerek e posta adresini değiştirin.",
     "INTERNAL_SERVER_ERROR": "Internal server error.",
     "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
     "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "The provided password does not match your current password.",
     "PENDING_MIGRATIONS": "There are pending migrations. Please run 'dotnet ef database update' to apply them.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "REGISTRATION_FAILED": "Could not create the account. Please try again in a few minutes. If this problem persists, please contact support.",
-    "USERNAME_ALREADY_IN_USE": "Username is already in use.",
-    "USERNAME_AVAILABLE": "Username is available.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
+    "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",
+    "USERNAME_ALREADY_IN_USE": "Bu kullanıcı ismi zaten kullanılıyor.",
+    "USERNAME_AVAILABLE": "Kullanıcı ismi kullanılabilir.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Kullanıcı adı boş olamaz veya yalnızca boşluklardan oluşamaz.",
     "USERNAME_INVALID_CHARACTERS": "Username is invalid, can only contain letters or digits.",
-    "USERNAME_INVALID_EMAIL": "Invalid email address.",
+    "USERNAME_INVALID_EMAIL": "Geçersiz e-posta adresi.",
     "USERNAME_MISMATCH": "Username does not match the current user.",
     "USERNAME_REQUIRED": "Kullanıcı adı gereklidir.",
-    "USERNAME_TOO_LONG": "Username too long: cannot be longer than 40 characters.",
-    "USERNAME_TOO_SHORT": "Username too short: must be at least 3 characters long.",
-    "USER_NOT_FOUND": "Invalid username or password. Please try again.",
+    "USERNAME_TOO_LONG": "Kullanıcı ismi çok uzun: 40 karakterden fazla olamaz.",
+    "USERNAME_TOO_SHORT": "Kullanıcı ismi çok kısa: en az 3 karakter uzunluğuna olmalıdır.",
+    "USER_NOT_FOUND": "Geçersiz kullanıcı ismi veya şifre. Lütfen tekrar deneyin.",
     "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again.",
     "VAULT_NOT_UP_TO_DATE": "Your vault is not up-to-date. Please synchronize your vault and try again."
   },
@@ -40,16 +42,16 @@
       "headerValue": "Header value",
       "selfHosted": "Self-hosted",
       "title": "API Connection",
-      "version": "Version: {{version}}"
+      "version": "{{version}} Sürümü"
     },
     "navigation": {
-      "login": "Login",
-      "loginSettings": "Login Settings"
+      "login": "Giriş",
+      "loginSettings": "Giriş Ayarları"
     },
     "notFound": {
-      "goHome": "Go back to the start",
-      "message": "This page has been moved or deleted.",
-      "title": "Page not found"
+      "goHome": "Başlangıca geri dönün",
+      "message": "Bu sayfa taşınmış veya silinmiş.",
+      "title": "Sayfa bulunamadı"
     },
     "reinitialize": {
       "attemptingToUnlockMessage": "Attempting to unlock.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Attachment deleted successfully.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
     "openExpandedWindow": "Open Expanded Window",
     "uploadError": "Error uploading file: {{error}}",
@@ -77,11 +80,9 @@
   },
   "auth": {
     "authCode": "Doğrulama Kodu",
-    "authCodeNote": "Not: Kimlik doğrulayıcı cihazınıza erişiminiz yoksa, web sitesinden giriş yaparak kurtarma kodu ile iki adımlı doğrulamayı sıfırlayabilirsiniz.",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "authCodeNote": "Not: Kimlik doğrulayıcı cihazınıza erişiminiz yoksa, internet sitesinden giriş yaparak kurtarma kodu ile 2 aşamalı doğrulamayı sıfırlayabilirsiniz.",
     "biometricPrompt": "Kasayı açmak için {{biometric}} kullanmak ister misiniz?",
     "browseVault": "Browse vault contents",
-    "closePopup": "Close this popup",
     "confirmLogout": "Çıkış yapmak istediğinizden emin misiniz? Kasaya erişmek için tekrar ana parolanızla giriş yapmanız gerekecek.",
     "connectingTo": "Bağlanıyor",
     "createNewVault": "Yeni kasa oluştur",
@@ -95,8 +96,7 @@
       "httpError": "HTTP hatası: {{status}}",
       "networkError": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
       "networkErrorSelfHosted": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı ve sunucunun erişilebilirliğini kontrol edin. Kendi sunucunuzu kullanıyorsanız, geçerli bir SSL sertifikası yüklü olduğundan emin olun. Güvenlik nedeniyle mobil cihazlarda kendi imzaladığınız sertifikalar desteklenmez.",
-      "serverErrorSelfHosted": "API’ye ulaşılamadı. Kendi sunucunuzu kullanıyorsanız, API uç noktasına tarayıcıdan erişilebilir olduğunu kontrol edin: sayfada “Tamam” görünmelidir.",
-      "sessionExpired": "Oturumun zaman aşımına uğradı. Lütfen tekrar giriş yap."
+      "serverErrorSelfHosted": "API’ye ulaşılamadı. Kendi sunucunuzu kullanıyorsanız, API uç noktasına tarayıcıdan erişilebilir olduğunu kontrol edin: sayfada “Tamam” görünmelidir."
     },
     "forgotPassword": {
       "contactAdministrator": "If you've recently changed your password and are experiencing difficulties signing in with your new password, please note that the server administrator may be able to recover an earlier backup of your vault to assist you. If this is the case, please contact the server administrator.",
@@ -116,7 +116,7 @@
       "loginRequestErrorMessage": "An error occurred while processing the login request.",
       "loginWithAuthenticatorLink": "Log in with an authenticator code instead.",
       "loginWithRecoveryCodeLink": "Log in with a recovery code instead.",
-      "lostPasswordLink": "Lost Password?",
+      "lostPasswordLink": "Şifrenizi mi unuttunuz?",
       "recoveryCodeDescription": "You have requested to log in with a recovery code. A recovery code is a one-time code that can be used to log in to your account. Note that if you don't manually disable 2FA after login, you will be asked for an authenticator code again at the next login.",
       "recoveryCodeLabel": "Recovery Code",
       "recoveryCodeVerificationTitle": "Recovery code verification",
@@ -124,11 +124,11 @@
       "rememberMachineLabel": "Remember this machine",
       "twoFactorAuthenticationDescription": "Your login is protected with an authenticator app. Enter your authenticator code below.",
       "verifyingRecoveryCodeMessage": "Verifying recovery code...",
-      "verifyingTwoFactorCodeMessage": "Verifying 2FA code..."
+      "verifyingTwoFactorCodeMessage": "2 Aşamalı Doğrulama kodu doğrulanıyor..."
     },
-    "loginTitle": "Log in to AliasVault",
-    "loginWithMobile": "Log in using Mobile App",
-    "logoutConfirm": "Are you sure you want to logout?",
+    "loginTitle": "AliasVault'a giriş yap",
+    "loginWithMobile": "Mobil Uygulamayı kullanarak giriş yap",
+    "logoutConfirm": "Çıkış yapmak istediğinizden emin misiniz?",
     "masterPassword": "Master Password",
     "maxAttemptsReached": "Too many failed unlock attempts. You have been logged out for security reasons.",
     "mobileUnlock": {
@@ -140,16 +140,16 @@
     "passwordPlaceholder": "Parolanızı girin",
     "pinInput": "PIN input",
     "register": {
-      "passwordLabel": "Your password",
+      "passwordLabel": "Şifreniz",
       "passwordPlaceholder": "••••••••",
-      "registrationErrorMessage": "An error occurred during registration.",
+      "registrationErrorMessage": "Kayıt olurken bir sorun oluştu.",
       "termsAndConditionsLink": "Terms and Conditions",
-      "usernameOrEmailLabel": "Your username or email"
+      "usernameOrEmailLabel": "Kullanıcı adı veya e-posta"
     },
-    "rememberMe": "Remember me",
+    "rememberMe": "Beni Hatırla",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
     "setup": {
-      "createAccountButton": "Create Account",
+      "createAccountButton": "Hesap Oluştur",
       "creatingStepTitle": "Creating Vault",
       "passwordStep": {
         "confirmMasterPasswordLabel": "Confirm Master Password",
@@ -161,7 +161,9 @@
         "securityPoint3": "Even the server admin cannot restore your access if you forget this password",
         "welcomeMessage": "Great! Now, let's set up your master password for AliasVault."
       },
-      "passwordStepTitle": "Set Password",
+      "passwordStepTitle": "Şifre Oluşturun",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Setup",
       "termsAndConditionsStepTitle": "Using AliasVault",
       "termsStep": {
@@ -192,21 +194,17 @@
     "unlockPage": {
       "connectionFailedError": "Connection with the AliasVault servers failed. Please try again (later).",
       "enterMasterPasswordDescription": "Enter your master password to unlock your vault.",
-      "incorrectPasswordError": "The password is incorrect. Please try entering your password again, or log out and log in again.",
-      "loggingInWithWebAuthn": "Logging in with passkey...",
+      "loggingInWithWebAuthn": "Geçiş Anahtarıyla Giriş Yapılıyor...",
       "quickUnlockDescription": "Quickly unlock your vault using your passkey. Or login with your password as a fallback.",
-      "sessionTimedOutError": "Your session has timed out. Please log in again.",
       "unlockButton": "Kilidi aç",
-      "unlockWithMobileButton": "Unlock with Mobile App",
-      "unlockWithWebAuthn": "Unlock with passkey",
+      "unlockWithMobileButton": "Mobil Uygulamayla Kilidi Aç",
+      "unlockWithWebAuthn": "Geçiş Anahtarıyla Kilidi Aç",
       "webAuthnNotSupportedError": "Your current browser does not support the WebAuthn PRF extension. Please login with your password instead."
     },
-    "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
-    "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockTitle": "Unlock Your Vault",
     "unlockVault": "Kasa Kilidini Aç",
     "unlockWithBiometric": "{{biometric}} ile aç",
-    "unlockWithMobile": "Unlock using Mobile App",
+    "unlockWithMobile": "Mobil Uygulamayı Kullanarak Kilidi Aç",
     "unlockWithPassword": "Şifre ile aç",
     "unlockWithPin": "Şifre ile aç",
     "unlocking": "Kilit açılıyor...",
@@ -225,7 +223,6 @@
     "back": "Geri",
     "backspace": "Backspace",
     "cancel": "İptal",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Panoyu Temizle"
     },
@@ -233,9 +230,9 @@
     "confirm": "Onayla",
     "continue": "Devam",
     "copied": "Panoya kopyalandı",
-    "copiedShort": "Copied!",
-    "copyToClipboard": "Copy to clipboard",
-    "create": "Create",
+    "copiedShort": "Kopyalandı!",
+    "copyToClipboard": "Pano'ya kopyala",
+    "create": "Oluştur",
     "credentials": "Kimlik Bilgileri",
     "customFields": "Custom Fields",
     "delete": "Sil",
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "Parolalar eşleşmiyor.",
     "errors": {
       "backgroundUnresponsive": "The extension background service is not responding. Please close and reopen the extension, or restart your browser if the problem persists.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
-      "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
+      "clientNotSupported": "AliasVault'un bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen son sürüme güncelleyin.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Contact support at {{email}}.",
       "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
       "keyChainUnreadable": "Your password is correct, but the encryption keys of your vault could not be opened. Please contact support.",
@@ -270,16 +267,16 @@
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın.",
       "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Your session has expired. Please log in again.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "unexpectedErrorContactSupport": "An unexpected error occurred. Please try again, and contact support if the problem persists.",
       "unknownError": "Bilinmeyen bir hata oluştu.",
       "unknownErrorTryAgain": "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyiniz.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Your vault data could not be read, so your data is not accessible at this moment. Please contact support.",
-      "vaultIsLocked": "Vault is locked",
-      "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
+      "vaultIsLocked": "Kasa Kilitlendi",
+      "vaultLoadError": "Kasanız yüklenirken bir şeyler yanlış gitti. Lütfen aşağıdaki hata detaylarını kopyalayın ve yardım için destek ekibiyle iletişime geçin.",
       "vaultLoadErrorTitle": "Your vault could not be loaded",
       "vaultNotAvailable": "Vault not available",
       "vaultSyncTimeout": "Vault sync timed out. This can happen when the vault is large or the internet connection is slow. Please try again.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "İki faktörlü kimlik doğrulama",
     "unavailable": "Unavailable",
     "undo": "Undo",
+    "updateApp": "Update app",
     "use": "Kullan",
     "username": "Kullanıcı Adı",
     "vaultSaveError": "Failed to save changes to the vault. Please try again.",
@@ -591,7 +589,7 @@
       "url": "URL"
     },
     "login": {
-      "title": "Login"
+      "title": "Giriş"
     },
     "note": {
       "title": "Note"
@@ -735,8 +733,7 @@
     "history": "History",
     "home": {
       "alphabeticalOption": "Alphabetical",
-      "buttonLocationText": "button in the top right corner.",
-      "createFirstItemText": "Create your first item using the",
+      "createFirstItemManuallyText": "Create your first vault item manually.",
       "emptyFolderMessage": "This folder is empty.",
       "failedToCreateFolder": "Failed to create folder.",
       "failedToDeleteFolder": "Failed to delete folder.",
@@ -746,8 +743,6 @@
       "importButtonText": "Import from KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "If you previously used a different password manager, you can import your items from it.",
       "loadingMore": "Loading more...",
-      "newAliasButtonText": "\"+ New Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "No items yet",
       "pageDescription": "Find all of your items below.",
       "sortOrderLabel": "Sort Order",
@@ -769,16 +764,16 @@
     "loginCredentials": "Giriş bilgileri",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Banking",
+        "dev": "Development",
+        "game": "Games",
+        "health": "Health",
+        "mail": "Mail",
+        "media": "Media",
+        "shopping": "Shopping",
+        "social": "Social",
+        "travel": "Travel",
+        "work": "Work"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,10 +824,9 @@
       "creatingNewAliasMessage": "Creating new alias...",
       "namePlaceholderCard": "E.g. Mastercard",
       "namePlaceholderNote": "E.g. Passport Details",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ New",
       "typeCard": "Card",
-      "typeLogin": "Login"
+      "typeLogin": "Giriş"
     },
     "recentlyDeleted": {
       "allItemsDeleted": "All items permanently deleted",
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Select the text to insert into the focused input field",
     "serverUnavailableMessage": "The server is currently unavailable. Please try again later.",
     "serverUnavailableTitle": "Server Unavailable",
-    "serverVersionNotSupportedContactAdmin": "The server version is outdated. Please contact your administrator to update the server.",
-    "serverVersionNotSupportedMessage": "The server version is outdated. Please update your server to the latest version.",
     "serverVersionNotSupportedTitle": "Server Update Required",
     "sessionExpiredMessage": "Your session has expired. Please sign in again.",
     "sessionExpiredTitle": "Session Expired",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "this credential",
     "usernameCopied": "Username copied",
     "usernamePrefix": "Kullanıcı Adı: ",
-    "versionNotSupportedMessage": "Your app version is no longer supported. Please update to the latest version.",
     "versionNotSupportedTitle": "Update Required",
     "viewDetails": "View Details",
     "website": "Web Sitesi"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Use Browser Passkey"
   },
   "settings": {
+    "accountSecurity": "Account Security",
     "activeOnAllSites": "Active on all sites (unless disabled below)",
     "advancedOptions": "Advanced Options",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.",
       "aliasGenerationGenderDescription": "Set the default gender preference for generating new identities.",
       "aliasGenerationLanguageDescription": "Set the default language that will be used when generating new identities.",
-      "aliasSettingsTitle": "Identity Generator Settings",
       "appLanguageDescription": "Set the language for the application interface.",
       "appLanguageTitle": "Application Language",
       "autoEmailRefreshLabel": "Auto refresh emails content when new ones arrive",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Public Domains"
     },
     "globalSettings": "Global Settings",
+    "groups": {
+      "autofill": "Autofill",
+      "general": "General",
+      "generators": "Generators"
+    },
     "identityGenerator": "Kimlik Oluşturucu",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Set the age range for generating new identities.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Failed to disable two-factor authentication.",
         "pageDescription": "Disabling two-factor authentication means you will be able to login with only your password.",
         "pageTitle": "Disable two-factor authentication",
-        "statusMessage": "Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.",
         "twoFactorDisabledSuccess": "Two-factor authentication is now successfully disabled.",
-        "twoFactorNotEnabled": "Two-factor authentication is not enabled.",
-        "warningMessage": "Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again."
+        "twoFactorNotEnabled": "Two-factor authentication is not enabled."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Failed to enable two-factor authentication.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Two factor authentication is currently disabled. In order to improve your account security we advise you to enable it.",
-        "enabledMessage": "Two factor authentication is currently enabled."
+        "enabledMessage": "Two factor authentication is currently enabled.",
+        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
       }
     },
     "selectLanguage": "Select Language",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
     "serverUrl": "Server URL",
     "serverVersion": "Server version",
+    "sessionsAndLogs": "Sessions & Logs",
+    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
     "siteSpecificSettings": "Site-Specific Settings",
     "storageInsights": {
       "breadcrumbTitle": "Storage insights",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Kasa güncellemeleri kontrol ediliyor",
     "checkingVaultUpdates": "Kasa güncellemeleri kontrol ediliyor",
     "errors": {
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "failedToGetEncryptedDatabase": "Şifrelenmiş veritabanı alınamadı",
       "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online.",
-      "serverVersionNotSupported": "Bu mobil uygulamayı kullanabilmek için AliasVault sunucusunun daha yeni bir sürüme güncellenmesi gerekiyor. Yardıma ihtiyacınız olursa lütfen destek ile iletişime geçin.",
-      "usernameNotFound": "Kullanıcı adı bulunamadı",
-      "vaultOutdated": "Kasınız güncel değil. Lütfen AliasVault web sitesinden giriş yapın ve gerekli adımları izleyin.",
-      "versionNotSupported": "AliasVault mobil uygulamasının bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen uygulamanızı en son sürüme güncelleyin."
+      "usernameNotFound": "Kullanıcı adı bulunamadı"
     },
     "mergingVault": "Merging vault changes...",
     "savingChangesToVault": "Kasadaki değişiklikler kaydediliyor",

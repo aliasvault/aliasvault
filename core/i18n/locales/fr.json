@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "Code d'authentification invalide. Veuillez réessayer.",
     "INVALID_RECOVERY_CODE": "Code de récupération invalide. Veuillez réessayer.",
     "INVALID_REFRESH_TOKEN": "Jeton d'actualisation invalide.",
+    "INVITE_CODE_INVALID": "Ce lien d'invitation est invalide, a expiré ou a déjà été utilisé. Veuillez en demander un nouveau.",
     "PASSWORD_MISMATCH": "Le mot de passe indiqué ne correspond pas à votre mot de passe actuel.",
     "PENDING_MIGRATIONS": "Il y a des migrations en attente. Veuillez exécuter 'dotnet ef database update' pour les appliquer.",
     "PUBLIC_REGISTRATION_DISABLED": "L'enregistrement d'un nouveau compte est actuellement désactivé sur ce serveur. Veuillez contacter l'administrateur.",
     "REFRESH_TOKEN_REQUIRED": "Le jeton d'actualisation est requis.",
     "REGISTRATION_FAILED": "Impossible de créer le compte. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez contacter le support.",
+    "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
     "USERNAME_ALREADY_IN_USE": "Nom d'utilisateur déjà utilisé.",
     "USERNAME_AVAILABLE": "Ce nom d'utilisateur est disponible.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Le nom d'utilisateur ne peut pas être vide ou contenir un espace.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Pièce jointe supprimée avec succès.",
+    "fileEmpty": "{{filename}} est vide.",
     "firefoxExpandRequired": "Pour envoyer des fichiers, utilisez la fenêtre étendue.",
     "openExpandedWindow": "Ouvrir la fenêtre étendue",
     "uploadError": "Erreur lors de l'envoi du fichier : {{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "Code d'authentification",
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
-    "autoCloseUnlockPopup": "Fermeture automatique lors des connexions futures",
     "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre-fort ?",
     "browseVault": "Parcourir le contenu du coffre-fort",
-    "closePopup": "Fermer cette popup",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devez vous reconnecter avec votre mot de passe maître pour accéder à votre coffre-fort.",
     "connectingTo": "Connexion à",
     "createNewVault": "Créer un nouveau coffre-fort",
@@ -95,8 +96,7 @@
       "httpError": "Erreur HTTP : {{status}}",
       "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
       "networkErrorSelfHosted": "La requête réseau a échoué. Vérifiez votre connexion réseau et la disponibilité du serveur. Pour les instances auto-hébergées, veuillez vous assurer que vous avez un certificat SSL valide. Les certificats auto-signés ne sont pas pris en charge pour des raisons de sécurité.",
-      "serverErrorSelfHosted": "Impossible d'atteindre l'API. Pour les instances auto-hébergées, veuillez vérifier que le point de terminaison de l'API est accessible en naviguant vers celui-ci dans un navigateur : il devrait afficher 'OK'.",
-      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+      "serverErrorSelfHosted": "Impossible d'atteindre l'API. Pour les instances auto-hébergées, veuillez vérifier que le point de terminaison de l'API est accessible en naviguant vers celui-ci dans un navigateur : il devrait afficher 'OK'."
     },
     "forgotPassword": {
       "contactAdministrator": "Si vous avez récemment changé votre mot de passe et que vous rencontrez des difficultés à vous connecter avec votre nouveau mot de passe, Veuillez noter que l'administrateur du serveur pourra peut-être récupérer une sauvegarde antérieure de votre coffre-fort pour vous aider. Si c'est le cas, veuillez contacter l'administrateur du serveur.",
@@ -162,6 +162,8 @@
         "welcomeMessage": "Super ! Maintenant, allons configurer votre mot de passe principal pour AliasVault."
       },
       "passwordStepTitle": "Définissez le Mot de Passe",
+      "registrationDisabledMessage": "Les nouveaux comptes ne peuvent être créés qu'avec un lien d'invitation. Demandez une invitation à l'administrateur du serveur.",
+      "registrationDisabledTitle": "L'inscription d'un utilisateur est désactivée",
       "setupStepTitle": "Réglages",
       "termsAndConditionsStepTitle": "Utiliser AliasVault",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "La connexion avec les serveurs AliasVault a échoué. Veuillez réessayer (plus tard).",
       "enterMasterPasswordDescription": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort.",
-      "incorrectPasswordError": "Le mot de passe est incorrect. Veuillez essayer de saisir votre mot de passe à nouveau, ou déconnectez-vous et reconnectez-vous.",
       "loggingInWithWebAuthn": "Connexion avec la clé d'accès...",
       "quickUnlockDescription": "Déverrouillez rapidement votre coffre-fort en utilisant votre clé d'accès. Ou connectez-vous avec votre mot de passe en guise de repli.",
-      "sessionTimedOutError": "Votre session a expiré. Veuillez vous reconnecter.",
       "unlockButton": "Déverrouiller",
       "unlockWithMobileButton": "Déverrouiller avec l'application mobile",
       "unlockWithWebAuthn": "Déverrouiller avec la clé d'accès",
       "webAuthnNotSupportedError": "Votre navigateur actuel ne supporte pas l'extension WebAuthn PRF. Veuillez vous connecter avec votre mot de passe."
     },
-    "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
-    "unlockSuccessTitle": "Votre coffre-fort a été déverrouillé avec succès",
     "unlockTitle": "Déverrouiller votre coffre-fort",
     "unlockVault": "Déverrouiller le coffre-fort",
     "unlockWithBiometric": "Déverrouiller avec {{biometric}}",
@@ -225,7 +223,6 @@
     "back": "Retour",
     "backspace": "RetArr",
     "cancel": "Annuler",
-    "clientVersionUnsupported": "Cette version de l'application n'est plus supportée par le serveur. Veuillez rafraîchir la page pour charger la dernière version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Effacer le presse-papiers"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "Les mots de passes ne correspondent pas.",
     "errors": {
       "backgroundUnresponsive": "Le service d'arrière-plan de l'extension ne répond pas. Veuillez fermer et rouvrir l'extension ou redémarrer votre navigateur si le problème persiste.",
-      "browserExtensionOutdated": "Cette extension de navigateur est obsolète et ne peut pas être utilisée pour accéder à ce coffre-fort. Veuillez la mettre à jour pour continuer.",
-      "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
+      "clientNotSupported": "Cette version d'AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour vers la dernière version.",
+      "clientOutdated": "Cette version d'AliasVault ne peut pas ouvrir votre coffre car il a été mis à jour par une version plus récente. Veuillez mettre à jour AliasVault pour continuer.",
       "contactSupportAt": "Contactez le support à {{email}}.",
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "keyChainUnreadable": "Votre mot de passe est correct, mais les clés de chiffrement de votre coffre n'ont pas pu être ouvertes. Veuillez contacter le support.",
@@ -270,13 +267,13 @@
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
-      "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
-      "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide.",
+      "serverOutdated": "Le serveur AliasVault doit être mis à jour pour fonctionner avec cette version d'AliasVault. Veuillez contacter le support si vous avez besoin d'aide.",
       "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre-fort après plusieurs tentatives. Veuillez réessayer plus tard.",
       "unexpectedErrorContactSupport": "Une erreur inattendue s'est produite. Veuillez réessayer et contacter le support si le problème persiste.",
       "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "updateRequiredTitle": "Mise à jour requise",
       "vaultDataUnreadable": "Les données de votre coffre n'ont pas pu être lues, vos données ne sont donc pas accessibles pour le moment. Contactez le support.",
       "vaultIsLocked": "Le coffre-fort est verrouillé",
       "vaultLoadError": "Une erreur s'est produite lors du chargement de votre coffre. Veuillez copier les détails de l'erreur ci-dessous et contacter le support pour obtenir de l'aide.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "Authentification à double facteur",
     "unavailable": "Indisponible",
     "undo": "Annuler",
+    "updateApp": "Mettre à jour l'app",
     "use": "Utiliser",
     "username": "Nom d'utilisateur",
     "vaultSaveError": "Impossible d'enregistrer les modifications dans le coffre-fort. Veuillez réessayer.",
@@ -735,8 +733,7 @@
     "history": "Historique",
     "home": {
       "alphabeticalOption": "Ordre alphabétique",
-      "buttonLocationText": "bouton dans le coin supérieur droit.",
-      "createFirstItemText": "Créez votre premier élément en utilisant le",
+      "createFirstItemManuallyText": "Créez manuellement votre premier élément de coffre.",
       "emptyFolderMessage": "Ce dossier est vide.",
       "failedToCreateFolder": "Impossible de créer le dossier.",
       "failedToDeleteFolder": "Impossible de supprimer le dossier.",
@@ -746,8 +743,6 @@
       "importButtonText": "Importer depuis KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Si vous avez précédemment utilisé un gestionnaire de mots de passe différent, vous pouvez importer vos éléments à partir de celui-ci.",
       "loadingMore": "Chargement...",
-      "newAliasButtonText": "\"+ Nouvel Alias\"",
-      "newAliasButtonTextMobile": "\"+\"",
       "noItemsTitle": "Pas encore d'éléments",
       "pageDescription": "Trouvez tous vos éléments ci-dessous.",
       "sortOrderLabel": "Ordre de tri",
@@ -769,16 +764,16 @@
     "loginCredentials": "Identifiants de connexion",
     "logo": {
       "builtin": {
-        "Bank": "Banque",
-        "Dev": "Développement",
-        "Game": "Jeux",
-        "Health": "Santé",
-        "Mail": "Mail",
-        "Media": "Médias",
-        "Shopping": "Achats",
-        "Social": "Réseaux",
-        "Travel": "Voyages",
-        "Work": "Travail"
+        "bank": "Banque",
+        "dev": "Développement",
+        "game": "Jeux",
+        "health": "Santé",
+        "mail": "Mail",
+        "media": "Médias",
+        "shopping": "Achats",
+        "social": "Réseaux",
+        "travel": "Voyages",
+        "work": "Travail"
       },
       "builtinLogos": "Bibliothèque des icônes",
       "chooseLogo": "Choisir une icône",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "Création de nouveaux alias...",
       "namePlaceholderCard": "Par ex. Mastercard",
       "namePlaceholderNote": "Par ex. les détails du passeport",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nouveau",
       "typeCard": "Carte",
       "typeLogin": "Se connecter"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Sélectionnez le texte à insérer dans le champ de saisie ciblé",
     "serverUnavailableMessage": "Le serveur est actuellement indisponible, veuillez réessayer plus tard.",
     "serverUnavailableTitle": "Serveur indisponible",
-    "serverVersionNotSupportedContactAdmin": "La version du serveur est obsolète. Veuillez contacter votre administrateur pour mettre à jour le serveur.",
-    "serverVersionNotSupportedMessage": "La version du serveur est obsolète. Veuillez mettre à jour votre serveur vers la dernière version.",
     "serverVersionNotSupportedTitle": "Mise à jour du serveur requise",
     "sessionExpiredMessage": "Votre session a expiré. Veuillez vous reconnecter.",
     "sessionExpiredTitle": "Session expirée",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "cet identifiant",
     "usernameCopied": "Nom d'utilisateur copié",
     "usernamePrefix": "Nom d'utilisateur : ",
-    "versionNotSupportedMessage": "La version de votre application n'est plus prise en charge. Veuillez mettre à jour vers la dernière version.",
     "versionNotSupportedTitle": "Mise à jour requise",
     "viewDetails": "Voir les détails",
     "website": "Site internet"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Utiliser la clé d'accès du navigateur"
   },
   "settings": {
+    "accountSecurity": "Sécurité du Compte",
     "activeOnAllSites": "Activé sur tous les sites (sauf si désactivé ci-dessous)",
     "advancedOptions": "Options avancées",
     "androidAutofillSettings": {
@@ -1213,7 +1205,6 @@
       "aliasGenerationAgeRangeDescription": "Définissez la plage d'âge par défaut pour la génération de nouvelles identités. Cela affecte la date de naissance assignée à l'identité générée.",
       "aliasGenerationGenderDescription": "Définit la préférence par défaut pour le sexe des nouvelles identités.",
       "aliasGenerationLanguageDescription": "Définir la langue par défaut qui sera utilisée lors de la génération de nouvelles identités.",
-      "aliasSettingsTitle": "Paramètres du Générateur d'identité",
       "appLanguageDescription": "Définissez la langue pour l'interface de l'application.",
       "appLanguageTitle": "Langue de l'application",
       "autoEmailRefreshLabel": "Rafraîchir automatiquement le contenu des emails à l'arrivée des nouveaux emails",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Domaine public"
     },
     "globalSettings": "Paramètres généraux",
+    "groups": {
+      "autofill": "Remplissage automatique",
+      "general": "Général",
+      "generators": "Générateurs"
+    },
     "identityGenerator": "Générateur d'identité",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Échec de la désactivation de l'authentification à deux facteurs.",
         "pageDescription": "Désactiver l'authentification à deux facteurs signifie que vous ne pourrez vous connecter qu'avec votre mot de passe.",
         "pageTitle": "Désactiver l’authentification à deux facteurs",
-        "statusMessage": "L'authentification à deux facteurs est actuellement activée. Désactivez-la pour pouvoir accéder à votre coffre-fort uniquement avec votre mot de passe.",
         "twoFactorDisabledSuccess": "L’authentification à deux facteurs a été désactivée avec succès.",
-        "twoFactorNotEnabled": "L'authentification à deux facteurs n'est pas activée.",
-        "warningMessage": "Remarque : après avoir désactivé l'authentification à deux facteurs, toute application d'authentification configurée cessera de fonctionner. Lorsque vous voulez réactiver l'authentification à deux facteurs, vous devrez reconfigurer l'application d'authentification."
+        "twoFactorNotEnabled": "L'authentification à deux facteurs n'est pas activée."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Échec de l'activation de l'authentification à deux facteurs.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "L'authentification à deux facteurs est actuellement désactivée. Afin d'améliorer la sécurité de votre compte, nous vous conseillons de l'activer.",
-        "enabledMessage": "L'authentification à deux facteurs est actuellement activée."
+        "enabledMessage": "L'authentification à deux facteurs est actuellement activée.",
+        "notEnabledWarning": "Votre coffre est actuellement accessible uniquement avec votre mot de passe principal. Nous vous recommandons d'activer l'authentification à deux facteurs pour améliorer la sécurité de votre compte."
       }
     },
     "selectLanguage": "Sélectionner une langue",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Configurer l'URL du serveur AliasVault pour les instances auto-hébergées",
     "serverUrl": "URL du serveur",
     "serverVersion": "Version du serveur",
+    "sessionsAndLogs": "Sessions & Journaux",
+    "sessionsAndLogsDescription": "Voyez où vous êtes connecté et vérifiez les récentes tentatives de connexion.",
     "siteSpecificSettings": "Paramètres spécifiques au site",
     "storageInsights": {
       "breadcrumbTitle": "Aperçu du stockage",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Vérification des mises à jour du coffre-fort",
     "checkingVaultUpdates": "Vérification des mises à jour du coffre-fort",
     "errors": {
-      "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre-fort. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
       "passwordChangeRequiresOnline": "Le changement de mot de passe nécessite une connexion internet. Veuillez réessayer une fois connecté.",
-      "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
-      "usernameNotFound": "Identifiant non trouvé",
-      "vaultOutdated": "Votre coffre-fort est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
-      "versionNotSupported": "Cette version de l'application mobile AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre application vers la dernière version."
+      "usernameNotFound": "Identifiant non trouvé"
     },
     "mergingVault": "Fusion des modifications du coffre-fort...",
     "savingChangesToVault": "Enregistrement des modifications dans le coffre-fort",

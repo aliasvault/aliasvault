@@ -9,11 +9,13 @@
     "INVALID_AUTHENTICATOR_CODE": "Ongeldige authenticatiecode. Probeer het opnieuw.",
     "INVALID_RECOVERY_CODE": "Ongeldige herstelcode. Probeer het opnieuw.",
     "INVALID_REFRESH_TOKEN": "Ongeldig refresh token.",
+    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
     "PASSWORD_MISMATCH": "Het opgegeven wachtwoord komt niet overeen met je huidige wachtwoord.",
     "PENDING_MIGRATIONS": "Er zijn migraties in behandeling. Voer 'dotnet ef database update' uit om ze toe te passen.",
     "PUBLIC_REGISTRATION_DISABLED": "Registratie van nieuwe accounts is momenteel uitgeschakeld op deze server. Neem contact op met de beheerder.",
     "REFRESH_TOKEN_REQUIRED": "Refreshtoken is vereist.",
     "REGISTRATION_FAILED": "Kon het account niet aanmaken. Probeer het over een paar minuten opnieuw. Als dit probleem zich blijft voordoen, neem dan contact op met support.",
+    "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
     "USERNAME_ALREADY_IN_USE": "Gebruikersnaam is al in gebruik.",
     "USERNAME_AVAILABLE": "Gebruikersnaam is beschikbaar.",
     "USERNAME_EMPTY_OR_WHITESPACE": "Gebruikersnaam mag niet leeg zijn of alleen uit spaties bestaan.",
@@ -69,6 +71,7 @@
   },
   "attachmentUploader": {
     "deleteSuccess": "Bijlage is succesvol verwijderd.",
+    "fileEmpty": "{{filename}} is empty.",
     "firefoxExpandRequired": "Gebruik het grote venster om bestanden te uploaden.",
     "openExpandedWindow": "Open groot venster",
     "uploadError": "Fout bij uploaden van bestand: {{error}}",
@@ -78,10 +81,8 @@
   "auth": {
     "authCode": "Authenticatiecode",
     "authCodeNote": "Opmerking: als je geen toegang hebt tot je authenticator, kunt je je 2FA resetten door met een herstelcode in te loggen via de website.",
-    "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
     "biometricPrompt": "Wil je {{biometric}} gebruiken om je vault te ontgrendelen?",
     "browseVault": "Bekijk vault inhoud",
-    "closePopup": "Sluit deze popup",
     "confirmLogout": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen met je hoofdwachtwoord om toegang te krijgen tot je vault.",
     "connectingTo": "Verbinden met",
     "createNewVault": "Nieuwe vault aanmaken",
@@ -95,8 +96,7 @@
       "httpError": "HTTP fout: {{status}}",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven.",
-      "sessionExpired": "Je sessie is verlopen. Log opnieuw in."
+      "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven."
     },
     "forgotPassword": {
       "contactAdministrator": "Als je onlangs je wachtwoord hebt gewijzigd en problemen hebt met inloggen met je nieuwe wachtwoord, kan de serverbeheerder mogelijk een eerdere backup van je kluis herstellen om je te helpen. Neem in dat geval contact op met de serverbeheerder.",
@@ -162,6 +162,8 @@
         "welcomeMessage": "Geweldig! Laten we nu je hoofdwachtwoord voor AliasVault instellen."
       },
       "passwordStepTitle": "Wachtwoord instellen",
+      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
+      "registrationDisabledTitle": "User registration is disabled",
       "setupStepTitle": "Instellen",
       "termsAndConditionsStepTitle": "AliasVault gebruiken",
       "termsStep": {
@@ -192,17 +194,13 @@
     "unlockPage": {
       "connectionFailedError": "Verbinding met de AliasVault servers is mislukt. Probeer het (later) opnieuw.",
       "enterMasterPasswordDescription": "Voer je hoofdwachtwoord in om je vault te ontgrendelen.",
-      "incorrectPasswordError": "Het wachtwoord is onjuist. Probeer je wachtwoord opnieuw in te voeren, of log uit en log opnieuw in.",
       "loggingInWithWebAuthn": "Inloggen met passkey...",
       "quickUnlockDescription": "Ontgrendel je vault snel met je passkey. Of log in met je wachtwoord als alternatief.",
-      "sessionTimedOutError": "Je sessie is verlopen. Log opnieuw in.",
       "unlockButton": "Ontgrendelen",
       "unlockWithMobileButton": "Ontgrendel met mobiele app",
       "unlockWithWebAuthn": "Ontgrendelen met passkey",
       "webAuthnNotSupportedError": "Je huidige browser ondersteunt de WebAuthn PRF-extensie niet. Log in met je wachtwoord."
     },
-    "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken op inlogformulieren in je browser.",
-    "unlockSuccessTitle": "Je vault is succesvol ontgrendeld",
     "unlockTitle": "Ontgrendel je vault",
     "unlockVault": "Vault ontgrendelen",
     "unlockWithBiometric": "Ontgrendel met {{biometric}}",
@@ -225,7 +223,6 @@
     "back": "Terug",
     "backspace": "Backspace",
     "cancel": "Annuleren",
-    "clientVersionUnsupported": "This version of the app is no longer supported by the server. Please refresh the page to load the latest version.",
     "clipboardCountdown": {
       "clearClipboardButton": "Klembord wissen"
     },
@@ -259,8 +256,8 @@
     "errorPasswordMismatch": "Wachtwoorden komen niet overeen.",
     "errors": {
       "backgroundUnresponsive": "De extensie achtergrond service reageert niet. Sluit en heropen de extensie of start je browser opnieuw op als het probleem zich blijft voordoen.",
-      "browserExtensionOutdated": "Deze browserextensie is verouderd en kan niet worden gebruikt om toegang te krijgen tot deze vault. Update deze browserextensie om door te gaan.",
-      "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
+      "clientNotSupported": "This version of AliasVault is no longer supported by the server. Please update to the latest version.",
+      "clientOutdated": "This version of AliasVault cannot open your vault because it was upgraded by a newer version. Please update AliasVault to continue.",
       "contactSupportAt": "Neem contact op met support via {{email}}.",
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "keyChainUnreadable": "Je wachtwoord is correct, maar de encryptiesleutels van je vault konden niet worden geopend. Neem contact op met support.",
@@ -270,13 +267,13 @@
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
-      "serverVersionNotSupported": "De AliasVault server moet worden bijgewerkt naar een nieuwere versie om deze browserextensie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
+      "serverOutdated": "The AliasVault server needs to be updated to work with this version of AliasVault. Please contact support if you need help.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
       "unexpectedErrorContactSupport": "Er is een onverwachte fout opgetreden. Probeer het opnieuw of neem contact op met support als het probleem aanhoudt.",
       "unknownError": "Er is een onbekende fout opgetreden.",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "updateRequiredTitle": "Update required",
       "vaultDataUnreadable": "Je vault gegevens konden niet worden gelezen, dus je gegevens zijn op dit moment niet toegankelijk. Neem contact op met support.",
       "vaultIsLocked": "Vault is vergrendeld",
       "vaultLoadError": "Something went wrong while loading your vault. Please copy the error details below and contact support for help.",
@@ -342,6 +339,7 @@
     "twoFactorAuthentication": "Tweestapsverificatie",
     "unavailable": "Niet beschikbaar",
     "undo": "Ongedaan maken",
+    "updateApp": "Update app",
     "use": "Gebruik",
     "username": "Gebruikersnaam",
     "vaultSaveError": "Wijzigingen opslaan in de vault mislukt. Probeer het opnieuw.",
@@ -735,8 +733,7 @@
     "history": "Geschiedenis",
     "home": {
       "alphabeticalOption": "Alfabetisch",
-      "buttonLocationText": "knop rechtsboven.",
-      "createFirstItemText": "Maak je eerste item aan met de",
+      "createFirstItemManuallyText": "Maak uw eerste kluis handmatig aan.",
       "emptyFolderMessage": "Deze map is leeg.",
       "failedToCreateFolder": "Map aanmaken is mislukt.",
       "failedToDeleteFolder": "Map verwijderen is mislukt.",
@@ -746,8 +743,6 @@
       "importButtonText": "Importeren van KeePass, Bitwarden, Chrome, Firefox...",
       "importItemsText": "Als je al een andere wachtwoordmanager gebruikt, kun je je logingegevens importeren.",
       "loadingMore": "Meer laden...",
-      "newAliasButtonText": "\"+ Nieuwe Alias\"",
-      "newAliasButtonTextMobile": "+",
       "noItemsTitle": "Nog geen items",
       "pageDescription": "Vind al je items hieronder.",
       "sortOrderLabel": "Sorteervolgorde",
@@ -769,16 +764,16 @@
     "loginCredentials": "Inloggegevens",
     "logo": {
       "builtin": {
-        "Bank": "Banking",
-        "Dev": "Development",
-        "Game": "Games",
-        "Health": "Health",
-        "Mail": "Mail",
-        "Media": "Media",
-        "Shopping": "Shopping",
-        "Social": "Social",
-        "Travel": "Travel",
-        "Work": "Work"
+        "bank": "Bankieren",
+        "dev": "Ontwikkeling",
+        "game": "Spellen",
+        "health": "Gezondheid",
+        "mail": "Post",
+        "media": "Media",
+        "shopping": "Winkelen",
+        "social": "Sociaal",
+        "travel": "Reizen",
+        "work": "Werk"
       },
       "builtinLogos": "Icon library",
       "chooseLogo": "Choose icon",
@@ -829,7 +824,6 @@
       "creatingNewAliasMessage": "Nieuwe alias wordt aangemaakt...",
       "namePlaceholderCard": "Bijv. Mastercard",
       "namePlaceholderNote": "Bijv. Paspoort",
-      "newAliasButtonShort": "+",
       "newAliasButtonText": "+ Nieuw",
       "typeCard": "Creditcard",
       "typeLogin": "Login"
@@ -1049,8 +1043,6 @@
     "selectTextToInsertMessage": "Selecteer de tekst om in te voegen",
     "serverUnavailableMessage": "De server is momenteel niet beschikbaar. Probeer het later opnieuw.",
     "serverUnavailableTitle": "Server niet beschikbaar",
-    "serverVersionNotSupportedContactAdmin": "De server versie is verouderd. Neem contact op met de beheerder van je server om deze bij te werken.",
-    "serverVersionNotSupportedMessage": "De server versie is verouderd. Update je server naar de laatste versie of neem contact op met support.",
     "serverVersionNotSupportedTitle": "Server update vereist",
     "sessionExpiredMessage": "Je sessie is verlopen. Log opnieuw in.",
     "sessionExpiredTitle": "Sessie verlopen",
@@ -1059,7 +1051,6 @@
     "untitledCredential": "deze credential",
     "usernameCopied": "Gebruikersnaam gekopieerd",
     "usernamePrefix": "Gebruikersnaam: ",
-    "versionNotSupportedMessage": "Deze app-versie wordt niet langer ondersteund. Update naar de nieuwste versie.",
     "versionNotSupportedTitle": "Update vereist",
     "viewDetails": "Bekijk details",
     "website": "Website"
@@ -1106,6 +1097,7 @@
     "useBrowserPasskey": "Gebruik browser passkey"
   },
   "settings": {
+    "accountSecurity": "Account beveiliging",
     "activeOnAllSites": "Actief voor alle sites (tenzij hieronder uitgeschakeld)",
     "advancedOptions": "Geavanceerde opties",
     "androidAutofillSettings": {
@@ -1213,9 +1205,8 @@
       "aliasGenerationAgeRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationGenderDescription": "Stel de standaard geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
       "aliasGenerationLanguageDescription": "Stel de standaardtaal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
-      "aliasSettingsTitle": "Identiteit generator instellingen",
       "appLanguageDescription": "Stel de taal in voor de applicatie interface.",
-      "appLanguageTitle": "Taal van de Applicatie",
+      "appLanguageTitle": "Taal van de applicatie",
       "autoEmailRefreshLabel": "Automatisch e-mailinhoud verversen wanneer nieuwe berichten aankomen",
       "clipboardClearLimitationNote": "Klembord wissen in de webapp is alleen mogelijk als het tabblad actief is. Wanneer het tabblad de focus verliest, zal het klembord gewist worden wanneer het tabblad weer actief wordt.",
       "clipboardClearSecondsDescription": "Automatisch de inhoud van klembord wissen na het kopiëren van wachtwoorden of andere gevoelige gegevens.",
@@ -1224,7 +1215,7 @@
       "defaultEmailDomainDescriptionNote": "Let op: e-mails die worden ontvangen op privédomeinen zijn beveiligd met end-to-end versleuteling en uitsluitend door jou te lezen. E-mails die worden ontvangen op openbare domeinen kunnen daarentegen door iedereen worden gelezen die het ontvangende e-mailadres kent.",
       "defaultEmailDomainLabel": "Standaard e-maildomein",
       "defaultEmailDomainLearnMore": "Lees meer over het verschil",
-      "emailSettingsTitle": "E-mail Instellingen",
+      "emailSettingsTitle": "E-mail instellingen",
       "pageDescription": "Configureer algemene AliasVault instellingen.",
       "pageTitle": "Algemene instellingen",
       "privateDomainsDisabledLabel": "Geen privé e-maildomeinen geconfigureerd",
@@ -1232,6 +1223,11 @@
       "publicDomainsLabel": "Publieke Domeinen"
     },
     "globalSettings": "Globale Instellingen",
+    "groups": {
+      "autofill": "Automatisch invullen",
+      "general": "Algemeen",
+      "generators": "Generators"
+    },
     "identityGenerator": "Identiteit generator",
     "identityGeneratorSettings": {
       "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
@@ -1300,7 +1296,7 @@
     },
     "resetAllSiteSettings": "Alle site-specifieke instellingen resetten",
     "resetVault": {
-      "pageTitle": "Reset Vault",
+      "pageTitle": "Reset vault",
       "resetVaultConfirmButton": "Reset mijn vault",
       "resetVaultConfirmUsernameLabel": "Om door te gaan, typ je gebruikersnaam om te bevestigen",
       "resetVaultContinueButton": "Doorgaan met vault reset",
@@ -1411,10 +1407,8 @@
         "failedToDisable2Fa": "Tweestapsverificatie uitschakelen mislukt.",
         "pageDescription": "Als je tweestapsverificatie uitschakelt, kun je inloggen en toegang krijgen tot je vault met alleen je wachtwoord.",
         "pageTitle": "Tweestapsverificatie uitschakelen",
-        "statusMessage": "Tweestapsverificatie is momenteel ingeschakeld. Je kunt het uitschakelen om inloggen met alleen je wachtwoord mogelijk te maken.",
         "twoFactorDisabledSuccess": "Tweestapsverificatie is met succes uitgeschakeld.",
-        "twoFactorNotEnabled": "Tweestapsverificatie is niet ingeschakeld.",
-        "warningMessage": "Let op: na het uitschakelen van tweestapsverificatie zal de geconfigureerde authenticator-app niet meer werken. Wanneer je tweestapsverificatie opnieuw wilt inschakelen, moet je de authenticator-app opnieuw configureren."
+        "twoFactorNotEnabled": "Tweestapsverificatie is niet ingeschakeld."
       },
       "enable2fa": {
         "failedToEnable2Fa": "Tweestapsverificatie inschakelen mislukt.",
@@ -1448,7 +1442,8 @@
       },
       "twoFactor": {
         "disabledMessage": "Tweestapsverificatie is momenteel uitgeschakeld. Om de beveiliging van je account te verbeteren raden wij je aan dit in te schakelen.",
-        "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld."
+        "enabledMessage": "Tweestapsverificatie is momenteel ingeschakeld.",
+        "notEnabledWarning": "Je kluis is momenteel alleen toegankelijk via je hoofdwachtwoord. We raden je aan om tweestapsverificatie in te schakelen om de veiligheid van je account te verbeteren."
       }
     },
     "selectLanguage": "Selecteer taal",
@@ -1456,6 +1451,8 @@
     "serverConfigurationDescription": "Configureer de AliasVault server URL voor self-hosted omgevingen",
     "serverUrl": "Server URL",
     "serverVersion": "Server versie",
+    "sessionsAndLogs": "Sessies & Logbestanden",
+    "sessionsAndLogsDescription": "Zie waar je bent ingelogd en bekijk de recente aanmeldpogingen.",
     "siteSpecificSettings": "Site-specifieke Instellingen",
     "storageInsights": {
       "breadcrumbTitle": "Opslaggebruik",
@@ -1634,13 +1631,9 @@
     "checkingForVaultUpdates": "Controleren op vault updates",
     "checkingVaultUpdates": "Controleren op vault updates",
     "errors": {
-      "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
       "failedToGetEncryptedDatabase": "Fout bij ophalen van versleutelde vault",
       "passwordChangeRequiresOnline": "Het wijzigen van je wachtwoord vereist een internetverbinding. Probeer het opnieuw wanneer je online bent.",
-      "serverVersionNotSupported": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "usernameNotFound": "Gebruikersnaam niet gevonden",
-      "vaultOutdated": "Je vault is verouderd. Log in op de AliasVault website en volg de stappen.",
-      "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie."
+      "usernameNotFound": "Gebruikersnaam niet gevonden"
     },
     "mergingVault": "Vault wijzigingen mergen...",
     "savingChangesToVault": "Wijzigingen opslaan in vault",
