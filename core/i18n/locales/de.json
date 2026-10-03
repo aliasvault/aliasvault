@@ -9,7 +9,7 @@
     "INVALID_AUTHENTICATOR_CODE": "Ungültiger Sicherheits-Code. Bitte versuche es erneut.",
     "INVALID_RECOVERY_CODE": "Ungültiger Wiederherstellungscode. Bitte versuche es erneut.",
     "INVALID_REFRESH_TOKEN": "Ungültiger Aktualisierungstoken.",
-    "INVITE_CODE_INVALID": "This invite link is invalid, has expired or has already been used. Please ask the administrator for a new one.",
+    "INVITE_CODE_INVALID": "Dieser Einladungslink ist ungültig, ist abgelaufen oder wurde bereits verwendet. Bitte frage den Administrator nach einem neuen Link.",
     "PASSWORD_MISMATCH": "Das angegebene Passwort stimmt nicht mit Deinem aktuellen Passwort überein.",
     "PENDING_MIGRATIONS": "Es gibt ausstehende Migrationen. Bitte führe 'dotnet ef database update' aus, um diese durchzuführen.",
     "PUBLIC_REGISTRATION_DISABLED": "Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.",
@@ -162,8 +162,8 @@
         "welcomeMessage": "Großartig! Lass uns jetzt Dein Master-Passwort für AliasVault festlegen."
       },
       "passwordStepTitle": "Wähle Dein Passwort",
-      "registrationDisabledMessage": "New accounts can only be created with an invite link. Ask the server administrator for an invite.",
-      "registrationDisabledTitle": "User registration is disabled",
+      "registrationDisabledMessage": "Neue Konten können nur mit einem Einladungslink erstellt werden. Frage den Server-Administrator nach einer Einladung.",
+      "registrationDisabledTitle": "Benutzerregistrierung ist deaktiviert",
       "setupStepTitle": "Einrichtung",
       "termsAndConditionsStepTitle": "Nutzung von AliasVault",
       "termsStep": {
@@ -733,7 +733,7 @@
     "history": "Historie",
     "home": {
       "alphabeticalOption": "Alphabetisch",
-      "createFirstItemManuallyText": "Create your first vault item manually.",
+      "createFirstItemManuallyText": "Erstelle Deinen ersten Tresor-Eintrag manuell.",
       "emptyFolderMessage": "Dieser Ordner ist leer.",
       "failedToCreateFolder": "Ordner konnte nicht erstellt werden.",
       "failedToDeleteFolder": "Ordner konnte nicht gelöscht werden.",
@@ -1097,7 +1097,7 @@
     "useBrowserPasskey": "Browser-Passkey verwenden"
   },
   "settings": {
-    "accountSecurity": "Account Security",
+    "accountSecurity": "Kontosicherheit",
     "activeOnAllSites": "Auf allen Seiten aktiv (sofern nicht unten deaktiviert)",
     "advancedOptions": "Erweiterte Einstellungen",
     "androidAutofillSettings": {
@@ -1225,8 +1225,8 @@
     "globalSettings": "Allgemeine Einstellungen",
     "groups": {
       "autofill": "Autofill",
-      "general": "General",
-      "generators": "Generators"
+      "general": "Allgemein",
+      "generators": "Generatoren"
     },
     "identityGenerator": "Identitätsgenerator",
     "identityGeneratorSettings": {
@@ -1443,7 +1443,7 @@
       "twoFactor": {
         "disabledMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit deaktiviert. Es wird empfohlen, diese zu aktivieren, um die Sicherheit Deines Kontos zu verbessern.",
         "enabledMessage": "Die Zwei-Faktor-Authentifizierung ist derzeit aktiviert.",
-        "notEnabledWarning": "Your vault is currently accessible via your master password only. We recommend to enable two-factor authentication to improve your account security."
+        "notEnabledWarning": "Dein Tresor ist derzeit nur über Dein Master-Passwort zugänglich. Wir empfehlen, die Zwei-Faktor-Authentifizierung zu aktivieren, um die Sicherheit Deines Kontos zu erhöhen."
       }
     },
     "selectLanguage": "Sprache auswählen",
@@ -1451,8 +1451,8 @@
     "serverConfigurationDescription": "AliasVault-Server-URL für selbstgehostete Instanzen konfigurieren",
     "serverUrl": "URL des Servers",
     "serverVersion": "Server-Version",
-    "sessionsAndLogs": "Sessions & Logs",
-    "sessionsAndLogsDescription": "See where you are logged in and review recent login attempts.",
+    "sessionsAndLogs": "Sitzungen & Protokolle",
+    "sessionsAndLogsDescription": "Sehen Dir an, wo Du eingeloggt bist und überprüfe die letzten Anmeldeversuche.",
     "siteSpecificSettings": "Seitenspezifische Einstellungen",
     "storageInsights": {
       "breadcrumbTitle": "Speichereinblicke",
