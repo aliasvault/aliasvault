@@ -1,5 +1,5 @@
 {
-  "description": "A vault written by the 1.0.0 client in the legacy sqlite-blob format, with the SRP login material of that time. Planted on a test account via POST v2/Test/legacy-vault/by-username/{username}.",
+  "description": "A legacy sqlite-blob vault on the first vault version (1.0.0, the data model of app version 0.1.0). Manually rekeyed against login material defaults of 0.9.0: the weakest Argon2id parameters a current client accepts.",
   "password": "password",
   "expectedItemNames": [
     "Test credential 1",
