@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
 use super::types::{Db, FailureFields, SharedManifestDto, SharingOperationResult, SharingParams, ALGORITHM_RSA_OAEP_SHA256};
-use super::{db, engine, http, keys};
+use super::{db, engine, http, keys, pull};
 use crate::crypto;
 use crate::vault_codec;
 use crate::vault_model::{id_key, ids_equal};
@@ -191,10 +191,9 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     }
 
     let manifest_vek = crypto::generate_key_base64();
-    let self_encrypted_vek = crypto::encrypt_with_public_key(manifest_vek.as_bytes(), &self_public_key)?;
-    // The server keeps the name for every member to fetch, encrypted with the manifest's own key.
-    let encrypted_name = crypto::symmetric_encrypt(&name, &manifest_vek)?;
     let requested_id = db::new_id();
+    let self_encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &requested_id, &self_public_key)?;
+    let encrypted_name = pull::encrypt_manifest_name(&name, &requested_id, &manifest_vek)?;
     let response: CreateSharedManifestResponse = http::post(
         &ctx.host,
         &format!("Groups/{}/manifests", group.group_id),
@@ -203,6 +202,9 @@ async fn create_shared_manifest(ctx: &mut Ctx) -> Outcome {
     )
     .await?;
     let manifest_id = response.manifest_id;
+    if !ids_equal(&manifest_id, &requested_id) {
+        return Err(SyncError::Other(format!("The server created shared manifest {} instead of the requested {}, whose key and name are bound to the requested id", manifest_id, requested_id)));
+    }
 
     let mut records = keys::shared_manifest_records(ctx).await?;
     records.insert(
@@ -252,7 +254,7 @@ async fn update_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let manifest_vek = keys::open_shared_manifest_vek(ctx, &record).await?.ok_or_else(|| SyncError::Other("The key of the shared manifest did not open".to_string()))?;
 
     // The server decides who may change a shared manifest; it only ever sees the name encrypted.
-    let encrypted_name = crypto::symmetric_encrypt(&name, &manifest_vek)?;
+    let encrypted_name = pull::encrypt_manifest_name(&name, &record.manifest_id, &manifest_vek)?;
     http::post_no_content(&ctx.host, &format!("Groups/{}/manifests/{}", target.group_id, record.manifest_id), &UpdateSharedManifestRequest { encrypted_name: Some(&encrypted_name) }).await?;
 
     if let Some(held) = records.values_mut().find(|held| ids_equal(&held.manifest_id, &manifest_id)) {
@@ -301,7 +303,7 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
         recipient_public_key_id,
-        encrypted_vek: crypto::encrypt_with_public_key(manifest_vek.as_bytes(), &recipient_public_key)?,
+        encrypted_vek: keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?,
         encrypted_name: name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?,
     };
 

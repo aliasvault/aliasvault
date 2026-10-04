@@ -8,7 +8,8 @@ use std::fmt;
 use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
-use super::aes_gcm::{generate_key_base64, symmetric_decrypt, symmetric_decrypt_bytes, symmetric_encrypt, symmetric_encrypt_bytes};
+use super::aad;
+use super::aes_gcm::{generate_key_base64, symmetric_decrypt_bytes_with_aad, symmetric_decrypt_with_aad, symmetric_encrypt_bytes_with_aad, symmetric_encrypt_with_aad};
 use super::rsa_oaep::{generate_rsa_key_pair, validate_rsa_key_pair, RsaKeyPair};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
 use crate::common::error::VaultResult;
@@ -95,24 +96,29 @@ pub fn derive_kek_base64(unlock_key_base64: &str) -> VaultResult<Zeroizing<Strin
 
 /// Wrap the Account Key with the KEK derived from an unlock key.
 pub fn wrap_account_key(account_key_base64: &str, unlock_key_base64: &str) -> VaultResult<String> {
-    wrap_key(account_key_base64, &derive_kek_base64(unlock_key_base64)?)
+    wrap_key(account_key_base64, &derive_kek_base64(unlock_key_base64)?, aad::ACCOUNT_KEY)
 }
 
 /// Unwrap the Account Key with the KEK derived from an unlock key. Fails when the unlock key is not the one it was
 /// wrapped for (wrong password).
 pub fn unwrap_account_key(encrypted_account_key: &str, unlock_key_base64: &str) -> VaultResult<Zeroizing<String>> {
-    unwrap_key(encrypted_account_key, &derive_kek_base64(unlock_key_base64)?)
+    unwrap_key(encrypted_account_key, &derive_kek_base64(unlock_key_base64)?, aad::ACCOUNT_KEY)
 }
 
-/// Wrap a base64 key with another base64 key. Returns base64 of `IV | ciphertext | tag`.
-pub fn wrap_key(key_base64: &str, wrapping_key_base64: &str) -> VaultResult<String> {
-    symmetric_encrypt_bytes(&Zeroizing::new(base64_decode(key_base64)?), wrapping_key_base64)
+/// Wrap a base64 key with another base64 key, bound to `aad` (see [`aad`]). Returns base64 of `IV | ciphertext | tag`.
+pub fn wrap_key(key_base64: &str, wrapping_key_base64: &str, aad: &[u8]) -> VaultResult<String> {
+    symmetric_encrypt_bytes_with_aad(&Zeroizing::new(base64_decode(key_base64)?), wrapping_key_base64, aad)
 }
 
-/// Unwrap a wrapped key. Returns the key as base64.
-pub fn unwrap_key(wrapped_key_base64: &str, wrapping_key_base64: &str) -> VaultResult<Zeroizing<String>> {
-    let raw = Zeroizing::new(symmetric_decrypt_bytes(&base64_decode(wrapped_key_base64)?, wrapping_key_base64)?);
+/// Unwrap a key wrapped bound to `aad`. Returns the key as base64.
+pub fn unwrap_key(wrapped_key_base64: &str, wrapping_key_base64: &str, aad: &[u8]) -> VaultResult<Zeroizing<String>> {
+    let raw = Zeroizing::new(symmetric_decrypt_bytes_with_aad(&base64_decode(wrapped_key_base64)?, wrapping_key_base64, aad)?);
     Ok(Zeroizing::new(base64_encode(&raw[..])))
+}
+
+/// Decrypt the account private key (a JWK) with the Account Key.
+pub fn open_account_private_key(encrypted_account_private_key: &str, account_key_base64: &str) -> VaultResult<String> {
+    symmetric_decrypt_with_aad(encrypted_account_private_key, account_key_base64, aad::ACCOUNT_PRIVATE_KEY)
 }
 
 /// Why a key chain did not open.
@@ -142,15 +148,15 @@ pub struct OpenedKeyChain {
 
 /// Open a key chain with a stored key: the Account Key, or an unlock key stored before the switch to the Account Key.
 pub fn open_account_key_chain(stored_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
-    let (account_key, vault_encryption_key) = match unwrap_key(encrypted_vek, stored_key) {
+    let (account_key, vault_encryption_key) = match unwrap_key(encrypted_vek, stored_key, aad::PERSONAL_VEK) {
         Ok(vek) => (Zeroizing::new(stored_key.to_string()), vek),
         Err(_) => {
             let account_key = unwrap_account_key(encrypted_account_key, stored_key).map_err(|_| KeyChainError::UnlockKeyRejected)?;
-            let vek = unwrap_key(encrypted_vek, &account_key).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
+            let vek = unwrap_key(encrypted_vek, &account_key, aad::PERSONAL_VEK).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
             (account_key, vek)
         }
     };
-    let account_private_key = encrypted_account_private_key.filter(|e| !e.is_empty()).and_then(|e| symmetric_decrypt(e, &account_key).ok()).map(Zeroizing::new);
+    let account_private_key = encrypted_account_private_key.filter(|e| !e.is_empty()).and_then(|e| open_account_private_key(e, &account_key).ok()).map(Zeroizing::new);
     Ok(OpenedKeyChain { vault_encryption_key, account_key, account_private_key })
 }
 
@@ -167,9 +173,9 @@ pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_p
 
     let account_keys = AccountKeyBlobs {
         encrypted_account_key: wrap_account_key(&account_key, unlock_key_base64)?,
-        encrypted_vek: wrap_key(&vault_encryption_key, &account_key)?,
+        encrypted_vek: wrap_key(&vault_encryption_key, &account_key, aad::PERSONAL_VEK)?,
         account_public_key: key_pair.public_key.clone(),
-        encrypted_account_private_key: symmetric_encrypt(&key_pair.private_key, &account_key)?,
+        encrypted_account_private_key: symmetric_encrypt_with_aad(&key_pair.private_key, &account_key, aad::ACCOUNT_PRIVATE_KEY)?,
     };
 
     Ok(AccountKeyHierarchy { vault_encryption_key, account_private_key: key_pair.private_key.clone(), account_keys })
@@ -237,8 +243,8 @@ mod tests {
     fn account_key_is_not_wrapped_with_the_raw_unlock_key() {
         let unlock_key = generate_key_base64();
         let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
-        assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).is_err());
-        assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &derive_kek_base64(&unlock_key).unwrap()).is_ok());
+        assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key, aad::ACCOUNT_KEY).is_err());
+        assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &derive_kek_base64(&unlock_key).unwrap(), aad::ACCOUNT_KEY).is_ok());
     }
 
     #[test]
@@ -268,7 +274,7 @@ mod tests {
     fn chain_with_a_foreign_vek_is_unreadable() {
         let unlock_key = generate_key_base64();
         let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
-        let foreign_vek = wrap_key(&generate_key_base64(), &generate_key_base64()).unwrap();
+        let foreign_vek = wrap_key(&generate_key_base64(), &generate_key_base64(), aad::PERSONAL_VEK).unwrap();
         let result = open_account_key_chain(&unlock_key, &hierarchy.account_keys.encrypted_account_key, &foreign_vek, None);
         assert!(matches!(result, Err(KeyChainError::KeyChainUnreadable(_))));
     }
@@ -310,6 +316,22 @@ mod tests {
     fn wrap_and_unwrap_round_trip() {
         let wrapping = generate_key_base64();
         let key = generate_key_base64();
-        assert_eq!(*unwrap_key(&wrap_key(&key, &wrapping).unwrap(), &wrapping).unwrap(), key);
+        assert_eq!(*unwrap_key(&wrap_key(&key, &wrapping, b"a").unwrap(), &wrapping, b"a").unwrap(), key);
+        assert!(unwrap_key(&wrap_key(&key, &wrapping, b"a").unwrap(), &wrapping, b"b").is_err());
+    }
+
+    #[test]
+    fn chain_ciphertexts_do_not_open_in_each_others_slot() {
+        let unlock_key = generate_key_base64();
+        let hierarchy = create_account_key_hierarchy(&unlock_key).unwrap();
+        let blobs = &hierarchy.account_keys;
+        let account_key = unwrap_account_key(&blobs.encrypted_account_key, &unlock_key).unwrap();
+
+        // The Account Key wrap served as the VEK wrap, under the KEK: refused, not read as the VEK.
+        let swapped = open_account_key_chain(&unlock_key, &blobs.encrypted_account_key, &blobs.encrypted_account_key, None);
+        assert!(matches!(swapped, Err(KeyChainError::KeyChainUnreadable(_))));
+        assert!(unwrap_key(&blobs.encrypted_vek, &account_key, aad::ACCOUNT_KEY).is_err());
+        assert!(open_account_private_key(&blobs.encrypted_account_private_key, &account_key).is_ok());
+        assert!(symmetric_decrypt_with_aad(&blobs.encrypted_account_private_key, &account_key, aad::PERSONAL_VEK).is_err());
     }
 }

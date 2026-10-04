@@ -3,10 +3,9 @@
  * how the app reports a vault it cannot open.
  */
 
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, webcrypto } from 'node:crypto';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
 import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload } from '@aliasvault/client/rust/RustCore';
 
 import './client-platform';
@@ -42,7 +41,19 @@ export async function writeManifestWithBrokenRow(apiUrl: string, user: TestUser,
   manifest.tables[table] = [...(manifest.tables[table] ?? []), row];
 
   const packed = await vaultCodecPackPayload(JSON.stringify(manifest));
-  await writePersonalManifest(apiUrl, user, await EncryptionUtility.symmetricEncryptBytes(packed, user.vaultEncryptionKey));
+  await writePersonalManifest(apiUrl, user, await encryptManifest(packed, user.vaultEncryptionKey, manifestId));
+}
+
+/**
+ * Encrypt a packed manifest as the Rust core does: base64 of `IV | ciphertext | tag`, bound to the manifest's
+ * associated data from `core/rust/src/crypto/aad.rs`.
+ */
+async function encryptManifest(packed: Uint8Array, base64Key: string, manifestId: string): Promise<string> {
+  const key = await webcrypto.subtle.importKey('raw', Buffer.from(base64Key, 'base64'), 'AES-GCM', false, ['encrypt']);
+  const iv = randomBytes(12);
+  const additionalData = new TextEncoder().encode(`aliasvault/v1/manifest/${manifestId.trim().toLowerCase()}`);
+  const ciphertext = await webcrypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData }, key, packed);
+  return Buffer.concat([iv, Buffer.from(ciphertext)]).toString('base64');
 }
 
 /**

@@ -180,32 +180,6 @@ export class EncryptionUtility {
   }
 
   /**
-   * Generates a random 256-bit Vault Encryption Key (VEK) as base64. The VEK encrypts the vault content and never
-   * changes; it is stored server-side only in encryped form (encrypted with a KEK derived from an unlock method).
-   */
-  public static generateVaultEncryptionKey(): string {
-    const vek = crypto.getRandomValues(new Uint8Array(32));
-    return bytesToBase64(vek);
-  }
-
-  /**
-   * Encrypts a VEK with a KEK using AES-256-GCM. Returns base64(IV | ciphertext | authTag).
-   */
-  public static async encryptVaultEncryptionKey(vekBase64: string, kekBase64: string): Promise<string> {
-    const vekBytes = base64ToBytes(vekBase64);
-    return this.symmetricEncryptBytes(vekBytes, kekBase64);
-  }
-
-  /**
-   * Decrypts an encrypted VEK with a KEK. Returns the VEK as base64.
-   */
-  public static async decryptVaultEncryptionKey(encryptedVekBase64: string, kekBase64: string): Promise<string> {
-    const encryptedBytes = base64ToBytes(encryptedVekBase64);
-    const vekBytes = await this.symmetricDecryptBytes(encryptedBytes, kekBase64);
-    return bytesToBase64(vekBytes);
-  }
-
-  /**
    * Generates a new RSA key pair for asymmetric encryption
    */
   public static async generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {

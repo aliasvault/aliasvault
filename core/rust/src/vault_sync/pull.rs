@@ -88,8 +88,8 @@ fn base64_chars(size_bytes: i64) -> usize {
     ((size_bytes.max(0) as usize).div_ceil(3)) * 4
 }
 
-/// Verify a ciphertext against the server's hash, decrypt it and open it via the codec.
-fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, expected_ciphertext_hash: Option<&str>, label: &str) -> SyncResult<String> {
+/// Verify a ciphertext against the server's hash, decrypt it bound to `aad` and open it via the codec.
+fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, aad: &[u8], expected_ciphertext_hash: Option<&str>, label: &str) -> SyncResult<String> {
     if let Some(expected) = expected_ciphertext_hash.filter(|hash| !hash.is_empty()) {
         if vault_codec::compute_ciphertext_hash(base64_ciphertext) != expected {
             return Err(SyncError::ServerVaultUnreadable(format!("{} ciphertext hash mismatch, refusing to load (possible storage corruption)", label)));
@@ -97,7 +97,7 @@ fn verify_decrypt_unpack(base64_ciphertext: &str, vek: &str, expected_ciphertext
     }
     let unreadable = |e: crate::common::error::VaultError| SyncError::ServerVaultUnreadable(format!("{}: {}", label, e));
     let encrypted = crate::common::encoding::base64_decode(base64_ciphertext).map_err(unreadable)?;
-    let plain = crypto::symmetric_decrypt_bytes(&encrypted, vek).map_err(unreadable)?;
+    let plain = crypto::symmetric_decrypt_bytes_with_aad(&encrypted, vek, aad).map_err(unreadable)?;
     match vault_codec::unpack_versioned_payload(&plain).map_err(unreadable)? {
         UnpackedPayload::Readable(payload_json) => Ok(payload_json),
         UnpackedPayload::NewerFormat(version) => Err(newer_format(label, version)),
@@ -199,7 +199,7 @@ pub(crate) async fn open_manifests_and_record_sync_state(ctx: &mut Ctx, snapshot
         let (encrypted_vek, encryption_public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant this account can re-open, refusing to assemble", entry.manifest_id)))?;
         let encrypted_name = served_encrypted_name(ctx, &previous_records, &entry.manifest_id);
         if let Some(ciphertext) = &encrypted_name {
-            match open_manifest_name(ciphertext, &manifest_key) {
+            match open_manifest_name(ciphertext, &entry.manifest_id, &manifest_key) {
                 Some(name) => drop(manifest_names.insert(id_key(&entry.manifest_id), name)),
                 None => ctx.warn(format!("[V2Pull] The name of shared manifest {} did not open with its key; leaving it unnamed.", entry.manifest_id)).await,
             }
@@ -247,9 +247,14 @@ fn served_encrypted_name(ctx: &Ctx, previous: &HashMap<String, SharedManifestDto
         .or_else(|| previous.values().find(|record| ids_equal(&record.manifest_id, manifest_id)).and_then(|record| record.encrypted_name.clone()))
 }
 
-/// Decrypt a manifest's name with the manifest's own key.
-pub(crate) fn open_manifest_name(ciphertext: &str, manifest_key: &str) -> Option<String> {
-    crypto::symmetric_decrypt(ciphertext, manifest_key).ok().filter(|name| !name.is_empty())
+/// Decrypt a shared manifest's name with the manifest's own key.
+pub(crate) fn open_manifest_name(ciphertext: &str, manifest_id: &str, manifest_key: &str) -> Option<String> {
+    crypto::symmetric_decrypt_with_aad(ciphertext, manifest_key, &crypto::aad::manifest_name(manifest_id)).ok().filter(|name| !name.is_empty())
+}
+
+/// Encrypt a shared manifest's name with the manifest's own key.
+pub(crate) fn encrypt_manifest_name(name: &str, manifest_id: &str, manifest_key: &str) -> SyncResult<String> {
+    Ok(crypto::symmetric_encrypt_with_aad(name, manifest_key, &crypto::aad::manifest_name(manifest_id))?)
 }
 
 /// Commit a snapshot's revision maps as the local believed-current revisions, manifests and buckets together.
@@ -270,7 +275,7 @@ async fn open_data_buckets(ctx: &Ctx, snapshot: &GetResponse, resolved: &[Resolv
         let Some(blob) = dto.blob.as_deref().filter(|b| !b.is_empty()) else { continue };
         let key = key_by_manifest.get(dto.manifest_id.as_str()).ok_or_else(|| SyncError::Snapshot(format!("data bucket \"{}\" belongs to manifest {}, which this vault did not open, refusing to assemble", dto.category, dto.manifest_id)))?;
         let label = format!("\"{}\" bucket of manifest {}", dto.category, dto.manifest_id);
-        let bucket_json = verify_decrypt_unpack(blob, key, dto.ciphertext_hash.as_deref(), &label)?;
+        let bucket_json = verify_decrypt_unpack(blob, key, &crypto::aad::bucket(&dto.manifest_id, &dto.category), dto.ciphertext_hash.as_deref(), &label)?;
         let bucket: DataBucket = serde_json::from_str(&bucket_json)?;
         ensure_readable(bucket.schema_version, &label)?;
         if !ids_equal(&bucket.manifest_id, &dto.manifest_id) || bucket.category != dto.category {
@@ -327,8 +332,8 @@ async fn download_referenced_blobs(ctx: &Ctx, resolved: &[ResolvedManifest], fal
             ctx.warn(format!("[V2Sync] Referenced {} blob {} was not served; its row stays not loaded and keeps the reference.", reference.category, reference.hash)).await;
             continue;
         };
-        let key = owners.get(&reference.hash).map(|o| o.vek.as_str()).unwrap_or(fallback_vek);
-        match blob_keys::decrypt_blob(encrypted, key) {
+        let (key, manifest_id) = owners.get(&reference.hash).map(|o| (o.vek.as_str(), o.manifest_id.as_str())).unwrap_or((fallback_vek, ""));
+        match blob_keys::decrypt_blob(encrypted, key, manifest_id, &reference.hash) {
             Ok(bytes) => {
                 blob_map.insert(reference.hash.clone(), bytes);
                 pruned_cache.insert(reference.hash.clone(), encrypted.clone());
@@ -367,7 +372,7 @@ pub(crate) async fn materialize_to_sqlite(ctx: &mut Ctx, manifests: &[Manifest],
 
 fn open_manifest(dto: &ManifestDto, vek: &str, is_personal: bool) -> SyncResult<ResolvedManifest> {
     let label = if is_personal { "manifest".to_string() } else { format!("shared manifest {}", dto.manifest_id) };
-    let manifest_json = verify_decrypt_unpack(dto.blob.as_deref().unwrap_or(""), vek, dto.ciphertext_hash.as_deref(), &label)?;
+    let manifest_json = verify_decrypt_unpack(dto.blob.as_deref().unwrap_or(""), vek, &crypto::aad::manifest(&dto.manifest_id), dto.ciphertext_hash.as_deref(), &label)?;
     let manifest: Manifest = serde_json::from_str(&manifest_json)?;
     ensure_readable(manifest.schema_version, &label)?;
     if !ids_equal(&manifest.manifest_id, &dto.manifest_id) {
@@ -416,5 +421,5 @@ async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String>
         return Err(SyncError::Snapshot(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\" (newer server?), refusing to assemble", dto.manifest_id, algorithm)));
     }
     let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or_else(|| SyncError::Snapshot(format!("this session holds no account private key that opens the grant on shared manifest {}, refusing to assemble", dto.manifest_id)))?;
-    keys::decrypt_manifest_vek(&encrypted_vek, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
+    keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
 }

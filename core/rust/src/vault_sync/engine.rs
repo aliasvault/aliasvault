@@ -355,7 +355,7 @@ async fn refresh_manifest_names(ctx: &mut Ctx, status: &StatusResponse, needs_pu
     for record in records.values_mut() {
         let Some(served) = ctx.served_manifest_names.get(&id_key(&record.manifest_id)).filter(|served| record.encrypted_name.as_ref() != Some(*served)).cloned() else { continue };
         let Some(vek) = keys::open_shared_manifest_vek(ctx, record).await? else { continue };
-        match pull::open_manifest_name(&served, &vek) {
+        match pull::open_manifest_name(&served, &record.manifest_id, &vek) {
             Some(name) => drop(opened.insert(id_key(&record.manifest_id), name)),
             None => ctx.warn(format!("[Sharing] The name of shared manifest {} did not open with its key.", record.manifest_id)).await,
         }
