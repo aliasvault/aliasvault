@@ -112,8 +112,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
-   * Store the unlock key (the password-derived KEK) in the Native module (in memory and optionally keychain). The
-   * native module opens the account key chain with it, which gives the vault encryption key of the session.
+   * Store the unlock key (the password's Argon2id output) in the Native module (in memory and optionally keychain). The
+   * native module opens the account key chain with it and keeps the Account Key it yields, which gives the vault
+   * encryption key of the session.
    *
    * @param derivedKey The password-derived unlock key
    */
@@ -265,7 +266,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Test if the database is working with the provided (to be stored) unlock key by performing a simple query.
    * Uses two-step process: first init key in memory, verify it works, then persist to keystore.
    * This prevents overwriting a valid key with an invalid one if user enters wrong password.
-   * @param derivedKey The unlock key (the password-derived KEK) to test with
+   * @param derivedKey The unlock key (the password's Argon2id output) to test with
    * @returns true if the database is working
    * @throws Error with error code if unlock fails - caller should handle the error
    */
@@ -294,7 +295,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   /**
    * Verify if the provided unlock key is valid.
-   * @param derivedKey The unlock key (the password-derived KEK) to verify
+   * @param derivedKey The unlock key (the password's Argon2id output) to verify
    * @returns true if the key is valid, false if invalid (wrong password)
    */
   const verifyUnlockKey = useCallback(async (derivedKey: string): Promise<boolean> => {

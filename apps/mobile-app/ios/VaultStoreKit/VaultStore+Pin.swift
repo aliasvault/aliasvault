@@ -53,9 +53,13 @@ extension VaultStore {
             throw AppError.biometricNotAvailable
         }
 
-        // Get the unlock key from memory (vault must be unlocked): the PIN protects the KEK, never the vault key
-        let unlockKey = try getUnlockKey()
+        // The session's stored key (vault must be unlocked): the PIN protects the Account Key, never the vault key
+        try encryptKeyWithPin(try getUnlockKey(), pin: pin)
+        print("PIN unlock enabled successfully")
+    }
 
+    /// Encrypt a stored key with a key derived from the PIN and keep it in the keychain.
+    internal func encryptKeyWithPin(_ unlockKey: Data, pin: String) throws {
         // Generate random salt
         var salt = Data(count: 16)
         let result = salt.withUnsafeMutableBytes {
@@ -85,19 +89,25 @@ extension VaultStore {
         userDefaults.set(true, forKey: VaultConstants.pinEnabledKey)
         userDefaults.set(pin.count, forKey: Self.pinLengthKey)
         userDefaults.synchronize()
-
-        print("PIN unlock enabled successfully")
     }
 
     // MARK: - PIN Unlock Methods
 
     /// Unlock with PIN
-    /// Returns the decrypted unlock key (the password-derived KEK)
+    /// Returns the decrypted stored key
     ///
     /// - Parameter pin: The PIN to use for unlocking
-    /// - Returns: The decrypted unlock key (base64), to open the session with
+    /// - Returns: The decrypted key (base64), to open the session with
     /// - Throws: PinUnlockError with specific error type and metadata
     public func unlockWithPin(_ pin: String) throws -> String {
+        let pinProtectedKey = try decryptPinProtectedKey(pin)
+        let accountKey = try openAccountKeyChain(with: pinProtectedKey).accountKey
+        convertLegacyPinKey(pin: pin, pinKey: pinProtectedKey, accountKey: accountKey)
+        return accountKey.base64EncodedString()
+    }
+
+    /// Decrypt the key the PIN protects, counting a failure against the PIN attempts.
+    private func decryptPinProtectedKey(_ pin: String) throws -> Data {
         do {
             // Retrieve encrypted key and salt from keychain
             let (encryptedKey, salt) = try retrievePinDataFromKeychain()
@@ -114,8 +124,7 @@ extension VaultStore {
             try storePinFailedAttemptsInKeychain(0)
             markSuccessfulAuth()
 
-            // Return the decrypted unlock key as base64.
-            return decryptedKey.base64EncodedString()
+            return decryptedKey
         } catch {
             // Increment failed attempts
             let currentAttempts = getPinFailedAttempts()
