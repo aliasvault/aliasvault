@@ -22,9 +22,9 @@ public class MobileLoginSubmitRequest
     public required string RequestId { get; set; }
 
     /// <summary>
-    /// Gets or sets the account unlock key, encrypted with the client's RSA public key (base64).
+    /// Gets or sets the Account Key, encrypted with the client's RSA public key (base64).
     /// </summary>
     [Required]
     [StringLength(1024)]
-    public required string EncryptedUnlockKey { get; set; }
+    public required string EncryptedAccountKey { get; set; }
 }

@@ -183,7 +183,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
 
       // Encrypt with the public key that was verified against the QR code.
       const encryptedAccountKey = await NativeVaultManager.encryptAccountKeyForMobileLogin(request.details.clientPublicKey);
-      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedUnlockKey: encryptedAccountKey };
+      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedAccountKey };
       await webApi.post<MobileLoginSubmitRequest, void>('auth/mobile-login/submit', submitRequest, false);
 
       showResult(true);

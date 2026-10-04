@@ -28,7 +28,7 @@ public class MobileLoginPollResponse
     public string? EncryptedPayload { get; set; }
 
     /// <summary>
-    /// Gets or sets the account unlock key, encrypted by the mobile app with the client's RSA public key (base64).
+    /// Gets or sets the Account Key, encrypted by the mobile app with the client's RSA public key (base64).
     /// </summary>
-    public string? EncryptedUnlockKey { get; set; }
+    public string? EncryptedAccountKey { get; set; }
 }
