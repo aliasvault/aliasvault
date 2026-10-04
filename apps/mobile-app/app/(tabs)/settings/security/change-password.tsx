@@ -1,3 +1,5 @@
+import { apiErrorMessage } from '@aliasvault/client/api/errors/ApiErrorMessage';
+import { IncorrectPasswordError, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { MIN_ACCEPTED_PASSWORD_LENGTH } from '@aliasvault/client/utilities/PasswordStrength';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -64,6 +66,20 @@ export default function ChangePasswordScreen(): React.ReactNode {
   });
 
   /**
+   * Map a password change failure onto the message to show.
+   * @param error - the error thrown by the change flow
+   */
+  const errorMessage = (error: unknown): string => {
+    if (error instanceof IncorrectPasswordError) {
+      return t('settings.securitySettings.changePassword.currentPasswordIncorrect');
+    }
+    if (error instanceof PasswordChangedElsewhereError) {
+      return t('common.errors.passwordChanged');
+    }
+    return apiErrorMessage(error, t, t('settings.securitySettings.changePassword.failedToChange'));
+  };
+
+  /**
    * Handle the submit button press.
    * @returns {Promise<void>} A promise that resolves when the operation is complete
    */
@@ -92,13 +108,13 @@ export default function ChangePasswordScreen(): React.ReactNode {
       setIsLoading(true);
       setLoadingStatus(t('settings.securitySettings.changePassword.initiatingChange'));
 
-      const currentPasswordHashBase64 = await authContext.verifyPassword(currentPassword);
-      if (!currentPasswordHashBase64) {
+      const currentUnlockKeyBase64 = await authContext.verifyPassword(currentPassword);
+      if (!currentUnlockKeyBase64) {
         showAlert(t('common.error'), t('settings.securitySettings.changePassword.currentPasswordIncorrect'));
         return;
       }
 
-      await executeVaultPasswordChange(currentPasswordHashBase64, newPassword);
+      await executeVaultPasswordChange(currentUnlockKeyBase64, newPassword);
 
       // Show confirm dialog and go back to the settings screen
       showAlert(t('common.success'), t('settings.securitySettings.changePassword.passwordChangedSuccessfully'), () => {
@@ -109,7 +125,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
       });
     } catch (error) {
       console.error('Password change error:', error);
-      showAlert(t('common.error'), t('settings.securitySettings.changePassword.failedToChange'));
+      showAlert(t('common.error'), errorMessage(error));
     } finally {
       setIsLoading(false);
       setLoadingStatus(null);
