@@ -83,8 +83,8 @@ public class VaultController(
             return Unauthorized();
         }
 
-        var emailRouting = await BuildEmailRoutingAsync(context, user);
         var accessScope = await ManifestAccessHelper.ResolveScopeAsync(context, user.Id, user.PersonalGroupId);
+        var emailRouting = await BuildEmailRoutingAsync(context, accessScope);
 
         // Every manifest the caller can open.
         var latestManifests = await AccessibleManifests(context, accessScope)
@@ -803,25 +803,40 @@ public class VaultController(
             return Ok();
         }
 
-        // The alias is charged to the target's group from now on, so it has to fit that group's alias limit.
         var targetGroupId = (await GroupHelper.GetOwnerGroupsAsync(context, [model.TargetManifestId]))[model.TargetManifestId];
-        var remaining = await GetRemainingAliasAllowancesAsync(context, user, [targetGroupId]);
-        if (remaining.TryGetValue(targetGroupId, out var left) && left <= 0)
+
+        var strategy = context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync<IActionResult>(async () =>
         {
-            return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALIAS_LIMIT_REACHED, 400));
-        }
+            await using var tx = await context.Database.BeginTransactionAsync();
 
-        claim.VaultManifestId = model.TargetManifestId;
-        if (claim.State == EmailClaimState.Removed)
-        {
-            claim.State = EmailClaimState.Active;
-        }
+            await LockAliasQuotaGroupsAsync(context, [targetGroupId]);
+            await context.Entry(claim).ReloadAsync();
+            if (claim.VaultManifestId != sourceManifestId)
+            {
+                return Conflict(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.EMAIL_CLAIM_NOT_FOUND, 409));
+            }
 
-        claim.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-        await context.SaveChangesAsync();
+            var remaining = await GetRemainingAliasAllowancesAsync(context, user, [targetGroupId]);
+            if (remaining.TryGetValue(targetGroupId, out var left) && left <= 0)
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ALIAS_LIMIT_REACHED, 400));
+            }
 
-        logger.LogInformation("{User} transferred alias {Email} from manifest {Source} to manifest {Target}.", user.UserName, address, sourceManifestId, model.TargetManifestId);
-        return Ok();
+            // A Removed claim comes back Active: moving an alias to the item that now carries it is how it is restored.
+            claim.VaultManifestId = model.TargetManifestId;
+            if (claim.State == EmailClaimState.Removed)
+            {
+                claim.State = EmailClaimState.Active;
+            }
+
+            claim.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
+            await context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            logger.LogInformation("{User} transferred alias {Email} from manifest {Source} to manifest {Target}.", user.UserName, address, sourceManifestId, model.TargetManifestId);
+            return Ok();
+        });
     }
 
     /// <summary>
@@ -848,6 +863,20 @@ public class VaultController(
             .ToListAsync();
 
         return [.. administered];
+    }
+
+    /// <summary>
+    /// Takes a transaction-scoped lock per alias quota group, so alias counting and claiming for a group run one at a time.
+    /// Locks are taken in a fixed order to rule out deadlocks between callers locking several groups.
+    /// </summary>
+    /// <param name="context">Database context, inside an open transaction.</param>
+    /// <param name="groupIds">The quota groups about to be checked and charged.</param>
+    private static async Task LockAliasQuotaGroupsAsync(AliasServerDbContext context, IEnumerable<Guid> groupIds)
+    {
+        foreach (var groupId in groupIds.Distinct().Order())
+        {
+            await context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({"alias-quota:" + groupId}, 0))");
+        }
     }
 
     /// <summary>
@@ -1039,15 +1068,16 @@ public class VaultController(
     }
 
     /// <summary>
-    /// Builds the email routing DTO for a user.
+    /// Builds the email routing DTO for a user, listing the live aliases of the manifests they can open.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="user">The user.</param>
+    /// <param name="scope">The caller's manifest access scope.</param>
     /// <returns>The email routing DTO.</returns>
-    private async Task<EmailRouting> BuildEmailRoutingAsync(AliasServerDbContext context, AliasVaultUser user)
+    private async Task<EmailRouting> BuildEmailRoutingAsync(AliasServerDbContext context, ManifestAccessScope scope)
     {
+        var accessible = ManifestAccessHelper.AccessibleManifests(context, scope);
         var claims = await context.EmailClaims
-            .Where(c => c.State != EmailClaimState.Removed && context.GroupMembers.Any(gm => gm.GroupId == c.VaultManifest!.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
+            .Where(c => c.State != EmailClaimState.Removed && accessible.Any(m => m.ManifestId == c.VaultManifestId))
             .Select(c => c.Address)
             .ToListAsync();
 
@@ -1129,10 +1159,6 @@ public class VaultController(
             .ToList();
 
         var accessibleManifests = (await ManifestAccessHelper.AccessibleManifests(context, scope).Select(m => m.ManifestId).ToListAsync()).ToHashSet();
-        var ownedManifests = (await context.VaultManifests
-            .Where(m => context.GroupMembers.Any(gm => gm.GroupId == m.OwnerGroupId && gm.UserId == user.Id && gm.Role == GroupRole.Owner))
-            .Select(m => m.ManifestId)
-            .ToListAsync()).ToHashSet();
 
         // Resolved server-side and never read off the push: this is what stops a client filing an alias under a manifest it merely named.
         var personalManifestId = await GroupHelper.GetPersonalManifestIdAsync(context, user.PersonalGroupId);
@@ -1161,7 +1187,7 @@ public class VaultController(
         var coveredManifestIds = routing.CoveredManifestIds.ToHashSet();
         coveredManifestIds.UnionWith(assertedManifestIds);
 
-        var updateScope = accessibleManifests.Union(ownedManifests).Intersect(coveredManifestIds).ToHashSet();
+        var updateScope = accessibleManifests.Intersect(coveredManifestIds).Intersect(routing.BaseRevisions.Select(r => r.ManifestId)).ToHashSet();
 
         // Warn when a shared manifest claims aliases without a published delivery key: it gets no wrap for its mail until one is published.
         var manifestsWithDeliveryKey = (await context.VaultManifestDeliveryKeys
@@ -1186,6 +1212,7 @@ public class VaultController(
         var now = timeProvider.GetUtcNow().UtcDateTime;
 
         // Max-alias check: how many new aliases each quota subject (the group owning the manifest) may still create.
+        await LockAliasQuotaGroupsAsync(context, ownerGroupByManifest.Values.Append(user.PersonalGroupId));
         var remainingAliases = await GetRemainingAliasAllowancesAsync(context, user, ownerGroupByManifest.Values);
         var limitLoggedFor = new HashSet<Guid>();
 
