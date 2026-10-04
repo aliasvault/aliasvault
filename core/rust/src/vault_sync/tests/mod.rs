@@ -76,12 +76,12 @@ fn snapshot_of(conn: &rusqlite::Connection, vek: &str, revision: i64, salt: &str
     })
     .unwrap();
     let manifest_json = serde_json::to_string(&canonicalized.manifests[0].manifest).unwrap();
-    let blob = crypto::symmetric_encrypt_bytes(&vault_codec::pack_payload(&manifest_json).unwrap(), vek).unwrap();
+    let blob = crypto::symmetric_encrypt_bytes_with_aad(&vault_codec::pack_payload(&manifest_json).unwrap(), vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     let ciphertext_hash = vault_codec::compute_ciphertext_hash(&blob);
     let mut buckets = Vec::new();
     for bucket in &canonicalized.data_buckets {
         let bucket_json = serde_json::to_string(bucket).unwrap();
-        let bucket_blob = crypto::symmetric_encrypt_bytes(&vault_codec::pack_payload(&bucket_json).unwrap(), vek).unwrap();
+        let bucket_blob = crypto::symmetric_encrypt_bytes_with_aad(&vault_codec::pack_payload(&bucket_json).unwrap(), vek, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).unwrap();
         buckets.push(json!({ "manifestId": bucket.manifest_id, "category": bucket.category, "blob": bucket_blob, "ciphertextHash": vault_codec::compute_ciphertext_hash(&bucket_blob), "revision": revision }));
     }
     let status = json!({
@@ -187,7 +187,7 @@ fn new_account_starts_from_an_empty_vault_and_writes_its_first_revision() {
 
     // The written manifest opens with the VEK and names the personal manifest.
     let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(blob).unwrap(), &vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["manifestId"], PERSONAL_MANIFEST_ID);
     assert_eq!(manifest["manifestSalt"], host.state[state::VAULT_MANIFEST_SALT]);
@@ -315,7 +315,7 @@ fn dirty_client_pushes_only_what_changed() {
 
     // The written manifest decrypts with the VEK and carries both items.
     let blob = body["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(blob).unwrap(), &vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["tables"]["Items"].as_array().unwrap().len(), 2);
 }
@@ -363,8 +363,9 @@ fn pushed_blobs_name_the_manifest_that_owns_them() {
     // The bytes are encrypted with the blob's own key, which travels encrypted with the VEK.
     let ciphertext = crate::common::encoding::base64_decode(upload["blobs"][0]["encryptedDataBase64"].as_str().unwrap()).unwrap();
     assert!(crypto::symmetric_decrypt_bytes(&ciphertext, &vek).is_err());
-    let blob_key = crypto::unwrap_key(upload["blobs"][0]["encryptedBlobKey"].as_str().unwrap(), &vek).unwrap();
-    assert_eq!(crypto::symmetric_decrypt_bytes(&ciphertext, &blob_key).unwrap(), vec![1u8, 2, 3, 4]);
+    let hash = upload["blobs"][0]["hash"].as_str().unwrap();
+    let blob_key = crypto::unwrap_key(upload["blobs"][0]["encryptedBlobKey"].as_str().unwrap(), &vek, &crypto::aad::blob_key(PERSONAL_MANIFEST_ID, hash)).unwrap();
+    assert_eq!(crypto::symmetric_decrypt_bytes_with_aad(&ciphertext, &blob_key, &crypto::aad::blob_data(PERSONAL_MANIFEST_ID, hash)).unwrap(), vec![1u8, 2, 3, 4]);
 }
 
 #[test]
@@ -433,7 +434,7 @@ fn push_creates_and_publishes_a_missing_personal_delivery_key() {
 
     // The keypair travels inside the manifest, so the other devices get the private half.
     let blob = write["manifests"][0]["manifestBlob"].as_str().unwrap();
-    let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+    let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(blob).unwrap(), &vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     let manifest: Value = serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap();
     assert_eq!(manifest["tables"]["EncryptionKeys"].as_array().unwrap().len(), 1);
 
@@ -509,7 +510,7 @@ fn outdated_push_merges_the_server_change_and_retries() {
     assert_eq!(posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["currentRevision"], 8);
     let merged: Value = {
         let blob = posts.last().unwrap().body.as_ref().unwrap()["manifests"][0]["manifestBlob"].as_str().unwrap();
-        let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(blob).unwrap(), &vek).unwrap();
+        let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(blob).unwrap(), &vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(merged["tables"]["Items"].as_array().unwrap().len(), 3);
@@ -577,7 +578,8 @@ fn outdated_bucket_only_push_merges_the_server_bucket_instead_of_overwriting_it(
     let accepted = posts.last().unwrap().body.as_ref().unwrap();
     assert_eq!(accepted["buckets"][0]["currentRevision"], 8);
     let bucket: Value = {
-        let plain = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(accepted["buckets"][0]["blob"].as_str().unwrap()).unwrap(), &vek).unwrap();
+        let aad = crypto::aad::bucket(accepted["buckets"][0]["manifestId"].as_str().unwrap(), accepted["buckets"][0]["category"].as_str().unwrap());
+        let plain = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(accepted["buckets"][0]["blob"].as_str().unwrap()).unwrap(), &vek, &aad).unwrap();
         serde_json::from_str(&vault_codec::unpack_payload(&plain).unwrap()).unwrap()
     };
     assert_eq!(bucket["tables"]["ItemStats"].as_array().unwrap().len(), 2, "the other device's stats must survive: {}", bucket);
@@ -667,7 +669,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["migration"]["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
-    assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key).is_err(), "the legacy vault key does not wrap the Account Key directly");
+    assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key, crypto::aad::ACCOUNT_KEY).is_err(), "the legacy vault key does not wrap the Account Key directly");
     let opened = crypto::open_account_key_chain(&unlock_key, body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), None).unwrap();
     assert_eq!(*opened.vault_encryption_key, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
@@ -802,7 +804,7 @@ fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert_eq!(body["manifests"][0]["currentRevision"], 3, "the baseline still comes from the server");
-    let manifest_json = crypto::symmetric_decrypt_bytes(&crate::common::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), &host.vault_key).unwrap();
+    let manifest_json = crypto::symmetric_decrypt_bytes_with_aad(&crate::common::encoding::base64_decode(body["manifests"][0]["manifestBlob"].as_str().unwrap()).unwrap(), &host.vault_key, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     assert!(vault_codec::unpack_payload(&manifest_json).unwrap().contains("Local item"), "the push carries the local changes");
 }
 
@@ -964,7 +966,7 @@ fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
 fn resolve_vault_key_tells_an_unreadable_chain_apart_from_a_wrong_password() {
     let unlock_key = crypto::generate_key_base64();
     let mut hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
-    hierarchy.account_keys.encrypted_vek = crypto::wrap_key(&crypto::generate_key_base64(), &crypto::generate_key_base64()).unwrap();
+    hierarchy.account_keys.encrypted_vek = crypto::wrap_key(&crypto::generate_key_base64(), &crypto::generate_key_base64(), crypto::aad::PERSONAL_VEK).unwrap();
     let mut host = TestHost::new(&unlock_key);
     host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 

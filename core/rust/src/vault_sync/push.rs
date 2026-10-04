@@ -424,10 +424,10 @@ struct EncryptedPayload {
     hash: String,
 }
 
-/// Pack and encrypt a JSON payload under `key`, logging its size at every stage.
-async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str) -> SyncResult<EncryptedPayload> {
+/// Pack and encrypt a JSON payload under `key` bound to `aad`, logging its size at every stage.
+async fn encrypt_payload(ctx: &Ctx, label: &str, plaintext: &str, key: &str, aad: &[u8]) -> SyncResult<EncryptedPayload> {
     let packed = vault_codec::pack_payload(plaintext)?;
-    let ciphertext = crypto::symmetric_encrypt_bytes(&packed, key)?;
+    let ciphertext = crypto::symmetric_encrypt_bytes_with_aad(&packed, key, aad)?;
     ctx.log(format!("[V2Push] {}: raw {} > compressed {} > encrypted {}.", label, format_kb(plaintext.len()), format_kb(packed.len()), format_kb(ciphertext.len()))).await;
     let hash = vault_codec::compute_ciphertext_hash(&ciphertext);
     Ok(EncryptedPayload { ciphertext, hash })
@@ -579,7 +579,7 @@ async fn encrypt_changed_buckets(ctx: &Ctx, buckets: &[DataBucket], candidates: 
         if !validation.ok {
             return Err(SyncError::UploadRejected(vec![format!("{} validation failed: {}. {}", label, validation.failed_rules.join(", "), validation.message).trim().to_string()]));
         }
-        let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key).await?;
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, bucket_key, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
         writes.push(BucketWrite { manifest_id: bucket.manifest_id.clone(), category: bucket.category.clone(), blob: encrypted.ciphertext, ciphertext_hash: encrypted.hash, current_revision: baselines.bucket_revision(bucket) });
         written.insert(fingerprint_key, fingerprint);
     }
@@ -606,7 +606,7 @@ async fn encrypt_changed_manifests(ctx: &Ctx, candidates: &[Candidate<'_>], base
             ctx.warn(format!("[V2Push] {} failed validation ({}), dropping it from this write.", label, validation.failed_rules.join(", "))).await;
             continue;
         }
-        let encrypted = encrypt_payload(ctx, &label, &plaintext, &candidate.vek).await?;
+        let encrypted = encrypt_payload(ctx, &label, &plaintext, &candidate.vek, &crypto::aad::manifest(&candidate.record.manifest_id)).await?;
 
         // Publish the public half of this manifest's mail delivery keypair; only admins may publish a shared one.
         let may_publish = candidate.record.is_personal || candidate.record.can_administer;
@@ -733,7 +733,7 @@ async fn upload_blobs(ctx: &Ctx, blobs: &UploadBlobs, hashes: &[String], overwri
         let mut dtos = Vec::new();
         for hash in hashes {
             let entry = &blobs.entries[&hash];
-            let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek)?;
+            let encrypted = blob_keys::encrypt_blob(&entry.bytes, &entry.vek, &manifest_id, &hash)?;
             encrypted_blobs.insert(hash.clone(), encrypted.clone());
             dtos.push(BlobDto { hash, category: entry.kind.clone(), encrypted_data_base64: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key });
         }
@@ -766,7 +766,7 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
         ctx.log(format!("[V2Push] {} unchanged versus server baseline, skipping upload.", label)).await;
         return Ok((PushStatus::Ok, baselines.bucket_revision(bucket)));
     }
-    let encrypted = encrypt_payload(ctx, &label, &plaintext, vek).await?;
+    let encrypted = encrypt_payload(ctx, &label, &plaintext, vek, &crypto::aad::bucket(&bucket.manifest_id, &bucket.category)).await?;
 
     let current_revision = baselines.bucket_revision(bucket);
     let payload = VaultWriteRequest {

@@ -12,6 +12,7 @@
 //! order; primitives as serde_json renders them, which matches `JSON.stringify` for the escaping and
 //! integer cases that occur in vault data, so a hash computed here agrees with one a client computed.
 
+use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
 
 use crate::common::encoding::{hex_decode, hex_encode_lower, uuid_from_bytes};
@@ -71,14 +72,13 @@ pub fn content_hash(value: &serde_json::Value) -> String {
     sha256_hex(canonical_json(value).as_bytes())
 }
 
-/// Per-manifest salted blob hash `sha256(salt_bytes ‖ plaintext_bytes)`, lowercase hex.
+/// Per-manifest blob address `HMAC-SHA256(key = salt_bytes, plaintext_bytes)`, lowercase hex.
 /// A missing or malformed salt is an error, since hashing without it would break the per-manifest separation.
 pub fn salted_blob_hash(bytes: &[u8], manifest_salt: &str) -> VaultResult<String> {
     let salt_bytes = hex_decode(manifest_salt).filter(|salt| !salt.is_empty()).ok_or_else(|| VaultError::General("manifest salt is missing or not valid hex".to_string()))?;
-    let mut hasher = Sha256::new();
-    hasher.update(&salt_bytes);
-    hasher.update(bytes);
-    Ok(hex_encode_lower(&hasher.finalize()))
+    let mut mac = Hmac::<Sha256>::new_from_slice(&salt_bytes).expect("HMAC takes a key of any length");
+    mac.update(bytes);
+    Ok(hex_encode_lower(&mac.finalize().into_bytes()))
 }
 
 #[cfg(test)]
@@ -114,12 +114,10 @@ mod tests {
         assert!(matches!(&id[19..20], "8" | "9" | "a" | "b"));
     }
 
+    /// Known-answer vector: a changed output re-addresses every stored blob. Never regenerate it.
     #[test]
     fn salted_hash_is_stable() {
-        // Pinned vector: salt "00ff", bytes [1,2,3].
-        let h = salted_blob_hash(&[1, 2, 3], "00ff").unwrap();
-        // sha256(00 ff 01 02 03)
-        assert_eq!(h, sha256_hex(&[0x00, 0xff, 0x01, 0x02, 0x03]));
-        assert_eq!(h.len(), 64);
+        // HMAC-SHA256(key = 00 ff, message = 01 02 03).
+        assert_eq!(salted_blob_hash(&[1, 2, 3], "00ff").unwrap(), "4307c7b0faa3e0b307fc467d8f3c3db3cd548860c7555955b2f3f00fe70cbea1");
     }
 }

@@ -50,12 +50,12 @@ fn snapshot(conn: &rusqlite::Connection, vek: &str, blob_key: &str, salt: &str, 
     })
     .unwrap();
     let entry = &canonicalized.manifests[0];
-    let blob = crypto::symmetric_encrypt_bytes(&vault_codec::pack_payload(&serde_json::to_string(&entry.manifest).unwrap()).unwrap(), vek).unwrap();
+    let blob = crypto::symmetric_encrypt_bytes_with_aad(&vault_codec::pack_payload(&serde_json::to_string(&entry.manifest).unwrap()).unwrap(), vek, &crypto::aad::manifest(PERSONAL_MANIFEST_ID)).unwrap();
     let blobs: Vec<ServerBlob> = entry
         .blobs
         .iter()
         .map(|(hash, b)| {
-            let encrypted = blob_keys::encrypt_blob(&crate::common::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key).unwrap();
+            let encrypted = blob_keys::encrypt_blob(&crate::common::encoding::base64_decode(&b.bytes_base64).unwrap(), blob_key, PERSONAL_MANIFEST_ID, hash).unwrap();
             ServerBlob { hash: hash.clone(), kind: b.kind.clone(), ciphertext: encrypted.encrypted_data_base64, encrypted_blob_key: encrypted.encrypted_blob_key }
         })
         .collect();

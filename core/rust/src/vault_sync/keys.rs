@@ -77,9 +77,14 @@ pub(crate) fn resolve_grant_private_key(ctx: &Ctx, public_key: &str) -> Option<S
     ctx.account_private_key.clone()
 }
 
-/// Decrypt an RSA-OAEP encrypted manifest VEK.
-pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, private_key_jwk: &str) -> SyncResult<String> {
-    let plaintext = crypto::decrypt_with_private_key(encrypted_vek, private_key_jwk)?;
+/// Encrypt a manifest's VEK for one recipient key, bound to the manifest (see [`crypto::aad::grant`]).
+pub(crate) fn encrypt_manifest_vek(manifest_vek: &str, manifest_id: &str, recipient_public_key_jwk: &str) -> SyncResult<String> {
+    Ok(crypto::encrypt_with_public_key_and_label(manifest_vek.as_bytes(), recipient_public_key_jwk, &crypto::aad::grant(manifest_id))?)
+}
+
+/// Decrypt a manifest's VEK from a grant made out to this private key for that manifest.
+pub(crate) fn decrypt_manifest_vek(encrypted_vek: &str, manifest_id: &str, private_key_jwk: &str) -> SyncResult<String> {
+    let plaintext = crypto::decrypt_with_private_key_and_label(encrypted_vek, private_key_jwk, &crypto::aad::grant(manifest_id))?;
     String::from_utf8(plaintext).map_err(|_| SyncError::Other("Decrypted manifest key is not valid text".to_string()))
 }
 
@@ -93,7 +98,7 @@ pub(crate) async fn open_shared_manifest_vek(ctx: &Ctx, record: &SharedManifestD
         ctx.warn(format!("[Sharing] This session holds no account private key that opens the grant on manifest {}; leaving it closed.", record.manifest_id)).await;
         return Ok(None);
     };
-    match decrypt_manifest_vek(&record.encrypted_vek, &private_key) {
+    match decrypt_manifest_vek(&record.encrypted_vek, &record.manifest_id, &private_key) {
         Ok(vek) => Ok(Some(vek)),
         Err(error) => {
             ctx.warn(format!("[Sharing] Failed to unwrap the key of manifest {}; leaving it closed. {}", record.manifest_id, error)).await;
@@ -236,7 +241,7 @@ async fn switch_to_vek(ctx: &mut Ctx, old_key: &str, vek: &str) -> SyncResult<()
 /// Open the account private key with the Account Key and stage it for the grant flows of this run.
 async fn stage_account_private_key(ctx: &mut Ctx, account_key: &str, encrypted_private_key: Option<&str>) {
     let Some(encrypted) = encrypted_private_key.filter(|e| !e.is_empty()) else { return };
-    match crypto::symmetric_decrypt(encrypted, account_key) {
+    match crypto::open_account_private_key(encrypted, account_key) {
         Ok(private_key) => ctx.account_private_key = Some(private_key),
         Err(error) => ctx.warn(format!("[VaultSync] The cached account private key did not open; shared grants stay closed. {}", error)).await,
     }
