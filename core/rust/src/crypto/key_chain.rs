@@ -9,7 +9,7 @@ use thiserror::Error;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use super::aes_gcm::{generate_key_base64, symmetric_decrypt, symmetric_decrypt_bytes, symmetric_encrypt, symmetric_encrypt_bytes};
-use super::rsa_oaep::generate_rsa_key_pair;
+use super::rsa_oaep::{generate_rsa_key_pair, validate_rsa_key_pair, RsaKeyPair};
 use crate::common::encoding::{base64_decode, base64_encode, hex_encode_upper};
 use crate::common::error::VaultResult;
 
@@ -156,9 +156,14 @@ pub fn open_account_key_chain(stored_key: &str, encrypted_account_key: &str, enc
 
 /// Create a new account key hierarchy wrapped under the KEK derived from an unlock key.
 pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<AccountKeyHierarchy> {
+    create_account_key_hierarchy_with_key_pair(unlock_key_base64, &generate_rsa_key_pair()?)
+}
+
+/// [`create_account_key_hierarchy`] around an account keypair the host generated, as WebCrypto is far faster than wasm.
+pub fn create_account_key_hierarchy_with_key_pair(unlock_key_base64: &str, key_pair: &RsaKeyPair) -> VaultResult<AccountKeyHierarchy> {
+    validate_rsa_key_pair(key_pair)?;
     let vault_encryption_key = generate_key_base64();
     let account_key = Zeroizing::new(generate_key_base64());
-    let key_pair = generate_rsa_key_pair()?;
 
     let account_keys = AccountKeyBlobs {
         encrypted_account_key: wrap_account_key(&account_key, unlock_key_base64)?,
@@ -168,6 +173,23 @@ pub fn create_account_key_hierarchy(unlock_key_base64: &str) -> VaultResult<Acco
     };
 
     Ok(AccountKeyHierarchy { vault_encryption_key, account_private_key: key_pair.private_key.clone(), account_keys })
+}
+
+/// The Account Key re-encrypted for a new password.
+#[derive(Serialize, Zeroize, ZeroizeOnDrop)]
+#[serde(rename_all = "camelCase")]
+pub struct ReencryptedAccountKey {
+    pub account_key: String,
+
+    #[zeroize(skip)]
+    pub new_encrypted_account_key: String,
+}
+
+/// Re-encrypt the Account Key under the KEK of a new unlock key (password change).
+pub fn reencrypt_account_key(encrypted_account_key: &str, old_unlock_key_base64: &str, new_unlock_key_base64: &str) -> Result<ReencryptedAccountKey, KeyChainError> {
+    let account_key = unwrap_account_key(encrypted_account_key, old_unlock_key_base64).map_err(|_| KeyChainError::UnlockKeyRejected)?;
+    let new_encrypted_account_key = wrap_account_key(&account_key, new_unlock_key_base64).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()))?;
+    Ok(ReencryptedAccountKey { account_key: account_key.to_string(), new_encrypted_account_key })
 }
 
 #[cfg(test)]
@@ -249,6 +271,39 @@ mod tests {
         let foreign_vek = wrap_key(&generate_key_base64(), &generate_key_base64()).unwrap();
         let result = open_account_key_chain(&unlock_key, &hierarchy.account_keys.encrypted_account_key, &foreign_vek, None);
         assert!(matches!(result, Err(KeyChainError::KeyChainUnreadable(_))));
+    }
+
+    #[test]
+    fn hierarchy_takes_a_host_key_pair_and_rejects_a_mismatched_one() {
+        let unlock_key = generate_key_base64();
+        let key_pair = generate_rsa_key_pair().unwrap();
+        let hierarchy = create_account_key_hierarchy_with_key_pair(&unlock_key, &key_pair).unwrap();
+        assert_eq!(hierarchy.account_keys.account_public_key, key_pair.public_key);
+        assert_eq!(hierarchy.account_private_key, key_pair.private_key);
+
+        let mismatched = RsaKeyPair { public_key: generate_rsa_key_pair().unwrap().public_key.clone(), private_key: key_pair.private_key.clone() };
+        assert!(create_account_key_hierarchy_with_key_pair(&unlock_key, &mismatched).is_err());
+    }
+
+    #[test]
+    fn reencrypted_account_key_opens_with_the_new_unlock_key_only() {
+        let old_unlock_key = generate_key_base64();
+        let new_unlock_key = generate_key_base64();
+        let hierarchy = create_account_key_hierarchy(&old_unlock_key).unwrap();
+        let blobs = &hierarchy.account_keys;
+
+        let reencrypted = reencrypt_account_key(&blobs.encrypted_account_key, &old_unlock_key, &new_unlock_key).unwrap();
+        let opened = open_account_key_chain(&new_unlock_key, &reencrypted.new_encrypted_account_key, &blobs.encrypted_vek, None).unwrap();
+        assert_eq!(*opened.vault_encryption_key, hierarchy.vault_encryption_key);
+        assert_eq!(*opened.account_key, reencrypted.account_key);
+        assert!(open_account_key_chain(&old_unlock_key, &reencrypted.new_encrypted_account_key, &blobs.encrypted_vek, None).is_err());
+    }
+
+    #[test]
+    fn reencrypt_rejects_a_wrong_old_unlock_key() {
+        let hierarchy = create_account_key_hierarchy(&generate_key_base64()).unwrap();
+        let result = reencrypt_account_key(&hierarchy.account_keys.encrypted_account_key, &generate_key_base64(), &generate_key_base64());
+        assert_eq!(result.err(), Some(KeyChainError::UnlockKeyRejected));
     }
 
     #[test]

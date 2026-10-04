@@ -89,6 +89,31 @@ export type KeyChainOpenResult =
   | { status: 'unlockKeyRejected' }
   | { status: 'keyChainUnreadable'; message: string };
 
+/**
+ * The encrypted halves of an account key hierarchy: what the server stores, sent as-is in a register or migration payload.
+ */
+export type AccountKeyBlobs = {
+  encryptedAccountKey: string;
+  encryptedVek: string;
+  accountPublicKey: string;
+  encryptedAccountPrivateKey: string;
+};
+
+/**
+ * A newly created account key hierarchy (the Rust `create_account_key_hierarchy`): the encrypted blobs plus the plaintext halves the client keeps.
+ */
+export type AccountKeyHierarchy = {
+  vaultEncryptionKey: string;
+  accountPrivateKey: string;
+  accountKeys: AccountKeyBlobs;
+};
+
+/** The Account Key (base64) re-encrypted for a new password. */
+export type ReencryptedAccountKey = {
+  accountKey: string;
+  newEncryptedAccountKey: string;
+};
+
 /*
  * Vault codec (manifest-v1 storage format).
  */

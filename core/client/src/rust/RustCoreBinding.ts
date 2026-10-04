@@ -1,4 +1,4 @@
-import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * One running operation of the Rust vault sync engine.
@@ -41,9 +41,10 @@ export interface IRustCore {
   extractEmailAttachment(source: Uint8Array, index: number, detachedBody?: Uint8Array): Promise<Uint8Array>;
 
   argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array>;
-  deriveKek(unlockKeyBase64: string): Promise<string>;
   deriveSrpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string>;
   openAccountKeyChain(storedKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult>;
+  createAccountKeyHierarchy(unlockKeyBase64: string, publicKeyJwk: string, privateKeyJwk: string): Promise<AccountKeyHierarchy>;
+  reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<ReencryptedAccountKey | null>;
 
   srpGenerateSalt(): Promise<string>;
   srpDerivePrivateKey(salt: string, identity: string, passwordHash: string): Promise<string>;

@@ -56,6 +56,14 @@ pub fn generate_rsa_key_pair() -> VaultResult<RsaKeyPair> {
     Ok(RsaKeyPair { public_key: public_to_jwk(&public)?, private_key: private_to_jwk(&private)? })
 }
 
+/// Check that a key pair generated elsewhere (WebCrypto) is a valid private key whose public half matches.
+pub fn validate_rsa_key_pair(key_pair: &RsaKeyPair) -> VaultResult<()> {
+    if private_from_jwk(&key_pair.private_key)?.to_public_key() != public_from_jwk(&key_pair.public_key)? {
+        return Err(VaultError::General("RSA public key does not belong to the private key".to_string()));
+    }
+    Ok(())
+}
+
 /// Encrypt bytes for the holder of a JWK public key. Returns base64 ciphertext.
 pub fn encrypt_with_public_key(plaintext: &[u8], public_key_jwk: &str) -> VaultResult<String> {
     let public = public_from_jwk(public_key_jwk)?;

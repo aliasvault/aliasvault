@@ -1,6 +1,6 @@
 import { StorageKeys } from '../constants/StorageKeys';
-import { unwrapAccountKey, wrapAccountKey } from '../crypto/AccountKeys';
 import { getPlatform } from '../platform/ClientPlatform';
+import { reencryptAccountKey } from '../rust/RustCore';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
 
 import { SrpAuthService, type SrpClientProof } from './SrpAuthService';
@@ -103,8 +103,11 @@ export class MasterPasswordService {
    * @throws {IncorrectPasswordError} when the old unlock key does not open the blob (wrong current password).
    */
   public static async reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<{ accountKey: string; newEncryptedAccountKey: string }> {
-    const accountKey = await MasterPasswordService.decryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64);
-    return { accountKey, newEncryptedAccountKey: await wrapAccountKey(accountKey, newUnlockKeyBase64) };
+    const reencrypted = await reencryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64);
+    if (!reencrypted) {
+      throw new IncorrectPasswordError();
+    }
+    return reencrypted;
   }
 
   /**
@@ -155,19 +158,6 @@ export class MasterPasswordService {
 
     // Persist the new Account Key and its derivation parameters.
     await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings }, accountKey);
-  }
-
-  /**
-   * Decrypt the KEK-wrapped Account Key.
-   * @param encryptedAccountKey - the Account Key encrypted with the KEK of the entered password
-   * @param unlockKeyBase64 - the unlock key derived from the entered password
-   */
-  private static async decryptAccountKey(encryptedAccountKey: string, unlockKeyBase64: string): Promise<string> {
-    try {
-      return await unwrapAccountKey(encryptedAccountKey, unlockKeyBase64);
-    } catch {
-      throw new IncorrectPasswordError();
-    }
   }
 }
 

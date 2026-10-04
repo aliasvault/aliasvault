@@ -5,8 +5,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import uniffi.aliasvault_core.KeyChainException
 import uniffi.aliasvault_core.argon2DeriveKey
+import uniffi.aliasvault_core.createAccountKeyHierarchyJson
 import uniffi.aliasvault_core.decodeEmailSource
-import uniffi.aliasvault_core.deriveKek
 import uniffi.aliasvault_core.deriveSrpPasswordHash
 import uniffi.aliasvault_core.extractDomain
 import uniffi.aliasvault_core.extractEmailAttachment
@@ -26,6 +26,7 @@ import uniffi.aliasvault_core.isRpIdAllowedForHost
 import uniffi.aliasvault_core.openAccountKeyChain
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.pruneVaultJson
+import uniffi.aliasvault_core.reencryptAccountKeyJson
 import uniffi.aliasvault_core.selectFaviconTarget
 import uniffi.aliasvault_core.srpDerivePrivateKey
 import uniffi.aliasvault_core.srpDeriveSession
@@ -81,9 +82,10 @@ object RustCoreDispatcher {
             "extractEmailAttachment" -> json(extractEmailAttachment(args.bytes(0), args.uint(1), args.optionalBytes(2)))
 
             "argon2DeriveKey" -> json(argon2DeriveKey(args.string(0), args.string(1), args.string(2)))
-            "deriveKek" -> json(deriveKek(args.bytes(0)))
             "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))
             "openAccountKeyChain" -> openKeyChain(args.bytes(0), args.string(1), args.string(2), args.optionalString(3))
+            "createAccountKeyHierarchyJson" -> createAccountKeyHierarchyJson(args.bytes(0), args.string(1), args.string(2))
+            "reencryptAccountKeyJson" -> reencryptAccountKeyJson(args.string(0), args.bytes(1), args.bytes(2))
 
             "srpGenerateSalt" -> json(srpGenerateSalt())
             "srpDerivePrivateKey" -> json(srpDerivePrivateKey(args.string(0), args.string(1), args.string(2)))

@@ -218,10 +218,26 @@ pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_sett
     crate::crypto::argon2::argon2_derive_key_bytes_from_settings(&password, &salt, &encryption_settings)
 }
 
-/// The KEK that wraps the Account Key, HKDF-derived from the unlock key.
+/// Create a new account key hierarchy for the unlock key around an account keypair (JWK) the caller generated, as JSON.
 #[uniffi::export]
-pub fn derive_kek(unlock_key: Vec<u8>) -> Vec<u8> {
-    crate::crypto::derive_kek(&unlock_key).to_vec()
+pub fn create_account_key_hierarchy_json(unlock_key: Vec<u8>, public_key_jwk: String, private_key_jwk: String) -> Result<String, VaultError> {
+    let unlock_key = zeroize::Zeroizing::new(crate::common::encoding::base64_encode(&unlock_key));
+    let key_pair = crate::crypto::RsaKeyPair { public_key: public_key_jwk, private_key: private_key_jwk };
+    let hierarchy = crate::crypto::create_account_key_hierarchy_with_key_pair(&unlock_key, &key_pair)?;
+    Ok(serde_json::to_string(&hierarchy)?)
+}
+
+/// Re-encrypt the Account Key from the old to the new unlock key, as JSON; `null` when the old unlock key does not open it.
+#[uniffi::export]
+pub fn reencrypt_account_key_json(encrypted_account_key: String, old_unlock_key: Vec<u8>, new_unlock_key: Vec<u8>) -> Result<String, VaultError> {
+    use crate::common::encoding::base64_encode;
+    let old_unlock_key = zeroize::Zeroizing::new(base64_encode(&old_unlock_key));
+    let new_unlock_key = zeroize::Zeroizing::new(base64_encode(&new_unlock_key));
+    match crate::crypto::reencrypt_account_key(&encrypted_account_key, &old_unlock_key, &new_unlock_key) {
+        Ok(reencrypted) => Ok(serde_json::to_string(&reencrypted)?),
+        Err(KeyChainError::UnlockKeyRejected) => Ok("null".to_string()),
+        Err(e) => Err(VaultError::General(e.to_string())),
+    }
 }
 
 /// The SRP `password_hash` (uppercase hex) for an account's `encryptionType`, from the unlock key.
