@@ -33,7 +33,7 @@ public class MobileLoginRequest
 
     /// <summary>
     /// Gets or sets the algorithm <see cref="ClientPublicKey"/> is for, which is what the mobile app must
-    /// encrypt <see cref="EncryptedUnlockKey"/> with.
+    /// encrypt <see cref="EncryptedAccountKey"/> with.
     /// </summary>
     [StringLength(30)]
     public VaultKeyAlgorithm Algorithm { get; set; } = VaultKeyAlgorithm.RsaOaepSha256;
@@ -50,10 +50,10 @@ public class MobileLoginRequest
     public string PollSecretHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the account unlock key from the mobile app, encrypted with <see cref="ClientPublicKey"/> (base64 encoded).
+    /// Gets or sets the Account Key from the mobile app, encrypted with <see cref="ClientPublicKey"/> (base64 encoded).
     /// Will be null until mobile app responds.
     /// </summary>
-    public string? EncryptedUnlockKey { get; set; }
+    public string? EncryptedAccountKey { get; set; }
 
     /// <summary>
     /// Gets or sets the created timestamp.
@@ -77,7 +77,7 @@ public class MobileLoginRequest
 
     /// <summary>
     /// Gets or sets the timestamp when sensitive data was cleared from this record.
-    /// Sensitive data (ClientPublicKey, EncryptedUnlockKey) is cleared
+    /// Sensitive data (ClientPublicKey, EncryptedAccountKey) is cleared
     /// after a timeout period to minimize risk if server is compromised.
     /// </summary>
     public DateTime? ClearedAt { get; set; }

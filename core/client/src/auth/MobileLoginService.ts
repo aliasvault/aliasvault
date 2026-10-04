@@ -148,13 +148,13 @@ export class MobileLoginService {
           return;
         }
 
-        if (data.status === 'Approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedUnlockKey) {
+        if (data.status === 'Approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedAccountKey) {
           // Capture the key locally.
           const privateKey = this.privateKey!;
           this.cleanup();
 
           // The mobile app encrypted its stored key with our public key.
-          const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedUnlockKey, privateKey));
+          const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedAccountKey, privateKey));
 
           // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.
           const symmetricKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedSymmetricKey, privateKey));

@@ -33,7 +33,7 @@ export type MobileLoginPollResponse = {
     status: MobileLoginStatus;
     encryptedSymmetricKey: string | null;
     encryptedPayload: string | null;
-    encryptedUnlockKey: string | null;
+    encryptedAccountKey: string | null;
 }
 
 /**
@@ -74,5 +74,5 @@ export type MobileLoginDetailsResponse = {
  */
 export type MobileLoginSubmitRequest = {
     requestId: string;
-    encryptedUnlockKey: string;
+    encryptedAccountKey: string;
 }
