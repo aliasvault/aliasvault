@@ -284,7 +284,7 @@ export class ItemQueries {
 
   /**
    * Get all unique email addresses the vault still routes mail to. Addresses the user switched off are excluded:
-   * their claim link is disabled server-side, so no new mail arrives for them and their inbox stays hidden.
+   * their claim is disabled server-side, so no new mail arrives for them and their inbox stays hidden.
    */
   public static readonly GET_ROUTABLE_EMAIL_ADDRESSES = `
     SELECT DISTINCT fv.Value as Email

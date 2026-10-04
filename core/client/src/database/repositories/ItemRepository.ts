@@ -233,7 +233,7 @@ export class ItemRepository extends BaseRepository {
 
   /**
    * Fetch the unique email addresses the vault still routes mail to, i.e. every live login email field the user
-   * has not switched off. A switched-off alias keeps its claim link and its stored mail server-side, but the
+   * has not switched off. A switched-off alias keeps its claim and its stored mail server-side, but the
    * client stops asking for its mailbox until it is switched back on.
    * @returns Array of email addresses
    */

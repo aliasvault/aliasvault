@@ -815,7 +815,7 @@ public class TaskRunnerTests
         foreach (var alias in aliases)
         {
             // Add 50 random emails for enabled aliases
-            if (alias.Links.Any(l => l.State != EmailClaimLinkState.Removed))
+            if (alias.State != EmailClaimState.Removed)
             {
                 for (int i = 0; i < 50; i++)
                 {

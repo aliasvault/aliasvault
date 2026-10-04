@@ -70,7 +70,7 @@
                 u.TwoFactorEnabled,
                 LastActivityDate = u.LastActivityDate!.Value,
                 CredentialCount = dbContext.VaultManifests.Where(m => m.OwnerGroupId == u.PersonalGroupId).Sum(m => m.CredentialsCount),
-                EmailClaimCount = dbContext.EmailClaimLinks.Count(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == u.PersonalGroupId),
+                EmailClaimCount = dbContext.EmailClaims.Count(c => c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == u.PersonalGroupId),
             })
             .ToListAsync();
 

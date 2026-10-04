@@ -1,11 +1,15 @@
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import { EncryptionUtility } from '@aliasvault/client/crypto/EncryptionUtility';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 
+import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import { AttachmentIcon } from '@/entrypoints/popup/components/Icons/AttachmentIcon';
 import Icon from '@/entrypoints/popup/components/Icons/Icon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -14,7 +18,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected } from '@/utils/Diagnostics';
 
-import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 
 import { storage } from '#imports';
 
@@ -23,12 +27,13 @@ const spamOk = new SpamOkClient('av-chrome', AppInfo.VERSION);
 
 type EmailPreviewProps = {
   email: string;
+  manifestId: string;
 }
 
 /**
  * This component shows a preview of the latest emails in the inbox.
  */
-export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
+export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId }) => {
   const { t } = useTranslation();
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
   const [displayedEmails, setDisplayedEmails] = useState<MailboxEmail[]>([]);
@@ -38,6 +43,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const [error, setError] = useState<string | null>(null);
   const [isSupportedDomain, setIsSupportedDomain] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(2);
+  const [ownerNotice, setOwnerNotice] = useState<AliasOwnerNotice | null>(null);
+  const [showMoveConfirm, setShowMoveConfirm] = useState(false);
   const webApi = useWebApi();
   const dbContext = useDb();
   const location = useLocation();
@@ -155,7 +162,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
              */
             const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
             try {
-              const data = response as { mails: MailboxEmail[], publicKeys: string[] };
+              const data = response as Mailbox;
+              setOwnerNotice(aliasOwnerNotice(email, data, manifestId, dbContext.sqliteClient!.getPersonalManifestId(), dbContext.sqliteClient!.folders.getAll()));
 
               // Store all emails, sorted by date
               const allMails = data.mails
@@ -201,7 +209,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
               }
 
               markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
-              setError(t('apiErrors.' + apiErrorResponse?.code, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+              setError(aliasOwnerErrorText(apiErrorResponse?.code) ?? t('apiErrors.' + apiErrorResponse?.code, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
               return;
             }
           } catch (err) {
@@ -241,7 +249,45 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         clearTimeout(timer);
       }
     };
-  }, [email, loading, webApi, dbContext, t, displayedCount]);
+  }, [email, manifestId, loading, webApi, dbContext, t, displayedCount]);
+
+  /**
+   * Move the alias to this item's vault, then reload so the notice goes away.
+   */
+  const moveHere = async (): Promise<void> => {
+    setShowMoveConfirm(false);
+    try {
+      await moveAliasHere(webApi, email, manifestId);
+      setOwnerNotice(null);
+      setLoading(true);
+    } catch (err) {
+      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('common.errors.unknownErrorTryAgain'));
+    }
+  };
+
+  const ownerNoticeBlock = ownerNotice && (
+    <div className="mb-2 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded">
+      <p className="text-sm text-amber-800 dark:text-amber-200">{ownerNotice.notice}</p>
+      {ownerNotice.canMove && (
+        <button
+          id="move-alias-here"
+          onClick={() => setShowMoveConfirm(true)}
+          className="mt-2 py-1 px-3 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm"
+        >
+          {familySharingText.aliasOwner.moveHere}
+        </button>
+      )}
+      <Modal
+        isOpen={showMoveConfirm}
+        onClose={() => setShowMoveConfirm(false)}
+        onConfirm={() => void moveHere()}
+        title={familySharingText.aliasOwner.moveHere}
+        message={ownerNotice.moveConfirm}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+      />
+    </div>
+  );
 
   // Don't render anything if the domain is not supported
   if (!isSupportedDomain) {
@@ -291,6 +337,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.recentEmails')}</h2>
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
         </div>
+        {ownerNoticeBlock}
         {t('emails.noEmails')}
       </div>
     );
@@ -302,6 +349,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.recentEmails')}</h2>
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
       </div>
+      {ownerNoticeBlock}
 
       {displayedEmails.map((mail) => (
         isSpamOk ? (

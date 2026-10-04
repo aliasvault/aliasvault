@@ -99,15 +99,6 @@ public static class GrantHelper
         }
 
         context.VaultManifestAccessKeys.RemoveRange(grants);
-
-        var personalGroupId = await GroupHelper.GetPersonalGroupIdAsync(context, userId);
-        if (personalGroupId is not null)
-        {
-            await context.EmailClaimLinks
-                .Where(l => l.VaultManifest.OwnerGroupId == personalGroupId.Value && context.EmailClaimLinks.Any(s => s.EmailClaimId == l.EmailClaimId && s.VaultManifestId == manifestId))
-                .ExecuteUpdateAsync(s => s.SetProperty(l => l.State, EmailClaimLinkState.Removed));
-        }
-
         return true;
     }
 

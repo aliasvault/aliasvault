@@ -272,4 +272,24 @@ public enum ApiErrorCode
     /// The registration invite code is unknown, expired or used up.
     /// </summary>
     INVITE_CODE_INVALID,
+
+    /// <summary>
+    /// The email claim does not exist, or its owning manifest is not accessible to the caller.
+    /// </summary>
+    EMAIL_CLAIM_NOT_FOUND,
+
+    /// <summary>
+    /// The target manifest's group already holds as many aliases as it is allowed to.
+    /// </summary>
+    ALIAS_LIMIT_REACHED,
+
+    /// <summary>
+    /// The email alias is owned by a vault the caller cannot open, of someone the caller shares a group with.
+    /// </summary>
+    CLAIM_OWNED_BY_OTHER_VAULT,
+
+    /// <summary>
+    /// The email address is already in use by another account.
+    /// </summary>
+    CLAIM_TAKEN,
 }

@@ -8,12 +8,13 @@
 namespace AliasServerDb;
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
-/// EmailClaim object. This object is used to reserve an email address. The claim is linked to every manifest that
-/// has ever held the alias (see <see cref="Links"/>), each link saying whether that manifest still carries it; a
-/// claim whose links are all gone is a tombstone that blocks re-use of the address by design.
+/// EmailClaim object. This object is used to reserve an email address for exactly one owning manifest. Only that manifest
+/// can update or reclaim it; moving it to another manifest is an explicit transfer. A claim whose manifest is gone is a
+/// tombstone that blocks re-use of the address by design.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
 public class EmailClaim
@@ -25,9 +26,20 @@ public class EmailClaim
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the manifests this alias lives in (and from which the owner groups can be derived).
+    /// Gets or sets the manifest that owns the alias. Null once that manifest has been deleted (tombstone).
     /// </summary>
-    public virtual List<EmailClaimLink> Links { get; set; } = [];
+    public Guid? VaultManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the navigation property to the manifest that owns the alias.
+    /// </summary>
+    [ForeignKey("VaultManifestId")]
+    public virtual VaultManifest? VaultManifest { get; set; }
+
+    /// <summary>
+    /// Gets or sets the state of the alias in its owning manifest.
+    /// </summary>
+    public EmailClaimState State { get; set; } = EmailClaimState.Active;
 
     /// <summary>
     /// Gets or sets the full email address.

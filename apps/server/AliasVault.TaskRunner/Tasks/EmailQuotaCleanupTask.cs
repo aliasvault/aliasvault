@@ -49,8 +49,8 @@ public class EmailQuotaCleanupTask : IMaintenanceTask
         var usersWithClaims = await (from u in dbContext.AliasVaultUsers
                                      join g in dbContext.Groups on u.PersonalGroupId equals g.Id
                                      join m in dbContext.VaultManifests on g.Id equals m.OwnerGroupId
-                                     join l in dbContext.EmailClaimLinks.Where(link => link.State != EmailClaimLinkState.Removed) on m.ManifestId equals l.VaultManifestId
-                                     select new { u.Id, u.UserName, g.MaxEmails, u.LastActivityDate, u.CreatedAt, l.EmailClaim.Address })
+                                     join c in dbContext.EmailClaims.Where(claim => claim.State != EmailClaimState.Removed) on m.ManifestId equals c.VaultManifestId
+                                     select new { u.Id, u.UserName, g.MaxEmails, u.LastActivityDate, u.CreatedAt, c.Address })
             .ToListAsync(cancellationToken);
 
         // Get minimum activity date which is used to determine if user is active.

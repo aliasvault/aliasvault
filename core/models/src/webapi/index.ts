@@ -9,6 +9,7 @@ export * from './StatusResponse';
 export * from './StatusResponseV2';
 export * from './Login';
 export * from './ValidateLogin';
+export * from './Mailbox';
 export * from './MailboxBulk';
 export * from './MailboxEmail';
 export * from './Email';

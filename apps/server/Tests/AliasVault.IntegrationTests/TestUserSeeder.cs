@@ -79,7 +79,8 @@ public static class TestUserSeeder
             AddressDomain = addressParts[1],
             CreatedAt = timestamp,
             UpdatedAt = timestamp,
-            Links = [new EmailClaimLink { VaultManifestId = vaultManifestId, State = disabled ? EmailClaimLinkState.Removed : EmailClaimLinkState.Active }],
+            VaultManifestId = vaultManifestId,
+            State = disabled ? EmailClaimState.Removed : EmailClaimState.Active,
         };
     }
 }

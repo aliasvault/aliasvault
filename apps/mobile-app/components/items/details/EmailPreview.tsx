@@ -4,11 +4,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
+import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
 import { SpamOkClient } from '@aliasvault/client/email/SpamOkClient';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import { AppInfo } from '@aliasvault/client/platform/AppInfo';
 import { logExpected } from '@aliasvault/client/utilities/Diagnostics';
 import { mailboxPollDelayMs } from '@aliasvault/client/utilities/PollBackoff';
-import type { ApiErrorResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { ApiErrorResponse, Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -17,6 +20,7 @@ import { PulseDot } from '@/components/PulseDot';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 
 /** Client for the SpamOK mailboxes of the public email domains. */
@@ -24,12 +28,13 @@ const spamOk = new SpamOkClient('av-mobile', AppInfo.VERSION);
 
 type EmailPreviewProps = {
   email: string | undefined;
+  manifestId: string;
 };
 
 /**
  * Email preview component.
  */
-export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.ReactNode => {
+export const EmailPreview: React.FC<EmailPreviewProps> = ({ email, manifestId }) : React.ReactNode => {
   const [emails, setEmails] = useState<MailboxEmail[]>([]);
   const [displayedEmails, setDisplayedEmails] = useState<MailboxEmail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +44,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   const [error, setError] = useState<string | null>(null);
   const [isSupportedDomain, setIsSupportedDomain] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(2);
+  const [ownerNotice, setOwnerNotice] = useState<AliasOwnerNotice | null>(null);
+  const { showConfirm } = useDialog();
   const webApi = useWebApi();
   const dbContext = useDb();
   const colors = useColors();
@@ -188,7 +195,8 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
             // Use single emailbox operator instead of bulk
             const response = await webApi.authFetch(`EmailBox/${email}`, { method: 'GET' }, true, false);
             try {
-              const data = response as { mails: MailboxEmail[]; publicKeys: string[] };
+              const data = response as Mailbox;
+              setOwnerNotice(aliasOwnerNotice(email, data, manifestId, await dbContext.sqliteClient.getPersonalManifestId(), await dbContext.sqliteClient.folders.getAll()));
 
               // Store all emails, sorted by date
               const allMails = data.mails
@@ -225,7 +233,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
               }
 
               markPollFailed(`The server rejected the mailbox request: ${apiErrorResponse?.code ?? 'unknown'}`);
-              setError(t(`apiErrors.${apiErrorResponse?.code}`, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
+              setError(aliasOwnerErrorText(apiErrorResponse?.code) ?? t(`apiErrors.${apiErrorResponse?.code}`, { defaultValue: t('common.errors.unknownErrorTryAgain') }));
               return;
             }
           } catch (err) {
@@ -265,7 +273,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
         clearTimeout(timer);
       }
     };
-  }, [email, loading, webApi, dbContext, isPublicDomain, isPrivateDomain, isComponentVisible, t, displayedCount, updateDisplayedEmails]);
+  }, [email, manifestId, loading, webApi, dbContext, isPublicDomain, isPrivateDomain, isComponentVisible, t, displayedCount, updateDisplayedEmails]);
 
   const styles = StyleSheet.create({
     date: {
@@ -304,6 +312,31 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
       marginTop: 8,
       paddingHorizontal: 16,
       paddingVertical: 10,
+    },
+    moveButton: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      marginTop: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    moveButtonText: {
+      color: colors.primarySurfaceText,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    ownerNotice: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginTop: 8,
+      padding: 12,
+    },
+    ownerNoticeText: {
+      color: colors.text,
+      fontSize: 14,
     },
     loadMoreText: {
       color: colors.textMuted,
@@ -347,6 +380,32 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   if (!email) {
     return null;
   }
+
+  /**
+   * Move the alias to this item's vault after confirmation, then reload.
+   */
+  const confirmMoveHere = (moveConfirm: string): void => {
+    showConfirm(familySharingText.aliasOwner.moveHere, moveConfirm, t('common.confirm'), async () => {
+      try {
+        await moveAliasHere(webApi, email, manifestId);
+        setOwnerNotice(null);
+        setLoading(true);
+      } catch (err) {
+        setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('common.errors.unknownErrorTryAgain'));
+      }
+    });
+  };
+
+  const ownerNoticeBlock = ownerNotice && (
+    <View style={styles.ownerNotice}>
+      <ThemedText style={styles.ownerNoticeText}>{ownerNotice.notice}</ThemedText>
+      {ownerNotice.canMove && (
+        <TouchableOpacity style={styles.moveButton} onPress={() => confirmMoveHere(ownerNotice.moveConfirm)} testID="move-alias-here">
+          <ThemedText style={styles.moveButtonText}>{familySharingText.aliasOwner.moveHere}</ThemedText>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   // Don't render anything if the domain is not supported
   if (!isSupportedDomain) {
@@ -397,6 +456,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
           <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
           <PulseDot />
         </View>
+        {ownerNoticeBlock}
         <ThemedText style={styles.placeholderText}>{t('items.noEmailsYet')}</ThemedText>
       </ThemedView>
     );
@@ -408,6 +468,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
         <ThemedText type="title" style={styles.title}>{t('common.recentEmails')}</ThemedText>
         <PulseDot />
       </View>
+      {ownerNoticeBlock}
       {displayedEmails.map((mail) => (
         <TouchableOpacity
           key={mail.id}

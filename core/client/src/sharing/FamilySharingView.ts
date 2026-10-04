@@ -54,6 +54,17 @@ export const familySharingText = {
   /** Password prompt for deleting a shared vault. */
   deleteVaultPasswordPrompt: (vault: string): string => `Enter your master password to confirm deleting “${vault}” for the whole family.`,
   vaultDeleted: 'The shared vault has been deleted.',
+  /** An item's email alias that receives its emails in another place than the item's own vault or shared folder. */
+  aliasOwner: {
+    inPersonalVault: 'This email alias receives its emails in your personal vault.',
+    /** The alias receives its emails in a shared folder. */
+    inSharedFolder: (folder: string): string => `This email alias receives its emails in the shared folder “${folder}”.`,
+    moveHere: 'Move alias here',
+    /** Confirmation for moving the alias into a shared folder. */
+    moveToSharedFolderConfirm: (email: string, folder: string): string => `From now on, new emails for ${email} go to the shared folder “${folder}”, where everyone with access to it can read them. Emails received before stay where they are.`,
+    /** Confirmation for moving the alias into the personal vault. */
+    moveToPersonalVaultConfirm: (email: string): string => `From now on, new emails for ${email} go to your personal vault, where only you can read them. Emails received before stay where they are.`,
+  },
   errors: {
     loadFailed: 'Family sharing could not be loaded.',
     createVaultFailed: 'The shared vault could not be created. Please try again.',
@@ -69,6 +80,8 @@ export const familySharingText = {
     lastMemberWithAccess: 'Somebody has to be able to open the shared vault. Give another member access to it first.',
     vaultLimitReached: 'Max amount of shared vaults reached.',
     deleteVaultFailed: 'The shared vault could not be deleted. Please try again.',
+    aliasOwnedByOtherFolder: 'This email alias receives its emails in a shared folder you cannot open, or in the personal vault of another family member. Ask them to move it here.',
+    aliasLimitReached: 'The maximum number of email aliases has been reached.',
   },
 };
 

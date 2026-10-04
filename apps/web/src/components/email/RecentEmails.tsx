@@ -1,5 +1,7 @@
 import { apiErrorCodeOf } from '@aliasvault/client/api/errors/ApiRequestError';
 import EncryptionUtility from '@aliasvault/client/crypto/EncryptionUtility';
+import { type AliasOwnerNotice, aliasOwnerErrorText, aliasOwnerNotice, moveAliasHere } from '@aliasvault/client/email/AliasOwner';
+import { familySharingText } from '@aliasvault/client/sharing/FamilySharingView';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,16 +11,18 @@ import SkeletonBase from '@/components/loading/SkeletonBase';
 import Card from '@/components/shared/Card';
 import Icon from '@/components/shared/Icon';
 import SectionTitle from '@/components/shared/SectionTitle';
+import { useConfirmModal } from '@/context/ConfirmModalContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import { useEmailDomains } from '@/hooks/useEmailDomains';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { type EmailViewModel, loadAliasVaultEmail, loadSpamOkEmail, spamOk } from '@/utils/EmailViewModel';
 
-import type { MailboxBulkResponse, MailboxEmail } from '@aliasvault/models/webapi';
+import type { Mailbox, MailboxEmail } from '@aliasvault/models/webapi';
 
 type RecentEmailsProps = {
   emailAddress: string;
+  manifestId: string;
 };
 
 const INITIAL_DISPLAY_COUNT = 2;
@@ -36,7 +40,7 @@ const formatDate = (value: string): string => {
 /**
  * The recent emails received on an item's email address, with an in-place email modal.
  */
-const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
+const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress, manifestId }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
   const webApi = useWebApi();
@@ -45,6 +49,8 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
   const [mailboxEmails, setMailboxEmails] = useState<MailboxEmail[]>([]);
   const [displayedCount, setDisplayedCount] = useState(INITIAL_DISPLAY_COUNT);
   const [error, setError] = useState('');
+  const [ownerNotice, setOwnerNotice] = useState<AliasOwnerNotice | null>(null);
+  const { showConfirmation } = useConfirmModal();
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [email, setEmail] = useState<EmailViewModel | null>(null);
   const isPageVisible = useRef(true);
@@ -68,7 +74,8 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
           setMailboxEmails(mails);
         }
       } else if (isAliasVault && dbContext.sqliteClient) {
-        const mailbox = await webApi.get<MailboxBulkResponse>(`EmailBox/${emailAddress}`);
+        const mailbox = await webApi.get<Mailbox>(`EmailBox/${emailAddress}`);
+        setOwnerNotice(aliasOwnerNotice(emailAddress, mailbox, manifestId, dbContext.sqliteClient.getPersonalManifestId(), dbContext.sqliteClient.folders.getAll()));
         const decrypted = await EncryptionUtility.decryptEmailList(mailbox.mails, mailbox.publicKeys, dbContext.sqliteClient.encryptionKeys.getAll());
         setMailboxEmails(decrypted);
         setError('');
@@ -84,11 +91,13 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
           return;
         }
         setError(t('apiErrors.CLAIM_DOES_NOT_EXIST'));
+      } else if (apiErrorCodeOf(err)) {
+        setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('apiErrors.' + apiErrorCodeOf(err), { defaultValue: t('common.errors.unknownErrorTryAgain') }));
       } else {
         setError(err instanceof Error ? err.message : String(err));
       }
     }
-  }, [dbContext.isSyncing, dbContext.isUploading, dbContext.sqliteClient, emailAddress, emailPrefix, isAliasVault, isSpamOk, showComponent, t, webApi]);
+  }, [dbContext.isSyncing, dbContext.isUploading, dbContext.sqliteClient, emailAddress, emailPrefix, isAliasVault, isSpamOk, manifestId, showComponent, t, webApi]);
 
   /**
    * Reload from scratch, with the loading skeleton.
@@ -181,6 +190,21 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
     }
   };
 
+  /**
+   * Move the alias to this item's vault after confirmation, then reload.
+   */
+  const moveHere = async (): Promise<void> => {
+    if (!ownerNotice || !await showConfirmation(familySharingText.aliasOwner.moveHere, ownerNotice.moveConfirm, t('common.confirm'), t('common.cancel'))) {
+      return;
+    }
+    try {
+      await moveAliasHere(webApi, emailAddress, manifestId);
+      await manualRefresh();
+    } catch (err) {
+      setError(aliasOwnerErrorText(apiErrorCodeOf(err)) ?? t('common.errors.unknownErrorTryAgain'));
+    }
+  };
+
   if (!showComponent) {
     return null;
   }
@@ -212,6 +236,17 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
             </button>
           </div>
         </div>
+
+        {!isLoading && error.length === 0 && ownerNotice && (
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <p className="text-sm text-amber-800 dark:text-amber-200">{ownerNotice.notice}</p>
+            {ownerNotice.canMove && (
+              <button id="move-alias-here" type="button" onClick={() => void moveHere()} className="mt-2 py-1.5 px-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium">
+                {familySharingText.aliasOwner.moveHere}
+              </button>
+            )}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex flex-col mt-6">

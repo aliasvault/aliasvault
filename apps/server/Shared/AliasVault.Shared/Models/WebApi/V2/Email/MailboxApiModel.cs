@@ -29,6 +29,17 @@ public class MailboxApiModel
     public List<string> PublicKeys { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the manifest that owns the alias. A client shows the alias as owned elsewhere when this differs from the
+    /// manifest of the item it is looking at.
+    /// </summary>
+    public Guid? OwnerManifestId { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the caller may move the alias to another manifest it can access.
+    /// </summary>
+    public bool CanTransfer { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of mailbox email API models.
     /// </summary>
     public List<MailboxEmailApiModel> Mails { get; set; } = [];
