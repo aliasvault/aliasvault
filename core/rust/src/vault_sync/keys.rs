@@ -126,7 +126,7 @@ fn is_server_unreachable(error: &SyncError) -> bool {
     matches!(error, SyncError::Network(_) | SyncError::Timeout(_) | SyncError::Http { .. })
 }
 
-/// Clear the cached key chain: the account has none (legacy), so the password-derived key is the vault key.
+/// Clear the cached key chain: the account has none (legacy), so the unlock key is the vault key.
 async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     for key in [state::ENCRYPTED_ACCOUNT_KEY, state::ENCRYPTED_VEK, state::ACCOUNT_PUBLIC_KEY, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY] {
         state::remove(host, key).await?;
@@ -134,43 +134,43 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     Ok(())
 }
 
-/// Walk a key chain, telling a key that does not open the account key (wrong password) apart from a chain whose VEK
-/// does not open under its own account key. Returns the VEK and the Account Key.
-fn walk_chain(encrypted_account_key: &str, encrypted_vek: &str, kek: &str) -> SyncResult<(Zeroizing<String>, Zeroizing<String>)> {
-    let account_key = crypto::unwrap_key(encrypted_account_key, kek).map_err(|_| SyncError::UnlockKeyRejected)?;
-    let vek = crypto::unwrap_key(encrypted_vek, &account_key).map_err(|e| SyncError::KeyChainUnreadable(e.to_string()))?;
-    Ok((vek, account_key))
+/// Walk a key chain with an unlock key or the stored Account Key, telling a key that does not open the account key
+/// (wrong password) apart from a chain whose VEK does not open under its own account key. Returns the VEK and the
+/// Account Key.
+fn walk_chain(encrypted_account_key: &str, encrypted_vek: &str, unlock_key: &str) -> SyncResult<(Zeroizing<String>, Zeroizing<String>)> {
+    let opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None).map_err(|error| match error {
+        crypto::KeyChainError::UnlockKeyRejected => SyncError::UnlockKeyRejected,
+        crypto::KeyChainError::KeyChainUnreadable(message) => SyncError::KeyChainUnreadable(message),
+    })?;
+    Ok((opened.vault_encryption_key, opened.account_key))
 }
 
-/// Open a key chain with the password-derived key: the VEK becomes the session key and the private key is staged.
-async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, kek: &str) -> SyncResult<()> {
-    let (vek, account_key) = walk_chain(encrypted_account_key, encrypted_vek, kek)?;
+/// Open a key chain with an unlock key or the stored Account Key: the VEK becomes the session key and the private key
+/// is staged.
+async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<()> {
+    let (vek, account_key) = walk_chain(encrypted_account_key, encrypted_vek, unlock_key)?;
     ctx.set_encryption_key(vek.to_string());
     stage_account_private_key(ctx, &account_key, encrypted_private_key).await;
     Ok(())
 }
 
-/// The login-time key resolution (the `resolveVaultKey` operation). The request carries the password-derived key
-/// (KEK); the account's key chain is fetched from the server (the cached one stands in when the server cannot be
-/// reached or predates the endpoint), opened with the KEK, cached for offline unlock, and the VEK becomes the
-/// session key. An account without a chain is a sqlite-blob legacy account whose KEK is the vault key itself; its
-/// hierarchy is created later by the migration push. Returns whether the account has a chain.
+/// The login-time key resolution (the `resolveVaultKey` operation).
 pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
-    let kek = ctx.encryption_key()?;
+    let unlock_key = ctx.encryption_key()?;
     let fetched = http::get::<VaultKeyGetResponse>(&ctx.host, http::VAULT_KEY_PASSWORD_ENDPOINT, false).await;
     ctx.vault_key_probed = true;
     match fetched {
         Ok(response) => match response.vault_key {
             Some(vault_key) if vault_key.encrypted_vek.is_some() => {
                 let encrypted_vek = vault_key.encrypted_vek.clone().unwrap_or_default();
-                open_chain(ctx, &vault_key.encrypted_account_key, &encrypted_vek, vault_key.encrypted_account_private_key.as_deref(), &kek).await?;
+                open_chain(ctx, &vault_key.encrypted_account_key, &encrypted_vek, vault_key.encrypted_account_private_key.as_deref(), &unlock_key).await?;
                 cache_vault_key_blobs(&ctx.host, &vault_key).await?;
                 ctx.log("[VaultSync] Opened the account's key chain; the session key is the VEK.").await;
                 Ok(true)
             }
             _ => {
                 clear_cached_chain(&ctx.host).await?;
-                ctx.log("[VaultSync] The account has no key chain yet (legacy vault); the password-derived key is the vault key.").await;
+                ctx.log("[VaultSync] The account has no key chain yet (legacy vault); the unlock key is the vault key.").await;
                 Ok(false)
             }
         },
@@ -178,7 +178,7 @@ pub(crate) async fn resolve_vault_key(ctx: &mut Ctx) -> SyncResult<bool> {
             ctx.warn(format!("[VaultSync] Could not fetch the key chain, opening the cached one: {}", error)).await;
             let Some((encrypted_account_key, encrypted_vek)) = cached_chain(&ctx.host).await? else { return Ok(false) };
             let encrypted_private_key = state::get::<String>(&ctx.host, state::ENCRYPTED_ACCOUNT_PRIVATE_KEY).await?;
-            open_chain(ctx, &encrypted_account_key, &encrypted_vek, encrypted_private_key.as_deref(), &kek).await?;
+            open_chain(ctx, &encrypted_account_key, &encrypted_vek, encrypted_private_key.as_deref(), &unlock_key).await?;
             Ok(true)
         }
         Err(error) => Err(error),

@@ -4,6 +4,7 @@
 //! All functions use JSON strings for input/output to simplify cross-language marshalling.
 
 use crate::crypto::argon2::Argon2Error;
+use crate::crypto::{KeyChainError, SrpInputError};
 use crate::crypto::srp::{SrpEphemeral, SrpError, SrpSession};
 use crate::common::error::{json_call, VaultError};
 use crate::sqlite_host::{MemoryDatabase, SqlResult, SqlValue};
@@ -215,6 +216,44 @@ pub fn argon2_derive_key(password: String, salt: String, encryption_settings: St
 #[uniffi::export]
 pub fn argon2_derive_key_bytes(password: Vec<u8>, salt: Vec<u8>, encryption_settings: String) -> Result<Vec<u8>, Argon2Error> {
     crate::crypto::argon2::argon2_derive_key_bytes_from_settings(&password, &salt, &encryption_settings)
+}
+
+/// The KEK that wraps the Account Key, HKDF-derived from the unlock key.
+#[uniffi::export]
+pub fn derive_kek(unlock_key: Vec<u8>) -> Vec<u8> {
+    crate::crypto::derive_kek(&unlock_key).to_vec()
+}
+
+/// The SRP `password_hash` (uppercase hex) for an account's `encryptionType`, from the unlock key.
+#[uniffi::export]
+pub fn derive_srp_password_hash(unlock_key: Vec<u8>, encryption_type: String) -> Result<String, SrpInputError> {
+    crate::crypto::derive_srp_password_hash(&unlock_key, &encryption_type).map(|hash| hash.to_string())
+}
+
+/// The keys an opened chain gives.
+#[derive(uniffi::Record)]
+pub struct KeyChainKeys {
+    pub vault_encryption_key: Vec<u8>,
+
+    /// What the caller stores in place of the key it passed in.
+    pub account_key: Vec<u8>,
+
+    /// The account private key (JWK), none when the account has no keypair or it does not open.
+    pub account_private_key: Option<String>,
+}
+
+/// Open a key chain with a stored key: the Account Key or an unlock key.
+#[uniffi::export]
+pub fn open_account_key_chain(stored_key: Vec<u8>, encrypted_account_key: String, encrypted_vek: String, encrypted_account_private_key: Option<String>) -> Result<KeyChainKeys, KeyChainError> {
+    use crate::common::encoding::{base64_decode, base64_encode};
+    let stored_key = zeroize::Zeroizing::new(base64_encode(&stored_key));
+    let opened = crate::crypto::open_account_key_chain(&stored_key, &encrypted_account_key, &encrypted_vek, encrypted_account_private_key.as_deref())?;
+    let decode = |key: &str| base64_decode(key).map_err(|e| KeyChainError::KeyChainUnreadable(e.to_string()));
+    Ok(KeyChainKeys {
+        vault_encryption_key: decode(&opened.vault_encryption_key)?,
+        account_key: decode(&opened.account_key)?,
+        account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
+    })
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
