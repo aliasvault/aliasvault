@@ -178,7 +178,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         {
             await context.Emails
                 .Where(e => model.Ids.Contains(e.Id))
-                .Where(e => context.EmailClaims.Any(c => c.Address == e.To.Trim().ToLower() && c.Links.Any(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId)))
+                .Where(e => context.EmailClaims.Any(c => c.Address == e.To.Trim().ToLower() && c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == user.PersonalGroupId))
                 .ExecuteDeleteAsync();
         }
         catch (Exception ex)
@@ -245,7 +245,7 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         var normalizedEmailAddress = email.To.Trim().ToLower();
         var emailClaim = await context.EmailClaims
             .Where(x => x.Address == normalizedEmailAddress)
-            .FirstOrDefaultAsync(x => x.Links.Any(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId));
+            .FirstOrDefaultAsync(x => x.State != EmailClaimState.Removed && x.VaultManifest!.OwnerGroupId == user.PersonalGroupId);
 
         if (emailClaim is null)
         {

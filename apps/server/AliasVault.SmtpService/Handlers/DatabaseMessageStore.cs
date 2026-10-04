@@ -390,20 +390,16 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // An alias may be claimed by several manifests at once (personal + shared). The mail is stored once, with
-        // the symmetric key wrapped per linked manifest's primary delivery key.
-        var links = await dbContext.EmailClaimLinks.Where(l => l.EmailClaimId == emailClaim.Id).Select(l => new { l.VaultManifestId, l.State }).ToListAsync(CancellationToken.None);
-        if (links.Count == 0)
+        if (emailClaim.VaultManifestId is not Guid ownerManifestId)
         {
-            // The claim is orphaned: every manifest it was linked to no longer exists (owner deleted account).
+            // The claim is orphaned: the manifest that owned it no longer exists (owner deleted account or vault).
             logger.LogInformation(
                 "Rejected email: email for {ToAddress} is claimed but its owning vault no longer exists. The owner has most likely deleted their account.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }
 
-        // Check whether any vault still carries the alias at all.
-        if (links.All(l => l.State == EmailClaimLinkState.Removed))
+        if (emailClaim.State == EmailClaimState.Removed)
         {
             // Email claim is disabled, so we cannot process this email.
             logger.LogInformation(
@@ -412,35 +408,28 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             return false;
         }
 
-        // Check if there is at least one manifest that still carries the alias and wants its mail.
-        var linkedManifestIds = links.Where(l => l.State == EmailClaimLinkState.Active).Select(l => l.VaultManifestId).ToList();
-        if (linkedManifestIds.Count == 0)
+        if (emailClaim.State == EmailClaimState.Paused)
         {
             logger.LogInformation(
-                "Rejected email: email for {ToAddress} is claimed but every vault that still carries it has the alias switched off.",
+                "Rejected email: email for {ToAddress} is claimed but the vault that carries it has the alias switched off.",
                 toAddress.User + "@" + toAddress.Host);
             return false;
         }
 
-        // Resolve every linked manifest's primary delivery key.
-        var deliveryKeys = await dbContext.VaultManifestDeliveryKeys.Where(x => linkedManifestIds.Contains(x.VaultManifestId) && x.IsPrimary).ToListAsync(CancellationToken.None);
-        foreach (var keylessManifestId in linkedManifestIds.Except(deliveryKeys.Select(k => k.VaultManifestId)))
-        {
-            logger.LogWarning("Manifest {ManifestId} claims alias {ToAddress} but has no primary delivery key published; it gets no wrap for this email.", keylessManifestId, toAddress.User + "@" + toAddress.Host);
-        }
-
+        // Resolve the owning manifest's primary delivery key.
+        var deliveryKeys = await dbContext.VaultManifestDeliveryKeys.Where(x => x.VaultManifestId == ownerManifestId && x.IsPrimary).ToListAsync(CancellationToken.None);
         if (deliveryKeys.Count == 0)
         {
-            // No linked manifest has a published primary delivery key, so we cannot process this email.
+            // The owning manifest has no published primary delivery key, so we cannot process this email.
             logger.LogCritical(
-                "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for any of its manifests.",
-                toAddress.User + "@" + toAddress.Host);
+                "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for manifest {ManifestId}.",
+                toAddress.User + "@" + toAddress.Host,
+                ownerManifestId);
             return false;
         }
 
-        // Resolve the groups that own the wrapped-for manifests, only used to increment their EmailsReceived counters.
-        var wrappedManifestIds = deliveryKeys.Select(k => k.VaultManifestId).ToList();
-        var recipientGroupIds = await dbContext.VaultManifests.Where(m => wrappedManifestIds.Contains(m.ManifestId)).Select(m => m.OwnerGroupId).Distinct().ToListAsync(CancellationToken.None);
+        // Resolve the group that owns the manifest, only used to increment its EmailsReceived counter.
+        var recipientGroupIds = await dbContext.VaultManifests.Where(m => m.ManifestId == ownerManifestId).Select(m => m.OwnerGroupId).ToListAsync(CancellationToken.None);
 
         var insertedId = await InsertEmailIntoDatabase(message, detachedParts, new MailAddress(toAddress.AsAddress()), deliveryKeys, recipientGroupIds, emailClaim.Id, emailClaim.AnonymizedSenderCounted);
         logger.LogDebug("Email for {ToAddress} successfully saved into database with ID {InsertedId}.", toAddress.User + "@" + toAddress.Host, insertedId);

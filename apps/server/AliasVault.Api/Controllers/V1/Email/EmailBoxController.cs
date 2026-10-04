@@ -50,9 +50,8 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var sanitizedEmail = to.Trim().ToLower();
 
         // Unclaimed and claimed by someone else return the same error on purpose.
-        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail && x.Links.Any(l => l.State != EmailClaimLinkState.Removed));
-        var hasPersonalLink = emailClaim is not null && await context.EmailClaimLinks.AnyAsync(l => l.EmailClaimId == emailClaim.Id && l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId);
-        if (!hasPersonalLink)
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail && x.State != EmailClaimState.Removed && x.VaultManifest!.OwnerGroupId == user.PersonalGroupId);
+        if (emailClaim is null)
         {
             return BadRequest(new ApiErrorResponse
             {
@@ -131,10 +130,9 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         model.PageSize = Math.Clamp(model.PageSize, 1, 50);
 
         // Load all email addresses that the user has a claim to where the address is in the list.
-        var validAddresses = await context.EmailClaimLinks
-            .Where(l => model.Addresses.Contains(l.EmailClaim.Address) && l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == user.PersonalGroupId)
-            .Select(l => l.EmailClaim.Address)
-            .Distinct()
+        var validAddresses = await context.EmailClaims
+            .Where(c => model.Addresses.Contains(c.Address) && c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == user.PersonalGroupId)
+            .Select(c => c.Address)
             .ToListAsync();
 
         // The caller's personal keys: v1 clients only hold the private halves of these, so serve the matching decryption keys.

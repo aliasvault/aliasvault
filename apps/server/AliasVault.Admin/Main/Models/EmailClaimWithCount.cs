@@ -10,7 +10,7 @@ namespace AliasVault.Admin.Main.Models;
 using AliasServerDb;
 
 /// <summary>
-/// An email claim as seen from one manifest, with the number of emails stored for its address.
+/// An email claim with the number of emails stored for its address.
 /// </summary>
 public class EmailClaimWithCount
 {
@@ -25,9 +25,9 @@ public class EmailClaimWithCount
     public string Address { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets what the manifest's link to this claim says about the alias right now.
+    /// Gets or sets the state of the alias in its owning manifest.
     /// </summary>
-    public EmailClaimLinkState State { get; set; }
+    public EmailClaimState State { get; set; }
 
     /// <summary>
     /// Gets or sets the created at timestamp.

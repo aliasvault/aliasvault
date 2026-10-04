@@ -52,9 +52,9 @@ public class DisabledEmailCleanupTask : IMaintenanceTask
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var cutoffDate = DateTime.UtcNow.AddDays(-settings.DisabledEmailRetentionDays);
 
-        // An alias is dead once no manifest carries it anymore, which is what the absence of a live link says.
+        // An alias is dead once its owning manifest no longer carries it, or that manifest is gone.
         var deletedCount = await dbContext.Emails
-            .Where(e => e.DateSystem <= cutoffDate && dbContext.EmailClaims.Any(c => c.Address == e.To && !c.Links.Any(l => l.State != EmailClaimLinkState.Removed)))
+            .Where(e => e.DateSystem <= cutoffDate && dbContext.EmailClaims.Any(c => c.Address == e.To && (c.State == EmailClaimState.Removed || c.VaultManifestId == null)))
             .ExecuteDeleteAsync(cancellationToken);
 
         _logger.LogInformation("Deleted {Count} emails for aliases that no vault carries anymore.", deletedCount);

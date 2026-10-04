@@ -10,7 +10,9 @@ namespace AliasVault.Api.Controllers.V2.Email;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using AliasVault.Auth.IpAddress;
+using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Email;
 using Asp.Versioning;
@@ -26,8 +28,9 @@ using NpgsqlTypes;
 /// <param name="dbContextFactory">DbContext instance.</param>
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="ipBlockListService">IpBlockListService used to shadow-block email retrieval from blocked IPs.</param>
+/// <param name="takenAliasLookupRateLimit">Limits how many taken addresses a caller may learn about.</param>
 [ApiVersion("2")]
-public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService) : AuthenticatedRequestController(userManager)
+public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService, TakenAliasLookupRateLimitService takenAliasLookupRateLimit) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Returns a list of emails for the provided email address.
@@ -49,11 +52,32 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         var sanitizedEmail = to.Trim().ToLower();
-
-        // Unclaimed and claimed by someone else return the same error, so this endpoint does not reveal which addresses are taken.
-        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail && x.Links.Any(l => l.State != EmailClaimLinkState.Removed));
-        if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
+        var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail);
+        if (emailClaim is null || !await EmailAccessHelper.CanAccessOwnerAsync(context, emailClaim, user.Id))
         {
+            if (emailClaim is not null && await EmailAccessHelper.IsOwnedWithinSharedGroupAsync(context, emailClaim, user.Id))
+            {
+                return BadRequest(new ApiErrorResponse
+                {
+                    Message = "This email alias is owned by another vault.",
+                    Code = nameof(ApiErrorCode.CLAIM_OWNED_BY_OTHER_VAULT),
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Timestamp = DateTime.UtcNow,
+                });
+            }
+
+            // Over the lookup limit a taken address falls back to the generic error, which slows down enumeration.
+            if (emailClaim is not null && takenAliasLookupRateLimit.TryRecord(user.Id, RegistrationCheckRateLimit.GetClientKey(HttpContext), sanitizedEmail))
+            {
+                return BadRequest(new ApiErrorResponse
+                {
+                    Message = "This email address is already in use by another account.",
+                    Code = nameof(ApiErrorCode.CLAIM_TAKEN),
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Timestamp = DateTime.UtcNow,
+                });
+            }
+
             return BadRequest(new ApiErrorResponse
             {
                 Message = "No claim exists for this email address.",
@@ -68,6 +92,13 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);
         var keyTable = await EmailKeyTable.BuildAsync(context, decryptableKeyIds);
         var emailQuery = context.Emails.AsNoTracking().Where(x => x.To == sanitizedEmail && x.DecryptionKeys.Any(d => decryptableKeyIds.Contains(d.VaultManifestDeliveryKeyId)));
+
+        // A removed alias still answers with its owner (so the client can offer to move it), but without its mail.
+        if (emailClaim.State == EmailClaimState.Removed)
+        {
+            emailQuery = emailQuery.Where(x => false);
+        }
+
         if (shadowCutoff is not null)
         {
             emailQuery = emailQuery.Where(x => x.DateSystem <= shadowCutoff.Value);
@@ -109,6 +140,10 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
             Subscribed = false,
             PublicKeys = keyTable.PublicKeys,
             Mails = emails,
+            OwnerManifestId = emailClaim.VaultManifestId,
+
+            // For now anyone who can open the owning manifest may move the alias, matching VaultController.TransferEmailClaim.
+            CanTransfer = true,
         };
 
         return Ok(returnValue);

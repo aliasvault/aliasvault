@@ -4,6 +4,7 @@
     "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
     "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
+    "CLAIM_TAKEN": "This email address is already used by another account. Edit this item and choose a different email address.",
     "INTERNAL_SERVER_ERROR": "Internal server error.",
     "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
     "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",

@@ -21,11 +21,49 @@ public static class EmailAccessHelper
     /// <param name="context">Database context.</param>
     /// <param name="claim">The email claim to check access for.</param>
     /// <param name="userId">The user requesting access.</param>
-    /// <returns>True when the alias is linked to a manifest the user can access.</returns>
+    /// <returns>True when the alias is owned by a manifest the user can access.</returns>
     public static async Task<bool> CanReadClaimAsync(AliasServerDbContext context, EmailClaim claim, string userId)
     {
         var accessible = await AccessibleManifestsAsync(context, userId);
-        return await context.EmailClaimLinks.AnyAsync(l => l.EmailClaimId == claim.Id && l.State != EmailClaimLinkState.Removed && accessible.Any(m => m.ManifestId == l.VaultManifestId));
+        return claim.State != EmailClaimState.Removed && claim.VaultManifestId is Guid owner && await accessible.AnyAsync(m => m.ManifestId == owner);
+    }
+
+    /// <summary>
+    /// Check if the user can open the manifest that owns the email claim, whatever the claim's state.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="claim">The email claim to check.</param>
+    /// <param name="userId">The user requesting access.</param>
+    /// <returns>True when the owning manifest is accessible to the user.</returns>
+    public static async Task<bool> CanAccessOwnerAsync(AliasServerDbContext context, EmailClaim claim, string userId)
+    {
+        var accessible = await AccessibleManifestsAsync(context, userId);
+        return claim.VaultManifestId is Guid owner && await accessible.AnyAsync(m => m.ManifestId == owner);
+    }
+
+    /// <summary>
+    /// Check if the email claim is owned by a vault of someone the user shares a group with: a shared vault of that group, or
+    /// the personal vault of one of its members. Only then may the user learn that the address is owned elsewhere.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="claim">The email claim to check.</param>
+    /// <param name="userId">The user asking.</param>
+    /// <returns>True when the claim's owner is within one of the user's shared groups.</returns>
+    public static async Task<bool> IsOwnedWithinSharedGroupAsync(AliasServerDbContext context, EmailClaim claim, string userId)
+    {
+        if (claim.VaultManifestId is not Guid owner)
+        {
+            return false;
+        }
+
+        var ownerGroupId = await context.VaultManifests.Where(m => m.ManifestId == owner).Select(m => (Guid?)m.OwnerGroupId).FirstOrDefaultAsync();
+        if (ownerGroupId is null)
+        {
+            return false;
+        }
+
+        var sharedGroupIds = context.GroupMembers.Where(gm => gm.UserId == userId && gm.Group.Type == GroupType.Shared).Select(gm => gm.GroupId);
+        return await context.GroupMembers.AnyAsync(gm => sharedGroupIds.Contains(gm.GroupId) && (gm.GroupId == ownerGroupId || gm.User.PersonalGroupId == ownerGroupId));
     }
 
     /// <summary>
@@ -43,10 +81,9 @@ public static class EmailAccessHelper
         }
 
         var accessible = await AccessibleManifestsAsync(context, userId);
-        return await context.EmailClaimLinks
-            .Where(l => addresses.Contains(l.EmailClaim.Address) && l.State != EmailClaimLinkState.Removed && accessible.Any(m => m.ManifestId == l.VaultManifestId))
-            .Select(l => l.EmailClaim.Address)
-            .Distinct()
+        return await context.EmailClaims
+            .Where(c => addresses.Contains(c.Address) && c.State != EmailClaimState.Removed && accessible.Any(m => m.ManifestId == c.VaultManifestId))
+            .Select(c => c.Address)
             .ToListAsync();
     }
 

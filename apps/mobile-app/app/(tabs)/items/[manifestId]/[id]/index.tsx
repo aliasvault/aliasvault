@@ -304,7 +304,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
             {renderUrls()}
           </View>
         </ThemedView>
-        <EmailPreview email={email} />
+        <EmailPreview email={email} manifestId={item.ManifestId} />
         <TotpSection item={item} />
         <LoginFields item={item} />
         <CardDetails item={item} />

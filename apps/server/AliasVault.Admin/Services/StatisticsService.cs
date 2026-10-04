@@ -74,7 +74,7 @@ public class StatisticsService(IAliasServerDbContextFactory contextFactory)
         return new ServerStatistics
         {
             TotalUsers = await context.AliasVaultUsers.CountAsync(),
-            TotalAliases = await context.EmailClaims.CountAsync(c => c.Links.Any(l => l.State != EmailClaimLinkState.Removed)),
+            TotalAliases = await context.EmailClaims.CountAsync(c => c.State != EmailClaimState.Removed && c.VaultManifestId != null),
             TotalEmails = await context.Emails.CountAsync(),
             TotalVaultStorageKb = await context.AliasVaultUsers.WithVaultStorage(context).SumAsync(x => x.VaultStorageKb),
         };
@@ -120,10 +120,10 @@ public class StatisticsService(IAliasServerDbContextFactory contextFactory)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
 
-        // A claim link is the ownership record of an alias; only links that are not Removed still carry it.
-        var liveLinksPerUser = context.EmailClaimLinks
-            .Where(l => l.State != EmailClaimLinkState.Removed)
-            .Join(context.AliasVaultUsers, l => l.VaultManifest.OwnerGroupId, u => u.PersonalGroupId, (l, u) => new { u.Id, u.UserName, u.Blocked })
+        // Only claims that are not Removed are still carried by their owning manifest.
+        var liveLinksPerUser = context.EmailClaims
+            .Where(c => c.State != EmailClaimState.Removed)
+            .Join(context.AliasVaultUsers, c => c.VaultManifest!.OwnerGroupId, u => u.PersonalGroupId, (c, u) => new { u.Id, u.UserName, u.Blocked })
             .GroupBy(x => new { x.Id, x.UserName, x.Blocked })
             .Select(g => new { UserId = g.Key.Id, Username = g.Key.UserName, g.Key.Blocked, AliasCount = g.Count() });
 
@@ -226,7 +226,7 @@ public class StatisticsService(IAliasServerDbContextFactory contextFactory)
         return new UserUsageStatistics
         {
             TotalCredentials = await context.VaultManifests.Where(m => m.OwnerGroupId == personalGroupId).SumAsync(m => m.CredentialsCount),
-            ActiveEmailClaims = await context.EmailClaimLinks.CountAsync(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == personalGroupId),
+            ActiveEmailClaims = await context.EmailClaims.CountAsync(c => c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == personalGroupId),
             TotalReceivedEmails = await context.Emails.CountAsync(e => e.DecryptionKeys.Any(d => d.VaultManifestDeliveryKey.VaultManifest.OwnerGroupId == personalGroupId)),
         };
     }

@@ -52,7 +52,7 @@ const EmailsList: React.FC = () => {
 
   /**
    * The addresses whose mailbox this vault may ask for: aliases on a server-hosted domain that are still switched on.
-   * A deleted or switched-off alias has no enabled claim link on the server, so its mail stays hidden, and addresses
+   * A deleted or switched-off alias has no enabled claim on the server, so its mail stays hidden, and addresses
    * on domains the server does not host are never sent to it in the first place.
    */
   const getMailboxAddresses = useCallback(async () : Promise<string[]> => {

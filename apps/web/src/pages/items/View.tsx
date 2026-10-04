@@ -211,7 +211,7 @@ const ItemView: React.FC = () => {
               </div>
             </Section>
 
-            {isLoginLike && emailAddress.length > 0 && <RecentEmails emailAddress={emailAddress} />}
+            {isLoginLike && emailAddress.length > 0 && <RecentEmails emailAddress={emailAddress} manifestId={item.ManifestId} />}
 
             {totpCodes.length > 0 && <TotpViewer totpCodes={totpCodes} item={item} />}
 

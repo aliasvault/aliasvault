@@ -200,7 +200,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
         const emailField = item.Fields.find(f => f.FieldKey === 'login.email');
         const emailValue = emailField?.Value;
         const email = Array.isArray(emailValue) ? emailValue[0] : emailValue;
-        return email ? <EmailPreview email={email} /> : null;
+        return email ? <EmailPreview email={email} manifestId={item.ManifestId} /> : null;
       })()}
 
       {/* TOTP codes - only for Login and Alias types, shown at top */}

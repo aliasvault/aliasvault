@@ -97,11 +97,6 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
     public DbSet<EmailClaim> EmailClaims { get; set; }
 
     /// <summary>
-    /// Gets or sets the EmailClaimLinks DbSet.
-    /// </summary>
-    public DbSet<EmailClaimLink> EmailClaimLinks { get; set; }
-
-    /// <summary>
     /// Gets or sets the EmailDecryptionKeys DbSet.
     /// </summary>
     public DbSet<EmailDecryptionKey> EmailDecryptionKeys { get; set; }
@@ -517,28 +512,22 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
         });
 
         /*
-         * Configure EmailClaimLink - the claim's ownership references.
+         * Configure EmailClaim - one owning manifest per address.
          */
-        modelBuilder.Entity<EmailClaimLink>(builder =>
+        modelBuilder.Entity<EmailClaim>(builder =>
         {
-            builder.HasKey(l => new { l.EmailClaimId, l.VaultManifestId });
-
-            // Stored as its name rather than an ordinal: every query here reads "is this link still Removed", which
+            // Stored as its name rather than an ordinal: every query here reads "is this claim still Removed", which
             // is worth being able to answer from a raw SQL prompt without a lookup table in your head.
-            builder.Property(l => l.State).HasConversion<string>().HasMaxLength(20);
+            builder.Property(c => c.State).HasConversion<string>().HasMaxLength(20);
 
-            builder.HasOne(l => l.EmailClaim)
-                .WithMany(c => c.Links)
-                .HasForeignKey(l => l.EmailClaimId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(l => l.VaultManifest)
+            // Deleting the owning manifest leaves the claim behind as a tombstone, so the address is never handed out again.
+            builder.HasOne(c => c.VaultManifest)
                 .WithMany()
-                .HasForeignKey(l => l.VaultManifestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(c => c.VaultManifestId)
+                .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasIndex(l => new { l.VaultManifestId, l.EmailClaimId });
-            builder.HasIndex(l => l.EmailClaimId).HasFilter("\"State\" <> 'Removed'").HasDatabaseName("IX_EmailClaimLinks_EmailClaimId_Live");
+            builder.HasIndex(c => new { c.VaultManifestId, c.State });
+            builder.HasIndex(c => new { c.VaultManifestId, c.CreatedAt });
         });
 
         /*

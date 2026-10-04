@@ -66,7 +66,9 @@ public static class RegistrationCheckRateLimit
     /// <summary>
     /// The client IP as partition key, IPv6 reduced to its /64 since a single client usually controls a whole /64.
     /// </summary>
-    private static string GetClientKey(HttpContext httpContext)
+    /// <param name="httpContext">The current request.</param>
+    /// <returns>The partition key of the client.</returns>
+    public static string GetClientKey(HttpContext httpContext)
     {
         var ip = IpAddressUtility.GetRawIpAddressFromContext(httpContext);
         if (ip is null)

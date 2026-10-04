@@ -192,7 +192,7 @@ else
                     x.User.LastActivityDate,
                     x.VaultStorageKb,
                     CredentialCount = dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.User.PersonalGroupId).Sum(m => m.CredentialsCount),
-                    EmailClaimCount = dbContext.EmailClaimLinks.Count(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == x.User.PersonalGroupId),
+                    EmailClaimCount = dbContext.EmailClaims.Count(c => c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == x.User.PersonalGroupId),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -317,8 +317,8 @@ else
                 ? query.OrderBy(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.User.PersonalGroupId).Sum(m => m.CredentialsCount))
                 : query.OrderByDescending(x => dbContext.VaultManifests.Where(m => m.OwnerGroupId == x.User.PersonalGroupId).Sum(m => m.CredentialsCount)),
             "EmailClaimCount" => ascending
-                ? query.OrderBy(x => dbContext.EmailClaimLinks.Count(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == x.User.PersonalGroupId))
-                : query.OrderByDescending(x => dbContext.EmailClaimLinks.Count(l => l.State != EmailClaimLinkState.Removed && l.VaultManifest.OwnerGroupId == x.User.PersonalGroupId)),
+                ? query.OrderBy(x => dbContext.EmailClaims.Count(c => c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == x.User.PersonalGroupId))
+                : query.OrderByDescending(x => dbContext.EmailClaims.Count(c => c.State != EmailClaimState.Removed && c.VaultManifest!.OwnerGroupId == x.User.PersonalGroupId)),
             "VaultStorageInKb" => ascending ? query.OrderBy(x => x.VaultStorageKb) : query.OrderByDescending(x => x.VaultStorageKb),
             _ => ascending ? query.OrderBy(x => x.User.Id) : query.OrderByDescending(x => x.User.Id),
         };

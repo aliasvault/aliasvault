@@ -10,6 +10,7 @@ namespace AliasVault.Api.Controllers.V1;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Services;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,8 +21,9 @@ using Microsoft.EntityFrameworkCore;
 /// </summary>
 /// <param name="userManager">UserManager instance.</param>
 /// <param name="dbContextFactory">DbContextFactory instance.</param>
+/// <param name="takenAliasLookupRateLimit">Limits how many taken addresses a caller may learn about.</param>
 [ApiVersion("1")]
-public class IdentityController(UserManager<AliasVaultUser> userManager, IAliasServerDbContextFactory dbContextFactory) : AuthenticatedRequestController(userManager)
+public class IdentityController(UserManager<AliasVaultUser> userManager, IAliasServerDbContextFactory dbContextFactory, TakenAliasLookupRateLimitService takenAliasLookupRateLimit) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
     /// Verify that provided email address is not already taken by another user.
@@ -37,7 +39,8 @@ public class IdentityController(UserManager<AliasVaultUser> userManager, IAliasS
             return Unauthorized();
         }
 
-        bool isTaken = await EmailClaimExistsAsync(email);
+        // Over the lookup limit a taken address reads as free; a later claim of it is still refused, this only slows down enumeration.
+        bool isTaken = await EmailClaimExistsAsync(email) && takenAliasLookupRateLimit.TryRecord(user.Id, RegistrationCheckRateLimit.GetClientKey(HttpContext), EmailHelper.SanitizeEmail(email));
         return Ok(new { isTaken });
     }
 

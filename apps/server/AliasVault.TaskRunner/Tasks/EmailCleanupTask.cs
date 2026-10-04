@@ -79,8 +79,7 @@ public class EmailCleanupTask : IMaintenanceTask
 
             // Get all email addresses this user's vault still carries.
             var userAddresses = await dbContext.EmailClaims
-                .Where(c => c.Links.Any(l => l.State != EmailClaimLinkState.Removed
-                    && dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == l.VaultManifest.OwnerGroupId)))
+                .Where(c => c.State != EmailClaimState.Removed && dbContext.AliasVaultUsers.Any(u => u.Id == user.Id && u.PersonalGroupId == c.VaultManifest!.OwnerGroupId))
                 .Select(c => c.Address)
                 .ToListAsync(cancellationToken);
 
