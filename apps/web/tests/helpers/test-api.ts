@@ -119,16 +119,46 @@ export async function setServerSetting(apiUrl: string, key: string, value: strin
 }
 
 /**
+ * One item a legacy vault fixture holds, as read from its decrypted SQLite when the fixture was made.
+ */
+export type LegacyVaultItem = {
+  name: string;
+  type: string;
+  folderPath: string[];
+  logoSource: string | null;
+  fields: { key: string; value: string }[];
+  customFields: { label: string; type: string; value: string }[];
+  totpCodes: { name: string; secretKey: string }[];
+  attachments: { filename: string; size: number; sha256: string }[];
+  passkeys: { rpId: string; displayName: string }[];
+  passwordHistory?: string[];
+  removed?: { customFields?: string[]; totpCodes?: string[]; attachments?: string[] };
+};
+
+/**
+ * Everything a legacy vault fixture holds; fixtures without it only list their item names.
+ */
+export type LegacyVaultContent = {
+  items: LegacyVaultItem[];
+  trashedItems: LegacyVaultItem[];
+  purgedItemNames: string[];
+  deletedFolderNames: string[];
+  settings: Record<string, string>;
+  rowCounts: Record<string, number>;
+};
+
+/**
  * A vault written by an old client, with the login material of that time (core/test-fixtures/legacy-vaults).
  */
 export type LegacyVaultFixture = {
   password: string;
   expectedItemNames: string[];
+  expected?: LegacyVaultContent;
   vault: Record<string, unknown>;
 };
 
 /**
- * Read a legacy vault fixture by the client version that wrote it, e.g. "1.0.0".
+ * Read a legacy vault fixture by its file name in core/test-fixtures/legacy-vaults: the app version whose data model the vault has, e.g. "0.1.0" or "0.30.7".
  */
 export function readLegacyVaultFixture(version: string): LegacyVaultFixture {
   const fixturePath = path.resolve(import.meta.dirname, '..', '..', '..', '..', 'core', 'test-fixtures', 'legacy-vaults', `${version}.json`);
