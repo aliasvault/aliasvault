@@ -62,8 +62,8 @@ public class VaultManager: NSObject {
         }
     }
 
-    /// Open a session in memory with the unlock key (the password-derived KEK), without keychain persistence.
-    /// Use this to test if a password-derived key is valid before persisting.
+    /// Open a session in memory with the unlock key or stored key, without keychain persistence.
+    /// Use this to test if a key is valid before persisting.
     @objc
     func storeUnlockKeyInMemory(_ base64UnlockKey: String,
                                     resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -76,7 +76,7 @@ public class VaultManager: NSObject {
         }
     }
 
-    /// Open a session with the unlock key (the password-derived KEK) AND persist it to keychain if Face ID is enabled.
+    /// Open a session with the unlock key or stored key AND persist the stored key to keychain if Face ID is enabled.
     @objc
     func storeUnlockKey(_ base64UnlockKey: String,
                             resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -1417,28 +1417,6 @@ public class VaultManager: NSObject {
         }
     }
 
-    /// Answer a server's SRP challenge with the unlock key of the open session (see VaultStore.deriveSrpProof).
-    @objc
-    func deriveSrpProof(_ salt: String,
-                        srpIdentity: String,
-                        serverEphemeral: String,
-                        resolver resolve: @escaping RCTPromiseResolveBlock,
-                        rejecter reject: @escaping RCTPromiseRejectBlock) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else {
-                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
-                return
-            }
-
-            do {
-                let proof = try self.vaultStore.deriveSrpProof(salt: salt, srpIdentity: srpIdentity, serverEphemeral: serverEphemeral)
-                resolve(["clientPublicEphemeral": proof.clientPublicEphemeral, "clientSessionProof": proof.clientSessionProof])
-            } catch {
-                reject("SRP_PROOF_ERROR", "Failed to derive the SRP proof: \(error.localizedDescription)", error)
-            }
-        }
-    }
-
     // MARK: - Sync State Management
 
     @objc
@@ -1595,6 +1573,11 @@ private enum RustCoreDispatcher {
 
         case "argon2DeriveKey":
             return try json(bytes: try RustCoreFramework.argon2DeriveKey(password: try args.string(0), salt: try args.string(1), encryptionSettings: try args.string(2)))
+        case "deriveKek": return try json(bytes: RustCoreFramework.deriveKek(unlockKey: try args.data(0)))
+        case "deriveSrpPasswordHash": return try json(try RustCoreFramework.deriveSrpPasswordHash(unlockKey: try args.data(0), encryptionType: try args.string(1)))
+        case "openAccountKeyChain":
+            let storedKey = try args.data(0)
+            return try openKeyChain(storedKey: storedKey, encryptedAccountKey: try args.string(1), encryptedVek: try args.string(2), encryptedAccountPrivateKey: args.optionalString(3))
 
         case "srpGenerateSalt": return try json(RustCoreFramework.srpGenerateSalt())
         case "srpDerivePrivateKey":
@@ -1631,6 +1614,25 @@ private enum RustCoreDispatcher {
     }
 
     /// JSON-encode raw bytes as a base64 string.
+    /// Open a key chain and report the outcome as the `KeyChainOpenResult` JSON the client core expects.
+    private static func openKeyChain(storedKey: Data, encryptedAccountKey: String, encryptedVek: String, encryptedAccountPrivateKey: String?) throws -> String {
+        do {
+            let keys = try RustCoreFramework.openAccountKeyChain(
+                storedKey: storedKey, encryptedAccountKey: encryptedAccountKey, encryptedVek: encryptedVek, encryptedAccountPrivateKey: encryptedAccountPrivateKey
+            )
+            return try json([
+                "status": "opened",
+                "vaultEncryptionKey": keys.vaultEncryptionKey.base64EncodedString(),
+                "accountKey": keys.accountKey.base64EncodedString(),
+                "accountPrivateKey": keys.accountPrivateKey as Any? ?? NSNull()
+            ])
+        } catch KeyChainError.UnlockKeyRejected {
+            return try json(["status": "unlockKeyRejected"])
+        } catch KeyChainError.KeyChainUnreadable(let message) {
+            return try json(["status": "keyChainUnreadable", "message": message])
+        }
+    }
+
     private static func json(bytes: Data) throws -> String {
         return try json(bytes.base64EncodedString())
     }

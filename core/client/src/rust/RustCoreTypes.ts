@@ -80,6 +80,15 @@ export type SrpSession = {
   key: string;
 };
 
+/**
+ * The outcome of opening a key chain with a stored key (the Rust `open_account_key_chain`). Keys are base64; on
+ * success `accountKey` is what the caller stores in place of the key it passed in.
+ */
+export type KeyChainOpenResult =
+  | { status: 'opened'; vaultEncryptionKey: string; accountKey: string; accountPrivateKey: string | null }
+  | { status: 'unlockKeyRejected' }
+  | { status: 'keyChainUnreadable'; message: string };
+
 /*
  * Vault codec (manifest-v1 storage format).
  */

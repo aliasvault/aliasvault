@@ -57,6 +57,9 @@ export const nativeRustCore: IRustCore = {
   extractEmailAttachment: (source, index, detachedBody) => callForBytes('extractEmailAttachment', base64(source), index, detachedBody ? base64(detachedBody) : null),
 
   argon2DeriveKey: (password, salt, encryptionSettings) => callForBytes('argon2DeriveKey', password, salt, encryptionSettings),
+  deriveKek: (unlockKeyBase64) => call('deriveKek', unlockKeyBase64),
+  deriveSrpPasswordHash: (unlockKeyBase64, encryptionType) => call('deriveSrpPasswordHash', unlockKeyBase64, encryptionType),
+  openAccountKeyChain: (storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey) => call('openAccountKeyChain', storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey),
 
   srpGenerateSalt: () => call('srpGenerateSalt'),
   srpDerivePrivateKey: (salt, identity, passwordHash) => call('srpDerivePrivateKey', salt, identity, passwordHash),

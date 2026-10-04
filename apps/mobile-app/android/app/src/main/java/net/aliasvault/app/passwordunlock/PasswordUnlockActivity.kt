@@ -50,7 +50,7 @@ class PasswordUnlockActivity : AppCompatActivity() {
         /** Result code for max attempts reached - user has been logged out. */
         const val RESULT_MAX_ATTEMPTS_REACHED = Activity.RESULT_FIRST_USER + 1
 
-        /** Intent extra key for the unlock key, the password-derived KEK (returned on success). */
+        /** Intent extra key for the unlock key, the password's Argon2id output (returned on success). */
         const val EXTRA_UNLOCK_KEY = "unlock_key"
 
         /** Intent extra key for custom title (optional). */

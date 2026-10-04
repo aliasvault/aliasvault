@@ -12,7 +12,7 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, ParsedEmail } from './RustCoreTypes';
+import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
@@ -179,6 +179,20 @@ export async function extractEmailAttachment(source: Uint8Array, index: number, 
  */
 export async function argon2DeriveKey(password: string, salt: string, encryptionSettings: string): Promise<Uint8Array> {
   return rustCore().argon2DeriveKey(password, salt, encryptionSettings);
+}
+
+/**
+ * The KEK (base64) that wraps the Account Key, derived from the unlock key (base64).
+ */
+export async function deriveKek(unlockKeyBase64: string): Promise<string> {
+  return rustCore().deriveKek(unlockKeyBase64);
+}
+
+/**
+ * Open a key chain with a stored key: the Account Key, or an unlock key that is then replaced by the Account Key.
+ */
+export async function openAccountKeyChain(storedKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult> {
+  return rustCore().openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
 }
 
 /**
