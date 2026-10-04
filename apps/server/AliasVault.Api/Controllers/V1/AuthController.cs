@@ -162,6 +162,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await using var context = await dbContextFactory.CreateDbContextAsync();
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, user);
 
+        // A v1 client can only answer a legacy verifier; for an upgraded one it would report a wrong password.
+        if (latestVaultEncryptionSettings.EncryptionType != Defaults.LegacyEncryptionType)
+        {
+            return StatusCode(426, new { error = "UPGRADE_REQUIRED", message = "Your client is out of date. Please update to access this vault." });
+        }
+
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
         // Server creates ephemeral and sends to client
@@ -1005,7 +1011,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         return Ok(new LoginInitiateResponse(
             fakeData.Salt,
             fakeEphemeral.Public,
-            Defaults.EncryptionType,
+            Defaults.LegacyEncryptionType,
             Defaults.EncryptionSettings,
             fakeData.SrpIdentity));
     }
