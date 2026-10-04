@@ -15,7 +15,6 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
 import { logFailure } from '@/utils/Diagnostics';
-import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 type PasswordInputProps = {
   id: string;
@@ -123,13 +122,8 @@ const ChangePasswordSettings: React.FC = () => {
 
     try {
       showLoading();
+      // The PIN protects the Account Key, which a password change leaves as it is, so PIN unlock keeps working.
       await MasterPasswordService.changePassword(webApi, currentPassword, newPassword);
-
-      /*
-       * The PIN protects the key derived from the old password, which no longer opens the account key chain.
-       * TODO: refactor this to automatically update the PIN instead of disabling it?
-       */
-      await removeAndDisablePin();
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

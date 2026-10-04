@@ -284,7 +284,7 @@ extension VaultStore {
         return try openAccountKeyChain(with: try getUnlockKey()).vaultEncryptionKey
     }
 
-    /// Get the unlock key - the password-derived KEK the keychain and PIN protect.
+    /// Get the session's stored key, which the keychain and PIN protect.
     internal func getUnlockKey() throws -> Data {
         if let key = self.unlockKey {
             return key
@@ -339,6 +339,9 @@ extension VaultStore {
 
             do {
                 try openSession(unlockKey: keyData)
+                if let accountKey = self.unlockKey {
+                    convertLegacyKeychainKey(keychainKey: keyData, accountKey: accountKey)
+                }
             } catch let vaultError as AppError {
                 print("The unlock key from the keychain does not open the account key chain: \(vaultError.message)")
                 throw vaultError

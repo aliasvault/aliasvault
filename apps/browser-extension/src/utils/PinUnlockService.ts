@@ -10,7 +10,7 @@ import { browser, storage } from '#imports';
  * PinUnlockService - Handles PIN-based vault unlock
  *
  * This service allows users to set a 6-8 digit PIN to unlock their vault instead
- * of entering their full master password. The unlock key (the password-derived KEK)
+ * of entering their full master password. The session's stored key (the Account Key)
  * is encrypted with a key derived from the PIN and stored locally.
  *
  * Security features:
@@ -150,7 +150,7 @@ export async function isPinLocked(): Promise<boolean> {
  * Encrypts the unlock key with the PIN and stores it
  *
  * @param pin - The PIN to set (6-8 digits)
- * @param unlockKey - The base64-encoded unlock key to protect
+ * @param unlockKey - The base64-encoded stored key to protect (VaultKeyService.getSessionUnlockKey)
  */
 export async function setupPin(pin: string, unlockKey: string): Promise<void> {
   if (!isValidPin(pin)) {
@@ -202,10 +202,10 @@ export async function setupPin(pin: string, unlockKey: string): Promise<void> {
 
 /**
  * Unlock with PIN
- * Returns the decrypted unlock key (the password-derived KEK)
+ * Returns the decrypted stored key (the Account Key, or an unlock key from before the account had a key chain)
  *
  * @param pin - The PIN to use for unlocking
- * @returns The decrypted unlock key (base64), which opens the account key chain
+ * @returns The decrypted key (base64), which opens the account key chain
  */
 export async function unlockWithPin(pin: string): Promise<string> {
   if (!isValidPin(pin)) {

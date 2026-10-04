@@ -7,7 +7,7 @@ import Foundation
 /// Unlock methods a user can enroll. Each enrolled method stores one copy of the user's Account Key,
 /// encrypted with a KEK derived from that method's secret.
 public struct UnlockMethodType {
-    /// Master password: the KEK is derived from the password via Argon2.
+    /// Master password: Argon2id of the password gives the unlock key, which the KEK and SRP input are HKDF-derived from.
     public static let password = "password"
 
     /// All known UnlockMethodType tokens.

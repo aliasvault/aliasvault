@@ -60,13 +60,13 @@ class PinUnlockActivity : AppCompatActivity() {
         /** Result code when PIN was disabled due to max attempts. */
         const val RESULT_PIN_DISABLED = 100
 
-        /** Intent extra key for the unlock key, the password-derived KEK (returned in unlock mode). */
+        /** Intent extra key for the key the PIN protects, the Account Key (returned in unlock mode). */
         const val EXTRA_UNLOCK_KEY = "unlock_key"
 
         /** Intent extra key for the mode (unlock or setup). */
         const val EXTRA_MODE = "mode"
 
-        /** Intent extra key for the unlock key (the password-derived KEK) the PIN protects during setup. */
+        /** Intent extra key for the key the PIN protects during setup (the session's Account Key). */
         const val EXTRA_SETUP_UNLOCK_KEY = "setup_unlock_key"
 
         /** Intent extra key for custom title (optional). */

@@ -182,8 +182,8 @@ class SqliteClient {
   }
 
   /**
-   * Open a session in memory with the unlock key (the password-derived KEK), without keychain persistence.
-   * Use this to test if a password-derived key is valid before persisting.
+   * Open a session in memory with the unlock key or a stored Account Key, without keychain persistence.
+   * Use this to test if a key is valid before persisting.
    *
    * @param base64UnlockKey The base64 encoded unlock key
    */
@@ -197,7 +197,7 @@ class SqliteClient {
   }
 
   /**
-   * Open a session with the unlock key (the password-derived KEK) AND persist it to keychain (may trigger biometric prompt).
+   * Open a session with the unlock key or a stored Account Key AND persist the Account Key to keychain (may trigger biometric prompt).
    *
    * @param base64UnlockKey The base64 encoded unlock key
    */
