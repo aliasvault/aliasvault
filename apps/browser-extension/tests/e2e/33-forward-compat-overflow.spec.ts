@@ -134,6 +134,6 @@ async function openLatestManifest(apiUrl: string, token: string, derivedKey: Uin
     const snapshot = await getVaultSnapshot(apiUrl, token);
     const personal = requirePersonalManifest(snapshot);
     const vaultKey = await resolveVaultEncryptionKey(apiUrl, token, derivedKey);
-    return { manifest: await openManifest(personal.blob, vaultKey), personal, vaultKey };
+    return { manifest: await openManifest(personal.manifestId, personal.blob, vaultKey), personal, vaultKey };
   });
 }
