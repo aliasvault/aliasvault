@@ -75,6 +75,40 @@ test.describe('7. Vault upgrades', () => {
     });
   });
 
+  test('7.3 should upgrade the verifier of an upgraded vault at the next login', async ({ app, apiUrl, testUser }) => {
+    const { page } = app;
+    const fixture = await upgradeLegacyVault(app, apiUrl, testUser);
+
+    /**
+     * The encryption type the server advertises for the account's password.
+     */
+    const encryptionType = async (): Promise<string> => {
+      const response = await fetch(`${apiUrl}/v2/Auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: testUser.username }) });
+      return ((await response.json()) as { encryptionType: string }).encryptionType;
+    };
+
+    await test.step('the upgraded vault still has the verifier of the 1.0.0 vault', async () => {
+      expect(await encryptionType()).toBe('Argon2Id');
+    });
+
+    await test.step('a password login replaces it with the split verifier', async () => {
+      await app.logout();
+      await app.login(testUser.username, fixture.password);
+      expect(await encryptionType()).toBe('Argon2IdHkdf');
+    });
+
+    await test.step('the split verifier logs in, and v1 clients are told to update', async () => {
+      await app.logout();
+      await app.login(testUser.username, fixture.password);
+      for (const name of fixture.expectedItemNames) {
+        await expect(page.getByText(name, { exact: true })).toBeVisible();
+      }
+
+      const v1 = await fetch(`${apiUrl}/v1/Auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: testUser.username }) });
+      expect(v1.status).toBe(426);
+    });
+  });
+
   test('7.2 should receive and decrypt mail on a new alias after upgrading a 1.0.0 vault', async ({ app, apiUrl, testUser }) => {
     await requireSmtp();
     const { page } = app;
