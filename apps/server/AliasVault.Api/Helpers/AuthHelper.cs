@@ -26,11 +26,6 @@ public static class AuthHelper
     public static readonly string CachePrefixEphemeral = "LoginEphemeral_";
 
     /// <summary>
-    /// Cache prefix for storing fake data for non-existent users.
-    /// </summary>
-    public static readonly string CachePrefixFakeData = "FakeData_";
-
-    /// <summary>
     /// Gets the SRP identity to use for a user, falling back to the lowercase username for accounts that were created
     /// before SRP identities existed (pre-0.26.0). TODO: remove this fallback in a future version.
     /// </summary>
