@@ -3,8 +3,11 @@ package net.aliasvault.app.nativevaultmanager
 import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
+import uniffi.aliasvault_core.KeyChainException
 import uniffi.aliasvault_core.argon2DeriveKey
 import uniffi.aliasvault_core.decodeEmailSource
+import uniffi.aliasvault_core.deriveKek
+import uniffi.aliasvault_core.deriveSrpPasswordHash
 import uniffi.aliasvault_core.extractDomain
 import uniffi.aliasvault_core.extractEmailAttachment
 import uniffi.aliasvault_core.extractRootDomain
@@ -20,6 +23,7 @@ import uniffi.aliasvault_core.getIdentityLanguages
 import uniffi.aliasvault_core.getSyncableTableNames
 import uniffi.aliasvault_core.isRelatedOriginAllowed
 import uniffi.aliasvault_core.isRpIdAllowedForHost
+import uniffi.aliasvault_core.openAccountKeyChain
 import uniffi.aliasvault_core.parseEmailSource
 import uniffi.aliasvault_core.pruneVaultJson
 import uniffi.aliasvault_core.selectFaviconTarget
@@ -77,6 +81,9 @@ object RustCoreDispatcher {
             "extractEmailAttachment" -> json(extractEmailAttachment(args.bytes(0), args.uint(1), args.optionalBytes(2)))
 
             "argon2DeriveKey" -> json(argon2DeriveKey(args.string(0), args.string(1), args.string(2)))
+            "deriveKek" -> json(deriveKek(args.bytes(0)))
+            "deriveSrpPasswordHash" -> json(deriveSrpPasswordHash(args.bytes(0), args.string(1)))
+            "openAccountKeyChain" -> openKeyChain(args.bytes(0), args.string(1), args.string(2), args.optionalString(3))
 
             "srpGenerateSalt" -> json(srpGenerateSalt())
             "srpDerivePrivateKey" -> json(srpDerivePrivateKey(args.string(0), args.string(1), args.string(2)))
@@ -130,6 +137,24 @@ object RustCoreDispatcher {
 
     /** JSON-encode a list of strings. */
     private fun json(values: List<String>): String = JSONArray(values).toString()
+
+    /** Open a key chain and report the outcome as the `KeyChainOpenResult` JSON the client core expects. */
+    @Suppress("SwallowedException") // A failure is reported as its status, not thrown.
+    private fun openKeyChain(storedKey: ByteArray, encryptedAccountKey: String, encryptedVek: String, encryptedAccountPrivateKey: String?): String {
+        val result = JSONObject()
+        try {
+            val keys = openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey)
+            result.put("status", "opened")
+                .put("vaultEncryptionKey", Base64.encodeToString(keys.vaultEncryptionKey, Base64.NO_WRAP))
+                .put("accountKey", Base64.encodeToString(keys.accountKey, Base64.NO_WRAP))
+                .put("accountPrivateKey", keys.accountPrivateKey ?: JSONObject.NULL)
+        } catch (e: KeyChainException.UnlockKeyRejected) {
+            result.put("status", "unlockKeyRejected")
+        } catch (e: KeyChainException.KeyChainUnreadable) {
+            result.put("status", "keyChainUnreadable").put("message", e.message ?: "")
+        }
+        return result.toString()
+    }
 
     /** JSON-encode raw bytes as a base64 string. */
     private fun json(bytes: ByteArray): String = json(Base64.encodeToString(bytes, Base64.NO_WRAP))

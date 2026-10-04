@@ -205,13 +205,6 @@ class VaultStore(
     }
 
     /**
-     * Answer a server's SRP challenge with the unlock key of the open session (see VaultCrypto.deriveSrpProof).
-     */
-    fun deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String, callback: CryptoOperationCallback) {
-        crypto.deriveSrpProof(salt, srpIdentity, serverEphemeral, callback, auth.getAuthMethods())
-    }
-
-    /**
      * Check if biometric authentication is enabled and available.
      */
     fun isBiometricAuthEnabled(): Boolean {
@@ -302,7 +295,7 @@ class VaultStore(
             val encryptionType = paramsJson.getString("encryptionType")
             val encryptionSettings = paramsJson.getString("encryptionSettings")
 
-            // Derive the KEK from the password and unwrap the chain; a wrong password fails the unwrap.
+            // Derive the unlock key from the password and open the chain; a wrong password fails to open it.
             val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
             val vaultEncryptionKey = crypto.openAccountKeyChain(derivedKey).vaultEncryptionKey
 
@@ -949,7 +942,7 @@ class VaultStore(
     }
 
     /**
-     * Unlock with PIN. Returns the unlock key the PIN protects, to open the session with.
+     * Unlock with PIN. Returns the key the PIN protects, to open the session with.
      */
     @Throws(Exception::class)
     fun unlockWithPin(pinValue: String): String {

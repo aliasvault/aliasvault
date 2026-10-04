@@ -243,7 +243,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Open a session in memory with the unlock key, without keystore persistence.
-     * Use this to test if a password-derived key is valid before persisting.
+     * Use this to test if a key is valid before persisting.
      * @param base64UnlockKey The unlock key as a base64 encoded string
      * @param promise The promise to resolve
      */
@@ -864,7 +864,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * Derive a key from a password using Argon2Id.
      * @param password The password to derive from
      * @param salt The salt to use
-     * @param encryptionType The type of encryption (should be "Argon2Id")
+     * @param encryptionType The type of encryption ("Argon2Id" or "Argon2IdHkdf")
      * @param encryptionSettings JSON string with encryption parameters
      * @param promise The promise to resolve
      */
@@ -1971,39 +1971,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             }
         }
     }
-
-    /**
-     * Answer a server's SRP challenge with the unlock key of the open session (see VaultStore.deriveSrpProof).
-     * @param salt The salt the initiate call returned.
-     * @param srpIdentity The SRP identity the initiate call returned.
-     * @param serverEphemeral The server public ephemeral the initiate call returned.
-     * @param promise The promise to resolve with the client public ephemeral and session proof.
-     */
-    @ReactMethod
-    override fun deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String, promise: Promise) {
-        vaultStore.deriveSrpProof(
-            salt,
-            srpIdentity,
-            serverEphemeral,
-            object : CryptoOperationCallback {
-                override fun onSuccess(result: String) {
-                    val proof = JSONObject(result)
-                    val resultMap = Arguments.createMap().apply {
-                        putString("clientPublicEphemeral", proof.getString("clientPublicEphemeral"))
-                        putString("clientSessionProof", proof.getString("clientSessionProof"))
-                    }
-                    promise.resolve(resultMap)
-                }
-
-                override fun onError(e: Exception) {
-                    Log.e(TAG, "Error deriving the SRP proof", e)
-                    promise.reject("SRP_PROOF_ERROR", "Failed to derive the SRP proof: ${e.message}", e)
-                }
-            },
-        )
-    }
-
-    // MARK: - Sync State Management
 
     /**
      * Get the sync state (isDirty, mutationSequence, serverRevision, isSyncing).

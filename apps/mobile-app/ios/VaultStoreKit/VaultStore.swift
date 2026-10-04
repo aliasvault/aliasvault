@@ -32,8 +32,8 @@ public class VaultStore {
     /// The live vault, held in the Rust core's memory. Nil while vault is locked.
     internal var dbConnection: SqliteMemoryDatabase?
 
-    /// The unlock key: the password-derived KEK. The one secret the unlocked session holds in memory, and the key the
-    /// unlock methods (keychain, PIN) protect. Every other key is derived from it and the cached account key chain.
+    /// The stored key: the one secret the unlocked session holds in memory, and the key the unlock methods (keychain,
+    /// PIN) protect. Every other key is derived from it and the cached account key chain.
     internal var unlockKey: Data?
 
     /// The encryption key for the vault, derived from the unlock key. Nil while the vault is locked.
@@ -46,8 +46,8 @@ public class VaultStore {
         return sessionKeys?.accountPrivateKey
     }
 
-    /// What the unlock key opens in the cached account key chain.
-    private var sessionKeys: (vaultEncryptionKey: Data, accountPrivateKey: String?)? {
+    /// What the stored key opens in the cached account key chain.
+    private var sessionKeys: SessionKeys? {
         guard let unlockKey = unlockKey else {
             return nil
         }

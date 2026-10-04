@@ -3,7 +3,7 @@ import Security
 
 /// Extension for the VaultStore class to handle RSA public key encryption
 extension VaultStore {
-    /// Encrypts the unlock key (the password-derived KEK) using an RSA public key for mobile login
+    /// Encrypts the session's stored key using an RSA public key for mobile login
     /// The receiving client opens the account key chain with it.
     /// - Parameter publicKeyJWK: The RSA public key in JWK format (JSON string)
     /// - Returns: The encrypted unlock key
