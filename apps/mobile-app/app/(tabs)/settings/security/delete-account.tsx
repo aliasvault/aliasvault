@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -162,8 +160,8 @@ export default function DeleteAccountScreen(): React.ReactNode {
       const srpIdentity = data.srpIdentity ?? username;
 
       setLoadingStatus(t('settings.securitySettings.deleteAccount.verifyingWithServer'));
-      // Convert base64 string to hex string
-      const currentPasswordHashString = Buffer.from(currentPasswordHashBase64, 'base64').toString('hex').toUpperCase();
+      // The SRP password hash the account's encryption type makes from the unlock key.
+      const currentPasswordHashString = await SrpAuthService.srpPasswordHash(currentPasswordHashBase64, data.encryptionType);
 
       // Derive the SRP client proof to authenticate the deletion with the server.
       const clientProof = await SrpAuthService.deriveClientProof(
