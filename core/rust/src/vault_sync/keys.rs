@@ -8,7 +8,6 @@ use super::state::{self, Ctx};
 use super::types::{SharedManifestDto, VaultKeyGetResponse, VaultKeyResponse, ALGORITHM_RSA_OAEP_SHA256};
 use super::http;
 use crate::crypto;
-use zeroize::Zeroizing;
 
 /// Whether this device holds a vault key.
 pub(crate) async fn has_local_vault_key(host: &Host) -> SyncResult<bool> {
@@ -134,23 +133,12 @@ async fn clear_cached_chain(host: &Host) -> SyncResult<()> {
     Ok(())
 }
 
-/// Walk a key chain with an unlock key or the stored Account Key, telling a key that does not open the account key
-/// (wrong password) apart from a chain whose VEK does not open under its own account key. Returns the VEK and the
-/// Account Key.
-fn walk_chain(encrypted_account_key: &str, encrypted_vek: &str, unlock_key: &str) -> SyncResult<(Zeroizing<String>, Zeroizing<String>)> {
-    let opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None).map_err(|error| match error {
-        crypto::KeyChainError::UnlockKeyRejected => SyncError::UnlockKeyRejected,
-        crypto::KeyChainError::KeyChainUnreadable(message) => SyncError::KeyChainUnreadable(message),
-    })?;
-    Ok((opened.vault_encryption_key, opened.account_key))
-}
-
 /// Open a key chain with an unlock key or the stored Account Key: the VEK becomes the session key and the private key
 /// is staged.
 async fn open_chain(ctx: &mut Ctx, encrypted_account_key: &str, encrypted_vek: &str, encrypted_private_key: Option<&str>, unlock_key: &str) -> SyncResult<()> {
-    let (vek, account_key) = walk_chain(encrypted_account_key, encrypted_vek, unlock_key)?;
-    ctx.set_encryption_key(vek.to_string());
-    stage_account_private_key(ctx, &account_key, encrypted_private_key).await;
+    let opened = crypto::open_account_key_chain(unlock_key, encrypted_account_key, encrypted_vek, None)?;
+    ctx.set_encryption_key(opened.vault_encryption_key.to_string());
+    stage_account_private_key(ctx, &opened.account_key, encrypted_private_key).await;
     Ok(())
 }
 
@@ -210,10 +198,10 @@ pub(crate) async fn accept_hierarchy_created_elsewhere(ctx: &mut Ctx) -> SyncRes
 
     // Hosts hold the unlock key and derive the vault key from the cached chain.
     let accepted: SyncResult<()> = async {
-        let (vek, account_key) = walk_chain(&vault_key.encrypted_account_key, &encrypted_vek, &session_key)?;
+        let opened = crypto::open_account_key_chain(&session_key, &vault_key.encrypted_account_key, &encrypted_vek, None)?;
         cache_vault_key_blobs(&ctx.host, &vault_key).await?;
-        switch_to_vek(ctx, &session_key, &vek).await?;
-        stage_account_private_key(ctx, &account_key, vault_key.encrypted_account_private_key.as_deref()).await;
+        switch_to_vek(ctx, &session_key, &opened.vault_encryption_key).await?;
+        stage_account_private_key(ctx, &opened.account_key, vault_key.encrypted_account_private_key.as_deref()).await;
         Ok(())
     }
     .await;

@@ -667,7 +667,7 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["migration"]["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
-    assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key).is_err(), "the legacy vault key is not the KEK");
+    assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key).is_err(), "the legacy vault key does not wrap the Account Key directly");
     let opened = crypto::open_account_key_chain(&unlock_key, body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), None).unwrap();
     assert_eq!(*opened.vault_encryption_key, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
@@ -753,7 +753,7 @@ fn legacy_snapshot_of(conn: &rusqlite::Connection, unlock_key: &str, revision: i
     })
 }
 
-/// A host as a client predating the manifest storage format leaves it: a sqlite blob under the KEK, no personal
+/// A host as a client predating the manifest storage format leaves it: a sqlite blob under the unlock key, no personal
 /// manifest id and no revision baseline, against a server that still holds the account as a legacy vault.
 fn pre_format_session_host(unlock_key: &str, local_item: &str, server_item: &str) -> TestHost {
     let mut host = TestHost::new(unlock_key);
@@ -849,7 +849,7 @@ fn vault_key_body(hierarchy: &crypto::AccountKeyHierarchy) -> Value {
     json!({ "vaultKey": { "type": "password", "encryptedAccountKey": blobs.encrypted_account_key, "encryptedVek": blobs.encrypted_vek, "accountPublicKey": blobs.account_public_key, "encryptedAccountPrivateKey": blobs.encrypted_account_private_key, "salt": "salt", "encryptionType": "Argon2Id", "encryptionSettings": "{}" } })
 }
 
-/// The cross-device race: this device logged in while the account was legacy (no cached chain, KEK session), and
+/// The cross-device race: this device logged in while the account was legacy (no cached chain, unlock key session), and
 /// another device created the hierarchy since. The pull accepts it, and the stored vault reaches the host
 /// together with the VEK it is now encrypted under.
 #[test]
@@ -914,7 +914,7 @@ fn resolve_vault_key_opens_the_chain_with_a_stored_account_key() {
 
 /// A legacy account has no chain: the password-derived key is the vault key and any stale cached chain is dropped.
 #[test]
-fn resolve_vault_key_keeps_the_kek_for_a_legacy_account() {
+fn resolve_vault_key_keeps_the_unlock_key_for_a_legacy_account() {
     let unlock_key = crypto::generate_key_base64();
     let mut host = TestHost::new(&unlock_key);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("stale"));
@@ -948,11 +948,11 @@ fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
 #[test]
 fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
     let hierarchy = crypto::create_account_key_hierarchy(&crypto::generate_key_base64()).unwrap();
-    let wrong_kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&wrong_kek);
+    let wrong_unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&wrong_unlock_key);
     host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 
-    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &wrong_kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &wrong_unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], false);
     assert_eq!(result["errorCode"], "E-206");
@@ -974,10 +974,10 @@ fn resolve_vault_key_tells_an_unreadable_chain_apart_from_a_wrong_password() {
     assert_eq!(result["errorCode"], "E-207");
 }
 
-/// The sync trusts the key it is given: a KEK handed to a device that caches the chain is not upgraded any more,
+/// The sync trusts the key it is given: an unlock key handed to a device that caches the chain is not upgraded any more,
 /// so the run fails to open the vault instead of silently swapping keys. Resolving the key is the host's job.
 #[test]
-fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
+fn an_unlock_key_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
     let unlock_key = crypto::generate_key_base64();
     let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();

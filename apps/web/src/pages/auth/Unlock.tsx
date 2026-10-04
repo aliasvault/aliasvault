@@ -59,7 +59,7 @@ const Unlock: React.FC = () => {
   const username = auth.username;
 
   /**
-   * Decrypt the unlock key with the passkey and open the vault.
+   * Decrypt the Account Key with the passkey and open the vault.
    */
   const unlockWithWebAuthn = useCallback(async (): Promise<void> => {
     if (!WebAuthnService.isEnabled()) {
@@ -161,24 +161,24 @@ const Unlock: React.FC = () => {
     setErrors([]);
 
     try {
-      let unlockKey: string;
+      let accountKey: string;
       if (dbContext.getIsOffline()) {
         const params = await MasterPasswordService.getStoredDerivationParams();
         if (!params) {
           throw new Error(t('auth.unlockPage.connectionFailedError'));
         }
-        const prepared = await SrpAuthService.prepareCredentials(password, params.salt, params.encryptionType, params.encryptionSettings);
+        const unlockKey = await SrpAuthService.deriveUnlockKey(password, params.salt, params.encryptionSettings);
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        unlockKey = await VaultKeyService.verifyUnlockKey(prepared.passwordHashBase64);
+        accountKey = await VaultKeyService.verifyUnlockKey(unlockKey);
       } else {
         const loginResponse = await srpUtil.initiateLogin(username);
-        const prepared = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionType, loginResponse.encryptionSettings);
+        const unlockKey = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
         await vaultStore.storeUnlockKeyDerivationParams({ salt: loginResponse.salt, encryptionType: loginResponse.encryptionType, encryptionSettings: loginResponse.encryptionSettings });
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        unlockKey = await VaultKeyService.refreshKeyChain(prepared.passwordHashBase64, webApi);
+        accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
       }
 
-      await vaultStore.storeUnlockKey(unlockKey);
+      await vaultStore.storeAccountKey(accountKey);
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Unlock error:', err);
@@ -198,7 +198,7 @@ const Unlock: React.FC = () => {
   };
 
   /**
-   * Replace the session with the one the mobile app approved and open the vault with the unlock key it sent.
+   * Replace the session with the one the mobile app approved and open the vault with the key it sent.
    */
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading(t('app.status.unlockingVault'));
@@ -217,9 +217,9 @@ const Unlock: React.FC = () => {
       await auth.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // Throws an unlock-key-rejected (E-206) error if the key does not open the key chain.
-      const storedKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+      const accountKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
       await vaultStore.storeUnlockKeyDerivationParams({ salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings });
-      await vaultStore.storeUnlockKey(storedKey);
+      await vaultStore.storeAccountKey(accountKey);
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Mobile unlock error:', err);

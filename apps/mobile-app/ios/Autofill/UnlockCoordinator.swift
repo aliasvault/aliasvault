@@ -83,10 +83,10 @@ class UnlockCoordinator: ObservableObject {
                 guard let self = self else { return }
 
                 // Attempt to unlock with PIN
-                let unlockKeyBase64 = try self.vaultStore.unlockWithPin(pin)
+                let accountKeyBase64 = try self.vaultStore.unlockWithPin(pin)
 
-                // Open the session with the unlock key
-                try self.vaultStore.storeUnlockKey(base64Key: unlockKeyBase64)
+                // Open the session with the Account Key
+                try self.vaultStore.storeAccountKey(base64Key: accountKeyBase64)
 
                 // Now unlock the vault with the key in memory
                 try self.vaultStore.unlockVault()

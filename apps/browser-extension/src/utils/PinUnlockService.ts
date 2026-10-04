@@ -10,7 +10,7 @@ import { browser, storage } from '#imports';
  * PinUnlockService - Handles PIN-based vault unlock
  *
  * This service allows users to set a 6-8 digit PIN to unlock their vault instead
- * of entering their full master password. The session's stored key (the Account Key)
+ * of entering their full master password. The Account Key
  * is encrypted with a key derived from the PIN and stored locally.
  *
  * Security features:
@@ -147,12 +147,12 @@ export async function isPinLocked(): Promise<boolean> {
 
 /**
  * Setup PIN unlock
- * Encrypts the unlock key with the PIN and stores it
+ * Encrypts the session's Account Key with the PIN and stores it
  *
  * @param pin - The PIN to set (6-8 digits)
- * @param unlockKey - The base64-encoded stored key to protect (VaultKeyService.getSessionUnlockKey)
+ * @param accountKey - The base64 Account Key to protect (VaultKeyService.getSessionAccountKey)
  */
-export async function setupPin(pin: string, unlockKey: string): Promise<void> {
+export async function setupPin(pin: string, accountKey: string): Promise<void> {
   if (!isValidPin(pin)) {
     throw new InvalidPinFormatError();
   }
@@ -166,12 +166,12 @@ export async function setupPin(pin: string, unlockKey: string): Promise<void> {
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Encrypt the unlock key
+    // Encrypt the Account Key
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encryptedKey = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       pinKey,
-      new TextEncoder().encode(unlockKey)
+      new TextEncoder().encode(accountKey)
     );
 
     // Combine IV + encrypted data
@@ -238,7 +238,7 @@ export async function unlockWithPin(pin: string): Promise<string> {
     const combinedSalt = await assembleSaltWithPepper(salt);
     const pinKey = await derivePinKey(pin, combinedSalt);
 
-    // Decrypt the unlock key
+    // Decrypt the stored key
     const decryptedData = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
       pinKey,

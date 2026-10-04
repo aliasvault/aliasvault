@@ -24,14 +24,14 @@ export type FetchVaultKeyResult = {
 };
 
 /**
- * The keys a stored key opens.
+ * The keys the Account Key opens.
  */
 export type SessionKeys = {
   /** The vault encryption key (VEK). */
   vaultEncryptionKey: string;
   /** The account private key (JWK). */
   accountPrivateKey: string | null;
-  /** The Account Key, which the session stores for later unlocks (until the account is upgraded: its vault key). */
+  /** The Account Key, which the session stores for later unlocks. */
   accountKey: string;
 };
 
@@ -63,7 +63,7 @@ export class VaultKeyService {
    * cache it for offline unlock.
    * @param unlockKeyBase64 - the unlock key (the Argon2id output of the master password) or a stored Account Key
    * @param webApi - the API client to use
-   * @returns The key to store for this session (see {@link SessionKeys.accountKey}).
+   * @returns The Account Key to store for this session.
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
   public static async refreshKeyChain(unlockKeyBase64: string, webApi?: WebApiService): Promise<string> {
@@ -87,7 +87,7 @@ export class VaultKeyService {
   /**
    * Check offline that a key opens the locally cached chain (an account not yet upgraded has none; its key is the vault key).
    * @param unlockKeyBase64 - the unlock key derived from the typed password, or a key restored by PIN or WebAuthn
-   * @returns The key to store for this session (see {@link SessionKeys.accountKey}).
+   * @returns The Account Key to store for this session.
    * @throws Error with {@link AppErrorCode.UNLOCK_KEY_REJECTED} when the key does not open the chain (wrong password).
    */
   public static async verifyUnlockKey(unlockKeyBase64: string): Promise<string> {
@@ -121,24 +121,23 @@ export class VaultKeyService {
   }
 
   /**
-   * The stored key of this session (see {@link SessionKeys.accountKey}), or null when the vault is locked.
+   * The Account Key of the unlocked session, or null when the vault is locked.
    */
-  public static async getSessionUnlockKey(): Promise<string | null> {
-    return (await getPlatform().storage.get(StorageKeys.UNLOCK_KEY)) as string | null;
+  public static async getSessionAccountKey(): Promise<string | null> {
+    return (await getPlatform().storage.get(StorageKeys.ACCOUNT_KEY)) as string | null;
   }
 
   /**
-   * The keys of the unlocked session, derived from the stored key and the cached chain, or null when the vault is
-   * locked. A stored unlock key is replaced by the Account Key here, e.g. after a sync accepted a chain created on
-   * another device.
+   * The keys of the unlocked session, derived from the Account Key and the cached chain, or null when the vault is
+   * locked. A legacy stored unlock key is replaced by the Account Key here (see LegacyKeyConversion).
    */
   public static async getSessionKeys(): Promise<SessionKeys | null> {
-    const unlockKey = await VaultKeyService.getSessionUnlockKey();
-    if (!unlockKey) {
+    const accountKey = await VaultKeyService.getSessionAccountKey();
+    if (!accountKey) {
       return null;
     }
-    const keys = await VaultKeyService.openKeyChain(unlockKey);
-    await convertLegacySessionKey(unlockKey, keys.accountKey);
+    const keys = await VaultKeyService.openKeyChain(accountKey);
+    await convertLegacySessionKey(accountKey, keys.accountKey);
     return keys;
   }
 
@@ -175,7 +174,7 @@ export class VaultKeyService {
     await getPlatform().storage.setMany([
       { key: StorageKeys.ENCRYPTED_ACCOUNT_KEY, value: newEncryptedAccountKey },
       { key: StorageKeys.UNLOCK_KEY_DERIVATION_PARAMS, value: derivationParams },
-      { key: StorageKeys.UNLOCK_KEY, value: accountKeyBase64 },
+      { key: StorageKeys.ACCOUNT_KEY, value: accountKeyBase64 },
     ]);
   }
 

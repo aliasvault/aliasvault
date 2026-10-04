@@ -22,6 +22,6 @@ export const RegistrationService = {
     await setAuthTokens(registered.username, registered.token.token, registered.token.refreshToken);
     await VaultKeyService.cacheVaultKeyBlobs({ type: UnlockMethodType.Password, ...registered.keys.accountKeys, ...registered.derivationParams });
     await vaultStore.storeUnlockKeyDerivationParams(registered.derivationParams);
-    await vaultStore.storeUnlockKey(registered.derivedKey);
+    await vaultStore.storeAccountKey(registered.derivedKey);
   },
 };

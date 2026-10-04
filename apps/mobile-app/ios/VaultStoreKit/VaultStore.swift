@@ -32,26 +32,25 @@ public class VaultStore {
     /// The live vault, held in the Rust core's memory. Nil while vault is locked.
     internal var dbConnection: SqliteMemoryDatabase?
 
-    /// The stored key: the one secret the unlocked session holds in memory, and the key the unlock methods (keychain,
-    /// PIN) protect. Every other key is derived from it and the cached account key chain.
-    internal var unlockKey: Data?
+    /// The Account Key the unlocked session holds and the keychain and PIN protect (see `VaultStore+LegacyKeyConversion`).
+    internal var accountKey: Data?
 
-    /// The encryption key for the vault, derived from the unlock key. Nil while the vault is locked.
+    /// The encryption key for the vault, derived from the Account Key. Nil while the vault is locked.
     internal var encryptionKey: Data? {
         return sessionKeys?.vaultEncryptionKey
     }
 
-    /// The account private key (JWK) of the unlocked session, derived from the unlock key.
+    /// The account private key (JWK) of the unlocked session, derived from the Account Key.
     internal var accountPrivateKey: String? {
         return sessionKeys?.accountPrivateKey
     }
 
-    /// What the stored key opens in the cached account key chain.
+    /// What the Account Key opens in the cached account key chain.
     private var sessionKeys: SessionKeys? {
-        guard let unlockKey = unlockKey else {
+        guard let accountKey = accountKey else {
             return nil
         }
-        return try? openAccountKeyChain(with: unlockKey)
+        return try? openAccountKeyChain(with: accountKey)
     }
 
     /// Last successful biometric/PIN auth operation.

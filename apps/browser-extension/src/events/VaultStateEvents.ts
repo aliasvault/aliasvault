@@ -10,26 +10,26 @@ type Listener = () => void;
  * storage events. Reset to null whenever the key is removed (any lock), so a
  * subsequent unlock in another window is detected as a foreign write.
  */
-let lastOwnUnlockKey: string | null = null;
+let lastOwnAccountKey: string | null = null;
 
 /**
  * Record an unlock-key value that THIS window is about to write. Must be
  * called BEFORE the actual write so the storage watcher can skip the
  * resulting self-event. The popup unlock/login flows call this via
- * `DbContext.storeUnlockKey`.
+ * `DbContext.storeAccountKey`.
  */
-export function markOwnUnlockKey(key: string): void {
-  lastOwnUnlockKey = key;
+export function markOwnAccountKey(key: string): void {
+  lastOwnAccountKey = key;
 }
 
 /*
- * Reset `lastOwnUnlockKey` whenever the key is cleared in storage (i.e.
+ * Reset `lastOwnAccountKey` whenever the key is cleared in storage (i.e.
  * any window locks/logs out). Without this, A's stored "own" value would
  * mask a later unlock from B that happens to use the same key value.
  */
-storage.watch<string | null>(StorageKeys.UNLOCK_KEY, (newValue) => {
+storage.watch<string | null>(StorageKeys.ACCOUNT_KEY, (newValue) => {
   if (!newValue) {
-    lastOwnUnlockKey = null;
+    lastOwnAccountKey = null;
   }
 });
 
@@ -39,7 +39,7 @@ storage.watch<string | null>(StorageKeys.UNLOCK_KEY, (newValue) => {
 export const vaultStateEvents = {
   /** Fires when the vault is locked in any window. */
   onVaultLocked(listener: Listener): Unsubscribe {
-    return storage.watch<string | null>(StorageKeys.UNLOCK_KEY, (newValue) => {
+    return storage.watch<string | null>(StorageKeys.ACCOUNT_KEY, (newValue) => {
       if (!newValue) {
         listener();
       }
@@ -48,8 +48,8 @@ export const vaultStateEvents = {
 
   /**
    * Fires when ANOTHER window unlocks the vault (or completes login). The
-   * active window's own write is filtered via `lastOwnUnlockKey`, which
-   * is set synchronously before the write through `markOwnUnlockKey`.
+   * active window's own write is filtered via `lastOwnAccountKey`, which
+   * is set synchronously before the write through `markOwnAccountKey`.
    *
    * Unlocked means a foreign key AND a stored vault: a login stores its key
    * before the vault pull lands, so the key alone is not yet a vault to open.
@@ -60,16 +60,16 @@ export const vaultStateEvents = {
      */
     const fireIfUnlocked = async (): Promise<void> => {
       const [key, vault] = await Promise.all([
-        storage.getItem<string | null>(StorageKeys.UNLOCK_KEY),
+        storage.getItem<string | null>(StorageKeys.ACCOUNT_KEY),
         storage.getItem<string | null>(StorageKeys.ENCRYPTED_VAULT),
       ]);
-      if (key && vault && key !== lastOwnUnlockKey) {
+      if (key && vault && key !== lastOwnAccountKey) {
         listener();
       }
     };
 
-    const unwatchKey = storage.watch<string | null>(StorageKeys.UNLOCK_KEY, (newValue) => {
-      if (newValue && newValue !== lastOwnUnlockKey) {
+    const unwatchKey = storage.watch<string | null>(StorageKeys.ACCOUNT_KEY, (newValue) => {
+      if (newValue && newValue !== lastOwnAccountKey) {
         void fireIfUnlocked();
       }
     });

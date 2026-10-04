@@ -9,7 +9,7 @@ namespace AliasVault.Shared.Models.WebApi.V2.Auth;
 
 /// <summary>
 /// Request for POST /v2/Auth/change-password. Carries the new SRP credentials plus the Account Key
-/// re-encrypted with the new password-derived KEK.
+/// re-encrypted with the KEK derived from the new password's unlock key.
 /// </summary>
 public class PasswordChangeRequest
 {
@@ -19,7 +19,7 @@ public class PasswordChangeRequest
     /// <summary>Gets or sets the client's session proof for the SRP proof of the current password.</summary>
     public required string CurrentClientSessionProof { get; set; }
 
-    /// <summary>Gets or sets the new SRP/KEK derivation salt.</summary>
+    /// <summary>Gets or sets the new unlock key derivation salt.</summary>
     public required string NewPasswordSalt { get; set; }
 
     /// <summary>Gets or sets the new SRP verifier.</summary>
@@ -29,9 +29,9 @@ public class PasswordChangeRequest
     /// account keypair and grants are untouched by a password change.</summary>
     public required string NewEncryptedAccountKey { get; set; }
 
-    /// <summary>Gets or sets the KDF type the client derived the new KEK with (currently always Argon2Id).</summary>
+    /// <summary>Gets or sets the KDF type the client derived the new unlock key with.</summary>
     public required string NewEncryptionType { get; set; }
 
-    /// <summary>Gets or sets the KDF settings JSON the client derived the new KEK with.</summary>
+    /// <summary>Gets or sets the KDF settings JSON the client derived the new unlock key with.</summary>
     public required string NewEncryptionSettings { get; set; }
 }

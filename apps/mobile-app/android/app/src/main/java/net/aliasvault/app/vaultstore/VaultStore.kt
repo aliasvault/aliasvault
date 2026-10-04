@@ -167,18 +167,18 @@ class VaultStore(
     // region Crypto Methods
 
     /**
-     * Open a session with the unlock key and persist that key to keystore if biometrics
+     * Open a session with the unlock key or the Account Key and persist the Account Key to keystore if biometrics
      * are enabled.
      */
-    fun storeUnlockKey(base64UnlockKey: String) {
-        crypto.storeUnlockKey(base64UnlockKey, auth.getAuthMethods())
+    fun storeAccountKey(base64Key: String) {
+        crypto.storeAccountKey(base64Key, auth.getAuthMethods())
     }
 
     /**
-     * Open a session in memory only with the unlock key.
+     * Open a session in memory only with the unlock key or the Account Key.
      */
-    fun storeUnlockKeyInMemory(base64UnlockKey: String) {
-        crypto.storeUnlockKeyInMemory(base64UnlockKey)
+    fun storeAccountKeyInMemory(base64Key: String) {
+        crypto.storeAccountKeyInMemory(base64Key)
     }
 
     /**
@@ -198,10 +198,10 @@ class VaultStore(
     }
 
     /**
-     * Get the unlock key, the keystore and PIN protect.
+     * Get the Account Key, the key the keystore and PIN protect.
      */
-    fun getUnlockKey(callback: CryptoOperationCallback) {
-        crypto.getUnlockKey(callback, auth.getAuthMethods())
+    fun getAccountKey(callback: CryptoOperationCallback) {
+        crypto.getAccountKey(callback, auth.getAuthMethods())
     }
 
     /**
@@ -240,7 +240,7 @@ class VaultStore(
     }
 
     /**
-     * The account private key (JWK) of the unlocked session, derived from the unlock key; null for an account without a keypair.
+     * The account private key (JWK) of the unlocked session, derived from the Account Key; null for an account without a keypair.
      */
     internal val accountPrivateKey: String?
         get() = crypto.accountPrivateKey
@@ -272,10 +272,10 @@ class VaultStore(
     }
 
     /**
-     * Encrypts the unlock key using an RSA public key for mobile login.
+     * Encrypts the Account Key using an RSA public key for mobile login.
      */
-    fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String): String {
-        return crypto.encryptUnlockKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
+    fun encryptAccountKeyForMobileLogin(publicKeyJWK: String): String {
+        return crypto.encryptAccountKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
     }
 
     /**
@@ -344,10 +344,10 @@ class VaultStore(
      * Unlock the vault.
      */
     fun unlockVault() {
-        // A nil-to-non-nil transition means the keystore just released the unlock key after biometric.
-        val hadKeyInMemory = crypto.unlockKey != null
+        // A nil-to-non-nil transition means the keystore just released the Account Key after biometric.
+        val hadKeyInMemory = crypto.accountKey != null
         database.unlockVault(auth.getAuthMethods())
-        if (!hadKeyInMemory && crypto.unlockKey != null) {
+        if (!hadKeyInMemory && crypto.accountKey != null) {
             markSuccessfulAuth()
         }
     }
@@ -476,11 +476,11 @@ class VaultStore(
     }
 
     /**
-     * Attempts to get all items using only the unlock key held in memory.
+     * Attempts to get all items using only the Account Key held in memory.
      */
     fun tryGetAllItems(callback: ItemOperationCallback): Boolean {
-        if (crypto.unlockKey == null) {
-            android.util.Log.d(TAG, "Unlock key not in memory, authentication required")
+        if (crypto.accountKey == null) {
+            android.util.Log.d(TAG, "Account Key not in memory, authentication required")
             return false
         }
 
@@ -514,8 +514,8 @@ class VaultStore(
 
         if (!wasBiometricEnabled && isBiometricEnabled) {
             try {
-                crypto.storeUnlockKey(
-                    android.util.Base64.encodeToString(crypto.unlockKey, android.util.Base64.NO_WRAP),
+                crypto.storeAccountKey(
+                    android.util.Base64.encodeToString(crypto.accountKey, android.util.Base64.NO_WRAP),
                     authMethods,
                 )
             } catch (e: Exception) {
@@ -937,12 +937,12 @@ class VaultStore(
      * Setup PIN unlock.
      */
     @Throws(Exception::class)
-    fun setupPin(pinValue: String, unlockKeyBase64: String) {
-        pin.setupPin(pinValue, unlockKeyBase64)
+    fun setupPin(pinValue: String, accountKeyBase64: String) {
+        pin.setupPin(pinValue, accountKeyBase64)
     }
 
     /**
-     * Unlock with PIN. Returns the key the PIN protects, to open the session with.
+     * Unlock with PIN. Returns the Account Key, to open the session with.
      */
     @Throws(Exception::class)
     fun unlockWithPin(pinValue: String): String {

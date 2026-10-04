@@ -198,15 +198,15 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
  * Store the session's key in session storage. It is the one secret the session holds: the vault encryption key and the
  * account private key are derived from it and the cached key chain on demand.
  */
-export async function handleStoreUnlockKey(
-  unlockKey: string,
+export async function handleStoreAccountKey(
+  accountKey: string,
 ) : Promise<messageBoolResponse> {
   try {
-    await storage.setItem(StorageKeys.UNLOCK_KEY, unlockKey);
+    await storage.setItem(StorageKeys.ACCOUNT_KEY, accountKey);
     return { success: true };
   } catch (error) {
-    logFailure('Failed to store unlock key', error);
-    // E-602: Storage write failed during unlock key store
+    logFailure('Failed to store Account Key', error);
+    // E-602: Storage write failed during Account Key store
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
@@ -456,7 +456,7 @@ export async function handleGetPasswordSettings(
 }
 
 /**
- * Get the encryption key for the encrypted vault: derived from the session unlock key and the cached key chain,
+ * Get the encryption key for the encrypted vault: derived from the Account Key and the cached key chain,
  * null while the vault is locked.
  */
 export async function handleGetEncryptionKey(

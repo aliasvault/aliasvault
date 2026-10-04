@@ -13,11 +13,11 @@ import { getPlatform } from '../platform/ClientPlatform';
 
 /**
  * Store the Account Key in the session when the session still held an unlock key.
- * @param sessionKey - the key the session held
+ * @param storedKey - the key the session held
  * @param accountKey - the Account Key the chain opened with it
  */
-export async function convertLegacySessionKey(sessionKey: string, accountKey: string): Promise<void> {
-  if (accountKey !== sessionKey) {
-    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY, accountKey);
+export async function convertLegacySessionKey(storedKey: string, accountKey: string): Promise<void> {
+  if (accountKey !== storedKey) {
+    await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, accountKey);
   }
 }

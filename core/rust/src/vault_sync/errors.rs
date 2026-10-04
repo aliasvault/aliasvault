@@ -133,7 +133,7 @@ pub enum SyncError {
     /// The account key opened, the vault encryption key under it did not.
     #[error("The account key does not open the vault encryption key: {0}")]
     KeyChainUnreadable(String),
-    /// The session key matches neither the server's KEK nor its VEK; only a re-login recovers.
+    /// The session key opens neither the server's chain nor its VEK; only a re-login recovers.
     #[error("Vault encryption key out of sync with the server; log in again")]
     KeyOutOfSync,
     /// A server manifest or bucket failed its hash check or did not decrypt.
@@ -168,6 +168,15 @@ pub enum SyncError {
     /// Anything else.
     #[error("{0}")]
     Other(String),
+}
+
+impl From<crate::crypto::KeyChainError> for SyncError {
+    fn from(error: crate::crypto::KeyChainError) -> Self {
+        match error {
+            crate::crypto::KeyChainError::UnlockKeyRejected => SyncError::UnlockKeyRejected,
+            crate::crypto::KeyChainError::KeyChainUnreadable(message) => SyncError::KeyChainUnreadable(message),
+        }
+    }
 }
 
 impl SyncError {

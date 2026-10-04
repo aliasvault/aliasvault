@@ -128,16 +128,16 @@ const VaultUnlockSettings: React.FC = () => {
 
     try {
       showLoading();
-      const unlockKey = await VaultKeyService.getSessionUnlockKey();
+      const accountKey = await VaultKeyService.getSessionAccountKey();
 
-      if (!unlockKey) {
+      if (!accountKey) {
         setError(t('common.errors.unknownErrorTryAgain'));
         hideLoading();
         return;
       }
 
       /* Setup PIN with the unlock key */
-      await setupPin(newPin, unlockKey);
+      await setupPin(newPin, accountKey);
 
       /*
        * Mark PIN as the last-used unlock method so the unlock screen defaults to

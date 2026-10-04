@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { SrpAuthService, type LoginCredentials } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -63,8 +63,7 @@ export default function LoginScreen() : React.ReactNode {
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [initiateLoginResponse, setInitiateLoginResponse] = useState<LoginResponse | null>(null);
-  const [loginCredentials, setLoginCredentials] = useState<LoginCredentials | null>(null);
-  const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
+  const [loginCredentials, setLoginCredentials] = useState<PreparedCredentials | null>(null);
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -174,13 +173,13 @@ export default function LoginScreen() : React.ReactNode {
    * Process the vault response by storing the vault and logging in the user.
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param passwordHashBase64 - The password hash base64
+   * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
    * @param initiateLoginResponse - The initiate login response
    */
   const processVaultResponse = async (
     token: string,
     refreshToken: string,
-    passwordHashBase64: string,
+    unlockKeyBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
     // Get biometric display name
@@ -209,7 +208,7 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                passwordHashBase64,
+                unlockKeyBase64,
                 initiateLoginResponse
               );
             }
@@ -225,7 +224,7 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                passwordHashBase64,
+                unlockKeyBase64,
                 initiateLoginResponse
               );
             }
@@ -241,7 +240,7 @@ export default function LoginScreen() : React.ReactNode {
       await continueProcessVaultResponse(
         token,
         refreshToken,
-        passwordHashBase64,
+        unlockKeyBase64,
         initiateLoginResponse
       );
     }
@@ -251,14 +250,13 @@ export default function LoginScreen() : React.ReactNode {
    * Continue processing the vault response after biometric choice
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param passwordHashBase64 - The password hash base64
+   * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
    * @param initiateLoginResponse - The initiate login response
-   * @param unlockKeyDerivationParams - The encryption key derivation parameters
    */
   const continueProcessVaultResponse = async (
     token: string,
     refreshToken: string,
-    passwordHashBase64: string,
+    unlockKeyBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
     const unlockKeyDerivationParams : UnlockKeyDerivationParams = {
@@ -275,11 +273,10 @@ export default function LoginScreen() : React.ReactNode {
     await dbContext.storeUnlockKeyDerivationParams(unlockKeyDerivationParams);
 
     /*
-     * The derived key is the unlock key. The Rust core opens the account's key chain with the KEK derived from it
-     * (fetched from the server, or the cached one when offline) and caches the chain as-is. The session, biometrics
-     * and PIN keep the Account Key and open the chain from it on every unlock.
+     * The Rust core opens the account's key chain (fetched from the server, or the cached one when offline) with the
+     * KEK derived from the unlock key and caches the chain as-is. The session keeps the Account Key it yields.
      */
-    await NativeVaultManager.resolveVaultKey(passwordHashBase64);
+    await NativeVaultManager.resolveVaultKey(unlockKeyBase64);
 
     /*
      * Forced logout recovery check:
@@ -374,7 +371,6 @@ export default function LoginScreen() : React.ReactNode {
     setTwoFactorRequired(false);
     setTwoFactorCode('');
     setLoginCredentials(null);
-    setPasswordHashBase64(null);
     setInitiateLoginResponse(null);
     setLoginStatus(null);
     router.replace('/(tabs)/items');
@@ -401,15 +397,15 @@ export default function LoginScreen() : React.ReactNode {
     try {
       const initiateLoginResponse = await srpUtil.initiateLogin(SrpAuthService.normalizeUsername(credentials.username));
 
-      const passwordHash = await EncryptionUtility.deriveKeyFromPassword(
+      const unlockKey = await EncryptionUtility.deriveKeyFromPassword(
         credentials.password,
         initiateLoginResponse.salt,
         initiateLoginResponse.encryptionType,
         initiateLoginResponse.encryptionSettings
       );
 
-      const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
-      const passwordCredentials = await SrpAuthService.loginCredentials(passwordHashBase64, initiateLoginResponse, credentials.username);
+      const unlockKeyBase64 = Buffer.from(unlockKey).toString('base64');
+      const passwordCredentials = await SrpAuthService.loginCredentials(unlockKeyBase64, initiateLoginResponse, credentials.username);
 
       setLoginStatus(t('auth.validatingCredentials'));
       await new Promise(resolve => requestAnimationFrame(resolve));
@@ -423,7 +419,6 @@ export default function LoginScreen() : React.ReactNode {
       if (validationResponse.requiresTwoFactor) {
         setInitiateLoginResponse(initiateLoginResponse);
         setLoginCredentials(passwordCredentials);
-        setPasswordHashBase64(passwordHashBase64);
         setTwoFactorRequired(true);
         setIsLoading(false);
         setLoginStatus(null);
@@ -440,7 +435,7 @@ export default function LoginScreen() : React.ReactNode {
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        passwordHashBase64,
+        passwordCredentials.unlockKeyBase64,
         initiateLoginResponse
       );
     } catch (err) {
@@ -461,7 +456,7 @@ export default function LoginScreen() : React.ReactNode {
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
-      if (!loginCredentials || !passwordHashBase64 || !initiateLoginResponse) {
+      if (!loginCredentials || !initiateLoginResponse) {
         throw new Error('Required login data not found');
       }
 
@@ -488,7 +483,7 @@ export default function LoginScreen() : React.ReactNode {
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        passwordHashBase64,
+        loginCredentials.unlockKeyBase64,
         initiateLoginResponse
       );
     } catch (err) {
@@ -736,7 +731,6 @@ export default function LoginScreen() : React.ReactNode {
                         setTwoFactorRequired(false);
                         setTwoFactorCode('');
                         setLoginCredentials(null);
-                        setPasswordHashBase64(null);
                         setInitiateLoginResponse(null);
                         setError(null);
                       }}

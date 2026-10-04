@@ -28,7 +28,7 @@ export type TestUser = {
   token?: TokenModel;
   /** TOTP secret if 2FA is enabled */
   totpSecret?: string;
-  /** Argon2Id password-derived key (the KEK), for tests that walk the account key chain API-side. */
+  /** The Argon2Id unlock key, for tests that walk the account key chain API-side. */
   encryptionKey?: Uint8Array;
 };
 
@@ -59,7 +59,7 @@ export function generateTestPassword(): string {
  * @param apiBaseUrl - The base URL of the API (e.g., 'http://localhost:5100')
  * @param username - The username for the new account
  * @param password - The password for the new account
- * @returns The token model and the password-derived key (KEK) on success
+ * @returns The token model and the unlock key on success
  * @throws Error if registration fails
  */
 export async function registerTestUser(

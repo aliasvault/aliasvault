@@ -23,7 +23,7 @@ const QuickVaultUnlockSection = forwardRef<SectionHandle>((_, ref) => {
   useImperativeHandle(ref, () => ({ loadData }), [loadData]);
 
   /**
-   * Create a passkey and encrypt the session keys with it.
+   * Create a passkey and encrypt the Account Key with it.
    */
   const enable = async (): Promise<void> => {
     try {

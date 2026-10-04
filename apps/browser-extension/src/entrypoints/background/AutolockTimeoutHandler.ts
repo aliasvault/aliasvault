@@ -26,8 +26,8 @@ let shortTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
  */
 async function lockVaultDueToInactivity(): Promise<void> {
   // Check if vault is still unlocked before locking
-  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
-  if (!unlockKey) {
+  const accountKey = await storage.getItem(StorageKeys.ACCOUNT_KEY) as string | null;
+  if (!accountKey) {
     // Vault is already locked
     return;
   }
@@ -87,8 +87,8 @@ async function setAutoLockTimer(timeoutSeconds: number): Promise<void> {
  */
 export async function initializeAutoLockAlarm(): Promise<void> {
   // Check if vault is unlocked
-  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
-  if (!unlockKey) {
+  const accountKey = await storage.getItem(StorageKeys.ACCOUNT_KEY) as string | null;
+  if (!accountKey) {
     // Vault is locked, clear any existing alarm
     clearShortTimeoutTimer();
     await browser.alarms.clear(AUTO_LOCK_ALARM_NAME);
@@ -151,8 +151,8 @@ export async function handleResetAutoLockTimer(): Promise<void> {
   }
 
   // Check if vault is unlocked before setting timer
-  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
-  if (!unlockKey) {
+  const accountKey = await storage.getItem(StorageKeys.ACCOUNT_KEY) as string | null;
+  if (!accountKey) {
     // Vault is already locked, don't start timer
     clearShortTimeoutTimer();
     await browser.alarms.clear(AUTO_LOCK_ALARM_NAME);
@@ -176,8 +176,8 @@ export async function handlePopupHeartbeat(): Promise<void> {
   }
 
   // Check if vault is unlocked
-  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
-  if (!unlockKey) {
+  const accountKey = await storage.getItem(StorageKeys.ACCOUNT_KEY) as string | null;
+  if (!accountKey) {
     // Vault is already locked, don't extend timer
     return;
   }
@@ -202,8 +202,8 @@ export async function handleSetAutoLockTimeout(timeout: number): Promise<boolean
   }
 
   // Check if vault is unlocked before setting new timer
-  const unlockKey = await storage.getItem(StorageKeys.UNLOCK_KEY) as string | null;
-  if (!unlockKey) {
+  const accountKey = await storage.getItem(StorageKeys.ACCOUNT_KEY) as string | null;
+  if (!accountKey) {
     // Vault is locked, don't start timer
     return true;
   }

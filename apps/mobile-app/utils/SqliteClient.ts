@@ -182,31 +182,30 @@ class SqliteClient {
   }
 
   /**
-   * Open a session in memory with the unlock key or a stored Account Key, without keychain persistence.
+   * Open a session in memory with the unlock key or the Account Key, without keychain persistence.
    * Use this to test if a key is valid before persisting.
    *
-   * @param base64UnlockKey The base64 encoded unlock key
+   * @param base64Key The base64 encoded unlock key or Account Key
    */
-  public async storeUnlockKeyInMemory(base64UnlockKey: string): Promise<void> {
+  public async storeAccountKeyInMemory(base64Key: string): Promise<void> {
     try {
-      await NativeVaultManager.storeUnlockKeyInMemory(base64UnlockKey);
+      await NativeVaultManager.storeAccountKeyInMemory(base64Key);
     } catch (error) {
-      console.error('Error storing unlock key in memory:', error);
+      console.error('Error storing Account Key in memory:', error);
       throw error;
     }
   }
 
   /**
-   * Open a session with the unlock key or a stored Account Key AND persist the Account Key to keychain (may trigger biometric prompt).
+   * Open a session with the unlock key or the Account Key AND persist the Account Key to keychain (may trigger biometric prompt).
    *
-   * @param base64UnlockKey The base64 encoded unlock key
+   * @param base64Key The base64 encoded unlock key or Account Key
    */
-  public async storeUnlockKey(base64UnlockKey: string): Promise<void> {
+  public async storeAccountKey(base64Key: string): Promise<void> {
     try {
-      // Open the session with the unlock key in the native module
-      await NativeVaultManager.storeUnlockKey(base64UnlockKey);
+      await NativeVaultManager.storeAccountKey(base64Key);
     } catch (error) {
-      console.error('Error storing unlock key:', error);
+      console.error('Error storing Account Key:', error);
       throw error;
     }
   }

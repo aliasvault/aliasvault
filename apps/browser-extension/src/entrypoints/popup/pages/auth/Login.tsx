@@ -167,7 +167,7 @@ const Login: React.FC = () => {
    * @param username - the normalized username
    * @param token - the access token
    * @param refreshToken - the refresh token
-   * @param unlockKey - the key the phone sent (its stored key), base64
+   * @param unlockKey - the key the phone sent (its Account Key, or an unlock key from an older app), base64
    * @param derivationParams - how the unlock key is derived from the password
    */
   const handleSuccessfulAuth = async (
@@ -184,9 +184,9 @@ const Login: React.FC = () => {
      * Fetch the account's key chain, check the unlock key opens it and cache it as-is; the vault encryption key is
      * derived from the two on demand. Legacy accounts have no chain.
      */
-    let storedKey: string;
+    let accountKey: string;
     try {
-      storedKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+      accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
     } catch (err) {
       // If key chain can't be fetched, logout user and show error as this is not a recoverable error.
       await app.logout();
@@ -199,8 +199,8 @@ const Login: React.FC = () => {
       encryptionSettings: derivationParams.encryptionSettings
     });
 
-    // Store the session key, then pull and load the vault.
-    await dbContext.storeUnlockKey(storedKey);
+    // Store the Account Key, then pull and load the vault.
+    await dbContext.storeAccountKey(accountKey);
     await pullAndLoadVault();
 
     // Reset prefill flag so next logout will prefill again

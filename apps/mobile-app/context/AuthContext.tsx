@@ -252,7 +252,7 @@ export const AuthProvider: React.FC<{
   }, []);
 
   /**
-   * Verify the password. Returns the current password hash if the password is correct, otherwise returns null.
+   * Verify the password. Returns its unlock key (base64) if the password is correct, otherwise returns null.
    */
   const verifyPassword = useCallback(async (password: string): Promise<string | null> => {
     // Get the key derivation parameters
@@ -261,23 +261,23 @@ export const AuthProvider: React.FC<{
       throw new Error('Failed to verify current password. Please try again.');
     }
 
-    // Derive the encryption key from the password using the stored parameters
-    const passwordHash = await EncryptionUtility.deriveKeyFromPassword(
+    // Derive the unlock key from the password using the stored parameters
+    const unlockKey = await EncryptionUtility.deriveKeyFromPassword(
       password,
       params.salt,
       params.encryptionType,
       params.encryptionSettings
     );
 
-    const currentPasswordHashBase64 = Buffer.from(passwordHash).toString('base64');
+    const unlockKeyBase64 = Buffer.from(unlockKey).toString('base64');
 
     // Check if the current password is correct
-    const isValid = await dbContext.verifyUnlockKey(currentPasswordHashBase64);
+    const isValid = await dbContext.verifyUnlockKey(unlockKeyBase64);
     if (!isValid) {
       return null;
     }
 
-    return currentPasswordHashBase64;
+    return unlockKeyBase64;
   }, [dbContext, getUnlockKeyDerivationParams]);
 
   /**

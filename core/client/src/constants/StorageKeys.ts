@@ -41,7 +41,7 @@ export const StorageKeys = {
   PRIVATE_EMAIL_DOMAINS: 'local:privateEmailDomains',
   /** Private email domains that are hidden from the domain picker. */
   HIDDEN_PRIVATE_EMAIL_DOMAINS: 'local:hiddenPrivateEmailDomains',
-  /** Argon2 parameters used to derive the KEK from the master password. */
+  /** Argon2 parameters used to derive the unlock key from the master password. */
   UNLOCK_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
   /** The VEK encrypted with the Account Key, as returned by the server. */
   ENCRYPTED_VEK: 'local:encryptedVek',
@@ -91,10 +91,10 @@ export const StorageKeys = {
    */
 
   /**
-   * The unlock key of the session: the account private key and vault encryption key are derived from it and the cached key chain on demand (see VaultKeyService).
+   * The Account Key of the session, from which the vault encryption key and account private key are opened on demand (see VaultKeyService).
    * Session-only: it must never persist to disk. An additional unlock method (PIN) protects this same key.
    */
-  UNLOCK_KEY: 'session:unlockKey',
+  ACCOUNT_KEY: 'session:unlockKey',
   /** The sync hold record (reason + when it was taken) while an operation no sync may race runs; see VaultSyncHold. */
   VAULT_SYNC_HOLD: 'session:vaultSyncHold',
 } as const satisfies Record<string, StorageKey>;
@@ -115,7 +115,7 @@ export const AUTH_STORAGE_KEYS: readonly StorageKey[] = [
 
 /** Keys that must not survive a vault lock: the unlock key. Hosts add anything they derive from decrypted data. */
 export const VAULT_LOCK_STORAGE_KEYS: readonly StorageKey[] = [
-  StorageKeys.UNLOCK_KEY,
+  StorageKeys.ACCOUNT_KEY,
 ];
 
 /**
