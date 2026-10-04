@@ -42,7 +42,7 @@ const VOCABULARIES = [
       {
         name: 'Password',
         token: 'password',
-        summary: 'Master password: the KEK is derived from the password via Argon2.',
+        summary: 'Master password: Argon2id of the password gives the unlock key, which the KEK and SRP input are HKDF-derived from.',
       },
     ],
   },
