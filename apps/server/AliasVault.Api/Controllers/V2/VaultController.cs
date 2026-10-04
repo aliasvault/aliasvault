@@ -308,6 +308,17 @@ public class VaultController(
             return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_NOT_UP_TO_DATE, 400));
         }
 
+        // A routing push names the revision it was built from for every manifest it speaks for, once each.
+        if (model.EmailRouting is { } routing)
+        {
+            var baseIds = routing.BaseRevisions.Select(r => r.ManifestId).ToList();
+            var spokenFor = routing.CoveredManifestIds.Concat(routing.EmailAddressList.Select(a => a.ManifestId));
+            if (baseIds.Distinct().Count() != baseIds.Count || spokenFor.Any(id => !baseIds.Contains(id)))
+            {
+                return BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.VAULT_ERROR, 400));
+            }
+        }
+
         // Decode base64-encoded ciphertexts into raw bytes.
         var manifestBlobs = new Dictionary<Guid, byte[]>();
         foreach (var mw in model.Manifests)
@@ -400,12 +411,24 @@ public class VaultController(
 
         var manifestStale = resolved.Any(r => r.Row.RevisionNumber >= r.Write.CurrentRevision + 1);
         var bucketStale = model.Buckets.Any(b => bucketCurrentRevisions[(b.ManifestId, b.Category)] >= b.CurrentRevision + 1);
-        if (manifestStale || bucketStale)
+
+        // The routing set is built from the manifests the client read, so it is stale when any of them moved on since.
+        List<ManifestRevision> routingBaseRevisions = model.EmailRouting?.BaseRevisions ?? [];
+        var routingBaseIds = routingBaseRevisions.Select(r => r.ManifestId).Distinct().ToList();
+        var routingCurrentRevisions = routingBaseIds.Count == 0 ? new Dictionary<Guid, long>() : await ManifestAccessHelper.AccessibleManifests(context, accessScope)
+            .Where(x => routingBaseIds.Contains(x.ManifestId))
+            .ToDictionaryAsync(x => x.ManifestId, x => x.RevisionNumber);
+        var routingStale = routingBaseRevisions.Where(r => routingCurrentRevisions.TryGetValue(r.ManifestId, out var current) && current > r.Revision).Select(r => r.ManifestId).Distinct().ToList();
+
+        if (manifestStale || bucketStale || routingStale.Count > 0)
         {
+            var staleRoutingOnly = routingStale.Where(id => resolved.All(r => r.Row.ManifestId != id));
             return Ok(new VaultWriteResponse
             {
                 Status = VaultStatus.Outdated,
-                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber }).ToList(),
+                ManifestRevisions = resolved.Select(r => new ManifestWriteResult { ManifestId = r.Write.ManifestId, Revision = r.Row.RevisionNumber })
+                    .Concat(staleRoutingOnly.Select(id => new ManifestWriteResult { ManifestId = id, Revision = routingCurrentRevisions[id] }))
+                    .ToList(),
                 BucketRevisions = model.Buckets.Select(b => new BucketRevision { ManifestId = b.ManifestId, Category = b.Category, Revision = bucketCurrentRevisions[(b.ManifestId, b.Category)] }).ToList(),
             });
         }

@@ -4,6 +4,7 @@ mod item_move;
 mod merge_edge_cases;
 mod test_host;
 mod unloaded_blobs;
+mod unsupported_grant;
 
 use std::collections::HashMap;
 
@@ -309,6 +310,7 @@ fn dirty_client_pushes_only_what_changed() {
     assert_eq!(body["manifests"][0]["credentialsCount"], 2);
     assert_eq!(body["buckets"].as_array().unwrap().len(), 0, "unchanged buckets stay out of the write");
     assert_eq!(body["emailRouting"]["coveredManifestIds"][0], PERSONAL_MANIFEST_ID);
+    assert_eq!(body["emailRouting"]["baseRevisions"][0]["revision"], 7, "routing carries the revision it was built from");
     assert_eq!(host.state[state::SERVER_MANIFEST_REVISIONS][PERSONAL_MANIFEST_ID], 8);
     assert_eq!(host.mark_clean_calls, vec![1]);
     assert!(!host.is_dirty);

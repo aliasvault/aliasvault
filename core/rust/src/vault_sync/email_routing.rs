@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 use serde_json::Value;
 
-use super::types::{ClaimedEmailAddress, EmailRoutingPush};
+use super::types::{ClaimedEmailAddress, EmailRoutingPush, ManifestRevision};
 use super::db::value_string;
 use crate::vault_codec::row::{is_deleted, rows_of, str_col, truthy};
 use crate::vault_codec::Manifest;
@@ -13,8 +13,8 @@ use crate::vault_model::names::{DELETED_AT_COL, FIELD_KEY_COL, FIELD_VALUES_TABL
 /// The field key of an item's login email.
 const FIELD_KEY_LOGIN_EMAIL: &str = "login.email";
 
-/// Build the routing set from the canonicalized manifests, the user's own included.
-pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains: &[String]) -> EmailRoutingPush {
+/// Build the routing set from the canonicalized manifests, the user's own included, read at `manifest_revisions`.
+pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains: &[String], manifest_revisions: &HashMap<String, i64>) -> EmailRoutingPush {
     let mut by_pair: HashMap<String, ClaimedEmailAddress> = HashMap::new();
     let mut order: Vec<String> = Vec::new();
 
@@ -59,6 +59,10 @@ pub(crate) fn build_email_routing(manifests: &[Manifest], private_email_domains:
     EmailRoutingPush {
         email_address_list: order.into_iter().filter_map(|key| by_pair.remove(&key)).collect(),
         covered_manifest_ids: manifests.iter().map(|manifest| manifest.manifest_id.clone()).collect(),
+        base_revisions: manifests
+            .iter()
+            .map(|manifest| ManifestRevision { manifest_id: manifest.manifest_id.clone(), revision: manifest_revisions.get(&manifest.manifest_id).copied().unwrap_or(0), encrypted_name: None })
+            .collect(),
     }
 }
 
@@ -86,10 +90,12 @@ mod tests {
                 serde_json::json!({"ItemId": "i1", "FieldKey": "login.email", "Value": "x@public.com", "IsDeleted": 0}),
             ],
         );
-        let routing = build_email_routing(&[m], &["private.io".to_string()]);
+        let routing = build_email_routing(&[m], &["private.io".to_string()], &HashMap::from([("m1".to_string(), 7)]));
         assert_eq!(routing.email_address_list.len(), 1);
         assert_eq!(routing.email_address_list[0].address, "a@private.io");
         assert!(!routing.email_address_list[0].paused);
         assert_eq!(routing.covered_manifest_ids, vec!["m1"]);
+        assert_eq!(routing.base_revisions.len(), 1);
+        assert_eq!(routing.base_revisions[0].revision, 7);
     }
 }

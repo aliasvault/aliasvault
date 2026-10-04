@@ -481,7 +481,8 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
     }
 
     let mut uploaded = upload_missing_blobs(ctx, &blobs, &baselines, gate).await?;
-    let email_routing = build_email_routing(&canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect::<Vec<_>>(), &ctx.request.private_email_domains);
+    let routed_manifests: Vec<_> = canonicalized.manifests.iter().map(|m| m.manifest.clone()).collect();
+    let email_routing = build_email_routing(&routed_manifests, &ctx.request.private_email_domains, &baselines.manifest_revisions);
     let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
     let response = write_vault(ctx, &payload, &blobs, gate, &mut uploaded).await?;
 

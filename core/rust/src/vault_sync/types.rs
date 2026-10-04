@@ -667,6 +667,7 @@ pub struct ClaimedEmailAddress {
 pub struct EmailRoutingPush {
     pub email_address_list: Vec<ClaimedEmailAddress>,
     pub covered_manifest_ids: Vec<String>,
+    pub base_revisions: Vec<ManifestRevision>,
 }
 
 #[derive(Debug, Clone, Serialize)]
