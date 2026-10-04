@@ -421,7 +421,7 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
         if (deliveryKeys.Count == 0)
         {
             // The owning manifest has no published primary delivery key, so we cannot process this email.
-            logger.LogCritical(
+            logger.LogWarning(
                 "Rejected email: email for {ToAddress} cannot be processed. No primary delivery encryption key found for manifest {ManifestId}.",
                 toAddress.User + "@" + toAddress.Host,
                 ownerManifestId);
