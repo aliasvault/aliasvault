@@ -1,5 +1,5 @@
 /**
- * Category 7: Offline Sync (Requires API + Multi-Client Scenario)
+ * Category 32: Offline Sync (Requires API + Multi-Client Scenario)
  *
  * These tests verify offline mode functionality and subsequent sync behavior:
  *
@@ -16,7 +16,7 @@
  */
 import { test, expect, TestClient, FieldSelectors, ButtonSelectors } from '../fixtures';
 
-test.describe.serial('7. Offline Sync', () => {
+test.describe.serial('32. Offline Sync', () => {
   let clientA: TestClient;
   let clientB: TestClient;
   let originalApiUrl: string;
@@ -29,7 +29,7 @@ test.describe.serial('7. Offline Sync', () => {
     await TestClient.cleanupAll(clientA, clientB);
   });
 
-  test('7.1 Setup: Both clients login to the same account', async ({ testUser, apiUrl }) => {
+  test('32.1 Setup: Both clients login to the same account', async ({ testUser, apiUrl }) => {
     sharedTestUser = { username: testUser.username, password: testUser.password };
     originalApiUrl = apiUrl;
 
@@ -39,28 +39,28 @@ test.describe.serial('7. Offline Sync', () => {
     clientB = await TestClient.create();
     await clientB.login(apiUrl, testUser.username, testUser.password);
 
-    await clientA.screenshot('7.1-client-a-logged-in.png');
-    await clientB.screenshot('7.1-client-b-logged-in.png');
+    await clientA.screenshot('32.1-client-a-logged-in.png');
+    await clientB.screenshot('32.1-client-b-logged-in.png');
   });
 
-  test('7.2 Client A creates a credential while online', async () => {
+  test('32.2 Client A creates a credential while online', async () => {
     await clientA
       .goToVault()
       .then((c) => c.createCredential(credentialNameA, 'clientA@example.com', 'ClientAPassword123!'))
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameA))
-      .then((c) => c.screenshot('7.2-client-a-credential-created.png'));
+      .then((c) => c.screenshot('32.2-client-a-credential-created.png'));
   });
 
-  test('7.3 Client B goes offline', async () => {
+  test('32.3 Client B goes offline', async () => {
     await clientB
       .enableOfflineMode()
       .then((c) => c.triggerSync())
       .then((c) => c.waitForOffline())
-      .then((c) => c.screenshot('7.3-client-b-offline-mode.png'));
+      .then((c) => c.screenshot('32.3-client-b-offline-mode.png'));
   });
 
-  test('7.4 Client B creates a credential while offline', async () => {
+  test('32.4 Client B creates a credential while offline', async () => {
     await clientB.goToVault();
     await clientB.popup.locator(ButtonSelectors.ADD_NEW_ITEM).click();
     await clientB.popup.locator(ButtonSelectors.ADD_ITEM_TYPE_LOGIN).click();
@@ -73,49 +73,49 @@ test.describe.serial('7. Offline Sync', () => {
 
     await clientB
       .verifyCredentialExists(credentialNameB)
-      .then((c) => c.screenshot('7.4-client-b-offline-credential-saved.png'));
+      .then((c) => c.screenshot('32.4-client-b-offline-credential-saved.png'));
 
     await clientB
       .goToVault()
       .then((c) => c.verifyCredentialExists(credentialNameB))
-      .then((c) => c.screenshot('7.4-client-b-offline-credential-in-list.png'));
+      .then((c) => c.screenshot('32.4-client-b-offline-credential-in-list.png'));
   });
 
-  test('7.5 Client B locks vault while offline', async () => {
+  test('32.5 Client B locks vault while offline', async () => {
     await clientB
       .lockVault()
-      .then((c) => c.screenshot('7.5-client-b-vault-locked.png'));
+      .then((c) => c.screenshot('32.5-client-b-vault-locked.png'));
   });
 
-  test('7.6 Client B unlocks vault while still offline', async () => {
+  test('32.6 Client B unlocks vault while still offline', async () => {
     await clientB
       .unlockVault(sharedTestUser.password)
-      .then((c) => c.screenshot('7.6-client-b-after-unlock.png'))
+      .then((c) => c.screenshot('32.6-client-b-after-unlock.png'))
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameB))
-      .then((c) => c.screenshot('7.6-client-b-offline-vault-unlocked.png'));
+      .then((c) => c.screenshot('32.6-client-b-offline-vault-unlocked.png'));
   });
 
-  test('7.7 Client B goes back online and triggers sync', async () => {
+  test('32.7 Client B goes back online and triggers sync', async () => {
     await clientB
       .disableOfflineMode(originalApiUrl)
       .then((c) => c.triggerSync())
-      .then((c) => c.screenshot('7.7-client-b-back-online.png'))
+      .then((c) => c.screenshot('32.7-client-b-back-online.png'))
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameB))
       .then((c) => c.verifyCredentialExists(credentialNameA))
-      .then((c) => c.screenshot('7.7-client-b-vault-after-sync.png'))
+      .then((c) => c.screenshot('32.7-client-b-vault-after-sync.png'))
       .then((c) => c.verifyVaultItemCount(2));
   });
 
-  test('7.8 Client A syncs and verifies both credentials are present', async () => {
+  test('32.8 Client A syncs and verifies both credentials are present', async () => {
     await clientA
       .triggerSync()
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameA))
       .then((c) => c.verifyCredentialExists(credentialNameB))
-      .then((c) => c.screenshot('7.8-client-a-vault-after-sync.png'))
+      .then((c) => c.screenshot('32.8-client-a-vault-after-sync.png'))
       .then((c) => c.verifyVaultItemCount(2))
-      .then((c) => c.screenshot('7.8-client-a-both-credentials.png'));
+      .then((c) => c.screenshot('32.8-client-a-both-credentials.png'));
   });
 });

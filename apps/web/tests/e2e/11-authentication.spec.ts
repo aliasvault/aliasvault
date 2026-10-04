@@ -1,10 +1,10 @@
 /**
- * Category 2: Authentication (requires API)
+ * Category 11: Authentication (requires API)
  */
 import { test, expect } from '../fixtures';
 
-test.describe('2. Authentication', () => {
-  test('2.1 should log in and log out', async ({ app, testUser }) => {
+test.describe('11. Authentication', () => {
+  test('11.1 should log in and log out', async ({ app, testUser }) => {
     await test.step('log in', async () => {
       await app.login(testUser.username, testUser.password);
       await expect(app.page.getByText('No items yet')).toBeVisible();
@@ -20,7 +20,7 @@ test.describe('2. Authentication', () => {
     });
   });
 
-  test('2.2 should reject invalid credentials', async ({ app, credentials }) => {
+  test('11.2 should reject invalid credentials', async ({ app, credentials }) => {
     await app.page.goto('/user/login');
     await app.page.locator('#email').fill(credentials.username);
     await app.page.locator('#password').fill(credentials.password);
@@ -30,7 +30,7 @@ test.describe('2. Authentication', () => {
     await expect(app.page).toHaveURL(/\/user\/login$/);
   });
 
-  test('2.3 should return to the open page after unlocking a reloaded vault', async ({ app, testUser }) => {
+  test('11.3 should return to the open page after unlocking a reloaded vault', async ({ app, testUser }) => {
     const { page } = app;
     await app.login(testUser.username, testUser.password);
     await app.createItem('Return after unlock');

@@ -1,5 +1,5 @@
 /**
- * Category 7: Vault upgrades from older versions.
+ * Category 90: Vault upgrades from older versions.
  */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -198,14 +198,14 @@ async function expectLegacyVaultContent(app: WebApp, fixture: LegacyVaultFixture
   });
 }
 
-test.describe('7. Vault upgrades', () => {
+test.describe('90. Vault upgrades', () => {
   /*
    * One after the other: every test account gets the fixture's SRP identity, and the server keys the login handshake
    * on that identity, so two logins at once would overwrite each other's handshake.
    */
   test.describe.configure({ mode: 'default' });
 
-  test('7.1 should upgrade a 0.1.0 vault to the current storage format', async ({ app, apiUrl, testUser }) => {
+  test('90.1 should upgrade a 0.1.0 vault to the current storage format', async ({ app, apiUrl, testUser }) => {
     const { page } = app;
     const fixture = await upgradeLegacyVault(app, apiUrl, testUser);
 
@@ -234,7 +234,7 @@ test.describe('7. Vault upgrades', () => {
     });
   });
 
-  test('7.2 should receive and decrypt mail on a new alias after upgrading a 0.1.0 vault', async ({ app, apiUrl, testUser }) => {
+  test('90.2 should receive and decrypt mail on a new alias after upgrading a 0.1.0 vault', async ({ app, apiUrl, testUser }) => {
     await requireSmtp();
     const { page } = app;
     const id = Math.random().toString(36).substring(2, 10);
@@ -271,7 +271,7 @@ test.describe('7. Vault upgrades', () => {
     });
   });
 
-  test('7.3 should upgrade the verifier of an upgraded vault at the next login', async ({ app, apiUrl, testUser }) => {
+  test('90.3 should upgrade the verifier of an upgraded vault at the next login', async ({ app, apiUrl, testUser }) => {
     const { page } = app;
     const fixture = await upgradeLegacyVault(app, apiUrl, testUser);
 
@@ -305,7 +305,7 @@ test.describe('7. Vault upgrades', () => {
     });
   });
 
-  test('7.4 should keep everything a 0.30.7 vault holds when upgrading it', async ({ app, apiUrl, testUser }) => {
+  test('90.4 should keep everything a 0.30.7 vault holds when upgrading it', async ({ app, apiUrl, testUser }) => {
     test.slow();
     const fixture = await upgradeLegacyVault(app, apiUrl, testUser, '0.30.7');
 

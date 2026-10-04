@@ -1,12 +1,12 @@
 /**
- * Category 6: Settings (requires API)
+ * Category 50: Settings (requires API)
  */
 import { test, expect } from '../fixtures';
 
 import type { Locator } from '@playwright/test';
 
-test.describe('6. Settings', () => {
-  test('6.1 should keep the app language in the vault', async ({ app, testUser }) => {
+test.describe('50. Settings', () => {
+  test('50.1 should keep the app language in the vault', async ({ app, testUser }) => {
     const { page } = app;
     /**
      * The Emails link of the top menu, by its translated name.

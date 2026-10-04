@@ -1,5 +1,5 @@
 /**
- * Category 11: Cross-Window State Sync (Requires API)
+ * Category 62: Cross-Window State Sync (Requires API)
  *
  * Lock, logout, unlock and login actions performed in one popup must propagate
  * to any other open popup (e.g. the "Open in new window" popout).
@@ -14,14 +14,14 @@ import {
   Timeouts,
 } from '../fixtures';
 
-test.describe.serial('11. Cross-Window State Sync', () => {
+test.describe.serial('62. Cross-Window State Sync', () => {
   let client: TestClient;
 
   test.afterAll(async () => {
     await client?.cleanup();
   });
 
-  test('11.1 lock in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
+  test('62.1 lock in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
     client = await TestClient.fromContext(context, extensionId);
     await client.login(apiUrl, testUser.username, testUser.password);
 
@@ -41,8 +41,8 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     await popout.close();
   });
 
-  test('11.2 logout in popup propagates to expanded popout', async ({ context, extensionId, testUser }) => {
-    // Main popup is on /unlock from 11.1; bring it back to the vault.
+  test('62.2 logout in popup propagates to expanded popout', async ({ context, extensionId, testUser }) => {
+    // Main popup is on /unlock from 62.1; bring it back to the vault.
     await client.popup.bringToFront();
     await client.unlockVault(testUser.password);
 
@@ -62,8 +62,8 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     await popout.close();
   });
 
-  test('11.3 unlock in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
-    // After 11.2 the popup is on /login; sign back in and lock so both windows start on /unlock.
+  test('62.3 unlock in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
+    // After 62.2 the popup is on /login; sign back in and lock so both windows start on /unlock.
     await client.popup.bringToFront();
     await client.login(apiUrl, testUser.username, testUser.password);
     await client.lockVault();
@@ -85,7 +85,7 @@ test.describe.serial('11. Cross-Window State Sync', () => {
     await popout.close();
   });
 
-  test('11.4 login in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
+  test('62.4 login in popup propagates to expanded popout', async ({ context, extensionId, apiUrl, testUser }) => {
     // Reach a clean logged-out state in the main popup.
     await client.goToSettings();
     await client.popup.locator('button#logout-button').click();

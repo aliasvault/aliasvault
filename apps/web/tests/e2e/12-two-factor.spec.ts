@@ -1,5 +1,5 @@
 /**
- * Category 8: Two-factor authentication (requires API)
+ * Category 12: Two-factor authentication (requires API)
  */
 import * as OTPAuth from 'otpauth';
 
@@ -86,8 +86,8 @@ function wrongCode(totp: OTPAuth.TOTP): string {
   return String((Number(totp.generate()) + 500000) % 1000000).padStart(6, '0');
 }
 
-test.describe('8. Two-factor authentication', () => {
-  test('8.1 should enable 2FA, log in with an authenticator code and disable it again', async ({ app, testUser, apiUrl }) => {
+test.describe('12. Two-factor authentication', () => {
+  test('12.1 should enable 2FA, log in with an authenticator code and disable it again', async ({ app, testUser, apiUrl }) => {
     const { page } = app;
     await app.login(testUser.username, testUser.password);
     const { totp } = await enableTwoFactor(app);
@@ -127,7 +127,7 @@ test.describe('8. Two-factor authentication', () => {
     });
   });
 
-  test('8.2 should log in with a recovery code and disable 2FA with another one', async ({ app, testUser }) => {
+  test('12.2 should log in with a recovery code and disable 2FA with another one', async ({ app, testUser }) => {
     const { page } = app;
     await app.login(testUser.username, testUser.password);
     const { recoveryCodes } = await enableTwoFactor(app);

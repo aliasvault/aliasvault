@@ -1,12 +1,12 @@
 /**
- * Category 16: Item Type Switch (Requires API + Authentication)
+ * Category 21: Item Type Switch (Requires API + Authentication)
  *
  * Switching the type of a new item hides the fields the new type does not have. Switching back,
  * also via other types, must bring their values back.
  */
 import { test, expect, TestClient, FieldSelectors, ButtonSelectors, waitForCredentialSaved } from '../fixtures';
 
-test.describe.serial('16. Item Type Switch', () => {
+test.describe.serial('21. Item Type Switch', () => {
   let client: TestClient;
   const itemName = `Type Switch ${Date.now()}`;
 
@@ -14,12 +14,12 @@ test.describe.serial('16. Item Type Switch', () => {
     await client?.cleanup();
   });
 
-  test('16.1 should login', async ({ testUser, apiUrl }) => {
+  test('21.1 should login', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
   });
 
-  test('16.2 should restore fields after switching the item type back', async () => {
+  test('21.2 should restore fields after switching the item type back', async () => {
     const { popup } = client;
 
     await test.step('create an alias and fill in the alias fields', async () => {

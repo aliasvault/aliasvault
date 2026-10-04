@@ -1,5 +1,5 @@
 /**
- * Category 9: Save Login Prompt (Requires API + Authentication)
+ * Category 61: Save Login Prompt (Requires API + Authentication)
  *
  * These tests verify the save login prompt functionality that appears when
  * users submit login forms on arbitrary websites.
@@ -229,14 +229,14 @@ async function getBlockedDomains(client: TestClient): Promise<string[]> {
   });
 }
 
-test.describe.serial('9. Save Login Prompt', () => {
+test.describe.serial('61. Save Login Prompt', () => {
   let client: TestClient;
 
   test.afterAll(async () => {
     await client?.cleanup();
   });
 
-  test('9.1 should login, enable save feature, and verify prompt appears on form submit', async ({ testUser, apiUrl }) => {
+  test('61.1 should login, enable save feature, and verify prompt appears on form submit', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
 
@@ -265,7 +265,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     const promptVisible = await isSavePromptVisible(testPage);
     expect(promptVisible).toBe(true);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.1-save-prompt-visible.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.1-save-prompt-visible.png' });
 
     // Dismiss the prompt for now (we'll test save functionality in next test)
     await clickSavePromptButton(testPage, '.av-save-prompt__btn--dismiss');
@@ -273,7 +273,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     await testPage.close();
   });
 
-  test('9.2 should save credential to vault when clicking Save', async () => {
+  test('61.2 should save credential to vault when clicking Save', async () => {
     // Create a test page on a new domain
     const testPage = await client.context.newPage();
     await setupTestPageRoute(testPage, 'save-credential-test.com');
@@ -292,13 +292,13 @@ test.describe.serial('9. Save Login Prompt', () => {
     const promptVisibleBeforeSave = await isSavePromptVisible(testPage);
     expect(promptVisibleBeforeSave).toBe(true);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.2-prompt-visible.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.2-prompt-visible.png' });
 
     // Fill in a custom service name
     const serviceName = 'Save Credential Test Site';
     await fillServiceName(testPage, serviceName);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.2-before-save.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.2-before-save.png' });
 
     // Click the Save button
     await clickSavePromptButton(testPage, '.av-save-prompt__btn--save');
@@ -306,7 +306,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     // Wait for the credential to be saved and synced
     await testPage.waitForTimeout(2000);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.2-after-save.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.2-after-save.png' });
 
     // Trigger a sync to ensure the vault is up to date
     await client.triggerSync();
@@ -316,12 +316,12 @@ test.describe.serial('9. Save Login Prompt', () => {
 
     await client.verifyCredentialExists(serviceName);
 
-    await client.screenshot('9.2-credential-saved-in-vault.png');
+    await client.screenshot('61.2-credential-saved-in-vault.png');
 
     await testPage.close();
   });
 
-  test('9.3 should NOT save credential when clicking Dismiss', async () => {
+  test('61.3 should NOT save credential when clicking Dismiss', async () => {
     // Get the current vault item count
     await client.goToVault().then(c => c.waitForVaultReady());
     const initialItemCount = await client.popup.locator('ul#items-list > li').count();
@@ -338,7 +338,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     // Wait for the save prompt to appear
     await waitForSavePrompt(testPage);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.3-prompt-before-dismiss.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.3-prompt-before-dismiss.png' });
 
     // Click the Dismiss button (X icon)
     await clickSavePromptButton(testPage, '.av-save-prompt__btn--dismiss');
@@ -355,12 +355,12 @@ test.describe.serial('9. Save Login Prompt', () => {
     const finalItemCount = await client.popup.locator('ul#items-list > li').count();
     expect(finalItemCount).toBe(initialItemCount);
 
-    await client.screenshot('9.3-vault-unchanged-after-dismiss.png');
+    await client.screenshot('61.3-vault-unchanged-after-dismiss.png');
 
     await testPage.close();
   });
 
-  test('9.4 should block future prompts when clicking Never for this site', async () => {
+  test('61.4 should block future prompts when clicking Never for this site', async () => {
     // Create a test page on a specific domain
     const blockedDomain = 'never-save-domain.com';
     const testPage = await client.context.newPage();
@@ -374,7 +374,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     // Wait for the save prompt to appear
     await waitForSavePrompt(testPage);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.4-prompt-before-never.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.4-prompt-before-never.png' });
 
     // Click the "Never for this site" button
     await clickSavePromptButton(testPage, '.av-save-prompt__btn--never');
@@ -390,7 +390,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     const blockedDomains = await getBlockedDomains(client);
     expect(blockedDomains).toContain(blockedDomain);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.4-prompt-dismissed.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.4-prompt-dismissed.png' });
 
     // Now try submitting the form again on the same domain
     // First, refresh the page to get a clean state
@@ -407,12 +407,12 @@ test.describe.serial('9. Save Login Prompt', () => {
     const promptAppearedAgain = await isSavePromptVisible(testPage);
     expect(promptAppearedAgain).toBe(false);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.4-no-prompt-on-blocked-domain.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.4-no-prompt-on-blocked-domain.png' });
 
     await testPage.close();
   });
 
-  test('9.5 should show prompt on new domain even after blocking another', async () => {
+  test('61.5 should show prompt on new domain even after blocking another', async () => {
     // Verify that blocking one domain doesn't affect other domains
     const newDomain = 'new-unblocked-domain.com';
     const testPage = await client.context.newPage();
@@ -430,7 +430,7 @@ test.describe.serial('9. Save Login Prompt', () => {
     const promptVisible = await isSavePromptVisible(testPage);
     expect(promptVisible).toBe(true);
 
-    await testPage.screenshot({ path: 'tests/screenshots/9.5-prompt-on-unblocked-domain.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/61.5-prompt-on-unblocked-domain.png' });
 
     // Clean up - dismiss the prompt
     await clickSavePromptButton(testPage, '.av-save-prompt__btn--dismiss');

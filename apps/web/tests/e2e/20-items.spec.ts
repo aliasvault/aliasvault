@@ -1,14 +1,14 @@
 /**
- * Category 3: Items (requires API)
+ * Category 20: Items (requires API)
  */
 import { test, expect } from '../fixtures';
 
-test.describe('3. Items', () => {
+test.describe('20. Items', () => {
   test.beforeEach(async ({ app, testUser }) => {
     await app.login(testUser.username, testUser.password);
   });
 
-  test('3.1 should create an item', async ({ app }) => {
+  test('20.1 should create an item', async ({ app }) => {
     await app.createItem('Test Service');
 
     await test.step('the item shows in the vault list', async () => {
@@ -17,7 +17,7 @@ test.describe('3. Items', () => {
     });
   });
 
-  test('3.2 should edit an item', async ({ app }) => {
+  test('20.2 should edit an item', async ({ app }) => {
     const { page } = app;
     await app.createItem('Item service before');
 
@@ -35,7 +35,7 @@ test.describe('3. Items', () => {
     });
   });
 
-  test('3.3 should delete an item', async ({ app }) => {
+  test('20.3 should delete an item', async ({ app }) => {
     const { page } = app;
     await app.createItem('Item to delete');
 
@@ -51,7 +51,7 @@ test.describe('3. Items', () => {
     });
   });
 
-  test('3.4 should restore fields after switching the item type back', async ({ app }) => {
+  test('20.4 should restore fields after switching the item type back', async ({ app }) => {
     const { page } = app;
     await app.createItem('Type switch service');
 
