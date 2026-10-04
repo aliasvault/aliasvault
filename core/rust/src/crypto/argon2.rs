@@ -6,6 +6,15 @@ use thiserror::Error;
 /// Length of every derived key in bytes; the vault format assumes a 256-bit key throughout.
 const ARGON2_OUTPUT_LENGTH: usize = 32;
 
+/*
+ * The weakest Argon2id parameters a client accepts from the server, to prevent KDF downgrade scenarios issued by the server.
+ * The minimum parameters reflect the defaults of the first public release (0.9.0), which accounts keep until a password change
+ * in 0.31.0+.
+ */
+const MIN_MEMORY_KIB: u32 = 19456;
+const MIN_ITERATIONS: u32 = 2;
+const MIN_PARALLELISM: u32 = 1;
+
 /// Argon2-related errors.
 #[derive(Error, Debug, Clone)]
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error))]
@@ -60,6 +69,10 @@ struct EncryptionSettingsJson {
 pub fn argon2_derive_key(password: &[u8], salt: &[u8], params: Argon2Params) -> Result<Vec<u8>, Argon2Error> {
     use argon2::{Algorithm, Argon2, Params, Version};
 
+    if params.memory_kib < MIN_MEMORY_KIB || params.iterations < MIN_ITERATIONS || params.parallelism < MIN_PARALLELISM {
+        return Err(Argon2Error::InvalidParameter(format!("Argon2 params below the minimum: {:?}", params)));
+    }
+
     let argon2_params = Params::new(params.memory_kib, params.iterations, params.parallelism, Some(ARGON2_OUTPUT_LENGTH))
         .map_err(|e| Argon2Error::InvalidParameter(format!("Invalid Argon2 params: {}", e)))?;
 
@@ -101,6 +114,13 @@ mod tests {
     fn rejects_incomplete_or_empty_settings() {
         for settings in ["", "{}", r#"{"MemorySize":65536,"Iterations":5}"#] {
             assert!(matches!(Argon2Params::from_settings_json(settings), Err(Argon2Error::InvalidSettings(_))), "accepted {settings:?}");
+        }
+    }
+
+    #[test]
+    fn rejects_params_below_the_minimum() {
+        for settings in [r#"{"DegreeOfParallelism":1,"MemorySize":19455,"Iterations":2}"#, r#"{"DegreeOfParallelism":1,"MemorySize":65536,"Iterations":1}"#, r#"{"DegreeOfParallelism":0,"MemorySize":65536,"Iterations":5}"#] {
+            assert!(matches!(argon2_derive_key_from_settings("password", "user@example.tld", settings), Err(Argon2Error::InvalidParameter(_))), "accepted {settings}");
         }
     }
 
