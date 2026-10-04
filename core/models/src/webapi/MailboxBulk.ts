@@ -1,10 +1,9 @@
 import type { MailboxEmail } from "./MailboxEmail";
 
 /**
- * Mailbox bulk request type.
+ * Mailbox bulk request type. The server resolves the addresses from the caller's active alias claims.
  */
 export type MailboxBulkRequest = {
-    addresses: string[];
     page: number;
     pageSize: number;
 }

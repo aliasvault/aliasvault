@@ -8,15 +8,10 @@
 namespace AliasVault.Shared.Models.WebApi.V2.Email;
 
 /// <summary>
-/// Represents the bulk mailbox request.
+/// Represents the bulk mailbox request. The server resolves the addresses from the caller's active alias claims.
 /// </summary>
 public class MailboxBulkRequest
 {
-    /// <summary>
-    /// Gets or sets the mailbox addresses that client wants to retrieve emails for.
-    /// </summary>
-    public List<string> Addresses { get; set; } = [];
-
     /// <summary>
     /// Gets or sets requested page number.
     /// </summary>

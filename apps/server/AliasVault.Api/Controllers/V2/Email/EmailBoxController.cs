@@ -33,6 +33,11 @@ using NpgsqlTypes;
 public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService, TakenAliasLookupRateLimitService takenAliasLookupRateLimit) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
+    /// Highest page the bulk mailbox serves; each address scans up to page * pageSize rows.
+    /// </summary>
+    private const int MaxBulkPage = 1000;
+
+    /// <summary>
     /// Returns a list of emails for the provided email address.
     /// </summary>
     /// <param name="to">The full email address including @ sign.</param>
@@ -168,14 +173,11 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
         // Shadow-block: when active, only emails received before the block took effect are visible.
         var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
-        // Sanitize input.
-        model.Addresses = model.Addresses.Select(x => x.Trim().ToLower()).ToList();
         model.PageSize = Math.Clamp(model.PageSize, 1, 50);
+        var page = Math.Clamp(model.Page, 1, MaxBulkPage);
 
-        // Check if the user has access to the email addresses.
-        var validAddresses = await EmailAccessHelper.FilterReadableAddressesAsync(context, model.Addresses, user.Id);
-
-        var page = Math.Clamp(model.Page, 1, 10000);
+        // The server picks the addresses, so a request carries no collection that could amplify the queries below.
+        var validAddresses = await EmailAccessHelper.ResolveActiveAddressesAsync(context, user.Id);
 
         // Restrict to emails this user holds a key for.
         var decryptableKeyIds = await EmailAccessHelper.ResolveDecryptableKeyIdsAsync(context, user.Id);

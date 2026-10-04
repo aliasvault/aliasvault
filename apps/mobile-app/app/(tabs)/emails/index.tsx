@@ -47,25 +47,6 @@ export default function EmailsScreen() : React.ReactNode {
   const PAGE_SIZE = 50;
 
   /**
-   * Get the vault's routable addresses on server-hosted domains; addresses on other domains are never sent to the server.
-   */
-  const getMailboxAddresses = useCallback(async () : Promise<string[]> => {
-    const sqliteClient = dbContext.sqliteClient;
-    if (!sqliteClient) {
-      return [];
-    }
-
-    const routableAddresses = await sqliteClient.items.getRoutableEmailAddresses();
-    try {
-      const metadata = await sqliteClient.getVaultMetadata();
-      const hostedDomains = [...metadata.privateEmailDomains, ...(metadata.hiddenPrivateEmailDomains ?? [])].map(domain => domain.toLowerCase());
-      return routableAddresses.filter(address => hostedDomains.some(domain => address.toLowerCase().endsWith(`@${domain}`)));
-    } catch {
-      return [];
-    }
-  }, [dbContext.sqliteClient]);
-
-  /**
    * Load emails.
    */
   const loadEmails = useCallback(async (reset: boolean = true) : Promise<void> => {
@@ -82,12 +63,9 @@ export default function EmailsScreen() : React.ReactNode {
         return;
       }
 
-      // Get the addresses this vault has enabled claims for.
-      const emailAddresses = await getMailboxAddresses();
-
       try {
+        // The server resolves the mailbox from the caller's active alias claims.
         const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-          addresses: emailAddresses,
           page: 1,
           pageSize: PAGE_SIZE,
         });
@@ -127,7 +105,7 @@ export default function EmailsScreen() : React.ReactNode {
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     }
-  }, [dbContext, webApi, setIsLoading, t, PAGE_SIZE, getMailboxAddresses]);
+  }, [dbContext, webApi, setIsLoading, t, PAGE_SIZE]);
 
   /**
    * Load more emails (next page).
@@ -141,11 +119,9 @@ export default function EmailsScreen() : React.ReactNode {
       setIsLoadingMore(true);
       setError(null);
 
-      const emailAddresses = await getMailboxAddresses();
       const nextPage = currentPage + 1;
 
       const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', {
-        addresses: emailAddresses,
         page: nextPage,
         pageSize: PAGE_SIZE,
       });
@@ -171,7 +147,7 @@ export default function EmailsScreen() : React.ReactNode {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, dbContext.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t, getMailboxAddresses]);
+  }, [isLoadingMore, dbContext.sqliteClient, dbContext.isOffline, webApi, currentPage, PAGE_SIZE, t]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
