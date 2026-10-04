@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Models;
 using AliasVault.Api.Services;
 using AliasVault.Api.Vault;
 using AliasVault.Api.Vault.RetentionRules;
@@ -242,7 +243,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
         }
 
         // Validate the SRP session (actual password check).
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.PasswordChange, model.CurrentClientPublicEphemeral, model.CurrentClientSessionProof);
         if (srpResult.Session is null)
         {
             if (srpResult.ActiveSessionFound)
