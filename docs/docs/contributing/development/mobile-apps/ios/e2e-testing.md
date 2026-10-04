@@ -4,14 +4,11 @@ sidebar_label: "Testing guide"
 ---
 # Testing guide
 
-This guide explains how to run the iOS test suites for the AliasVault mobile app.
+This guide explains how to run the iOS test suite for the AliasVault mobile app.
 
 ## Overview
 
-The iOS app has two test targets:
-
-1. **AliasVaultUITests** - End-to-end UI tests that test full user flows
-2. **VaultStoreKitTests** - Unit tests for the native VaultStoreKit framework
+The iOS app has one test target: **VaultStoreKitTests**, the unit tests for the native VaultStoreKit framework.
 
 ## Prerequisites
 
@@ -19,7 +16,6 @@ The iOS app has two test targets:
 - iOS Simulator configured
 - Node.js 20+
 - CocoaPods dependencies installed (`cd apps/mobile-app && npx pod-install`)
-- For UI tests: connect to your local API dev instance (by default `http://localhost:5100`)
 
 ## Running Tests
 
@@ -40,8 +36,6 @@ The iOS app has two test targets:
 
 ### Via Command Line (xcodebuild)
 
-#### Run All Tests
-
 ```bash
 cd apps/mobile-app/ios
 
@@ -50,57 +44,8 @@ xcodebuild test \
   -workspace AliasVault.xcworkspace \
   -scheme AliasVault \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:VaultStoreKitTests \
   -resultBundlePath ./test-results
-```
-
-#### Run UI Tests Only
-
-```bash
-xcodebuild test \
-  -workspace AliasVault.xcworkspace \
-  -scheme AliasVault \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:AliasVaultUITests
-```
-
-#### Run VaultStoreKit Unit Tests Only
-
-```bash
-xcodebuild test \
-  -workspace AliasVault.xcworkspace \
-  -scheme AliasVault \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:VaultStoreKitTests
-```
-
-#### Run a Specific Test
-
-```bash
-# Run a specific test class
-xcodebuild test \
-  -workspace AliasVault.xcworkspace \
-  -scheme AliasVault \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:AliasVaultUITests/AliasVaultUITests
-
-# Run a specific test method
-xcodebuild test \
-  -workspace AliasVault.xcworkspace \
-  -scheme AliasVault \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:AliasVaultUITests/AliasVaultUITests/test01AppLaunch
-```
-
-#### With Custom API URL (for UI tests)
-
-Point `API_URL` at your API dev instance (by default `5100`):
-
-```bash
-API_URL="http://your-server:5100" xcodebuild test \
-  -workspace AliasVault.xcworkspace \
-  -scheme AliasVault \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:AliasVaultUITests
 ```
 
 ### List Available Simulators
