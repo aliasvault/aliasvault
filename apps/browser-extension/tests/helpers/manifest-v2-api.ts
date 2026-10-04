@@ -12,7 +12,7 @@ import { createHash } from 'crypto';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
 import { getSyncableTableNames, openAccountKeyChain, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
 
-import { symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
+import { bucketAad, manifestAad, symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
 
 /** One manifest entry in the v2 GET snapshot. */
 export type SnapshotManifest = {
@@ -141,12 +141,13 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
 /**
  * Decrypts and unpacks a manifest blob into its JSON object (content hash verified by the codec).
  *
+ * @param manifestId - The manifest the blob belongs to
  * @param blobBase64 - The encrypted manifest blob from the snapshot
  * @param encryptionKey - The key the vault content is encrypted with, from `resolveVaultEncryptionKey`
  * @returns The decrypted manifest object
  */
-export async function openManifest(blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
-  const packedBytes = await symmetricDecryptBytes(blobBase64, encryptionKey);
+export async function openManifest(manifestId: string, blobBase64: string, encryptionKey: Uint8Array): Promise<DecryptedManifest> {
+  const packedBytes = await symmetricDecryptBytes(blobBase64, encryptionKey, manifestAad(manifestId));
   return JSON.parse(await vaultCodecUnpackPayload(packedBytes)) as DecryptedManifest;
 }
 
@@ -232,7 +233,7 @@ export async function pushInitialVault(apiBaseUrl: string, token: string, userna
 
   const bucketWrites: BucketWrite[] = [];
   for (const bucket of canonicalized.dataBuckets) {
-    const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(bucket), encryptionKey);
+    const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(bucket), encryptionKey, bucketAad(bucket.manifestId, bucket.category));
     bucketWrites.push({ manifestId: bucket.manifestId, category: bucket.category, blob, ciphertextHash, currentRevision: 0 });
   }
 
@@ -270,11 +271,12 @@ export async function pollUntil<T>(predicate: () => Promise<T | undefined | fals
  *
  * @param payloadJson - The payload to pack
  * @param encryptionKey - The key the vault content is encrypted with
+ * @param aad - The associated data the ciphertext is bound to
  * @returns The encrypted blob and the ciphertext hash the server verifies it against
  */
-async function packEncrypt(payloadJson: string, encryptionKey: Uint8Array): Promise<{ blob: string; ciphertextHash: string }> {
+async function packEncrypt(payloadJson: string, encryptionKey: Uint8Array, aad: Uint8Array): Promise<{ blob: string; ciphertextHash: string }> {
   const packedBytes = await vaultCodecPackPayload(payloadJson);
-  const blob = await symmetricEncryptBytes(packedBytes, encryptionKey);
+  const blob = await symmetricEncryptBytes(packedBytes, encryptionKey, aad);
   return { blob, ciphertextHash: createHash('sha256').update(Buffer.from(blob, 'base64')).digest('hex') };
 }
 
@@ -295,7 +297,7 @@ async function buildManifestWrite(
   blobReferences: Array<{ hash: string; category: string }>,
   encryptionKey: Uint8Array
 ): Promise<ManifestWrite> {
-  const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(manifest), encryptionKey);
+  const { blob, ciphertextHash } = await packEncrypt(JSON.stringify(manifest), encryptionKey, manifestAad(manifestId));
   return {
     manifestId,
     manifestBlob: blob,
