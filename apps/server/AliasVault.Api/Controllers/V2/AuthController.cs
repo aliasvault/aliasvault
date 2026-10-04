@@ -16,6 +16,7 @@ using AliasServerDb;
 using AliasServerDb.Retention;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Models;
 using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
@@ -47,14 +48,12 @@ using SecureRemotePassword;
 /// <param name="authLoggingService">AuthLoggingService instance. This is used to log auth attempts to the database.</param>
 /// <param name="config">Config instance.</param>
 /// <param name="settingsService">ServerSettingsService instance.</param>
-/// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
 /// <param name="ipBlockListService">IpBlockListService instance.</param>
-/// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
 /// <param name="registrationInviteService">RegistrationInviteService instance.</param>
 [Route("v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2")]
-public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, RegistrationRateLimitService registrationRateLimitService, IpBlockListService ipBlockListService, MobileLoginRateLimitService mobileLoginRateLimitService, RegistrationInviteService registrationInviteService) : ControllerBase
+public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IConfiguration configuration, IMemoryCache cache, TimeProvider timeProvider, AuthLoggingService authLoggingService, Config config, ServerSettingsService settingsService, IpBlockListService ipBlockListService, RegistrationInviteService registrationInviteService) : ControllerBase
 {
     /// <summary>
     /// Access token validity in minutes.
@@ -103,7 +102,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         {
             // Log the attempt internally
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return FakeLoginResponse(model);
+            return FakeLoginResponse(FakeLoginHelper.Create(model.Username));
         }
 
         // Check if the account is locked out.
@@ -401,9 +400,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Register endpoint used to register a new user.
     /// </summary>
     /// <param name="model">Register request model.</param>
+    /// <param name="registrationRateLimitService">RegistrationRateLimitService instance.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest model)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest model, [FromServices] RegistrationRateLimitService registrationRateLimitService)
     {
         // Without public registration only an invite code holder may register. The invite use is taken right before the account is created.
         var requiresInvite = !config.PublicRegistrationEnabled;
@@ -806,10 +806,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// Initiates a mobile login request. The client shows the returned request id as a QR code and keeps the poll secret to itself.
     /// </summary>
     /// <param name="model">The mobile login initiate request model.</param>
+    /// <param name="mobileLoginRateLimitService">MobileLoginRateLimitService instance.</param>
     /// <returns>IActionResult.</returns>
     [HttpPost("mobile-login/initiate")]
     [AllowAnonymous]
-    public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model)
+    public async Task<IActionResult> InitiateMobileLogin([FromBody] MobileLoginInitiateRequest model, [FromServices] MobileLoginRateLimitService mobileLoginRateLimitService)
     {
         // Reject invalid public key structure.
         if (!MobileLoginPublicKeyValidator.IsValid(model.ClientPublicKey))
@@ -1560,40 +1561,14 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Generate a fake login response for a user that does not exist to prevent user enumeration attacks.
+    /// Generate the login response of a user that does not exist, from its fake profile, to prevent user enumeration attacks.
     /// </summary>
-    /// <param name="model">The login initiate request model.</param>
+    /// <param name="profile">The fake login profile of the username.</param>
     /// <returns>IActionResult.</returns>
-    private OkObjectResult FakeLoginResponse(LoginInitiateRequest model)
+    private OkObjectResult FakeLoginResponse(FakeLoginProfile profile)
     {
-        // Generate a cache key for fake data
-        var fakeDataCacheKey = AuthHelper.CachePrefixFakeData + model.Username;
-
-        // Try to get cached fake data first
-        if (!cache.TryGetValue(fakeDataCacheKey, out (string Salt, string Verifier, string SrpIdentity) fakeData))
-        {
-            // Generate new fake data if not cached
-            var client = new SrpClient();
-            var fakeSalt = client.GenerateSalt();
-            var fakePrivateKey = client.DerivePrivateKey(fakeSalt, model.Username, "fakePassword");
-            var fakeVerifier = client.DeriveVerifier(fakePrivateKey);
-
-            // A fake identity is a random GUID, like a real one, so the response does not reveal whether the account exists.
-            fakeData = (fakeSalt, fakeVerifier, Guid.NewGuid().ToString());
-
-            // Cache the fake data for 4 hours
-            cache.Set(fakeDataCacheKey, fakeData, TimeSpan.FromHours(4));
-        }
-
-        // Always generate a new ephemeral for the fake data, as this is also done for existing users.
-        var fakeEphemeral = Srp.GenerateEphemeralServer(fakeData.Verifier);
-
-        // Return the same response format as for real users
-        return Ok(new LoginInitiateResponse(
-            fakeData.Salt,
-            fakeEphemeral.Public,
-            Defaults.EncryptionType,
-            Defaults.EncryptionSettings,
-            fakeData.SrpIdentity));
+        // Always generate a new ephemeral, as this is also done for existing users.
+        var fakeEphemeral = Srp.GenerateEphemeralServer(profile.Verifier);
+        return Ok(new LoginInitiateResponse(profile.Salt, fakeEphemeral.Public, Defaults.EncryptionType, Defaults.EncryptionSettings, profile.SrpIdentity));
     }
 }

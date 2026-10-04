@@ -136,12 +136,12 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var user = await userManager.FindByNameAsync(model.Username);
 
-        // If user doesn't exist, generate or retrieve fake data to prevent user enumeration attacks.
+        // A non-existent user answers like an upgraded account (as v2 does), to prevent user enumeration attacks.
         if (user == null)
         {
             // Log the attempt internally
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return FakeLoginResponse(model);
+            return UpgradeRequiredResponse();
         }
 
         // Check if the account is locked out.
@@ -165,7 +165,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // A v1 client can only answer a legacy verifier; for an upgraded one it would report a wrong password.
         if (latestVaultEncryptionSettings.EncryptionType != Defaults.LegacyEncryptionType)
         {
-            return StatusCode(426, new { error = "UPGRADE_REQUIRED", message = "Your client is out of date. Please update to access this vault." });
+            return UpgradeRequiredResponse();
         }
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
@@ -979,40 +979,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Generate a fake login response for a user that does not exist to prevent user enumeration attacks.
+    /// The response for an account a v1 client cannot sign in to.
     /// </summary>
-    /// <param name="model">The login initiate request model.</param>
     /// <returns>IActionResult.</returns>
-    private OkObjectResult FakeLoginResponse(LoginInitiateRequest model)
-    {
-        // Generate a cache key for fake data
-        var fakeDataCacheKey = AuthHelper.CachePrefixFakeData + model.Username;
-
-        // Try to get cached fake data first
-        if (!cache.TryGetValue(fakeDataCacheKey, out (string Salt, string Verifier, string SrpIdentity) fakeData))
-        {
-            // Generate new fake data if not cached
-            var client = new SrpClient();
-            var fakeSalt = client.GenerateSalt();
-            var fakePrivateKey = client.DerivePrivateKey(fakeSalt, model.Username, "fakePassword");
-            var fakeVerifier = client.DeriveVerifier(fakePrivateKey);
-
-            // A fake identity is a random GUID, like a real one, so the response does not reveal whether the account exists.
-            fakeData = (fakeSalt, fakeVerifier, Guid.NewGuid().ToString());
-
-            // Cache the fake data for 4 hours
-            cache.Set(fakeDataCacheKey, fakeData, TimeSpan.FromHours(4));
-        }
-
-        // Always generate a new ephemeral for the fake data, as this is also done for existing users.
-        var fakeEphemeral = Srp.GenerateEphemeralServer(fakeData.Verifier);
-
-        // Return the same response format as for real users
-        return Ok(new LoginInitiateResponse(
-            fakeData.Salt,
-            fakeEphemeral.Public,
-            Defaults.LegacyEncryptionType,
-            Defaults.EncryptionSettings,
-            fakeData.SrpIdentity));
-    }
+    private ObjectResult UpgradeRequiredResponse() => StatusCode(426, new { error = "UPGRADE_REQUIRED", message = "Your client is out of date. Please update to access this vault." });
 }
