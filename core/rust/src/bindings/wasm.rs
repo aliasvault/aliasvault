@@ -225,10 +225,21 @@ pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &st
     crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
 }
 
-/// The KEK (base64) that wraps the Account Key, HKDF-derived from the base64 unlock key.
-#[wasm_bindgen(js_name = deriveKek)]
-pub fn derive_kek_js(unlock_key_base64: &str) -> Result<String, JsValue> {
-    crate::crypto::derive_kek_base64(unlock_key_base64).map(|kek| kek.to_string()).map_err(js_err)
+/// Create a new account key hierarchy for the base64 unlock key around an account keypair (JWK) the caller generated.
+#[wasm_bindgen(js_name = createAccountKeyHierarchy)]
+pub fn create_account_key_hierarchy_js(unlock_key_base64: &str, public_key_jwk: String, private_key_jwk: String) -> Result<JsValue, JsValue> {
+    let key_pair = crate::crypto::RsaKeyPair { public_key: public_key_jwk, private_key: private_key_jwk };
+    to_js(&crate::crypto::create_account_key_hierarchy_with_key_pair(unlock_key_base64, &key_pair).map_err(js_err)?)
+}
+
+/// Re-encrypt the Account Key from the old to the new base64 unlock key; `null` when the old unlock key does not open it.
+#[wasm_bindgen(js_name = reencryptAccountKey)]
+pub fn reencrypt_account_key_js(encrypted_account_key: &str, old_unlock_key_base64: &str, new_unlock_key_base64: &str) -> Result<JsValue, JsValue> {
+    match crate::crypto::reencrypt_account_key(encrypted_account_key, old_unlock_key_base64, new_unlock_key_base64) {
+        Ok(reencrypted) => to_js(&reencrypted),
+        Err(crate::crypto::KeyChainError::UnlockKeyRejected) => Ok(JsValue::NULL),
+        Err(e) => Err(js_err(e)),
+    }
 }
 
 /// The SRP `password_hash` (uppercase hex) for an account's `encryptionType`, from the base64 unlock key.

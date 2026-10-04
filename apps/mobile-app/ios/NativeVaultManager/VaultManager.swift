@@ -1582,11 +1582,14 @@ private enum RustCoreDispatcher {
 
         case "argon2DeriveKey":
             return try json(bytes: try RustCoreFramework.argon2DeriveKey(password: try args.string(0), salt: try args.string(1), encryptionSettings: try args.string(2)))
-        case "deriveKek": return try json(bytes: RustCoreFramework.deriveKek(unlockKey: try args.data(0)))
         case "deriveSrpPasswordHash": return try json(try RustCoreFramework.deriveSrpPasswordHash(unlockKey: try args.data(0), encryptionType: try args.string(1)))
         case "openAccountKeyChain":
             let key = try args.data(0)
             return try openKeyChain(key: key, encryptedAccountKey: try args.string(1), encryptedVek: try args.string(2), encryptedAccountPrivateKey: args.optionalString(3))
+        case "createAccountKeyHierarchyJson":
+            return try RustCoreFramework.createAccountKeyHierarchyJson(unlockKey: try args.data(0), publicKeyJwk: try args.string(1), privateKeyJwk: try args.string(2))
+        case "reencryptAccountKeyJson":
+            return try RustCoreFramework.reencryptAccountKeyJson(encryptedAccountKey: try args.string(0), oldUnlockKey: try args.data(1), newUnlockKey: try args.data(2))
 
         case "srpGenerateSalt": return try json(RustCoreFramework.srpGenerateSalt())
         case "srpDerivePrivateKey":

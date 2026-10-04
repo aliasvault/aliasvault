@@ -6,7 +6,7 @@ import initWasm, * as core from '../../wasm/aliasvault_core.js';
 import { yieldToPaint } from '../utilities/YieldToPaint';
 
 import type { IRustCore, IVaultSyncSession } from './RustCoreBinding';
-import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, SrpEphemeral, SrpSession } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, FilterCredentialsInput, FilterCredentialsOutput, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey, SrpEphemeral, SrpSession } from './RustCoreTypes';
 
 /**
  * Where the host gets the `.wasm` binary from: bytes, or a fetch response for streaming instantiation.
@@ -75,10 +75,13 @@ export function createWasmRustCore(loadWasm: WasmLoader): IRustCore {
       await yieldToPaint();
       return ready(() => core.argon2DeriveKey(password, salt, encryptionSettings));
     },
-    deriveKek: (unlockKeyBase64): Promise<string> => ready(() => core.deriveKek(unlockKeyBase64)),
     deriveSrpPasswordHash: (unlockKeyBase64, encryptionType): Promise<string> => ready(() => core.deriveSrpPasswordHash(unlockKeyBase64, encryptionType)),
     openAccountKeyChain: (storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey): Promise<KeyChainOpenResult> =>
       ready(() => core.openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey ?? undefined) as KeyChainOpenResult),
+    createAccountKeyHierarchy: (unlockKeyBase64, publicKeyJwk, privateKeyJwk): Promise<AccountKeyHierarchy> =>
+      ready(() => core.createAccountKeyHierarchy(unlockKeyBase64, publicKeyJwk, privateKeyJwk) as AccountKeyHierarchy),
+    reencryptAccountKey: (encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64): Promise<ReencryptedAccountKey | null> =>
+      ready(() => core.reencryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64) as ReencryptedAccountKey | null),
 
     srpGenerateSalt: (): Promise<string> => ready(() => core.srpGenerateSalt()),
     srpDerivePrivateKey: (salt, identity, passwordHash): Promise<string> => ready(() => core.srpDerivePrivateKey(salt, identity, passwordHash)),

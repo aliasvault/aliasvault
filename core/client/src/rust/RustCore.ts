@@ -12,7 +12,7 @@ import { deviceLanguage } from '../platform/DeviceLanguage';
 import { AutofillMatchingMode } from './RustCoreTypes';
 
 import type { IRustCore } from './RustCoreBinding';
-import type { CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail } from './RustCoreTypes';
+import type { AccountKeyHierarchy, CodecCanonicalized, CodecCanonicalizeInput, FaviconTarget, IdentityNameInput, IdentityRequest, KeyChainOpenResult, ParsedEmail, ReencryptedAccountKey } from './RustCoreTypes';
 import type { Identity } from '@aliasvault/models/identity';
 import type { Item, PasswordSettings } from '@aliasvault/models/vault';
 
@@ -182,17 +182,24 @@ export async function argon2DeriveKey(password: string, salt: string, encryption
 }
 
 /**
- * The KEK (base64) that wraps the Account Key, derived from the unlock key (base64).
- */
-export async function deriveKek(unlockKeyBase64: string): Promise<string> {
-  return rustCore().deriveKek(unlockKeyBase64);
-}
-
-/**
  * Open a key chain with a stored key: the Account Key, or an unlock key that is then replaced by the Account Key.
  */
 export async function openAccountKeyChain(storedKey: string, encryptedAccountKey: string, encryptedVek: string, encryptedAccountPrivateKey: string | null): Promise<KeyChainOpenResult> {
   return rustCore().openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey);
+}
+
+/**
+ * Create a new account key hierarchy for the unlock key (base64) around an account keypair (JWK) the caller generated.
+ */
+export async function createAccountKeyHierarchy(unlockKeyBase64: string, publicKeyJwk: string, privateKeyJwk: string): Promise<AccountKeyHierarchy> {
+  return rustCore().createAccountKeyHierarchy(unlockKeyBase64, publicKeyJwk, privateKeyJwk);
+}
+
+/**
+ * Re-encrypt the Account Key from the old to the new unlock key (base64); null when the old unlock key does not open it.
+ */
+export async function reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<ReencryptedAccountKey | null> {
+  return rustCore().reencryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64, newUnlockKeyBase64);
 }
 
 /**

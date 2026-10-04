@@ -10,7 +10,7 @@
 import { createHash } from 'crypto';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { deriveKek, getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
+import { getSyncableTableNames, openAccountKeyChain, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
 
 import { symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
 
@@ -131,9 +131,11 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
     throw new Error('Vault key chain is missing the encrypted VEK');
   }
 
-  const kek = Buffer.from(await deriveKek(Buffer.from(derivedKey).toString('base64')), 'base64');
-  const accountKey = await symmetricDecryptBytes(vaultKey.encryptedAccountKey, kek);
-  return symmetricDecryptBytes(vaultKey.encryptedVek, accountKey);
+  const opened = await openAccountKeyChain(Buffer.from(derivedKey).toString('base64'), vaultKey.encryptedAccountKey, vaultKey.encryptedVek, null);
+  if (opened.status !== 'opened') {
+    throw new Error(`Vault key chain did not open: ${opened.status}`);
+  }
+  return new Uint8Array(Buffer.from(opened.vaultEncryptionKey, 'base64'));
 }
 
 /**
