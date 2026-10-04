@@ -499,12 +499,13 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
     Ok((PushStatus::Ok, migration.map(|m| m.content_key.clone())))
 }
 
-/// Generate the account key hierarchy for a migration push, when one is due.
-async fn start_account_key_migration(ctx: &Ctx, kek: &str, create_vault_key: bool) -> SyncResult<Option<LegacyAccountKeyMigration>> {
+/// Generate the account key hierarchy for a migration push, when one is due. The session key of a legacy account is
+/// its unlock key, which the hierarchy derives its KEK from.
+async fn start_account_key_migration(ctx: &Ctx, unlock_key: &str, create_vault_key: bool) -> SyncResult<Option<LegacyAccountKeyMigration>> {
     if !create_vault_key {
         return Ok(None);
     }
-    let hierarchy = crypto::create_account_key_hierarchy(kek)?;
+    let hierarchy = crypto::create_account_key_hierarchy(unlock_key)?;
     ctx.log("[V2Push] Account-key migration: generated new VEK, AK and account keypair; vault content and all blobs will be re-encrypted and re-uploaded.").await;
     Ok(Some(LegacyAccountKeyMigration {
         content_key: hierarchy.vault_encryption_key.clone(),

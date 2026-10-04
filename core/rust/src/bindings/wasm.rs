@@ -225,6 +225,49 @@ pub fn argon2_derive_key_js(password: &str, salt: &str, encryption_settings: &st
     crate::crypto::argon2::argon2_derive_key_from_settings(password, salt, encryption_settings).map_err(js_err)
 }
 
+/// The KEK (base64) that wraps the Account Key, HKDF-derived from the base64 unlock key.
+#[wasm_bindgen(js_name = deriveKek)]
+pub fn derive_kek_js(unlock_key_base64: &str) -> Result<String, JsValue> {
+    crate::crypto::derive_kek_base64(unlock_key_base64).map(|kek| kek.to_string()).map_err(js_err)
+}
+
+/// The SRP `password_hash` (uppercase hex) for an account's `encryptionType`, from the base64 unlock key.
+#[wasm_bindgen(js_name = deriveSrpPasswordHash)]
+pub fn derive_srp_password_hash_js(unlock_key_base64: &str, encryption_type: &str) -> Result<String, JsValue> {
+    let unlock_key = zeroize::Zeroizing::new(crate::common::encoding::base64_decode(unlock_key_base64).map_err(js_err)?);
+    crate::crypto::derive_srp_password_hash(&unlock_key, encryption_type).map(|hash| hash.to_string()).map_err(js_err)
+}
+
+/// The outcome of `openAccountKeyChain`: `status` is `opened`, `unlockKeyRejected` or `keyChainUnreadable`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct KeyChainOpenResult {
+    status: &'static str,
+    vault_encryption_key: Option<String>,
+    account_key: Option<String>,
+    account_private_key: Option<String>,
+    message: Option<String>,
+}
+
+/// Open a key chain with a stored key (the Account Key or an unlock key, base64). On success `accountKey` is what the
+/// caller stores in place of the key it passed in.
+#[wasm_bindgen(js_name = openAccountKeyChain)]
+pub fn open_account_key_chain_js(stored_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<String>) -> Result<JsValue, JsValue> {
+    use crate::crypto::KeyChainError;
+    let result = match crate::crypto::open_account_key_chain(stored_key, encrypted_account_key, encrypted_vek, encrypted_account_private_key.as_deref()) {
+        Ok(opened) => KeyChainOpenResult {
+            status: "opened",
+            vault_encryption_key: Some(opened.vault_encryption_key.to_string()),
+            account_key: Some(opened.account_key.to_string()),
+            account_private_key: opened.account_private_key.as_ref().map(|key| key.to_string()),
+            message: None,
+        },
+        Err(KeyChainError::UnlockKeyRejected) => KeyChainOpenResult { status: "unlockKeyRejected", vault_encryption_key: None, account_key: None, account_private_key: None, message: None },
+        Err(KeyChainError::KeyChainUnreadable(message)) => KeyChainOpenResult { status: "keyChainUnreadable", vault_encryption_key: None, account_key: None, account_private_key: None, message: Some(message) },
+    };
+    to_js(&result)
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SRP (Secure Remote Password) WASM Bindings
 // ═══════════════════════════════════════════════════════════════════════════════

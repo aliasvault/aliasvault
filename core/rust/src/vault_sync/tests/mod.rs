@@ -628,27 +628,27 @@ fn password_changed_elsewhere_requires_logout() {
 
 #[test]
 fn legacy_account_without_vault_key_reports_the_manifest_migration() {
-    let kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&unlock_key);
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.store_local_as_blob();
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
-    let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("fullSync", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["manifestMigrationRequired"], true);
 
-    let status = host.drive(&SyncSession::new(&request("migrationStatus", &kek, false, 0)).unwrap());
+    let status = host.drive(&SyncSession::new(&request("migrationStatus", &unlock_key, false, 0)).unwrap());
     assert_eq!(status["kind"], "storageFormatUpgrade");
 }
 
 #[test]
 fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
-    let kek = crypto::generate_key_base64();
+    let unlock_key = crypto::generate_key_base64();
     let salt = vault_codec::generate_manifest_salt();
-    let mut host = TestHost::new(&kek);
+    let mut host = TestHost::new(&unlock_key);
     insert_item(&host.local, "aaaaaaaa-0000-4000-8000-000000000001", "Old item", PERSONAL_MANIFEST_ID);
     host.store_local_as_blob();
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
@@ -658,17 +658,18 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
-    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
     let new_key = host.vault_key.clone();
-    assert_ne!(new_key, kek, "the host receives the new VEK through the store command");
+    assert_ne!(new_key, unlock_key, "the host receives the new VEK through the store command");
     let posts: Vec<_> = host.requests_to("Vault").into_iter().filter(|r| r.method == "POST").collect();
     let body = posts[0].body.as_ref().unwrap();
     assert!(body["migration"]["accountKeys"]["encryptedAccountKey"].is_string(), "the migration push carries the key hierarchy");
-    let (vek, _) = crypto::resolve_vault_encryption_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), &kek).unwrap();
-    assert_eq!(*vek, new_key);
+    assert!(crypto::unwrap_key(body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), &unlock_key).is_err(), "the legacy vault key is not the KEK");
+    let opened = crypto::open_account_key_chain(&unlock_key, body["migration"]["accountKeys"]["encryptedAccountKey"].as_str().unwrap(), body["migration"]["accountKeys"]["encryptedVek"].as_str().unwrap(), None).unwrap();
+    assert_eq!(*opened.vault_encryption_key, new_key);
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
     assert!(host.state.contains_key(state::ENCRYPTED_ACCOUNT_PRIVATE_KEY));
     assert_eq!(host.rekeyed_stores_found_the_chain, vec![true], "the chain is cached before the vault is stored under the VEK");
@@ -676,8 +677,8 @@ fn manifest_migration_generates_the_key_hierarchy_and_pushes() {
 
 #[test]
 fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
-    let kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&unlock_key);
     let item = "aaaaaaaa-0000-4000-8000-000000000001";
     let bytes = vec![0x00u8, 0xFF, 0xC3, 0x28, 0x10];
     let text = crate::common::encoding::base64_encode(&bytes);
@@ -694,7 +695,7 @@ fn account_upgrade_decodes_base64_text_that_0_30_merges_left_in_blob_columns() {
     host.respond("POST", "Vault/blobs", json!({}));
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
-    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{} {:?}", result, host.logs);
     let cell = |sql: &str| host.local.query_row(sql, [], |row| Ok((row.get::<_, String>(0)?, row.get_ref(1)?.as_bytes().map(<[u8]>::to_vec).ok()))).unwrap();
@@ -740,12 +741,12 @@ fn schema_rebuild_of_a_stale_vault_pushes_without_touching_the_key_hierarchy() {
 }
 
 /// A legacy sqlite-blob snapshot of the given database, as the server serves an account that has not migrated.
-fn legacy_snapshot_of(conn: &rusqlite::Connection, kek: &str, revision: i64) -> Value {
+fn legacy_snapshot_of(conn: &rusqlite::Connection, unlock_key: &str, revision: i64) -> Value {
     let bytes = conn.serialize(rusqlite::MAIN_DB).unwrap().to_vec();
     json!({
         "status": 0,
         "storageFormat": 0,
-        "legacyVaultBlob": crypto::symmetric_encrypt_bytes(&bytes, kek).unwrap(),
+        "legacyVaultBlob": crypto::symmetric_encrypt_bytes(&bytes, unlock_key).unwrap(),
         "legacyRevision": revision,
         "personalManifestId": PERSONAL_MANIFEST_ID,
         "emailRouting": { "privateEmailDomainList": ["private.io"], "publicEmailDomainList": [], "hiddenPrivateEmailDomainList": [], "emailAddressList": [] },
@@ -754,13 +755,13 @@ fn legacy_snapshot_of(conn: &rusqlite::Connection, kek: &str, revision: i64) -> 
 
 /// A host as a client predating the manifest storage format leaves it: a sqlite blob under the KEK, no personal
 /// manifest id and no revision baseline, against a server that still holds the account as a legacy vault.
-fn pre_format_session_host(kek: &str, local_item: &str, server_item: &str) -> TestHost {
-    let mut host = TestHost::new(kek);
+fn pre_format_session_host(unlock_key: &str, local_item: &str, server_item: &str) -> TestHost {
+    let mut host = TestHost::new(unlock_key);
     insert_item(&host.local, "aaaaaaaa-0000-4000-8000-000000000001", local_item, PERSONAL_MANIFEST_ID);
     host.store_local_as_blob();
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000002", server_item, PERSONAL_MANIFEST_ID);
-    host.respond("GET", "Vault", legacy_snapshot_of(&server_db, kek, 3));
+    host.respond("GET", "Vault", legacy_snapshot_of(&server_db, unlock_key, 3));
     host.respond_with(Box::new(|method, path, _| if method == "GET" && path == "VaultKey/Password" { Some((200, json!({ "vaultKey": null }))) } else { None }));
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
@@ -769,10 +770,10 @@ fn pre_format_session_host(kek: &str, local_item: &str, server_item: &str) -> Te
 
 #[test]
 fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
-    let kek = crypto::generate_key_base64();
-    let mut host = pre_format_session_host(&kek, "Local item", "Server item");
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = pre_format_session_host(&unlock_key, "Local item", "Server item");
 
-    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
@@ -788,11 +789,11 @@ fn manifest_migration_of_a_pre_format_session_pulls_the_server_vault_first() {
 
 #[test]
 fn manifest_migration_of_a_dirty_pre_format_session_keeps_the_local_vault() {
-    let kek = crypto::generate_key_base64();
-    let mut host = pre_format_session_host(&kek, "Local item", "Server item");
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = pre_format_session_host(&unlock_key, "Local item", "Server item");
     host.is_dirty = true;
 
-    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, true, 1)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, true, 1)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["pushed"], true);
@@ -853,10 +854,10 @@ fn vault_key_body(hierarchy: &crypto::AccountKeyHierarchy) -> Value {
 /// together with the VEK it is now encrypted under.
 #[test]
 fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
-    let kek = crypto::generate_key_base64();
-    let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
-    let mut host = TestHost::new(&kek);
+    let mut host = TestHost::new(&unlock_key);
 
     let server_db = test_host::open_schema_db(&host.schema_sql);
     insert_item(&server_db, "aaaaaaaa-0000-4000-8000-000000000001", "Server item", PERSONAL_MANIFEST_ID);
@@ -865,7 +866,7 @@ fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
     host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
     host.respond("GET", "Vault", vault);
 
-    let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("fullSync", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(host.vault_key, vek, "the store carried the VEK, so the host switched to it before opening the blob");
@@ -880,12 +881,12 @@ fn a_hierarchy_created_on_another_device_is_accepted_on_the_next_pull() {
 /// cached for offline unlock, and the VEK comes back as the key to store.
 #[test]
 fn resolve_vault_key_opens_the_chain_from_the_server() {
-    let kek = crypto::generate_key_base64();
-    let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
+    let mut host = TestHost::new(&unlock_key);
     host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 
-    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], true);
@@ -895,32 +896,48 @@ fn resolve_vault_key_opens_the_chain_from_the_server() {
     assert!(host.store_calls.is_empty(), "resolving a key never touches the stored vault");
 }
 
+/// A device that stores the Account Key (Login with Mobile from a phone that converted its keychain) resolves with it
+/// as well as with the unlock key.
+#[test]
+fn resolve_vault_key_opens_the_chain_with_a_stored_account_key() {
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
+    let account_key = crypto::unwrap_account_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).unwrap();
+    let mut host = TestHost::new(&account_key);
+    host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
+
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &account_key, false, 0)).unwrap());
+
+    assert_eq!(result["success"], true, "{}", result);
+    assert_eq!(result["encryptionKey"], hierarchy.vault_encryption_key);
+}
+
 /// A legacy account has no chain: the password-derived key is the vault key and any stale cached chain is dropped.
 #[test]
 fn resolve_vault_key_keeps_the_kek_for_a_legacy_account() {
-    let kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&unlock_key);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!("stale"));
     host.respond("GET", "VaultKey/Password", json!({ "vaultKey": null }));
 
-    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], false);
-    assert_eq!(result["encryptionKey"], kek);
+    assert_eq!(result["encryptionKey"], unlock_key);
     assert!(!host.state.contains_key(state::ENCRYPTED_ACCOUNT_KEY));
 }
 
 /// Offline, the cached chain opens with the password-derived key (a re-login after a forced logout).
 #[test]
 fn resolve_vault_key_opens_the_cached_chain_when_the_server_is_unreachable() {
-    let kek = crypto::generate_key_base64();
-    let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
+    let mut host = TestHost::new(&unlock_key);
     host.state.insert(state::ENCRYPTED_ACCOUNT_KEY.to_string(), json!(hierarchy.account_keys.encrypted_account_key));
     host.state.insert(state::ENCRYPTED_VEK.to_string(), json!(hierarchy.account_keys.encrypted_vek));
 
-    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(result["hasVaultKey"], true);
@@ -945,13 +962,13 @@ fn resolve_vault_key_refuses_a_key_that_does_not_open_the_chain() {
 /// A chain whose VEK does not open under its own account key is not reported as a wrong password.
 #[test]
 fn resolve_vault_key_tells_an_unreadable_chain_apart_from_a_wrong_password() {
-    let kek = crypto::generate_key_base64();
-    let mut hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
+    let unlock_key = crypto::generate_key_base64();
+    let mut hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     hierarchy.account_keys.encrypted_vek = crypto::wrap_key(&crypto::generate_key_base64(), &crypto::generate_key_base64()).unwrap();
-    let mut host = TestHost::new(&kek);
+    let mut host = TestHost::new(&unlock_key);
     host.respond("GET", "VaultKey/Password", vault_key_body(&hierarchy));
 
-    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("resolveVaultKey", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], false);
     assert_eq!(result["errorCode"], "E-207");
@@ -961,8 +978,8 @@ fn resolve_vault_key_tells_an_unreadable_chain_apart_from_a_wrong_password() {
 /// so the run fails to open the vault instead of silently swapping keys. Resolving the key is the host's job.
 #[test]
 fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
-    let kek = crypto::generate_key_base64();
-    let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
     let mut host = TestHost::new(&vek);
     host.store_local_as_blob();
@@ -971,7 +988,7 @@ fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
-    host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
+    host.drive(&SyncSession::new(&request("fullSync", &unlock_key, false, 0)).unwrap());
 
     assert!(host.store_calls.iter().all(|c| matches!(c, Command::VaultStore { encryption_key: None, .. })), "no key swap reaches the host");
     assert!(host.requests_to("VaultKey/Password").is_empty(), "a device with a cached chain is never probed");
@@ -980,8 +997,8 @@ fn a_kek_session_on_a_migrated_device_is_not_upgraded_by_the_sync() {
 /// The VEK itself opens nothing in the chain and stands as the session key.
 #[test]
 fn a_vek_session_key_is_left_alone() {
-    let kek = crypto::generate_key_base64();
-    let hierarchy = crypto::create_account_key_hierarchy(&kek).unwrap();
+    let unlock_key = crypto::generate_key_base64();
+    let hierarchy = crypto::create_account_key_hierarchy(&unlock_key).unwrap();
     let vek = hierarchy.vault_encryption_key.clone();
     let mut host = TestHost::new(&vek);
     host.store_local_as_blob();
@@ -999,14 +1016,14 @@ fn a_vek_session_key_is_left_alone() {
 /// A legacy account that is clean and in sync is not probed for a vault key: the probe belongs to a pull or a push.
 #[test]
 fn clean_legacy_account_in_sync_is_not_probed_for_a_vault_key() {
-    let kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&unlock_key);
     host.store_local_as_blob();
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
     host.state.insert(state::VAULT_PERSONAL_MANIFEST_ID.to_string(), json!(PERSONAL_MANIFEST_ID));
     host.respond("GET", "Status", json!({ "clientVersionSupported": true, "serverVersion": "0.31.0", "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 3 }], "personalManifestId": PERSONAL_MANIFEST_ID, "srpSalt": "salt" }));
 
-    let result = host.drive(&SyncSession::new(&request("fullSync", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("fullSync", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert!(host.requests_to("VaultKey/Password").is_empty());
@@ -1015,9 +1032,9 @@ fn clean_legacy_account_in_sync_is_not_probed_for_a_vault_key() {
 /// A dirty legacy account probes the server for a vault key once per run, not once per step.
 #[test]
 fn dirty_legacy_account_probes_for_a_vault_key_once_per_run() {
-    let kek = crypto::generate_key_base64();
+    let unlock_key = crypto::generate_key_base64();
     let salt = vault_codec::generate_manifest_salt();
-    let mut host = TestHost::new(&kek);
+    let mut host = TestHost::new(&unlock_key);
     insert_item(&host.local, "aaaaaaaa-0000-4000-8000-000000000001", "Local item", PERSONAL_MANIFEST_ID);
     host.store_local_as_blob();
     host.state.insert(state::SERVER_MANIFEST_REVISIONS.to_string(), json!({ PERSONAL_MANIFEST_ID: 3 }));
@@ -1028,7 +1045,7 @@ fn dirty_legacy_account_probes_for_a_vault_key_once_per_run() {
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
-    let result = host.drive(&SyncSession::new(&request("fullSync", &kek, true, 1)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("fullSync", &unlock_key, true, 1)).unwrap());
 
     assert_eq!(result["success"], true, "{}", result);
     assert_eq!(host.requests_to("VaultKey/Password").len(), 1);

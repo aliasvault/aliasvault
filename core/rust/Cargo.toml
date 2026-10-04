@@ -50,6 +50,9 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 # Argon2 password hashing
 argon2 = "0.5"
 
+# HKDF-SHA256 (SRP/KEK derivation from unlock key)
+hkdf = "0.12"
+
 # AES-256-GCM (vault blobs, key wrapping) and RSA-OAEP-SHA256 (manifest key grants)
 aes-gcm = "0.10"
 rsa = "0.9"
