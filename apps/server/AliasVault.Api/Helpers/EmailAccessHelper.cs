@@ -67,22 +67,16 @@ public static class EmailAccessHelper
     }
 
     /// <summary>
-    /// Get the addresses that the user may read.
+    /// Get the active alias addresses owned by a manifest the user can access, which together form the user's combined inbox.
     /// </summary>
     /// <param name="context">Database context.</param>
-    /// <param name="addresses">The addresses to check access for.</param>
     /// <param name="userId">The user requesting access.</param>
-    /// <returns>The addresses that the user may read.</returns>
-    public static async Task<List<string>> FilterReadableAddressesAsync(AliasServerDbContext context, List<string> addresses, string userId)
+    /// <returns>The active addresses that the user may read.</returns>
+    public static async Task<List<string>> ResolveActiveAddressesAsync(AliasServerDbContext context, string userId)
     {
-        if (addresses.Count == 0)
-        {
-            return [];
-        }
-
         var accessible = await AccessibleManifestsAsync(context, userId);
         return await context.EmailClaims
-            .Where(c => addresses.Contains(c.Address) && c.State != EmailClaimState.Removed && accessible.Any(m => m.ManifestId == c.VaultManifestId))
+            .Where(c => c.State == EmailClaimState.Active && accessible.Any(m => m.ManifestId == c.VaultManifestId))
             .Select(c => c.Address)
             .ToListAsync();
     }

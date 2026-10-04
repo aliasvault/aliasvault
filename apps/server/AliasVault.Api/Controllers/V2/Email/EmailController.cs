@@ -28,6 +28,11 @@ using Microsoft.EntityFrameworkCore;
 public class EmailController(ILogger<EmailController> logger, IAliasServerDbContextFactory dbContextFactory, UserManager<AliasVaultUser> userManager, IpBlockListService ipBlockListService) : AuthenticatedRequestController(userManager)
 {
     /// <summary>
+    /// Maximum number of email ids accepted by a single bulk delete.
+    /// </summary>
+    private const int MaxBulkDeleteIds = 500;
+
+    /// <summary>
     /// Get the email with the specified ID.
     /// </summary>
     /// <param name="id">The email ID to open.</param>
@@ -146,6 +151,12 @@ public class EmailController(ILogger<EmailController> logger, IAliasServerDbCont
         {
             // Nothing to delete
             return StatusCode(304);
+        }
+
+        // Every id runs its own access check, so the batch is capped.
+        if (model.Ids.Count > MaxBulkDeleteIds)
+        {
+            return BadRequest($"At most {MaxBulkDeleteIds} emails can be deleted per request.");
         }
 
         // For each email ID, validate if user has access and if email exists

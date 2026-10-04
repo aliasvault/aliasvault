@@ -90,7 +90,7 @@ const EmailsHome: React.FC = () => {
   const hasMoreEmails = totalRecords > emailList.length;
 
   /**
-   * Get the list of private email alias addresses in the vault.
+   * Get the list of private email alias addresses in the vault, used to show the empty state.
    */
   const getEmailClaimList = useCallback(async (): Promise<string[]> => {
     const routable = dbContext.sqliteClient?.items.getRoutableEmailAddresses() ?? [];
@@ -120,13 +120,13 @@ const EmailsHome: React.FC = () => {
   /**
    * Fetch and decrypt one page of the mailbox.
    */
-  const loadEmailsFromServer = useCallback(async (page: number, pageSize: number, emailClaimList: string[]): Promise<MailboxPage | null> => {
-    if (emailClaimList.length === 0 || !dbContext.sqliteClient) {
+  const loadEmailsFromServer = useCallback(async (page: number, pageSize: number): Promise<MailboxPage | null> => {
+    if (!dbContext.sqliteClient) {
       return null;
     }
 
     try {
-      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', { addresses: emailClaimList, page, pageSize });
+      const data = await webApi.post<MailboxBulkRequest, MailboxBulkResponse>('EmailBox/bulk', { page, pageSize });
       const encryptionKeys = dbContext.sqliteClient.encryptionKeys.getAll();
       const decrypted: MailboxEmail[] = await EncryptionUtility.decryptEmailList(data.mails, data.publicKeys, encryptionKeys);
       const lookup = getItemLookup();
@@ -183,7 +183,7 @@ const EmailsHome: React.FC = () => {
       return;
     }
 
-    const result = await loadEmailsFromServer(targetPage, PAGE_SIZE, emailClaimList);
+    const result = await loadEmailsFromServer(targetPage, PAGE_SIZE);
     if (result) {
       setEmailList(result.emails);
       knownEmailIds.current = new Set(result.emails.map(e => e.id));
@@ -204,11 +204,10 @@ const EmailsHome: React.FC = () => {
    * Check for new emails without disrupting the current view.
    */
   const checkForNewEmails = useCallback(async (): Promise<void> => {
-    if (!isPageVisible.current || !autoRefreshEnabled || currentPage !== 1) {
+    if (!isPageVisible.current || !autoRefreshEnabled || currentPage !== 1 || noEmailClaims) {
       return;
     }
-    const emailClaimList = await getEmailClaimList();
-    const result = await loadEmailsFromServer(1, 5, emailClaimList);
+    const result = await loadEmailsFromServer(1, 5);
     if (!result) {
       return;
     }
@@ -224,7 +223,7 @@ const EmailsHome: React.FC = () => {
     setTimeout(() => {
       setNewEmailIds(ids => new Set([...ids].filter(id => !arrivedIds.includes(id))));
     }, NEW_EMAIL_INDICATOR_MS);
-  }, [autoRefreshEnabled, currentPage, getEmailClaimList, loadEmailsFromServer]);
+  }, [autoRefreshEnabled, currentPage, noEmailClaims, loadEmailsFromServer]);
 
   /**
    * Poll while the tab is visible.
@@ -259,8 +258,7 @@ const EmailsHome: React.FC = () => {
     }
     setIsLoadingMore(true);
     try {
-      const emailClaimList = await getEmailClaimList();
-      const result = await loadEmailsFromServer(currentPage + 1, PAGE_SIZE, emailClaimList);
+      const result = await loadEmailsFromServer(currentPage + 1, PAGE_SIZE);
       if (result) {
         setEmailList(list => [...list, ...result.emails]);
         setCurrentPage(result.currentPage);
