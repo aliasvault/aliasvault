@@ -12,6 +12,7 @@ import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.models.TotpCode
 import net.aliasvault.app.vaultstore.models.VaultMutationScope
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
+import org.json.JSONObject
 import uniffi.aliasvault_core.VaultException
 import uniffi.aliasvault_core.rsaDecrypt
 import kotlin.coroutines.resume
@@ -55,6 +56,9 @@ class VaultStore(
          * Hard cap on how long a recent-auth grace will be honored, regardless of caller input.
          */
         private const val MAX_AUTH_RECENCY_WINDOW_SECONDS: Double = 15.0
+
+        /** How long a sync hold stays valid without being released, so a crashed holder is forgotten. */
+        private const val VAULT_SYNC_HOLD_TTL_MS = 2 * 60 * 1000L
 
         /**
          * Get the instance of the vault store.
@@ -618,6 +622,24 @@ class VaultStore(
      */
     fun getOfflineMode(): Boolean {
         return metadata.getOfflineMode()
+    }
+
+    /**
+     * Hold vault syncing while an operation runs that a sync must not race (e.g. a password change), or release it with null.
+     */
+    fun setVaultSyncHold(reason: String?) {
+        storageProvider.setVaultSyncHold(reason?.let { JSONObject().put("reason", it).put("heldAt", System.currentTimeMillis()).toString() })
+    }
+
+    /**
+     * The reason syncing is on hold, or null when no unexpired hold is held.
+     */
+    fun getVaultSyncHoldReason(): String? {
+        val hold = storageProvider.getVaultSyncHold()?.let { JSONObject(it) } ?: return null
+        if (System.currentTimeMillis() - hold.optLong("heldAt") >= VAULT_SYNC_HOLD_TTL_MS) {
+            return null
+        }
+        return hold.optString("reason").takeIf { it.isNotEmpty() }
     }
 
     // endregion

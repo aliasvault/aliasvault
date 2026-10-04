@@ -9,6 +9,29 @@ extension VaultStore {
         return await sync.syncVaultWithServer(using: webApiService)
     }
 
+    /// How long a sync hold stays valid without being released, so a crashed holder is forgotten.
+    private static let vaultSyncHoldTtl: TimeInterval = 2 * 60
+
+    /// Hold vault syncing while an operation runs that a sync must not race (e.g. a password change), or release it with nil.
+    public func setVaultSyncHold(_ reason: String?) {
+        if let reason = reason {
+            userDefaults.set(["reason": reason, "heldAt": Date().timeIntervalSince1970], forKey: VaultConstants.vaultSyncHoldKey)
+        } else {
+            userDefaults.removeObject(forKey: VaultConstants.vaultSyncHoldKey)
+        }
+    }
+
+    /// The reason syncing is on hold, or nil when no unexpired hold is held.
+    public func getVaultSyncHoldReason() -> String? {
+        guard let hold = userDefaults.dictionary(forKey: VaultConstants.vaultSyncHoldKey),
+              let reason = hold["reason"] as? String,
+              let heldAt = hold["heldAt"] as? TimeInterval,
+              Date().timeIntervalSince1970 - heldAt < Self.vaultSyncHoldTtl else {
+            return nil
+        }
+        return reason
+    }
+
     /// One status call: whether the server holds newer state than this device.
     public func checkVaultVersion(using webApiService: WebApiService) async throws -> VaultVersionCheckResult {
         return try await sync.checkVaultVersion(using: webApiService)

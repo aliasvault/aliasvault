@@ -86,7 +86,7 @@ public class VaultStore {
 
     /// Whether the vault is currently unlocked
     public var isVaultUnlocked: Bool {
-        return unlockKey != nil
+        return accountKey != nil
     }
 
     // MARK: - Authentication Recency

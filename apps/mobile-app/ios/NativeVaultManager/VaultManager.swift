@@ -724,6 +724,15 @@ public class VaultManager: NSObject {
         resolve(nil)
     }
 
+    /// Hold vault syncing while an operation runs that a sync must not race, or release it with nil.
+    @objc
+    func setVaultSyncHold(_ reason: String?,
+                          resolver resolve: @escaping RCTPromiseResolveBlock,
+                          rejecter reject: @escaping RCTPromiseRejectBlock) {
+        vaultStore.setVaultSyncHold(reason)
+        resolve(nil)
+    }
+
     @objc
     func getOfflineMode(_ resolve: @escaping RCTPromiseResolveBlock,
                        rejecter reject: @escaping RCTPromiseRejectBlock) {

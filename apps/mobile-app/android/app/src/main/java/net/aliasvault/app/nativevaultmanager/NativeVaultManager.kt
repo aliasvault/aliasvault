@@ -1345,6 +1345,22 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Hold vault syncing while an operation runs that a sync must not race, or release it with null.
+     * @param reason The operation taking the hold, or null to release it.
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun setVaultSyncHold(reason: String?, promise: Promise) {
+        try {
+            vaultStore.setVaultSyncHold(reason)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting the vault sync hold", e)
+            promise.reject("ERR_SET_VAULT_SYNC_HOLD", "Failed to set the vault sync hold: ${e.message}", e)
+        }
+    }
+
+    /**
      * Get offline mode flag.
      * @param promise The promise to resolve.
      */

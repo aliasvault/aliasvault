@@ -275,6 +275,10 @@
     [vaultManager setOfflineMode:isOffline resolver:resolve rejecter:reject];
 }
 
+- (void)setVaultSyncHold:(NSString *)reason resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setVaultSyncHold:reason resolver:resolve rejecter:reject];
+}
+
 - (void)getOfflineMode:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager getOfflineMode:resolve rejecter:reject];
 }

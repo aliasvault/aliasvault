@@ -140,6 +140,18 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
         return sharedPreferences.getBoolean("offline_mode", false)
     }
 
+    override fun getVaultSyncHold(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("vault_sync_hold", null)
+    }
+
+    override fun setVaultSyncHold(json: String?) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            if (json == null) remove("vault_sync_hold") else putString("vault_sync_hold", json)
+        }
+    }
+
     override fun setServerVersion(version: String) {
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
         sharedPreferences.edit {

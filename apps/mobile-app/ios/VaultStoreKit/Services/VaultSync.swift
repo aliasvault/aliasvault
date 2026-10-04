@@ -142,6 +142,7 @@ internal final class VaultSync {
 
     /// Run one engine operation and persist what it reported. A driver failure surfaces as the native error.
     private func run(_ operation: String, using webApiService: WebApiService, encryptionKey: String? = nil, sharing: [String: Any]? = nil) async throws -> [String: Any] {
+        await waitForSyncHoldRelease(operation)
         let result: [String: Any]
         do {
             result = try await VaultSyncEngine(vaultStore: vaultStore, webApiService: webApiService).run(operation: operation, encryptionKey: encryptionKey, sharing: sharing)
@@ -150,6 +151,16 @@ internal final class VaultSync {
         }
         persistSyncResult(result)
         return result
+    }
+
+    /// Wait while a sync hold is held (see VaultStore.setVaultSyncHold), so the run sees the state its holder leaves
+    /// behind. `resolveVaultKey` never waits: the password change runs it while holding the hold.
+    private func waitForSyncHoldRelease(_ operation: String) async {
+        guard operation != "resolveVaultKey", let reason = vaultStore.getVaultSyncHoldReason() else { return }
+        print("[VaultSync] \(operation) waits: on hold for \(reason)")
+        while vaultStore.getVaultSyncHoldReason() != nil {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
     }
 
     /// Persist what the engine reported: server version and capabilities, offline mode, session values it changed,

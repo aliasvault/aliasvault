@@ -1,6 +1,7 @@
 package net.aliasvault.app.vaultstore
 
 import android.util.Log
+import kotlinx.coroutines.delay
 import net.aliasvault.app.vaultstore.models.VaultMetadata
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -23,6 +24,9 @@ class VaultSync(
 ) {
     companion object {
         private const val TAG = "VaultSync"
+
+        /** How often a run waiting for a sync hold checks whether it was released. */
+        private const val SYNC_HOLD_POLL_MS = 100L
 
         /** The engine operations the sharing screen may ask for. */
         private val SHARING_OPERATIONS = setOf("createSharedManifest", "inviteToSharedManifest", "updateSharedManifest")
@@ -168,10 +172,24 @@ class VaultSync(
     }
 
     /**
+     * Wait while a sync hold is held (see VaultStore.setVaultSyncHold), so the run sees the state its holder leaves
+     * behind. `resolveVaultKey` never waits: the password change runs it while holding the hold.
+     */
+    private suspend fun waitForSyncHoldRelease(operation: String) {
+        if (operation == "resolveVaultKey") return
+        val reason = vaultStore.getVaultSyncHoldReason() ?: return
+        Log.d(TAG, "$operation waits: on hold for $reason")
+        while (vaultStore.getVaultSyncHoldReason() != null) {
+            delay(SYNC_HOLD_POLL_MS)
+        }
+    }
+
+    /**
      * Run one engine operation and persist what it reported. A driver failure surfaces as the native error.
      */
     @Suppress("TooGenericExceptionCaught")
     private suspend fun run(operation: String, webApiService: WebApiService, encryptionKey: String? = null, sharing: JSONObject? = null): JSONObject {
+        waitForSyncHoldRelease(operation)
         val result = try {
             VaultSyncEngine(vaultStore, storageProvider, webApiService).run(operation, encryptionKey = encryptionKey, sharing = sharing)
         } catch (e: Exception) {
