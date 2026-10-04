@@ -1,5 +1,5 @@
 /**
- * Category 13: Forward-compat overflow: no data loss (Requires API)
+ * Category 33: Forward-compat overflow: no data loss (Requires API)
  *
  * These tests enforce the manifest-v1 forward-compatibility guarantee: when a NEWER client writes
  * vault data this client's schema doesn't know (a new row column, a whole new table), the current
@@ -19,9 +19,9 @@ import { test, expect, TestClient, FieldSelectors } from '../fixtures';
 import { getVaultSnapshot, openManifest, pushManifest, pollUntil, requirePersonalManifest, resolveVaultEncryptionKey, type DecryptedManifest } from '../helpers/manifest-v2-api';
 import type { TestUser } from '../helpers/test-api';
 
-test.describe.serial('13. Forward-compat overflow', () => {
+test.describe.serial('33. Forward-compat overflow', () => {
   let client: TestClient;
-  /** The account under test; the testUser fixture is per-test, so 13.1 pins it for later tests. */
+  /** The account under test; the testUser fixture is per-test, so 33.1 pins it for later tests. */
   let user: TestUser;
   let baseApiUrl: string;
 
@@ -38,7 +38,7 @@ test.describe.serial('13. Forward-compat overflow', () => {
     await client?.cleanup();
   });
 
-  test('13.1 extension client should create a credential and sync to manifest-v1', async ({ testUser, apiUrl }) => {
+  test('33.1 extension client should create a credential and sync to manifest-v1', async ({ testUser, apiUrl }) => {
     user = testUser;
     baseApiUrl = apiUrl;
     client = await TestClient.create();
@@ -49,7 +49,7 @@ test.describe.serial('13. Forward-compat overflow', () => {
       .then((c) => c.createCredential(credentialName, 'overflow@example.com', 'OverflowPass123!'))
       .then((c) => c.verifyCredentialExists(credentialName))
       .then((c) => c.triggerSync())
-      .then((c) => c.screenshot('13.1-credential-created.png'));
+      .then((c) => c.screenshot('33.1-credential-created.png'));
 
     // The save's push runs in the background; wait until the server actually holds a manifest-v1
     // snapshot whose Items table contains the credential.
@@ -58,7 +58,7 @@ test.describe.serial('13. Forward-compat overflow', () => {
     expect(item, 'credential row should be present in the server manifest').toBeTruthy();
   });
 
-  test('13.2 a newer client should inject an unknown column and table into the server manifest', async () => {
+  test('33.2 a newer client should inject an unknown column and table into the server manifest', async () => {
     const token = user.token!.token;
     const { manifest, personal, vaultKey } = await openLatestManifest(baseApiUrl, token, user.encryptionKey!);
 
@@ -74,15 +74,15 @@ test.describe.serial('13. Forward-compat overflow', () => {
     expect(injectedRevision).toBeGreaterThan(personal.revision);
   });
 
-  test('13.3 extension should load the newer manifest without crashing', async () => {
+  test('33.3 extension should load the newer manifest without crashing', async () => {
     await client
       .triggerSync()
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialName))
-      .then((c) => c.screenshot('13.3-newer-manifest-loaded.png'));
+      .then((c) => c.screenshot('33.3-newer-manifest-loaded.png'));
   });
 
-  test('13.4 extension should edit the credential and push', async () => {
+  test('33.4 extension should edit the credential and push', async () => {
     await client
       .clickCredential(credentialName)
       .then((c) => c.openEditForm())
@@ -90,10 +90,10 @@ test.describe.serial('13. Forward-compat overflow', () => {
       .then((c) => c.saveCredential())
       .then((c) => c.verifyCredentialExists(renamedCredentialName))
       .then((c) => c.triggerSync())
-      .then((c) => c.screenshot('13.4-credential-renamed.png'));
+      .then((c) => c.screenshot('33.4-credential-renamed.png'));
   });
 
-  test('13.5 the newer client data should survive the extension push (no data loss)', async () => {
+  test('33.5 the newer client data should survive the extension push (no data loss)', async () => {
     // Wait for the extension's push to land: a revision beyond the injected one, carrying the rename.
     const manifest = await pollUntil(async (): Promise<DecryptedManifest | undefined> => {
       const { manifest: m, personal } = await openLatestManifest(baseApiUrl, user.token!.token, user.encryptionKey!);

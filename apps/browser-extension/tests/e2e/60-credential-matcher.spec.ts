@@ -1,5 +1,5 @@
 /**
- * Category 8: Credential Matcher Integration (Requires API + Authentication)
+ * Category 60: Credential Matcher Integration (Requires API + Authentication)
  *
  * These tests verify the CredentialMatcher Rust WASM integration works correctly.
  * The Rust core library is already unit tested natively; these tests verify the
@@ -71,14 +71,14 @@ async function setupTestPageRoute(page: Page, domain: string): Promise<void> {
   });
 }
 
-test.describe.serial('8. Credential Matcher Integration', () => {
+test.describe.serial('60. Credential Matcher Integration', () => {
   let client: TestClient;
 
   test.afterAll(async () => {
     await client?.cleanup();
   });
 
-  test('8.1 should login and create test credentials with different URLs', async ({ testUser, apiUrl }) => {
+  test('60.1 should login and create test credentials with different URLs', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
 
@@ -122,10 +122,10 @@ test.describe.serial('8. Credential Matcher Integration', () => {
     await client.verifyCredentialExists('Example Subdomain Login');
     await client.verifyCredentialExists('Another Site Login');
 
-    await client.screenshot('8.1-credentials-created.png');
+    await client.screenshot('60.1-credentials-created.png');
   });
 
-  test('8.2 should show no matches for unrelated domain', async () => {
+  test('60.2 should show no matches for unrelated domain', async () => {
     const testPage = await client.context.newPage();
 
     // Setup route to serve our test login page for unrelated-domain.com
@@ -157,11 +157,11 @@ test.describe.serial('8. Credential Matcher Integration', () => {
     expect(credentials).not.toContain('Another Site Login');
     expect(credentials.length).toBe(0);
 
-    await testPage.screenshot({ path: 'tests/screenshots/8.2-no-matches.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/60.2-no-matches.png' });
     await testPage.close();
   });
 
-  test('8.3 should show single matching credential on example.com', async () => {
+  test('60.3 should show single matching credential on example.com', async () => {
     const testPage = await client.context.newPage();
 
     // Setup route to serve our test login page for example.com
@@ -191,11 +191,11 @@ test.describe.serial('8. Credential Matcher Integration', () => {
     // Should NOT match another-example.com credential (different domain)
     expect(credentials).not.toContain('Another Site Login');
 
-    await testPage.screenshot({ path: 'tests/screenshots/8.3-example-com-match.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/60.3-example-com-match.png' });
     await testPage.close();
   });
 
-  test('8.4 should show single matching credential on another-example.com', async () => {
+  test('60.4 should show single matching credential on another-example.com', async () => {
     const testPage = await client.context.newPage();
 
     // Setup route to serve our test login page for another-example.com
@@ -226,11 +226,11 @@ test.describe.serial('8. Credential Matcher Integration', () => {
     expect(credentials).not.toContain('Example Site Login');
     expect(credentials).not.toContain('Example Subdomain Login');
 
-    await testPage.screenshot({ path: 'tests/screenshots/8.4-another-example-match.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/60.4-another-example-match.png' });
     await testPage.close();
   });
 
-  test('8.5 should show multiple matching credentials for subdomain', async () => {
+  test('60.5 should show multiple matching credentials for subdomain', async () => {
     const testPage = await client.context.newPage();
 
     // Setup route to serve our test login page for test.example.com
@@ -262,7 +262,7 @@ test.describe.serial('8. Credential Matcher Integration', () => {
     // Should NOT match another-example.com credential
     expect(credentials).not.toContain('Another Site Login');
 
-    await testPage.screenshot({ path: 'tests/screenshots/8.5-subdomain-match.png' });
+    await testPage.screenshot({ path: 'tests/screenshots/60.5-subdomain-match.png' });
     await testPage.close();
   });
 });

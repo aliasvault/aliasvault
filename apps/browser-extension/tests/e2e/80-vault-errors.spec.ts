@@ -1,5 +1,5 @@
 /**
- * Category 17: Vault errors (Requires API)
+ * Category 80: Vault errors (Requires API)
  *
  * Each test breaks the account's server vault on purpose, then checks the extension shows the real error with
  * its code instead of a generic "server not available" message.
@@ -36,7 +36,7 @@ async function expectSyncFailedDialog(popup: Page): Promise<void> {
   await expect(popup.getByText(SERVER_NOT_AVAILABLE_MESSAGE)).toHaveCount(0);
 }
 
-test.describe('17. Vault errors', () => {
+test.describe('80. Vault errors', () => {
   let client: TestClient | undefined;
 
   test.afterEach(async () => {
@@ -44,7 +44,7 @@ test.describe('17. Vault errors', () => {
     client = undefined;
   });
 
-  test('17.1 should report a server vault that does not decrypt on login', async ({ testUser, apiUrl }) => {
+  test('80.1 should report a server vault that does not decrypt on login', async ({ testUser, apiUrl }) => {
     await writeUndecryptableManifest(apiUrl, testUser);
 
     client = await TestClient.create();
@@ -55,7 +55,7 @@ test.describe('17. Vault errors', () => {
     await expectVaultErrorReport(client.popup, 'E-503', 'AES-GCM decryption failed');
   });
 
-  test('17.2 should report a server vault that does not load into the local database on login', async ({ testUser, apiUrl }) => {
+  test('80.2 should report a server vault that does not load into the local database on login', async ({ testUser, apiUrl }) => {
     // Decrypts and passes the codec, but the row misses required columns, so materializing it fails.
     await writeManifestWithBrokenRow(apiUrl, testUser, 'Items', { Id: crypto.randomUUID(), Name: 'Broken row' });
 
@@ -67,7 +67,7 @@ test.describe('17. Vault errors', () => {
     await expectVaultErrorReport(client.popup, 'E-508', 'NOT NULL constraint failed');
   });
 
-  test('17.3 should report a server vault that does not load during a sync after login', async ({ testUser, apiUrl }) => {
+  test('80.3 should report a server vault that does not load during a sync after login', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
     await client.goToVault();
@@ -79,7 +79,7 @@ test.describe('17. Vault errors', () => {
     await client.pause();
   });
 
-  test('17.4 should report a server vault that does not load on unlock', async ({ testUser, apiUrl }) => {
+  test('80.4 should report a server vault that does not load on unlock', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
     await client.lockVault();

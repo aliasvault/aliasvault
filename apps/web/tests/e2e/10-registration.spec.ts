@@ -1,11 +1,11 @@
 /**
- * Category 1: Full registration setup flow via web app UI (requires API)
+ * Category 10: Full registration setup flow via web app UI (requires API)
  */
 import { test, expect } from '../fixtures';
 import { createRegistrationInvite, TEST_DISABLE_PUBLIC_REGISTRATION_HEADER } from '../helpers/test-api';
 
-test.describe('1. Registration', () => {
-  test('1.1 should create a new account through the setup wizard', async ({ app, credentials }) => {
+test.describe('10. Registration', () => {
+  test('10.1 should create a new account through the setup wizard', async ({ app, credentials }) => {
     const { page } = app;
     const continueButton = page.getByRole('button', { name: 'Continue' });
 
@@ -40,10 +40,10 @@ test.describe('1. Registration', () => {
   });
 });
 
-test.describe('1. Registration with public registration disabled', () => {
+test.describe('10. Registration with public registration disabled', () => {
   test.use({ publicRegistrationEnabled: false });
 
-  test('1.2 should refuse registration without an invite link', async ({ app, apiUrl, credentials }) => {
+  test('10.2 should refuse registration without an invite link', async ({ app, apiUrl, credentials }) => {
     const { page } = app;
 
     await test.step('the start page offers no way to create a vault', async () => {
@@ -74,7 +74,7 @@ test.describe('1. Registration with public registration disabled', () => {
     });
   });
 
-  test('1.3 should create an account through an invite link and use up the invite', async ({ app, apiUrl, credentials }) => {
+  test('10.3 should create an account through an invite link and use up the invite', async ({ app, apiUrl, credentials }) => {
     const { page } = app;
     const continueButton = page.getByRole('button', { name: 'Continue' });
     const inviteCode = await createRegistrationInvite(apiUrl);
@@ -107,7 +107,7 @@ test.describe('1. Registration with public registration disabled', () => {
     });
   });
 
-  test('1.4 should reject an unknown invite link', async ({ app }) => {
+  test('10.4 should reject an unknown invite link', async ({ app }) => {
     const { page } = app;
 
     await page.goto('/user/setup?invite=AAAA-AAAA-AAAA-AAAA-AAAA');

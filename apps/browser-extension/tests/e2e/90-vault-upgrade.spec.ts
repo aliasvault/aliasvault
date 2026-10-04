@@ -1,5 +1,5 @@
 /**
- * Category 15: Vault upgrades from older versions.
+ * Category 90: Vault upgrades from older versions.
  */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -177,7 +177,7 @@ async function expectLegacyVaultContent(client: TestClient, fixture: LegacyVault
   });
 }
 
-test.describe.serial('15. Vault upgrades', () => {
+test.describe.serial('90. Vault upgrades', () => {
   const clients: TestClient[] = [];
   let client: TestClient;
 
@@ -185,7 +185,7 @@ test.describe.serial('15. Vault upgrades', () => {
     await Promise.all(clients.map(c => c.cleanup()));
   });
 
-  test('15.1 should upgrade a 0.1.0 vault to the current storage format', async ({ testUser, apiUrl }) => {
+  test('90.1 should upgrade a 0.1.0 vault to the current storage format', async ({ testUser, apiUrl }) => {
     const fixture = readLegacyVaultFixture('0.1.0');
     await restoreLegacyVault(apiUrl, testUser.username, fixture);
 
@@ -230,7 +230,7 @@ test.describe.serial('15. Vault upgrades', () => {
     });
   });
 
-  test('15.2 should keep everything a 0.30.7 vault holds when upgrading it', async ({ testUser, apiUrl }) => {
+  test('90.2 should keep everything a 0.30.7 vault holds when upgrading it', async ({ testUser, apiUrl }) => {
     test.slow();
     const fixture = readLegacyVaultFixture('0.30.7');
     await restoreLegacyVault(apiUrl, testUser.username, fixture);

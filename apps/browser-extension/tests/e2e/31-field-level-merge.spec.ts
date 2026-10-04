@@ -1,5 +1,5 @@
 /**
- * Category 6: Field-Level Merge (Requires API + Multi-Client Scenario)
+ * Category 31: Field-Level Merge (Requires API + Multi-Client Scenario)
  *
  * These tests verify that when the same credential is modified on two clients
  * simultaneously, the merge happens at the field level:
@@ -17,7 +17,7 @@
  */
 import { test, expect, TestClient, FieldSelectors } from '../fixtures';
 
-test.describe.serial('6. Field-Level Merge', () => {
+test.describe.serial('31. Field-Level Merge', () => {
   let clientA: TestClient;
   let clientB: TestClient;
 
@@ -34,7 +34,7 @@ test.describe.serial('6. Field-Level Merge', () => {
     await TestClient.cleanupAll(clientA, clientB);
   });
 
-  test('6.1 Setup: Both clients login and Client A creates a credential', async ({ testUser, apiUrl }) => {
+  test('31.1 Setup: Both clients login and Client A creates a credential', async ({ testUser, apiUrl }) => {
     clientA = await TestClient.create();
     await clientA.login(apiUrl, testUser.username, testUser.password);
 
@@ -44,14 +44,14 @@ test.describe.serial('6. Field-Level Merge', () => {
     await clientA
       .goToVault()
       .then((c) => c.createCredential(credentialName, originalUsername, originalPassword))
-      .then((c) => c.screenshot('6.1-client-a-credential-created.png'))
+      .then((c) => c.screenshot('31.1-client-a-credential-created.png'))
       .then((c) => c.waitForServerSync());
   });
 
-  test('6.2 Both clients sync and verify credential exists', async () => {
+  test('31.2 Both clients sync and verify credential exists', async () => {
     await clientA
       .goToVault()
-      .then((c) => c.screenshot('6.2-client-a-vault.png'))
+      .then((c) => c.screenshot('31.2-client-a-vault.png'))
       .then((c) => c.verifyCredentialExists(credentialName));
 
     await clientB
@@ -59,38 +59,38 @@ test.describe.serial('6. Field-Level Merge', () => {
       .then((c) => c.verifyCredentialExists(credentialName));
   });
 
-  test('6.3 Client A edits credential (username and notes) and saves', async () => {
+  test('31.3 Client A edits credential (username and notes) and saves', async () => {
     await clientA
       .clickCredential(credentialName)
       .then((c) => c.openEditForm())
       .then((c) => c.fillUsername(clientAUsername))
       .then((c) => c.fillNotes(clientANotes))
-      .then((c) => c.screenshot('6.3-client-a-before-save.png'))
+      .then((c) => c.screenshot('31.3-client-a-before-save.png'))
       .then((c) => c.saveCredential())
-      .then((c) => c.screenshot('6.3-client-a-after-save.png'))
+      .then((c) => c.screenshot('31.3-client-a-after-save.png'))
       // Ensure changes are synced to server before Client B edits
       .then((c) => c.triggerSync());
   });
 
-  test('6.4 Client B edits same credential (password and notes) with stale data', async () => {
+  test('31.4 Client B edits same credential (password and notes) with stale data', async () => {
     await clientB
       .clickCredential(credentialName)
-      .then((c) => c.screenshot('6.4-client-b-stale-details.png'))
+      .then((c) => c.screenshot('31.4-client-b-stale-details.png'))
       .then((c) => c.openEditForm())
-      .then((c) => c.screenshot('6.4-client-b-stale-form.png'))
+      .then((c) => c.screenshot('31.4-client-b-stale-form.png'))
       .then((c) => c.fillPassword(clientBPassword))
       .then((c) => c.fillNotes(clientBNotes))
-      .then((c) => c.screenshot('6.4-client-b-before-save.png'))
+      .then((c) => c.screenshot('31.4-client-b-before-save.png'))
       .then((c) => c.saveCredential())
-      .then((c) => c.screenshot('6.4-client-b-after-save.png'));
+      .then((c) => c.screenshot('31.4-client-b-after-save.png'));
 
     // Wait for the save operation to be persisted before moving to next test
     await clientB.popup.waitForTimeout(1000);
   });
 
-  test('6.5 Client B verifies field-level merge result', async () => {
+  test('31.5 Client B verifies field-level merge result', async () => {
     // Trigger sync to get the merged result from server
-    // The save in 6.4 triggered background sync+merge on server
+    // The save in 31.4 triggered background sync+merge on server
     await clientB.triggerSync();
 
     // Navigate to vault to ensure we're in a stable state
@@ -100,7 +100,7 @@ test.describe.serial('6. Field-Level Merge', () => {
     await clientB
       .clickCredential(credentialName)
       .then((c) => c.openEditForm())
-      .then((c) => c.screenshot('6.5-client-b-merged-form.png'));
+      .then((c) => c.screenshot('31.5-client-b-merged-form.png'));
 
     // Wait for merged values to appear (polling until sync completes)
     await clientB
@@ -122,7 +122,7 @@ test.describe.serial('6. Field-Level Merge', () => {
     await clientB.verifyCredentialExists(credentialName);
   });
 
-  test('6.6 Client A syncs and verifies merged credential', async () => {
+  test('31.6 Client A syncs and verifies merged credential', async () => {
     // Trigger sync to get the merged result from server
     await clientA.triggerSync();
 
@@ -133,7 +133,7 @@ test.describe.serial('6. Field-Level Merge', () => {
     await clientA
       .clickCredential(credentialName)
       .then((c) => c.openEditForm())
-      .then((c) => c.screenshot('6.6-client-a-synced-form.png'));
+      .then((c) => c.screenshot('31.6-client-a-synced-form.png'));
 
     // Wait for merged values to appear (polling until sync completes)
     await clientA

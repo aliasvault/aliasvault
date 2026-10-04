@@ -1,5 +1,5 @@
 /**
- * Category 12: Item Form Draft Persistence (Requires API + Authentication)
+ * Category 22: Item Form Draft Persistence (Requires API + Authentication)
  *
  * When the user is creating/editing a credential and the popup closes (e.g. they
  * focus the main browser window to copy something), their in-progress draft is
@@ -68,14 +68,14 @@ async function waitForPersist(client: TestClient): Promise<void> {
   await client.popup.waitForTimeout(500);
 }
 
-test.describe.serial('12. Item Form Draft Persistence', () => {
+test.describe.serial('22. Item Form Draft Persistence', () => {
   let client: TestClient;
 
   test.afterAll(async () => {
     await client?.cleanup();
   });
 
-  test('12.1 create: notes draft is restored after popup reopen', async ({ testUser, apiUrl }) => {
+  test('22.1 create: notes draft is restored after popup reopen', async ({ testUser, apiUrl }) => {
     client = await TestClient.create();
     await client.login(apiUrl, testUser.username, testUser.password);
 
@@ -93,7 +93,7 @@ test.describe.serial('12. Item Form Draft Persistence', () => {
     await expect(client.popup.locator(FieldSelectors.LOGIN_NOTES)).toHaveValue(NOTES_DRAFT);
   });
 
-  test('12.2 create: in-progress 2FA add form is restored after popup reopen', async () => {
+  test('22.2 create: in-progress 2FA add form is restored after popup reopen', async () => {
     await client.goToVault();
     await client.openAddCredentialForm();
     await client.popup.fill(FieldSelectors.ITEM_NAME, 'Create 2FA Draft');
@@ -109,7 +109,7 @@ test.describe.serial('12. Item Form Draft Persistence', () => {
     await expect(client.popup.locator(TOTP_SECRET_INPUT)).toHaveValue(TOTP_SECRET_DRAFT);
   });
 
-  test('12.3 edit: notes draft added to an existing item is restored after popup reopen', async () => {
+  test('22.3 edit: notes draft added to an existing item is restored after popup reopen', async () => {
     // Start from a saved credential that has no notes.
     await client.goToVault();
     await client.createCredential('Edit Notes Target', 'edit-notes-user', 'EditPass123!');
@@ -126,7 +126,7 @@ test.describe.serial('12. Item Form Draft Persistence', () => {
     await expect(client.popup.locator(FieldSelectors.LOGIN_NOTES)).toHaveValue(NOTES_DRAFT);
   });
 
-  test('12.4 edit: in-progress 2FA add form added to an existing item is restored after popup reopen', async () => {
+  test('22.4 edit: in-progress 2FA add form added to an existing item is restored after popup reopen', async () => {
     await client.goToVault();
     await client.createCredential('Edit 2FA Target', 'edit-2fa-user', 'EditPass123!');
 

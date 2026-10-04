@@ -1,5 +1,5 @@
 /**
- * Category 4: Vault errors (requires API)
+ * Category 80: Vault errors (requires API)
  *
  * Each test breaks the account's server vault on purpose, then checks the app correctly reports it to the user.
  */
@@ -50,8 +50,8 @@ async function expectClientUpdateRequest(page: Page): Promise<void> {
   });
 }
 
-test.describe('4. Vault errors', () => {
-  test('4.1 should report a server vault that does not decrypt', async ({ app, apiUrl, testUser }) => {
+test.describe('80. Vault errors', () => {
+  test('80.1 should report a server vault that does not decrypt', async ({ app, apiUrl, testUser }) => {
     await writeUndecryptableManifest(apiUrl, testUser);
 
     await app.page.goto('/user/login');
@@ -65,7 +65,7 @@ test.describe('4. Vault errors', () => {
     await expect(app.page.locator('#critical-error-report')).toContainText('AES-GCM decryption failed');
   });
 
-  test('4.2 should report a server vault that does not load into the local database', async ({ app, apiUrl, testUser }) => {
+  test('80.2 should report a server vault that does not load into the local database', async ({ app, apiUrl, testUser }) => {
     // Decrypts and passes the codec, but the row misses required columns, so materializing it fails.
     await writeManifestWithBrokenRow(apiUrl, testUser, 'Items', { Id: crypto.randomUUID(), Name: 'Broken row' });
 
@@ -80,7 +80,7 @@ test.describe('4. Vault errors', () => {
     await expect(app.page.locator('#critical-error-report')).toContainText('NOT NULL constraint failed');
   });
 
-  test('4.3 should report a key chain the password does not fully open', async ({ app, apiUrl }) => {
+  test('80.3 should report a key chain the password does not fully open', async ({ app, apiUrl }) => {
     const user = await createTestUserWithDamagedKeyChain(apiUrl);
 
     await app.page.goto('/user/login');
@@ -99,7 +99,7 @@ test.describe('4. Vault errors', () => {
     });
   });
 
-  test('4.4 should report a key chain the password does not fully open on unlock', async ({ app, testUser }) => {
+  test('80.4 should report a key chain the password does not fully open on unlock', async ({ app, testUser }) => {
     await app.login(testUser.username, testUser.password);
 
     await test.step('reloading locks the vault', async () => {
@@ -129,7 +129,7 @@ test.describe('4. Vault errors', () => {
     await expectCriticalError(app.page, KEY_CHAIN_UNREADABLE_MESSAGE, 'E-207');
   });
 
-  test('4.5 should ask for an update when the server rejects the client version on login', async ({ app, apiUrl, testUser }) => {
+  test('80.5 should ask for an update when the server rejects the client version on login', async ({ app, apiUrl, testUser }) => {
     await sendUnsupportedClientVersion(app.page, apiUrl);
 
     await app.page.goto('/user/login');
@@ -141,7 +141,7 @@ test.describe('4. Vault errors', () => {
     await expectClientUpdateRequest(app.page);
   });
 
-  test('4.6 should ask for an update when the server rejects the client version on unlock', async ({ app, apiUrl, testUser }) => {
+  test('80.6 should ask for an update when the server rejects the client version on unlock', async ({ app, apiUrl, testUser }) => {
     await app.login(testUser.username, testUser.password);
     await sendUnsupportedClientVersion(app.page, apiUrl);
 

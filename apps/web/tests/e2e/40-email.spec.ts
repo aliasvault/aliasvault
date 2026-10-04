@@ -1,13 +1,13 @@
 /**
- * Category 5: Email (requires API and SMTP service, e.g. `./scripts/dev.sh smtp`)
+ * Category 40: Email (requires API and SMTP service, e.g. `./scripts/dev.sh smtp`)
  */
 import { test, expect } from '../fixtures';
 import { requireSmtp, sendMail } from '../helpers/smtp';
 
-test.describe('5. Email', () => {
+test.describe('40. Email', () => {
   test.beforeAll(requireSmtp);
 
-  test('5.1 should receive and decrypt mail on an alias of a new account', async ({ app, testUser }) => {
+  test('40.1 should receive and decrypt mail on an alias of a new account', async ({ app, testUser }) => {
     const { page } = app;
     const id = Math.random().toString(36).substring(2, 10);
     const address = `e2e_${id}@example.tld`;

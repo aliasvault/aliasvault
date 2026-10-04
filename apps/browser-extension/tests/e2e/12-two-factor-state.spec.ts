@@ -1,5 +1,5 @@
 /**
- * Category 10: Two-Factor Authentication State Persistence
+ * Category 12: Two-Factor Authentication State Persistence
  *
  * These tests verify that the 2FA login state persists when the popup is closed
  * and reopened, allowing users to switch to their authenticator app without
@@ -39,7 +39,7 @@ async function reopenPopup(client: TestClient): Promise<void> {
   await client.popup.waitForTimeout(500);
 }
 
-test.describe.serial('10. Two-Factor Authentication State', () => {
+test.describe.serial('12. Two-Factor Authentication State', () => {
   let client: TestClient;
   let twoFactorUser: TestUser;
 
@@ -47,7 +47,7 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     await client?.cleanup();
   });
 
-  test('10.1 should show 2FA form after entering credentials for 2FA-enabled user', async ({ apiUrl }) => {
+  test('12.1 should show 2FA form after entering credentials for 2FA-enabled user', async ({ apiUrl }) => {
     // Create a test user with 2FA enabled
     twoFactorUser = await createTestUserWith2FA(apiUrl);
 
@@ -58,7 +58,7 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     const loginVisible = await isLoginFormVisible(client);
     expect(loginVisible).toBe(true);
 
-    await client.screenshot('10.1-initial-login-form.png');
+    await client.screenshot('12.1-initial-login-form.png');
 
     // Enter credentials for 2FA-enabled user and submit
     await client.popup.fill('input#username', twoFactorUser.username);
@@ -72,10 +72,10 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     const twoFactorVisible = await isTwoFactorFormVisible(client);
     expect(twoFactorVisible).toBe(true);
 
-    await client.screenshot('10.1-2fa-form-visible.png');
+    await client.screenshot('12.1-2fa-form-visible.png');
   });
 
-  test('10.2 should persist 2FA state across popup close/reopen', async () => {
+  test('12.2 should persist 2FA state across popup close/reopen', async () => {
     // Reopen the popup (simulates closing and reopening)
     await reopenPopup(client);
 
@@ -98,10 +98,10 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     const cancelButton = client.popup.locator('button:has-text("Cancel")');
     await expect(cancelButton).toBeVisible();
 
-    await client.screenshot('10.2-2fa-persisted.png');
+    await client.screenshot('12.2-2fa-persisted.png');
   });
 
-  test('10.3 should clear state when Cancel button is clicked', async () => {
+  test('12.3 should clear state when Cancel button is clicked', async () => {
     // Ensure we're on the 2FA form
     const twoFactorVisible = await isTwoFactorFormVisible(client);
     expect(twoFactorVisible).toBe(true);
@@ -116,7 +116,7 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     const loginVisible = await isLoginFormVisible(client);
     expect(loginVisible).toBe(true);
 
-    await client.screenshot('10.3-after-cancel.png');
+    await client.screenshot('12.3-after-cancel.png');
 
     // Reopen popup and verify state was cleared
     await reopenPopup(client);
@@ -125,10 +125,10 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     const stillOnLogin = await isLoginFormVisible(client);
     expect(stillOnLogin).toBe(true);
 
-    await client.screenshot('10.3-state-cleared.png');
+    await client.screenshot('12.3-state-cleared.png');
   });
 
-  test('10.4 should complete login with valid 2FA code', async () => {
+  test('12.4 should complete login with valid 2FA code', async () => {
     // Enter credentials again
     await client.popup.fill('input#username', twoFactorUser.username);
     await client.popup.fill('input#password', twoFactorUser.password);
@@ -143,7 +143,7 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     // Enter the 2FA code
     await client.popup.fill('input#twoFactorCode', totpCode);
 
-    await client.screenshot('10.4-2fa-code-entered.png');
+    await client.screenshot('12.4-2fa-code-entered.png');
 
     // Submit the 2FA code
     await client.popup.click('button:has-text("Verify")');
@@ -151,6 +151,6 @@ test.describe.serial('10. Two-Factor Authentication State', () => {
     // Wait for successful login (vault should be visible)
     await client.popup.getByRole('button', { name: 'Vault' }).waitFor({ state: 'visible', timeout: 15000 });
 
-    await client.screenshot('10.4-login-successful.png');
+    await client.screenshot('12.4-login-successful.png');
   });
 });

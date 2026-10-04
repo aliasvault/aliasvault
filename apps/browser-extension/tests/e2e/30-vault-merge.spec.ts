@@ -1,5 +1,5 @@
 /**
- * Category 5: Vault Merge (Requires API + Multi-Client Scenario)
+ * Category 30: Vault Merge (Requires API + Multi-Client Scenario)
  *
  * These tests verify the vault merge logic when two clients make concurrent changes.
  *
@@ -13,7 +13,7 @@
  */
 import { test, expect, TestClient, FieldSelectors, ButtonSelectors } from '../fixtures';
 
-test.describe.serial('5. Vault Merge', () => {
+test.describe.serial('30. Vault Merge', () => {
   let clientA: TestClient;
   let clientB: TestClient;
 
@@ -24,7 +24,7 @@ test.describe.serial('5. Vault Merge', () => {
     await TestClient.cleanupAll(clientA, clientB);
   });
 
-  test('5.1 should setup two clients and navigate both to add credential form', async ({ testUser, apiUrl }) => {
+  test('30.1 should setup two clients and navigate both to add credential form', async ({ testUser, apiUrl }) => {
     clientA = await TestClient.create();
     await clientA.login(apiUrl, testUser.username, testUser.password);
 
@@ -36,11 +36,11 @@ test.describe.serial('5. Vault Merge', () => {
     await clientA.goToVault().then((c) => c.openAddCredentialForm());
     await clientB.goToVault().then((c) => c.openAddCredentialForm());
 
-    await clientA.screenshot('5.1-client-a-add-form.png');
-    await clientB.screenshot('5.1-client-b-add-form.png');
+    await clientA.screenshot('30.1-client-a-add-form.png');
+    await clientB.screenshot('30.1-client-b-add-form.png');
   });
 
-  test('5.2 Client A should create a credential and sync', async () => {
+  test('30.2 Client A should create a credential and sync', async () => {
     // Client A fills and saves the credential (both clients have revision 1 at this point)
     // All fields are now visible on the same page (no "Next" step)
     await expect(clientA.popup.locator(FieldSelectors.LOGIN_USERNAME)).toBeVisible({ timeout: 10000 });
@@ -51,14 +51,14 @@ test.describe.serial('5. Vault Merge', () => {
 
     await clientA
       .verifyCredentialExists(credentialNameA)
-      .then((c) => c.screenshot('5.2-client-a-credential-saved.png'))
+      .then((c) => c.screenshot('30.2-client-a-credential-saved.png'))
       .then((c) => c.goToVault())
       .then((c) => c.verifyCredentialExists(credentialNameA))
-      .then((c) => c.screenshot('5.2-client-a-vault.png'))
+      .then((c) => c.screenshot('30.2-client-a-vault.png'))
       .then((c) => c.waitForServerSync());
   });
 
-  test('5.3 Client B should create a credential (triggers merge with Client A changes)', async () => {
+  test('30.3 Client B should create a credential (triggers merge with Client A changes)', async () => {
     // Client B still has stale data (revision 1, empty vault)
     // This should trigger a merge because the server has revision 2 from Client A
     // All fields are now visible on the same page (no "Next" step)
@@ -70,15 +70,15 @@ test.describe.serial('5. Vault Merge', () => {
 
     await clientB
       .verifyCredentialExists(credentialNameB)
-      .then((c) => c.screenshot('5.3-client-b-after-save.png'));
+      .then((c) => c.screenshot('30.3-client-b-after-save.png'));
   });
 
-  test('5.4 Client B vault should contain both credentials after merge', async () => {
+  test('30.4 Client B vault should contain both credentials after merge', async () => {
     // Trigger sync to ensure background merge has completed and database is reloaded
     await clientB
       .triggerSync()
       .then((c) => c.goToVault())
-      .then((c) => c.screenshot('5.4-client-b-vault-state.png'))
+      .then((c) => c.screenshot('30.4-client-b-vault-state.png'))
       .then((c) => c.verifyCredentialExists(credentialNameA));
 
     const clientBCredential = clientB.popup.locator(`text=${credentialNameB}`);
@@ -91,11 +91,11 @@ test.describe.serial('5. Vault Merge', () => {
     }
   });
 
-  test('5.5 Client A should see credentials after syncing', async () => {
+  test('30.5 Client A should see credentials after syncing', async () => {
     await clientA
       .triggerSync()
       .then((c) => c.verifyCredentialExists(credentialNameA))
-      .then((c) => c.screenshot('5.5-client-a-vault-state.png'));
+      .then((c) => c.screenshot('30.5-client-a-vault-state.png'));
 
     await clientA.verifyVaultItemCount(2);
   });
