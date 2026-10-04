@@ -50,28 +50,15 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         var sanitizedEmail = to.Trim().ToLower();
 
-        // See if this user has a valid claim to the email address.
+        // Unclaimed and claimed by someone else return the same error, so this endpoint does not reveal which addresses are taken.
         var emailClaim = await context.EmailClaims.FirstOrDefaultAsync(x => x.Address == sanitizedEmail && x.Links.Any(l => l.State != EmailClaimLinkState.Removed));
-        if (emailClaim is null)
+        if (emailClaim is null || !await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
         {
             return BadRequest(new ApiErrorResponse
             {
                 Message = "No claim exists for this email address.",
                 Code = "CLAIM_DOES_NOT_EXIST",
                 Details = new { ProvidedEmail = sanitizedEmail },
-                StatusCode = StatusCodes.Status400BadRequest,
-                Timestamp = DateTime.UtcNow,
-            });
-        }
-
-        // Check if the user has access to the email address.
-        if (!await EmailAccessHelper.CanReadClaimAsync(context, emailClaim, user.Id))
-        {
-            return BadRequest(new ApiErrorResponse
-            {
-                Message = "Claim does not match user.",
-                Code = "CLAIM_DOES_NOT_MATCH_USER",
-                Details = new { ProvidedEmail = to },
                 StatusCode = StatusCodes.Status400BadRequest,
                 Timestamp = DateTime.UtcNow,
             });
