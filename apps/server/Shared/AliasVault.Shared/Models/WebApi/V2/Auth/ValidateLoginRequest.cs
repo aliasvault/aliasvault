@@ -46,4 +46,10 @@ public class ValidateLoginRequest
     /// Gets the client's session proof.
     /// </summary>
     public string ClientSessionProof { get; }
+
+    /// <summary>
+    /// Gets or sets the upgrade of a legacy verifier, which the server stores once the login completes.
+    /// TODO: remove once no legacy verifiers are left.
+    /// </summary>
+    public LegacySrpVerifierUpgrade? LegacyVerifierUpgrade { get; set; }
 }

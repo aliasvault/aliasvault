@@ -13,9 +13,16 @@ namespace AliasVault.Cryptography;
 public static class Defaults
 {
     /// <summary>
-    /// Gets the default encryption type.
+    /// Gets the encryption type of new verifiers: Argon2id, with the SRP input and the KEK each derived from its output
+    /// with HKDF. Every v2 registration and password change uses it.
     /// </summary>
-    public static string EncryptionType { get; } = "Argon2Id";
+    public static string EncryptionType { get; } = "Argon2IdHkdf";
+
+    /// <summary>
+    /// Gets the encryption type of verifiers made from the Argon2id output itself, created before the SRP input was
+    /// split off. A v2 password login upgrades them to <see cref="EncryptionType"/>; v1 clients only know this one.
+    /// </summary>
+    public static string LegacyEncryptionType { get; } = "Argon2Id";
 
     /// <summary>
     /// Gets the default degree of parallelism for Argon2id.

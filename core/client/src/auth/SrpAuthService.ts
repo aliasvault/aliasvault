@@ -4,7 +4,7 @@ import { rustCore } from '../rust/RustCore';
 import { bytesToBase64 } from '../utilities/Base64';
 
 import type { SrpEphemeral, SrpSession } from '../rust/RustCoreTypes';
-import type { LoginResponse } from '@aliasvault/models/webapi';
+import type { LegacySrpVerifierUpgrade, LoginResponse } from '@aliasvault/models/webapi';
 
 /**
  * Register request type for creating a new user.
@@ -48,26 +48,40 @@ export type SrpClientSession = {
  * Login credentials prepared from password derivation.
  */
 export type PreparedCredentials = {
+  /** The SRP password hash (uppercase hex) for the account's encryption type. */
   passwordHashString: string;
+  /** The unlock key (base64): the Argon2id output of the password. */
   passwordHashBase64: string;
+  /** Set when the account still has a legacy verifier, see {@link LegacySrpVerifierUpgrade}. */
+  legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 };
 
 /**
- * What a new master password needs on both sides: what the server stores to verify it, and the KEK it derives.
+ * What a login proof is made from: the SRP password hash and, for a legacy verifier, its upgrade.
+ */
+export type LoginCredentials = Pick<PreparedCredentials, 'passwordHashString' | 'legacyVerifierUpgrade'>;
+
+/**
+ * What a new master password needs on both sides: what the server stores to verify it, and the unlock key it derives.
  */
 export type NewPasswordMaterial = {
   salt: string;
   verifier: string;
   encryptionType: string;
   encryptionSettings: string;
-  kekBase64: string;
+  unlockKeyBase64: string;
 };
 
 /**
- * Default Argon2Id settings for a newly derived KEK.
+ * The encryption type of a verifier made from the unlock key itself, created before the SRP input was split off.
+ */
+export const LEGACY_ENCRYPTION_TYPE = 'Argon2Id';
+
+/**
+ * Default Argon2Id settings for a newly derived unlock key. The type derives the SRP input and the KEK from it with HKDF.
  */
 export const DEFAULT_ENCRYPTION = {
-  type: 'Argon2Id',
+  type: 'Argon2IdHkdf',
   settings: JSON.stringify({
     DegreeOfParallelism: 1,
     MemorySize: 65536,
@@ -104,19 +118,6 @@ export class SrpAuthService {
    */
   public static async generateSalt(): Promise<string> {
     return rustCore().srpGenerateSalt();
-  }
-
-  /**
-   * Converts a Uint8Array to an uppercase hex string.
-   *
-   * @param bytes - The byte array to convert
-   * @returns Uppercase hex string
-   */
-  public static bytesToHexString(bytes: Uint8Array): string {
-    return Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-      .toUpperCase();
   }
 
   /**
@@ -252,29 +253,67 @@ export class SrpAuthService {
   }
 
   /**
-   * Prepares login credentials by deriving the password hash.
-   *
-   * This method derives the encryption key from the password using the
-   * encryption parameters from the login initiate response.
+   * Derive the unlock key from the password and the SRP password hash the account's encryption type makes from it.
    *
    * @param password - The user's password
-   * @param salt - The salt from login initiate response
-   * @param encryptionType - The encryption type (e.g., 'Argon2Id')
+   * @param salt - The salt from the server's challenge
+   * @param encryptionType - The encryption type from the server's challenge
    * @param encryptionSettings - The encryption settings JSON string
-   * @returns Prepared credentials with hash in both hex and base64 formats
+   * @returns The SRP password hash (hex) and the unlock key (base64)
    */
-  public static async prepareCredentials(
-    password: string,
-    salt: string,
-    encryptionSettings: string
-  ): Promise<PreparedCredentials> {
-    // Derive key from password using Argon2Id
-    const passwordHash = await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings);
-
+  public static async prepareCredentials(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<PreparedCredentials> {
+    const unlockKey = bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings));
     return {
-      passwordHashString: SrpAuthService.bytesToHexString(passwordHash),
-      passwordHashBase64: bytesToBase64(passwordHash),
+      passwordHashString: await SrpAuthService.srpPasswordHash(unlockKey, encryptionType),
+      passwordHashBase64: unlockKey,
     };
+  }
+
+  /**
+   * The SRP password hash (uppercase hex) an account's encryption type makes from an unlock key.
+   *
+   * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
+   * @param encryptionType - The encryption type from the server's challenge
+   * @returns The SRP password hash
+   */
+  public static async srpPasswordHash(unlockKeyBase64: string, encryptionType: string): Promise<string> {
+    return rustCore().deriveSrpPasswordHash(unlockKeyBase64, encryptionType);
+  }
+
+  /**
+   * {@link prepareCredentials} for a login: an account that still has a legacy verifier also gets its upgrade.
+   *
+   * @param password - The user's password
+   * @param loginResponse - The login initiate response
+   * @param username - The username typed by the user, used as SRP identity fallback on older servers
+   * @returns The credentials to log in with
+   */
+  public static async prepareLoginCredentials(password: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
+    const unlockKey = bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, loginResponse.salt, loginResponse.encryptionSettings));
+    return SrpAuthService.loginCredentials(unlockKey, loginResponse, username);
+  }
+
+  /**
+   * The login credentials of an unlock key derived elsewhere (natively on mobile), see {@link prepareLoginCredentials}.
+   *
+   * @param unlockKeyBase64 - The unlock key (base64), the Argon2id output of the password
+   * @param loginResponse - The login initiate response
+   * @param username - The username typed by the user, used as SRP identity fallback on older servers
+   * @returns The credentials to log in with
+   */
+  public static async loginCredentials(unlockKeyBase64: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
+    const credentials: PreparedCredentials = {
+      passwordHashString: await SrpAuthService.srpPasswordHash(unlockKeyBase64, loginResponse.encryptionType),
+      passwordHashBase64: unlockKeyBase64,
+    };
+    if (loginResponse.encryptionType !== LEGACY_ENCRYPTION_TYPE) {
+      return credentials;
+    }
+
+    const srpIdentity = loginResponse.srpIdentity ?? SrpAuthService.normalizeUsername(username);
+    const upgradedHash = await SrpAuthService.srpPasswordHash(unlockKeyBase64, DEFAULT_ENCRYPTION.type);
+    const srpVerifier = await SrpAuthService.deriveVerifier(await SrpAuthService.derivePrivateKey(loginResponse.salt, srpIdentity, upgradedHash));
+    return { ...credentials, legacyVerifierUpgrade: { srpVerifier, encryptionType: DEFAULT_ENCRYPTION.type } };
   }
 
   /**
@@ -287,17 +326,17 @@ export class SrpAuthService {
   }
 
   /**
-   * Derive what a new master password needs: a fresh salt, the SRP verifier the server stores, and the KEK the
-   * client wraps its key material with. Uses the default Argon2Id settings.
+   * Derive what a new master password needs: a fresh salt, the SRP verifier the server stores, and the unlock key
+   * whose derived KEK wraps the client's key material. Uses the default Argon2Id settings.
    * @param password - the new master password
    * @param srpIdentity - the account's SRP identity the verifier is bound to
    */
   public static async prepareNewPassword(password: string, srpIdentity: string): Promise<NewPasswordMaterial> {
     const salt = await SrpAuthService.generateSalt();
-    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.settings);
+    const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.type, DEFAULT_ENCRYPTION.settings);
     const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
     const verifier = await SrpAuthService.deriveVerifier(privateKey);
-    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, kekBase64: credentials.passwordHashBase64 };
+    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, unlockKeyBase64: credentials.passwordHashBase64 };
   }
 
   /**
@@ -319,7 +358,7 @@ export class SrpAuthService {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const srpIdentity = SrpAuthService.generateSrpIdentity();
     const material = await SrpAuthService.prepareNewPassword(password, srpIdentity);
-    const hierarchy = await createAccountKeyHierarchy(material.kekBase64);
+    const hierarchy = await createAccountKeyHierarchy(material.unlockKeyBase64);
 
     return {
       request: {
@@ -332,7 +371,7 @@ export class SrpAuthService {
         ...hierarchy.accountKeys,
       },
       keys: hierarchy,
-      derivedKey: material.kekBase64,
+      derivedKey: material.unlockKeyBase64,
     };
   }
 }

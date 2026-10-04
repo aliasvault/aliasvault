@@ -144,7 +144,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("validate")]
     public async Task<IActionResult> Validate([FromBody] ValidateLoginRequest model)
     {
-        var (user, serverSession, error) = await ValidateUserAndPassword(model);
+        var (user, serverSession, unlockKeyId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
             // Error occured during validation, return the error.
@@ -161,6 +161,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Reset failed login attempts.
         await userManager.ResetAccessFailedCountAsync(user);
         await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.Login);
+        await UpgradeLegacySrpVerifierAsync(unlockKeyId, model);
 
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
         return Ok(new ValidateLoginResponse(false, serverSession!.Proof, tokenModel));
@@ -174,7 +175,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("validate-2fa")]
     public async Task<IActionResult> Validate2Fa([FromBody] ValidateLoginRequest2Fa model)
     {
-        var (user, serverSession, error) = await ValidateUserAndPassword(model);
+        var (user, serverSession, unlockKeyId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
             // Error occured during validation, return the error.
@@ -201,6 +202,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Validation of 2-FA token is successful, user is authenticated.
         await userManager.ResetAccessFailedCountAsync(user);
         await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
+        await UpgradeLegacySrpVerifierAsync(unlockKeyId, model);
 
         // Generate and return the JWT token.
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
@@ -215,7 +217,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [HttpPost("validate-recovery-code")]
     public async Task<IActionResult> ValidateRecoveryCode([FromBody] ValidateLoginRequestRecoveryCode model)
     {
-        var (user, serverSession, error) = await ValidateUserAndPassword(model);
+        var (user, serverSession, unlockKeyId, error) = await ValidateUserAndPassword(model);
         if (error is not null)
         {
             // Error occured during validation, return the error.
@@ -246,6 +248,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // Recovery code is valid, user is authenticated.
         await userManager.ResetAccessFailedCountAsync(user);
         await authLoggingService.LogAuthEventSuccessAsync(model.Username, AuthEventType.TwoFactorAuthentication);
+        await UpgradeLegacySrpVerifierAsync(unlockKeyId, model);
 
         // Generate and return the JWT token.
         var tokenModel = await GenerateNewTokensForUser(user, extendedLifetime: model.RememberMe);
@@ -1328,28 +1331,28 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// action result is returned with the appropriate error message. If everything is valid nothing is returned.
     /// </summary>
     /// <param name="model">ValidateLoginRequest model.</param>
-    /// <returns>User and SrpSession object if validation succeeded, IActionResult as error on error.</returns>
-    private async Task<(AliasVaultUser? User, SrpSession? ServerSession, IActionResult? Error)> ValidateUserAndPassword(ValidateLoginRequest model)
+    /// <returns>User, SrpSession and the proven unlock key if validation succeeded, IActionResult as error on error.</returns>
+    private async Task<(AliasVaultUser? User, SrpSession? ServerSession, Guid? UnlockKeyId, IActionResult? Error)> ValidateUserAndPassword(ValidateLoginRequest model)
     {
         var user = await userManager.FindByNameAsync(model.Username);
         if (user == null)
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.InvalidUsername);
-            return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
+            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
         }
 
         // Check if the account is locked out.
         if (await userManager.IsLockedOutAsync(user))
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.TwoFactorAuthentication, AuthFailureReason.AccountLocked);
-            return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400)));
+            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_LOCKED, 400)));
         }
 
         // Check if the account is blocked.
         if (user.Blocked)
         {
             await authLoggingService.LogAuthEventFailAsync(model.Username, AuthEventType.Login, AuthFailureReason.AccountBlocked);
-            return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400)));
+            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.ACCOUNT_BLOCKED, 400)));
         }
 
         // Validate the SRP session (actual password check).
@@ -1365,13 +1368,48 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             }
 
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Login, srpResult.FailureReason);
-            return (null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
+            return (null, null, null, BadRequest(ApiErrorCodeHelper.CreateValidationErrorResponse(ApiErrorCode.USER_NOT_FOUND, 400)));
         }
 
         // Record usage of this unlock method for statistics purposes.
         await AuthHelper.TouchUnlockKeyLastUsedAsync(context, srpResult.UnlockKeyId, timeProvider.GetUtcNow().UtcDateTime);
 
-        return (user, srpResult.Session, null);
+        return (user, srpResult.Session, srpResult.UnlockKeyId, null);
+    }
+
+    /// <summary>
+    /// Replace the legacy verifier of the unlock key a completed login proved with the upgraded one the client sent.
+    /// </summary>
+    /// <param name="unlockKeyId">The unlock key the login proved; null for a legacy account, which keeps its verifier.</param>
+    /// <param name="model">The validate request carrying the upgraded verifier.</param>
+    /// <returns>Task.</returns>
+    private async Task UpgradeLegacySrpVerifierAsync(Guid? unlockKeyId, ValidateLoginRequest model)
+    {
+        /*
+         * Only after the whole login (2FA included): the proof shows the client holds the password, and the upgraded
+         * verifier keeps that same password and salt, so this is no password change. A legacy account (no unlock key
+         * row) is skipped on purpose: v1 clients can still sign in to it and only know the legacy verifier.
+         */
+        var upgrade = model.LegacyVerifierUpgrade;
+        if (unlockKeyId is null || upgrade is null || upgrade.EncryptionType != Defaults.EncryptionType || string.IsNullOrEmpty(upgrade.SrpVerifier) || upgrade.SrpVerifier.Length > MaxVerifierLength)
+        {
+            return;
+        }
+
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+        var unlockKey = await context.UserUnlockKeys.FirstOrDefaultAsync(x => x.Id == unlockKeyId.Value);
+        var metadata = VaultKeyMetadata.Parse(unlockKey?.Metadata);
+        if (unlockKey is null || metadata.EncryptionType != Defaults.LegacyEncryptionType)
+        {
+            return;
+        }
+
+        metadata.SrpVerifier = upgrade.SrpVerifier;
+        metadata.EncryptionType = Defaults.EncryptionType;
+        var newMetadataJson = metadata.ToJson();
+
+        // Conditional on the row being unchanged since it was read (a password change bumps UpdatedAt), so a concurrent change wins.
+        await context.UserUnlockKeys.Where(x => x.Id == unlockKey.Id && x.UpdatedAt == unlockKey.UpdatedAt).ExecuteUpdateAsync(s => s.SetProperty(x => x.Metadata, newMetadataJson));
     }
 
     /// <summary>
