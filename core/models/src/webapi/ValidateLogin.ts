@@ -1,4 +1,13 @@
 /**
+ * The verifier of the same password and salt under the current encryption type, sent once with a login that answered
+ * a legacy (pre-0.31.0, Argon2Id) verifier. TODO: remove once no legacy verifiers are left.
+ */
+export type LegacySrpVerifierUpgrade = {
+    srpVerifier: string;
+    encryptionType: string;
+}
+
+/**
  * Validate login request type.
  */
 export type ValidateLoginRequest = {
@@ -6,6 +15,7 @@ export type ValidateLoginRequest = {
     rememberMe: boolean;
     clientPublicEphemeral: string;
     clientSessionProof: string;
+    legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 }
 
 /**
@@ -17,6 +27,7 @@ export type ValidateLoginRequest2Fa = {
     rememberMe: boolean;
     clientPublicEphemeral: string;
     clientSessionProof: string;
+    legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 }
 
 /**

@@ -78,7 +78,7 @@ export class SrpLoginService {
   public async validateLogin(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
-    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade };
+    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...session.proof, legacyVerifierUpgrade: credentials.legacyVerifierUpgrade };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate', model));
   }
 
@@ -94,7 +94,7 @@ export class SrpLoginService {
   public async validateLogin2Fa(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse, code2Fa: number): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
-    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade, code2Fa };
+    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...session.proof, legacyVerifierUpgrade: credentials.legacyVerifierUpgrade, code2Fa };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate-2fa', model));
   }
 
@@ -110,7 +110,7 @@ export class SrpLoginService {
   public async validateLoginRecoveryCode(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse, recoveryCode: string): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
     const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
-    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade, recoveryCode };
+    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...session.proof, legacyVerifierUpgrade: credentials.legacyVerifierUpgrade, recoveryCode };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate-recovery-code', model));
   }
 

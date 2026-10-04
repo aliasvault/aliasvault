@@ -7,14 +7,13 @@ import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import org.json.JSONObject
-import uniffi.aliasvault_core.srpDerivePrivateKey
-import uniffi.aliasvault_core.srpDeriveSession
-import uniffi.aliasvault_core.srpGenerateEphemeral
+import uniffi.aliasvault_core.KeyChainException
 import java.math.BigInteger
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import uniffi.aliasvault_core.openAccountKeyChain as rustOpenAccountKeyChain
 
 /**
  * Handles encryption, decryption, and key management for the vault.
@@ -75,8 +74,8 @@ class VaultCrypto(
     }
 
     /**
-     * The unlock key. The one secret the unlocked session holds in memory, and the key the
-     * unlock methods (keystore, PIN) protect. Every other key is derived from it and the cached account key chain.
+     * The stored key: the one secret the unlocked session holds in memory, and the key the unlock methods (keystore,
+     * PIN) protect. Every other key is derived from it and the cached account key chain.
      */
     internal var unlockKey: ByteArray? = null
 
@@ -93,13 +92,15 @@ class VaultCrypto(
         get() = sessionKeys()?.accountPrivateKey
 
     /**
-     * What the unlock key opens in the cached account key chain.
+     * What the stored key opens in the cached account key chain. A session that still holds an unlock key while the
+     * account has a chain (a sync accepted one created on another device) keeps the Account Key from now on; the
+     * keystore copy converts at the next biometric unlock (see [LegacyKeyConversion]), so this never prompts.
      */
     @Suppress("SwallowedException")
     private fun sessionKeys(): SessionKeys? {
         val key = unlockKey ?: return null
         return try {
-            openAccountKeyChain(key)
+            openAccountKeyChain(key).also { if (!it.accountKey.contentEquals(key)) unlockKey = it.accountKey }
         } catch (e: Exception) {
             null
         }
@@ -116,7 +117,8 @@ class VaultCrypto(
         encryptionType: String,
         encryptionSettings: String,
     ): ByteArray {
-        require(encryptionType == "Argon2Id") { "Unsupported encryption type: $encryptionType" }
+        // Both types derive the unlock key with Argon2id; they differ only in how the SRP input is made from it.
+        require(encryptionType == "Argon2Id" || encryptionType == "Argon2IdHkdf") { "Unsupported encryption type: $encryptionType" }
 
         return uniffi.aliasvault_core.argon2DeriveKey(password, salt, encryptionSettings)
     }
@@ -143,7 +145,7 @@ class VaultCrypto(
                 var error: Exception? = null
 
                 keystoreProvider.storeKey(
-                    key = base64UnlockKey,
+                    key = Base64.encodeToString(unlockKey, Base64.NO_WRAP),
                     object : KeystoreOperationCallback {
                         override fun onSuccess(result: String) {
                             Log.d(TAG, "Encryption key stored successfully with biometric protection")
@@ -202,26 +204,27 @@ class VaultCrypto(
     }
 
     /**
-     * Store the account-key chain the native password unlock unwraps: JSON with the Account Key wrapped by the
-     * unlock key ("encryptedAccountKey") and the VEK wrapped by the Account Key ("encryptedVek").
-     * Null means a legacy account whose KEK encrypts the vault directly.
+     * Store the account-key chain the native unlock opens: JSON with the Account Key wrapped by the
+     * KEK derived from the unlock key ("encryptedAccountKey") and the VEK wrapped by the Account Key ("encryptedVek").
+     * Null until the account is upgraded; its unlock key encrypts the vault directly.
      */
     fun storeAccountKeyChain(chainJson: String?) {
         storageProvider.setAccountKeyChain(chainJson?.takeIf { it.isNotEmpty() })
     }
 
     /**
-     * The stored account-key chain JSON, or null for a legacy account.
+     * The stored account-key chain JSON, or null until the account is upgraded.
      */
     fun getAccountKeyChain(): String? {
         return storageProvider.getAccountKeyChain()
     }
 
     /*
-     * The unlock key is the one secret a session holds; keystore and PIN only protect
-     * that same key. It opens the cached account key chain as the server returned it: KEK > Account Key > vault key
-     * and account private key, which are derived on demand and never stored. A legacy account has no chain and its
-     * KEK is the vault key.
+     * The stored key is the one secret a session holds; keystore and PIN only protect that same key. It is the Account
+     * Key, so it does not depend on the password: a typed password yields an unlock key (its Argon2id output), which
+     * opening the chain turns into the Account Key before anything stores it. A key stored before the account had a
+     * chain is an unlock key; it still opens the chain and is replaced by the Account Key on the next open. The
+     * Account Key opens the vault key and account private key, which are derived on demand and never stored.
      */
 
     /**
@@ -229,48 +232,38 @@ class VaultCrypto(
      *
      * @property vaultEncryptionKey The key that encrypts and decrypts the vault
      * @property accountPrivateKey The account private key (JWK), null when the account has no keypair
+     * @property accountKey The key to store for later unlocks, in place of the key the chain was opened with
      */
-    class SessionKeys(val vaultEncryptionKey: ByteArray, val accountPrivateKey: String?)
+    class SessionKeys(val vaultEncryptionKey: ByteArray, val accountPrivateKey: String?, val accountKey: ByteArray)
 
     /**
-     * Open the cached account key chain with the KEK. Without a chain (legacy account) the KEK is the vault key.
+     * Open the cached account key chain with the stored key: the Account Key, or an unlock key that `accountKey` then
+     * replaces (Rust `openAccountKeyChain`). Without a chain (account not yet upgraded) the unlock key is the vault key.
      */
-    @Suppress("SwallowedException")
-    fun openAccountKeyChain(derivedKey: ByteArray): SessionKeys {
-        val chainJson = getAccountKeyChain() ?: return SessionKeys(derivedKey, null)
+    fun openAccountKeyChain(storedKey: ByteArray): SessionKeys {
+        val chainJson = getAccountKeyChain() ?: return SessionKeys(storedKey, null, storedKey)
         val chain = JSONObject(chainJson)
-        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(derivedKey, null)
+        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(storedKey, null, storedKey)
         val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
+        // A private key that does not open must not fail the unlock; grants stay closed until the next login.
+        val encryptedPrivateKey = chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() }
 
-        val accountKey = try {
-            decrypt(Base64.decode(encryptedAccountKey, Base64.NO_WRAP), derivedKey)
-        } catch (e: Exception) {
+        val keys = try {
+            rustOpenAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedPrivateKey)
+        } catch (e: KeyChainException.UnlockKeyRejected) {
             throw AppError.UnlockKeyRejected(cause = e)
-        }
-        // The account key opened, so a failure here is a damaged chain and never a wrong password.
-        val vaultEncryptionKey = try {
-            decrypt(Base64.decode(encryptedVek, Base64.NO_WRAP), accountKey)
-        } catch (e: Exception) {
+        } catch (e: KeyChainException.KeyChainUnreadable) {
+            // The account key opened, so this is a damaged chain and never a wrong password.
             throw AppError.KeyChainUnreadable(e.message ?: "decrypt failed", e)
         }
-
-        // A private key that does not open must not fail the unlock; grants stay closed until the next login.
-        val accountPrivateKey = chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() }?.let {
-            try {
-                String(decrypt(Base64.decode(it, Base64.NO_WRAP), accountKey), Charsets.UTF_8)
-            } catch (e: Exception) {
-                null
-            }
-        }
-        return SessionKeys(vaultEncryptionKey, accountPrivateKey)
+        return SessionKeys(keys.vaultEncryptionKey, keys.accountPrivateKey, keys.accountKey)
     }
 
     /**
-     * Open a session with the unlock key, after checking that it opens the cached account key chain.
+     * Open a session with a key that opens the cached account key chain; the session keeps the Account Key it yields.
      */
     fun openSession(unlockKey: ByteArray) {
-        openAccountKeyChain(unlockKey)
-        this.unlockKey = unlockKey
+        this.unlockKey = openAccountKeyChain(unlockKey).accountKey
     }
 
     /**
@@ -295,33 +288,6 @@ class VaultCrypto(
     }
 
     /**
-     * Answer a server's SRP challenge with the available unlock key.
-     */
-    fun deriveSrpProof(salt: String, srpIdentity: String, serverEphemeral: String, callback: CryptoOperationCallback, authMethods: String) {
-        withSession(
-            object : CryptoOperationCallback {
-                override fun onSuccess(result: String) {
-                    try {
-                        val passwordHash = Base64.decode(result, Base64.NO_WRAP).joinToString("") { "%02X".format(it) }
-                        val ephemeral = srpGenerateEphemeral()
-                        val privateKey = srpDerivePrivateKey(salt, srpIdentity, passwordHash)
-                        val session = srpDeriveSession(ephemeral.secret, serverEphemeral, salt, srpIdentity, privateKey)
-                        callback.onSuccess(JSONObject().put("clientPublicEphemeral", ephemeral.public).put("clientSessionProof", session.proof).toString())
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Could not derive the SRP proof from the unlock key", e)
-                        callback.onError(e)
-                    }
-                }
-
-                override fun onError(e: Exception) {
-                    callback.onError(e)
-                }
-            },
-            authMethods,
-        ) { unlockKey }
-    }
-
-    /**
      * Hand one of the session keys to the callback, opening the session from the keystore behind a biometric prompt
      * when none is open.
      */
@@ -336,7 +302,9 @@ class VaultCrypto(
                 object : KeystoreOperationCallback {
                     override fun onSuccess(result: String) {
                         try {
-                            openSession(Base64.decode(result, Base64.NO_WRAP))
+                            val keystoreKey = Base64.decode(result, Base64.NO_WRAP)
+                            openSession(keystoreKey)
+                            unlockKey?.let { LegacyKeyConversion.convertKeystoreKey(keystoreProvider, keystoreKey, it) }
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
                         } catch (e: AppError) {
                             Log.e(TAG, "The unlock key from the keystore does not open the account key chain", e)
