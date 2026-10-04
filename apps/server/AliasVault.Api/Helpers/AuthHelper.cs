@@ -7,6 +7,7 @@
 
 namespace AliasVault.Api.Helpers;
 
+using System.Security.Cryptography;
 using AliasServerDb;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Models;
@@ -24,6 +25,11 @@ public static class AuthHelper
     /// Cache prefix for the server ephemeral of an SRP exchange, followed by the purpose and the SRP identity.
     /// </summary>
     private const string CachePrefixEphemeral = "SrpEphemeral_";
+
+    /// <summary>
+    /// Length of an SRP session id in hex characters.
+    /// </summary>
+    private const int SrpSessionIdLength = 32;
 
     /// <summary>
     /// How long a client has to answer a server ephemeral.
@@ -53,13 +59,20 @@ public static class AuthHelper
     /// <param name="user">The user object.</param>
     /// <param name="purpose">The flow the exchange belongs to.</param>
     /// <param name="credentials">The credentials the client has to prove, as returned by <see cref="GetUserLatestVaultEncryptionSettingsAsync"/>.</param>
+    /// <param name="sessionId">The session id from <see cref="CreateSrpSessionId"/> the exchange is cached under, so a new exchange cannot replace it; null caches it per identity.</param>
     /// <returns>The public server ephemeral to send to the client.</returns>
-    public static string CreateSrpEphemeral(IMemoryCache cache, AliasVaultUser user, SrpPurpose purpose, UserSrpCredentials credentials)
+    public static string CreateSrpEphemeral(IMemoryCache cache, AliasVaultUser user, SrpPurpose purpose, UserSrpCredentials credentials, string? sessionId = null)
     {
         var ephemeral = Srp.GenerateEphemeralServer(credentials.Verifier);
-        cache.Set(EphemeralCacheKey(purpose, user), new CachedEphemeral(ephemeral.Secret, credentials.UnlockKeyId), EphemeralLifetime);
+        cache.Set(EphemeralCacheKey(purpose, user, sessionId), new CachedEphemeral(ephemeral.Secret, credentials.UnlockKeyId), EphemeralLifetime);
         return ephemeral.Public;
     }
+
+    /// <summary>
+    /// Create a random id for one SRP exchange.
+    /// </summary>
+    /// <returns>32 lowercase hex characters.</returns>
+    public static string CreateSrpSessionId() => RandomNumberGenerator.GetHexString(SrpSessionIdLength, lowercase: true);
 
     /// <summary>
     /// Validate a client's SRP proof against the ephemeral cached by <see cref="CreateSrpEphemeral"/> for the same flow.
@@ -70,10 +83,16 @@ public static class AuthHelper
     /// <param name="purpose">The flow the exchange belongs to.</param>
     /// <param name="clientEphemeral">The client ephemeral value.</param>
     /// <param name="clientSessionProof">The client session proof.</param>
+    /// <param name="sessionId">The session id the exchange was created with, or null for an exchange cached per identity.</param>
     /// <returns>The validation outcome, carrying the unlock method whose secret was proven.</returns>
-    public static async Task<SrpValidationResult> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, SrpPurpose purpose, string clientEphemeral, string clientSessionProof)
+    public static async Task<SrpValidationResult> ValidateSrpSessionAsync(IMemoryCache cache, AliasServerDbContext context, AliasVaultUser user, SrpPurpose purpose, string clientEphemeral, string clientSessionProof, string? sessionId = null)
     {
-        if (!cache.TryGetValue(EphemeralCacheKey(purpose, user), out CachedEphemeral? cached) || cached is null)
+        if (sessionId is not null && sessionId.Length != SrpSessionIdLength)
+        {
+            return new SrpValidationResult(null, false, null);
+        }
+
+        if (!cache.TryGetValue(EphemeralCacheKey(purpose, user, sessionId), out CachedEphemeral? cached) || cached is null)
         {
             // No exchange was initiated for this flow, or the server ephemeral has expired.
             return new SrpValidationResult(null, false, null);
@@ -186,9 +205,9 @@ public static class AuthHelper
     }
 
     /// <summary>
-    /// The cache key of the server ephemeral of one flow for one user.
+    /// The cache key of the server ephemeral of one flow for one user, and of one exchange when a session id is given.
     /// </summary>
-    private static string EphemeralCacheKey(SrpPurpose purpose, AliasVaultUser user) => $"{CachePrefixEphemeral}{purpose}_{GetSrpIdentity(user)}";
+    private static string EphemeralCacheKey(SrpPurpose purpose, AliasVaultUser user, string? sessionId) => sessionId is null ? $"{CachePrefixEphemeral}{purpose}_{GetSrpIdentity(user)}" : $"{CachePrefixEphemeral}{purpose}_{GetSrpIdentity(user)}_{sessionId}";
 
     /// <summary>
     /// A cached server ephemeral and the unlock method whose verifier it was created for (null for a legacy account).

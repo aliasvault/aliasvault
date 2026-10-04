@@ -61,6 +61,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     private const int AccessTokenValiditySeconds = 600;
 
     /// <summary>
+    /// Access token claim with the id of the refresh token it was issued with.
+    /// </summary>
+    private const string RefreshTokenIdClaim = "rtid";
+
+    /// <summary>
     /// Maximum accepted length of a password salt.
     /// </summary>
     private const int MaxSaltLength = 100;
@@ -125,9 +130,10 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
-        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.Login, latestVaultEncryptionSettings);
+        var loginSessionId = AuthHelper.CreateSrpSessionId();
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.Login, latestVaultEncryptionSettings, loginSessionId);
 
-        return Ok(new LoginInitiateResponse(latestVaultEncryptionSettings.Salt, serverEphemeral, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
+        return Ok(new LoginInitiateResponse(latestVaultEncryptionSettings.Salt, serverEphemeral, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity, loginSessionId));
     }
 
     /// <summary>
@@ -338,7 +344,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         if (refreshTokenEntry == null)
         {
-            // Token doesn't exist - could already be revoked or never existed.
+            // Token doesn't exist: could already be revoked or never existed.
             // Return success to avoid leaking information about token validity.
             return Ok();
         }
@@ -645,7 +651,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var settings = await settingsService.GetAllSettingsAsync();
-        var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
+        var currentRefreshTokenId = Guid.TryParse(User.FindFirstValue(RefreshTokenIdClaim), out var tokenId) ? tokenId : Guid.Empty;
 
         var newMetadata = VaultKeyMetadata.Parse(unlockKey.Metadata);
         newMetadata.Salt = model.NewPasswordSalt;
@@ -672,8 +678,8 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             // Update the password last changed at timestamp for user.
             await writeContext.AliasVaultUsers.Where(x => x.Id == user.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.PasswordChangedAt, now));
 
-            // Force revoke all logged-in sessions except the current one so other clients re-authenticate with the new password.
-            await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.DeviceIdentifier != deviceIdentifier).ExecuteDeleteAsync();
+            // Revoke every session except the caller's own refresh token; an access token without that claim keeps none.
+            await writeContext.AliasVaultUserRefreshTokens.Where(x => x.UserId == user.Id && x.Id != currentRefreshTokenId).ExecuteDeleteAsync();
             await transaction.CommitAsync();
         });
 
@@ -882,7 +888,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         }
 
         // One-time use: an approved request is handed out once, and only shortly after the approval.
-        if (loginRequest.RetrievedAt != null || loginRequest.EncryptedUnlockKey == null || MobileLoginRequestHelper.IsRetrievalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
+        if (loginRequest.RetrievedAt != null || loginRequest.EncryptedAccountKey == null || MobileLoginRequestHelper.IsRetrievalWindowClosed(loginRequest, timeProvider.GetUtcNow().UtcDateTime))
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
         }
@@ -911,11 +917,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Claim the request and clear its key material in one transaction.
         var clientPublicKey = loginRequest.ClientPublicKey;
-        var encryptedUnlockKey = loginRequest.EncryptedUnlockKey;
+        var encryptedAccountKey = loginRequest.EncryptedAccountKey;
         var retrievedAt = timeProvider.GetUtcNow().UtcDateTime;
         var claimed = await context.MobileLoginRequests
             .Where(r => r.Id == loginRequest.Id && r.RetrievedAt == null)
-            .ExecuteUpdateAsync(u => u.SetProperty(r => r.RetrievedAt, retrievedAt).SetProperty(r => r.ClientPublicKey, string.Empty).SetProperty(r => r.EncryptedUnlockKey, (string?)null));
+            .ExecuteUpdateAsync(u => u.SetProperty(r => r.RetrievedAt, retrievedAt).SetProperty(r => r.ClientPublicKey, string.Empty).SetProperty(r => r.EncryptedAccountKey, (string?)null));
         if (claimed != 1)
         {
             return NotFound(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_NOT_FOUND, 404));
@@ -946,7 +952,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             Status = MobileLoginStatus.Approved,
             EncryptedSymmetricKey = encryptedSymmetricKey,
             EncryptedPayload = encryptedPayload,
-            EncryptedUnlockKey = encryptedUnlockKey,
+            EncryptedAccountKey = encryptedAccountKey,
         });
     }
 
@@ -1014,7 +1020,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         var mobileIpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled);
         var updated = await context.MobileLoginRequests
             .Where(r => r.Id == loginRequest.Id && r.FulfilledAt == null && r.DeclinedAt == null)
-            .ExecuteUpdateAsync(u => u.SetProperty(r => r.EncryptedUnlockKey, model.EncryptedUnlockKey).SetProperty(r => r.UserId, user.Id).SetProperty(r => r.FulfilledAt, fulfilledAt).SetProperty(r => r.MobileIpAddress, mobileIpAddress));
+            .ExecuteUpdateAsync(u => u.SetProperty(r => r.EncryptedAccountKey, model.EncryptedAccountKey).SetProperty(r => r.UserId, user.Id).SetProperty(r => r.FulfilledAt, fulfilledAt).SetProperty(r => r.MobileIpAddress, mobileIpAddress));
         if (updated != 1)
         {
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED, 400));
@@ -1343,7 +1349,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.Login, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.Login, model.ClientPublicEphemeral, model.ClientSessionProof, model.LoginSessionId);
         if (srpResult.Session is null)
         {
             if (srpResult.ActiveSessionFound)
@@ -1404,14 +1410,16 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     /// when this access token expires.
     /// </summary>
     /// <param name="user">The user to generate the Jwt access token for.</param>
+    /// <param name="refreshTokenId">The id of the refresh token issued with this access token.</param>
     /// <returns>Access token as string.</returns>
-    private string GenerateJwtToken(AliasVaultUser user)
+    private string GenerateJwtToken(AliasVaultUser user, Guid refreshTokenId)
     {
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.UserName ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(RefreshTokenIdClaim, refreshTokenId.ToString()),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetJwtKey()));
@@ -1481,7 +1489,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             {
                 // A new token was already generated for the current token in the last 30 seconds.
                 // Return the already generated new token.
-                var accessToken = GenerateJwtToken(user);
+                var accessToken = GenerateJwtToken(user, existingTokenReuse.Id);
                 return new TokenModel { Token = accessToken, RefreshToken = existingTokenReuse.Value };
             }
 
@@ -1524,14 +1532,15 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-         // Generate device identifier
-        var accessToken = GenerateJwtToken(user);
+        var refreshTokenId = Guid.NewGuid();
+        var accessToken = GenerateJwtToken(user, refreshTokenId);
         var refreshToken = GenerateRefreshToken();
         var deviceIdentifier = AuthHelper.GenerateDeviceIdentifier(Request);
 
         // Add new refresh token.
         context.AliasVaultUserRefreshTokens.Add(new AliasVaultUserRefreshToken
         {
+            Id = refreshTokenId,
             UserId = user.Id,
             DeviceIdentifier = deviceIdentifier,
             IpAddress = IpAddressUtility.GetAnonymizedIpFromContext(HttpContext, config.IpLoggingEnabled),
@@ -1554,6 +1563,6 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         // Always generate a new ephemeral, as this is also done for existing users.
         var fakeEphemeral = Srp.GenerateEphemeralServer(profile.Verifier);
-        return Ok(new LoginInitiateResponse(profile.Salt, fakeEphemeral.Public, Defaults.EncryptionType, Defaults.EncryptionSettings, profile.SrpIdentity));
+        return Ok(new LoginInitiateResponse(profile.Salt, fakeEphemeral.Public, Defaults.EncryptionType, Defaults.EncryptionSettings, profile.SrpIdentity, AuthHelper.CreateSrpSessionId()));
     }
 }

@@ -22,13 +22,15 @@ public class LoginInitiateResponse
     /// <param name="encryptionType">Encryption type.</param>
     /// <param name="encryptionSettings">Encryption settings.</param>
     /// <param name="srpIdentity">The SRP identity.</param>
-    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string srpIdentity)
+    /// <param name="loginSessionId">The login session id, only set for a login.</param>
+    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string srpIdentity, string? loginSessionId = null)
     {
         Salt = salt;
         ServerEphemeral = serverEphemeral;
         EncryptionType = encryptionType;
         EncryptionSettings = encryptionSettings;
         SrpIdentity = srpIdentity;
+        LoginSessionId = loginSessionId;
     }
 
     /// <summary>
@@ -62,4 +64,11 @@ public class LoginInitiateResponse
     /// </summary>
     [JsonPropertyName("srpIdentity")]
     public string SrpIdentity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the id of this login exchange, which the client sends back with its proof.
+    /// </summary>
+    [JsonPropertyName("loginSessionId")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? LoginSessionId { get; set; }
 }

@@ -48,6 +48,11 @@ public class ValidateLoginRequest
     public string ClientSessionProof { get; }
 
     /// <summary>
+    /// Gets or sets the login session id from the initiate response.
+    /// </summary>
+    public required string LoginSessionId { get; set; }
+
+    /// <summary>
     /// Gets or sets the upgrade of a legacy verifier, which the server stores once the login completes.
     /// TODO: remove once no legacy verifiers are left.
     /// </summary>
