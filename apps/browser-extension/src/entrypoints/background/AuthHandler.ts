@@ -16,7 +16,7 @@ import { logExpected, logFailure } from '@/utils/Diagnostics';
 import { convertLegacyPinKey } from '@/utils/LegacyKeyConversion';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
-import { IncorrectPinError, InvalidPinFormatError, PinLockedError, resetFailedAttempts, unlockWithPin } from '@/utils/PinUnlockService';
+import { IncorrectPinError, InvalidPinFormatError, PinLockedError, removeAndDisablePin, resetFailedAttempts, unlockWithPin } from '@/utils/PinUnlockService';
 import type { BackgroundAuthResult } from '@/utils/types/messaging/BackgroundAuthResult';
 
 import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
@@ -211,9 +211,13 @@ export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAu
 
       const message = await describeAuthError(err, { fallback: 'common.errors.unknownErrorTryAgain' });
       if (message.wrongPassword) {
-        // The key the PIN restored does not open the key chain, treat as an incorrect PIN.
-        logExpected('[Unlock] The entered PIN did not decrypt the vault', err);
-        return { status: 'pinFailed', reason: 'incorrect', attemptsRemaining: 3 };
+        /*
+         * The PIN was right (AES-GCM decrypted), but the key it holds no longer opens the chain: a legacy PIN still
+         * holding the unlock key of a password that has since changed. It can never work again, so disable it.
+         */
+        logExpected('[Unlock] The key restored by the PIN no longer opens the key chain, disabling PIN unlock', err);
+        await removeAndDisablePin();
+        return { status: 'pinFailed', reason: 'locked' };
       }
       return failureResult('PIN unlock failed', err, { fallback: 'common.errors.unknownErrorTryAgain' });
     }
