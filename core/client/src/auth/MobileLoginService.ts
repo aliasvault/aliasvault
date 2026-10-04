@@ -153,7 +153,7 @@ export class MobileLoginService {
           const privateKey = this.privateKey!;
           this.cleanup();
 
-          // The mobile app encrypted the unlock key with our public key.
+          // The mobile app encrypted its stored key with our public key.
           const unlockKey = bytesToBase64(await EncryptionUtility.decryptWithPrivateKeyObject(data.encryptedUnlockKey, privateKey));
 
           // The server encrypted the session payload with a symmetric key, which is encrypted with our public key.

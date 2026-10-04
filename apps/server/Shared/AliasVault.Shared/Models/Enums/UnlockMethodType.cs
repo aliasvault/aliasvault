@@ -14,7 +14,7 @@ namespace AliasVault.Shared.Models.Enums;
 public enum UnlockMethodType
 {
     /// <summary>
-    /// Master password: the KEK is derived from the password via Argon2.
+    /// Master password: Argon2id of the password gives the unlock key, which the KEK and SRP input are HKDF-derived from.
     /// </summary>
     Password = 0,
 }

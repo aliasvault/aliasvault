@@ -100,7 +100,7 @@ export const StorageKeys = {
 
   /** Whether PIN unlock is enabled. */
   PIN_ENABLED: 'local:aliasvault_pin_enabled',
-  /** The unlock key (password-derived KEK), encrypted with the PIN derived key. */
+  /** The session's stored key (the Account Key), encrypted with the PIN derived key. */
   PIN_ENCRYPTED_KEY: 'local:aliasvault_pin_encrypted_key',
   /** Salt used to derive the PIN key. */
   PIN_SALT: 'local:aliasvault_pin_salt',

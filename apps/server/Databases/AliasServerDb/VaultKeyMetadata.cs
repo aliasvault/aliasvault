@@ -35,7 +35,7 @@ public sealed class VaultKeyMetadata
     public string? SrpVerifier { get; set; }
 
     /// <summary>
-    /// Gets or sets the KDF the client derives the KEK with, e.g. <c>Argon2Id</c>.
+    /// Gets or sets how the client derives the SRP input from the password: <c>Argon2IdHkdf</c>, or legacy <c>Argon2Id</c>.
     /// </summary>
     public string? EncryptionType { get; set; }
 

@@ -195,8 +195,8 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
 }
 
 /**
- * Store the unlock key (the password-derived KEK) in session storage. It is the one secret the session holds: the
- * vault encryption key and the account private key are derived from it and the cached key chain on demand.
+ * Store the session's key in session storage. It is the one secret the session holds: the vault encryption key and the
+ * account private key are derived from it and the cached key chain on demand.
  */
 export async function handleStoreUnlockKey(
   unlockKey: string,

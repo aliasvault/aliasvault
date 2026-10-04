@@ -372,8 +372,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [dbInitialized, loadStoredDatabase]);
 
   /**
-   * Store the unlock key (the password-derived KEK) in the background worker. It is the one secret the session
-   * holds; the vault encryption key is derived from it and the cached key chain.
+   * Store the session's key in the background worker. It is the one secret the session holds; the vault encryption key
+   * is derived from it and the cached key chain.
    */
   const storeUnlockKey = useCallback(async (unlockKey: string) : Promise<void> => {
     /*

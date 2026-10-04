@@ -188,8 +188,8 @@ export function useVaultMutate() : {
     const currentSalt = data.salt;
     const currentServerEphemeral = data.serverEphemeral;
 
-    // Convert base64 string to hex string
-    const currentPasswordHashString = Buffer.from(currentPasswordHashBase64, 'base64').toString('hex').toUpperCase();
+    // The SRP password hash the account's encryption type makes from the unlock key.
+    const currentPasswordHashString = await SrpAuthService.srpPasswordHash(currentPasswordHashBase64, data.encryptionType);
 
     // Get username from the auth context, always lowercase and trimmed which is required for the argon2id key derivation
     const username = authContext.username?.toLowerCase().trim();

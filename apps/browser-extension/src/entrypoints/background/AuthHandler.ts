@@ -13,6 +13,7 @@ import { handleClearSession, handleFullVaultSync, handleGetUnlockKeyDerivationPa
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected, logFailure } from '@/utils/Diagnostics';
+import { convertLegacyPinKey } from '@/utils/LegacyKeyConversion';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { sendMessage } from '@/utils/messaging/ExtensionMessaging';
 import { IncorrectPinError, InvalidPinFormatError, PinLockedError, resetFailedAttempts, unlockWithPin } from '@/utils/PinUnlockService';
@@ -115,7 +116,7 @@ async function checkServerStatus(webApi: WebApiService): Promise<{ online: boole
 }
 
 /**
- * Store the checked unlock key, which unlocks the vault, and tell content scripts about it.
+ * Store the checked key (see VaultKeyService.SessionKeys.accountKey), which unlocks the vault, and tell content scripts about it.
  */
 async function storeUnlockKey(unlockKey: string, offline: boolean, broadcast: boolean): Promise<void> {
   const stored = await handleStoreUnlockKey(unlockKey);
@@ -146,12 +147,11 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
       if (status.online) {
         const username = await storage.getItem<string>(StorageKeys.USERNAME);
         const loginResponse = await new SrpLoginService(webApi).initiateLogin(username!);
-        const credentials = await SrpAuthService.prepareCredentials(data.password, loginResponse.salt, loginResponse.encryptionSettings);
+        const credentials = await SrpAuthService.prepareCredentials(data.password, loginResponse.salt, loginResponse.encryptionType, loginResponse.encryptionSettings);
         await handleStoreUnlockKeyDerivationParams({ salt: loginResponse.salt, encryptionType: loginResponse.encryptionType, encryptionSettings: loginResponse.encryptionSettings });
 
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        unlockKey = credentials.passwordHashBase64;
-        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+        unlockKey = await VaultKeyService.refreshKeyChain(credentials.passwordHashBase64, webApi);
       } else {
         const storedParams = await handleGetUnlockKeyDerivationParams();
         if (!storedParams) {
@@ -159,9 +159,8 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
           return { status: 'error', error: { key: 'common.errors.serverNotAvailable', wrongPassword: false } };
         }
 
-        const credentials = await SrpAuthService.prepareCredentials(data.password, storedParams.salt, storedParams.encryptionSettings);
-        unlockKey = credentials.passwordHashBase64;
-        await VaultKeyService.verifyUnlockKey(unlockKey);
+        const credentials = await SrpAuthService.prepareCredentials(data.password, storedParams.salt, storedParams.encryptionType, storedParams.encryptionSettings);
+        unlockKey = await VaultKeyService.verifyUnlockKey(credentials.passwordHashBase64);
       }
 
       await storeUnlockKey(unlockKey, !status.online, true);
@@ -187,8 +186,9 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
 export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAuthResult> {
   return runExclusive(async () => {
     try {
-      const unlockKey = await unlockWithPin(data.pin);
-      await VaultKeyService.verifyUnlockKey(unlockKey);
+      const pinKey = await unlockWithPin(data.pin);
+      const unlockKey = await VaultKeyService.verifyUnlockKey(pinKey);
+      await convertLegacyPinKey(data.pin, pinKey, unlockKey);
 
       const status = await checkServerStatus(new WebApiService());
       if ('logout' in status) {
@@ -229,19 +229,19 @@ export function handleLoginWithPassword(data: { username: string; password: stri
       const username = SrpAuthService.normalizeUsername(data.username);
       const srp = new SrpLoginService(new WebApiService());
       const loginResponse = await srp.initiateLogin(username);
-      const { passwordHashString, passwordHashBase64 } = await SrpAuthService.prepareCredentials(data.password, loginResponse.salt, loginResponse.encryptionSettings);
-      const validation = await srp.validateLogin(username, passwordHashString, data.rememberMe, loginResponse);
+      const credentials = await SrpAuthService.prepareLoginCredentials(data.password, loginResponse, username);
+      const validation = await srp.validateLogin(username, credentials, data.rememberMe, loginResponse);
 
       if (validation.requiresTwoFactor) {
         // Kept in memory for the 2FA step, which may come from a reopened popup.
-        handleStoreTwoFactorState({ username, loginResponse, passwordHashString, passwordHashBase64, rememberMe: data.rememberMe });
+        handleStoreTwoFactorState({ username, loginResponse, credentials, rememberMe: data.rememberMe });
         return { status: 'twoFactorRequired', username, rememberMe: data.rememberMe };
       }
       if (!validation.token) {
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
-      return await completeLogin(username, validation.token.token, validation.token.refreshToken, passwordHashBase64, loginResponse);
+      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.passwordHashBase64, loginResponse);
     } catch (err) {
       return failureResult('Login error', err);
     }
@@ -260,13 +260,13 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
 
     try {
       const srp = new SrpLoginService(new WebApiService());
-      const validation = await srp.validateLogin2Fa(state.username, state.passwordHashString, state.rememberMe, state.loginResponse, parseInt(data.code));
+      const validation = await srp.validateLogin2Fa(state.username, state.credentials, state.rememberMe, state.loginResponse, parseInt(data.code));
       if (!validation.token) {
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
       handleClearTwoFactorState();
-      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.passwordHashBase64, state.loginResponse);
+      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.credentials.passwordHashBase64, state.loginResponse);
     } catch (err) {
       return failureResult('2FA error', err);
     }
@@ -283,8 +283,9 @@ async function completeLogin(username: string, token: string, refreshToken: stri
 
   // Fetch the key chain and check the unlock key opens it. Not recoverable when it fails, so log out again.
   const webApi = new WebApiService();
+  let storedKey: string;
   try {
-    await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+    storedKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
   } catch (err) {
     await webApi.revokeTokens();
     await handleClearSession();
@@ -294,7 +295,7 @@ async function completeLogin(username: string, token: string, refreshToken: stri
   await handleStoreUnlockKeyDerivationParams({ salt: derivationParams.salt, encryptionType: derivationParams.encryptionType, encryptionSettings: derivationParams.encryptionSettings });
 
   // Content scripts are told once the vault is pulled: before that there is nothing to autofill from.
-  await storeUnlockKey(unlockKey, false, false);
+  await storeUnlockKey(storedKey, false, false);
 
   const sync = await handleFullVaultSync({ forcePull: true, reportErrorToPopup: false });
   if (sync.logoutReason === 'clientVersionNotSupported') {

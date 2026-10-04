@@ -7,20 +7,13 @@ import { base64ToBytes, bytesToBase64 } from '@aliasvault/client/utilities/Base6
 import { getLocalPreference, removeLocalPreference, setLocalPreference } from '@/utils/LocalPreferences';
 import { StorageKeys } from '@/utils/StorageKeys';
 
-/** Local storage keys for the WebAuthn quick unlock. */
+/** Local storage keys for the WebAuthn quick unlock; the previous web client's keys are removed by LegacyStorageCleanup. */
 const KEYS = {
-  enabled: 'webAuthnEnabled',
-  credentialId: 'webAuthnCredentialId',
-  salt: 'webAuthnSalt',
-  encryptedKeys: 'webAuthnEncryptedEncryptionKey',
+  enabled: 'webAuthnUnlockEnabled',
+  credentialId: 'webAuthnUnlockCredentialId',
+  salt: 'webAuthnUnlockSalt',
+  encryptedAccountKey: 'webAuthnEncryptedAccountKey',
 } as const;
-
-/**
- * What the passkey-derived key encrypts: the session unlock key (the KEK), never the keys the chain opens.
- */
-type WebAuthnSessionKeys = {
-  UnlockKey: string;
-};
 
 /**
  * Thrown when the browser or authenticator has no PRF support.
@@ -122,7 +115,7 @@ async function createCredentialDerivedKey(username: string): Promise<{ credentia
 }
 
 /**
- * Passkey quick unlock: the session unlock key encrypted with a key the passkey derives, kept in localStorage.
+ * Passkey quick unlock: the session's Account Key encrypted with a key the passkey derives, kept in localStorage.
  */
 export const WebAuthnService = {
   /**
@@ -133,70 +126,51 @@ export const WebAuthnService = {
   },
 
   /**
-   * Create a passkey and encrypt the current session unlock key with it.
+   * Create a passkey and encrypt the session's Account Key with it.
    */
   async enable(username: string): Promise<void> {
-    const unlockKey = await VaultKeyService.getSessionUnlockKey();
-    if (!unlockKey) {
+    const accountKey = await VaultKeyService.getSessionUnlockKey();
+    if (!accountKey) {
       throw new Error('Vault is locked');
     }
     const credential = await createCredentialDerivedKey(username);
-    const payload: WebAuthnSessionKeys = { UnlockKey: unlockKey };
-    const encrypted = await EncryptionUtility.symmetricEncrypt(JSON.stringify(payload), credential.derivedKey);
     setLocalPreference(KEYS.credentialId, credential.credentialId);
     setLocalPreference(KEYS.salt, credential.salt);
-    setLocalPreference(KEYS.encryptedKeys, encrypted);
+    setLocalPreference(KEYS.encryptedAccountKey, await EncryptionUtility.symmetricEncrypt(accountKey, credential.derivedKey));
     setLocalPreference(KEYS.enabled, 'true');
   },
 
   /**
-   * Forget the passkey and the encrypted unlock key.
+   * Forget the passkey and the encrypted Account Key.
    */
   disable(): void {
     setLocalPreference(KEYS.enabled, 'false');
     removeLocalPreference(KEYS.credentialId);
     removeLocalPreference(KEYS.salt);
-    removeLocalPreference(KEYS.encryptedKeys);
+    removeLocalPreference(KEYS.encryptedAccountKey);
   },
 
   /**
-   * Decrypt the unlock key with the passkey, check it opens the key chain and put it in the session.
+   * Decrypt the Account Key with the passkey, check it opens the key chain and put it in the session.
    */
   async unlock(): Promise<void> {
     const credentialId = getLocalPreference(KEYS.credentialId);
     const salt = getLocalPreference(KEYS.salt);
-    const encrypted = getLocalPreference(KEYS.encryptedKeys);
+    const encrypted = getLocalPreference(KEYS.encryptedAccountKey);
     if (!credentialId || !salt || !encrypted) {
       throw new Error('WebAuthn encrypted encryption key is not set or WebAuthn credential ID is not set.');
     }
     const derivedKey = await getCredentialDerivedKey(credentialId, salt);
-    const payload = await EncryptionUtility.symmetricDecrypt(encrypted, derivedKey);
-    let keys: WebAuthnSessionKeys | null = null;
+    const accountKey = await EncryptionUtility.symmetricDecrypt(encrypted, derivedKey);
     try {
-      keys = JSON.parse(payload) as WebAuthnSessionKeys;
-    } catch {
-      keys = null;
-    }
-
-    /*
-     * Check for legacy storage (pre-0.31.0).
-     * TODO: this can be removed in a future release once 0.31.0 has been released.
-     */
-    const isLegacyStore = typeof keys?.UnlockKey !== 'string';
-    const unlockKey = keys && !isLegacyStore ? keys.UnlockKey : payload;
-    try {
-      await VaultKeyService.verifyUnlockKey(unlockKey);
+      await VaultKeyService.verifyUnlockKey(accountKey);
     } catch (error) {
-      // A key the chain rejects (password changed since) is discarded, the password unlock still works.
+      // A key the chain rejects is discarded, the password unlock still works.
       if (error instanceof Error && extractErrorCode(error.message) === AppErrorCode.UNLOCK_KEY_REJECTED) {
         WebAuthnService.disable();
       }
       throw error;
     }
-    if (isLegacyStore) {
-      const upgraded: WebAuthnSessionKeys = { UnlockKey: unlockKey };
-      setLocalPreference(KEYS.encryptedKeys, await EncryptionUtility.symmetricEncrypt(JSON.stringify(upgraded), derivedKey));
-    }
-    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY, unlockKey);
+    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY, accountKey);
   },
 };

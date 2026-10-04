@@ -1,7 +1,7 @@
 import { ApiRequestError } from '../api/errors/ApiRequestError';
 import { throwIfServerPredatesV2Api } from '../sync/LegacyStorageModelMigration';
 
-import { SrpAuthService, type SrpClientSession } from './SrpAuthService';
+import { SrpAuthService, type LoginCredentials, type SrpClientSession } from './SrpAuthService';
 
 import type { WebApiService } from '../api/WebApiService';
 import type { AccountKeyHierarchy } from '../crypto/AccountKeys';
@@ -70,47 +70,47 @@ export class SrpLoginService {
   /**
    * Validate login with the server using the locally generated ephemeral and session proof.
    * @param username - The username
-   * @param passwordHashString - The password hash as uppercase hex
+   * @param credentials - The SRP password hash and, for a legacy verifier, its upgrade
    * @param rememberMe - Whether to request an extended token lifetime
    * @param loginResponse - The initiate response
    * @returns The validate response
    */
-  public async validateLogin(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse): Promise<ValidateLoginResponse> {
+  public async validateLogin(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...session.proof };
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
+    const model: ValidateLoginRequest = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate', model));
   }
 
   /**
    * Validate login with a 2FA authenticator code.
    * @param username - The username
-   * @param passwordHashString - The password hash as uppercase hex
+   * @param credentials - The SRP password hash and, for a legacy verifier, its upgrade
    * @param rememberMe - Whether to request an extended token lifetime
    * @param loginResponse - The initiate response
    * @param code2Fa - The authenticator code
    * @returns The validate response
    */
-  public async validateLogin2Fa(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse, code2Fa: number): Promise<ValidateLoginResponse> {
+  public async validateLogin2Fa(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse, code2Fa: number): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...session.proof, code2Fa };
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
+    const model: ValidateLoginRequest2Fa = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade, code2Fa };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate-2fa', model));
   }
 
   /**
    * Validate login with a 2FA recovery code.
    * @param username - The username
-   * @param passwordHashString - The password hash as uppercase hex
+   * @param credentials - The SRP password hash and, for a legacy verifier, its upgrade
    * @param rememberMe - Whether to request an extended token lifetime
    * @param loginResponse - The initiate response
    * @param recoveryCode - The recovery code
    * @returns The validate response
    */
-  public async validateLoginRecoveryCode(username: string, passwordHashString: string, rememberMe: boolean, loginResponse: LoginResponse, recoveryCode: string): Promise<ValidateLoginResponse> {
+  public async validateLoginRecoveryCode(username: string, credentials: LoginCredentials, rememberMe: boolean, loginResponse: LoginResponse, recoveryCode: string): Promise<ValidateLoginResponse> {
     const normalizedUsername = SrpAuthService.normalizeUsername(username);
-    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, passwordHashString);
-    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...session.proof, recoveryCode };
+    const session = await SrpAuthService.deriveLoginSession(loginResponse, normalizedUsername, credentials.passwordHashString);
+    const model: ValidateLoginRequestRecoveryCode = { username: normalizedUsername, rememberMe, ...session.proof, ...credentials.srpUpgrade, recoveryCode };
     return this.verifiedLoginResponse(session, await this.post('Auth/validate-recovery-code', model));
   }
 

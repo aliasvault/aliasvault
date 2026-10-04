@@ -10,7 +10,7 @@
  */
 export const UnlockMethodType = {
   /**
-   * Master password: the KEK is derived from the password via Argon2.
+   * Master password: Argon2id of the password gives the unlock key, which the KEK and SRP input are HKDF-derived from.
    */
   Password: 'password',
 } as const;
