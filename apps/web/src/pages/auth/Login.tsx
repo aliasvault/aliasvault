@@ -1,6 +1,6 @@
 import { extractErrorCode } from '@aliasvault/client/api/errors/AppErrorCodes';
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpAuthService, type PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { getPlatform } from '@aliasvault/client/platform';
@@ -57,8 +57,7 @@ const Login: React.FC = () => {
   const [recoveryCode, setRecoveryCode] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
   const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
-  const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
-  const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState<PreparedCredentials | null>(null);
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
   const twoFactorRef = useRef<HTMLInputElement>(null);
@@ -119,15 +118,16 @@ const Login: React.FC = () => {
       await auth.setAuthTokens(SrpAuthService.normalizeUsername(loginUsername), accessToken, refreshToken);
 
       // Fetch the key chain, check the unlock key opens it and cache it; the vault key is derived from the two on demand.
+      let storedKey: string;
       try {
-        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+        storedKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
       } catch (err) {
         // Without a usable key chain the session is useless; end it so the error shows on this form.
         await auth.logout();
         throw err;
       }
       await vaultStore.storeUnlockKeyDerivationParams(params);
-      await vaultStore.storeUnlockKey(unlockKey);
+      await vaultStore.storeUnlockKey(storedKey);
 
       notifications.clearMessages();
       navigate('/sync', { replace: true });
@@ -178,14 +178,13 @@ const Login: React.FC = () => {
       const normalizedUsername = SrpAuthService.normalizeUsername(username);
       const response = await srpUtil.initiateLogin(normalizedUsername);
 
-      // Derive the KEK from the password.
-      const prepared = await SrpAuthService.prepareCredentials(password, response.salt, response.encryptionSettings);
-      const validateLoginResponse = await srpUtil.validateLogin(normalizedUsername, prepared.passwordHashString, rememberMe, response);
+      // Derive the unlock key and the SRP password hash from the password.
+      const prepared = await SrpAuthService.prepareLoginCredentials(password, response, normalizedUsername);
+      const validateLoginResponse = await srpUtil.validateLogin(normalizedUsername, prepared, rememberMe, response);
 
       if (validateLoginResponse.requiresTwoFactor) {
         setLoginResponse(response);
-        setPasswordHashString(prepared.passwordHashString);
-        setPasswordHashBase64(prepared.passwordHashBase64);
+        setCredentials(prepared);
         setStep('two-factor');
         return;
       }
@@ -207,15 +206,15 @@ const Login: React.FC = () => {
     setErrors([]);
 
     try {
-      if (!loginResponse || !passwordHashString || !passwordHashBase64) {
+      if (!loginResponse || !credentials) {
         throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
       }
       const code = twoFactorCode.trim();
       if (!/^\d{6}$/.test(code)) {
         throw new Error(t('common.errors.invalidCode'));
       }
-      const validateLoginResponse = await srpUtil.validateLogin2Fa(username, passwordHashString, rememberMe || rememberMachine, loginResponse, parseInt(code, 10));
-      await processLoginVerify(validateLoginResponse, passwordHashBase64, loginResponse);
+      const validateLoginResponse = await srpUtil.validateLogin2Fa(username, credentials, rememberMe || rememberMachine, loginResponse, parseInt(code, 10));
+      await processLoginVerify(validateLoginResponse, credentials.passwordHashBase64, loginResponse);
     } catch (err) {
       setErrors(await toErrorMessages(err));
     } finally {
@@ -232,11 +231,11 @@ const Login: React.FC = () => {
     setErrors([]);
 
     try {
-      if (!loginResponse || !passwordHashString || !passwordHashBase64) {
+      if (!loginResponse || !credentials) {
         throw new Error(t('auth.loginForm.loginRequestErrorMessage'));
       }
-      const validateLoginResponse = await srpUtil.validateLoginRecoveryCode(username, passwordHashString, rememberMe, loginResponse, recoveryCode.trim());
-      await processLoginVerify(validateLoginResponse, passwordHashBase64, loginResponse);
+      const validateLoginResponse = await srpUtil.validateLoginRecoveryCode(username, credentials, rememberMe, loginResponse, recoveryCode.trim());
+      await processLoginVerify(validateLoginResponse, credentials.passwordHashBase64, loginResponse);
     } catch (err) {
       setErrors(await toErrorMessages(err));
     } finally {

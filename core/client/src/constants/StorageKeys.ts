@@ -45,7 +45,7 @@ export const StorageKeys = {
   UNLOCK_KEY_DERIVATION_PARAMS: 'local:encryptionKeyDerivationParams',
   /** The VEK encrypted with the Account Key, as returned by the server. */
   ENCRYPTED_VEK: 'local:encryptedVek',
-  /** The Account Key encrypted with the password-derived KEK, as returned by the server. */
+  /** The Account Key encrypted with the KEK derived from the password, as returned by the server. */
   ENCRYPTED_ACCOUNT_KEY: 'local:encryptedAccountKey',
   /** The account public key, used for encrypting shared-manifest VEK grants. */
   ACCOUNT_PUBLIC_KEY: 'local:accountPublicKey',

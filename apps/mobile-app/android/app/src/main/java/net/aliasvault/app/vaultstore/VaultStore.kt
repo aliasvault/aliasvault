@@ -948,7 +948,11 @@ class VaultStore(
     fun unlockWithPin(pinValue: String): String {
         val key = pin.unlockWithPin(pinValue)
         markSuccessfulAuth()
-        return key
+
+        val accountKey = crypto.openAccountKeyChain(android.util.Base64.decode(key, android.util.Base64.NO_WRAP)).accountKey
+        val accountKeyBase64 = android.util.Base64.encodeToString(accountKey, android.util.Base64.NO_WRAP)
+        LegacyKeyConversion.convertPinKey(pin, pinValue, key, accountKeyBase64)
+        return accountKeyBase64
     }
 
     /**

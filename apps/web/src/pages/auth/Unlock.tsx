@@ -167,17 +167,15 @@ const Unlock: React.FC = () => {
         if (!params) {
           throw new Error(t('auth.unlockPage.connectionFailedError'));
         }
-        const prepared = await SrpAuthService.prepareCredentials(password, params.salt, params.encryptionSettings);
-        unlockKey = prepared.passwordHashBase64;
+        const prepared = await SrpAuthService.prepareCredentials(password, params.salt, params.encryptionType, params.encryptionSettings);
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        await VaultKeyService.verifyUnlockKey(unlockKey);
+        unlockKey = await VaultKeyService.verifyUnlockKey(prepared.passwordHashBase64);
       } else {
         const loginResponse = await srpUtil.initiateLogin(username);
-        const prepared = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionSettings);
+        const prepared = await SrpAuthService.prepareCredentials(password, loginResponse.salt, loginResponse.encryptionType, loginResponse.encryptionSettings);
         await vaultStore.storeUnlockKeyDerivationParams({ salt: loginResponse.salt, encryptionType: loginResponse.encryptionType, encryptionSettings: loginResponse.encryptionSettings });
-        unlockKey = prepared.passwordHashBase64;
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+        unlockKey = await VaultKeyService.refreshKeyChain(prepared.passwordHashBase64, webApi);
       }
 
       await vaultStore.storeUnlockKey(unlockKey);
@@ -219,9 +217,9 @@ const Unlock: React.FC = () => {
       await auth.setAuthTokens(result.username, result.token, result.refreshToken);
 
       // Throws an unlock-key-rejected (E-206) error if the key does not open the key chain.
-      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+      const storedKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
       await vaultStore.storeUnlockKeyDerivationParams({ salt: result.salt, encryptionType: result.encryptionType, encryptionSettings: result.encryptionSettings });
-      await vaultStore.storeUnlockKey(result.unlockKey);
+      await vaultStore.storeUnlockKey(storedKey);
       navigate('/sync', { replace: true });
     } catch (err) {
       console.error('Mobile unlock error:', err);

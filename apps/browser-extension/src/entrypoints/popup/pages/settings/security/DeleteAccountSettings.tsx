@@ -69,7 +69,7 @@ const DeleteAccountSettings: React.FC = () => {
     try {
       showLoading();
       const initiate = await webApi.post<DeleteAccountInitiateRequest, DeleteAccountInitiateResponse>('Auth/delete-account/initiate', { username: currentUsername });
-      const prepared = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionSettings);
+      const prepared = await SrpAuthService.prepareCredentials(password, initiate.salt, initiate.encryptionType, initiate.encryptionSettings);
       const proof = await SrpAuthService.deriveClientProof(initiate.salt, initiate.srpIdentity, prepared.passwordHashString, initiate.serverEphemeral);
       await webApi.post<DeleteAccountRequest, unknown>('Auth/delete-account/confirm', { username: currentUsername, clientPublicEphemeral: proof.clientPublicEphemeral, clientSessionProof: proof.clientSessionProof }, false);
       await auth.clearAuthUserInitiated();

@@ -77,7 +77,7 @@ public class RegisterRequest
     public string? EncryptedVek { get; }
 
     /// <summary>
-    /// Gets the Account Key encrypted with the password-derived KEK.
+    /// Gets the Account Key encrypted with the KEK derived from the password.
     /// </summary>
     public string? EncryptedAccountKey { get; }
 

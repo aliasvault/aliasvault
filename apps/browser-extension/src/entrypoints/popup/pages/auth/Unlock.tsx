@@ -459,13 +459,11 @@ const Unlock: React.FC = () => {
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
 
-      /*
-       * The mobile device sends the password-derived key (the KEK).
-       */
-      await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
+      // The mobile device sends its stored key.
+      const storedKey = await VaultKeyService.refreshKeyChain(result.unlockKey, webApi);
 
-      // Store the unlock key and derivation params
-      await dbContext.storeUnlockKey(result.unlockKey);
+      // Store the session key and derivation params
+      await dbContext.storeUnlockKey(storedKey);
       await dbContext.storeUnlockKeyDerivationParams({
         salt: result.salt,
         encryptionType: result.encryptionType,

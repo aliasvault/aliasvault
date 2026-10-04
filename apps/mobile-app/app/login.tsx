@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import { describeAuthError, formatErrorMessage } from '@aliasvault/client/auth/AuthErrorMessage';
-import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { SrpAuthService, type LoginCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import { SrpLoginService } from '@aliasvault/client/auth/SrpLoginService';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -63,7 +63,7 @@ export default function LoginScreen() : React.ReactNode {
   const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [initiateLoginResponse, setInitiateLoginResponse] = useState<LoginResponse | null>(null);
-  const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
+  const [loginCredentials, setLoginCredentials] = useState<LoginCredentials | null>(null);
   const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -275,10 +275,9 @@ export default function LoginScreen() : React.ReactNode {
     await dbContext.storeUnlockKeyDerivationParams(unlockKeyDerivationParams);
 
     /*
-     * The derived key is the KEK/unlock key. The Rust core opens the account's key chain with it (fetched from the
-     * server, or the cached one when offline) and caches the chain as-is. The session holds the VEK and the account
-     * private key, while biometrics and PIN keep the KEK and open the chain again on every unlock; a legacy account
-     * without a chain uses the KEK as the vault key.
+     * The derived key is the unlock key. The Rust core opens the account's key chain with the KEK derived from it
+     * (fetched from the server, or the cached one when offline) and caches the chain as-is. The session, biometrics
+     * and PIN keep the Account Key and open the chain from it on every unlock.
      */
     await NativeVaultManager.resolveVaultKey(passwordHashBase64);
 
@@ -374,7 +373,7 @@ export default function LoginScreen() : React.ReactNode {
     authContext.setOfflineMode(false);
     setTwoFactorRequired(false);
     setTwoFactorCode('');
-    setPasswordHashString(null);
+    setLoginCredentials(null);
     setPasswordHashBase64(null);
     setInitiateLoginResponse(null);
     setLoginStatus(null);
@@ -409,21 +408,21 @@ export default function LoginScreen() : React.ReactNode {
         initiateLoginResponse.encryptionSettings
       );
 
-      const passwordHashString = Buffer.from(passwordHash).toString('hex').toUpperCase();
       const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
+      const passwordCredentials = await SrpAuthService.loginCredentials(passwordHashBase64, initiateLoginResponse, credentials.username);
 
       setLoginStatus(t('auth.validatingCredentials'));
       await new Promise(resolve => requestAnimationFrame(resolve));
       const validationResponse = await srpUtil.validateLogin(
         SrpAuthService.normalizeUsername(credentials.username),
-        passwordHashString,
+        passwordCredentials,
         true,
         initiateLoginResponse
       );
 
       if (validationResponse.requiresTwoFactor) {
         setInitiateLoginResponse(initiateLoginResponse);
-        setPasswordHashString(passwordHashString);
+        setLoginCredentials(passwordCredentials);
         setPasswordHashBase64(passwordHashBase64);
         setTwoFactorRequired(true);
         setIsLoading(false);
@@ -462,7 +461,7 @@ export default function LoginScreen() : React.ReactNode {
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     try {
-      if (!passwordHashString || !passwordHashBase64 || !initiateLoginResponse) {
+      if (!loginCredentials || !passwordHashBase64 || !initiateLoginResponse) {
         throw new Error('Required login data not found');
       }
 
@@ -473,7 +472,7 @@ export default function LoginScreen() : React.ReactNode {
 
       const validationResponse = await srpUtil.validateLogin2Fa(
         SrpAuthService.normalizeUsername(credentials.username),
-        passwordHashString,
+        loginCredentials,
         true,
         initiateLoginResponse,
         parseInt(twoFactorCode)
@@ -736,7 +735,7 @@ export default function LoginScreen() : React.ReactNode {
                         setCredentials({ username: '', password: '' });
                         setTwoFactorRequired(false);
                         setTwoFactorCode('');
-                        setPasswordHashString(null);
+                        setLoginCredentials(null);
                         setPasswordHashBase64(null);
                         setInitiateLoginResponse(null);
                         setError(null);

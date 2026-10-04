@@ -10,7 +10,7 @@
 import { createHash } from 'crypto';
 
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
-import { getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
+import { deriveKek, getSyncableTableNames, vaultCodecCanonicalizeFromSqlite, vaultCodecGenerateManifestSalt, vaultCodecPackPayload, vaultCodecUnpackPayload } from '@aliasvault/client/rust/RustCore';
 
 import { symmetricDecryptBytes, symmetricEncryptBytes } from './vault-crypto';
 
@@ -131,7 +131,8 @@ export async function resolveVaultEncryptionKey(apiBaseUrl: string, token: strin
     throw new Error('Vault key chain is missing the encrypted VEK');
   }
 
-  const accountKey = await symmetricDecryptBytes(vaultKey.encryptedAccountKey, derivedKey);
+  const kek = Buffer.from(await deriveKek(Buffer.from(derivedKey).toString('base64')), 'base64');
+  const accountKey = await symmetricDecryptBytes(vaultKey.encryptedAccountKey, kek);
   return symmetricDecryptBytes(vaultKey.encryptedVek, accountKey);
 }
 

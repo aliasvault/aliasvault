@@ -1,4 +1,3 @@
-import { DEFAULT_ENCRYPTION } from '../../auth/SrpAuthService';
 import { EncryptionUtility } from '../../crypto/EncryptionUtility';
 import { AppInfo } from '../../platform/AppInfo';
 import { argon2DeriveKey } from '../../rust/RustCore';
@@ -12,6 +11,9 @@ import type { AvexHeader } from './AvexHeader';
  * The Argon2id parameters a new export is encrypted with.
  */
 const ARGON2_KDF_PARAMS = { DegreeOfParallelism: 1, MemorySize: 262144, Iterations: 3 };
+
+/** The KDF the export key is derived with: plain Argon2id, independent of the account's login encryption type. */
+const AVEX_KDF_TYPE = 'Argon2Id';
 
 /**
  * Writes the .avex encrypted vault export format: a JSON header, a PEM-style delimiter and the encrypted .avux payload
@@ -38,7 +40,7 @@ export class AvexExportService {
     const header: AvexHeader = {
       format: AvexConstants.FormatIdentifier,
       version: AvexConstants.FormatVersion,
-      kdf: { type: DEFAULT_ENCRYPTION.type, salt: saltBase64, params: { ...ARGON2_KDF_PARAMS } },
+      kdf: { type: AVEX_KDF_TYPE, salt: saltBase64, params: { ...ARGON2_KDF_PARAMS } },
       encryption: { algorithm: 'AES-256-GCM', encryptedDataOffset: 0 },
       metadata: { exportedAt: new Date().toISOString(), exportedBy: username, appVersion: AppInfo.VERSION },
     };

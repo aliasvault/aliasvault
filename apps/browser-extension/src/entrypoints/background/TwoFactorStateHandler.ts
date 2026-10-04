@@ -8,6 +8,7 @@
  * so users can close the popup to switch to their authenticator app and continue without re-entering credentials.
  */
 
+import type { PreparedCredentials } from '@aliasvault/client/auth/SrpAuthService';
 import type { LoginResponse } from '@aliasvault/models/webapi';
 
 /**
@@ -16,8 +17,7 @@ import type { LoginResponse } from '@aliasvault/models/webapi';
 export type TwoFactorState = {
   username: string;
   loginResponse: LoginResponse;
-  passwordHashString: string;
-  passwordHashBase64: string;
+  credentials: PreparedCredentials;
   rememberMe: boolean;
   timestamp: number;
 };

@@ -1,5 +1,5 @@
 import { StorageKeys } from '../constants/StorageKeys';
-import { EncryptionUtility } from '../crypto/EncryptionUtility';
+import { unwrapAccountKey, wrapAccountKey } from '../crypto/AccountKeys';
 import { getPlatform } from '../platform/ClientPlatform';
 import { VaultSyncHoldReason, withVaultSyncHold } from '../sync/VaultSyncHold';
 
@@ -38,6 +38,7 @@ export class PasswordChangedElsewhereError extends Error {
 export type SrpChallenge = {
   salt: string;
   serverEphemeral: string;
+  encryptionType: string;
   encryptionSettings: string;
   srpIdentity?: string;
 };
@@ -45,7 +46,7 @@ export type SrpChallenge = {
 /** The answer to an SRP challenge, plus what the same derivation yields for local key material. */
 export type SrpChallengeAnswer = {
   proof: SrpClientProof;
-  kekBase64: string;
+  unlockKeyBase64: string;
   srpIdentity: string;
 };
 
@@ -75,12 +76,12 @@ export class MasterPasswordService {
 
   /**
    * Answer a server's SRP challenge with the master password. The password goes no further than the derivation;
-   * the KEK it yields comes along for callers that also need to open local key material.
+   * the unlock key it yields comes along for callers that also need to open local key material.
    * @param challenge - the challenge the endpoint's initiate call returned
    * @param password - the master password to prove
    */
   public static async answerSrpChallenge(challenge: SrpChallenge, password: string): Promise<SrpChallengeAnswer> {
-    const credentials = await SrpAuthService.prepareCredentials(password, challenge.salt, challenge.encryptionSettings);
+    const credentials = await SrpAuthService.prepareCredentials(password, challenge.salt, challenge.encryptionType, challenge.encryptionSettings);
 
     /*
      * Use srpIdentity from the challenge if available, otherwise fall back to the normalized username.
@@ -90,24 +91,24 @@ export class MasterPasswordService {
     const srpIdentity = challenge.srpIdentity ?? SrpAuthService.normalizeUsername(username ?? '');
 
     const proof = await SrpAuthService.deriveClientProof(challenge.salt, srpIdentity, credentials.passwordHashString, challenge.serverEphemeral);
-    return { proof, kekBase64: credentials.passwordHashBase64, srpIdentity };
+    return { proof, unlockKeyBase64: credentials.passwordHashBase64, srpIdentity };
   }
 
   /**
-   * Re-encrypt the Account Key for a new password: open it with the old KEK, encrypt it with the new one.
-   * @param encryptedAccountKey - the Account Key encrypted with the old password-derived KEK
-   * @param oldKekBase64 - the KEK derived from the current password
-   * @param newKekBase64 - the KEK derived from the new password
+   * Re-encrypt the Account Key for a new password: open it with the old password's KEK, encrypt it with the new one's.
+   * @param encryptedAccountKey - the Account Key encrypted with the KEK of the current password
+   * @param oldUnlockKeyBase64 - the unlock key of the current password
+   * @param newUnlockKeyBase64 - the unlock key of the new password
    * @returns The decrypted Account Key and its new wrapping.
-   * @throws {IncorrectPasswordError} when the old KEK does not open the blob (wrong current password).
+   * @throws {IncorrectPasswordError} when the old unlock key does not open the blob (wrong current password).
    */
-  public static async reencryptAccountKey(encryptedAccountKey: string, oldKekBase64: string, newKekBase64: string): Promise<{ accountKey: string; newEncryptedAccountKey: string }> {
-    const accountKey = await MasterPasswordService.decryptAccountKey(encryptedAccountKey, oldKekBase64);
-    return { accountKey, newEncryptedAccountKey: await EncryptionUtility.encryptVaultEncryptionKey(accountKey, newKekBase64) };
+  public static async reencryptAccountKey(encryptedAccountKey: string, oldUnlockKeyBase64: string, newUnlockKeyBase64: string): Promise<{ accountKey: string; newEncryptedAccountKey: string }> {
+    const accountKey = await MasterPasswordService.decryptAccountKey(encryptedAccountKey, oldUnlockKeyBase64);
+    return { accountKey, newEncryptedAccountKey: await wrapAccountKey(accountKey, newUnlockKeyBase64) };
   }
 
   /**
-   * Change the master password by re-encrypting the Account Key using a new KEK.
+   * Change the master password by re-encrypting the Account Key using the new password's KEK.
    * @param webApi - the API client to use
    * @param currentPassword - the current master password
    * @param newPassword - the new master password
@@ -139,8 +140,8 @@ export class MasterPasswordService {
     const current = await MasterPasswordService.answerSrpChallenge(challenge, currentPassword);
     const next = await SrpAuthService.prepareNewPassword(newPassword, current.srpIdentity);
 
-    // Re-encrypt the Account Key using the new KEK.
-    const { newEncryptedAccountKey } = await MasterPasswordService.reencryptAccountKey(encryptedAccountKey, current.kekBase64, next.kekBase64);
+    // Re-encrypt the Account Key using the new password's KEK.
+    const { accountKey, newEncryptedAccountKey } = await MasterPasswordService.reencryptAccountKey(encryptedAccountKey, current.unlockKeyBase64, next.unlockKeyBase64);
 
     await webApi.post<PasswordChangeRequest, void>('Auth/change-password', {
       currentClientPublicEphemeral: current.proof.clientPublicEphemeral,
@@ -153,17 +154,17 @@ export class MasterPasswordService {
     }, false);
 
     // Persist the new Account Key and its derivation parameters.
-    await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings }, next.kekBase64);
+    await VaultKeyService.persistNewAccountKey(newEncryptedAccountKey, { salt: next.salt, encryptionType: next.encryptionType, encryptionSettings: next.encryptionSettings }, accountKey);
   }
 
   /**
    * Decrypt the KEK-wrapped Account Key.
-   * @param encryptedAccountKey - the Account Key encrypted with the password-derived KEK
-   * @param kekBase64 - the KEK derived from the entered password
+   * @param encryptedAccountKey - the Account Key encrypted with the KEK of the entered password
+   * @param unlockKeyBase64 - the unlock key derived from the entered password
    */
-  private static async decryptAccountKey(encryptedAccountKey: string, kekBase64: string): Promise<string> {
+  private static async decryptAccountKey(encryptedAccountKey: string, unlockKeyBase64: string): Promise<string> {
     try {
-      return await EncryptionUtility.decryptVaultEncryptionKey(encryptedAccountKey, kekBase64);
+      return await unwrapAccountKey(encryptedAccountKey, unlockKeyBase64);
     } catch {
       throw new IncorrectPasswordError();
     }
