@@ -74,9 +74,7 @@ const RecentEmails: React.FC<RecentEmailsProps> = ({ emailAddress }) => {
         setError('');
       }
     } catch (err) {
-      if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_MATCH_USER') {
-        setError(t('apiErrors.CLAIM_DOES_NOT_MATCH_USER'));
-      } else if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_EXIST') {
+      if (apiErrorCodeOf(err) === 'CLAIM_DOES_NOT_EXIST') {
         /*
          * The server learns about a new address when the vault push that follows a save lands. A load that races
          * that push is retried once instead of shown as an error.
