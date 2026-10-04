@@ -109,6 +109,9 @@ export interface Spec extends TurboModule {
   setOfflineMode(isOffline: boolean): Promise<void>;
   getOfflineMode(): Promise<boolean>;
 
+  // Hold vault syncing while an operation runs that a sync must not race (e.g. a password change); null releases it.
+  setVaultSyncHold(reason: string | null): Promise<void>;
+
   // Server version management
   getServerVersion(): Promise<string | null>;
 

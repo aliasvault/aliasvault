@@ -6,6 +6,7 @@ import type { UnlockKeyDerivationParams } from '@aliasvault/models/metadata';
 import type { PasswordChangeInitiateResponse, PasswordChangeRequest } from '@aliasvault/models/webapi';
 import { MasterPasswordService, PasswordChangedElsewhereError } from '@aliasvault/client/auth/MasterPasswordService';
 import { SrpAuthService } from '@aliasvault/client/auth/SrpAuthService';
+import { VaultSyncHoldReason } from '@aliasvault/client/sync/VaultSyncHold';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -192,7 +193,13 @@ export function useVaultMutate() : {
     try {
       setIsLoading(true);
       setSyncStatus(t('settings.securitySettings.changePassword.initiatingChange'));
-      await executePasswordChangeOperation(currentUnlockKeyBase64, newPasswordPlainText);
+      // Hold the vault sync so no sync compares the server's new salt with the stored old one in between.
+      await NativeVaultManager.setVaultSyncHold(VaultSyncHoldReason.PasswordChange);
+      try {
+        await executePasswordChangeOperation(currentUnlockKeyBase64, newPasswordPlainText);
+      } finally {
+        await NativeVaultManager.setVaultSyncHold(null);
+      }
     } finally {
       setIsLoading(false);
       setSyncStatus('');

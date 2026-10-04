@@ -17,6 +17,7 @@ class TestStorageProvider : StorageProvider {
     private var tempAutoLockTimeout = defaultAutoLockTimeout
     private var username: String? = null
     private var offlineMode: Boolean = false
+    private var vaultSyncHold: String? = null
     private var serverVersion: String? = null
     private var capabilities: String? = null
     private var isDirty: Boolean = false
@@ -99,6 +100,14 @@ class TestStorageProvider : StorageProvider {
 
     override fun getOfflineMode(): Boolean {
         return offlineMode
+    }
+
+    override fun getVaultSyncHold(): String? {
+        return vaultSyncHold
+    }
+
+    override fun setVaultSyncHold(json: String?) {
+        vaultSyncHold = json
     }
 
     override fun setServerVersion(version: String) {

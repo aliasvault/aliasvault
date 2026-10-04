@@ -122,6 +122,18 @@ interface StorageProvider {
     fun getOfflineMode(): Boolean
 
     /**
+     * Get the sync hold record (JSON with reason and heldAt), see VaultStore.setVaultSyncHold.
+     * @return The record, or null when no hold is held
+     */
+    fun getVaultSyncHold(): String?
+
+    /**
+     * Set or clear the sync hold record.
+     * @param json The record, or null to clear it
+     */
+    fun setVaultSyncHold(json: String?)
+
+    /**
      * Set the server API version.
      * @param version The server version to store
      */
