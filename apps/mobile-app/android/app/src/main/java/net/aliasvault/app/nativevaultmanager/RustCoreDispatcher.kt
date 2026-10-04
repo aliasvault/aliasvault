@@ -140,10 +140,10 @@ object RustCoreDispatcher {
 
     /** Open a key chain and report the outcome as the `KeyChainOpenResult` JSON the client core expects. */
     @Suppress("SwallowedException") // A failure is reported as its status, not thrown.
-    private fun openKeyChain(storedKey: ByteArray, encryptedAccountKey: String, encryptedVek: String, encryptedAccountPrivateKey: String?): String {
+    private fun openKeyChain(key: ByteArray, encryptedAccountKey: String, encryptedVek: String, encryptedAccountPrivateKey: String?): String {
         val result = JSONObject()
         try {
-            val keys = openAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey)
+            val keys = openAccountKeyChain(key, encryptedAccountKey, encryptedVek, encryptedAccountPrivateKey)
             result.put("status", "opened")
                 .put("vaultEncryptionKey", Base64.encodeToString(keys.vaultEncryptionKey, Base64.NO_WRAP))
                 .put("accountKey", Base64.encodeToString(keys.accountKey, Base64.NO_WRAP))

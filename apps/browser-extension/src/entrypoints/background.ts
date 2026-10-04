@@ -12,7 +12,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -252,10 +252,10 @@ export default defineBackground({
     onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
-    onExtensionPageMessage('STORE_UNLOCK_KEY', async ({ data }) => {
-      const result = await handleStoreUnlockKey(data);
+    onExtensionPageMessage('STORE_ACCOUNT_KEY', async ({ data }) => {
+      const result = await handleStoreAccountKey(data);
       /*
-       * Storing the unlock key means the vault just became unlocked; let content scripts
+       * Storing the Account Key means the vault just became unlocked; let content scripts
        * re-query any conditional passkey requests they parked while the vault was locked.
        */
       if (result.success) {

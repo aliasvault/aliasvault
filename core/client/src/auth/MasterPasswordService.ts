@@ -91,7 +91,7 @@ export class MasterPasswordService {
     const srpIdentity = challenge.srpIdentity ?? SrpAuthService.normalizeUsername(username ?? '');
 
     const proof = await SrpAuthService.deriveClientProof(challenge.salt, srpIdentity, credentials.passwordHashString, challenge.serverEphemeral);
-    return { proof, unlockKeyBase64: credentials.passwordHashBase64, srpIdentity };
+    return { proof, unlockKeyBase64: credentials.unlockKeyBase64, srpIdentity };
   }
 
   /**

@@ -114,7 +114,7 @@ export interface IExtensionMessageProtocol {
   SET_RECENTLY_SELECTED(data: { itemId: string; manifestId: string; domain: string }): { success: boolean };
   START_VAULT_SYNC(): BoolResponse;
   STORE_ENCRYPTED_VAULT(data: { transferId: string; index: number; chunk: string; commit?: VaultBlobStoreOptions }): { success: boolean; mutationSequence: number } | null;
-  STORE_UNLOCK_KEY(data: string): BoolResponse;
+  STORE_ACCOUNT_KEY(data: string): BoolResponse;
   STORE_UNLOCK_KEY_DERIVATION_PARAMS(data: UnlockKeyDerivationParams): BoolResponse;
   STORE_LAST_AUTOFILLED(data: LastAutofilledCredential): { success: boolean };
   STORE_SAVE_PROMPT_STATE(data: SavePromptPersistedState): { success: boolean };

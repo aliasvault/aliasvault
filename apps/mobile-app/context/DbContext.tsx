@@ -32,7 +32,7 @@ type DbContextType = {
    */
   shouldSuppressEmailErrors: () => boolean;
   refreshSyncState: () => Promise<void>;
-  storeUnlockKey: (derivedKey: string) => Promise<void>;
+  storeAccountKey: (derivedKey: string) => Promise<void>;
   storeUnlockKeyDerivationParams: (keyDerivationParams: UnlockKeyDerivationParams) => Promise<void>;
   requiresLegacySqliteBlobMigration: () => Promise<boolean>;
   hasPendingMigrations: () => Promise<boolean>;
@@ -112,15 +112,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
-   * Store the unlock key (the password's Argon2id output) in the Native module (in memory and optionally keychain). The
-   * native module opens the account key chain with it and keeps the Account Key it yields, which gives the vault
-   * encryption key of the session.
+   * Open a session from the unlock key (the password's Argon2id output) in the native module, in memory and optionally
+   * keychain. The session keeps the Account Key the account key chain resolves.
    *
    * @param derivedKey The password-derived unlock key
    */
-  const storeUnlockKey = useCallback(async (derivedKey: string) => {
-    await sqliteClient.storeUnlockKey(derivedKey
-    );
+  const storeAccountKey = useCallback(async (derivedKey: string) => {
+    await sqliteClient.storeAccountKey(derivedKey);
   }, [sqliteClient]);
 
   /**
@@ -271,7 +269,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * @throws Error with error code if unlock fails - caller should handle the error
    */
   const testDatabaseConnection = useCallback(async (derivedKey: string, persistToKeychain = true): Promise<boolean> => {
-    await sqliteClient.storeUnlockKeyInMemory(derivedKey);
+    await sqliteClient.storeAccountKeyInMemory(derivedKey);
 
     await unlockVault();
 
@@ -285,7 +283,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
        * The old key in keychain is preserved for future biometric unlocks.
        */
       if (persistToKeychain) {
-        await sqliteClient.storeUnlockKey(derivedKey);
+        await sqliteClient.storeAccountKey(derivedKey);
       }
       return true;
     }
@@ -300,7 +298,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const verifyUnlockKey = useCallback(async (derivedKey: string): Promise<boolean> => {
     try {
-      await sqliteClient.storeUnlockKeyInMemory(derivedKey);
+      await sqliteClient.storeAccountKeyInMemory(derivedKey);
       await unlockVault();
 
       const version = await sqliteClient.getDatabaseVersion();
@@ -334,11 +332,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     testDatabaseConnection,
     verifyUnlockKey,
     unlockVault,
-    storeUnlockKey,
+    storeAccountKey,
     storeUnlockKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, dirtyScopes, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyUnlockKey, unlockVault, storeUnlockKey, storeUnlockKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, dirtyScopes, isSyncing, isUploading, isOffline, setIsSyncing, setIsUploading, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, requiresLegacySqliteBlobMigration, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyUnlockKey, unlockVault, storeAccountKey, storeUnlockKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

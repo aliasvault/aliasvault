@@ -15,9 +15,9 @@ export async function verifyMasterPassword(password: string): Promise<boolean> {
     throw new Error('No local key chain to verify the master password against');
   }
 
-  const prepared = await SrpAuthService.prepareCredentials(password, params.salt, params.encryptionType, params.encryptionSettings);
+  const unlockKey = await SrpAuthService.deriveUnlockKey(password, params.salt, params.encryptionSettings);
   try {
-    await VaultKeyService.verifyUnlockKey(prepared.passwordHashBase64);
+    await VaultKeyService.verifyUnlockKey(unlockKey);
     return true;
   } catch (error) {
     const code = error instanceof Error ? extractErrorCode(error.message) : null;

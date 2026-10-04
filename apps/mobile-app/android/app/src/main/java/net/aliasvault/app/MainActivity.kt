@@ -126,7 +126,7 @@ class MainActivity : ReactActivity() {
      * Handle PIN unlock result directly without going through React context.
      * This avoids race conditions with React context initialization.
      * @param resultCode The result code from the PIN unlock activity.
-     * @param data The intent data containing the unlock key.
+     * @param data The intent data containing the Account Key.
      */
     private fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
         val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
@@ -147,12 +147,12 @@ class MainActivity : ReactActivity() {
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
                 // Clear auth context on success
                 net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
-                val unlockKeyBase64 = data?.getStringExtra(
-                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_UNLOCK_KEY,
+                val accountKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ACCOUNT_KEY,
                 )
 
-                if (unlockKeyBase64 == null) {
-                    promise.reject("UNLOCK_ERROR", "Failed to get unlock key from PIN unlock", null)
+                if (accountKeyBase64 == null) {
+                    promise.reject("UNLOCK_ERROR", "Failed to get Account Key from PIN unlock", null)
                     return
                 }
 
@@ -161,12 +161,12 @@ class MainActivity : ReactActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         /*
-                         * Use storeUnlockKeyInMemory instead of storeUnlockKey.
-                         * storeUnlockKey would trigger biometric prompt if biometrics is enabled
+                         * Use storeAccountKeyInMemory instead of storeAccountKey.
+                         * storeAccountKey would trigger biometric prompt if biometrics is enabled
                          * since it tries to store the key in the biometric-protected keystore.
                          * For PIN unlock, we just want to set the key in memory.
                          */
-                        vaultStore.storeUnlockKeyInMemory(unlockKeyBase64)
+                        vaultStore.storeAccountKeyInMemory(accountKeyBase64)
                         vaultStore.unlockVault()
                         promise.resolve(true)
                     } catch (e: Exception) {
@@ -270,7 +270,7 @@ class MainActivity : ReactActivity() {
                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                     try {
                         // Store unlock key in memory only
-                        vaultStore.storeUnlockKeyInMemory(unlockKeyBase64)
+                        vaultStore.storeAccountKeyInMemory(unlockKeyBase64)
 
                         // Unlock the vault with the key now in memory
                         vaultStore.unlockVault()

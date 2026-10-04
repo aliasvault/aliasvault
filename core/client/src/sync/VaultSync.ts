@@ -137,11 +137,11 @@ export class VaultSync {
   public async syncVaultWithServer(options: VaultSyncOptions = {}): Promise<FullVaultSyncResult> {
     try {
       const storage = getPlatform().storage;
-      const [username, accessToken, unlockKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), VaultKeyService.getSessionUnlockKey()]);
+      const [username, accessToken, accountKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), VaultKeyService.getSessionAccountKey()]);
       if (username === null || accessToken === null) {
         return syncResult({ success: false });
       }
-      if (!unlockKey) {
+      if (!accountKey) {
         return syncResult({ success: false, errorCode: AppErrorCode.VAULT_LOCKED });
       }
 
@@ -228,7 +228,7 @@ export class VaultSync {
    */
   public async migrateVaultManifest(): Promise<VaultManifestMigrationResult> {
     try {
-      if (!await VaultKeyService.getSessionUnlockKey()) {
+      if (!await VaultKeyService.getSessionAccountKey()) {
         return { success: false, pushed: false, errorCode: AppErrorCode.VAULT_LOCKED };
       }
       if (await (await this.openVault()).requiresLegacySqliteBlobMigration()) {

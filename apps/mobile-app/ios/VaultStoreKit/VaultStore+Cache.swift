@@ -4,10 +4,10 @@ import VaultUtils
 
 /// Extension for the VaultStore class to handle cache management
 extension VaultStore {
-    /// Clear the memory - remove the unlock key and decrypted database from memory
+    /// Clear the memory - remove the Account Key and decrypted database from memory
     public func clearCache() {
-        print("Clearing cache - removing unlock key and decrypted database from memory")
-        self.unlockKey = nil
+        print("Clearing cache - removing Account Key and decrypted database from memory")
+        self.accountKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
     }
@@ -20,7 +20,7 @@ extension VaultStore {
         print("Clearing session - preserving vault data for recovery")
 
         // Clear in-memory data only
-        self.unlockKey = nil
+        self.accountKey = nil
         self.dbConnection = nil
         clearLastSuccessfulAuth()
 
@@ -79,7 +79,7 @@ extension VaultStore {
         print("Cleared UserDefaults")
 
         // Clear the cache to remove all in-memory data
-        self.unlockKey = nil
+        self.accountKey = nil
         self.dbConnection = nil
         self.enabledAuthMethods = []
         self.autoLockTimeout = VaultConstants.defaultAutoLockTimeout

@@ -3,14 +3,14 @@ import XCTest
 
 final public class VaultStoreKitTests: XCTestCase {
     var vaultStore: VaultStore!
-    let testUnlockKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
+    let testAccountKeyBase64 = "/9So3C83JLDIfjsF0VQOc4rz1uAFtIseW7yrUuztAD0=" // 32 bytes for AES-256
 
     override public func setUp() {
         super.setUp()
         vaultStore = VaultStore.shared
 
         do {
-            try vaultStore.storeUnlockKey(base64Key: testUnlockKeyBase64)
+            try vaultStore.storeAccountKey(base64Key: testAccountKeyBase64)
 
             let encryptedDb = try loadTestDatabase()
             try vaultStore.storeEncryptedDatabase(encryptedDb)

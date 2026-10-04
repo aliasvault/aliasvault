@@ -220,8 +220,8 @@ fn a_save_that_changed_nothing_is_not_written_again() {
 fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     // The migration encrypts every personal blob again under the new key; one it has no bytes for would stay under
     // the old key and never open again. The vault stays dirty and the migration runs again once the blob loads.
-    let kek = crypto::generate_key_base64();
-    let mut host = TestHost::new(&kek);
+    let unlock_key = crypto::generate_key_base64();
+    let mut host = TestHost::new(&unlock_key);
     insert_item(&host.local, ITEM_ID, "Old item", PERSONAL_MANIFEST_ID);
     let now = crate::common::timestamp::now_vault_datetime();
     host.local.execute("INSERT INTO Attachments (ManifestId, Id, ItemId, Filename, Blob, BlobHash, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, 'cccccccc-0000-4000-8000-000000000001', ?, 'passport.pdf', NULL, 'hash-of-a-blob-that-is-not-loaded', ?, ?, 0)", rusqlite::params![PERSONAL_MANIFEST_ID, ITEM_ID, now, now]).unwrap();
@@ -233,11 +233,11 @@ fn a_key_migration_push_is_refused_while_a_personal_blob_is_not_loaded() {
     host.respond("POST", "Vault/blobs/missing", json!({ "missing": [] }));
     host.respond("POST", "Vault", json!({ "status": 0, "manifestRevisions": [{ "manifestId": PERSONAL_MANIFEST_ID, "revision": 4 }], "bucketRevisions": [], "missingBlobHashes": [] }));
 
-    let result = host.drive(&SyncSession::new(&request("migrateManifest", &kek, false, 0)).unwrap());
+    let result = host.drive(&SyncSession::new(&request("migrateManifest", &unlock_key, false, 0)).unwrap());
 
     assert_eq!(result["pushed"], false, "{}", result);
     assert!(host.requests_to("Vault").iter().all(|r| r.method != "POST"), "nothing was written with the new key");
-    assert_eq!(host.vault_key, kek, "and the session keeps its key");
+    assert_eq!(host.vault_key, unlock_key, "and the session keeps its key");
 }
 
 #[test]

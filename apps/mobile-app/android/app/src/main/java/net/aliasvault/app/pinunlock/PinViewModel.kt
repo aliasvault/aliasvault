@@ -54,11 +54,11 @@ class PinViewModel(
     suspend fun processPin(
         pin: String,
         configuration: PinConfiguration,
-        setupUnlockKey: String? = null,
+        setupAccountKey: String? = null,
     ): PinResult = withContext(Dispatchers.IO) {
         return@withContext when (configuration.mode) {
             PinMode.UNLOCK -> processUnlock(pin)
-            PinMode.SETUP -> processSetup(pin, configuration, setupUnlockKey)
+            PinMode.SETUP -> processSetup(pin, configuration, setupAccountKey)
         }
     }
 
@@ -67,8 +67,8 @@ class PinViewModel(
      */
     private fun processUnlock(pin: String): PinResult {
         return try {
-            val unlockKey = vaultStore.unlockWithPin(pin)
-            PinResult.Success(unlockKey)
+            val accountKey = vaultStore.unlockWithPin(pin)
+            PinResult.Success(accountKey)
         } catch (e: PinUnlockException) {
             when (e) {
                 is PinUnlockException.Locked -> {
@@ -95,7 +95,7 @@ class PinViewModel(
     private fun processSetup(
         pin: String,
         configuration: PinConfiguration,
-        setupUnlockKey: String?,
+        setupAccountKey: String?,
     ): PinResult {
         return when (configuration.setupStep) {
             PinSetupStep.ENTER_NEW -> {
@@ -131,13 +131,13 @@ class PinViewModel(
 
                 // Setup the PIN
                 try {
-                    if (setupUnlockKey == null) {
+                    if (setupAccountKey == null) {
                         return PinResult.Error(
-                            "Unlock key required for PIN setup",
+                            "Account Key required for PIN setup",
                             shouldClear = false,
                         )
                     }
-                    vaultStore.setupPin(pin, setupUnlockKey)
+                    vaultStore.setupPin(pin, setupAccountKey)
                     PinResult.Success(null)
                 } catch (e: Exception) {
                     PinResult.Error(

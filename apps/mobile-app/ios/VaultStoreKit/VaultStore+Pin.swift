@@ -53,13 +53,13 @@ extension VaultStore {
             throw AppError.biometricNotAvailable
         }
 
-        // The session's stored key (vault must be unlocked): the PIN protects the Account Key, never the vault key
-        try encryptKeyWithPin(try getUnlockKey(), pin: pin)
+        // The PIN protects the Account Key (vault must be unlocked), never the vault key
+        try encryptKeyWithPin(try getAccountKey(), pin: pin)
         print("PIN unlock enabled successfully")
     }
 
-    /// Encrypt a stored key with a key derived from the PIN and keep it in the keychain.
-    internal func encryptKeyWithPin(_ unlockKey: Data, pin: String) throws {
+    /// Encrypt the Account Key with a key derived from the PIN and keep it in the keychain.
+    internal func encryptKeyWithPin(_ accountKey: Data, pin: String) throws {
         // Generate random salt
         var salt = Data(count: 16)
         let result = salt.withUnsafeMutableBytes {
@@ -72,9 +72,9 @@ extension VaultStore {
         // Derive key from PIN + salt using Argon2id
         let pinKey = try derivePinKey(pin: pin, salt: salt)
 
-        // Encrypt the unlock key using AES-GCM
+        // Encrypt the Account Key using AES-GCM
         let symmetricKey = SymmetricKey(data: pinKey)
-        let sealedBox = try AES.GCM.seal(unlockKey, using: symmetricKey)
+        let sealedBox = try AES.GCM.seal(accountKey, using: symmetricKey)
         guard let encryptedData = sealedBox.combined else {
             throw NSError(domain: "VaultStore", code: 23, userInfo: [NSLocalizedDescriptionKey: "Failed to encrypt vault key"])
         }
@@ -94,7 +94,7 @@ extension VaultStore {
     // MARK: - PIN Unlock Methods
 
     /// Unlock with PIN
-    /// Returns the decrypted stored key
+    /// Returns the Account Key
     ///
     /// - Parameter pin: The PIN to use for unlocking
     /// - Returns: The decrypted key (base64), to open the session with

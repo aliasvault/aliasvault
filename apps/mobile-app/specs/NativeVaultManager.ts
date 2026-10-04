@@ -64,9 +64,9 @@ export interface Spec extends TurboModule {
   // Database/encryption key operations
   storeMetadata(metadata: string): Promise<void>;
   setAuthMethods(authMethods: string[]): Promise<void>;
-  storeUnlockKeyInMemory(base64UnlockKey: string): Promise<void>;
+  storeAccountKeyInMemory(base64Key: string): Promise<void>;
   clearEncryptionKeyFromMemory(): Promise<void>;
-  storeUnlockKey(base64UnlockKey: string): Promise<void>;
+  storeAccountKey(base64Key: string): Promise<void>;
   storeUnlockKeyDerivationParams(keyDerivationParams: string): Promise<void>;
   getUnlockKeyDerivationParams(): Promise<string | null>;
   getAccountKeyChain(): Promise<string | null>;
@@ -140,7 +140,7 @@ export interface Spec extends TurboModule {
   showPasswordUnlock(title: string | null, subtitle: string | null, buttonText: string | null): Promise<boolean | null>;
 
   // Mobile login methods
-  encryptUnlockKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
+  encryptAccountKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
 
   // Re-authentication methods
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.

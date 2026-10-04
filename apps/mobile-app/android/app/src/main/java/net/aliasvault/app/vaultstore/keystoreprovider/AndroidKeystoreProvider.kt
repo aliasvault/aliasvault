@@ -55,7 +55,7 @@ class AndroidKeystoreProvider(
         private const val KEYSTORE_ALIAS = "alias_vault_key"
 
         /**
-         * The filename for the encrypted unlock key.
+         * The filename for the encrypted Account Key.
          */
         private const val ENCRYPTED_KEY_FILE = "encrypted_vault_key"
 

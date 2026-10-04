@@ -12,7 +12,7 @@ import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logFailure } from '@/utils/Diagnostics';
 import { onMessage, sendMessage } from '@/utils/messaging/ExtensionMessaging';
 
-import { markOwnUnlockKey, vaultStateEvents } from '@/events/VaultStateEvents';
+import { markOwnAccountKey, vaultStateEvents } from '@/events/VaultStateEvents';
 import { t } from '@/i18n/StandaloneI18n';
 
 import type { SyncErrorDetail } from '@aliasvault/client/sync/VaultSync';
@@ -91,7 +91,7 @@ type DbContextType = {
    * Returns the SqliteClient if vault was loaded successfully, null otherwise.
    */
   loadStoredDatabase: () => Promise<SqliteClient | null>;
-  storeUnlockKey: (unlockKey: string) => Promise<void>;
+  storeAccountKey: (accountKey: string) => Promise<void>;
   storeUnlockKeyDerivationParams: (params: UnlockKeyDerivationParams) => Promise<void>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
@@ -375,13 +375,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Store the session's key in the background worker. It is the one secret the session holds; the vault encryption key
    * is derived from it and the cached key chain.
    */
-  const storeUnlockKey = useCallback(async (unlockKey: string) : Promise<void> => {
+  const storeAccountKey = useCallback(async (accountKey: string) : Promise<void> => {
     /*
      * Mark as our own write BEFORE sending, so the cross-window watcher
      * ignores the storage event triggered by this same flow.
      */
-    markOwnUnlockKey(unlockKey);
-    await sendMessage('STORE_UNLOCK_KEY', unlockKey);
+    markOwnAccountKey(accountKey);
+    await sendMessage('STORE_ACCOUNT_KEY', accountKey);
   }, []);
 
   /**
@@ -420,7 +420,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setIsUploading,
     shouldSuppressEmailErrors,
     loadStoredDatabase,
-    storeUnlockKey,
+    storeAccountKey,
     storeUnlockKeyDerivationParams,
     clearDatabase,
     getVaultMetadata,
@@ -429,7 +429,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     requiresManifestMigration,
     syncError,
     clearSyncError,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeUnlockKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, hasUnsyncedUserChanges, isSyncing, isUploading, setIsOffline, shouldSuppressEmailErrors, loadStoredDatabase, storeAccountKey, storeUnlockKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, requiresLegacySqliteBlobMigration, requiresManifestMigration, syncError, clearSyncError]);
 
   return (
     <DbContext.Provider value={contextValue}>

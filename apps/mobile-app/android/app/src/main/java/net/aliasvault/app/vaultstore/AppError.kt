@@ -123,7 +123,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
 
     // Decryption errors
     /**
-     * Error indicating the locally stored vault does not decrypt with the session key.
+     * Error indicating the locally stored vault does not decrypt with the Account Key.
      */
     class VaultDecryptFailed(
         message: String = "Failed to decrypt vault",
@@ -147,7 +147,7 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     ) : AppError("The account key does not open the vault encryption key: $message", cause)
 
     /**
-     * Error indicating the session key does not open the key chain the server holds; only a re-login recovers.
+     * Error indicating the Account Key does not open the key chain the server holds; only a re-login recovers.
      */
     class KeyOutOfSync(
         message: String = "Vault encryption key out of sync with the server; log in again",

@@ -214,7 +214,7 @@ async fn run_sync_preflight(ctx: &mut Ctx) -> SyncResult<Preflight> {
     // A changed server salt means the password was changed elsewhere, which warrants a logout.
     assert_salt_unchanged(ctx, status.srp_salt.as_deref()).await?;
 
-    // The session key is the VEK (or a legacy account's KEK) by contract; the host resolved it at login. The one
+    // The session key is the VEK (or a legacy account's unlock key) by contract; the host resolved it at login. The one
     // case the sync has to catch itself: this device holds no chain because the account was still legacy when it
     // logged in, and another device created the hierarchy since. That shows up as a revision change, so a pull
     // (or a push about to hit the server) is where it is checked.

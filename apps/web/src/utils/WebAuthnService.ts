@@ -115,7 +115,7 @@ async function createCredentialDerivedKey(username: string): Promise<{ credentia
 }
 
 /**
- * Passkey quick unlock: the session's Account Key encrypted with a key the passkey derives, kept in localStorage.
+ * Passkey quick unlock: the Account Key encrypted with a key the passkey derives, kept in localStorage.
  */
 export const WebAuthnService = {
   /**
@@ -126,10 +126,10 @@ export const WebAuthnService = {
   },
 
   /**
-   * Create a passkey and encrypt the session's Account Key with it.
+   * Create a passkey and encrypt the Account Key with it.
    */
   async enable(username: string): Promise<void> {
-    const accountKey = await VaultKeyService.getSessionUnlockKey();
+    const accountKey = await VaultKeyService.getSessionAccountKey();
     if (!accountKey) {
       throw new Error('Vault is locked');
     }
@@ -171,6 +171,6 @@ export const WebAuthnService = {
       }
       throw error;
     }
-    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY, accountKey);
+    await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, accountKey);
   },
 };

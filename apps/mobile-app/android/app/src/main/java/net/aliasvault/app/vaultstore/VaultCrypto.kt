@@ -74,33 +74,30 @@ class VaultCrypto(
     }
 
     /**
-     * The stored key: the one secret the unlocked session holds in memory, and the key the unlock methods (keystore,
-     * PIN) protect. Every other key is derived from it and the cached account key chain.
+     * The Account Key the unlocked session holds and the keystore and PIN protect (see [LegacyKeyConversion]).
      */
-    internal var unlockKey: ByteArray? = null
+    internal var accountKey: ByteArray? = null
 
     /**
-     * The encryption key for the vault, derived from the unlock key. Null while the vault is locked.
+     * The encryption key for the vault, derived from the Account Key. Null while the vault is locked.
      */
     internal val encryptionKey: ByteArray?
         get() = sessionKeys()?.vaultEncryptionKey
 
     /**
-     * The account private key (JWK) of the unlocked session, derived from the unlock key.
+     * The account private key (JWK) of the unlocked session, derived from the Account Key.
      */
     internal val accountPrivateKey: String?
         get() = sessionKeys()?.accountPrivateKey
 
     /**
-     * What the stored key opens in the cached account key chain. A session that still holds an unlock key while the
-     * account has a chain (a sync accepted one created on another device) keeps the Account Key from now on; the
-     * keystore copy converts at the next biometric unlock (see [LegacyKeyConversion]), so this never prompts.
+     * What the Account Key opens in the cached account key chain; a legacy key converts (see [LegacyKeyConversion]).
      */
     @Suppress("SwallowedException")
     private fun sessionKeys(): SessionKeys? {
-        val key = unlockKey ?: return null
+        val key = accountKey ?: return null
         return try {
-            openAccountKeyChain(key).also { if (!it.accountKey.contentEquals(key)) unlockKey = it.accountKey }
+            openAccountKeyChain(key).also { if (!it.accountKey.contentEquals(key)) accountKey = it.accountKey }
         } catch (e: Exception) {
             null
         }
@@ -128,7 +125,7 @@ class VaultCrypto(
     // region Encryption Key Management
 
     /**
-     * Open a session with the unlock key and optionally persist that key to keystore if
+     * Open a session with the unlock key or the Account Key and optionally persist the Account Key to keystore if
      * biometrics are enabled.
      *
      * During login, if biometrics are enabled, this will attempt to persist the key to keystore.
@@ -136,8 +133,8 @@ class VaultCrypto(
      * the key will only be stored in memory. It will be persisted to keystore on next unlock
      * when Activity context is available.
      */
-    fun storeUnlockKey(base64UnlockKey: String, authMethods: String) {
-        openSession(Base64.decode(base64UnlockKey, Base64.NO_WRAP))
+    fun storeAccountKey(base64Key: String, authMethods: String) {
+        openSession(Base64.decode(base64Key, Base64.NO_WRAP))
 
         if (authMethods.contains(BIOMETRICS_AUTH_METHOD)) {
             try {
@@ -145,7 +142,7 @@ class VaultCrypto(
                 var error: Exception? = null
 
                 keystoreProvider.storeKey(
-                    key = Base64.encodeToString(unlockKey, Base64.NO_WRAP),
+                    key = Base64.encodeToString(accountKey, Base64.NO_WRAP),
                     object : KeystoreOperationCallback {
                         override fun onSuccess(result: String) {
                             Log.d(TAG, "Encryption key stored successfully with biometric protection")
@@ -175,15 +172,15 @@ class VaultCrypto(
     }
 
     /**
-     * Open a session in memory only with the unlock key.
+     * Open a session in memory only with the unlock key or the Account Key.
      */
-    fun storeUnlockKeyInMemory(base64UnlockKey: String) {
-        openSession(Base64.decode(base64UnlockKey, Base64.NO_WRAP))
+    fun storeAccountKeyInMemory(base64Key: String) {
+        openSession(Base64.decode(base64Key, Base64.NO_WRAP))
     }
 
     /**
-     * Clear the unlock key from memory.
-     * This forces getEncryptionKey() to fetch the unlock key from keystore on next biometric access.
+     * Clear the Account Key from memory.
+     * This forces getEncryptionKey() to fetch the Account Key from keystore on next biometric access.
      */
     fun clearEncryptionKeyFromMemory() {
         clearKey()
@@ -219,37 +216,28 @@ class VaultCrypto(
         return storageProvider.getAccountKeyChain()
     }
 
-    /*
-     * The stored key is the one secret a session holds; keystore and PIN only protect that same key. It is the Account
-     * Key, so it does not depend on the password: a typed password yields an unlock key (its Argon2id output), which
-     * opening the chain turns into the Account Key before anything stores it. A key stored before the account had a
-     * chain is an unlock key; it still opens the chain and is replaced by the Account Key on the next open. The
-     * Account Key opens the vault key and account private key, which are derived on demand and never stored.
-     */
-
     /**
      * The session keys the account key chain gives.
      *
      * @property vaultEncryptionKey The key that encrypts and decrypts the vault
      * @property accountPrivateKey The account private key (JWK), null when the account has no keypair
-     * @property accountKey The key to store for later unlocks, in place of the key the chain was opened with
+     * @property accountKey The Account Key to keep, in place of the key the chain was opened with
      */
     class SessionKeys(val vaultEncryptionKey: ByteArray, val accountPrivateKey: String?, val accountKey: ByteArray)
 
     /**
-     * Open the cached account key chain with the stored key: the Account Key, or an unlock key that `accountKey` then
-     * replaces (Rust `openAccountKeyChain`). Without a chain (account not yet upgraded) the unlock key is the vault key.
+     * Open the cached account key chain with the Account Key or the unlock key (Rust `openAccountKeyChain`).
      */
-    fun openAccountKeyChain(storedKey: ByteArray): SessionKeys {
-        val chainJson = getAccountKeyChain() ?: return SessionKeys(storedKey, null, storedKey)
+    fun openAccountKeyChain(key: ByteArray): SessionKeys {
+        val chainJson = getAccountKeyChain() ?: return SessionKeys(key, null, key)
         val chain = JSONObject(chainJson)
-        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(storedKey, null, storedKey)
+        val encryptedAccountKey = chain.optString("encryptedAccountKey").takeIf { it.isNotEmpty() } ?: return SessionKeys(key, null, key)
         val encryptedVek = chain.optString("encryptedVek").takeIf { it.isNotEmpty() } ?: error("Account key chain is missing the encrypted VEK")
         // A private key that does not open must not fail the unlock; grants stay closed until the next login.
         val encryptedPrivateKey = chain.optString("encryptedAccountPrivateKey").takeIf { it.isNotEmpty() }
 
         val keys = try {
-            rustOpenAccountKeyChain(storedKey, encryptedAccountKey, encryptedVek, encryptedPrivateKey)
+            rustOpenAccountKeyChain(key, encryptedAccountKey, encryptedVek, encryptedPrivateKey)
         } catch (e: KeyChainException.UnlockKeyRejected) {
             throw AppError.UnlockKeyRejected(cause = e)
         } catch (e: KeyChainException.KeyChainUnreadable) {
@@ -262,8 +250,8 @@ class VaultCrypto(
     /**
      * Open a session with a key that opens the cached account key chain; the session keeps the Account Key it yields.
      */
-    fun openSession(unlockKey: ByteArray) {
-        this.unlockKey = openAccountKeyChain(unlockKey).accountKey
+    fun openSession(key: ByteArray) {
+        accountKey = openAccountKeyChain(key).accountKey
     }
 
     /**
@@ -281,10 +269,10 @@ class VaultCrypto(
     }
 
     /**
-     * Get the unlock key, the keystore and PIN protect.
+     * Get the Account Key, the key the keystore and PIN protect.
      */
-    fun getUnlockKey(callback: CryptoOperationCallback, authMethods: String) {
-        withSession(callback, authMethods) { unlockKey }
+    fun getAccountKey(callback: CryptoOperationCallback, authMethods: String) {
+        withSession(callback, authMethods) { accountKey }
     }
 
     /**
@@ -304,13 +292,13 @@ class VaultCrypto(
                         try {
                             val keystoreKey = Base64.decode(result, Base64.NO_WRAP)
                             openSession(keystoreKey)
-                            unlockKey?.let { LegacyKeyConversion.convertKeystoreKey(keystoreProvider, keystoreKey, it) }
+                            accountKey?.let { LegacyKeyConversion.convertKeystoreKey(keystoreProvider, keystoreKey, it) }
                             callback.onSuccess(Base64.encodeToString(key(), Base64.NO_WRAP))
                         } catch (e: AppError) {
-                            Log.e(TAG, "The unlock key from the keystore does not open the account key chain", e)
+                            Log.e(TAG, "The Account Key from the keystore does not open the account key chain", e)
                             callback.onError(e)
                         } catch (e: Exception) {
-                            Log.e(TAG, "The unlock key from the keystore does not open the account key chain", e)
+                            Log.e(TAG, "The Account Key from the keystore does not open the account key chain", e)
                             callback.onError(AppError.UnlockKeyRejected(cause = e))
                         }
                     }
@@ -331,7 +319,7 @@ class VaultCrypto(
      * Clear the encryption key from memory.
      */
     fun clearKey() {
-        unlockKey = null
+        accountKey = null
     }
 
     // endregion
@@ -432,15 +420,15 @@ class VaultCrypto(
     // region Mobile Login
 
     /**
-     * Encrypts the unlock key using an RSA public key for mobile login. The receiving
+     * Encrypts the Account Key using an RSA public key for mobile login. The receiving
      * client opens the account key chain with it, exactly as after a password login.
      */
-    fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String, authMethods: String): String {
+    fun encryptAccountKeyForMobileLogin(publicKeyJWK: String, authMethods: String): String {
         var result: String? = null
         var error: Exception? = null
         val latch = java.util.concurrent.CountDownLatch(1)
 
-        getUnlockKey(
+        getAccountKey(
             object : CryptoOperationCallback {
                 override fun onSuccess(key: String) {
                     try {

@@ -140,7 +140,7 @@ pub struct OpenedKeyChain {
     pub account_private_key: Option<Zeroizing<String>>,
 }
 
-/// Open a key chain with a stored key, which is either the Account Key or an unlock key (see the module docs).
+/// Open a key chain with a stored key: the Account Key, or an unlock key stored before the switch to the Account Key.
 pub fn open_account_key_chain(stored_key: &str, encrypted_account_key: &str, encrypted_vek: &str, encrypted_account_private_key: Option<&str>) -> Result<OpenedKeyChain, KeyChainError> {
     let (account_key, vault_encryption_key) = match unwrap_key(encrypted_vek, stored_key) {
         Ok(vek) => (Zeroizing::new(stored_key.to_string()), vek),
@@ -218,7 +218,6 @@ mod tests {
         assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &unlock_key).is_err());
         assert!(unwrap_key(&hierarchy.account_keys.encrypted_account_key, &derive_kek_base64(&unlock_key).unwrap()).is_ok());
     }
-
 
     #[test]
     fn chain_opens_with_the_unlock_key_and_hands_back_the_account_key() {

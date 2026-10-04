@@ -1,5 +1,5 @@
 /**
- * The web app's vault store: the at-rest (encrypted) vault, the session key, and the interface with the Rust sync engine.
+ * The web app's vault store: the at-rest (encrypted) vault, the Account Key, and the interface with the Rust sync engine.
  */
 
 import { AppErrorCode, formatErrorWithCode } from '@aliasvault/client/api/errors/AppErrorCodes';
@@ -81,7 +81,7 @@ function cleanupCachedSqliteClient(): void {
 }
 
 /**
- * The session vault key, derived from the session unlock key and the cached key chain, or null while locked.
+ * The session vault key, derived from the Account Key and the cached key chain, or null while locked.
  */
 async function getEncryptionKey(): Promise<string | null> {
   return VaultKeyService.getSessionVaultEncryptionKey();
@@ -372,11 +372,11 @@ export const vaultStore = {
   createVaultSqliteClient,
 
   /**
-   * Store the session unlock key.
-   * @param unlockKey - the unlock key
+   * Store the Account Key.
+   * @param accountKey - the Account Key
    */
-  async storeUnlockKey(unlockKey: string): Promise<void> {
-    await getPlatform().storage.set(StorageKeys.UNLOCK_KEY, unlockKey);
+  async storeAccountKey(accountKey: string): Promise<void> {
+    await getPlatform().storage.set(StorageKeys.ACCOUNT_KEY, accountKey);
   },
 
   /**
@@ -432,9 +432,9 @@ export const vaultStore = {
    */
   async checkAuthStatus(): Promise<{ isLoggedIn: boolean; isVaultLocked: boolean; hasStoredVault: boolean }> {
     const storage = getPlatform().storage;
-    const [username, accessToken, vaultData, unlockKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), getEncryptedVault(), VaultKeyService.getSessionUnlockKey()]);
+    const [username, accessToken, vaultData, accountKey] = await Promise.all([storage.get<string>(StorageKeys.USERNAME), storage.get<string>(StorageKeys.ACCESS_TOKEN), getEncryptedVault(), VaultKeyService.getSessionAccountKey()]);
     const isLoggedIn = username !== null && accessToken !== null;
-    return { isLoggedIn, isVaultLocked: isLoggedIn && unlockKey === null, hasStoredVault: vaultData !== null };
+    return { isLoggedIn, isVaultLocked: isLoggedIn && accountKey === null, hasStoredVault: vaultData !== null };
   },
 
   /**

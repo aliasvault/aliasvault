@@ -5,7 +5,7 @@ import { setupPin } from '@/utils/PinUnlockService';
  *
  * Before 0.31.0 the PIN protected the unlock key (the Argon2id output of the master password). Since then it protects
  * the Account Key. A PIN set up before the account had a key chain still opens the chain; it is then re-encrypted
- * with the Account Key, once. The session key itself converts in core/client `convertLegacySessionKey`.
+ * with the Account Key, once. The stored Account Key itself converts in core/client `convertLegacySessionKey`.
  *
  * TODO: remove once accounts without a key chain (pre-0.31.0) are no longer supported.
  */

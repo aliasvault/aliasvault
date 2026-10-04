@@ -25,13 +25,13 @@ public enum AppError: Error {
     case syncVaultFetchFailed(message: String)
 
     // Decryption errors
-    /// The locally stored vault does not decrypt with the session key.
+    /// The locally stored vault does not decrypt with the Account Key.
     case vaultDecryptFailed
     /// The unlock key does not open the account key (wrong password or PIN).
     case unlockKeyRejected
     /// The account key opened, the vault encryption key under it did not.
     case keyChainUnreadable(message: String)
-    /// The session key does not open the key chain the server holds; only a re-login recovers.
+    /// The Account Key does not open the key chain the server holds; only a re-login recovers.
     case keyOutOfSync
     /// A server manifest or bucket fails its hash check or does not decrypt.
     case serverVaultDecryptFailed(message: String)

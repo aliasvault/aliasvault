@@ -51,7 +51,7 @@ export type PreparedCredentials = {
   /** The SRP password hash (uppercase hex) for the account's encryption type. */
   passwordHashString: string;
   /** The unlock key (base64): the Argon2id output of the password. */
-  passwordHashBase64: string;
+  unlockKeyBase64: string;
   /** Set when the account still has a legacy verifier, see {@link LegacySrpVerifierUpgrade}. */
   legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 };
@@ -253,6 +253,18 @@ export class SrpAuthService {
   }
 
   /**
+   * Derive the unlock key (the Argon2id output, base64) from the password.
+   *
+   * @param password - The user's password
+   * @param salt - The account's salt
+   * @param encryptionSettings - The encryption settings JSON string
+   * @returns The unlock key (base64)
+   */
+  public static async deriveUnlockKey(password: string, salt: string, encryptionSettings: string): Promise<string> {
+    return bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings));
+  }
+
+  /**
    * Derive the unlock key from the password and the SRP password hash the account's encryption type makes from it.
    *
    * @param password - The user's password
@@ -262,11 +274,8 @@ export class SrpAuthService {
    * @returns The SRP password hash (hex) and the unlock key (base64)
    */
   public static async prepareCredentials(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<PreparedCredentials> {
-    const unlockKey = bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, salt, encryptionSettings));
-    return {
-      passwordHashString: await SrpAuthService.srpPasswordHash(unlockKey, encryptionType),
-      passwordHashBase64: unlockKey,
-    };
+    const unlockKeyBase64 = await SrpAuthService.deriveUnlockKey(password, salt, encryptionSettings);
+    return { passwordHashString: await SrpAuthService.srpPasswordHash(unlockKeyBase64, encryptionType), unlockKeyBase64 };
   }
 
   /**
@@ -289,8 +298,8 @@ export class SrpAuthService {
    * @returns The credentials to log in with
    */
   public static async prepareLoginCredentials(password: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
-    const unlockKey = bytesToBase64(await EncryptionUtility.deriveKeyFromPassword(password, loginResponse.salt, loginResponse.encryptionSettings));
-    return SrpAuthService.loginCredentials(unlockKey, loginResponse, username);
+    const unlockKeyBase64 = await SrpAuthService.deriveUnlockKey(password, loginResponse.salt, loginResponse.encryptionSettings);
+    return SrpAuthService.loginCredentials(unlockKeyBase64, loginResponse, username);
   }
 
   /**
@@ -302,10 +311,7 @@ export class SrpAuthService {
    * @returns The credentials to log in with
    */
   public static async loginCredentials(unlockKeyBase64: string, loginResponse: LoginResponse, username: string): Promise<PreparedCredentials> {
-    const credentials: PreparedCredentials = {
-      passwordHashString: await SrpAuthService.srpPasswordHash(unlockKeyBase64, loginResponse.encryptionType),
-      passwordHashBase64: unlockKeyBase64,
-    };
+    const credentials: PreparedCredentials = { passwordHashString: await SrpAuthService.srpPasswordHash(unlockKeyBase64, loginResponse.encryptionType), unlockKeyBase64 };
     if (loginResponse.encryptionType !== LEGACY_ENCRYPTION_TYPE) {
       return credentials;
     }
@@ -336,7 +342,7 @@ export class SrpAuthService {
     const credentials = await SrpAuthService.prepareCredentials(password, salt, DEFAULT_ENCRYPTION.type, DEFAULT_ENCRYPTION.settings);
     const privateKey = await SrpAuthService.derivePrivateKey(salt, srpIdentity, credentials.passwordHashString);
     const verifier = await SrpAuthService.deriveVerifier(privateKey);
-    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, unlockKeyBase64: credentials.passwordHashBase64 };
+    return { salt, verifier, encryptionType: DEFAULT_ENCRYPTION.type, encryptionSettings: DEFAULT_ENCRYPTION.settings, unlockKeyBase64: credentials.unlockKeyBase64 };
   }
 
   /**

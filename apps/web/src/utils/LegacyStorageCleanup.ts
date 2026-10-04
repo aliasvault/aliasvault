@@ -3,9 +3,9 @@ import { getLocalPreference, removeLocalPreference, setLocalPreference } from '@
 import { LocalPreferenceKeys } from '@/utils/StorageKeys';
 
 /**
- * localStorage keys only the previous (Blazor) web client wrote: its tokens, its cached key chain, debug keys, its
- * passkey unlock (which held the password-derived key; passkey unlock is set up again in this app) and its own
- * language key. This app keeps its session in IndexedDB, so none of them is read any more.
+ * localStorage keys no current client reads: the previous (Blazor) web client's tokens, cached key chain, debug keys
+ * and language key, plus the passkey unlock keys both web clients wrote before 0.31.0 (which held the unlock key;
+ * passkey unlock is set up again under new keys).
  */
 const LEGACY_ONLY_KEYS = [
   'token',

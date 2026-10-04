@@ -97,12 +97,12 @@
     [vaultManager storeMetadata:metadata resolver:resolve rejecter:reject];
 }
 
-- (void)storeUnlockKeyInMemory:(NSString *)base64UnlockKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeUnlockKeyInMemory:base64UnlockKey resolver:resolve rejecter:reject];
+- (void)storeAccountKeyInMemory:(NSString *)base64Key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeAccountKeyInMemory:base64Key resolver:resolve rejecter:reject];
 }
 
-- (void)storeUnlockKey:(NSString *)base64UnlockKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeUnlockKey:base64UnlockKey resolver:resolve rejecter:reject];
+- (void)storeAccountKey:(NSString *)base64Key resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager storeAccountKey:base64Key resolver:resolve rejecter:reject];
 }
 
 - (void)clearEncryptionKeyFromMemory:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -355,8 +355,8 @@
 
 // MARK: - Mobile Login
 
-- (void)encryptUnlockKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager encryptUnlockKeyForMobileLogin:publicKeyJWK resolver:resolve rejecter:reject];
+- (void)encryptAccountKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager encryptAccountKeyForMobileLogin:publicKeyJWK resolver:resolve rejecter:reject];
 }
 
 // MARK: - Re-authentication

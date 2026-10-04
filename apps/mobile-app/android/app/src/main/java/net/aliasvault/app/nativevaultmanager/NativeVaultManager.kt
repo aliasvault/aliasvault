@@ -242,35 +242,35 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Open a session in memory with the unlock key, without keystore persistence.
+     * Open a session in memory with the unlock key or the Account Key, without keystore persistence.
      * Use this to test if a key is valid before persisting.
-     * @param base64UnlockKey The unlock key as a base64 encoded string
+     * @param base64Key The unlock key or Account Key as a base64 encoded string
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun storeUnlockKeyInMemory(base64UnlockKey: String, promise: Promise) {
+    override fun storeAccountKeyInMemory(base64Key: String, promise: Promise) {
         try {
-            vaultStore.storeUnlockKeyInMemory(base64UnlockKey)
+            vaultStore.storeAccountKeyInMemory(base64Key)
             promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing unlock key in memory", e)
-            promise.reject("ERR_STORE_KEY_MEMORY", "Failed to store unlock key in memory: ${e.message}", e)
+            Log.e(TAG, "Error storing Account Key in memory", e)
+            promise.reject("ERR_STORE_KEY_MEMORY", "Failed to store Account Key in memory: ${e.message}", e)
         }
     }
 
     /**
-     * Open a session with the unlock key AND persist it to keystore (may trigger biometric prompt).
-     * @param base64UnlockKey The unlock key as a base64 encoded string
+     * Open a session with the unlock key or the Account Key AND persist the Account Key to keystore (may trigger biometric prompt).
+     * @param base64Key The unlock key or Account Key as a base64 encoded string
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun storeUnlockKey(base64UnlockKey: String, promise: Promise) {
+    override fun storeAccountKey(base64Key: String, promise: Promise) {
         try {
-            vaultStore.storeUnlockKey(base64UnlockKey)
+            vaultStore.storeAccountKey(base64Key)
             promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing unlock key", e)
-            promise.reject("ERR_STORE_KEY", "Failed to store unlock key: ${e.message}", e)
+            Log.e(TAG, "Error storing Account Key", e)
+            promise.reject("ERR_STORE_KEY", "Failed to store Account Key: ${e.message}", e)
         }
     }
 
@@ -345,7 +345,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
 
     /**
      * Resolve and store the vault key right after login from the unlock key (see VaultStore.resolveVaultKey).
-     * Resolves with the stored key; rejects with the native error code when the chain does not open or the session is gone.
+     * Resolves with the vault key; rejects with the native error code when the chain does not open or the session is gone.
      * @param base64DerivedKey The password-derived key as base64
      * @param promise The promise to resolve
      */
@@ -378,14 +378,14 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Encrypt the decryption key for mobile login.
+     * Encrypt the Account Key for mobile login.
      * @param publicKeyJWK The public key in JWK format
      * @param promise The promise to resolve
      */
     @ReactMethod
-    override fun encryptUnlockKeyForMobileLogin(publicKeyJWK: String, promise: Promise) {
+    override fun encryptAccountKeyForMobileLogin(publicKeyJWK: String, promise: Promise) {
         try {
-            val encryptedKey = vaultStore.encryptUnlockKeyForMobileLogin(publicKeyJWK)
+            val encryptedKey = vaultStore.encryptAccountKeyForMobileLogin(publicKeyJWK)
             promise.resolve(encryptedKey)
         } catch (e: Exception) {
             Log.e(TAG, "Error encrypting key for mobile login", e)
@@ -1643,15 +1643,14 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     /**
      * Show native PIN setup UI.
      * Launches the native PinUnlockActivity in setup mode.
-     * Gets the unlock key from memory (vault must be unlocked): the PIN protects that
+     * Gets the Account Key from memory (vault must be unlocked): the PIN protects that
      * key, never the vault key.
      * @param promise The promise to resolve when setup completes or rejects if cancelled/error.
      */
     @ReactMethod
     override fun showPinSetup(promise: Promise) {
-        // Get the unlock key first
-        vaultStore.getUnlockKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
-            override fun onSuccess(unlockKey: String) {
+        vaultStore.getAccountKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
+            override fun onSuccess(accountKey: String) {
                 try {
                     val activity = currentActivity
                     if (activity == null) {
@@ -1665,7 +1664,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     // Launch PIN setup activity
                     val intent = android.content.Intent(activity, net.aliasvault.app.pinunlock.PinUnlockActivity::class.java)
                     intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_MODE, net.aliasvault.app.pinunlock.PinUnlockActivity.MODE_SETUP)
-                    intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_SETUP_UNLOCK_KEY, unlockKey)
+                    intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_SETUP_ACCOUNT_KEY, accountKey)
 
                     activity.startActivityForResult(intent, PIN_SETUP_REQUEST_CODE)
                 } catch (e: Exception) {
@@ -1675,8 +1674,8 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             }
 
             override fun onError(error: Exception) {
-                Log.e(TAG, "Error getting unlock key for PIN setup", error)
-                promise.reject("ERR_SETUP_PIN", "Failed to get unlock key: ${error.message}", error)
+                Log.e(TAG, "Error getting Account Key for PIN setup", error)
+                promise.reject("ERR_SETUP_PIN", "Failed to get Account Key: ${error.message}", error)
             }
         })
     }

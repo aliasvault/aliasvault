@@ -74,15 +74,14 @@ internal final class VaultSync {
     }
 
     /// Resolve the vault key right after login: the account's key chain is opened with the unlock key (the password's
-    /// Argon2id output) and cached as-is. The session then opens from that chain like every later unlock, and keeps
-    /// the Account Key; an account not yet upgraded has no chain and its unlock key is the vault key. Returns the vault
-    /// key (base64).
+    /// Argon2id output) and cached as-is. The session then opens from that chain like every later unlock, and the session
+    /// keeps the Account Key. Returns the vault key (base64).
     func resolveVaultKey(using webApiService: WebApiService, derivedKeyBase64: String) async throws -> String {
         let result = try await run("resolveVaultKey", using: webApiService, encryptionKey: derivedKeyBase64)
         guard result["success"] as? Bool == true else {
             throw Self.syncError(from: result)
         }
-        try vaultStore.storeUnlockKey(base64Key: derivedKeyBase64)
+        try vaultStore.storeAccountKey(base64Key: derivedKeyBase64)
         return try vaultStore.getEncryptionKeyBase64()
     }
 

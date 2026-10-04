@@ -9,7 +9,7 @@ import { VaultKeyService } from '@aliasvault/client/auth/VaultKeyService';
 import { logoutReasonKey } from '@aliasvault/client/sync/VaultSync';
 
 import { handleClearTwoFactorState, handleGetTwoFactorState, handleStoreTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleClearSession, handleFullVaultSync, handleGetUnlockKeyDerivationParams, handleStoreUnlockKey, handleStoreUnlockKeyDerivationParams } from '@/entrypoints/background/VaultMessageHandler';
+import { handleClearSession, handleFullVaultSync, handleGetUnlockKeyDerivationParams, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams } from '@/entrypoints/background/VaultMessageHandler';
 
 import { StorageKeys } from '@/utils/constants/storageKeys';
 import { logExpected, logFailure } from '@/utils/Diagnostics';
@@ -116,10 +116,10 @@ async function checkServerStatus(webApi: WebApiService): Promise<{ online: boole
 }
 
 /**
- * Store the checked key (see VaultKeyService.SessionKeys.accountKey), which unlocks the vault, and tell content scripts about it.
+ * Store the verified Account Key, which unlocks the vault, and tell content scripts about it.
  */
-async function storeUnlockKey(unlockKey: string, offline: boolean, broadcast: boolean): Promise<void> {
-  const stored = await handleStoreUnlockKey(unlockKey);
+async function storeAccountKey(accountKey: string, offline: boolean, broadcast: boolean): Promise<void> {
+  const stored = await handleStoreAccountKey(accountKey);
   if (!stored.success) {
     throw new Error(stored.error);
   }
@@ -143,15 +143,15 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
     }
 
     try {
-      let unlockKey: string;
+      let accountKey: string;
       if (status.online) {
         const username = await storage.getItem<string>(StorageKeys.USERNAME);
         const loginResponse = await new SrpLoginService(webApi).initiateLogin(username!);
-        const credentials = await SrpAuthService.prepareCredentials(data.password, loginResponse.salt, loginResponse.encryptionType, loginResponse.encryptionSettings);
+        const unlockKey = await SrpAuthService.deriveUnlockKey(data.password, loginResponse.salt, loginResponse.encryptionSettings);
         await handleStoreUnlockKeyDerivationParams({ salt: loginResponse.salt, encryptionType: loginResponse.encryptionType, encryptionSettings: loginResponse.encryptionSettings });
 
         // Throws an unlock-key-rejected (E-206) error on a wrong password.
-        unlockKey = await VaultKeyService.refreshKeyChain(credentials.passwordHashBase64, webApi);
+        accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
       } else {
         const storedParams = await handleGetUnlockKeyDerivationParams();
         if (!storedParams) {
@@ -159,11 +159,11 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
           return { status: 'error', error: { key: 'common.errors.serverNotAvailable', wrongPassword: false } };
         }
 
-        const credentials = await SrpAuthService.prepareCredentials(data.password, storedParams.salt, storedParams.encryptionType, storedParams.encryptionSettings);
-        unlockKey = await VaultKeyService.verifyUnlockKey(credentials.passwordHashBase64);
+        const unlockKey = await SrpAuthService.deriveUnlockKey(data.password, storedParams.salt, storedParams.encryptionSettings);
+        accountKey = await VaultKeyService.verifyUnlockKey(unlockKey);
       }
 
-      await storeUnlockKey(unlockKey, !status.online, true);
+      await storeAccountKey(accountKey, !status.online, true);
       await resetFailedAttempts();
       await LocalPreferencesService.resetPasswordUnlockFailedAttempts();
       await LocalPreferencesService.setLastUsedUnlockMethod('password');
@@ -181,21 +181,21 @@ export function handleUnlockWithPassword(data: { password: string }): Promise<Ba
 }
 
 /**
- * Unlock the vault with the PIN, which decrypts the stored unlock key.
+ * Unlock the vault with the PIN, which decrypts the stored Account Key.
  */
 export function handleUnlockWithPin(data: { pin: string }): Promise<BackgroundAuthResult> {
   return runExclusive(async () => {
     try {
       const pinKey = await unlockWithPin(data.pin);
-      const unlockKey = await VaultKeyService.verifyUnlockKey(pinKey);
-      await convertLegacyPinKey(data.pin, pinKey, unlockKey);
+      const accountKey = await VaultKeyService.verifyUnlockKey(pinKey);
+      await convertLegacyPinKey(data.pin, pinKey, accountKey);
 
       const status = await checkServerStatus(new WebApiService());
       if ('logout' in status) {
         return status.logout;
       }
 
-      await storeUnlockKey(unlockKey, !status.online, true);
+      await storeAccountKey(accountKey, !status.online, true);
       await LocalPreferencesService.setLastUsedUnlockMethod('pin');
       return { status: 'success', offline: !status.online };
     } catch (err) {
@@ -241,7 +241,7 @@ export function handleLoginWithPassword(data: { username: string; password: stri
         return { status: 'error', error: { key: 'common.errors.unknownError', wrongPassword: false } };
       }
 
-      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.passwordHashBase64, loginResponse);
+      return await completeLogin(username, validation.token.token, validation.token.refreshToken, credentials.unlockKeyBase64, loginResponse);
     } catch (err) {
       return failureResult('Login error', err);
     }
@@ -266,7 +266,7 @@ export function handleLoginWithTwoFactor(data: { code: string }): Promise<Backgr
       }
 
       handleClearTwoFactorState();
-      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.credentials.passwordHashBase64, state.loginResponse);
+      return await completeLogin(state.username, validation.token.token, validation.token.refreshToken, state.credentials.unlockKeyBase64, state.loginResponse);
     } catch (err) {
       return failureResult('2FA error', err);
     }
@@ -283,9 +283,9 @@ async function completeLogin(username: string, token: string, refreshToken: stri
 
   // Fetch the key chain and check the unlock key opens it. Not recoverable when it fails, so log out again.
   const webApi = new WebApiService();
-  let storedKey: string;
+  let accountKey: string;
   try {
-    storedKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
+    accountKey = await VaultKeyService.refreshKeyChain(unlockKey, webApi);
   } catch (err) {
     await webApi.revokeTokens();
     await handleClearSession();
@@ -295,7 +295,7 @@ async function completeLogin(username: string, token: string, refreshToken: stri
   await handleStoreUnlockKeyDerivationParams({ salt: derivationParams.salt, encryptionType: derivationParams.encryptionType, encryptionSettings: derivationParams.encryptionSettings });
 
   // Content scripts are told once the vault is pulled: before that there is nothing to autofill from.
-  await storeUnlockKey(storedKey, false, false);
+  await storeAccountKey(accountKey, false, false);
 
   const sync = await handleFullVaultSync({ forcePull: true, reportErrorToPopup: false });
   if (sync.logoutReason === 'clientVersionNotSupported') {

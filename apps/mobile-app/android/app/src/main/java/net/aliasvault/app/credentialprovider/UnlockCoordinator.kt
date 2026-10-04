@@ -105,7 +105,7 @@ class UnlockCoordinator(
                 override fun onSuccess(result: String) {
                     try {
                         // Biometric authentication successful, unlock vault
-                        vaultStore.storeUnlockKeyInMemory(result)
+                        vaultStore.storeAccountKeyInMemory(result)
                         vaultStore.unlockVault()
 
                         // Notify success
@@ -121,7 +121,7 @@ class UnlockCoordinator(
                 }
 
                 override fun onError(e: Exception) {
-                    Log.e(TAG, "Failed to retrieve unlock key", e)
+                    Log.e(TAG, "Failed to retrieve Account Key", e)
                     activity.runOnUiThread {
                         handleBiometricKeystoreError(e)
                     }
@@ -136,11 +136,11 @@ class UnlockCoordinator(
     fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
         when (resultCode) {
             PinUnlockActivity.RESULT_SUCCESS -> {
-                // PIN unlock successful - get unlock key and unlock vault
-                val unlockKey = data?.getStringExtra(PinUnlockActivity.EXTRA_UNLOCK_KEY)
-                if (unlockKey != null) {
+                // PIN unlock successful - get Account Key and unlock vault
+                val accountKey = data?.getStringExtra(PinUnlockActivity.EXTRA_ACCOUNT_KEY)
+                if (accountKey != null) {
                     try {
-                        vaultStore.storeUnlockKeyInMemory(unlockKey)
+                        vaultStore.storeAccountKeyInMemory(accountKey)
                         vaultStore.unlockVault()
                         onUnlocked()
                     } catch (e: Exception) {
@@ -148,7 +148,7 @@ class UnlockCoordinator(
                         onError(getUnlockErrorMessage(e))
                     }
                 } else {
-                    Log.e(TAG, "No unlock key returned from PIN unlock")
+                    Log.e(TAG, "No Account Key returned from PIN unlock")
                     onError("Failed to unlock vault")
                 }
             }
@@ -180,7 +180,7 @@ class UnlockCoordinator(
                 val unlockKey = data?.getStringExtra(PasswordUnlockActivity.EXTRA_UNLOCK_KEY)
                 if (unlockKey != null) {
                     try {
-                        vaultStore.storeUnlockKeyInMemory(unlockKey)
+                        vaultStore.storeAccountKeyInMemory(unlockKey)
                         vaultStore.unlockVault()
                         onUnlocked()
                     } catch (e: Exception) {

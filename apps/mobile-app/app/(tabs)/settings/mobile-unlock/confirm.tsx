@@ -152,7 +152,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   };
 
   /**
-   * Handle approve: check the selected number, re-authenticate the user, then hand over the unlock key.
+   * Handle approve: check the selected number, re-authenticate the user, then hand over the Account Key.
    */
   const handleApprove = async () : Promise<void> => {
     if (!scan || !request || !selectedCode || approveDelay > 0) {
@@ -182,8 +182,9 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
       }
 
       // Encrypt with the public key that was verified against the QR code.
-      const encryptedUnlockKey = await NativeVaultManager.encryptUnlockKeyForMobileLogin(request.details.clientPublicKey);
-      await webApi.post<MobileLoginSubmitRequest, void>('auth/mobile-login/submit', { requestId: scan.requestId, encryptedUnlockKey }, false);
+      const encryptedAccountKey = await NativeVaultManager.encryptAccountKeyForMobileLogin(request.details.clientPublicKey);
+      const submitRequest: MobileLoginSubmitRequest = { requestId: scan.requestId, encryptedUnlockKey: encryptedAccountKey };
+      await webApi.post<MobileLoginSubmitRequest, void>('auth/mobile-login/submit', submitRequest, false);
 
       showResult(true);
     } catch (error) {
