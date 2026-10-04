@@ -25,4 +25,10 @@ public class EmailRoutingPush
     /// above, whether or not it holds any alias.
     /// </summary>
     public List<Guid> CoveredManifestIds { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the revision of each covered manifest the address list was built from. The write is rejected as
+    /// outdated when any of them is behind the server.
+    /// </summary>
+    public required List<ManifestRevision> BaseRevisions { get; set; }
 }

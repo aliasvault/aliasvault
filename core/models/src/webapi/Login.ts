@@ -14,4 +14,5 @@ export type LoginResponse = {
     encryptionType: string;
     encryptionSettings: string;
     srpIdentity?: string;
+    loginSessionId: string;
 }

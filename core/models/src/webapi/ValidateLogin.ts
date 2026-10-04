@@ -15,6 +15,7 @@ export type ValidateLoginRequest = {
     rememberMe: boolean;
     clientPublicEphemeral: string;
     clientSessionProof: string;
+    loginSessionId: string;
     legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 }
 
@@ -27,6 +28,7 @@ export type ValidateLoginRequest2Fa = {
     rememberMe: boolean;
     clientPublicEphemeral: string;
     clientSessionProof: string;
+    loginSessionId: string;
     legacyVerifierUpgrade?: LegacySrpVerifierUpgrade;
 }
 
