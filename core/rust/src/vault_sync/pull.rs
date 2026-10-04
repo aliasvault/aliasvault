@@ -33,7 +33,6 @@ pub(crate) struct OpenedManifestSet {
     pub blob_map: HashMap<String, Vec<u8>>,
     pub manifest_names: HashMap<String, String>,
     pub contentless_manifest_ids: Vec<String>,
-    /// The personal manifest is the empty placeholder of a new account, which this sync has to write.
     pub personal_needs_first_write: bool,
     pub personal_revision: i64,
     pub manifest_revisions: HashMap<String, i64>,
@@ -410,7 +409,7 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
         return Ok(personal_vek.to_string());
     }
     if key_type != types::KEY_TYPE_GRANT_KEY {
-        return Err(SyncError::Snapshot(format!("manifest {} states an unknown key type \"{}\" (newer server?), refusing to assemble", dto.manifest_id, key_type)));
+        return Err(SyncError::VaultVersionIncompatible(format!("manifest {} states an unknown key type \"{}\"; update the app", dto.manifest_id, key_type)));
     }
     resolve_granted_vek(ctx, dto).await
 }
@@ -418,7 +417,7 @@ async fn resolve_manifest_vek(ctx: &Ctx, dto: &ManifestDto, personal_manifest_id
 async fn resolve_granted_vek(ctx: &Ctx, dto: &ManifestDto) -> SyncResult<String> {
     let (encrypted_vek, public_key, algorithm) = grant_of(dto).ok_or_else(|| SyncError::Snapshot(format!("shared manifest {} carries no grant to open it with, refusing to assemble", dto.manifest_id)))?;
     if algorithm != types::ALGORITHM_RSA_OAEP_SHA256 {
-        return Err(SyncError::Snapshot(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\" (newer server?), refusing to assemble", dto.manifest_id, algorithm)));
+        return Err(SyncError::VaultVersionIncompatible(format!("shared manifest {} grants its VEK under an unsupported algorithm \"{}\"; update the app", dto.manifest_id, algorithm)));
     }
     let private_key = keys::resolve_grant_private_key(ctx, &public_key).ok_or_else(|| SyncError::Snapshot(format!("this session holds no account private key that opens the grant on shared manifest {}, refusing to assemble", dto.manifest_id)))?;
     keys::decrypt_manifest_vek(&encrypted_vek, &dto.manifest_id, &private_key).map_err(|e| SyncError::ServerVaultUnreadable(format!("failed to decrypt the VEK of shared manifest {}, refusing to assemble: {}", dto.manifest_id, e)))
