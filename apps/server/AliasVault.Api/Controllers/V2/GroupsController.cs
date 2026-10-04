@@ -11,8 +11,8 @@ using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Api.Filters;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Models;
 using AliasVault.Auth;
-using AliasVault.Cryptography;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi;
 using AliasVault.Shared.Models.WebApi.V2.Auth;
@@ -457,13 +457,12 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         var latestVaultEncryptionSettings = await AuthHelper.GetUserLatestVaultEncryptionSettingsAsync(context, me);
-        var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, me, SrpPurpose.SharedManifestDeletion, latestVaultEncryptionSettings);
         var srpIdentity = AuthHelper.GetSrpIdentity(me);
-        cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
 
         return Ok(new LoginInitiateResponse(
             latestVaultEncryptionSettings.Salt,
-            ephemeral.Public,
+            serverEphemeral,
             latestVaultEncryptionSettings.EncryptionType,
             latestVaultEncryptionSettings.EncryptionSettings,
             srpIdentity));
@@ -498,7 +497,7 @@ public class GroupsController(IAliasServerDbContextFactory dbContextFactory, Use
         }
 
         // Validate the SRP session (actual password check).
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, me, SrpPurpose.SharedManifestDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(me.UserName!, AuthEventType.SharedVaultDeletion, srpResult.FailureReason);

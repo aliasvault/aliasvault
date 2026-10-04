@@ -14,6 +14,7 @@ using System.Text;
 using AliasServerDb;
 using AliasVault.Api.Headers;
 using AliasVault.Api.Helpers;
+using AliasVault.Api.Models;
 using AliasVault.Auth;
 using AliasVault.Auth.IpAddress;
 using AliasVault.Cryptography;
@@ -170,14 +171,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
-        // Server creates ephemeral and sends to client
-        var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.Login, latestVaultEncryptionSettings);
 
-        // Store the server ephemeral in memory cache for Validate() endpoint to use.
-        // Use SrpIdentity as the cache key to ensure consistency.
-        cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
-
-        return Ok(new LoginInitiateResponse(latestVaultEncryptionSettings.Salt, ephemeral.Public, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
+        return Ok(new LoginInitiateResponse(latestVaultEncryptionSettings.Salt, serverEphemeral, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
     }
 
     /// <summary>
@@ -474,14 +470,9 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
-        // Server creates ephemeral and sends to client
-        var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.PasswordChange, latestVaultEncryptionSettings);
 
-        // Store the server ephemeral in memory cache for the Vault update (and set new password) endpoint to use.
-        // Use SrpIdentity as the cache key to ensure consistency.
-        cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
-
-        return Ok(new PasswordChangeInitiateResponse(latestVaultEncryptionSettings.Salt, ephemeral.Public, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
+        return Ok(new PasswordChangeInitiateResponse(latestVaultEncryptionSettings.Salt, serverEphemeral, latestVaultEncryptionSettings.EncryptionType, latestVaultEncryptionSettings.EncryptionSettings, srpIdentity));
     }
 
     /// <summary>
@@ -552,16 +543,11 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         var srpIdentity = AuthHelper.GetSrpIdentity(user);
 
-        // Server creates ephemeral and sends to client
-        var ephemeral = Srp.GenerateEphemeralServer(latestVaultEncryptionSettings.Verifier);
-
-        // Store the server ephemeral in memory cache for confirmation endpoint.
-        // Use SrpIdentity as the cache key to ensure consistency.
-        cache.Set(AuthHelper.CachePrefixEphemeral + srpIdentity, ephemeral.Secret, TimeSpan.FromMinutes(5));
+        var serverEphemeral = AuthHelper.CreateSrpEphemeral(cache, user, SrpPurpose.AccountDeletion, latestVaultEncryptionSettings);
 
         return Ok(new LoginInitiateResponse(
             latestVaultEncryptionSettings.Salt,
-            ephemeral.Public,
+            serverEphemeral,
             latestVaultEncryptionSettings.EncryptionType,
             latestVaultEncryptionSettings.EncryptionSettings,
             srpIdentity));
@@ -636,7 +622,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.AccountDeletion, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.AccountDeletion, srpResult.FailureReason);
@@ -814,7 +800,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
 
         // Validate the SRP session (actual password check).
         await using var context = await dbContextFactory.CreateDbContextAsync();
-        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, model.ClientPublicEphemeral, model.ClientSessionProof);
+        var srpResult = await AuthHelper.ValidateSrpSessionAsync(cache, context, user, SrpPurpose.Login, model.ClientPublicEphemeral, model.ClientSessionProof);
         if (srpResult.Session is null)
         {
             if (srpResult.ActiveSessionFound)
