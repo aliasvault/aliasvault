@@ -15,7 +15,7 @@ export type AuthLogModel = {
   /**
    * Gets or sets the type of authentication event.
    */
-  eventType: number;
+  eventType: string;
 
   /**
    * Gets or sets the username associated with the auth log entry.

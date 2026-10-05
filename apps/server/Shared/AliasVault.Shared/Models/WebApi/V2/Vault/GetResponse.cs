@@ -7,16 +7,11 @@
 
 namespace AliasVault.Shared.Models.WebApi.V2.Vault;
 
-using AliasVault.Shared.Models.Enums;
-
 /// <summary>
 /// Atomic snapshot returned by GET /v2/Vault.
 /// </summary>
 public class GetResponse
 {
-    /// <summary>Gets or sets the operation status.</summary>
-    public required VaultStatus Status { get; set; }
-
     /// <summary>
     /// Gets or sets the storage format of the returned vault.
     /// </summary>

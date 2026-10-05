@@ -5,65 +5,73 @@ export enum AuthEventType {
   /**
    * Represents a standard login attempt.
    */
-  Login = 1,
+  Login = 'login',
 
   /**
    * Represents a two-factor authentication attempt.
    */
-  TwoFactorAuthentication = 2,
+  TwoFactorAuthentication = 'two-factor-authentication',
 
   /**
    * Represents a user logout event.
    */
-  Logout = 3,
+  Logout = 'logout',
 
   /**
    * Represents a mobile login attempt (login via QR code from mobile app).
    */
-  MobileLogin = 4,
+  MobileLogin = 'mobile-login',
 
   /**
    * Represents JWT access token refresh event issued by client to API.
    */
-  TokenRefresh = 10,
+  TokenRefresh = 'token-refresh',
 
   /**
    * Represents a password reset event.
    */
-  PasswordReset = 20,
+  PasswordReset = 'password-reset',
 
   /**
    * Represents a password change event.
    */
-  PasswordChange = 21,
+  PasswordChange = 'password-change',
 
   /**
    * Represents enabling two-factor authentication in settings.
    */
-  TwoFactorAuthEnable = 22,
+  TwoFactorAuthEnable = 'two-factor-auth-enable',
 
   /**
    * Represents disabling two-factor authentication in settings.
    */
-  TwoFactorAuthDisable = 23,
+  TwoFactorAuthDisable = 'two-factor-auth-disable',
 
   /**
    * Represents a user registration event.
    */
-  Register = 30,
+  Register = 'register',
 
   /**
    * Represents creation of a shared manifest.
    */
-  SharedVaultCreation = 50,
+  SharedVaultCreation = 'shared-vault-creation',
 
   /**
    * Represents deletion of a shared manifest, confirmed with the master password.
    */
-  SharedVaultDeletion = 51,
+  SharedVaultDeletion = 'shared-vault-deletion',
 
   /**
    * Represents a user account deletion event.
    */
-  AccountDeletion = 99,
+  AccountDeletion = 'account-deletion',
+}
+
+/**
+ * The enum member name of an event type, or the value itself when this build does not know it.
+ * @param eventType - the event type as sent by the server.
+ */
+export function authEventTypeName(eventType: string): string {
+  return Object.keys(AuthEventType).find((key) => AuthEventType[key as keyof typeof AuthEventType] === eventType) ?? eventType;
 }

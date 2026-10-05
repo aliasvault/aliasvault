@@ -8,7 +8,7 @@ use crate::vault_model::{id_key, ids_equal, OVERFLOW_TABLE, TRASH_RETENTION_DEFA
 use super::email_routing::build_email_routing;
 use super::errors::{SyncError, SyncResult};
 use super::state::{self, Ctx};
-use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse};
+use super::types::{BlobDto, BlobHashesRequest, BlobRef, BlobUploadRequest, BucketRevision, BucketWrite, Db, ManifestRevision, ManifestWrite, MissingBlobsResponse, VaultWriteMigration, VaultWriteRequest, VaultWriteResponse, VaultWriteStatus};
 use super::blob_keys::{self, EncryptedBlob};
 use super::{db, http, keys};
 use crate::crypto;
@@ -492,7 +492,7 @@ async fn push_internal(ctx: &mut Ctx, cached: Option<CanonicalizedSet>, create_v
     let payload = VaultWriteRequest { username: ctx.request.username.clone(), manifests: manifest_writes, buckets: bucket_writes, email_routing: Some(email_routing), migration: migration.as_ref().map(|m| VaultWriteMigration { account_keys: Some(m.account_keys.clone()) }) };
     let response = write_vault(ctx, &payload, &blobs, gate, &mut uploaded).await?;
 
-    if response.status != 0 {
+    if response.status != VaultWriteStatus::Ok {
         // All-or-nothing: a single stale manifest or bucket rejected the whole write; the caller pulls, merges and retries.
         return Ok((PushStatus::Outdated, None));
     }
@@ -800,7 +800,7 @@ async fn push_data_bucket_only_internal(ctx: &Ctx, bucket: &DataBucket, vek: &st
     };
     let response: VaultWriteResponse = http::post(&ctx.host, http::VAULT_ENDPOINT, &payload, true).await?;
     let reported = response.bucket_revisions.iter().find(|b| ids_equal(&b.manifest_id, &bucket.manifest_id) && b.category == bucket.category).map(|b| b.revision);
-    if response.status != 0 {
+    if response.status != VaultWriteStatus::Ok {
         ctx.warn(format!("[V2Push] {} outdated (server at revision {}, we assumed {}); pulling and merging before the next attempt.", label, reported.unwrap_or(current_revision), current_revision)).await;
         return Ok((PushStatus::Outdated, reported.unwrap_or(current_revision)));
     }

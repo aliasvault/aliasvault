@@ -1,5 +1,5 @@
 import { toLocalDisplayFormat } from '@aliasvault/client/utilities/DateFormatter';
-import { AuthEventType } from '@aliasvault/models/webapi';
+import { authEventTypeName } from '@aliasvault/models/webapi';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -54,7 +54,7 @@ const AuthLogsSettings: React.FC = () => {
               {logs.map((log) => (
                 <div key={log.id} className="p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-gray-900 dark:text-white break-words">{AuthEventType[log.eventType] ?? log.eventType}</p>
+                    <p className="font-medium text-gray-900 dark:text-white break-words">{authEventTypeName(log.eventType)}</p>
                     <span className={`shrink-0 text-sm font-semibold ${log.isSuccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {log.isSuccess ? t('settings.securitySettings.authLogs.success') : t('settings.securitySettings.authLogs.failed')}
                     </span>

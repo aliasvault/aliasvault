@@ -67,13 +67,13 @@ const VOCABULARIES = [
     members: [
       {
         name: 'AccountKey',
-        token: 'accountkey',
+        token: 'account-key',
         summary: 'The VEK is encrypted with the user\'s own Account Key, which their unlock chain produces.',
         flags: { VekTravelsWithManifest: false },
       },
       {
         name: 'GrantKey',
-        token: 'grantkey',
+        token: 'grant-key',
         summary: 'A grant: the VEK is encrypted to a public key of the user, so only its holder\'s private half can open it.',
         flags: { VekTravelsWithManifest: true },
       },

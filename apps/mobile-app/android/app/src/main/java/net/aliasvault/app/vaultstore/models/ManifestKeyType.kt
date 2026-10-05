@@ -12,12 +12,12 @@ object ManifestKeyType {
     /**
      * The VEK is encrypted with the user's own Account Key, which their unlock chain produces.
      */
-    const val ACCOUNT_KEY = "accountkey"
+    const val ACCOUNT_KEY = "account-key"
 
     /**
      * A grant: the VEK is encrypted to a public key of the user, so only its holder's private half can open it.
      */
-    const val GRANT_KEY = "grantkey"
+    const val GRANT_KEY = "grant-key"
 
     /**
      * All known ManifestKeyType tokens.

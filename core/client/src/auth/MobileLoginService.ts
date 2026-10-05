@@ -142,13 +142,13 @@ export class MobileLoginService {
 
         const data = await response.json() as MobileLoginPollResponse;
 
-        if (data.status === 'Declined') {
+        if (data.status === 'declined') {
           this.cleanup();
           onError(MobileLoginErrorCode.DECLINED);
           return;
         }
 
-        if (data.status === 'Approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedAccountKey) {
+        if (data.status === 'approved' && data.encryptedSymmetricKey && data.encryptedPayload && data.encryptedAccountKey) {
           // Capture the key locally.
           const privateKey = this.privateKey!;
           this.cleanup();

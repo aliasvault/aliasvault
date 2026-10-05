@@ -23,7 +23,7 @@ use crate::vault_model::{id_key, ids_equal};
 const MAX_OUTDATED_RESYNCS: u32 = 3;
 
 /// The pending action type this build carries out.
-const ACTION_ROTATE_MANIFEST_DELIVERY_KEY: &str = "RotateManifestDeliveryKey";
+const ACTION_ROTATE_MANIFEST_DELIVERY_KEY: &str = "rotate-manifest-delivery-key";
 
 /// Run one operation to completion; the value is the `done` command's result.
 pub(crate) async fn run(host: Host, request: SyncRequest) -> Value {

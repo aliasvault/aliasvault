@@ -8,10 +8,10 @@ import Foundation
 /// exactly one of these, and the token decides where the client looks for the key that opens the manifest.
 public struct ManifestKeyType {
     /// The VEK is encrypted with the user's own Account Key, which their unlock chain produces.
-    public static let accountKey = "accountkey"
+    public static let accountKey = "account-key"
 
     /// A grant: the VEK is encrypted to a public key of the user, so only its holder's private half can open it.
-    public static let grantKey = "grantkey"
+    public static let grantKey = "grant-key"
 
     /// All known ManifestKeyType tokens.
     public static let all = [accountKey, grantKey]

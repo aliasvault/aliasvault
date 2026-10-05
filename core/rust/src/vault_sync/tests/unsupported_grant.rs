@@ -37,7 +37,7 @@ fn assert_told_to_update(host: &TestHost, result: &Value) {
 
 #[test]
 fn unknown_grant_algorithm_asks_for_an_app_update() {
-    let (host, result) = sync_with_shared_grant("future-x", "grantkey", "bm90LXJlYWRhYmxl");
+    let (host, result) = sync_with_shared_grant("future-x", "grant-key", "bm90LXJlYWRhYmxl");
     assert_told_to_update(&host, &result);
 }
 
@@ -49,6 +49,6 @@ fn unknown_grant_key_type_asks_for_an_app_update() {
 
 #[test]
 fn unknown_grant_algorithm_on_a_contentless_shared_manifest_asks_for_an_app_update() {
-    let (host, result) = sync_with_shared_grant("future-x", "grantkey", "");
+    let (host, result) = sync_with_shared_grant("future-x", "grant-key", "");
     assert_told_to_update(&host, &result);
 }

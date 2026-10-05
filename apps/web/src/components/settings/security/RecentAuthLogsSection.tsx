@@ -1,4 +1,4 @@
-import { AuthEventType } from '@aliasvault/models/webapi';
+import { authEventTypeName } from '@aliasvault/models/webapi';
 import React, { useCallback, useImperativeHandle, useState, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -53,7 +53,7 @@ const RecentAuthLogsSection = forwardRef<SectionHandle>((_, ref) => {
               {logs.map(log => (
                 <tr key={log.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                   <td className="px-6 py-4">{formatDateTime(log.timestamp)}</td>
-                  <td className="px-6 py-4">{AuthEventType[log.eventType] ?? log.eventType}</td>
+                  <td className="px-6 py-4">{authEventTypeName(log.eventType)}</td>
                   <td className="px-6 py-4">{log.client}</td>
                   <td className="px-6 py-4">{log.ipAddress}</td>
                   <td className="px-4 py-4"><StatusPill enabled={log.isSuccess} textTrue={t('settings.securitySettings.authLogs.success')} textFalse={t('settings.securitySettings.authLogs.failed')} /></td>
