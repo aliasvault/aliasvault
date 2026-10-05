@@ -14,7 +14,7 @@ namespace AliasServerDb.Migrations
             migrationBuilder.RenameColumn(
                 name: "EncryptedDecryptionKey",
                 table: "MobileLoginRequests",
-                newName: "EncryptedUnlockKey");
+                newName: "EncryptedAccountKey");
 
             migrationBuilder.AddColumn<string>(
                 name: "ClientBrowser",
@@ -76,7 +76,7 @@ namespace AliasServerDb.Migrations
                 table: "MobileLoginRequests");
 
             migrationBuilder.RenameColumn(
-                name: "EncryptedUnlockKey",
+                name: "EncryptedAccountKey",
                 table: "MobileLoginRequests",
                 newName: "EncryptedDecryptionKey");
         }
