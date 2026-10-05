@@ -17,6 +17,12 @@ export class MobileLoginProtocol {
 
   public static readonly VERIFICATION_CODE_LENGTH = 2;
 
+  /** RSA-OAEP label of the Account Key the mobile app encrypts; matches `MOBILE_LOGIN_ACCOUNT_KEY` in `core/rust/src/crypto/aad.rs`. */
+  public static readonly ACCOUNT_KEY_LABEL = 'aliasvault/v1/mobile-login/account-key';
+
+  /** RSA-OAEP label of the payload key the server encrypts; matches `MOBILE_LOGIN_PAYLOAD_KEY` in `core/rust/src/crypto/aad.rs`. */
+  public static readonly PAYLOAD_KEY_LABEL = 'aliasvault/v1/mobile-login/payload-key';
+
   private static readonly VERIFICATION_CODE_CONTEXT = 'AliasVault.MobileLogin.VerificationCode.v1:';
 
   private static readonly REQUEST_ID_PATTERN = /^[0-9a-f]{32}$/;

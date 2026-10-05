@@ -242,14 +242,12 @@ export class EncryptionUtility {
   }
 
   /**
-   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key.
+   * Decrypts data using RSA-OAEP asymmetric encryption with a CryptoKey private key, under an OAEP label when given.
    */
-  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey): Promise<Uint8Array> {
+  public static async decryptWithPrivateKeyObject(ciphertext: string, privateKey: CryptoKey, label?: string): Promise<Uint8Array> {
     const cipherBuffer = base64ToBytes(ciphertext);
     const plaintextBuffer = await crypto.subtle.decrypt(
-      {
-        name: "RSA-OAEP",
-      },
+      label === undefined ? { name: "RSA-OAEP" } : { name: "RSA-OAEP", label: new TextEncoder().encode(label) },
       privateKey,
       cipherBuffer
     );

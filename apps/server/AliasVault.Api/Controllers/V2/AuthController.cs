@@ -976,7 +976,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         // The payload is encrypted with a one-off symmetric key, which in turn is encrypted with the client's RSA public key.
         var symmetricKey = Cryptography.Encryption.GenerateRandomSymmetricKey();
         var encryptedPayload = Cryptography.Encryption.SymmetricEncrypt(JsonSerializer.Serialize(payload, MobileLoginRequestHelper.PayloadJsonOptions), symmetricKey);
-        var encryptedSymmetricKey = Cryptography.Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, clientPublicKey);
+        var encryptedSymmetricKey = Cryptography.Encryption.EncryptSymmetricKeyWithRsa(symmetricKey, clientPublicKey, Cryptography.Encryption.MobileLoginPayloadKeyLabel);
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.MobileLogin);
 

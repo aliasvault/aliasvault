@@ -10,12 +10,23 @@ namespace AliasVault.Cryptography;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 
 /// <summary>
 /// RSA/AES and Argon2id encryption methods.
 /// </summary>
 public static class Encryption
 {
+    /// <summary>
+    /// The RSA-OAEP label of the session payload key the server encrypts for a mobile login request's one-off public key.
+    /// Must match <c>MOBILE_LOGIN_PAYLOAD_KEY</c> in <c>core/rust/src/crypto/aad.rs</c>.
+    /// </summary>
+    public const string MobileLoginPayloadKeyLabel = "aliasvault/v1/mobile-login/payload-key";
+
     /// <summary>
     /// Generates a random symmetric key for use with AES-256.
     /// </summary>
@@ -58,6 +69,39 @@ public static class Encryption
 
         byte[] cipherBytes = Convert.FromBase64String(ciphertext);
         return rsa.Decrypt(cipherBytes, rsaParams);
+    }
+
+    /// <summary>
+    /// Encrypts a symmetric key using an RSA public key under an OAEP label, which decryption must present as-is.
+    /// </summary>
+    /// <param name="symmetricKey">The symmetric key to encrypt.</param>
+    /// <param name="publicKey">The RSA public key in JWK format.</param>
+    /// <param name="label">The OAEP label.</param>
+    /// <returns>The encrypted symmetric key as a base64-encoded string.</returns>
+    public static string EncryptSymmetricKeyWithRsa(byte[] symmetricKey, string publicKey, string label)
+    {
+        var jwk = JsonSerializer.Deserialize<JsonElement>(publicKey);
+        var key = new RsaKeyParameters(false, JwkInteger(jwk, "n"), JwkInteger(jwk, "e"));
+        var oaep = LabelledOaep(label);
+        oaep.Init(true, new ParametersWithRandom(key, new SecureRandom()));
+        return Convert.ToBase64String(oaep.ProcessBlock(symmetricKey, 0, symmetricKey.Length));
+    }
+
+    /// <summary>
+    /// Decrypts a symmetric key that was encrypted with an RSA public key under an OAEP label.
+    /// </summary>
+    /// <param name="ciphertext">The encrypted symmetric key as base64.</param>
+    /// <param name="privateKey">The RSA private key in JWK format.</param>
+    /// <param name="label">The OAEP label the ciphertext was encrypted under.</param>
+    /// <returns>The decrypted symmetric key.</returns>
+    public static byte[] DecryptSymmetricKeyWithRsa(string ciphertext, string privateKey, string label)
+    {
+        var jwk = JsonSerializer.Deserialize<JsonElement>(privateKey);
+        var key = new RsaPrivateCrtKeyParameters(JwkInteger(jwk, "n"), JwkInteger(jwk, "e"), JwkInteger(jwk, "d"), JwkInteger(jwk, "p"), JwkInteger(jwk, "q"), JwkInteger(jwk, "dp"), JwkInteger(jwk, "dq"), JwkInteger(jwk, "qi"));
+        var oaep = LabelledOaep(label);
+        oaep.Init(false, new ParametersWithRandom(key, new SecureRandom()));
+        var cipherBytes = Convert.FromBase64String(ciphertext);
+        return oaep.ProcessBlock(cipherBytes, 0, cipherBytes.Length);
     }
 
     /// <summary>
@@ -135,6 +179,27 @@ public static class Encryption
         aesGcm.Decrypt(nonce, ciphertext, tag, plaintext);
 
         return plaintext;
+    }
+
+    /// <summary>
+    /// RSA-OAEP with SHA-256 for both the hash and MGF1, as WebCrypto's RSA-OAEP-256, under the given label.
+    /// </summary>
+    /// <param name="label">The OAEP label.</param>
+    /// <returns>The OAEP encoding, not yet initialized.</returns>
+    private static OaepEncoding LabelledOaep(string label)
+    {
+        return new OaepEncoding(new RsaBlindedEngine(), new Sha256Digest(), new Sha256Digest(), Encoding.UTF8.GetBytes(label));
+    }
+
+    /// <summary>
+    /// Reads an unsigned big-endian JWK integer member.
+    /// </summary>
+    /// <param name="jwk">The parsed JWK.</param>
+    /// <param name="name">The member name.</param>
+    /// <returns>The integer.</returns>
+    private static Org.BouncyCastle.Math.BigInteger JwkInteger(JsonElement jwk, string name)
+    {
+        return new Org.BouncyCastle.Math.BigInteger(1, Base64UrlDecode(jwk.GetProperty(name).GetString()!));
     }
 
     /// <summary>

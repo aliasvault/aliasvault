@@ -1145,12 +1145,7 @@ public class VaultManager: NSObject {
                                          resolver resolve: @escaping RCTPromiseResolveBlock,
                                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         do {
-            // Encrypt the Account Key with the provided public key
-            let encryptedData = try vaultStore.encryptAccountKeyForMobileLogin(publicKeyJWK: publicKeyJWK)
-
-            // Return the encrypted data as base64 string
-            let base64Encrypted = encryptedData.base64EncodedString()
-            resolve(base64Encrypted)
+            resolve(try vaultStore.encryptAccountKeyForMobileLogin(publicKeyJWK: publicKeyJWK))
         } catch {
             reject("ENCRYPTION_ERROR", "Failed to encrypt decryption key: \(error.localizedDescription)", error)
         }
