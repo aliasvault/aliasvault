@@ -24,11 +24,20 @@ public class ReceivedManifestInvitation
     /// <summary>Gets or sets the username of the member who sent it.</summary>
     public required string InviterUsername { get; set; }
 
+    /// <summary>Gets or sets the user id of the member who sent it, which <see cref="EncryptedNameSignature"/> names.</summary>
+    public required string InviterUserId { get; set; }
+
     /// <summary>Gets or sets when it was sent.</summary>
     public required DateTime CreatedAt { get; set; }
 
     /// <summary>Gets or sets the encrypted name of the vault.</summary>
     public string? EncryptedName { get; set; }
+
+    /// <summary>Gets or sets the inviter's signature over <see cref="EncryptedName"/>.</summary>
+    public string? EncryptedNameSignature { get; set; }
+
+    /// <summary>Gets or sets the inviter's signing public key that <see cref="EncryptedNameSignature"/> verifies under.</summary>
+    public string? SignerPublicKey { get; set; }
 
     /// <summary>Gets or sets the public half of the recipient's keypair the offer was encrypted to.</summary>
     public string? RecipientPublicKey { get; set; }

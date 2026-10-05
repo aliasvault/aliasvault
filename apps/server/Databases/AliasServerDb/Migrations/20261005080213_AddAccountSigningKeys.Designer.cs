@@ -720,6 +720,10 @@ namespace AliasServerDb.Migrations
                     b.Property<string>("EncryptedName")
                         .HasColumnType("text");
 
+                    b.Property<string>("EncryptedNameSignature")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("EncryptedVek")
                         .HasColumnType("text");
 

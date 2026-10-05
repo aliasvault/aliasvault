@@ -80,6 +80,12 @@ public class GroupInvitation
     public string? EncryptedName { get; set; }
 
     /// <summary>
+    /// Gets or sets the inviter's signature over <see cref="EncryptedName"/>, verifying under <see cref="GrantSignerPublicKey"/>.
+    /// </summary>
+    [StringLength(255)]
+    public string? EncryptedNameSignature { get; set; }
+
+    /// <summary>
     /// Gets or sets the invitee's account keypair (<see cref="UserGrantKey"/>) the <see cref="EncryptedVek"/> was encrypted to.
     /// </summary>
     public Guid? UserGrantKeyId { get; set; }

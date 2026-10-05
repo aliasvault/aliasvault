@@ -95,6 +95,7 @@ struct ManifestGrant {
     recipient_public_key_id: String,
     encrypted_vek: String,
     encrypted_name: Option<String>,
+    encrypted_name_signature: Option<String>,
     signature: String,
 }
 
@@ -337,13 +338,16 @@ async fn invite_to_shared_manifest(ctx: &mut Ctx) -> Outcome {
 
     // The name travels encrypted in the invitation, so the recipient sees what they are invited to; one too long to fit is left out.
     let name = db::manifest_display_names(&ctx.host).await?.get(&id_key(&manifest.manifest_id)).cloned().filter(|name| !name.is_empty() && name.len() <= MAX_SHARED_MANIFEST_NAME_BYTES);
+    let own_user_id = own_user_id(ctx, &group)?;
     let encrypted_vek = keys::encrypt_manifest_vek(&manifest_vek, &manifest.manifest_id, &recipient_public_key)?;
+    let encrypted_name = name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?;
     let grant = ManifestGrant {
         recipient_user_id: member.user_id.clone(),
         recipient_public_key_id,
-        signature: crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id(ctx, &group)?, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
+        signature: crypto::signing::sign(&signing_key, &crypto::signing::grant_message(&manifest.manifest_id, manifest.key_version, &own_user_id, &recipient_public_key, ALGORITHM_RSA_OAEP_SHA256, &encrypted_vek))?,
+        encrypted_name_signature: encrypted_name.as_deref().map(|name| crypto::signing::sign(&signing_key, &crypto::signing::invitation_name_message(&manifest.manifest_id, &own_user_id, &recipient_public_key, name))).transpose()?,
         encrypted_vek,
-        encrypted_name: name.map(|name| crypto::encrypt_with_public_key(name.as_bytes(), &recipient_public_key)).transpose()?,
+        encrypted_name,
     };
 
     http::post_no_content(

@@ -26,6 +26,10 @@ public class ManifestGrant
     /// <summary>Gets or sets the vault's name encrypted with the same public key, null when the client encrypted none.</summary>
     public string? EncryptedName { get; set; }
 
+    /// <summary>Gets or sets the caller's signature over <see cref="EncryptedName"/>, required when a name is sent.</summary>
+    [StringLength(255)]
+    public string? EncryptedNameSignature { get; set; }
+
     /// <summary>Gets or sets the caller's signature over the grant.</summary>
     [StringLength(255)]
     public required string Signature { get; set; }

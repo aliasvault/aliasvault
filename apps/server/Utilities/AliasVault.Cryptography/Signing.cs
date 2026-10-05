@@ -33,6 +33,11 @@ public static class Signing
     public const string DeliveryKeyLabel = "aliasvault/v1/sig/delivery-key";
 
     /// <summary>
+    /// The label of the vault name an invitation carries, signed by the inviter.
+    /// </summary>
+    public const string InvitationNameLabel = "aliasvault/v1/sig/invitation-name";
+
+    /// <summary>
     /// Builds the bytes a signature covers: the label and each field, each prefixed with its length as a big-endian uint.
     /// </summary>
     /// <param name="label">The purpose label.</param>
@@ -66,6 +71,19 @@ public static class Signing
     public static byte[] GrantMessage(Guid manifestId, int keyVersion, string signerUserId, string recipientPublicKey, string algorithm, string encryptedVek)
     {
         return SignedMessage(GrantLabel, Utf8(manifestId.ToString()), Utf8(keyVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)), Utf8(signerUserId), Utf8(recipientPublicKey), Utf8(algorithm), Utf8(encryptedVek));
+    }
+
+    /// <summary>
+    /// Builds the signed message of the vault name an invitation carries.
+    /// </summary>
+    /// <param name="manifestId">The manifest the invitation is for.</param>
+    /// <param name="signerUserId">The inviter.</param>
+    /// <param name="recipientPublicKey">The recipient public key (JWK) the name is encrypted for, as stored.</param>
+    /// <param name="encryptedName">The encrypted name.</param>
+    /// <returns>The message bytes.</returns>
+    public static byte[] InvitationNameMessage(Guid manifestId, string signerUserId, string recipientPublicKey, string encryptedName)
+    {
+        return SignedMessage(InvitationNameLabel, Utf8(manifestId.ToString()), Utf8(signerUserId), Utf8(recipientPublicKey), Utf8(encryptedName));
     }
 
     /// <summary>
