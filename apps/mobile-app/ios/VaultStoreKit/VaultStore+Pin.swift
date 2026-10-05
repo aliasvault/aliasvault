@@ -32,9 +32,14 @@ extension VaultStore {
         return length > 0 ? length : nil
     }
 
-    /// Get failed attempts count from secure storage
+    /// Get failed attempts count from secure storage.
     public func getPinFailedAttempts() -> Int {
-        return (try? retrievePinFailedAttemptsFromKeychain()) ?? 0
+        return try {
+            retrievePinFailedAttemptsFromKeychain()
+        } catch {
+            // Failure to retrieve the counter counts as the maximum for safety reasons.
+            return Self.maxPinAttempts
+        }
     }
 
     // MARK: - PIN Setup Methods
@@ -108,6 +113,11 @@ extension VaultStore {
 
     /// Decrypt the key the PIN protects, counting a failure against the PIN attempts.
     private func decryptPinProtectedKey(_ pin: String) throws -> Data {
+        if getPinFailedAttempts() >= Self.maxPinAttempts {
+            try? removeAndDisablePin()
+            throw PinUnlockError.locked
+        }
+
         do {
             // Retrieve encrypted key and salt from keychain
             let (encryptedKey, salt) = try retrievePinDataFromKeychain()
@@ -301,12 +311,19 @@ extension VaultStore {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
-        guard status == errSecSuccess, let data = result as? Data else {
-            // Return 0 if not found
+        if status == errSecItemNotFound {
             return 0
         }
 
-        return data.withUnsafeBytes { $0.load(as: Int.self) }
+        guard status == errSecSuccess, let data = result as? Data, data.count == MemoryLayout<Int>.size else {
+            throw NSError(domain: "VaultStore", code: 42, userInfo: [NSLocalizedDescriptionKey: "Failed to read PIN failed attempts: \(status)"])
+        }
+
+        let attempts = data.withUnsafeBytes { $0.loadUnaligned(as: Int.self) }
+        guard attempts >= 0 else {
+            throw NSError(domain: "VaultStore", code: 43, userInfo: [NSLocalizedDescriptionKey: "Invalid PIN failed attempts value"])
+        }
+        return attempts
     }
 
     /// Remove failed attempts counter from Keychain

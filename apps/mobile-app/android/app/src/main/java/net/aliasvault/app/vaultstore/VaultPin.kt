@@ -121,8 +121,9 @@ class VaultPin(
         return try {
             retrievePinFailedAttemptsFromKeystore()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to retrieve failed attempts, returning 0", e)
-            0
+            // Failure to retrieve the counter counts as the maximum for safety reasons.
+            Log.e(TAG, "Failed to retrieve failed attempts, treating PIN as locked", e)
+            MAX_PIN_ATTEMPTS
         }
     }
 
@@ -193,6 +194,11 @@ class VaultPin(
     @Throws(PinUnlockException::class)
     @Suppress("SwallowedException") // We intentionally swallow to avoid exposing crypto implementation details
     fun unlockWithPin(pin: String): String {
+        if (getPinFailedAttempts() >= MAX_PIN_ATTEMPTS) {
+            removeAndDisablePin()
+            throw PinUnlockException.Locked
+        }
+
         try {
             // Retrieve encrypted key and salt from Keystore
             val (encryptedKey, salt) = retrievePinDataFromKeystore()
@@ -416,12 +422,15 @@ class VaultPin(
 
             // Get decryption key from Keystore
             val secretKey = keyStore.getKey(KEYSTORE_ALIAS_DATA_ENCRYPTION, null) as? SecretKey
-                ?: return 0
+                ?: return MAX_PIN_ATTEMPTS
 
             // Decrypt the attempts data
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
             val decryptedData = cipher.doFinal(encryptedData)
+            if (decryptedData.size != 4) {
+                return MAX_PIN_ATTEMPTS
+            }
 
             // Convert ByteArray to Int
             return ((decryptedData[0].toInt() and 0xFF) shl 24) or
@@ -429,8 +438,8 @@ class VaultPin(
                 ((decryptedData[2].toInt() and 0xFF) shl 8) or
                 (decryptedData[3].toInt() and 0xFF)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to decode failed attempts", e)
-            return 0
+            Log.e(TAG, "Failed to decode failed attempts, treating PIN as locked", e)
+            return MAX_PIN_ATTEMPTS
         }
     }
 
