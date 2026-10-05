@@ -176,6 +176,19 @@ export default [
         },
     },
     {
+        // Content scripts have no storage.local access (setAccessLevel in ContentSettingsHandler), these calls need to go through the background.
+        files: ["src/entrypoints/content.ts", "src/entrypoints/contentScript/**/*.ts", "src/utils/TotpClipboard.ts"],
+        ignores: ["src/**/__tests__/**"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                paths: [
+                    { name: "#imports", importNames: ["storage"], message: "Content scripts cannot use storage.local; add a background message (see ContentSettingsHandler)." },
+                    { name: "@/utils/LocalPreferencesService", message: "Content scripts cannot use storage.local; use GET_CONTENT_SETTINGS or add a background message." },
+                ],
+            }],
+        },
+    },
+    {
         // The dev-only trace channel is the only module allowed to reach the console directly.
         files: ["src/utils/devLogger/DevLogger.ts"],
         rules: {

@@ -61,7 +61,7 @@ export function handleStoreSavePromptState(
  * @param currentDomain - The hostname of the page asking for the prompt.
  * @returns True when the prompt may be restored.
  */
-async function isRelatedDomain(stateDomain: string, currentDomain: string): Promise<boolean> {
+export async function isRelatedDomain(stateDomain: string, currentDomain: string): Promise<boolean> {
   if (stateDomain === currentDomain) {
     return true;
   }
@@ -130,8 +130,6 @@ export function handleClearSavePromptState(
 
 /**
  * Store last autofilled credential for a tab.
- * This tracks which credential was used for autofill so we can offer
- * "Add URL to existing credential" instead of "Save new credential".
  * @param data - The tab ID and credential info.
  * @returns Success response.
  */

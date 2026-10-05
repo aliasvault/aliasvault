@@ -7,12 +7,14 @@ import '@/platform/ClientServices';
 import { broadcastVaultUnlocked, handleAwaitPendingAuth, handleLoginWithPassword, handleLoginWithTwoFactor, handleUnlockWithPassword, handleUnlockWithPin } from '@/entrypoints/background/AuthHandler';
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
+import { handleBlockLoginSaveForDomain, handleDisableAutofillForSite, handleDismissVaultLockedPopup, handleGetContentSettings, handleGetLanguage, handleIsLoginSaveBlocked, restrictContentScriptStorage } from '@/entrypoints/background/ContentSettingsHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData, handleGetMatchingPasskeys, handleWebAuthnGetAssertion } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
+import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleGetTwoFactorPrompt, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode, handleSetRecentlySelected, handleRecordItemUsage } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleGetFilteredItems, handleGetSearchItems, handleGetEncryptionKey, handleGetUnlockKeyDerivationParams, handleGetPersistedFormValues, handleGetVaultMigrationStatus, handlePersistFormValues, handleStoreAccountKey, handleStoreUnlockKeyDerivationParams, handleStoreEncryptedVaultChunk, handleGetSyncState, handleMigrateVaultManifest, handleFullVaultSync, handleGroupCreateVault, handleGroupInviteMember, handleGroupUpdateVault, handleGroupRevokeAccess, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleIsUrlLinkedToCredential, handleGetLoginSaveSettings, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpCodes, handleGenerateTotpCode, handleGetAutofillCredential, handleRecordItemUsage, type AutofillSender } from '@/entrypoints/background/VaultMessageHandler';
+import { getCurrentAutofillFrameUrl } from '@/entrypoints/contentScript/AutofillFrameUrl';
 
 import { logFailure } from '@/utils/Diagnostics';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -137,6 +139,32 @@ function onExtensionPageMessage<TType extends keyof IExtensionMessageProtocol>(
 }
 
 /**
+ * Resolve the tab and frame URL of a content-script message from the browser-supplied sender.
+ */
+function getAutofillSender(sender: { url?: string; frameId?: number; tab?: { id?: number; url?: string } }): AutofillSender {
+  const url = sender.url ?? (sender.frameId === 0 ? sender.tab?.url : undefined);
+  let pageUrl: string | null = null;
+  try {
+    pageUrl = url ? getCurrentAutofillFrameUrl(new URL(url)) : null;
+  } catch {
+    pageUrl = null;
+  }
+  return { tabId: sender.tab?.id, pageUrl };
+}
+
+/**
+ * Host of the content-script frame that sent a message, from the browser-supplied sender.
+ */
+function getSenderHostname(sender: { url?: string; frameId?: number; tab?: { id?: number; url?: string } }): string | null {
+  const { pageUrl } = getAutofillSender(sender);
+  try {
+    return pageUrl ? new URL(pageUrl).hostname || null : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Validate a WebAuthn create request against the sender's trusted origin, then forward it to the
  * passkey create flow. Falls back when the sender is untrusted or validation fails.
  */
@@ -215,6 +243,9 @@ export default defineBackground({
    * run as a fire-and-forget IIFE so this function returns synchronously.
    */
   main() {
+    // Keep content scripts (and so a compromised page renderer) out of storage.local where the browser supports it.
+    void restrictContentScriptStorage();
+
     /*
      * Register any synchronous event listeners first, before any await, 
      * so they're attached synchronously on service-worker wake-up.
@@ -249,7 +280,7 @@ export default defineBackground({
 
     onExtensionPageMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
     onExtensionPageMessage('GET_UNLOCK_KEY_DERIVATION_PARAMS', () => handleGetUnlockKeyDerivationParams());
-    onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data));
+    onMessage('GET_FILTERED_ITEMS', ({ data, sender }) => handleGetFilteredItems(data, getAutofillSender(sender)));
     onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data));
 
     onExtensionPageMessage('STORE_ACCOUNT_KEY', async ({ data }) => {
@@ -300,23 +331,31 @@ export default defineBackground({
     onExtensionPageMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
 
     // Remember login save messages
-    onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data));
-    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data));
-    onMessage('ADD_URL_TO_CREDENTIAL', ({ data }) => handleAddUrlToCredential(data));
-    onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data }) => handleIsUrlLinkedToCredential(data));
+    onMessage('CHECK_LOGIN_DUPLICATE', ({ data, sender }) => handleCheckLoginDuplicate(data, getAutofillSender(sender)));
+    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data, sender }) => handleSaveLoginCredential(data, getAutofillSender(sender)));
+    onMessage('ADD_URL_TO_CREDENTIAL', ({ data, sender }) => handleAddUrlToCredential(data, getAutofillSender(sender)));
+    onMessage('IS_URL_LINKED_TO_CREDENTIAL', ({ data, sender }) => handleIsUrlLinkedToCredential(data, getAutofillSender(sender)));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
+    onMessage('IS_LOGIN_SAVE_BLOCKED', ({ data }) => handleIsLoginSaveBlocked(data.domain));
+    onMessage('BLOCK_LOGIN_SAVE_FOR_DOMAIN', ({ data }) => handleBlockLoginSaveForDomain(data.domain));
+
+    // Local preferences for content scripts, which cannot read storage.local themselves
+    onMessage('GET_CONTENT_SETTINGS', ({ sender }) => handleGetContentSettings(getSenderHostname(sender)));
+    onMessage('DISABLE_AUTOFILL_FOR_SITE', ({ data, sender }) => handleDisableAutofillForSite(getSenderHostname(sender), data.temporary));
+    onMessage('DISMISS_VAULT_LOCKED_POPUP', () => handleDismissVaultLockedPopup());
+    onMessage('GET_LANGUAGE', () => handleGetLanguage());
 
     // TOTP autofill messages
-    onMessage('GET_ITEMS_WITH_TOTP', ({ data }) => handleGetItemsWithTotp(data));
+    onMessage('GET_ITEMS_WITH_TOTP', ({ data, sender }) => handleGetItemsWithTotp(data, getAutofillSender(sender)));
     onMessage('SEARCH_ITEMS_WITH_TOTP', ({ data }) => handleSearchItemsWithTotp(data));
-    onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data));
-    onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data));
+    onMessage('GET_TOTP_CODES', ({ data }) => handleGetTotpCodes(data));
+    onMessage('GENERATE_TOTP_CODE', ({ data, sender }) => handleGenerateTotpCode(data, getAutofillSender(sender)));
 
-    // Record item usage (last used + counts) into the Stats data bucket
-    onMessage('RECORD_ITEM_USAGE', ({ data }) => handleRecordItemUsage(data));
+    // Fill data for the one item picked in the in-page popup; records the pick (recently selected, last autofilled, usage)
+    onMessage('GET_AUTOFILL_CREDENTIAL', ({ data, sender }) => handleGetAutofillCredential(data, getAutofillSender(sender)));
 
-    // Track recently selected items for autofill prioritization
-    onMessage('SET_RECENTLY_SELECTED', ({ data }) => handleSetRecentlySelected(data));
+    // Record item usage (last used + counts) into the Stats data bucket; autofill from content scripts is recorded by the background
+    onExtensionPageMessage('RECORD_ITEM_USAGE', ({ data }) => handleRecordItemUsage(data));
 
     // Remember login save state (for surviving page navigation)
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tab!.id!, state: data }));
@@ -324,7 +363,6 @@ export default defineBackground({
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tab!.id! }));
 
     // Track last autofilled credential (for "Add URL to existing credential" prompt)
-    onMessage('STORE_LAST_AUTOFILLED', ({ data, sender }) => handleStoreLastAutofilled({ tabId: sender.tab!.id!, credential: data }));
     onMessage('GET_LAST_AUTOFILLED', ({ data, sender }) => handleGetLastAutofilled({ tabId: sender.tab!.id!, ...data }));
     onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tab!.id! }));
 
